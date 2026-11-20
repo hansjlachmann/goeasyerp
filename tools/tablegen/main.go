@@ -1407,6 +1407,7 @@ func templateFuncs() template.FuncMap {
 			return expr
 		},
 		"fieldKind":     fieldKind,
+		"keyArgsFrom":   keyArgsFrom,
 		"fieldInfoType": fieldInfoType,
 		"lowerFirst":    lowerFirst,
 		"sqlType":       getSQLType,
@@ -2102,21 +2103,14 @@ type {{ .StructName }} struct {
 	// Temporary: the record's own table is in a private in-memory database (InitTemporary)
 	temp *tables.TemporaryStore
 
-	// Iteration state for FindSet/Next
-	currentRows *sql.Rows
+	// The result set of FindSet/FindSetBuffered/Next and the paging window (SetPage)
+	cur tables.Cursor
 
 	// LockTable: the following reads lock the rows they read (SELECT … FOR UPDATE, Postgres)
 	lockForUpdate bool
 
 
 
-	// Pagination window for FindSet/FindSetBuffered (0 limit = all rows)
-	limit  int
-	offset int
-
-	// Buffered recordset for bidirectional navigation
-	bufferedRecords []*{{ .StructName }}
-	currentBufferPos int
 
 	// Business logic of this record only (SetLogic, tests); nil = the registered logic
 	// (Register{{ .StructName }}Logic)
@@ -2556,164 +2550,16 @@ func (t *{{ .StructName }}) convertPlaceholders(sql string, count int) string {
 // For single primary key: pass the value directly (string, int, etc.)
 // For composite keys: pass a map[string]interface{} with field names as keys
 func (t *{{ .StructName }}) Get(primaryKey interface{}) bool {
-	// Handle composite primary key (map[string]interface{})
+	// A composite primary key (map[string]interface{}, values also as text)
 	if pkMap, ok := primaryKey.(map[string]interface{}); ok {
-{{- range $i, $f := .Table.Fields }}{{- if $f.PrimaryKey }}
-		var {{ lowerFirst $f.Name }}Val {{ fieldGoType $.StructName $f }}
-		if v, exists := pkMap["{{ $f.DBName }}"]; exists {
-{{- if eq $f.Type "types.Code" }}
-			switch val := v.(type) {
-			case types.Code:
-				{{ lowerFirst $f.Name }}Val = val
-			case string:
-				{{ lowerFirst $f.Name }}Val = types.NewCode(val)
-			}
-{{- else if eq $f.Type "types.Text" }}
-			switch val := v.(type) {
-			case types.Text:
-				{{ lowerFirst $f.Name }}Val = val
-			case string:
-				{{ lowerFirst $f.Name }}Val = types.NewText(val)
-			}
-{{- else if eq $f.Type "int" }}
-			switch val := v.(type) {
-			case int:
-				{{ lowerFirst $f.Name }}Val = val
-			case float64:
-				{{ lowerFirst $f.Name }}Val = int(val)
-			case string:
-				// the key part as text: the API's "CUSTOMER1,10000"
-				if n, err := strconv.Atoi(strings.TrimSpace(val)); err == nil {
-					{{ lowerFirst $f.Name }}Val = n
-				}
-			}
-{{- else if eq $f.Type "int64" }}
-			switch val := v.(type) {
-			case int64:
-				{{ lowerFirst $f.Name }}Val = val
-			case int:
-				{{ lowerFirst $f.Name }}Val = int64(val)
-			case float64:
-				{{ lowerFirst $f.Name }}Val = int64(val)
-			case string:
-				if n, err := strconv.ParseInt(strings.TrimSpace(val), 10, 64); err == nil {
-					{{ lowerFirst $f.Name }}Val = n
-				}
-			}
-{{- else if eq $f.Type "string" }}
-			if val, ok := v.(string); ok {
-				{{ lowerFirst $f.Name }}Val = val
-			}
-{{- else if eq $f.Type "Option" }}
-			switch val := v.(type) {
-			case {{ fieldGoType $.StructName $f }}:
-				{{ lowerFirst $f.Name }}Val = val
-			case int:
-				{{ lowerFirst $f.Name }}Val = {{ fieldGoType $.StructName $f }}(val)
-			case float64:
-				{{ lowerFirst $f.Name }}Val = {{ fieldGoType $.StructName $f }}(int(val))
-			case string:
-				if n, err := strconv.Atoi(val); err == nil {
-					{{ lowerFirst $f.Name }}Val = {{ fieldGoType $.StructName $f }}(n)
-				}
-			}
-{{- else if eq $f.Type "types.Decimal" }}
-			switch val := v.(type) {
-			case types.Decimal:
-				{{ lowerFirst $f.Name }}Val = val
-			case int:
-				{{ lowerFirst $f.Name }}Val = types.NewDecimalFromInt(int64(val))
-			case float64:
-				{{ lowerFirst $f.Name }}Val = types.NewDecimal(val)
-			case string:
-				// the key part as text: the API's "CODE,10"
-				{{ lowerFirst $f.Name }}Val, _ = types.NewDecimalFromString(strings.TrimSpace(val))
-			}
-{{- else if eq $f.Type "types.Date" }}
-			switch val := v.(type) {
-			case types.Date:
-				{{ lowerFirst $f.Name }}Val = val
-			case time.Time:
-				{{ lowerFirst $f.Name }}Val = types.NewDate(val.Year(), val.Month(), val.Day())
-			case string:
-				{{ lowerFirst $f.Name }}Val, _ = types.NewDateFromString(val)
-			}
-{{- else if eq $f.Type "bool" }}
-			switch val := v.(type) {
-			case bool:
-				{{ lowerFirst $f.Name }}Val = val
-			case string:
-				// the key part as text: the API's "true,PCS,…"
-				{{ lowerFirst $f.Name }}Val, _ = strconv.ParseBool(strings.TrimSpace(val))
-			}
-{{- end }}
-		}
-{{- end }}{{- end }}
-		return t.GetByPK({{- range $i, $f := .Table.Fields }}{{- if $f.PrimaryKey }}{{ lowerFirst $f.Name }}Val{{ if not (isLastPK $i $.Table.Fields) }}, {{ end }}{{- end }}{{- end }})
+		key := {{ lowerFirst .StructName }}Fields.KeyFromMap(pkMap)
+		return t.GetByPK({{ keyArgsFrom .StructName .Table.Fields "key" }})
 	}
-
 {{- if eq (pkCount .Table.Fields) 1 }}
-	// Handle single primary key (for tables with only one PK field)
-{{- $pk := firstPK .Table.Fields }}
-{{- if eq $pk.Type "types.Code" }}
-	switch pk := primaryKey.(type) {
-	case types.Code:
-		return t.GetByPK(pk)
-	case string:
-		return t.GetByPK(types.NewCode(pk))
+	// The primary key itself (a table with one primary key field)
+	if key, ok := {{ lowerFirst .StructName }}Fields.KeyFromValue(primaryKey); ok {
+		return t.GetByPK({{ keyArgsFrom .StructName .Table.Fields "[]any{key}" }})
 	}
-{{- else if eq $pk.Type "types.Text" }}
-	switch pk := primaryKey.(type) {
-	case types.Text:
-		return t.GetByPK(pk)
-	case string:
-		return t.GetByPK(types.NewText(pk))
-	}
-{{- else if eq $pk.Type "int" }}
-	switch pk := primaryKey.(type) {
-	case int:
-		return t.GetByPK(pk)
-	case float64:
-		return t.GetByPK(int(pk))
-	case string:
-		var intVal int
-		if _, err := fmt.Sscanf(pk, "%d", &intVal); err == nil {
-			return t.GetByPK(intVal)
-		}
-	}
-{{- else if eq $pk.Type "int64" }}
-	switch pk := primaryKey.(type) {
-	case int64:
-		return t.GetByPK(pk)
-	case int:
-		return t.GetByPK(int64(pk))
-	case float64:
-		return t.GetByPK(int64(pk))
-	case string:
-		var intVal int64
-		if _, err := fmt.Sscanf(pk, "%d", &intVal); err == nil {
-			return t.GetByPK(intVal)
-		}
-	}
-{{- else if eq $pk.Type "string" }}
-	if pk, ok := primaryKey.(string); ok {
-		return t.GetByPK(pk)
-	}
-{{- else if eq $pk.Type "types.Date" }}
-	switch pk := primaryKey.(type) {
-	case types.Date:
-		return t.GetByPK(pk)
-	case time.Time:
-		return t.GetByPK(types.NewDate(pk.Year(), pk.Month(), pk.Day()))
-	case string:
-		if d, err := types.NewDateFromString(pk); err == nil {
-			return t.GetByPK(d)
-		}
-	}
-{{- end }}
-{{- else }}
-	// For tables with composite keys, direct value is not supported
-	// Use a map[string]interface{} with field names as keys
 {{- end }}
 
 	fmt.Printf("Error: Invalid primary key type for {{ .Table.Name }}.Get: %T (use map for composite keys)\n", primaryKey)
@@ -2722,109 +2568,13 @@ func (t *{{ .StructName }}) Get(primaryKey interface{}) bool {
 
 // GetByPK retrieves a record by its typed primary key(s) - for direct typed access
 func (t *{{ .StructName }}) GetByPK({{- range $i, $f := .Table.Fields }}{{- if $f.PrimaryKey }}{{ lowerFirst $f.Name }} {{ fieldGoType $.StructName $f }}{{ if not (isLastPK $i $.Table.Fields) }}, {{ end }}{{- end }}{{- end }}) bool {
-{{- if .Table.Global }}
-	tableName := {{ .StructName }}TableName
-{{- else }}
-	tableName := fmt.Sprintf("%s$%s", t.company, {{ .StructName }}TableName)
-{{- end }}
-
-	{{- range .Table.Fields }}
-	{{- if not .FlowField }}
-	{{- if eq .Type "types.Code" }}
-	var {{ lowerFirst .Name }}Null sql.NullString
-	{{- else if eq .Type "types.Text" }}
-	var {{ lowerFirst .Name }}Null sql.NullString
-	{{- else if eq .Type "types.Decimal" }}
-	var {{ lowerFirst .Name }}Null sql.NullString
-	{{- else if eq .Type "types.Date" }}
-	var {{ lowerFirst .Name }}Null sql.NullString
-	{{- else if eq .Type "types.DateTime" }}
-	var {{ lowerFirst .Name }}Null sql.NullString
-	{{- else if eq .Type "bool" }}
-	var {{ lowerFirst .Name }}Bool sql.NullBool
-	{{- else if eq .Type "Option" }}
-	var {{ lowerFirst .Name }}Int int
-	{{- else }}
-	var {{ lowerFirst .Name }}Val {{ .Type }}
-	{{- end }}
-	{{- end }}
-	{{- end }}
-
 	// Collect arguments for query
 	args := []interface{}{
 		{{- range $i, $f := .Table.Fields }}{{- if $f.PrimaryKey }}
 		{{ keyArg $f (lowerFirst $f.Name) }},
 		{{- end }}{{- end }}
 	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(` + "`SELECT {{ range $i, $f := .Table.Fields }}{{ if not $f.FlowField }}{{ $f.DBName }}{{ if not (isLastDBField $i $.Table.Fields) }}, {{ end }}{{ end }}{{ end }} FROM \"%s\" WHERE 1=1{{ range .Table.Fields }}{{ if .PrimaryKey }} AND {{ .DBName }} = ?{{ end }}{{ end }}`" + `, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-	sqlStr += t.forUpdate()
-
-	err := t.exec().QueryRow(sqlStr, args...).Scan(
-{{- range $i, $f := .Table.Fields }}
-		{{- if not $f.FlowField }}
-		{{- if eq $f.Type "types.Code" }}
-		&{{ lowerFirst $f.Name }}Null,
-		{{- else if eq $f.Type "types.Text" }}
-		&{{ lowerFirst $f.Name }}Null,
-		{{- else if eq $f.Type "types.Decimal" }}
-		&{{ lowerFirst $f.Name }}Null,
-		{{- else if eq $f.Type "types.Date" }}
-		&{{ lowerFirst $f.Name }}Null,
-		{{- else if eq $f.Type "types.DateTime" }}
-		&{{ lowerFirst $f.Name }}Null,
-		{{- else if eq $f.Type "bool" }}
-		&{{ lowerFirst $f.Name }}Bool,
-		{{- else if eq $f.Type "Option" }}
-		&{{ lowerFirst $f.Name }}Int,
-		{{- else }}
-		&{{ lowerFirst $f.Name }}Val,
-		{{- end }}
-		{{- end }}
-{{- end }}
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			// Record not found - this is not an error, just return false
-			return false
-		}
-		// Actual database error
-		fmt.Printf("Error: Failed to get {{ .Table.Name }}: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-{{- range .Table.Fields }}
-{{- if not .FlowField }}
-{{- if eq .Type "types.Code" }}
-	t.{{ upperFirst .Name }} = types.NewCode({{ lowerFirst .Name }}Null.String)
-{{- else if eq .Type "types.Text" }}
-	t.{{ upperFirst .Name }} = types.NewText({{ lowerFirst .Name }}Null.String)
-{{- else if eq .Type "types.Decimal" }}
-	t.{{ upperFirst .Name }}, _ = types.NewDecimalFromString({{ lowerFirst .Name }}Null.String)
-{{- else if eq .Type "types.Date" }}
-	t.{{ upperFirst .Name }}, _ = types.NewDateFromString({{ lowerFirst .Name }}Null.String)
-{{- else if eq .Type "types.DateTime" }}
-	t.{{ upperFirst .Name }}, _ = types.NewDateTimeFromString({{ lowerFirst .Name }}Null.String)
-{{- else if eq .Type "bool" }}
-	t.{{ upperFirst .Name }} = {{ lowerFirst .Name }}Bool.Bool
-{{- else if eq .Type "Option" }}
-	t.{{ upperFirst .Name }} = {{ $.StructName }}{{ upperFirst .Name }}({{ lowerFirst .Name }}Int)
-{{- else }}
-	t.{{ upperFirst .Name }} = {{ lowerFirst .Name }}Val
-{{- end }}
-{{- end }}
-{{- end }}
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().Get(args)
 }
 
 // Insert inserts the record into the database
@@ -3829,10 +3579,7 @@ func (t *{{ .StructName }}) columnName(fieldName string) (string, bool) {
 func (t *{{ .StructName }}) Reset() {
 	t.q.Reset()
 	t.oldValues = nil
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
+	t.cur.CloseRows()
 }
 
 // buildWhereClause builds WHERE clause from current filters and search
@@ -3874,310 +3621,50 @@ func (t *{{ .StructName }}) getOrderByClause() (string, []interface{}) {
 // limit rows, skipping the first offset rows. A limit of 0 disables pagination
 // (all matching rows are returned). Negative values are treated as 0.
 func (t *{{ .StructName }}) SetPage(limit, offset int) {
-	if limit < 0 {
-		limit = 0
-	}
-	if offset < 0 {
-		offset = 0
-	}
-	t.limit = limit
-	t.offset = offset
+	t.cur.SetPage(limit, offset)
 }
 
-// getLimitClause builds the LIMIT/OFFSET clause from the pagination window.
-// Returns an empty string when no limit is set. LIMIT/OFFSET take integer
-// literals (not placeholders), which both SQLite and PostgreSQL accept.
-func (t *{{ .StructName }}) getLimitClause() string {
-	if t.limit <= 0 {
-		return ""
+// rec is what the read functions of foundation/tables need of the record
+func (t *{{ .StructName }}) rec() *tables.Rec {
+	_, inTx := t.db.(*sql.Tx)
+	return &tables.Rec{
+		Fields:    {{ lowerFirst .StructName }}Fields,
+		Ref:       t.fieldRef,
+		QT:        t.qt(),
+		Q:         &t.q,
+		Cur:       &t.cur,
+		Exec:      t.exec(),
+		Buffered:  t.temp != nil || inTx,
+		Postgres:  t.dbType == database.DBTypePostgres,
+		Table:     {{- if .Table.Global }}{{ .StructName }}TableName{{- else }}fmt.Sprintf("%s$%s", t.company, {{ .StructName }}TableName){{- end }},
+		ForUpdate: t.forUpdate(),
+		Store:     t.StoreOldValues,
 	}
-	if t.offset > 0 {
-		return fmt.Sprintf(" LIMIT %d OFFSET %d", t.limit, t.offset)
-	}
-	return fmt.Sprintf(" LIMIT %d", t.limit)
 }
 
 // FindFirst finds the first record matching current filters
 // Returns true if found, false if not found
 func (t *{{ .StructName }}) FindFirst() bool {
-{{- if .Table.Global }}
-	tableName := {{ .StructName }}TableName
-{{- else }}
-	tableName := fmt.Sprintf("%s$%s", t.company, {{ .StructName }}TableName)
-{{- end }}
-	where, args := t.buildWhereClause()
-	// The first record in the current key and direction (classic FIND('-'))
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(` + "`SELECT {{ range $i, $f := .Table.Fields }}{{ if not $f.FlowField }}{{ $f.DBName }}{{ if not (isLastDBField $i $.Table.Fields) }}, {{ end }}{{ end }}{{ end }} FROM \"%s\" WHERE %s ORDER BY %s LIMIT 1`" + `, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-
-{{- range .Table.Fields }}
-{{- if not .FlowField }}
-{{- if eq .Type "types.Code" }}
-	var {{ .Name }}Null sql.NullString
-{{- else if eq .Type "types.Text" }}
-	var {{ .Name }}Null sql.NullString
-{{- else if eq .Type "types.Decimal" }}
-	var {{ .Name }}Null sql.NullString
-{{- else if eq .Type "types.Date" }}
-	var {{ .Name }}Null sql.NullString
-{{- else if eq .Type "types.DateTime" }}
-	var {{ .Name }}Null sql.NullString
-{{- else if eq .Type "bool" }}
-	var {{ .Name }}Bool sql.NullBool
-{{- else if eq .Type "Option" }}
-	var {{ .Name }}Int int
-{{- else if eq .Type "time.Time" }}
-	var {{ .Name }}Time time.Time
-{{- end }}
-{{- end }}
-{{- end }}
-
-	err := t.exec().QueryRow(query, args...).Scan(
-{{- range $i, $f := .Table.Fields }}
-{{- if not $f.FlowField }}
-{{- if eq $f.Type "types.Code" }}
-		&{{ $f.Name }}Null,
-{{- else if eq $f.Type "types.Text" }}
-		&{{ $f.Name }}Null,
-{{- else if eq $f.Type "types.Decimal" }}
-		&{{ $f.Name }}Null,
-{{- else if eq $f.Type "types.Date" }}
-		&{{ $f.Name }}Null,
-{{- else if eq $f.Type "types.DateTime" }}
-		&{{ $f.Name }}Null,
-{{- else if eq $f.Type "bool" }}
-		&{{ $f.Name }}Bool,
-{{- else if eq $f.Type "Option" }}
-		&{{ $f.Name }}Int,
-{{- else if eq $f.Type "time.Time" }}
-		&{{ $f.Name }}Time,
-{{- else }}
-		&t.{{ upperFirst $f.Name }},
-{{- end }}
-{{- end }}
-{{- end }}
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find first {{ .Table.Name }}: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-{{- range .Table.Fields }}
-{{- if not .FlowField }}
-{{- if eq .Type "types.Code" }}
-	t.{{ upperFirst .Name }} = types.NewCode({{ .Name }}Null.String)
-{{- else if eq .Type "types.Text" }}
-	t.{{ upperFirst .Name }} = types.NewText({{ .Name }}Null.String)
-{{- else if eq .Type "types.Decimal" }}
-	t.{{ upperFirst .Name }}, _ = types.NewDecimalFromString({{ .Name }}Null.String)
-{{- else if eq .Type "types.Date" }}
-	t.{{ upperFirst .Name }}, _ = types.NewDateFromString({{ .Name }}Null.String)
-{{- else if eq .Type "types.DateTime" }}
-	t.{{ upperFirst .Name }}, _ = types.NewDateTimeFromString({{ .Name }}Null.String)
-{{- else if eq .Type "bool" }}
-	t.{{ upperFirst .Name }} = {{ .Name }}Bool.Bool
-{{- else if eq .Type "Option" }}
-	t.{{ upperFirst .Name }} = {{ $.StructName }}{{ upperFirst .Name }}({{ .Name }}Int)
-{{- else if eq .Type "time.Time" }}
-	t.{{ upperFirst .Name }} = {{ .Name }}Time
-{{- end }}
-{{- end }}
-{{- end }}
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindFirst()
 }
 
 // FindLast finds the last record matching current filters
 // Returns true if found, false if not found
 func (t *{{ .StructName }}) FindLast() bool {
-{{- if .Table.Global }}
-	tableName := {{ .StructName }}TableName
-{{- else }}
-	tableName := fmt.Sprintf("%s$%s", t.company, {{ .StructName }}TableName)
-{{- end }}
-	where, args := t.buildWhereClause()
-	// The last record in the current key and direction (classic FIND('+')): the key reversed,
-	// every column of it
-	t.q.Descending = !t.q.Descending
-	orderBy, orderArgs := t.getOrderByClause()
-	t.q.Descending = !t.q.Descending
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(` + "`SELECT {{ range $i, $f := .Table.Fields }}{{ if not $f.FlowField }}{{ $f.DBName }}{{ if not (isLastDBField $i $.Table.Fields) }}, {{ end }}{{ end }}{{ end }} FROM \"%s\" WHERE %s ORDER BY %s LIMIT 1`" + `, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-
-{{- range .Table.Fields }}
-{{- if not .FlowField }}
-{{- if eq .Type "types.Code" }}
-	var {{ .Name }}Null sql.NullString
-{{- else if eq .Type "types.Text" }}
-	var {{ .Name }}Null sql.NullString
-{{- else if eq .Type "types.Decimal" }}
-	var {{ .Name }}Null sql.NullString
-{{- else if eq .Type "types.Date" }}
-	var {{ .Name }}Null sql.NullString
-{{- else if eq .Type "types.DateTime" }}
-	var {{ .Name }}Null sql.NullString
-{{- else if eq .Type "bool" }}
-	var {{ .Name }}Bool sql.NullBool
-{{- else if eq .Type "Option" }}
-	var {{ .Name }}Int int
-{{- else if eq .Type "time.Time" }}
-	var {{ .Name }}Time time.Time
-{{- end }}
-{{- end }}
-{{- end }}
-
-	err := t.exec().QueryRow(query, args...).Scan(
-{{- range $i, $f := .Table.Fields }}
-{{- if not $f.FlowField }}
-{{- if eq $f.Type "types.Code" }}
-		&{{ $f.Name }}Null,
-{{- else if eq $f.Type "types.Text" }}
-		&{{ $f.Name }}Null,
-{{- else if eq $f.Type "types.Decimal" }}
-		&{{ $f.Name }}Null,
-{{- else if eq $f.Type "types.Date" }}
-		&{{ $f.Name }}Null,
-{{- else if eq $f.Type "types.DateTime" }}
-		&{{ $f.Name }}Null,
-{{- else if eq $f.Type "bool" }}
-		&{{ $f.Name }}Bool,
-{{- else if eq $f.Type "Option" }}
-		&{{ $f.Name }}Int,
-{{- else if eq $f.Type "time.Time" }}
-		&{{ $f.Name }}Time,
-{{- else }}
-		&t.{{ upperFirst $f.Name }},
-{{- end }}
-{{- end }}
-{{- end }}
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find last {{ .Table.Name }}: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-{{- range .Table.Fields }}
-{{- if not .FlowField }}
-{{- if eq .Type "types.Code" }}
-	t.{{ upperFirst .Name }} = types.NewCode({{ .Name }}Null.String)
-{{- else if eq .Type "types.Text" }}
-	t.{{ upperFirst .Name }} = types.NewText({{ .Name }}Null.String)
-{{- else if eq .Type "types.Decimal" }}
-	t.{{ upperFirst .Name }}, _ = types.NewDecimalFromString({{ .Name }}Null.String)
-{{- else if eq .Type "types.Date" }}
-	t.{{ upperFirst .Name }}, _ = types.NewDateFromString({{ .Name }}Null.String)
-{{- else if eq .Type "types.DateTime" }}
-	t.{{ upperFirst .Name }}, _ = types.NewDateTimeFromString({{ .Name }}Null.String)
-{{- else if eq .Type "bool" }}
-	t.{{ upperFirst .Name }} = {{ .Name }}Bool.Bool
-{{- else if eq .Type "Option" }}
-	t.{{ upperFirst .Name }} = {{ $.StructName }}{{ upperFirst .Name }}({{ .Name }}Int)
-{{- else if eq .Type "time.Time" }}
-	t.{{ upperFirst .Name }} = {{ .Name }}Time
-{{- end }}
-{{- end }}
-{{- end }}
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindLast()
 }
 
 // Count returns the number of records matching current filters
 func (t *{{ .StructName }}) Count() int {
-{{- if .Table.Global }}
-	tableName := {{ .StructName }}TableName
-{{- else }}
-	tableName := fmt.Sprintf("%s$%s", t.company, {{ .StructName }}TableName)
-{{- end }}
-	where, args := t.buildWhereClause()
-
-	query := fmt.Sprintf(` + "`SELECT COUNT(*) FROM \"%s\" WHERE %s`" + `, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var count int
-	err := t.exec().QueryRow(query, args...).Scan(&count)
-	if err != nil {
-		fmt.Printf("Error: Failed to count {{ .Table.Name }}: %v\n", err)
-		return 0
-	}
-
-	return count
+	return t.rec().Count()
 }
 
 // FindSet opens a result set matching current filters
 // Call Next() to iterate through the results
-// Returns true if at least one record found, false otherwise
+// Returns true if at least one record found, false otherwise. A temporary record, and a
+// record in a transaction, reads all at once (FindSetBuffered).
 func (t *{{ .StructName }}) FindSet() bool {
-	// A temporary record, and a record in a transaction, reads all at once: its in-memory
-	// database or the transaction has one connection, which an open result set would block for
-	// the statements of the loop (Modify while looping; on PostgreSQL a query while the rows are
-	// read breaks the connection — "unexpected Parse response")
-	if _, inTx := t.db.(*sql.Tx); t.temp != nil || inTx {
-		return t.FindSetBuffered()
-	}
-	// Close any existing result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-
-{{- if .Table.Global }}
-	tableName := {{ .StructName }}TableName
-{{- else }}
-	tableName := fmt.Sprintf("%s$%s", t.company, {{ .StructName }}TableName)
-{{- end }}
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(` + "`SELECT {{ range $i, $f := .Table.Fields }}{{ if not $f.FlowField }}{{ $f.DBName }}{{ if not (isLastDBField $i $.Table.Fields) }}, {{ end }}{{ end }}{{ end }} FROM \"%s\" WHERE %s ORDER BY %s%s`" + `, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSet for {{ .Table.Name }}: %v\n", err)
-		return false
-	}
-
-	t.currentRows = rows
-
-	// Load first record
-	return t.Next()
+	return t.rec().FindSet()
 }
 
 // Next advances to the next record: in the result set after FindSet() or FindSetBuffered(),
@@ -4189,307 +3676,14 @@ func (t *{{ .StructName }}) FindSet() bool {
 //   - Next(-3): Skip backward 3 records (FindSetBuffered, or after Get/Find)
 // Returns true if a record was loaded, false if no more records or out of bounds
 func (t *{{ .StructName }}) Next(steps ...int) bool {
-	// Default to 1 step forward
-	step := 1
-	if len(steps) > 0 {
-		step = steps[0]
-	}
-
-	// BUFFERED MODE: Bidirectional navigation with in-memory records
-	if t.bufferedRecords != nil {
-		// Calculate new position
-		newPos := t.currentBufferPos + step
-
-		// Check bounds
-		if newPos < 0 || newPos >= len(t.bufferedRecords) {
-			return false // Out of bounds
-		}
-
-		// Move to new position
-		t.currentBufferPos = newPos
-		t.copyFromBuffered(t.bufferedRecords[t.currentBufferPos])
-		return true
-	}
-
-	// FORWARD-ONLY MODE: Streaming with sql.Rows (only positive steps allowed)
-	if t.currentRows != nil {
-		// Validate: only forward movement allowed
-		if step < 1 {
-			fmt.Printf("Error: Backward navigation (Next(%d)) requires FindSetBuffered()\n", step)
-			return false
-		}
-
-		// Advance 'step' times (1 = next record, 2 = skip 1 record, etc.)
-		for i := 0; i < step; i++ {
-			if !t.currentRows.Next() {
-				// No more rows - close result set
-				t.currentRows.Close()
-				t.currentRows = nil
-				return false
-			}
-		}
-
-		// Scan the row
-{{- range .Table.Fields }}
-{{- if not .FlowField }}
-{{- if eq .Type "types.Code" }}
-		var {{ .Name }}Null sql.NullString
-{{- else if eq .Type "types.Text" }}
-		var {{ .Name }}Null sql.NullString
-{{- else if eq .Type "types.Decimal" }}
-		var {{ .Name }}Null sql.NullString
-{{- else if eq .Type "types.Date" }}
-		var {{ .Name }}Null sql.NullString
-{{- else if eq .Type "types.DateTime" }}
-		var {{ .Name }}Null sql.NullString
-{{- else if eq .Type "bool" }}
-		var {{ .Name }}Bool sql.NullBool
-{{- else if eq .Type "Option" }}
-		var {{ .Name }}Int int
-{{- else if eq .Type "time.Time" }}
-		var {{ .Name }}Time time.Time
-{{- end }}
-{{- end }}
-{{- end }}
-
-		err := t.currentRows.Scan(
-{{- range $i, $f := .Table.Fields }}
-{{- if not $f.FlowField }}
-{{- if eq $f.Type "types.Code" }}
-			&{{ $f.Name }}Null,
-{{- else if eq $f.Type "types.Text" }}
-			&{{ $f.Name }}Null,
-{{- else if eq $f.Type "types.Decimal" }}
-			&{{ $f.Name }}Null,
-{{- else if eq $f.Type "types.Date" }}
-			&{{ $f.Name }}Null,
-{{- else if eq $f.Type "types.DateTime" }}
-			&{{ $f.Name }}Null,
-{{- else if eq $f.Type "bool" }}
-			&{{ $f.Name }}Bool,
-{{- else if eq $f.Type "Option" }}
-			&{{ $f.Name }}Int,
-{{- else if eq $f.Type "time.Time" }}
-			&{{ $f.Name }}Time,
-{{- else }}
-			&t.{{ upperFirst $f.Name }},
-{{- end }}
-{{- end }}
-{{- end }}
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan {{ .Table.Name }} record: %v\n", err)
-			t.currentRows.Close()
-			t.currentRows = nil
-			return false
-		}
-
-		// Populate fields
-{{- range .Table.Fields }}
-{{- if not .FlowField }}
-{{- if eq .Type "types.Code" }}
-		t.{{ upperFirst .Name }} = types.NewCode({{ .Name }}Null.String)
-{{- else if eq .Type "types.Text" }}
-		t.{{ upperFirst .Name }} = types.NewText({{ .Name }}Null.String)
-{{- else if eq .Type "types.Decimal" }}
-		t.{{ upperFirst .Name }}, _ = types.NewDecimalFromString({{ .Name }}Null.String)
-{{- else if eq .Type "types.Date" }}
-		t.{{ upperFirst .Name }}, _ = types.NewDateFromString({{ .Name }}Null.String)
-{{- else if eq .Type "types.DateTime" }}
-		t.{{ upperFirst .Name }}, _ = types.NewDateTimeFromString({{ .Name }}Null.String)
-{{- else if eq .Type "bool" }}
-		t.{{ upperFirst .Name }} = {{ .Name }}Bool.Bool
-{{- else if eq .Type "Option" }}
-		t.{{ upperFirst .Name }} = {{ $.StructName }}{{ upperFirst .Name }}({{ .Name }}Int)
-{{- else if eq .Type "time.Time" }}
-		t.{{ upperFirst .Name }} = {{ .Name }}Time
-{{- end }}
-{{- end }}
-{{- end }}
-
-		// Store old values for field tracking
-		t.StoreOldValues()
-
-		return true
-	}
-
-	// No record set (after Get, Find, FindFirst, FindLast): the next record in the current key
-	// and direction within the filters, one step at a time (classic NEXT after FIND); a step
-	// that finds none leaves the record on the last one reached
-	if step == 0 {
-		return false
-	}
-	for i := 0; i != step; {
-		if step > 0 {
-			if !t.findInKey(">", false) {
-				return false
-			}
-			i++
-		} else {
-			if !t.findInKey("<", true) {
-				return false
-			}
-			i--
-		}
-	}
-	return true
+	return t.rec().Next(steps, t.findInKey)
 }
 
 // FindSetBuffered loads all filtered records into memory for bidirectional navigation
 // Use this when you need to move backward/forward with Next(steps)
-// Filters (SetRange/SetFilter) are applied in SQL before buffering to minimize memory usage
 // Returns true if at least one record found, false otherwise
 func (t *{{ .StructName }}) FindSetBuffered() bool {
-	// Close any existing forward-only result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-
-	// Clear any existing buffer
-	t.bufferedRecords = nil
-	t.currentBufferPos = -1
-
-{{- if .Table.Global }}
-	tableName := {{ .StructName }}TableName
-{{- else }}
-	tableName := fmt.Sprintf("%s$%s", t.company, {{ .StructName }}TableName)
-{{- end }}
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(` + "`SELECT {{ range $i, $f := .Table.Fields }}{{ if not $f.FlowField }}{{ $f.DBName }}{{ if not (isLastDBField $i $.Table.Fields) }}, {{ end }}{{ end }}{{ end }} FROM \"%s\" WHERE %s ORDER BY %s%s`" + `, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSetBuffered for {{ .Table.Name }}: %v\n", err)
-		return false
-	}
-	defer rows.Close()
-
-	// Load all records into memory
-	for rows.Next() {
-		// Create a new record instance
-		record := &{{ .StructName }}{}
-		record.db = t.db
-		record.temp = t.temp
-		record.company = t.company
-		record.dbType = t.dbType
-
-		// Scan the row
-{{- range .Table.Fields }}
-{{- if not .FlowField }}
-{{- if eq .Type "types.Code" }}
-		var {{ .Name }}Null sql.NullString
-{{- else if eq .Type "types.Text" }}
-		var {{ .Name }}Null sql.NullString
-{{- else if eq .Type "types.Decimal" }}
-		var {{ .Name }}Null sql.NullString
-{{- else if eq .Type "types.Date" }}
-		var {{ .Name }}Null sql.NullString
-{{- else if eq .Type "types.DateTime" }}
-		var {{ .Name }}Null sql.NullString
-{{- else if eq .Type "bool" }}
-		var {{ .Name }}Bool sql.NullBool
-{{- else if eq .Type "Option" }}
-		var {{ .Name }}Int int
-{{- else if eq .Type "time.Time" }}
-		var {{ .Name }}Time time.Time
-{{- end }}
-{{- end }}
-{{- end }}
-
-		err := rows.Scan(
-{{- range $i, $f := .Table.Fields }}
-{{- if not $f.FlowField }}
-{{- if eq $f.Type "types.Code" }}
-			&{{ $f.Name }}Null,
-{{- else if eq $f.Type "types.Text" }}
-			&{{ $f.Name }}Null,
-{{- else if eq $f.Type "types.Decimal" }}
-			&{{ $f.Name }}Null,
-{{- else if eq $f.Type "types.Date" }}
-			&{{ $f.Name }}Null,
-{{- else if eq $f.Type "types.DateTime" }}
-			&{{ $f.Name }}Null,
-{{- else if eq $f.Type "bool" }}
-			&{{ $f.Name }}Bool,
-{{- else if eq $f.Type "Option" }}
-			&{{ $f.Name }}Int,
-{{- else if eq $f.Type "time.Time" }}
-			&{{ $f.Name }}Time,
-{{- else }}
-			&record.{{ upperFirst $f.Name }},
-{{- end }}
-{{- end }}
-{{- end }}
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan {{ .Table.Name }} record: %v\n", err)
-			return false
-		}
-
-		// Populate special type fields
-{{- range .Table.Fields }}
-{{- if not .FlowField }}
-{{- if eq .Type "types.Code" }}
-		record.{{ upperFirst .Name }} = types.NewCode({{ .Name }}Null.String)
-{{- else if eq .Type "types.Text" }}
-		record.{{ upperFirst .Name }} = types.NewText({{ .Name }}Null.String)
-{{- else if eq .Type "types.Decimal" }}
-		record.{{ upperFirst .Name }}, _ = types.NewDecimalFromString({{ .Name }}Null.String)
-{{- else if eq .Type "types.Date" }}
-		record.{{ upperFirst .Name }}, _ = types.NewDateFromString({{ .Name }}Null.String)
-{{- else if eq .Type "types.DateTime" }}
-		record.{{ upperFirst .Name }}, _ = types.NewDateTimeFromString({{ .Name }}Null.String)
-{{- else if eq .Type "bool" }}
-		record.{{ upperFirst .Name }} = {{ .Name }}Bool.Bool
-{{- else if eq .Type "Option" }}
-		record.{{ upperFirst .Name }} = {{ $.StructName }}{{ upperFirst .Name }}({{ .Name }}Int)
-{{- else if eq .Type "time.Time" }}
-		record.{{ upperFirst .Name }} = {{ .Name }}Time
-{{- end }}
-{{- end }}
-{{- end }}
-
-		// Store old values
-		record.StoreOldValues()
-
-		// Add to buffer
-		t.bufferedRecords = append(t.bufferedRecords, record)
-	}
-
-	// Check for errors during iteration
-	if err := rows.Err(); err != nil {
-		fmt.Printf("Error: Failed to iterate {{ .Table.Name }} records: %v\n", err)
-		return false
-	}
-
-	// If no records found, return false
-	if len(t.bufferedRecords) == 0 {
-		return false
-	}
-
-	// Load first record into current instance
-	t.currentBufferPos = 0
-	t.copyFromBuffered(t.bufferedRecords[0])
-
-	return true
-}
-
-// copyFromBuffered copies field values from a buffered record to the current instance
-func (t *{{ .StructName }}) copyFromBuffered(record *{{ .StructName }}) {
-{{- range .Table.Fields }}
-	t.{{ upperFirst .Name }} = record.{{ upperFirst .Name }}
-{{- end }}
-	t.StoreOldValues()
+	return t.rec().FindSetBuffered()
 }
 
 // ========================================
@@ -4961,49 +4155,9 @@ func (t *{{ .StructName }}) Find(which ...string) bool {
 }
 
 // findInKey reads the first record in the current key and direction — reversed for the
-// last — and with seek ">"/"<" only after/before the current record (a row-value
-// comparison on the key and primary key columns). A key with a FlowField cannot seek.
+// last — and with seek ">"/"<" only after/before the current record
 func (t *{{ .StructName }}) findInKey(seek string, reverse bool) bool {
-	if seek != "" {
-		var columns, params []string
-		var values []interface{}
-		for _, column := range t.keyColumns() {
-			v, ok := t.columnValue(column)
-			if !ok {
-				fmt.Printf("Error: Find(%q) on {{ .Table.Name }} needs a key of stored fields\n", seek)
-				return false
-			}
-			if t.isKeyDateColumn(column) {
-				v = types.KeyDate(v)
-			}
-			columns = append(columns, t.cmpColumn(column))
-			params = append(params, t.cmpParam(column))
-			values = append(values, v)
-		}
-		after := (seek == ">") != t.q.Descending
-		op := "<"
-		if after {
-			op = ">"
-		}
-		t.q.Seek = "(" + strings.Join(columns, ", ") + ") " + op + " (" + strings.Join(params, ", ") + ")"
-		t.q.SeekArgs = values
-	}
-	savedLimit, savedOffset, savedDescending := t.limit, t.offset, t.q.Descending
-	t.limit, t.offset = 1, 0
-	if reverse {
-		t.q.Descending = !t.q.Descending
-	}
-	found := t.FindSet()
-	// One record read: a later Next seeks from it in the key (inside a transaction FindSet
-	// buffers its rows — a one-row buffer would end the Next at once)
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	t.limit, t.offset, t.q.Descending = savedLimit, savedOffset, savedDescending
-	t.q.Seek, t.q.SeekArgs = "", nil
-	return found
+	return t.rec().FindInKey(seek, reverse)
 }
 
 // keyColumns returns the columns of the current key followed by the primary key's (the
@@ -5550,4 +4704,24 @@ func fieldInfoType(f Field) string {
 		return "tables.FieldTypeBlob"
 	}
 	return "tables.FieldTypeText"
+}
+
+// keyArgsFrom: the primary key fields' typed values taken from a []any of key values (in key
+// order, an option as its number) — the arguments of GetByPK
+func keyArgsFrom(structName string, fields []Field, values string) string {
+	var args []string
+	i := 0
+	for _, f := range fields {
+		if !f.PrimaryKey {
+			continue
+		}
+		v := fmt.Sprintf("%s[%d]", values, i)
+		if f.Type == "Option" {
+			args = append(args, fmt.Sprintf("%s%s(%s.(int))", structName, upperFirst(f.Name), v))
+		} else {
+			args = append(args, fmt.Sprintf("%s.(%s)", v, f.Type))
+		}
+		i++
+	}
+	return strings.Join(args, ", ")
 }

@@ -129,19 +129,11 @@ type ResLedgerEntry struct {
 	// Temporary: the record's own table is in a private in-memory database (InitTemporary)
 	temp *tables.TemporaryStore
 
-	// Iteration state for FindSet/Next
-	currentRows *sql.Rows
+	// The result set of FindSet/FindSetBuffered/Next and the paging window (SetPage)
+	cur tables.Cursor
 
 	// LockTable: the following reads lock the rows they read (SELECT … FOR UPDATE, Postgres)
 	lockForUpdate bool
-
-	// Pagination window for FindSet/FindSetBuffered (0 limit = all rows)
-	limit  int
-	offset int
-
-	// Buffered recordset for bidirectional navigation
-	bufferedRecords  []*ResLedgerEntry
-	currentBufferPos int
 
 	// Business logic of this record only (SetLogic, tests); nil = the registered logic
 	// (RegisterResLedgerEntryLogic)
@@ -876,35 +868,14 @@ func (t *ResLedgerEntry) convertPlaceholders(sql string, count int) string {
 // For single primary key: pass the value directly (string, int, etc.)
 // For composite keys: pass a map[string]interface{} with field names as keys
 func (t *ResLedgerEntry) Get(primaryKey interface{}) bool {
-	// Handle composite primary key (map[string]interface{})
+	// A composite primary key (map[string]interface{}, values also as text)
 	if pkMap, ok := primaryKey.(map[string]interface{}); ok {
-		var entry_noVal int
-		if v, exists := pkMap["entry_no"]; exists {
-			switch val := v.(type) {
-			case int:
-				entry_noVal = val
-			case float64:
-				entry_noVal = int(val)
-			case string:
-				// the key part as text: the API's "CUSTOMER1,10000"
-				if n, err := strconv.Atoi(strings.TrimSpace(val)); err == nil {
-					entry_noVal = n
-				}
-			}
-		}
-		return t.GetByPK(entry_noVal)
+		key := resLedgerEntryFields.KeyFromMap(pkMap)
+		return t.GetByPK(key[0].(int))
 	}
-	// Handle single primary key (for tables with only one PK field)
-	switch pk := primaryKey.(type) {
-	case int:
-		return t.GetByPK(pk)
-	case float64:
-		return t.GetByPK(int(pk))
-	case string:
-		var intVal int
-		if _, err := fmt.Sscanf(pk, "%d", &intVal); err == nil {
-			return t.GetByPK(intVal)
-		}
+	// The primary key itself (a table with one primary key field)
+	if key, ok := resLedgerEntryFields.KeyFromValue(primaryKey); ok {
+		return t.GetByPK([]any{key}[0].(int))
 	}
 
 	fmt.Printf("Error: Invalid primary key type for Res_Ledger_Entry.Get: %T (use map for composite keys)\n", primaryKey)
@@ -913,123 +884,11 @@ func (t *ResLedgerEntry) Get(primaryKey interface{}) bool {
 
 // GetByPK retrieves a record by its typed primary key(s) - for direct typed access
 func (t *ResLedgerEntry) GetByPK(entry_no int) bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, ResLedgerEntryTableName)
-	var entry_noVal int
-	var entry_typeInt int
-	var document_noNull sql.NullString
-	var posting_dateNull sql.NullString
-	var resource_noNull sql.NullString
-	var resource_group_noNull sql.NullString
-	var descriptionNull sql.NullString
-	var work_type_codeNull sql.NullString
-	var unit_of_measure_codeNull sql.NullString
-	var quantityNull sql.NullString
-	var direct_unit_costNull sql.NullString
-	var unit_costNull sql.NullString
-	var total_costNull sql.NullString
-	var unit_priceNull sql.NullString
-	var total_priceNull sql.NullString
-	var dimension_1_codeNull sql.NullString
-	var dimension_2_codeNull sql.NullString
-	var user_idNull sql.NullString
-	var source_codeNull sql.NullString
-	var chargeableBool sql.NullBool
-	var journal_batch_nameNull sql.NullString
-	var reason_codeNull sql.NullString
-	var gen_bus_posting_groupNull sql.NullString
-	var gen_prod_posting_groupNull sql.NullString
-	var document_dateNull sql.NullString
-	var external_document_noNull sql.NullString
-	var no_seriesNull sql.NullString
-	var project_noNull sql.NullString
-
 	// Collect arguments for query
 	args := []interface{}{
 		entry_no,
 	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT entry_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, dimension_1_code, dimension_2_code, user_id, source_code, chargeable, journal_batch_name, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series, project_no FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-	sqlStr += t.forUpdate()
-
-	err := t.exec().QueryRow(sqlStr, args...).Scan(
-		&entry_noVal,
-		&entry_typeInt,
-		&document_noNull,
-		&posting_dateNull,
-		&resource_noNull,
-		&resource_group_noNull,
-		&descriptionNull,
-		&work_type_codeNull,
-		&unit_of_measure_codeNull,
-		&quantityNull,
-		&direct_unit_costNull,
-		&unit_costNull,
-		&total_costNull,
-		&unit_priceNull,
-		&total_priceNull,
-		&dimension_1_codeNull,
-		&dimension_2_codeNull,
-		&user_idNull,
-		&source_codeNull,
-		&chargeableBool,
-		&journal_batch_nameNull,
-		&reason_codeNull,
-		&gen_bus_posting_groupNull,
-		&gen_prod_posting_groupNull,
-		&document_dateNull,
-		&external_document_noNull,
-		&no_seriesNull,
-		&project_noNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			// Record not found - this is not an error, just return false
-			return false
-		}
-		// Actual database error
-		fmt.Printf("Error: Failed to get Res_Ledger_Entry: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Entry_no = entry_noVal
-	t.Entry_type = ResLedgerEntryEntry_type(entry_typeInt)
-	t.Document_no = types.NewCode(document_noNull.String)
-	t.Posting_date, _ = types.NewDateFromString(posting_dateNull.String)
-	t.Resource_no = types.NewCode(resource_noNull.String)
-	t.Resource_group_no = types.NewCode(resource_group_noNull.String)
-	t.Description = types.NewText(descriptionNull.String)
-	t.Work_type_code = types.NewCode(work_type_codeNull.String)
-	t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
-	t.Quantity, _ = types.NewDecimalFromString(quantityNull.String)
-	t.Direct_unit_cost, _ = types.NewDecimalFromString(direct_unit_costNull.String)
-	t.Unit_cost, _ = types.NewDecimalFromString(unit_costNull.String)
-	t.Total_cost, _ = types.NewDecimalFromString(total_costNull.String)
-	t.Unit_price, _ = types.NewDecimalFromString(unit_priceNull.String)
-	t.Total_price, _ = types.NewDecimalFromString(total_priceNull.String)
-	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
-	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
-	t.User_id = types.NewCode(user_idNull.String)
-	t.Source_code = types.NewCode(source_codeNull.String)
-	t.Chargeable = chargeableBool.Bool
-	t.Journal_batch_name = types.NewCode(journal_batch_nameNull.String)
-	t.Reason_code = types.NewCode(reason_codeNull.String)
-	t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
-	t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
-	t.Document_date, _ = types.NewDateFromString(document_dateNull.String)
-	t.External_document_no = types.NewCode(external_document_noNull.String)
-	t.No_series = types.NewCode(no_seriesNull.String)
-	t.Project_no = types.NewCode(project_noNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().Get(args)
 }
 
 // Insert inserts the record into the database
@@ -1573,10 +1432,7 @@ func (t *ResLedgerEntry) columnName(fieldName string) (string, bool) {
 func (t *ResLedgerEntry) Reset() {
 	t.q.Reset()
 	t.oldValues = nil
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
+	t.cur.CloseRows()
 }
 
 // buildWhereClause builds WHERE clause from current filters and search
@@ -1618,325 +1474,50 @@ func (t *ResLedgerEntry) getOrderByClause() (string, []interface{}) {
 // limit rows, skipping the first offset rows. A limit of 0 disables pagination
 // (all matching rows are returned). Negative values are treated as 0.
 func (t *ResLedgerEntry) SetPage(limit, offset int) {
-	if limit < 0 {
-		limit = 0
-	}
-	if offset < 0 {
-		offset = 0
-	}
-	t.limit = limit
-	t.offset = offset
+	t.cur.SetPage(limit, offset)
 }
 
-// getLimitClause builds the LIMIT/OFFSET clause from the pagination window.
-// Returns an empty string when no limit is set. LIMIT/OFFSET take integer
-// literals (not placeholders), which both SQLite and PostgreSQL accept.
-func (t *ResLedgerEntry) getLimitClause() string {
-	if t.limit <= 0 {
-		return ""
+// rec is what the read functions of foundation/tables need of the record
+func (t *ResLedgerEntry) rec() *tables.Rec {
+	_, inTx := t.db.(*sql.Tx)
+	return &tables.Rec{
+		Fields:    resLedgerEntryFields,
+		Ref:       t.fieldRef,
+		QT:        t.qt(),
+		Q:         &t.q,
+		Cur:       &t.cur,
+		Exec:      t.exec(),
+		Buffered:  t.temp != nil || inTx,
+		Postgres:  t.dbType == database.DBTypePostgres,
+		Table:     fmt.Sprintf("%s$%s", t.company, ResLedgerEntryTableName),
+		ForUpdate: t.forUpdate(),
+		Store:     t.StoreOldValues,
 	}
-	if t.offset > 0 {
-		return fmt.Sprintf(" LIMIT %d OFFSET %d", t.limit, t.offset)
-	}
-	return fmt.Sprintf(" LIMIT %d", t.limit)
 }
 
 // FindFirst finds the first record matching current filters
 // Returns true if found, false if not found
 func (t *ResLedgerEntry) FindFirst() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, ResLedgerEntryTableName)
-	where, args := t.buildWhereClause()
-	// The first record in the current key and direction (classic FIND('-'))
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, dimension_1_code, dimension_2_code, user_id, source_code, chargeable, journal_batch_name, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series, project_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var entry_typeInt int
-	var document_noNull sql.NullString
-	var posting_dateNull sql.NullString
-	var resource_noNull sql.NullString
-	var resource_group_noNull sql.NullString
-	var descriptionNull sql.NullString
-	var work_type_codeNull sql.NullString
-	var unit_of_measure_codeNull sql.NullString
-	var quantityNull sql.NullString
-	var direct_unit_costNull sql.NullString
-	var unit_costNull sql.NullString
-	var total_costNull sql.NullString
-	var unit_priceNull sql.NullString
-	var total_priceNull sql.NullString
-	var dimension_1_codeNull sql.NullString
-	var dimension_2_codeNull sql.NullString
-	var user_idNull sql.NullString
-	var source_codeNull sql.NullString
-	var chargeableBool sql.NullBool
-	var journal_batch_nameNull sql.NullString
-	var reason_codeNull sql.NullString
-	var gen_bus_posting_groupNull sql.NullString
-	var gen_prod_posting_groupNull sql.NullString
-	var document_dateNull sql.NullString
-	var external_document_noNull sql.NullString
-	var no_seriesNull sql.NullString
-	var project_noNull sql.NullString
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&t.Entry_no,
-		&entry_typeInt,
-		&document_noNull,
-		&posting_dateNull,
-		&resource_noNull,
-		&resource_group_noNull,
-		&descriptionNull,
-		&work_type_codeNull,
-		&unit_of_measure_codeNull,
-		&quantityNull,
-		&direct_unit_costNull,
-		&unit_costNull,
-		&total_costNull,
-		&unit_priceNull,
-		&total_priceNull,
-		&dimension_1_codeNull,
-		&dimension_2_codeNull,
-		&user_idNull,
-		&source_codeNull,
-		&chargeableBool,
-		&journal_batch_nameNull,
-		&reason_codeNull,
-		&gen_bus_posting_groupNull,
-		&gen_prod_posting_groupNull,
-		&document_dateNull,
-		&external_document_noNull,
-		&no_seriesNull,
-		&project_noNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find first Res_Ledger_Entry: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Entry_type = ResLedgerEntryEntry_type(entry_typeInt)
-	t.Document_no = types.NewCode(document_noNull.String)
-	t.Posting_date, _ = types.NewDateFromString(posting_dateNull.String)
-	t.Resource_no = types.NewCode(resource_noNull.String)
-	t.Resource_group_no = types.NewCode(resource_group_noNull.String)
-	t.Description = types.NewText(descriptionNull.String)
-	t.Work_type_code = types.NewCode(work_type_codeNull.String)
-	t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
-	t.Quantity, _ = types.NewDecimalFromString(quantityNull.String)
-	t.Direct_unit_cost, _ = types.NewDecimalFromString(direct_unit_costNull.String)
-	t.Unit_cost, _ = types.NewDecimalFromString(unit_costNull.String)
-	t.Total_cost, _ = types.NewDecimalFromString(total_costNull.String)
-	t.Unit_price, _ = types.NewDecimalFromString(unit_priceNull.String)
-	t.Total_price, _ = types.NewDecimalFromString(total_priceNull.String)
-	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
-	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
-	t.User_id = types.NewCode(user_idNull.String)
-	t.Source_code = types.NewCode(source_codeNull.String)
-	t.Chargeable = chargeableBool.Bool
-	t.Journal_batch_name = types.NewCode(journal_batch_nameNull.String)
-	t.Reason_code = types.NewCode(reason_codeNull.String)
-	t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
-	t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
-	t.Document_date, _ = types.NewDateFromString(document_dateNull.String)
-	t.External_document_no = types.NewCode(external_document_noNull.String)
-	t.No_series = types.NewCode(no_seriesNull.String)
-	t.Project_no = types.NewCode(project_noNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindFirst()
 }
 
 // FindLast finds the last record matching current filters
 // Returns true if found, false if not found
 func (t *ResLedgerEntry) FindLast() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, ResLedgerEntryTableName)
-	where, args := t.buildWhereClause()
-	// The last record in the current key and direction (classic FIND('+')): the key reversed,
-	// every column of it
-	t.q.Descending = !t.q.Descending
-	orderBy, orderArgs := t.getOrderByClause()
-	t.q.Descending = !t.q.Descending
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, dimension_1_code, dimension_2_code, user_id, source_code, chargeable, journal_batch_name, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series, project_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var entry_typeInt int
-	var document_noNull sql.NullString
-	var posting_dateNull sql.NullString
-	var resource_noNull sql.NullString
-	var resource_group_noNull sql.NullString
-	var descriptionNull sql.NullString
-	var work_type_codeNull sql.NullString
-	var unit_of_measure_codeNull sql.NullString
-	var quantityNull sql.NullString
-	var direct_unit_costNull sql.NullString
-	var unit_costNull sql.NullString
-	var total_costNull sql.NullString
-	var unit_priceNull sql.NullString
-	var total_priceNull sql.NullString
-	var dimension_1_codeNull sql.NullString
-	var dimension_2_codeNull sql.NullString
-	var user_idNull sql.NullString
-	var source_codeNull sql.NullString
-	var chargeableBool sql.NullBool
-	var journal_batch_nameNull sql.NullString
-	var reason_codeNull sql.NullString
-	var gen_bus_posting_groupNull sql.NullString
-	var gen_prod_posting_groupNull sql.NullString
-	var document_dateNull sql.NullString
-	var external_document_noNull sql.NullString
-	var no_seriesNull sql.NullString
-	var project_noNull sql.NullString
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&t.Entry_no,
-		&entry_typeInt,
-		&document_noNull,
-		&posting_dateNull,
-		&resource_noNull,
-		&resource_group_noNull,
-		&descriptionNull,
-		&work_type_codeNull,
-		&unit_of_measure_codeNull,
-		&quantityNull,
-		&direct_unit_costNull,
-		&unit_costNull,
-		&total_costNull,
-		&unit_priceNull,
-		&total_priceNull,
-		&dimension_1_codeNull,
-		&dimension_2_codeNull,
-		&user_idNull,
-		&source_codeNull,
-		&chargeableBool,
-		&journal_batch_nameNull,
-		&reason_codeNull,
-		&gen_bus_posting_groupNull,
-		&gen_prod_posting_groupNull,
-		&document_dateNull,
-		&external_document_noNull,
-		&no_seriesNull,
-		&project_noNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find last Res_Ledger_Entry: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Entry_type = ResLedgerEntryEntry_type(entry_typeInt)
-	t.Document_no = types.NewCode(document_noNull.String)
-	t.Posting_date, _ = types.NewDateFromString(posting_dateNull.String)
-	t.Resource_no = types.NewCode(resource_noNull.String)
-	t.Resource_group_no = types.NewCode(resource_group_noNull.String)
-	t.Description = types.NewText(descriptionNull.String)
-	t.Work_type_code = types.NewCode(work_type_codeNull.String)
-	t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
-	t.Quantity, _ = types.NewDecimalFromString(quantityNull.String)
-	t.Direct_unit_cost, _ = types.NewDecimalFromString(direct_unit_costNull.String)
-	t.Unit_cost, _ = types.NewDecimalFromString(unit_costNull.String)
-	t.Total_cost, _ = types.NewDecimalFromString(total_costNull.String)
-	t.Unit_price, _ = types.NewDecimalFromString(unit_priceNull.String)
-	t.Total_price, _ = types.NewDecimalFromString(total_priceNull.String)
-	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
-	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
-	t.User_id = types.NewCode(user_idNull.String)
-	t.Source_code = types.NewCode(source_codeNull.String)
-	t.Chargeable = chargeableBool.Bool
-	t.Journal_batch_name = types.NewCode(journal_batch_nameNull.String)
-	t.Reason_code = types.NewCode(reason_codeNull.String)
-	t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
-	t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
-	t.Document_date, _ = types.NewDateFromString(document_dateNull.String)
-	t.External_document_no = types.NewCode(external_document_noNull.String)
-	t.No_series = types.NewCode(no_seriesNull.String)
-	t.Project_no = types.NewCode(project_noNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindLast()
 }
 
 // Count returns the number of records matching current filters
 func (t *ResLedgerEntry) Count() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, ResLedgerEntryTableName)
-	where, args := t.buildWhereClause()
-
-	query := fmt.Sprintf(`SELECT COUNT(*) FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var count int
-	err := t.exec().QueryRow(query, args...).Scan(&count)
-	if err != nil {
-		fmt.Printf("Error: Failed to count Res_Ledger_Entry: %v\n", err)
-		return 0
-	}
-
-	return count
+	return t.rec().Count()
 }
 
 // FindSet opens a result set matching current filters
 // Call Next() to iterate through the results
-// Returns true if at least one record found, false otherwise
+// Returns true if at least one record found, false otherwise. A temporary record, and a
+// record in a transaction, reads all at once (FindSetBuffered).
 func (t *ResLedgerEntry) FindSet() bool {
-	// A temporary record, and a record in a transaction, reads all at once: its in-memory
-	// database or the transaction has one connection, which an open result set would block for
-	// the statements of the loop (Modify while looping; on PostgreSQL a query while the rows are
-	// read breaks the connection — "unexpected Parse response")
-	if _, inTx := t.db.(*sql.Tx); t.temp != nil || inTx {
-		return t.FindSetBuffered()
-	}
-	// Close any existing result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	tableName := fmt.Sprintf("%s$%s", t.company, ResLedgerEntryTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, dimension_1_code, dimension_2_code, user_id, source_code, chargeable, journal_batch_name, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series, project_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSet for Res_Ledger_Entry: %v\n", err)
-		return false
-	}
-
-	t.currentRows = rows
-
-	// Load first record
-	return t.Next()
+	return t.rec().FindSet()
 }
 
 // Next advances to the next record: in the result set after FindSet() or FindSetBuffered(),
@@ -1949,361 +1530,14 @@ func (t *ResLedgerEntry) FindSet() bool {
 //
 // Returns true if a record was loaded, false if no more records or out of bounds
 func (t *ResLedgerEntry) Next(steps ...int) bool {
-	// Default to 1 step forward
-	step := 1
-	if len(steps) > 0 {
-		step = steps[0]
-	}
-
-	// BUFFERED MODE: Bidirectional navigation with in-memory records
-	if t.bufferedRecords != nil {
-		// Calculate new position
-		newPos := t.currentBufferPos + step
-
-		// Check bounds
-		if newPos < 0 || newPos >= len(t.bufferedRecords) {
-			return false // Out of bounds
-		}
-
-		// Move to new position
-		t.currentBufferPos = newPos
-		t.copyFromBuffered(t.bufferedRecords[t.currentBufferPos])
-		return true
-	}
-
-	// FORWARD-ONLY MODE: Streaming with sql.Rows (only positive steps allowed)
-	if t.currentRows != nil {
-		// Validate: only forward movement allowed
-		if step < 1 {
-			fmt.Printf("Error: Backward navigation (Next(%d)) requires FindSetBuffered()\n", step)
-			return false
-		}
-
-		// Advance 'step' times (1 = next record, 2 = skip 1 record, etc.)
-		for i := 0; i < step; i++ {
-			if !t.currentRows.Next() {
-				// No more rows - close result set
-				t.currentRows.Close()
-				t.currentRows = nil
-				return false
-			}
-		}
-
-		// Scan the row
-		var entry_typeInt int
-		var document_noNull sql.NullString
-		var posting_dateNull sql.NullString
-		var resource_noNull sql.NullString
-		var resource_group_noNull sql.NullString
-		var descriptionNull sql.NullString
-		var work_type_codeNull sql.NullString
-		var unit_of_measure_codeNull sql.NullString
-		var quantityNull sql.NullString
-		var direct_unit_costNull sql.NullString
-		var unit_costNull sql.NullString
-		var total_costNull sql.NullString
-		var unit_priceNull sql.NullString
-		var total_priceNull sql.NullString
-		var dimension_1_codeNull sql.NullString
-		var dimension_2_codeNull sql.NullString
-		var user_idNull sql.NullString
-		var source_codeNull sql.NullString
-		var chargeableBool sql.NullBool
-		var journal_batch_nameNull sql.NullString
-		var reason_codeNull sql.NullString
-		var gen_bus_posting_groupNull sql.NullString
-		var gen_prod_posting_groupNull sql.NullString
-		var document_dateNull sql.NullString
-		var external_document_noNull sql.NullString
-		var no_seriesNull sql.NullString
-		var project_noNull sql.NullString
-
-		err := t.currentRows.Scan(
-			&t.Entry_no,
-			&entry_typeInt,
-			&document_noNull,
-			&posting_dateNull,
-			&resource_noNull,
-			&resource_group_noNull,
-			&descriptionNull,
-			&work_type_codeNull,
-			&unit_of_measure_codeNull,
-			&quantityNull,
-			&direct_unit_costNull,
-			&unit_costNull,
-			&total_costNull,
-			&unit_priceNull,
-			&total_priceNull,
-			&dimension_1_codeNull,
-			&dimension_2_codeNull,
-			&user_idNull,
-			&source_codeNull,
-			&chargeableBool,
-			&journal_batch_nameNull,
-			&reason_codeNull,
-			&gen_bus_posting_groupNull,
-			&gen_prod_posting_groupNull,
-			&document_dateNull,
-			&external_document_noNull,
-			&no_seriesNull,
-			&project_noNull,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan Res_Ledger_Entry record: %v\n", err)
-			t.currentRows.Close()
-			t.currentRows = nil
-			return false
-		}
-
-		// Populate fields
-		t.Entry_type = ResLedgerEntryEntry_type(entry_typeInt)
-		t.Document_no = types.NewCode(document_noNull.String)
-		t.Posting_date, _ = types.NewDateFromString(posting_dateNull.String)
-		t.Resource_no = types.NewCode(resource_noNull.String)
-		t.Resource_group_no = types.NewCode(resource_group_noNull.String)
-		t.Description = types.NewText(descriptionNull.String)
-		t.Work_type_code = types.NewCode(work_type_codeNull.String)
-		t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
-		t.Quantity, _ = types.NewDecimalFromString(quantityNull.String)
-		t.Direct_unit_cost, _ = types.NewDecimalFromString(direct_unit_costNull.String)
-		t.Unit_cost, _ = types.NewDecimalFromString(unit_costNull.String)
-		t.Total_cost, _ = types.NewDecimalFromString(total_costNull.String)
-		t.Unit_price, _ = types.NewDecimalFromString(unit_priceNull.String)
-		t.Total_price, _ = types.NewDecimalFromString(total_priceNull.String)
-		t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
-		t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
-		t.User_id = types.NewCode(user_idNull.String)
-		t.Source_code = types.NewCode(source_codeNull.String)
-		t.Chargeable = chargeableBool.Bool
-		t.Journal_batch_name = types.NewCode(journal_batch_nameNull.String)
-		t.Reason_code = types.NewCode(reason_codeNull.String)
-		t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
-		t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
-		t.Document_date, _ = types.NewDateFromString(document_dateNull.String)
-		t.External_document_no = types.NewCode(external_document_noNull.String)
-		t.No_series = types.NewCode(no_seriesNull.String)
-		t.Project_no = types.NewCode(project_noNull.String)
-
-		// Store old values for field tracking
-		t.StoreOldValues()
-
-		return true
-	}
-
-	// No record set (after Get, Find, FindFirst, FindLast): the next record in the current key
-	// and direction within the filters, one step at a time (classic NEXT after FIND); a step
-	// that finds none leaves the record on the last one reached
-	if step == 0 {
-		return false
-	}
-	for i := 0; i != step; {
-		if step > 0 {
-			if !t.findInKey(">", false) {
-				return false
-			}
-			i++
-		} else {
-			if !t.findInKey("<", true) {
-				return false
-			}
-			i--
-		}
-	}
-	return true
+	return t.rec().Next(steps, t.findInKey)
 }
 
 // FindSetBuffered loads all filtered records into memory for bidirectional navigation
 // Use this when you need to move backward/forward with Next(steps)
-// Filters (SetRange/SetFilter) are applied in SQL before buffering to minimize memory usage
 // Returns true if at least one record found, false otherwise
 func (t *ResLedgerEntry) FindSetBuffered() bool {
-	// Close any existing forward-only result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-
-	// Clear any existing buffer
-	t.bufferedRecords = nil
-	t.currentBufferPos = -1
-	tableName := fmt.Sprintf("%s$%s", t.company, ResLedgerEntryTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, entry_type, document_no, posting_date, resource_no, resource_group_no, description, work_type_code, unit_of_measure_code, quantity, direct_unit_cost, unit_cost, total_cost, unit_price, total_price, dimension_1_code, dimension_2_code, user_id, source_code, chargeable, journal_batch_name, reason_code, gen_bus_posting_group, gen_prod_posting_group, document_date, external_document_no, no_series, project_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSetBuffered for Res_Ledger_Entry: %v\n", err)
-		return false
-	}
-	defer rows.Close()
-
-	// Load all records into memory
-	for rows.Next() {
-		// Create a new record instance
-		record := &ResLedgerEntry{}
-		record.db = t.db
-		record.temp = t.temp
-		record.company = t.company
-		record.dbType = t.dbType
-
-		// Scan the row
-		var entry_typeInt int
-		var document_noNull sql.NullString
-		var posting_dateNull sql.NullString
-		var resource_noNull sql.NullString
-		var resource_group_noNull sql.NullString
-		var descriptionNull sql.NullString
-		var work_type_codeNull sql.NullString
-		var unit_of_measure_codeNull sql.NullString
-		var quantityNull sql.NullString
-		var direct_unit_costNull sql.NullString
-		var unit_costNull sql.NullString
-		var total_costNull sql.NullString
-		var unit_priceNull sql.NullString
-		var total_priceNull sql.NullString
-		var dimension_1_codeNull sql.NullString
-		var dimension_2_codeNull sql.NullString
-		var user_idNull sql.NullString
-		var source_codeNull sql.NullString
-		var chargeableBool sql.NullBool
-		var journal_batch_nameNull sql.NullString
-		var reason_codeNull sql.NullString
-		var gen_bus_posting_groupNull sql.NullString
-		var gen_prod_posting_groupNull sql.NullString
-		var document_dateNull sql.NullString
-		var external_document_noNull sql.NullString
-		var no_seriesNull sql.NullString
-		var project_noNull sql.NullString
-
-		err := rows.Scan(
-			&record.Entry_no,
-			&entry_typeInt,
-			&document_noNull,
-			&posting_dateNull,
-			&resource_noNull,
-			&resource_group_noNull,
-			&descriptionNull,
-			&work_type_codeNull,
-			&unit_of_measure_codeNull,
-			&quantityNull,
-			&direct_unit_costNull,
-			&unit_costNull,
-			&total_costNull,
-			&unit_priceNull,
-			&total_priceNull,
-			&dimension_1_codeNull,
-			&dimension_2_codeNull,
-			&user_idNull,
-			&source_codeNull,
-			&chargeableBool,
-			&journal_batch_nameNull,
-			&reason_codeNull,
-			&gen_bus_posting_groupNull,
-			&gen_prod_posting_groupNull,
-			&document_dateNull,
-			&external_document_noNull,
-			&no_seriesNull,
-			&project_noNull,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan Res_Ledger_Entry record: %v\n", err)
-			return false
-		}
-
-		// Populate special type fields
-		record.Entry_type = ResLedgerEntryEntry_type(entry_typeInt)
-		record.Document_no = types.NewCode(document_noNull.String)
-		record.Posting_date, _ = types.NewDateFromString(posting_dateNull.String)
-		record.Resource_no = types.NewCode(resource_noNull.String)
-		record.Resource_group_no = types.NewCode(resource_group_noNull.String)
-		record.Description = types.NewText(descriptionNull.String)
-		record.Work_type_code = types.NewCode(work_type_codeNull.String)
-		record.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
-		record.Quantity, _ = types.NewDecimalFromString(quantityNull.String)
-		record.Direct_unit_cost, _ = types.NewDecimalFromString(direct_unit_costNull.String)
-		record.Unit_cost, _ = types.NewDecimalFromString(unit_costNull.String)
-		record.Total_cost, _ = types.NewDecimalFromString(total_costNull.String)
-		record.Unit_price, _ = types.NewDecimalFromString(unit_priceNull.String)
-		record.Total_price, _ = types.NewDecimalFromString(total_priceNull.String)
-		record.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
-		record.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
-		record.User_id = types.NewCode(user_idNull.String)
-		record.Source_code = types.NewCode(source_codeNull.String)
-		record.Chargeable = chargeableBool.Bool
-		record.Journal_batch_name = types.NewCode(journal_batch_nameNull.String)
-		record.Reason_code = types.NewCode(reason_codeNull.String)
-		record.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
-		record.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
-		record.Document_date, _ = types.NewDateFromString(document_dateNull.String)
-		record.External_document_no = types.NewCode(external_document_noNull.String)
-		record.No_series = types.NewCode(no_seriesNull.String)
-		record.Project_no = types.NewCode(project_noNull.String)
-
-		// Store old values
-		record.StoreOldValues()
-
-		// Add to buffer
-		t.bufferedRecords = append(t.bufferedRecords, record)
-	}
-
-	// Check for errors during iteration
-	if err := rows.Err(); err != nil {
-		fmt.Printf("Error: Failed to iterate Res_Ledger_Entry records: %v\n", err)
-		return false
-	}
-
-	// If no records found, return false
-	if len(t.bufferedRecords) == 0 {
-		return false
-	}
-
-	// Load first record into current instance
-	t.currentBufferPos = 0
-	t.copyFromBuffered(t.bufferedRecords[0])
-
-	return true
-}
-
-// copyFromBuffered copies field values from a buffered record to the current instance
-func (t *ResLedgerEntry) copyFromBuffered(record *ResLedgerEntry) {
-	t.Entry_no = record.Entry_no
-	t.Entry_type = record.Entry_type
-	t.Document_no = record.Document_no
-	t.Posting_date = record.Posting_date
-	t.Resource_no = record.Resource_no
-	t.Resource_group_no = record.Resource_group_no
-	t.Description = record.Description
-	t.Work_type_code = record.Work_type_code
-	t.Unit_of_measure_code = record.Unit_of_measure_code
-	t.Quantity = record.Quantity
-	t.Direct_unit_cost = record.Direct_unit_cost
-	t.Unit_cost = record.Unit_cost
-	t.Total_cost = record.Total_cost
-	t.Unit_price = record.Unit_price
-	t.Total_price = record.Total_price
-	t.Dimension_1_code = record.Dimension_1_code
-	t.Dimension_2_code = record.Dimension_2_code
-	t.User_id = record.User_id
-	t.Source_code = record.Source_code
-	t.Chargeable = record.Chargeable
-	t.Journal_batch_name = record.Journal_batch_name
-	t.Reason_code = record.Reason_code
-	t.Gen_bus_posting_group = record.Gen_bus_posting_group
-	t.Gen_prod_posting_group = record.Gen_prod_posting_group
-	t.Document_date = record.Document_date
-	t.External_document_no = record.External_document_no
-	t.No_series = record.No_series
-	t.Project_no = record.Project_no
-	t.StoreOldValues()
+	return t.rec().FindSetBuffered()
 }
 
 // ========================================
@@ -2782,49 +2016,9 @@ func (t *ResLedgerEntry) Find(which ...string) bool {
 }
 
 // findInKey reads the first record in the current key and direction — reversed for the
-// last — and with seek ">"/"<" only after/before the current record (a row-value
-// comparison on the key and primary key columns). A key with a FlowField cannot seek.
+// last — and with seek ">"/"<" only after/before the current record
 func (t *ResLedgerEntry) findInKey(seek string, reverse bool) bool {
-	if seek != "" {
-		var columns, params []string
-		var values []interface{}
-		for _, column := range t.keyColumns() {
-			v, ok := t.columnValue(column)
-			if !ok {
-				fmt.Printf("Error: Find(%q) on Res_Ledger_Entry needs a key of stored fields\n", seek)
-				return false
-			}
-			if t.isKeyDateColumn(column) {
-				v = types.KeyDate(v)
-			}
-			columns = append(columns, t.cmpColumn(column))
-			params = append(params, t.cmpParam(column))
-			values = append(values, v)
-		}
-		after := (seek == ">") != t.q.Descending
-		op := "<"
-		if after {
-			op = ">"
-		}
-		t.q.Seek = "(" + strings.Join(columns, ", ") + ") " + op + " (" + strings.Join(params, ", ") + ")"
-		t.q.SeekArgs = values
-	}
-	savedLimit, savedOffset, savedDescending := t.limit, t.offset, t.q.Descending
-	t.limit, t.offset = 1, 0
-	if reverse {
-		t.q.Descending = !t.q.Descending
-	}
-	found := t.FindSet()
-	// One record read: a later Next seeks from it in the key (inside a transaction FindSet
-	// buffers its rows — a one-row buffer would end the Next at once)
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	t.limit, t.offset, t.q.Descending = savedLimit, savedOffset, savedDescending
-	t.q.Seek, t.q.SeekArgs = "", nil
-	return found
+	return t.rec().FindInKey(seek, reverse)
 }
 
 // keyColumns returns the columns of the current key followed by the primary key's (the

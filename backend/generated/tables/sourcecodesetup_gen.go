@@ -137,19 +137,11 @@ type SourceCodeSetup struct {
 	// Temporary: the record's own table is in a private in-memory database (InitTemporary)
 	temp *tables.TemporaryStore
 
-	// Iteration state for FindSet/Next
-	currentRows *sql.Rows
+	// The result set of FindSet/FindSetBuffered/Next and the paging window (SetPage)
+	cur tables.Cursor
 
 	// LockTable: the following reads lock the rows they read (SELECT … FOR UPDATE, Postgres)
 	lockForUpdate bool
-
-	// Pagination window for FindSet/FindSetBuffered (0 limit = all rows)
-	limit  int
-	offset int
-
-	// Buffered recordset for bidirectional navigation
-	bufferedRecords  []*SourceCodeSetup
-	currentBufferPos int
 
 	// Business logic of this record only (SetLogic, tests); nil = the registered logic
 	// (RegisterSourceCodeSetupLogic)
@@ -973,25 +965,14 @@ func (t *SourceCodeSetup) convertPlaceholders(sql string, count int) string {
 // For single primary key: pass the value directly (string, int, etc.)
 // For composite keys: pass a map[string]interface{} with field names as keys
 func (t *SourceCodeSetup) Get(primaryKey interface{}) bool {
-	// Handle composite primary key (map[string]interface{})
+	// A composite primary key (map[string]interface{}, values also as text)
 	if pkMap, ok := primaryKey.(map[string]interface{}); ok {
-		var primary_keyVal types.Code
-		if v, exists := pkMap["primary_key"]; exists {
-			switch val := v.(type) {
-			case types.Code:
-				primary_keyVal = val
-			case string:
-				primary_keyVal = types.NewCode(val)
-			}
-		}
-		return t.GetByPK(primary_keyVal)
+		key := sourceCodeSetupFields.KeyFromMap(pkMap)
+		return t.GetByPK(key[0].(types.Code))
 	}
-	// Handle single primary key (for tables with only one PK field)
-	switch pk := primaryKey.(type) {
-	case types.Code:
-		return t.GetByPK(pk)
-	case string:
-		return t.GetByPK(types.NewCode(pk))
+	// The primary key itself (a table with one primary key field)
+	if key, ok := sourceCodeSetupFields.KeyFromValue(primaryKey); ok {
+		return t.GetByPK([]any{key}[0].(types.Code))
 	}
 
 	fmt.Printf("Error: Invalid primary key type for Source_Code_Setup.Get: %T (use map for composite keys)\n", primaryKey)
@@ -1000,168 +981,11 @@ func (t *SourceCodeSetup) Get(primaryKey interface{}) bool {
 
 // GetByPK retrieves a record by its typed primary key(s) - for direct typed access
 func (t *SourceCodeSetup) GetByPK(primary_key types.Code) bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, SourceCodeSetupTableName)
-	var primary_keyNull sql.NullString
-	var salesNull sql.NullString
-	var purchasesNull sql.NullString
-	var exchange_rate_adjmtNull sql.NullString
-	var close_income_statementNull sql.NullString
-	var consolidationNull sql.NullString
-	var adjust_add_reporting_currencyNull sql.NullString
-	var general_journalNull sql.NullString
-	var sales_journalNull sql.NullString
-	var purchase_journalNull sql.NullString
-	var cash_receipt_journalNull sql.NullString
-	var payment_journalNull sql.NullString
-	var sales_entry_applicationNull sql.NullString
-	var purchase_entry_applicationNull sql.NullString
-	var tax_settlementNull sql.NullString
-	var financially_voided_checkNull sql.NullString
-	var finance_charge_memoNull sql.NullString
-	var reminderNull sql.NullString
-	var inventory_post_costNull sql.NullString
-	var item_journalNull sql.NullString
-	var bom_journalNull sql.NullString
-	var resource_journalNull sql.NullString
-	var post_recognitionNull sql.NullString
-	var post_valueNull sql.NullString
-	var project_journalNull sql.NullString
-	var compress_project_ledgerNull sql.NullString
-	var item_transfer_journalNull sql.NullString
-	var phys_inventory_journalNull sql.NullString
-	var fixed_asset_journalNull sql.NullString
-	var fixed_asset_g_l_journalNull sql.NullString
-	var insurance_journalNull sql.NullString
-	var compress_g_lNull sql.NullString
-	var compress_tax_entriesNull sql.NullString
-	var compress_cust_ledgerNull sql.NullString
-	var compress_vend_ledgerNull sql.NullString
-	var compress_item_ledgerNull sql.NullString
-	var compress_bom_ledgerNull sql.NullString
-	var compress_res_ledgerNull sql.NullString
-	var compress_bank_acc_ledgerNull sql.NullString
-	var compress_check_ledgerNull sql.NullString
-	var compress_fa_ledgerNull sql.NullString
-	var compress_maintenance_ledgerNull sql.NullString
-	var compress_insurance_ledgerNull sql.NullString
-
 	// Collect arguments for query
 	args := []interface{}{
 		primary_key,
 	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, consolidation, adjust_add_reporting_currency, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, post_recognition, post_value, project_journal, compress_project_ledger, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal, insurance_journal, compress_g_l, compress_tax_entries, compress_cust_ledger, compress_vend_ledger, compress_item_ledger, compress_bom_ledger, compress_res_ledger, compress_bank_acc_ledger, compress_check_ledger, compress_fa_ledger, compress_maintenance_ledger, compress_insurance_ledger FROM "%s" WHERE 1=1 AND primary_key = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-	sqlStr += t.forUpdate()
-
-	err := t.exec().QueryRow(sqlStr, args...).Scan(
-		&primary_keyNull,
-		&salesNull,
-		&purchasesNull,
-		&exchange_rate_adjmtNull,
-		&close_income_statementNull,
-		&consolidationNull,
-		&adjust_add_reporting_currencyNull,
-		&general_journalNull,
-		&sales_journalNull,
-		&purchase_journalNull,
-		&cash_receipt_journalNull,
-		&payment_journalNull,
-		&sales_entry_applicationNull,
-		&purchase_entry_applicationNull,
-		&tax_settlementNull,
-		&financially_voided_checkNull,
-		&finance_charge_memoNull,
-		&reminderNull,
-		&inventory_post_costNull,
-		&item_journalNull,
-		&bom_journalNull,
-		&resource_journalNull,
-		&post_recognitionNull,
-		&post_valueNull,
-		&project_journalNull,
-		&compress_project_ledgerNull,
-		&item_transfer_journalNull,
-		&phys_inventory_journalNull,
-		&fixed_asset_journalNull,
-		&fixed_asset_g_l_journalNull,
-		&insurance_journalNull,
-		&compress_g_lNull,
-		&compress_tax_entriesNull,
-		&compress_cust_ledgerNull,
-		&compress_vend_ledgerNull,
-		&compress_item_ledgerNull,
-		&compress_bom_ledgerNull,
-		&compress_res_ledgerNull,
-		&compress_bank_acc_ledgerNull,
-		&compress_check_ledgerNull,
-		&compress_fa_ledgerNull,
-		&compress_maintenance_ledgerNull,
-		&compress_insurance_ledgerNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			// Record not found - this is not an error, just return false
-			return false
-		}
-		// Actual database error
-		fmt.Printf("Error: Failed to get Source_Code_Setup: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Primary_key = types.NewCode(primary_keyNull.String)
-	t.Sales = types.NewCode(salesNull.String)
-	t.Purchases = types.NewCode(purchasesNull.String)
-	t.Exchange_rate_adjmt = types.NewCode(exchange_rate_adjmtNull.String)
-	t.Close_income_statement = types.NewCode(close_income_statementNull.String)
-	t.Consolidation = types.NewCode(consolidationNull.String)
-	t.Adjust_add_reporting_currency = types.NewCode(adjust_add_reporting_currencyNull.String)
-	t.General_journal = types.NewCode(general_journalNull.String)
-	t.Sales_journal = types.NewCode(sales_journalNull.String)
-	t.Purchase_journal = types.NewCode(purchase_journalNull.String)
-	t.Cash_receipt_journal = types.NewCode(cash_receipt_journalNull.String)
-	t.Payment_journal = types.NewCode(payment_journalNull.String)
-	t.Sales_entry_application = types.NewCode(sales_entry_applicationNull.String)
-	t.Purchase_entry_application = types.NewCode(purchase_entry_applicationNull.String)
-	t.Tax_settlement = types.NewCode(tax_settlementNull.String)
-	t.Financially_voided_check = types.NewCode(financially_voided_checkNull.String)
-	t.Finance_charge_memo = types.NewCode(finance_charge_memoNull.String)
-	t.Reminder = types.NewCode(reminderNull.String)
-	t.Inventory_post_cost = types.NewCode(inventory_post_costNull.String)
-	t.Item_journal = types.NewCode(item_journalNull.String)
-	t.Bom_journal = types.NewCode(bom_journalNull.String)
-	t.Resource_journal = types.NewCode(resource_journalNull.String)
-	t.Post_recognition = types.NewCode(post_recognitionNull.String)
-	t.Post_value = types.NewCode(post_valueNull.String)
-	t.Project_journal = types.NewCode(project_journalNull.String)
-	t.Compress_project_ledger = types.NewCode(compress_project_ledgerNull.String)
-	t.Item_transfer_journal = types.NewCode(item_transfer_journalNull.String)
-	t.Phys_inventory_journal = types.NewCode(phys_inventory_journalNull.String)
-	t.Fixed_asset_journal = types.NewCode(fixed_asset_journalNull.String)
-	t.Fixed_asset_g_l_journal = types.NewCode(fixed_asset_g_l_journalNull.String)
-	t.Insurance_journal = types.NewCode(insurance_journalNull.String)
-	t.Compress_g_l = types.NewCode(compress_g_lNull.String)
-	t.Compress_tax_entries = types.NewCode(compress_tax_entriesNull.String)
-	t.Compress_cust_ledger = types.NewCode(compress_cust_ledgerNull.String)
-	t.Compress_vend_ledger = types.NewCode(compress_vend_ledgerNull.String)
-	t.Compress_item_ledger = types.NewCode(compress_item_ledgerNull.String)
-	t.Compress_bom_ledger = types.NewCode(compress_bom_ledgerNull.String)
-	t.Compress_res_ledger = types.NewCode(compress_res_ledgerNull.String)
-	t.Compress_bank_acc_ledger = types.NewCode(compress_bank_acc_ledgerNull.String)
-	t.Compress_check_ledger = types.NewCode(compress_check_ledgerNull.String)
-	t.Compress_fa_ledger = types.NewCode(compress_fa_ledgerNull.String)
-	t.Compress_maintenance_ledger = types.NewCode(compress_maintenance_ledgerNull.String)
-	t.Compress_insurance_ledger = types.NewCode(compress_insurance_ledgerNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().Get(args)
 }
 
 // Insert inserts the record into the database
@@ -1763,10 +1587,7 @@ func (t *SourceCodeSetup) columnName(fieldName string) (string, bool) {
 func (t *SourceCodeSetup) Reset() {
 	t.q.Reset()
 	t.oldValues = nil
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
+	t.cur.CloseRows()
 }
 
 // buildWhereClause builds WHERE clause from current filters and search
@@ -1808,419 +1629,50 @@ func (t *SourceCodeSetup) getOrderByClause() (string, []interface{}) {
 // limit rows, skipping the first offset rows. A limit of 0 disables pagination
 // (all matching rows are returned). Negative values are treated as 0.
 func (t *SourceCodeSetup) SetPage(limit, offset int) {
-	if limit < 0 {
-		limit = 0
-	}
-	if offset < 0 {
-		offset = 0
-	}
-	t.limit = limit
-	t.offset = offset
+	t.cur.SetPage(limit, offset)
 }
 
-// getLimitClause builds the LIMIT/OFFSET clause from the pagination window.
-// Returns an empty string when no limit is set. LIMIT/OFFSET take integer
-// literals (not placeholders), which both SQLite and PostgreSQL accept.
-func (t *SourceCodeSetup) getLimitClause() string {
-	if t.limit <= 0 {
-		return ""
+// rec is what the read functions of foundation/tables need of the record
+func (t *SourceCodeSetup) rec() *tables.Rec {
+	_, inTx := t.db.(*sql.Tx)
+	return &tables.Rec{
+		Fields:    sourceCodeSetupFields,
+		Ref:       t.fieldRef,
+		QT:        t.qt(),
+		Q:         &t.q,
+		Cur:       &t.cur,
+		Exec:      t.exec(),
+		Buffered:  t.temp != nil || inTx,
+		Postgres:  t.dbType == database.DBTypePostgres,
+		Table:     fmt.Sprintf("%s$%s", t.company, SourceCodeSetupTableName),
+		ForUpdate: t.forUpdate(),
+		Store:     t.StoreOldValues,
 	}
-	if t.offset > 0 {
-		return fmt.Sprintf(" LIMIT %d OFFSET %d", t.limit, t.offset)
-	}
-	return fmt.Sprintf(" LIMIT %d", t.limit)
 }
 
 // FindFirst finds the first record matching current filters
 // Returns true if found, false if not found
 func (t *SourceCodeSetup) FindFirst() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, SourceCodeSetupTableName)
-	where, args := t.buildWhereClause()
-	// The first record in the current key and direction (classic FIND('-'))
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, consolidation, adjust_add_reporting_currency, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, post_recognition, post_value, project_journal, compress_project_ledger, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal, insurance_journal, compress_g_l, compress_tax_entries, compress_cust_ledger, compress_vend_ledger, compress_item_ledger, compress_bom_ledger, compress_res_ledger, compress_bank_acc_ledger, compress_check_ledger, compress_fa_ledger, compress_maintenance_ledger, compress_insurance_ledger FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var primary_keyNull sql.NullString
-	var salesNull sql.NullString
-	var purchasesNull sql.NullString
-	var exchange_rate_adjmtNull sql.NullString
-	var close_income_statementNull sql.NullString
-	var consolidationNull sql.NullString
-	var adjust_add_reporting_currencyNull sql.NullString
-	var general_journalNull sql.NullString
-	var sales_journalNull sql.NullString
-	var purchase_journalNull sql.NullString
-	var cash_receipt_journalNull sql.NullString
-	var payment_journalNull sql.NullString
-	var sales_entry_applicationNull sql.NullString
-	var purchase_entry_applicationNull sql.NullString
-	var tax_settlementNull sql.NullString
-	var financially_voided_checkNull sql.NullString
-	var finance_charge_memoNull sql.NullString
-	var reminderNull sql.NullString
-	var inventory_post_costNull sql.NullString
-	var item_journalNull sql.NullString
-	var bom_journalNull sql.NullString
-	var resource_journalNull sql.NullString
-	var post_recognitionNull sql.NullString
-	var post_valueNull sql.NullString
-	var project_journalNull sql.NullString
-	var compress_project_ledgerNull sql.NullString
-	var item_transfer_journalNull sql.NullString
-	var phys_inventory_journalNull sql.NullString
-	var fixed_asset_journalNull sql.NullString
-	var fixed_asset_g_l_journalNull sql.NullString
-	var insurance_journalNull sql.NullString
-	var compress_g_lNull sql.NullString
-	var compress_tax_entriesNull sql.NullString
-	var compress_cust_ledgerNull sql.NullString
-	var compress_vend_ledgerNull sql.NullString
-	var compress_item_ledgerNull sql.NullString
-	var compress_bom_ledgerNull sql.NullString
-	var compress_res_ledgerNull sql.NullString
-	var compress_bank_acc_ledgerNull sql.NullString
-	var compress_check_ledgerNull sql.NullString
-	var compress_fa_ledgerNull sql.NullString
-	var compress_maintenance_ledgerNull sql.NullString
-	var compress_insurance_ledgerNull sql.NullString
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&primary_keyNull,
-		&salesNull,
-		&purchasesNull,
-		&exchange_rate_adjmtNull,
-		&close_income_statementNull,
-		&consolidationNull,
-		&adjust_add_reporting_currencyNull,
-		&general_journalNull,
-		&sales_journalNull,
-		&purchase_journalNull,
-		&cash_receipt_journalNull,
-		&payment_journalNull,
-		&sales_entry_applicationNull,
-		&purchase_entry_applicationNull,
-		&tax_settlementNull,
-		&financially_voided_checkNull,
-		&finance_charge_memoNull,
-		&reminderNull,
-		&inventory_post_costNull,
-		&item_journalNull,
-		&bom_journalNull,
-		&resource_journalNull,
-		&post_recognitionNull,
-		&post_valueNull,
-		&project_journalNull,
-		&compress_project_ledgerNull,
-		&item_transfer_journalNull,
-		&phys_inventory_journalNull,
-		&fixed_asset_journalNull,
-		&fixed_asset_g_l_journalNull,
-		&insurance_journalNull,
-		&compress_g_lNull,
-		&compress_tax_entriesNull,
-		&compress_cust_ledgerNull,
-		&compress_vend_ledgerNull,
-		&compress_item_ledgerNull,
-		&compress_bom_ledgerNull,
-		&compress_res_ledgerNull,
-		&compress_bank_acc_ledgerNull,
-		&compress_check_ledgerNull,
-		&compress_fa_ledgerNull,
-		&compress_maintenance_ledgerNull,
-		&compress_insurance_ledgerNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find first Source_Code_Setup: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Primary_key = types.NewCode(primary_keyNull.String)
-	t.Sales = types.NewCode(salesNull.String)
-	t.Purchases = types.NewCode(purchasesNull.String)
-	t.Exchange_rate_adjmt = types.NewCode(exchange_rate_adjmtNull.String)
-	t.Close_income_statement = types.NewCode(close_income_statementNull.String)
-	t.Consolidation = types.NewCode(consolidationNull.String)
-	t.Adjust_add_reporting_currency = types.NewCode(adjust_add_reporting_currencyNull.String)
-	t.General_journal = types.NewCode(general_journalNull.String)
-	t.Sales_journal = types.NewCode(sales_journalNull.String)
-	t.Purchase_journal = types.NewCode(purchase_journalNull.String)
-	t.Cash_receipt_journal = types.NewCode(cash_receipt_journalNull.String)
-	t.Payment_journal = types.NewCode(payment_journalNull.String)
-	t.Sales_entry_application = types.NewCode(sales_entry_applicationNull.String)
-	t.Purchase_entry_application = types.NewCode(purchase_entry_applicationNull.String)
-	t.Tax_settlement = types.NewCode(tax_settlementNull.String)
-	t.Financially_voided_check = types.NewCode(financially_voided_checkNull.String)
-	t.Finance_charge_memo = types.NewCode(finance_charge_memoNull.String)
-	t.Reminder = types.NewCode(reminderNull.String)
-	t.Inventory_post_cost = types.NewCode(inventory_post_costNull.String)
-	t.Item_journal = types.NewCode(item_journalNull.String)
-	t.Bom_journal = types.NewCode(bom_journalNull.String)
-	t.Resource_journal = types.NewCode(resource_journalNull.String)
-	t.Post_recognition = types.NewCode(post_recognitionNull.String)
-	t.Post_value = types.NewCode(post_valueNull.String)
-	t.Project_journal = types.NewCode(project_journalNull.String)
-	t.Compress_project_ledger = types.NewCode(compress_project_ledgerNull.String)
-	t.Item_transfer_journal = types.NewCode(item_transfer_journalNull.String)
-	t.Phys_inventory_journal = types.NewCode(phys_inventory_journalNull.String)
-	t.Fixed_asset_journal = types.NewCode(fixed_asset_journalNull.String)
-	t.Fixed_asset_g_l_journal = types.NewCode(fixed_asset_g_l_journalNull.String)
-	t.Insurance_journal = types.NewCode(insurance_journalNull.String)
-	t.Compress_g_l = types.NewCode(compress_g_lNull.String)
-	t.Compress_tax_entries = types.NewCode(compress_tax_entriesNull.String)
-	t.Compress_cust_ledger = types.NewCode(compress_cust_ledgerNull.String)
-	t.Compress_vend_ledger = types.NewCode(compress_vend_ledgerNull.String)
-	t.Compress_item_ledger = types.NewCode(compress_item_ledgerNull.String)
-	t.Compress_bom_ledger = types.NewCode(compress_bom_ledgerNull.String)
-	t.Compress_res_ledger = types.NewCode(compress_res_ledgerNull.String)
-	t.Compress_bank_acc_ledger = types.NewCode(compress_bank_acc_ledgerNull.String)
-	t.Compress_check_ledger = types.NewCode(compress_check_ledgerNull.String)
-	t.Compress_fa_ledger = types.NewCode(compress_fa_ledgerNull.String)
-	t.Compress_maintenance_ledger = types.NewCode(compress_maintenance_ledgerNull.String)
-	t.Compress_insurance_ledger = types.NewCode(compress_insurance_ledgerNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindFirst()
 }
 
 // FindLast finds the last record matching current filters
 // Returns true if found, false if not found
 func (t *SourceCodeSetup) FindLast() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, SourceCodeSetupTableName)
-	where, args := t.buildWhereClause()
-	// The last record in the current key and direction (classic FIND('+')): the key reversed,
-	// every column of it
-	t.q.Descending = !t.q.Descending
-	orderBy, orderArgs := t.getOrderByClause()
-	t.q.Descending = !t.q.Descending
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, consolidation, adjust_add_reporting_currency, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, post_recognition, post_value, project_journal, compress_project_ledger, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal, insurance_journal, compress_g_l, compress_tax_entries, compress_cust_ledger, compress_vend_ledger, compress_item_ledger, compress_bom_ledger, compress_res_ledger, compress_bank_acc_ledger, compress_check_ledger, compress_fa_ledger, compress_maintenance_ledger, compress_insurance_ledger FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var primary_keyNull sql.NullString
-	var salesNull sql.NullString
-	var purchasesNull sql.NullString
-	var exchange_rate_adjmtNull sql.NullString
-	var close_income_statementNull sql.NullString
-	var consolidationNull sql.NullString
-	var adjust_add_reporting_currencyNull sql.NullString
-	var general_journalNull sql.NullString
-	var sales_journalNull sql.NullString
-	var purchase_journalNull sql.NullString
-	var cash_receipt_journalNull sql.NullString
-	var payment_journalNull sql.NullString
-	var sales_entry_applicationNull sql.NullString
-	var purchase_entry_applicationNull sql.NullString
-	var tax_settlementNull sql.NullString
-	var financially_voided_checkNull sql.NullString
-	var finance_charge_memoNull sql.NullString
-	var reminderNull sql.NullString
-	var inventory_post_costNull sql.NullString
-	var item_journalNull sql.NullString
-	var bom_journalNull sql.NullString
-	var resource_journalNull sql.NullString
-	var post_recognitionNull sql.NullString
-	var post_valueNull sql.NullString
-	var project_journalNull sql.NullString
-	var compress_project_ledgerNull sql.NullString
-	var item_transfer_journalNull sql.NullString
-	var phys_inventory_journalNull sql.NullString
-	var fixed_asset_journalNull sql.NullString
-	var fixed_asset_g_l_journalNull sql.NullString
-	var insurance_journalNull sql.NullString
-	var compress_g_lNull sql.NullString
-	var compress_tax_entriesNull sql.NullString
-	var compress_cust_ledgerNull sql.NullString
-	var compress_vend_ledgerNull sql.NullString
-	var compress_item_ledgerNull sql.NullString
-	var compress_bom_ledgerNull sql.NullString
-	var compress_res_ledgerNull sql.NullString
-	var compress_bank_acc_ledgerNull sql.NullString
-	var compress_check_ledgerNull sql.NullString
-	var compress_fa_ledgerNull sql.NullString
-	var compress_maintenance_ledgerNull sql.NullString
-	var compress_insurance_ledgerNull sql.NullString
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&primary_keyNull,
-		&salesNull,
-		&purchasesNull,
-		&exchange_rate_adjmtNull,
-		&close_income_statementNull,
-		&consolidationNull,
-		&adjust_add_reporting_currencyNull,
-		&general_journalNull,
-		&sales_journalNull,
-		&purchase_journalNull,
-		&cash_receipt_journalNull,
-		&payment_journalNull,
-		&sales_entry_applicationNull,
-		&purchase_entry_applicationNull,
-		&tax_settlementNull,
-		&financially_voided_checkNull,
-		&finance_charge_memoNull,
-		&reminderNull,
-		&inventory_post_costNull,
-		&item_journalNull,
-		&bom_journalNull,
-		&resource_journalNull,
-		&post_recognitionNull,
-		&post_valueNull,
-		&project_journalNull,
-		&compress_project_ledgerNull,
-		&item_transfer_journalNull,
-		&phys_inventory_journalNull,
-		&fixed_asset_journalNull,
-		&fixed_asset_g_l_journalNull,
-		&insurance_journalNull,
-		&compress_g_lNull,
-		&compress_tax_entriesNull,
-		&compress_cust_ledgerNull,
-		&compress_vend_ledgerNull,
-		&compress_item_ledgerNull,
-		&compress_bom_ledgerNull,
-		&compress_res_ledgerNull,
-		&compress_bank_acc_ledgerNull,
-		&compress_check_ledgerNull,
-		&compress_fa_ledgerNull,
-		&compress_maintenance_ledgerNull,
-		&compress_insurance_ledgerNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find last Source_Code_Setup: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Primary_key = types.NewCode(primary_keyNull.String)
-	t.Sales = types.NewCode(salesNull.String)
-	t.Purchases = types.NewCode(purchasesNull.String)
-	t.Exchange_rate_adjmt = types.NewCode(exchange_rate_adjmtNull.String)
-	t.Close_income_statement = types.NewCode(close_income_statementNull.String)
-	t.Consolidation = types.NewCode(consolidationNull.String)
-	t.Adjust_add_reporting_currency = types.NewCode(adjust_add_reporting_currencyNull.String)
-	t.General_journal = types.NewCode(general_journalNull.String)
-	t.Sales_journal = types.NewCode(sales_journalNull.String)
-	t.Purchase_journal = types.NewCode(purchase_journalNull.String)
-	t.Cash_receipt_journal = types.NewCode(cash_receipt_journalNull.String)
-	t.Payment_journal = types.NewCode(payment_journalNull.String)
-	t.Sales_entry_application = types.NewCode(sales_entry_applicationNull.String)
-	t.Purchase_entry_application = types.NewCode(purchase_entry_applicationNull.String)
-	t.Tax_settlement = types.NewCode(tax_settlementNull.String)
-	t.Financially_voided_check = types.NewCode(financially_voided_checkNull.String)
-	t.Finance_charge_memo = types.NewCode(finance_charge_memoNull.String)
-	t.Reminder = types.NewCode(reminderNull.String)
-	t.Inventory_post_cost = types.NewCode(inventory_post_costNull.String)
-	t.Item_journal = types.NewCode(item_journalNull.String)
-	t.Bom_journal = types.NewCode(bom_journalNull.String)
-	t.Resource_journal = types.NewCode(resource_journalNull.String)
-	t.Post_recognition = types.NewCode(post_recognitionNull.String)
-	t.Post_value = types.NewCode(post_valueNull.String)
-	t.Project_journal = types.NewCode(project_journalNull.String)
-	t.Compress_project_ledger = types.NewCode(compress_project_ledgerNull.String)
-	t.Item_transfer_journal = types.NewCode(item_transfer_journalNull.String)
-	t.Phys_inventory_journal = types.NewCode(phys_inventory_journalNull.String)
-	t.Fixed_asset_journal = types.NewCode(fixed_asset_journalNull.String)
-	t.Fixed_asset_g_l_journal = types.NewCode(fixed_asset_g_l_journalNull.String)
-	t.Insurance_journal = types.NewCode(insurance_journalNull.String)
-	t.Compress_g_l = types.NewCode(compress_g_lNull.String)
-	t.Compress_tax_entries = types.NewCode(compress_tax_entriesNull.String)
-	t.Compress_cust_ledger = types.NewCode(compress_cust_ledgerNull.String)
-	t.Compress_vend_ledger = types.NewCode(compress_vend_ledgerNull.String)
-	t.Compress_item_ledger = types.NewCode(compress_item_ledgerNull.String)
-	t.Compress_bom_ledger = types.NewCode(compress_bom_ledgerNull.String)
-	t.Compress_res_ledger = types.NewCode(compress_res_ledgerNull.String)
-	t.Compress_bank_acc_ledger = types.NewCode(compress_bank_acc_ledgerNull.String)
-	t.Compress_check_ledger = types.NewCode(compress_check_ledgerNull.String)
-	t.Compress_fa_ledger = types.NewCode(compress_fa_ledgerNull.String)
-	t.Compress_maintenance_ledger = types.NewCode(compress_maintenance_ledgerNull.String)
-	t.Compress_insurance_ledger = types.NewCode(compress_insurance_ledgerNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindLast()
 }
 
 // Count returns the number of records matching current filters
 func (t *SourceCodeSetup) Count() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, SourceCodeSetupTableName)
-	where, args := t.buildWhereClause()
-
-	query := fmt.Sprintf(`SELECT COUNT(*) FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var count int
-	err := t.exec().QueryRow(query, args...).Scan(&count)
-	if err != nil {
-		fmt.Printf("Error: Failed to count Source_Code_Setup: %v\n", err)
-		return 0
-	}
-
-	return count
+	return t.rec().Count()
 }
 
 // FindSet opens a result set matching current filters
 // Call Next() to iterate through the results
-// Returns true if at least one record found, false otherwise
+// Returns true if at least one record found, false otherwise. A temporary record, and a
+// record in a transaction, reads all at once (FindSetBuffered).
 func (t *SourceCodeSetup) FindSet() bool {
-	// A temporary record, and a record in a transaction, reads all at once: its in-memory
-	// database or the transaction has one connection, which an open result set would block for
-	// the statements of the loop (Modify while looping; on PostgreSQL a query while the rows are
-	// read breaks the connection — "unexpected Parse response")
-	if _, inTx := t.db.(*sql.Tx); t.temp != nil || inTx {
-		return t.FindSetBuffered()
-	}
-	// Close any existing result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	tableName := fmt.Sprintf("%s$%s", t.company, SourceCodeSetupTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, consolidation, adjust_add_reporting_currency, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, post_recognition, post_value, project_journal, compress_project_ledger, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal, insurance_journal, compress_g_l, compress_tax_entries, compress_cust_ledger, compress_vend_ledger, compress_item_ledger, compress_bom_ledger, compress_res_ledger, compress_bank_acc_ledger, compress_check_ledger, compress_fa_ledger, compress_maintenance_ledger, compress_insurance_ledger FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSet for Source_Code_Setup: %v\n", err)
-		return false
-	}
-
-	t.currentRows = rows
-
-	// Load first record
-	return t.Next()
+	return t.rec().FindSet()
 }
 
 // Next advances to the next record: in the result set after FindSet() or FindSetBuffered(),
@@ -2233,470 +1685,14 @@ func (t *SourceCodeSetup) FindSet() bool {
 //
 // Returns true if a record was loaded, false if no more records or out of bounds
 func (t *SourceCodeSetup) Next(steps ...int) bool {
-	// Default to 1 step forward
-	step := 1
-	if len(steps) > 0 {
-		step = steps[0]
-	}
-
-	// BUFFERED MODE: Bidirectional navigation with in-memory records
-	if t.bufferedRecords != nil {
-		// Calculate new position
-		newPos := t.currentBufferPos + step
-
-		// Check bounds
-		if newPos < 0 || newPos >= len(t.bufferedRecords) {
-			return false // Out of bounds
-		}
-
-		// Move to new position
-		t.currentBufferPos = newPos
-		t.copyFromBuffered(t.bufferedRecords[t.currentBufferPos])
-		return true
-	}
-
-	// FORWARD-ONLY MODE: Streaming with sql.Rows (only positive steps allowed)
-	if t.currentRows != nil {
-		// Validate: only forward movement allowed
-		if step < 1 {
-			fmt.Printf("Error: Backward navigation (Next(%d)) requires FindSetBuffered()\n", step)
-			return false
-		}
-
-		// Advance 'step' times (1 = next record, 2 = skip 1 record, etc.)
-		for i := 0; i < step; i++ {
-			if !t.currentRows.Next() {
-				// No more rows - close result set
-				t.currentRows.Close()
-				t.currentRows = nil
-				return false
-			}
-		}
-
-		// Scan the row
-		var primary_keyNull sql.NullString
-		var salesNull sql.NullString
-		var purchasesNull sql.NullString
-		var exchange_rate_adjmtNull sql.NullString
-		var close_income_statementNull sql.NullString
-		var consolidationNull sql.NullString
-		var adjust_add_reporting_currencyNull sql.NullString
-		var general_journalNull sql.NullString
-		var sales_journalNull sql.NullString
-		var purchase_journalNull sql.NullString
-		var cash_receipt_journalNull sql.NullString
-		var payment_journalNull sql.NullString
-		var sales_entry_applicationNull sql.NullString
-		var purchase_entry_applicationNull sql.NullString
-		var tax_settlementNull sql.NullString
-		var financially_voided_checkNull sql.NullString
-		var finance_charge_memoNull sql.NullString
-		var reminderNull sql.NullString
-		var inventory_post_costNull sql.NullString
-		var item_journalNull sql.NullString
-		var bom_journalNull sql.NullString
-		var resource_journalNull sql.NullString
-		var post_recognitionNull sql.NullString
-		var post_valueNull sql.NullString
-		var project_journalNull sql.NullString
-		var compress_project_ledgerNull sql.NullString
-		var item_transfer_journalNull sql.NullString
-		var phys_inventory_journalNull sql.NullString
-		var fixed_asset_journalNull sql.NullString
-		var fixed_asset_g_l_journalNull sql.NullString
-		var insurance_journalNull sql.NullString
-		var compress_g_lNull sql.NullString
-		var compress_tax_entriesNull sql.NullString
-		var compress_cust_ledgerNull sql.NullString
-		var compress_vend_ledgerNull sql.NullString
-		var compress_item_ledgerNull sql.NullString
-		var compress_bom_ledgerNull sql.NullString
-		var compress_res_ledgerNull sql.NullString
-		var compress_bank_acc_ledgerNull sql.NullString
-		var compress_check_ledgerNull sql.NullString
-		var compress_fa_ledgerNull sql.NullString
-		var compress_maintenance_ledgerNull sql.NullString
-		var compress_insurance_ledgerNull sql.NullString
-
-		err := t.currentRows.Scan(
-			&primary_keyNull,
-			&salesNull,
-			&purchasesNull,
-			&exchange_rate_adjmtNull,
-			&close_income_statementNull,
-			&consolidationNull,
-			&adjust_add_reporting_currencyNull,
-			&general_journalNull,
-			&sales_journalNull,
-			&purchase_journalNull,
-			&cash_receipt_journalNull,
-			&payment_journalNull,
-			&sales_entry_applicationNull,
-			&purchase_entry_applicationNull,
-			&tax_settlementNull,
-			&financially_voided_checkNull,
-			&finance_charge_memoNull,
-			&reminderNull,
-			&inventory_post_costNull,
-			&item_journalNull,
-			&bom_journalNull,
-			&resource_journalNull,
-			&post_recognitionNull,
-			&post_valueNull,
-			&project_journalNull,
-			&compress_project_ledgerNull,
-			&item_transfer_journalNull,
-			&phys_inventory_journalNull,
-			&fixed_asset_journalNull,
-			&fixed_asset_g_l_journalNull,
-			&insurance_journalNull,
-			&compress_g_lNull,
-			&compress_tax_entriesNull,
-			&compress_cust_ledgerNull,
-			&compress_vend_ledgerNull,
-			&compress_item_ledgerNull,
-			&compress_bom_ledgerNull,
-			&compress_res_ledgerNull,
-			&compress_bank_acc_ledgerNull,
-			&compress_check_ledgerNull,
-			&compress_fa_ledgerNull,
-			&compress_maintenance_ledgerNull,
-			&compress_insurance_ledgerNull,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan Source_Code_Setup record: %v\n", err)
-			t.currentRows.Close()
-			t.currentRows = nil
-			return false
-		}
-
-		// Populate fields
-		t.Primary_key = types.NewCode(primary_keyNull.String)
-		t.Sales = types.NewCode(salesNull.String)
-		t.Purchases = types.NewCode(purchasesNull.String)
-		t.Exchange_rate_adjmt = types.NewCode(exchange_rate_adjmtNull.String)
-		t.Close_income_statement = types.NewCode(close_income_statementNull.String)
-		t.Consolidation = types.NewCode(consolidationNull.String)
-		t.Adjust_add_reporting_currency = types.NewCode(adjust_add_reporting_currencyNull.String)
-		t.General_journal = types.NewCode(general_journalNull.String)
-		t.Sales_journal = types.NewCode(sales_journalNull.String)
-		t.Purchase_journal = types.NewCode(purchase_journalNull.String)
-		t.Cash_receipt_journal = types.NewCode(cash_receipt_journalNull.String)
-		t.Payment_journal = types.NewCode(payment_journalNull.String)
-		t.Sales_entry_application = types.NewCode(sales_entry_applicationNull.String)
-		t.Purchase_entry_application = types.NewCode(purchase_entry_applicationNull.String)
-		t.Tax_settlement = types.NewCode(tax_settlementNull.String)
-		t.Financially_voided_check = types.NewCode(financially_voided_checkNull.String)
-		t.Finance_charge_memo = types.NewCode(finance_charge_memoNull.String)
-		t.Reminder = types.NewCode(reminderNull.String)
-		t.Inventory_post_cost = types.NewCode(inventory_post_costNull.String)
-		t.Item_journal = types.NewCode(item_journalNull.String)
-		t.Bom_journal = types.NewCode(bom_journalNull.String)
-		t.Resource_journal = types.NewCode(resource_journalNull.String)
-		t.Post_recognition = types.NewCode(post_recognitionNull.String)
-		t.Post_value = types.NewCode(post_valueNull.String)
-		t.Project_journal = types.NewCode(project_journalNull.String)
-		t.Compress_project_ledger = types.NewCode(compress_project_ledgerNull.String)
-		t.Item_transfer_journal = types.NewCode(item_transfer_journalNull.String)
-		t.Phys_inventory_journal = types.NewCode(phys_inventory_journalNull.String)
-		t.Fixed_asset_journal = types.NewCode(fixed_asset_journalNull.String)
-		t.Fixed_asset_g_l_journal = types.NewCode(fixed_asset_g_l_journalNull.String)
-		t.Insurance_journal = types.NewCode(insurance_journalNull.String)
-		t.Compress_g_l = types.NewCode(compress_g_lNull.String)
-		t.Compress_tax_entries = types.NewCode(compress_tax_entriesNull.String)
-		t.Compress_cust_ledger = types.NewCode(compress_cust_ledgerNull.String)
-		t.Compress_vend_ledger = types.NewCode(compress_vend_ledgerNull.String)
-		t.Compress_item_ledger = types.NewCode(compress_item_ledgerNull.String)
-		t.Compress_bom_ledger = types.NewCode(compress_bom_ledgerNull.String)
-		t.Compress_res_ledger = types.NewCode(compress_res_ledgerNull.String)
-		t.Compress_bank_acc_ledger = types.NewCode(compress_bank_acc_ledgerNull.String)
-		t.Compress_check_ledger = types.NewCode(compress_check_ledgerNull.String)
-		t.Compress_fa_ledger = types.NewCode(compress_fa_ledgerNull.String)
-		t.Compress_maintenance_ledger = types.NewCode(compress_maintenance_ledgerNull.String)
-		t.Compress_insurance_ledger = types.NewCode(compress_insurance_ledgerNull.String)
-
-		// Store old values for field tracking
-		t.StoreOldValues()
-
-		return true
-	}
-
-	// No record set (after Get, Find, FindFirst, FindLast): the next record in the current key
-	// and direction within the filters, one step at a time (classic NEXT after FIND); a step
-	// that finds none leaves the record on the last one reached
-	if step == 0 {
-		return false
-	}
-	for i := 0; i != step; {
-		if step > 0 {
-			if !t.findInKey(">", false) {
-				return false
-			}
-			i++
-		} else {
-			if !t.findInKey("<", true) {
-				return false
-			}
-			i--
-		}
-	}
-	return true
+	return t.rec().Next(steps, t.findInKey)
 }
 
 // FindSetBuffered loads all filtered records into memory for bidirectional navigation
 // Use this when you need to move backward/forward with Next(steps)
-// Filters (SetRange/SetFilter) are applied in SQL before buffering to minimize memory usage
 // Returns true if at least one record found, false otherwise
 func (t *SourceCodeSetup) FindSetBuffered() bool {
-	// Close any existing forward-only result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-
-	// Clear any existing buffer
-	t.bufferedRecords = nil
-	t.currentBufferPos = -1
-	tableName := fmt.Sprintf("%s$%s", t.company, SourceCodeSetupTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, consolidation, adjust_add_reporting_currency, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, post_recognition, post_value, project_journal, compress_project_ledger, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal, insurance_journal, compress_g_l, compress_tax_entries, compress_cust_ledger, compress_vend_ledger, compress_item_ledger, compress_bom_ledger, compress_res_ledger, compress_bank_acc_ledger, compress_check_ledger, compress_fa_ledger, compress_maintenance_ledger, compress_insurance_ledger FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSetBuffered for Source_Code_Setup: %v\n", err)
-		return false
-	}
-	defer rows.Close()
-
-	// Load all records into memory
-	for rows.Next() {
-		// Create a new record instance
-		record := &SourceCodeSetup{}
-		record.db = t.db
-		record.temp = t.temp
-		record.company = t.company
-		record.dbType = t.dbType
-
-		// Scan the row
-		var primary_keyNull sql.NullString
-		var salesNull sql.NullString
-		var purchasesNull sql.NullString
-		var exchange_rate_adjmtNull sql.NullString
-		var close_income_statementNull sql.NullString
-		var consolidationNull sql.NullString
-		var adjust_add_reporting_currencyNull sql.NullString
-		var general_journalNull sql.NullString
-		var sales_journalNull sql.NullString
-		var purchase_journalNull sql.NullString
-		var cash_receipt_journalNull sql.NullString
-		var payment_journalNull sql.NullString
-		var sales_entry_applicationNull sql.NullString
-		var purchase_entry_applicationNull sql.NullString
-		var tax_settlementNull sql.NullString
-		var financially_voided_checkNull sql.NullString
-		var finance_charge_memoNull sql.NullString
-		var reminderNull sql.NullString
-		var inventory_post_costNull sql.NullString
-		var item_journalNull sql.NullString
-		var bom_journalNull sql.NullString
-		var resource_journalNull sql.NullString
-		var post_recognitionNull sql.NullString
-		var post_valueNull sql.NullString
-		var project_journalNull sql.NullString
-		var compress_project_ledgerNull sql.NullString
-		var item_transfer_journalNull sql.NullString
-		var phys_inventory_journalNull sql.NullString
-		var fixed_asset_journalNull sql.NullString
-		var fixed_asset_g_l_journalNull sql.NullString
-		var insurance_journalNull sql.NullString
-		var compress_g_lNull sql.NullString
-		var compress_tax_entriesNull sql.NullString
-		var compress_cust_ledgerNull sql.NullString
-		var compress_vend_ledgerNull sql.NullString
-		var compress_item_ledgerNull sql.NullString
-		var compress_bom_ledgerNull sql.NullString
-		var compress_res_ledgerNull sql.NullString
-		var compress_bank_acc_ledgerNull sql.NullString
-		var compress_check_ledgerNull sql.NullString
-		var compress_fa_ledgerNull sql.NullString
-		var compress_maintenance_ledgerNull sql.NullString
-		var compress_insurance_ledgerNull sql.NullString
-
-		err := rows.Scan(
-			&primary_keyNull,
-			&salesNull,
-			&purchasesNull,
-			&exchange_rate_adjmtNull,
-			&close_income_statementNull,
-			&consolidationNull,
-			&adjust_add_reporting_currencyNull,
-			&general_journalNull,
-			&sales_journalNull,
-			&purchase_journalNull,
-			&cash_receipt_journalNull,
-			&payment_journalNull,
-			&sales_entry_applicationNull,
-			&purchase_entry_applicationNull,
-			&tax_settlementNull,
-			&financially_voided_checkNull,
-			&finance_charge_memoNull,
-			&reminderNull,
-			&inventory_post_costNull,
-			&item_journalNull,
-			&bom_journalNull,
-			&resource_journalNull,
-			&post_recognitionNull,
-			&post_valueNull,
-			&project_journalNull,
-			&compress_project_ledgerNull,
-			&item_transfer_journalNull,
-			&phys_inventory_journalNull,
-			&fixed_asset_journalNull,
-			&fixed_asset_g_l_journalNull,
-			&insurance_journalNull,
-			&compress_g_lNull,
-			&compress_tax_entriesNull,
-			&compress_cust_ledgerNull,
-			&compress_vend_ledgerNull,
-			&compress_item_ledgerNull,
-			&compress_bom_ledgerNull,
-			&compress_res_ledgerNull,
-			&compress_bank_acc_ledgerNull,
-			&compress_check_ledgerNull,
-			&compress_fa_ledgerNull,
-			&compress_maintenance_ledgerNull,
-			&compress_insurance_ledgerNull,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan Source_Code_Setup record: %v\n", err)
-			return false
-		}
-
-		// Populate special type fields
-		record.Primary_key = types.NewCode(primary_keyNull.String)
-		record.Sales = types.NewCode(salesNull.String)
-		record.Purchases = types.NewCode(purchasesNull.String)
-		record.Exchange_rate_adjmt = types.NewCode(exchange_rate_adjmtNull.String)
-		record.Close_income_statement = types.NewCode(close_income_statementNull.String)
-		record.Consolidation = types.NewCode(consolidationNull.String)
-		record.Adjust_add_reporting_currency = types.NewCode(adjust_add_reporting_currencyNull.String)
-		record.General_journal = types.NewCode(general_journalNull.String)
-		record.Sales_journal = types.NewCode(sales_journalNull.String)
-		record.Purchase_journal = types.NewCode(purchase_journalNull.String)
-		record.Cash_receipt_journal = types.NewCode(cash_receipt_journalNull.String)
-		record.Payment_journal = types.NewCode(payment_journalNull.String)
-		record.Sales_entry_application = types.NewCode(sales_entry_applicationNull.String)
-		record.Purchase_entry_application = types.NewCode(purchase_entry_applicationNull.String)
-		record.Tax_settlement = types.NewCode(tax_settlementNull.String)
-		record.Financially_voided_check = types.NewCode(financially_voided_checkNull.String)
-		record.Finance_charge_memo = types.NewCode(finance_charge_memoNull.String)
-		record.Reminder = types.NewCode(reminderNull.String)
-		record.Inventory_post_cost = types.NewCode(inventory_post_costNull.String)
-		record.Item_journal = types.NewCode(item_journalNull.String)
-		record.Bom_journal = types.NewCode(bom_journalNull.String)
-		record.Resource_journal = types.NewCode(resource_journalNull.String)
-		record.Post_recognition = types.NewCode(post_recognitionNull.String)
-		record.Post_value = types.NewCode(post_valueNull.String)
-		record.Project_journal = types.NewCode(project_journalNull.String)
-		record.Compress_project_ledger = types.NewCode(compress_project_ledgerNull.String)
-		record.Item_transfer_journal = types.NewCode(item_transfer_journalNull.String)
-		record.Phys_inventory_journal = types.NewCode(phys_inventory_journalNull.String)
-		record.Fixed_asset_journal = types.NewCode(fixed_asset_journalNull.String)
-		record.Fixed_asset_g_l_journal = types.NewCode(fixed_asset_g_l_journalNull.String)
-		record.Insurance_journal = types.NewCode(insurance_journalNull.String)
-		record.Compress_g_l = types.NewCode(compress_g_lNull.String)
-		record.Compress_tax_entries = types.NewCode(compress_tax_entriesNull.String)
-		record.Compress_cust_ledger = types.NewCode(compress_cust_ledgerNull.String)
-		record.Compress_vend_ledger = types.NewCode(compress_vend_ledgerNull.String)
-		record.Compress_item_ledger = types.NewCode(compress_item_ledgerNull.String)
-		record.Compress_bom_ledger = types.NewCode(compress_bom_ledgerNull.String)
-		record.Compress_res_ledger = types.NewCode(compress_res_ledgerNull.String)
-		record.Compress_bank_acc_ledger = types.NewCode(compress_bank_acc_ledgerNull.String)
-		record.Compress_check_ledger = types.NewCode(compress_check_ledgerNull.String)
-		record.Compress_fa_ledger = types.NewCode(compress_fa_ledgerNull.String)
-		record.Compress_maintenance_ledger = types.NewCode(compress_maintenance_ledgerNull.String)
-		record.Compress_insurance_ledger = types.NewCode(compress_insurance_ledgerNull.String)
-
-		// Store old values
-		record.StoreOldValues()
-
-		// Add to buffer
-		t.bufferedRecords = append(t.bufferedRecords, record)
-	}
-
-	// Check for errors during iteration
-	if err := rows.Err(); err != nil {
-		fmt.Printf("Error: Failed to iterate Source_Code_Setup records: %v\n", err)
-		return false
-	}
-
-	// If no records found, return false
-	if len(t.bufferedRecords) == 0 {
-		return false
-	}
-
-	// Load first record into current instance
-	t.currentBufferPos = 0
-	t.copyFromBuffered(t.bufferedRecords[0])
-
-	return true
-}
-
-// copyFromBuffered copies field values from a buffered record to the current instance
-func (t *SourceCodeSetup) copyFromBuffered(record *SourceCodeSetup) {
-	t.Primary_key = record.Primary_key
-	t.Sales = record.Sales
-	t.Purchases = record.Purchases
-	t.Exchange_rate_adjmt = record.Exchange_rate_adjmt
-	t.Close_income_statement = record.Close_income_statement
-	t.Consolidation = record.Consolidation
-	t.Adjust_add_reporting_currency = record.Adjust_add_reporting_currency
-	t.General_journal = record.General_journal
-	t.Sales_journal = record.Sales_journal
-	t.Purchase_journal = record.Purchase_journal
-	t.Cash_receipt_journal = record.Cash_receipt_journal
-	t.Payment_journal = record.Payment_journal
-	t.Sales_entry_application = record.Sales_entry_application
-	t.Purchase_entry_application = record.Purchase_entry_application
-	t.Tax_settlement = record.Tax_settlement
-	t.Financially_voided_check = record.Financially_voided_check
-	t.Finance_charge_memo = record.Finance_charge_memo
-	t.Reminder = record.Reminder
-	t.Inventory_post_cost = record.Inventory_post_cost
-	t.Item_journal = record.Item_journal
-	t.Bom_journal = record.Bom_journal
-	t.Resource_journal = record.Resource_journal
-	t.Post_recognition = record.Post_recognition
-	t.Post_value = record.Post_value
-	t.Project_journal = record.Project_journal
-	t.Compress_project_ledger = record.Compress_project_ledger
-	t.Item_transfer_journal = record.Item_transfer_journal
-	t.Phys_inventory_journal = record.Phys_inventory_journal
-	t.Fixed_asset_journal = record.Fixed_asset_journal
-	t.Fixed_asset_g_l_journal = record.Fixed_asset_g_l_journal
-	t.Insurance_journal = record.Insurance_journal
-	t.Compress_g_l = record.Compress_g_l
-	t.Compress_tax_entries = record.Compress_tax_entries
-	t.Compress_cust_ledger = record.Compress_cust_ledger
-	t.Compress_vend_ledger = record.Compress_vend_ledger
-	t.Compress_item_ledger = record.Compress_item_ledger
-	t.Compress_bom_ledger = record.Compress_bom_ledger
-	t.Compress_res_ledger = record.Compress_res_ledger
-	t.Compress_bank_acc_ledger = record.Compress_bank_acc_ledger
-	t.Compress_check_ledger = record.Compress_check_ledger
-	t.Compress_fa_ledger = record.Compress_fa_ledger
-	t.Compress_maintenance_ledger = record.Compress_maintenance_ledger
-	t.Compress_insurance_ledger = record.Compress_insurance_ledger
-	t.StoreOldValues()
+	return t.rec().FindSetBuffered()
 }
 
 // ========================================
@@ -3106,49 +2102,9 @@ func (t *SourceCodeSetup) Find(which ...string) bool {
 }
 
 // findInKey reads the first record in the current key and direction — reversed for the
-// last — and with seek ">"/"<" only after/before the current record (a row-value
-// comparison on the key and primary key columns). A key with a FlowField cannot seek.
+// last — and with seek ">"/"<" only after/before the current record
 func (t *SourceCodeSetup) findInKey(seek string, reverse bool) bool {
-	if seek != "" {
-		var columns, params []string
-		var values []interface{}
-		for _, column := range t.keyColumns() {
-			v, ok := t.columnValue(column)
-			if !ok {
-				fmt.Printf("Error: Find(%q) on Source_Code_Setup needs a key of stored fields\n", seek)
-				return false
-			}
-			if t.isKeyDateColumn(column) {
-				v = types.KeyDate(v)
-			}
-			columns = append(columns, t.cmpColumn(column))
-			params = append(params, t.cmpParam(column))
-			values = append(values, v)
-		}
-		after := (seek == ">") != t.q.Descending
-		op := "<"
-		if after {
-			op = ">"
-		}
-		t.q.Seek = "(" + strings.Join(columns, ", ") + ") " + op + " (" + strings.Join(params, ", ") + ")"
-		t.q.SeekArgs = values
-	}
-	savedLimit, savedOffset, savedDescending := t.limit, t.offset, t.q.Descending
-	t.limit, t.offset = 1, 0
-	if reverse {
-		t.q.Descending = !t.q.Descending
-	}
-	found := t.FindSet()
-	// One record read: a later Next seeks from it in the key (inside a transaction FindSet
-	// buffers its rows — a one-row buffer would end the Next at once)
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	t.limit, t.offset, t.q.Descending = savedLimit, savedOffset, savedDescending
-	t.q.Seek, t.q.SeekArgs = "", nil
-	return found
+	return t.rec().FindInKey(seek, reverse)
 }
 
 // keyColumns returns the columns of the current key followed by the primary key's (the

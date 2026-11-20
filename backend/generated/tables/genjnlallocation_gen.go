@@ -138,19 +138,11 @@ type GenJnlAllocation struct {
 	// Temporary: the record's own table is in a private in-memory database (InitTemporary)
 	temp *tables.TemporaryStore
 
-	// Iteration state for FindSet/Next
-	currentRows *sql.Rows
+	// The result set of FindSet/FindSetBuffered/Next and the paging window (SetPage)
+	cur tables.Cursor
 
 	// LockTable: the following reads lock the rows they read (SELECT … FOR UPDATE, Postgres)
 	lockForUpdate bool
-
-	// Pagination window for FindSet/FindSetBuffered (0 limit = all rows)
-	limit  int
-	offset int
-
-	// Buffered recordset for bidirectional navigation
-	bufferedRecords  []*GenJnlAllocation
-	currentBufferPos int
 
 	// Business logic of this record only (SetLogic, tests); nil = the registered logic
 	// (RegisterGenJnlAllocationLogic)
@@ -844,58 +836,11 @@ func (t *GenJnlAllocation) convertPlaceholders(sql string, count int) string {
 // For single primary key: pass the value directly (string, int, etc.)
 // For composite keys: pass a map[string]interface{} with field names as keys
 func (t *GenJnlAllocation) Get(primaryKey interface{}) bool {
-	// Handle composite primary key (map[string]interface{})
+	// A composite primary key (map[string]interface{}, values also as text)
 	if pkMap, ok := primaryKey.(map[string]interface{}); ok {
-		var journal_template_nameVal types.Code
-		if v, exists := pkMap["journal_template_name"]; exists {
-			switch val := v.(type) {
-			case types.Code:
-				journal_template_nameVal = val
-			case string:
-				journal_template_nameVal = types.NewCode(val)
-			}
-		}
-		var journal_batch_nameVal types.Code
-		if v, exists := pkMap["journal_batch_name"]; exists {
-			switch val := v.(type) {
-			case types.Code:
-				journal_batch_nameVal = val
-			case string:
-				journal_batch_nameVal = types.NewCode(val)
-			}
-		}
-		var journal_line_noVal int
-		if v, exists := pkMap["journal_line_no"]; exists {
-			switch val := v.(type) {
-			case int:
-				journal_line_noVal = val
-			case float64:
-				journal_line_noVal = int(val)
-			case string:
-				// the key part as text: the API's "CUSTOMER1,10000"
-				if n, err := strconv.Atoi(strings.TrimSpace(val)); err == nil {
-					journal_line_noVal = n
-				}
-			}
-		}
-		var line_noVal int
-		if v, exists := pkMap["line_no"]; exists {
-			switch val := v.(type) {
-			case int:
-				line_noVal = val
-			case float64:
-				line_noVal = int(val)
-			case string:
-				// the key part as text: the API's "CUSTOMER1,10000"
-				if n, err := strconv.Atoi(strings.TrimSpace(val)); err == nil {
-					line_noVal = n
-				}
-			}
-		}
-		return t.GetByPK(journal_template_nameVal, journal_batch_nameVal, journal_line_noVal, line_noVal)
+		key := genJnlAllocationFields.KeyFromMap(pkMap)
+		return t.GetByPK(key[0].(types.Code), key[1].(types.Code), key[2].(int), key[3].(int))
 	}
-	// For tables with composite keys, direct value is not supported
-	// Use a map[string]interface{} with field names as keys
 
 	fmt.Printf("Error: Invalid primary key type for Gen_Jnl_Allocation.Get: %T (use map for composite keys)\n", primaryKey)
 	return false
@@ -903,31 +848,6 @@ func (t *GenJnlAllocation) Get(primaryKey interface{}) bool {
 
 // GetByPK retrieves a record by its typed primary key(s) - for direct typed access
 func (t *GenJnlAllocation) GetByPK(journal_template_name types.Code, journal_batch_name types.Code, journal_line_no int, line_no int) bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, GenJnlAllocationTableName)
-	var journal_template_nameNull sql.NullString
-	var journal_batch_nameNull sql.NullString
-	var journal_line_noVal int
-	var line_noVal int
-	var account_noNull sql.NullString
-	var dimension_1_codeNull sql.NullString
-	var dimension_2_codeNull sql.NullString
-	var allocation_quantityNull sql.NullString
-	var allocation_percentNull sql.NullString
-	var amountNull sql.NullString
-	var gen_posting_typeInt int
-	var gen_bus_posting_groupNull sql.NullString
-	var gen_prod_posting_groupNull sql.NullString
-	var tax_calculation_typeInt int
-	var tax_amountNull sql.NullString
-	var tax_percentNull sql.NullString
-	var tax_area_codeNull sql.NullString
-	var tax_liableBool sql.NullBool
-	var tax_group_codeNull sql.NullString
-	var use_taxBool sql.NullBool
-	var tax_bus_posting_groupNull sql.NullString
-	var tax_prod_posting_groupNull sql.NullString
-	var additional_currency_amountNull sql.NullString
-
 	// Collect arguments for query
 	args := []interface{}{
 		journal_template_name,
@@ -935,79 +855,7 @@ func (t *GenJnlAllocation) GetByPK(journal_template_name types.Code, journal_bat
 		journal_line_no,
 		line_no,
 	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, journal_line_no, line_no, account_no, dimension_1_code, dimension_2_code, allocation_quantity, allocation_percent, amount, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_amount, tax_percent, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND journal_line_no = ? AND line_no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-	sqlStr += t.forUpdate()
-
-	err := t.exec().QueryRow(sqlStr, args...).Scan(
-		&journal_template_nameNull,
-		&journal_batch_nameNull,
-		&journal_line_noVal,
-		&line_noVal,
-		&account_noNull,
-		&dimension_1_codeNull,
-		&dimension_2_codeNull,
-		&allocation_quantityNull,
-		&allocation_percentNull,
-		&amountNull,
-		&gen_posting_typeInt,
-		&gen_bus_posting_groupNull,
-		&gen_prod_posting_groupNull,
-		&tax_calculation_typeInt,
-		&tax_amountNull,
-		&tax_percentNull,
-		&tax_area_codeNull,
-		&tax_liableBool,
-		&tax_group_codeNull,
-		&use_taxBool,
-		&tax_bus_posting_groupNull,
-		&tax_prod_posting_groupNull,
-		&additional_currency_amountNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			// Record not found - this is not an error, just return false
-			return false
-		}
-		// Actual database error
-		fmt.Printf("Error: Failed to get Gen_Jnl_Allocation: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Journal_template_name = types.NewCode(journal_template_nameNull.String)
-	t.Journal_batch_name = types.NewCode(journal_batch_nameNull.String)
-	t.Journal_line_no = journal_line_noVal
-	t.Line_no = line_noVal
-	t.Account_no = types.NewCode(account_noNull.String)
-	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
-	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
-	t.Allocation_quantity, _ = types.NewDecimalFromString(allocation_quantityNull.String)
-	t.Allocation_percent, _ = types.NewDecimalFromString(allocation_percentNull.String)
-	t.Amount, _ = types.NewDecimalFromString(amountNull.String)
-	t.Gen_posting_type = GenJnlAllocationGen_posting_type(gen_posting_typeInt)
-	t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
-	t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
-	t.Tax_calculation_type = GenJnlAllocationTax_calculation_type(tax_calculation_typeInt)
-	t.Tax_amount, _ = types.NewDecimalFromString(tax_amountNull.String)
-	t.Tax_percent, _ = types.NewDecimalFromString(tax_percentNull.String)
-	t.Tax_area_code = types.NewCode(tax_area_codeNull.String)
-	t.Tax_liable = tax_liableBool.Bool
-	t.Tax_group_code = types.NewCode(tax_group_codeNull.String)
-	t.Use_tax = use_taxBool.Bool
-	t.Tax_bus_posting_group = types.NewCode(tax_bus_posting_groupNull.String)
-	t.Tax_prod_posting_group = types.NewCode(tax_prod_posting_groupNull.String)
-	t.Additional_currency_amount, _ = types.NewDecimalFromString(additional_currency_amountNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().Get(args)
 }
 
 // Insert inserts the record into the database
@@ -1544,10 +1392,7 @@ func (t *GenJnlAllocation) columnName(fieldName string) (string, bool) {
 func (t *GenJnlAllocation) Reset() {
 	t.q.Reset()
 	t.oldValues = nil
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
+	t.cur.CloseRows()
 }
 
 // buildWhereClause builds WHERE clause from current filters and search
@@ -1589,291 +1434,50 @@ func (t *GenJnlAllocation) getOrderByClause() (string, []interface{}) {
 // limit rows, skipping the first offset rows. A limit of 0 disables pagination
 // (all matching rows are returned). Negative values are treated as 0.
 func (t *GenJnlAllocation) SetPage(limit, offset int) {
-	if limit < 0 {
-		limit = 0
-	}
-	if offset < 0 {
-		offset = 0
-	}
-	t.limit = limit
-	t.offset = offset
+	t.cur.SetPage(limit, offset)
 }
 
-// getLimitClause builds the LIMIT/OFFSET clause from the pagination window.
-// Returns an empty string when no limit is set. LIMIT/OFFSET take integer
-// literals (not placeholders), which both SQLite and PostgreSQL accept.
-func (t *GenJnlAllocation) getLimitClause() string {
-	if t.limit <= 0 {
-		return ""
+// rec is what the read functions of foundation/tables need of the record
+func (t *GenJnlAllocation) rec() *tables.Rec {
+	_, inTx := t.db.(*sql.Tx)
+	return &tables.Rec{
+		Fields:    genJnlAllocationFields,
+		Ref:       t.fieldRef,
+		QT:        t.qt(),
+		Q:         &t.q,
+		Cur:       &t.cur,
+		Exec:      t.exec(),
+		Buffered:  t.temp != nil || inTx,
+		Postgres:  t.dbType == database.DBTypePostgres,
+		Table:     fmt.Sprintf("%s$%s", t.company, GenJnlAllocationTableName),
+		ForUpdate: t.forUpdate(),
+		Store:     t.StoreOldValues,
 	}
-	if t.offset > 0 {
-		return fmt.Sprintf(" LIMIT %d OFFSET %d", t.limit, t.offset)
-	}
-	return fmt.Sprintf(" LIMIT %d", t.limit)
 }
 
 // FindFirst finds the first record matching current filters
 // Returns true if found, false if not found
 func (t *GenJnlAllocation) FindFirst() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, GenJnlAllocationTableName)
-	where, args := t.buildWhereClause()
-	// The first record in the current key and direction (classic FIND('-'))
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, journal_line_no, line_no, account_no, dimension_1_code, dimension_2_code, allocation_quantity, allocation_percent, amount, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_amount, tax_percent, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var journal_template_nameNull sql.NullString
-	var journal_batch_nameNull sql.NullString
-	var account_noNull sql.NullString
-	var dimension_1_codeNull sql.NullString
-	var dimension_2_codeNull sql.NullString
-	var allocation_quantityNull sql.NullString
-	var allocation_percentNull sql.NullString
-	var amountNull sql.NullString
-	var gen_posting_typeInt int
-	var gen_bus_posting_groupNull sql.NullString
-	var gen_prod_posting_groupNull sql.NullString
-	var tax_calculation_typeInt int
-	var tax_amountNull sql.NullString
-	var tax_percentNull sql.NullString
-	var tax_area_codeNull sql.NullString
-	var tax_liableBool sql.NullBool
-	var tax_group_codeNull sql.NullString
-	var use_taxBool sql.NullBool
-	var tax_bus_posting_groupNull sql.NullString
-	var tax_prod_posting_groupNull sql.NullString
-	var additional_currency_amountNull sql.NullString
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&journal_template_nameNull,
-		&journal_batch_nameNull,
-		&t.Journal_line_no,
-		&t.Line_no,
-		&account_noNull,
-		&dimension_1_codeNull,
-		&dimension_2_codeNull,
-		&allocation_quantityNull,
-		&allocation_percentNull,
-		&amountNull,
-		&gen_posting_typeInt,
-		&gen_bus_posting_groupNull,
-		&gen_prod_posting_groupNull,
-		&tax_calculation_typeInt,
-		&tax_amountNull,
-		&tax_percentNull,
-		&tax_area_codeNull,
-		&tax_liableBool,
-		&tax_group_codeNull,
-		&use_taxBool,
-		&tax_bus_posting_groupNull,
-		&tax_prod_posting_groupNull,
-		&additional_currency_amountNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find first Gen_Jnl_Allocation: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Journal_template_name = types.NewCode(journal_template_nameNull.String)
-	t.Journal_batch_name = types.NewCode(journal_batch_nameNull.String)
-	t.Account_no = types.NewCode(account_noNull.String)
-	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
-	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
-	t.Allocation_quantity, _ = types.NewDecimalFromString(allocation_quantityNull.String)
-	t.Allocation_percent, _ = types.NewDecimalFromString(allocation_percentNull.String)
-	t.Amount, _ = types.NewDecimalFromString(amountNull.String)
-	t.Gen_posting_type = GenJnlAllocationGen_posting_type(gen_posting_typeInt)
-	t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
-	t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
-	t.Tax_calculation_type = GenJnlAllocationTax_calculation_type(tax_calculation_typeInt)
-	t.Tax_amount, _ = types.NewDecimalFromString(tax_amountNull.String)
-	t.Tax_percent, _ = types.NewDecimalFromString(tax_percentNull.String)
-	t.Tax_area_code = types.NewCode(tax_area_codeNull.String)
-	t.Tax_liable = tax_liableBool.Bool
-	t.Tax_group_code = types.NewCode(tax_group_codeNull.String)
-	t.Use_tax = use_taxBool.Bool
-	t.Tax_bus_posting_group = types.NewCode(tax_bus_posting_groupNull.String)
-	t.Tax_prod_posting_group = types.NewCode(tax_prod_posting_groupNull.String)
-	t.Additional_currency_amount, _ = types.NewDecimalFromString(additional_currency_amountNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindFirst()
 }
 
 // FindLast finds the last record matching current filters
 // Returns true if found, false if not found
 func (t *GenJnlAllocation) FindLast() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, GenJnlAllocationTableName)
-	where, args := t.buildWhereClause()
-	// The last record in the current key and direction (classic FIND('+')): the key reversed,
-	// every column of it
-	t.q.Descending = !t.q.Descending
-	orderBy, orderArgs := t.getOrderByClause()
-	t.q.Descending = !t.q.Descending
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, journal_line_no, line_no, account_no, dimension_1_code, dimension_2_code, allocation_quantity, allocation_percent, amount, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_amount, tax_percent, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var journal_template_nameNull sql.NullString
-	var journal_batch_nameNull sql.NullString
-	var account_noNull sql.NullString
-	var dimension_1_codeNull sql.NullString
-	var dimension_2_codeNull sql.NullString
-	var allocation_quantityNull sql.NullString
-	var allocation_percentNull sql.NullString
-	var amountNull sql.NullString
-	var gen_posting_typeInt int
-	var gen_bus_posting_groupNull sql.NullString
-	var gen_prod_posting_groupNull sql.NullString
-	var tax_calculation_typeInt int
-	var tax_amountNull sql.NullString
-	var tax_percentNull sql.NullString
-	var tax_area_codeNull sql.NullString
-	var tax_liableBool sql.NullBool
-	var tax_group_codeNull sql.NullString
-	var use_taxBool sql.NullBool
-	var tax_bus_posting_groupNull sql.NullString
-	var tax_prod_posting_groupNull sql.NullString
-	var additional_currency_amountNull sql.NullString
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&journal_template_nameNull,
-		&journal_batch_nameNull,
-		&t.Journal_line_no,
-		&t.Line_no,
-		&account_noNull,
-		&dimension_1_codeNull,
-		&dimension_2_codeNull,
-		&allocation_quantityNull,
-		&allocation_percentNull,
-		&amountNull,
-		&gen_posting_typeInt,
-		&gen_bus_posting_groupNull,
-		&gen_prod_posting_groupNull,
-		&tax_calculation_typeInt,
-		&tax_amountNull,
-		&tax_percentNull,
-		&tax_area_codeNull,
-		&tax_liableBool,
-		&tax_group_codeNull,
-		&use_taxBool,
-		&tax_bus_posting_groupNull,
-		&tax_prod_posting_groupNull,
-		&additional_currency_amountNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find last Gen_Jnl_Allocation: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Journal_template_name = types.NewCode(journal_template_nameNull.String)
-	t.Journal_batch_name = types.NewCode(journal_batch_nameNull.String)
-	t.Account_no = types.NewCode(account_noNull.String)
-	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
-	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
-	t.Allocation_quantity, _ = types.NewDecimalFromString(allocation_quantityNull.String)
-	t.Allocation_percent, _ = types.NewDecimalFromString(allocation_percentNull.String)
-	t.Amount, _ = types.NewDecimalFromString(amountNull.String)
-	t.Gen_posting_type = GenJnlAllocationGen_posting_type(gen_posting_typeInt)
-	t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
-	t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
-	t.Tax_calculation_type = GenJnlAllocationTax_calculation_type(tax_calculation_typeInt)
-	t.Tax_amount, _ = types.NewDecimalFromString(tax_amountNull.String)
-	t.Tax_percent, _ = types.NewDecimalFromString(tax_percentNull.String)
-	t.Tax_area_code = types.NewCode(tax_area_codeNull.String)
-	t.Tax_liable = tax_liableBool.Bool
-	t.Tax_group_code = types.NewCode(tax_group_codeNull.String)
-	t.Use_tax = use_taxBool.Bool
-	t.Tax_bus_posting_group = types.NewCode(tax_bus_posting_groupNull.String)
-	t.Tax_prod_posting_group = types.NewCode(tax_prod_posting_groupNull.String)
-	t.Additional_currency_amount, _ = types.NewDecimalFromString(additional_currency_amountNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindLast()
 }
 
 // Count returns the number of records matching current filters
 func (t *GenJnlAllocation) Count() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, GenJnlAllocationTableName)
-	where, args := t.buildWhereClause()
-
-	query := fmt.Sprintf(`SELECT COUNT(*) FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var count int
-	err := t.exec().QueryRow(query, args...).Scan(&count)
-	if err != nil {
-		fmt.Printf("Error: Failed to count Gen_Jnl_Allocation: %v\n", err)
-		return 0
-	}
-
-	return count
+	return t.rec().Count()
 }
 
 // FindSet opens a result set matching current filters
 // Call Next() to iterate through the results
-// Returns true if at least one record found, false otherwise
+// Returns true if at least one record found, false otherwise. A temporary record, and a
+// record in a transaction, reads all at once (FindSetBuffered).
 func (t *GenJnlAllocation) FindSet() bool {
-	// A temporary record, and a record in a transaction, reads all at once: its in-memory
-	// database or the transaction has one connection, which an open result set would block for
-	// the statements of the loop (Modify while looping; on PostgreSQL a query while the rows are
-	// read breaks the connection — "unexpected Parse response")
-	if _, inTx := t.db.(*sql.Tx); t.temp != nil || inTx {
-		return t.FindSetBuffered()
-	}
-	// Close any existing result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	tableName := fmt.Sprintf("%s$%s", t.company, GenJnlAllocationTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, journal_line_no, line_no, account_no, dimension_1_code, dimension_2_code, allocation_quantity, allocation_percent, amount, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_amount, tax_percent, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSet for Gen_Jnl_Allocation: %v\n", err)
-		return false
-	}
-
-	t.currentRows = rows
-
-	// Load first record
-	return t.Next()
+	return t.rec().FindSet()
 }
 
 // Next advances to the next record: in the result set after FindSet() or FindSetBuffered(),
@@ -1886,323 +1490,14 @@ func (t *GenJnlAllocation) FindSet() bool {
 //
 // Returns true if a record was loaded, false if no more records or out of bounds
 func (t *GenJnlAllocation) Next(steps ...int) bool {
-	// Default to 1 step forward
-	step := 1
-	if len(steps) > 0 {
-		step = steps[0]
-	}
-
-	// BUFFERED MODE: Bidirectional navigation with in-memory records
-	if t.bufferedRecords != nil {
-		// Calculate new position
-		newPos := t.currentBufferPos + step
-
-		// Check bounds
-		if newPos < 0 || newPos >= len(t.bufferedRecords) {
-			return false // Out of bounds
-		}
-
-		// Move to new position
-		t.currentBufferPos = newPos
-		t.copyFromBuffered(t.bufferedRecords[t.currentBufferPos])
-		return true
-	}
-
-	// FORWARD-ONLY MODE: Streaming with sql.Rows (only positive steps allowed)
-	if t.currentRows != nil {
-		// Validate: only forward movement allowed
-		if step < 1 {
-			fmt.Printf("Error: Backward navigation (Next(%d)) requires FindSetBuffered()\n", step)
-			return false
-		}
-
-		// Advance 'step' times (1 = next record, 2 = skip 1 record, etc.)
-		for i := 0; i < step; i++ {
-			if !t.currentRows.Next() {
-				// No more rows - close result set
-				t.currentRows.Close()
-				t.currentRows = nil
-				return false
-			}
-		}
-
-		// Scan the row
-		var journal_template_nameNull sql.NullString
-		var journal_batch_nameNull sql.NullString
-		var account_noNull sql.NullString
-		var dimension_1_codeNull sql.NullString
-		var dimension_2_codeNull sql.NullString
-		var allocation_quantityNull sql.NullString
-		var allocation_percentNull sql.NullString
-		var amountNull sql.NullString
-		var gen_posting_typeInt int
-		var gen_bus_posting_groupNull sql.NullString
-		var gen_prod_posting_groupNull sql.NullString
-		var tax_calculation_typeInt int
-		var tax_amountNull sql.NullString
-		var tax_percentNull sql.NullString
-		var tax_area_codeNull sql.NullString
-		var tax_liableBool sql.NullBool
-		var tax_group_codeNull sql.NullString
-		var use_taxBool sql.NullBool
-		var tax_bus_posting_groupNull sql.NullString
-		var tax_prod_posting_groupNull sql.NullString
-		var additional_currency_amountNull sql.NullString
-
-		err := t.currentRows.Scan(
-			&journal_template_nameNull,
-			&journal_batch_nameNull,
-			&t.Journal_line_no,
-			&t.Line_no,
-			&account_noNull,
-			&dimension_1_codeNull,
-			&dimension_2_codeNull,
-			&allocation_quantityNull,
-			&allocation_percentNull,
-			&amountNull,
-			&gen_posting_typeInt,
-			&gen_bus_posting_groupNull,
-			&gen_prod_posting_groupNull,
-			&tax_calculation_typeInt,
-			&tax_amountNull,
-			&tax_percentNull,
-			&tax_area_codeNull,
-			&tax_liableBool,
-			&tax_group_codeNull,
-			&use_taxBool,
-			&tax_bus_posting_groupNull,
-			&tax_prod_posting_groupNull,
-			&additional_currency_amountNull,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan Gen_Jnl_Allocation record: %v\n", err)
-			t.currentRows.Close()
-			t.currentRows = nil
-			return false
-		}
-
-		// Populate fields
-		t.Journal_template_name = types.NewCode(journal_template_nameNull.String)
-		t.Journal_batch_name = types.NewCode(journal_batch_nameNull.String)
-		t.Account_no = types.NewCode(account_noNull.String)
-		t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
-		t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
-		t.Allocation_quantity, _ = types.NewDecimalFromString(allocation_quantityNull.String)
-		t.Allocation_percent, _ = types.NewDecimalFromString(allocation_percentNull.String)
-		t.Amount, _ = types.NewDecimalFromString(amountNull.String)
-		t.Gen_posting_type = GenJnlAllocationGen_posting_type(gen_posting_typeInt)
-		t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
-		t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
-		t.Tax_calculation_type = GenJnlAllocationTax_calculation_type(tax_calculation_typeInt)
-		t.Tax_amount, _ = types.NewDecimalFromString(tax_amountNull.String)
-		t.Tax_percent, _ = types.NewDecimalFromString(tax_percentNull.String)
-		t.Tax_area_code = types.NewCode(tax_area_codeNull.String)
-		t.Tax_liable = tax_liableBool.Bool
-		t.Tax_group_code = types.NewCode(tax_group_codeNull.String)
-		t.Use_tax = use_taxBool.Bool
-		t.Tax_bus_posting_group = types.NewCode(tax_bus_posting_groupNull.String)
-		t.Tax_prod_posting_group = types.NewCode(tax_prod_posting_groupNull.String)
-		t.Additional_currency_amount, _ = types.NewDecimalFromString(additional_currency_amountNull.String)
-
-		// Store old values for field tracking
-		t.StoreOldValues()
-
-		return true
-	}
-
-	// No record set (after Get, Find, FindFirst, FindLast): the next record in the current key
-	// and direction within the filters, one step at a time (classic NEXT after FIND); a step
-	// that finds none leaves the record on the last one reached
-	if step == 0 {
-		return false
-	}
-	for i := 0; i != step; {
-		if step > 0 {
-			if !t.findInKey(">", false) {
-				return false
-			}
-			i++
-		} else {
-			if !t.findInKey("<", true) {
-				return false
-			}
-			i--
-		}
-	}
-	return true
+	return t.rec().Next(steps, t.findInKey)
 }
 
 // FindSetBuffered loads all filtered records into memory for bidirectional navigation
 // Use this when you need to move backward/forward with Next(steps)
-// Filters (SetRange/SetFilter) are applied in SQL before buffering to minimize memory usage
 // Returns true if at least one record found, false otherwise
 func (t *GenJnlAllocation) FindSetBuffered() bool {
-	// Close any existing forward-only result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-
-	// Clear any existing buffer
-	t.bufferedRecords = nil
-	t.currentBufferPos = -1
-	tableName := fmt.Sprintf("%s$%s", t.company, GenJnlAllocationTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, journal_line_no, line_no, account_no, dimension_1_code, dimension_2_code, allocation_quantity, allocation_percent, amount, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_amount, tax_percent, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSetBuffered for Gen_Jnl_Allocation: %v\n", err)
-		return false
-	}
-	defer rows.Close()
-
-	// Load all records into memory
-	for rows.Next() {
-		// Create a new record instance
-		record := &GenJnlAllocation{}
-		record.db = t.db
-		record.temp = t.temp
-		record.company = t.company
-		record.dbType = t.dbType
-
-		// Scan the row
-		var journal_template_nameNull sql.NullString
-		var journal_batch_nameNull sql.NullString
-		var account_noNull sql.NullString
-		var dimension_1_codeNull sql.NullString
-		var dimension_2_codeNull sql.NullString
-		var allocation_quantityNull sql.NullString
-		var allocation_percentNull sql.NullString
-		var amountNull sql.NullString
-		var gen_posting_typeInt int
-		var gen_bus_posting_groupNull sql.NullString
-		var gen_prod_posting_groupNull sql.NullString
-		var tax_calculation_typeInt int
-		var tax_amountNull sql.NullString
-		var tax_percentNull sql.NullString
-		var tax_area_codeNull sql.NullString
-		var tax_liableBool sql.NullBool
-		var tax_group_codeNull sql.NullString
-		var use_taxBool sql.NullBool
-		var tax_bus_posting_groupNull sql.NullString
-		var tax_prod_posting_groupNull sql.NullString
-		var additional_currency_amountNull sql.NullString
-
-		err := rows.Scan(
-			&journal_template_nameNull,
-			&journal_batch_nameNull,
-			&record.Journal_line_no,
-			&record.Line_no,
-			&account_noNull,
-			&dimension_1_codeNull,
-			&dimension_2_codeNull,
-			&allocation_quantityNull,
-			&allocation_percentNull,
-			&amountNull,
-			&gen_posting_typeInt,
-			&gen_bus_posting_groupNull,
-			&gen_prod_posting_groupNull,
-			&tax_calculation_typeInt,
-			&tax_amountNull,
-			&tax_percentNull,
-			&tax_area_codeNull,
-			&tax_liableBool,
-			&tax_group_codeNull,
-			&use_taxBool,
-			&tax_bus_posting_groupNull,
-			&tax_prod_posting_groupNull,
-			&additional_currency_amountNull,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan Gen_Jnl_Allocation record: %v\n", err)
-			return false
-		}
-
-		// Populate special type fields
-		record.Journal_template_name = types.NewCode(journal_template_nameNull.String)
-		record.Journal_batch_name = types.NewCode(journal_batch_nameNull.String)
-		record.Account_no = types.NewCode(account_noNull.String)
-		record.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
-		record.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
-		record.Allocation_quantity, _ = types.NewDecimalFromString(allocation_quantityNull.String)
-		record.Allocation_percent, _ = types.NewDecimalFromString(allocation_percentNull.String)
-		record.Amount, _ = types.NewDecimalFromString(amountNull.String)
-		record.Gen_posting_type = GenJnlAllocationGen_posting_type(gen_posting_typeInt)
-		record.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
-		record.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
-		record.Tax_calculation_type = GenJnlAllocationTax_calculation_type(tax_calculation_typeInt)
-		record.Tax_amount, _ = types.NewDecimalFromString(tax_amountNull.String)
-		record.Tax_percent, _ = types.NewDecimalFromString(tax_percentNull.String)
-		record.Tax_area_code = types.NewCode(tax_area_codeNull.String)
-		record.Tax_liable = tax_liableBool.Bool
-		record.Tax_group_code = types.NewCode(tax_group_codeNull.String)
-		record.Use_tax = use_taxBool.Bool
-		record.Tax_bus_posting_group = types.NewCode(tax_bus_posting_groupNull.String)
-		record.Tax_prod_posting_group = types.NewCode(tax_prod_posting_groupNull.String)
-		record.Additional_currency_amount, _ = types.NewDecimalFromString(additional_currency_amountNull.String)
-
-		// Store old values
-		record.StoreOldValues()
-
-		// Add to buffer
-		t.bufferedRecords = append(t.bufferedRecords, record)
-	}
-
-	// Check for errors during iteration
-	if err := rows.Err(); err != nil {
-		fmt.Printf("Error: Failed to iterate Gen_Jnl_Allocation records: %v\n", err)
-		return false
-	}
-
-	// If no records found, return false
-	if len(t.bufferedRecords) == 0 {
-		return false
-	}
-
-	// Load first record into current instance
-	t.currentBufferPos = 0
-	t.copyFromBuffered(t.bufferedRecords[0])
-
-	return true
-}
-
-// copyFromBuffered copies field values from a buffered record to the current instance
-func (t *GenJnlAllocation) copyFromBuffered(record *GenJnlAllocation) {
-	t.Journal_template_name = record.Journal_template_name
-	t.Journal_batch_name = record.Journal_batch_name
-	t.Journal_line_no = record.Journal_line_no
-	t.Line_no = record.Line_no
-	t.Account_no = record.Account_no
-	t.Dimension_1_code = record.Dimension_1_code
-	t.Dimension_2_code = record.Dimension_2_code
-	t.Allocation_quantity = record.Allocation_quantity
-	t.Allocation_percent = record.Allocation_percent
-	t.Amount = record.Amount
-	t.Gen_posting_type = record.Gen_posting_type
-	t.Gen_bus_posting_group = record.Gen_bus_posting_group
-	t.Gen_prod_posting_group = record.Gen_prod_posting_group
-	t.Tax_calculation_type = record.Tax_calculation_type
-	t.Tax_amount = record.Tax_amount
-	t.Tax_percent = record.Tax_percent
-	t.Account_name = record.Account_name
-	t.Tax_area_code = record.Tax_area_code
-	t.Tax_liable = record.Tax_liable
-	t.Tax_group_code = record.Tax_group_code
-	t.Use_tax = record.Use_tax
-	t.Tax_bus_posting_group = record.Tax_bus_posting_group
-	t.Tax_prod_posting_group = record.Tax_prod_posting_group
-	t.Additional_currency_amount = record.Additional_currency_amount
-	t.StoreOldValues()
+	return t.rec().FindSetBuffered()
 }
 
 // ========================================
@@ -2692,49 +1987,9 @@ func (t *GenJnlAllocation) Find(which ...string) bool {
 }
 
 // findInKey reads the first record in the current key and direction — reversed for the
-// last — and with seek ">"/"<" only after/before the current record (a row-value
-// comparison on the key and primary key columns). A key with a FlowField cannot seek.
+// last — and with seek ">"/"<" only after/before the current record
 func (t *GenJnlAllocation) findInKey(seek string, reverse bool) bool {
-	if seek != "" {
-		var columns, params []string
-		var values []interface{}
-		for _, column := range t.keyColumns() {
-			v, ok := t.columnValue(column)
-			if !ok {
-				fmt.Printf("Error: Find(%q) on Gen_Jnl_Allocation needs a key of stored fields\n", seek)
-				return false
-			}
-			if t.isKeyDateColumn(column) {
-				v = types.KeyDate(v)
-			}
-			columns = append(columns, t.cmpColumn(column))
-			params = append(params, t.cmpParam(column))
-			values = append(values, v)
-		}
-		after := (seek == ">") != t.q.Descending
-		op := "<"
-		if after {
-			op = ">"
-		}
-		t.q.Seek = "(" + strings.Join(columns, ", ") + ") " + op + " (" + strings.Join(params, ", ") + ")"
-		t.q.SeekArgs = values
-	}
-	savedLimit, savedOffset, savedDescending := t.limit, t.offset, t.q.Descending
-	t.limit, t.offset = 1, 0
-	if reverse {
-		t.q.Descending = !t.q.Descending
-	}
-	found := t.FindSet()
-	// One record read: a later Next seeks from it in the key (inside a transaction FindSet
-	// buffers its rows — a one-row buffer would end the Next at once)
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	t.limit, t.offset, t.q.Descending = savedLimit, savedOffset, savedDescending
-	t.q.Seek, t.q.SeekArgs = "", nil
-	return found
+	return t.rec().FindInKey(seek, reverse)
 }
 
 // keyColumns returns the columns of the current key followed by the primary key's (the

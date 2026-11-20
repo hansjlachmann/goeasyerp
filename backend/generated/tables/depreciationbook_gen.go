@@ -162,19 +162,11 @@ type DepreciationBook struct {
 	// Temporary: the record's own table is in a private in-memory database (InitTemporary)
 	temp *tables.TemporaryStore
 
-	// Iteration state for FindSet/Next
-	currentRows *sql.Rows
+	// The result set of FindSet/FindSetBuffered/Next and the paging window (SetPage)
+	cur tables.Cursor
 
 	// LockTable: the following reads lock the rows they read (SELECT … FOR UPDATE, Postgres)
 	lockForUpdate bool
-
-	// Pagination window for FindSet/FindSetBuffered (0 limit = all rows)
-	limit  int
-	offset int
-
-	// Buffered recordset for bidirectional navigation
-	bufferedRecords  []*DepreciationBook
-	currentBufferPos int
 
 	// Business logic of this record only (SetLogic, tests); nil = the registered logic
 	// (RegisterDepreciationBookLogic)
@@ -868,25 +860,14 @@ func (t *DepreciationBook) convertPlaceholders(sql string, count int) string {
 // For single primary key: pass the value directly (string, int, etc.)
 // For composite keys: pass a map[string]interface{} with field names as keys
 func (t *DepreciationBook) Get(primaryKey interface{}) bool {
-	// Handle composite primary key (map[string]interface{})
+	// A composite primary key (map[string]interface{}, values also as text)
 	if pkMap, ok := primaryKey.(map[string]interface{}); ok {
-		var codeVal types.Code
-		if v, exists := pkMap["code"]; exists {
-			switch val := v.(type) {
-			case types.Code:
-				codeVal = val
-			case string:
-				codeVal = types.NewCode(val)
-			}
-		}
-		return t.GetByPK(codeVal)
+		key := depreciationBookFields.KeyFromMap(pkMap)
+		return t.GetByPK(key[0].(types.Code))
 	}
-	// Handle single primary key (for tables with only one PK field)
-	switch pk := primaryKey.(type) {
-	case types.Code:
-		return t.GetByPK(pk)
-	case string:
-		return t.GetByPK(types.NewCode(pk))
+	// The primary key itself (a table with one primary key field)
+	if key, ok := depreciationBookFields.KeyFromValue(primaryKey); ok {
+		return t.GetByPK([]any{key}[0].(types.Code))
 	}
 
 	fmt.Printf("Error: Invalid primary key type for Depreciation_Book.Get: %T (use map for composite keys)\n", primaryKey)
@@ -895,147 +876,11 @@ func (t *DepreciationBook) Get(primaryKey interface{}) bool {
 
 // GetByPK retrieves a record by its typed primary key(s) - for direct typed access
 func (t *DepreciationBook) GetByPK(code types.Code) bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, DepreciationBookTableName)
-	var codeNull sql.NullString
-	var descriptionNull sql.NullString
-	var g_l_integration_acq_costBool sql.NullBool
-	var g_l_integration_depreciationBool sql.NullBool
-	var g_l_integration_write_downBool sql.NullBool
-	var g_l_integration_appreciationBool sql.NullBool
-	var g_l_integration_custom_1Bool sql.NullBool
-	var g_l_integration_custom_2Bool sql.NullBool
-	var g_l_integration_disposalBool sql.NullBool
-	var g_l_integration_maintenanceBool sql.NullBool
-	var disposal_calculation_methodInt int
-	var use_custom_1_depreciationBool sql.NullBool
-	var allow_depr_below_zeroBool sql.NullBool
-	var use_fa_exch_rate_in_duplicBool sql.NullBool
-	var part_of_duplication_listBool sql.NullBool
-	var last_date_modifiedNull sql.NullString
-	var allow_indexationBool sql.NullBool
-	var use_same_fa_g_l_posting_datesBool sql.NullBool
-	var default_exchange_rateNull sql.NullString
-	var use_fa_ledger_checkBool sql.NullBool
-	var use_rounding_in_periodic_deprBool sql.NullBool
-	var new_fiscal_year_starting_dateNull sql.NullString
-	var no_of_days_in_fiscal_yearVal int
-	var allow_changes_in_depr_fieldsBool sql.NullBool
-	var default_final_rounding_amountNull sql.NullString
-	var default_ending_book_valueNull sql.NullString
-	var periodic_depr_date_calcInt int
-	var mark_errors_as_correctionsBool sql.NullBool
-	var add_curr_exch_rate_acq_costBool sql.NullBool
-	var add_curr_exch_rate_deprBool sql.NullBool
-	var add_curr_exch_rate_write_downBool sql.NullBool
-	var add_curr_exch_rate_apprecBool sql.NullBool
-	var add_curr_exch_rate_custom_1Bool sql.NullBool
-	var add_curr_exch_rate_custom_2Bool sql.NullBool
-	var add_curr_exch_rate_dispBool sql.NullBool
-	var add_curr_exch_rate_maintBool sql.NullBool
-
 	// Collect arguments for query
 	args := []interface{}{
 		code,
 	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT code, description, g_l_integration_acq_cost, g_l_integration_depreciation, g_l_integration_write_down, g_l_integration_appreciation, g_l_integration_custom_1, g_l_integration_custom_2, g_l_integration_disposal, g_l_integration_maintenance, disposal_calculation_method, use_custom_1_depreciation, allow_depr_below_zero, use_fa_exch_rate_in_duplic, part_of_duplication_list, last_date_modified, allow_indexation, use_same_fa_g_l_posting_dates, default_exchange_rate, use_fa_ledger_check, use_rounding_in_periodic_depr, new_fiscal_year_starting_date, no_of_days_in_fiscal_year, allow_changes_in_depr_fields, default_final_rounding_amount, default_ending_book_value, periodic_depr_date_calc, mark_errors_as_corrections, add_curr_exch_rate_acq_cost, add_curr_exch_rate_depr, add_curr_exch_rate_write_down, add_curr_exch_rate_apprec, add_curr_exch_rate_custom_1, add_curr_exch_rate_custom_2, add_curr_exch_rate_disp, add_curr_exch_rate_maint FROM "%s" WHERE 1=1 AND code = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-	sqlStr += t.forUpdate()
-
-	err := t.exec().QueryRow(sqlStr, args...).Scan(
-		&codeNull,
-		&descriptionNull,
-		&g_l_integration_acq_costBool,
-		&g_l_integration_depreciationBool,
-		&g_l_integration_write_downBool,
-		&g_l_integration_appreciationBool,
-		&g_l_integration_custom_1Bool,
-		&g_l_integration_custom_2Bool,
-		&g_l_integration_disposalBool,
-		&g_l_integration_maintenanceBool,
-		&disposal_calculation_methodInt,
-		&use_custom_1_depreciationBool,
-		&allow_depr_below_zeroBool,
-		&use_fa_exch_rate_in_duplicBool,
-		&part_of_duplication_listBool,
-		&last_date_modifiedNull,
-		&allow_indexationBool,
-		&use_same_fa_g_l_posting_datesBool,
-		&default_exchange_rateNull,
-		&use_fa_ledger_checkBool,
-		&use_rounding_in_periodic_deprBool,
-		&new_fiscal_year_starting_dateNull,
-		&no_of_days_in_fiscal_yearVal,
-		&allow_changes_in_depr_fieldsBool,
-		&default_final_rounding_amountNull,
-		&default_ending_book_valueNull,
-		&periodic_depr_date_calcInt,
-		&mark_errors_as_correctionsBool,
-		&add_curr_exch_rate_acq_costBool,
-		&add_curr_exch_rate_deprBool,
-		&add_curr_exch_rate_write_downBool,
-		&add_curr_exch_rate_apprecBool,
-		&add_curr_exch_rate_custom_1Bool,
-		&add_curr_exch_rate_custom_2Bool,
-		&add_curr_exch_rate_dispBool,
-		&add_curr_exch_rate_maintBool,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			// Record not found - this is not an error, just return false
-			return false
-		}
-		// Actual database error
-		fmt.Printf("Error: Failed to get Depreciation_Book: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Code = types.NewCode(codeNull.String)
-	t.Description = types.NewText(descriptionNull.String)
-	t.G_l_integration_acq_cost = g_l_integration_acq_costBool.Bool
-	t.G_l_integration_depreciation = g_l_integration_depreciationBool.Bool
-	t.G_l_integration_write_down = g_l_integration_write_downBool.Bool
-	t.G_l_integration_appreciation = g_l_integration_appreciationBool.Bool
-	t.G_l_integration_custom_1 = g_l_integration_custom_1Bool.Bool
-	t.G_l_integration_custom_2 = g_l_integration_custom_2Bool.Bool
-	t.G_l_integration_disposal = g_l_integration_disposalBool.Bool
-	t.G_l_integration_maintenance = g_l_integration_maintenanceBool.Bool
-	t.Disposal_calculation_method = DepreciationBookDisposal_calculation_method(disposal_calculation_methodInt)
-	t.Use_custom_1_depreciation = use_custom_1_depreciationBool.Bool
-	t.Allow_depr_below_zero = allow_depr_below_zeroBool.Bool
-	t.Use_fa_exch_rate_in_duplic = use_fa_exch_rate_in_duplicBool.Bool
-	t.Part_of_duplication_list = part_of_duplication_listBool.Bool
-	t.Last_date_modified, _ = types.NewDateFromString(last_date_modifiedNull.String)
-	t.Allow_indexation = allow_indexationBool.Bool
-	t.Use_same_fa_g_l_posting_dates = use_same_fa_g_l_posting_datesBool.Bool
-	t.Default_exchange_rate, _ = types.NewDecimalFromString(default_exchange_rateNull.String)
-	t.Use_fa_ledger_check = use_fa_ledger_checkBool.Bool
-	t.Use_rounding_in_periodic_depr = use_rounding_in_periodic_deprBool.Bool
-	t.New_fiscal_year_starting_date, _ = types.NewDateFromString(new_fiscal_year_starting_dateNull.String)
-	t.No_of_days_in_fiscal_year = no_of_days_in_fiscal_yearVal
-	t.Allow_changes_in_depr_fields = allow_changes_in_depr_fieldsBool.Bool
-	t.Default_final_rounding_amount, _ = types.NewDecimalFromString(default_final_rounding_amountNull.String)
-	t.Default_ending_book_value, _ = types.NewDecimalFromString(default_ending_book_valueNull.String)
-	t.Periodic_depr_date_calc = DepreciationBookPeriodic_depr_date_calc(periodic_depr_date_calcInt)
-	t.Mark_errors_as_corrections = mark_errors_as_correctionsBool.Bool
-	t.Add_curr_exch_rate_acq_cost = add_curr_exch_rate_acq_costBool.Bool
-	t.Add_curr_exch_rate_depr = add_curr_exch_rate_deprBool.Bool
-	t.Add_curr_exch_rate_write_down = add_curr_exch_rate_write_downBool.Bool
-	t.Add_curr_exch_rate_apprec = add_curr_exch_rate_apprecBool.Bool
-	t.Add_curr_exch_rate_custom_1 = add_curr_exch_rate_custom_1Bool.Bool
-	t.Add_curr_exch_rate_custom_2 = add_curr_exch_rate_custom_2Bool.Bool
-	t.Add_curr_exch_rate_disp = add_curr_exch_rate_dispBool.Bool
-	t.Add_curr_exch_rate_maint = add_curr_exch_rate_maintBool.Bool
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().Get(args)
 }
 
 // Insert inserts the record into the database
@@ -1643,10 +1488,7 @@ func (t *DepreciationBook) columnName(fieldName string) (string, bool) {
 func (t *DepreciationBook) Reset() {
 	t.q.Reset()
 	t.oldValues = nil
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
+	t.cur.CloseRows()
 }
 
 // buildWhereClause builds WHERE clause from current filters and search
@@ -1688,373 +1530,50 @@ func (t *DepreciationBook) getOrderByClause() (string, []interface{}) {
 // limit rows, skipping the first offset rows. A limit of 0 disables pagination
 // (all matching rows are returned). Negative values are treated as 0.
 func (t *DepreciationBook) SetPage(limit, offset int) {
-	if limit < 0 {
-		limit = 0
-	}
-	if offset < 0 {
-		offset = 0
-	}
-	t.limit = limit
-	t.offset = offset
+	t.cur.SetPage(limit, offset)
 }
 
-// getLimitClause builds the LIMIT/OFFSET clause from the pagination window.
-// Returns an empty string when no limit is set. LIMIT/OFFSET take integer
-// literals (not placeholders), which both SQLite and PostgreSQL accept.
-func (t *DepreciationBook) getLimitClause() string {
-	if t.limit <= 0 {
-		return ""
+// rec is what the read functions of foundation/tables need of the record
+func (t *DepreciationBook) rec() *tables.Rec {
+	_, inTx := t.db.(*sql.Tx)
+	return &tables.Rec{
+		Fields:    depreciationBookFields,
+		Ref:       t.fieldRef,
+		QT:        t.qt(),
+		Q:         &t.q,
+		Cur:       &t.cur,
+		Exec:      t.exec(),
+		Buffered:  t.temp != nil || inTx,
+		Postgres:  t.dbType == database.DBTypePostgres,
+		Table:     fmt.Sprintf("%s$%s", t.company, DepreciationBookTableName),
+		ForUpdate: t.forUpdate(),
+		Store:     t.StoreOldValues,
 	}
-	if t.offset > 0 {
-		return fmt.Sprintf(" LIMIT %d OFFSET %d", t.limit, t.offset)
-	}
-	return fmt.Sprintf(" LIMIT %d", t.limit)
 }
 
 // FindFirst finds the first record matching current filters
 // Returns true if found, false if not found
 func (t *DepreciationBook) FindFirst() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, DepreciationBookTableName)
-	where, args := t.buildWhereClause()
-	// The first record in the current key and direction (classic FIND('-'))
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT code, description, g_l_integration_acq_cost, g_l_integration_depreciation, g_l_integration_write_down, g_l_integration_appreciation, g_l_integration_custom_1, g_l_integration_custom_2, g_l_integration_disposal, g_l_integration_maintenance, disposal_calculation_method, use_custom_1_depreciation, allow_depr_below_zero, use_fa_exch_rate_in_duplic, part_of_duplication_list, last_date_modified, allow_indexation, use_same_fa_g_l_posting_dates, default_exchange_rate, use_fa_ledger_check, use_rounding_in_periodic_depr, new_fiscal_year_starting_date, no_of_days_in_fiscal_year, allow_changes_in_depr_fields, default_final_rounding_amount, default_ending_book_value, periodic_depr_date_calc, mark_errors_as_corrections, add_curr_exch_rate_acq_cost, add_curr_exch_rate_depr, add_curr_exch_rate_write_down, add_curr_exch_rate_apprec, add_curr_exch_rate_custom_1, add_curr_exch_rate_custom_2, add_curr_exch_rate_disp, add_curr_exch_rate_maint FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var codeNull sql.NullString
-	var descriptionNull sql.NullString
-	var g_l_integration_acq_costBool sql.NullBool
-	var g_l_integration_depreciationBool sql.NullBool
-	var g_l_integration_write_downBool sql.NullBool
-	var g_l_integration_appreciationBool sql.NullBool
-	var g_l_integration_custom_1Bool sql.NullBool
-	var g_l_integration_custom_2Bool sql.NullBool
-	var g_l_integration_disposalBool sql.NullBool
-	var g_l_integration_maintenanceBool sql.NullBool
-	var disposal_calculation_methodInt int
-	var use_custom_1_depreciationBool sql.NullBool
-	var allow_depr_below_zeroBool sql.NullBool
-	var use_fa_exch_rate_in_duplicBool sql.NullBool
-	var part_of_duplication_listBool sql.NullBool
-	var last_date_modifiedNull sql.NullString
-	var allow_indexationBool sql.NullBool
-	var use_same_fa_g_l_posting_datesBool sql.NullBool
-	var default_exchange_rateNull sql.NullString
-	var use_fa_ledger_checkBool sql.NullBool
-	var use_rounding_in_periodic_deprBool sql.NullBool
-	var new_fiscal_year_starting_dateNull sql.NullString
-	var allow_changes_in_depr_fieldsBool sql.NullBool
-	var default_final_rounding_amountNull sql.NullString
-	var default_ending_book_valueNull sql.NullString
-	var periodic_depr_date_calcInt int
-	var mark_errors_as_correctionsBool sql.NullBool
-	var add_curr_exch_rate_acq_costBool sql.NullBool
-	var add_curr_exch_rate_deprBool sql.NullBool
-	var add_curr_exch_rate_write_downBool sql.NullBool
-	var add_curr_exch_rate_apprecBool sql.NullBool
-	var add_curr_exch_rate_custom_1Bool sql.NullBool
-	var add_curr_exch_rate_custom_2Bool sql.NullBool
-	var add_curr_exch_rate_dispBool sql.NullBool
-	var add_curr_exch_rate_maintBool sql.NullBool
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&codeNull,
-		&descriptionNull,
-		&g_l_integration_acq_costBool,
-		&g_l_integration_depreciationBool,
-		&g_l_integration_write_downBool,
-		&g_l_integration_appreciationBool,
-		&g_l_integration_custom_1Bool,
-		&g_l_integration_custom_2Bool,
-		&g_l_integration_disposalBool,
-		&g_l_integration_maintenanceBool,
-		&disposal_calculation_methodInt,
-		&use_custom_1_depreciationBool,
-		&allow_depr_below_zeroBool,
-		&use_fa_exch_rate_in_duplicBool,
-		&part_of_duplication_listBool,
-		&last_date_modifiedNull,
-		&allow_indexationBool,
-		&use_same_fa_g_l_posting_datesBool,
-		&default_exchange_rateNull,
-		&use_fa_ledger_checkBool,
-		&use_rounding_in_periodic_deprBool,
-		&new_fiscal_year_starting_dateNull,
-		&t.No_of_days_in_fiscal_year,
-		&allow_changes_in_depr_fieldsBool,
-		&default_final_rounding_amountNull,
-		&default_ending_book_valueNull,
-		&periodic_depr_date_calcInt,
-		&mark_errors_as_correctionsBool,
-		&add_curr_exch_rate_acq_costBool,
-		&add_curr_exch_rate_deprBool,
-		&add_curr_exch_rate_write_downBool,
-		&add_curr_exch_rate_apprecBool,
-		&add_curr_exch_rate_custom_1Bool,
-		&add_curr_exch_rate_custom_2Bool,
-		&add_curr_exch_rate_dispBool,
-		&add_curr_exch_rate_maintBool,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find first Depreciation_Book: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Code = types.NewCode(codeNull.String)
-	t.Description = types.NewText(descriptionNull.String)
-	t.G_l_integration_acq_cost = g_l_integration_acq_costBool.Bool
-	t.G_l_integration_depreciation = g_l_integration_depreciationBool.Bool
-	t.G_l_integration_write_down = g_l_integration_write_downBool.Bool
-	t.G_l_integration_appreciation = g_l_integration_appreciationBool.Bool
-	t.G_l_integration_custom_1 = g_l_integration_custom_1Bool.Bool
-	t.G_l_integration_custom_2 = g_l_integration_custom_2Bool.Bool
-	t.G_l_integration_disposal = g_l_integration_disposalBool.Bool
-	t.G_l_integration_maintenance = g_l_integration_maintenanceBool.Bool
-	t.Disposal_calculation_method = DepreciationBookDisposal_calculation_method(disposal_calculation_methodInt)
-	t.Use_custom_1_depreciation = use_custom_1_depreciationBool.Bool
-	t.Allow_depr_below_zero = allow_depr_below_zeroBool.Bool
-	t.Use_fa_exch_rate_in_duplic = use_fa_exch_rate_in_duplicBool.Bool
-	t.Part_of_duplication_list = part_of_duplication_listBool.Bool
-	t.Last_date_modified, _ = types.NewDateFromString(last_date_modifiedNull.String)
-	t.Allow_indexation = allow_indexationBool.Bool
-	t.Use_same_fa_g_l_posting_dates = use_same_fa_g_l_posting_datesBool.Bool
-	t.Default_exchange_rate, _ = types.NewDecimalFromString(default_exchange_rateNull.String)
-	t.Use_fa_ledger_check = use_fa_ledger_checkBool.Bool
-	t.Use_rounding_in_periodic_depr = use_rounding_in_periodic_deprBool.Bool
-	t.New_fiscal_year_starting_date, _ = types.NewDateFromString(new_fiscal_year_starting_dateNull.String)
-	t.Allow_changes_in_depr_fields = allow_changes_in_depr_fieldsBool.Bool
-	t.Default_final_rounding_amount, _ = types.NewDecimalFromString(default_final_rounding_amountNull.String)
-	t.Default_ending_book_value, _ = types.NewDecimalFromString(default_ending_book_valueNull.String)
-	t.Periodic_depr_date_calc = DepreciationBookPeriodic_depr_date_calc(periodic_depr_date_calcInt)
-	t.Mark_errors_as_corrections = mark_errors_as_correctionsBool.Bool
-	t.Add_curr_exch_rate_acq_cost = add_curr_exch_rate_acq_costBool.Bool
-	t.Add_curr_exch_rate_depr = add_curr_exch_rate_deprBool.Bool
-	t.Add_curr_exch_rate_write_down = add_curr_exch_rate_write_downBool.Bool
-	t.Add_curr_exch_rate_apprec = add_curr_exch_rate_apprecBool.Bool
-	t.Add_curr_exch_rate_custom_1 = add_curr_exch_rate_custom_1Bool.Bool
-	t.Add_curr_exch_rate_custom_2 = add_curr_exch_rate_custom_2Bool.Bool
-	t.Add_curr_exch_rate_disp = add_curr_exch_rate_dispBool.Bool
-	t.Add_curr_exch_rate_maint = add_curr_exch_rate_maintBool.Bool
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindFirst()
 }
 
 // FindLast finds the last record matching current filters
 // Returns true if found, false if not found
 func (t *DepreciationBook) FindLast() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, DepreciationBookTableName)
-	where, args := t.buildWhereClause()
-	// The last record in the current key and direction (classic FIND('+')): the key reversed,
-	// every column of it
-	t.q.Descending = !t.q.Descending
-	orderBy, orderArgs := t.getOrderByClause()
-	t.q.Descending = !t.q.Descending
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT code, description, g_l_integration_acq_cost, g_l_integration_depreciation, g_l_integration_write_down, g_l_integration_appreciation, g_l_integration_custom_1, g_l_integration_custom_2, g_l_integration_disposal, g_l_integration_maintenance, disposal_calculation_method, use_custom_1_depreciation, allow_depr_below_zero, use_fa_exch_rate_in_duplic, part_of_duplication_list, last_date_modified, allow_indexation, use_same_fa_g_l_posting_dates, default_exchange_rate, use_fa_ledger_check, use_rounding_in_periodic_depr, new_fiscal_year_starting_date, no_of_days_in_fiscal_year, allow_changes_in_depr_fields, default_final_rounding_amount, default_ending_book_value, periodic_depr_date_calc, mark_errors_as_corrections, add_curr_exch_rate_acq_cost, add_curr_exch_rate_depr, add_curr_exch_rate_write_down, add_curr_exch_rate_apprec, add_curr_exch_rate_custom_1, add_curr_exch_rate_custom_2, add_curr_exch_rate_disp, add_curr_exch_rate_maint FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var codeNull sql.NullString
-	var descriptionNull sql.NullString
-	var g_l_integration_acq_costBool sql.NullBool
-	var g_l_integration_depreciationBool sql.NullBool
-	var g_l_integration_write_downBool sql.NullBool
-	var g_l_integration_appreciationBool sql.NullBool
-	var g_l_integration_custom_1Bool sql.NullBool
-	var g_l_integration_custom_2Bool sql.NullBool
-	var g_l_integration_disposalBool sql.NullBool
-	var g_l_integration_maintenanceBool sql.NullBool
-	var disposal_calculation_methodInt int
-	var use_custom_1_depreciationBool sql.NullBool
-	var allow_depr_below_zeroBool sql.NullBool
-	var use_fa_exch_rate_in_duplicBool sql.NullBool
-	var part_of_duplication_listBool sql.NullBool
-	var last_date_modifiedNull sql.NullString
-	var allow_indexationBool sql.NullBool
-	var use_same_fa_g_l_posting_datesBool sql.NullBool
-	var default_exchange_rateNull sql.NullString
-	var use_fa_ledger_checkBool sql.NullBool
-	var use_rounding_in_periodic_deprBool sql.NullBool
-	var new_fiscal_year_starting_dateNull sql.NullString
-	var allow_changes_in_depr_fieldsBool sql.NullBool
-	var default_final_rounding_amountNull sql.NullString
-	var default_ending_book_valueNull sql.NullString
-	var periodic_depr_date_calcInt int
-	var mark_errors_as_correctionsBool sql.NullBool
-	var add_curr_exch_rate_acq_costBool sql.NullBool
-	var add_curr_exch_rate_deprBool sql.NullBool
-	var add_curr_exch_rate_write_downBool sql.NullBool
-	var add_curr_exch_rate_apprecBool sql.NullBool
-	var add_curr_exch_rate_custom_1Bool sql.NullBool
-	var add_curr_exch_rate_custom_2Bool sql.NullBool
-	var add_curr_exch_rate_dispBool sql.NullBool
-	var add_curr_exch_rate_maintBool sql.NullBool
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&codeNull,
-		&descriptionNull,
-		&g_l_integration_acq_costBool,
-		&g_l_integration_depreciationBool,
-		&g_l_integration_write_downBool,
-		&g_l_integration_appreciationBool,
-		&g_l_integration_custom_1Bool,
-		&g_l_integration_custom_2Bool,
-		&g_l_integration_disposalBool,
-		&g_l_integration_maintenanceBool,
-		&disposal_calculation_methodInt,
-		&use_custom_1_depreciationBool,
-		&allow_depr_below_zeroBool,
-		&use_fa_exch_rate_in_duplicBool,
-		&part_of_duplication_listBool,
-		&last_date_modifiedNull,
-		&allow_indexationBool,
-		&use_same_fa_g_l_posting_datesBool,
-		&default_exchange_rateNull,
-		&use_fa_ledger_checkBool,
-		&use_rounding_in_periodic_deprBool,
-		&new_fiscal_year_starting_dateNull,
-		&t.No_of_days_in_fiscal_year,
-		&allow_changes_in_depr_fieldsBool,
-		&default_final_rounding_amountNull,
-		&default_ending_book_valueNull,
-		&periodic_depr_date_calcInt,
-		&mark_errors_as_correctionsBool,
-		&add_curr_exch_rate_acq_costBool,
-		&add_curr_exch_rate_deprBool,
-		&add_curr_exch_rate_write_downBool,
-		&add_curr_exch_rate_apprecBool,
-		&add_curr_exch_rate_custom_1Bool,
-		&add_curr_exch_rate_custom_2Bool,
-		&add_curr_exch_rate_dispBool,
-		&add_curr_exch_rate_maintBool,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find last Depreciation_Book: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Code = types.NewCode(codeNull.String)
-	t.Description = types.NewText(descriptionNull.String)
-	t.G_l_integration_acq_cost = g_l_integration_acq_costBool.Bool
-	t.G_l_integration_depreciation = g_l_integration_depreciationBool.Bool
-	t.G_l_integration_write_down = g_l_integration_write_downBool.Bool
-	t.G_l_integration_appreciation = g_l_integration_appreciationBool.Bool
-	t.G_l_integration_custom_1 = g_l_integration_custom_1Bool.Bool
-	t.G_l_integration_custom_2 = g_l_integration_custom_2Bool.Bool
-	t.G_l_integration_disposal = g_l_integration_disposalBool.Bool
-	t.G_l_integration_maintenance = g_l_integration_maintenanceBool.Bool
-	t.Disposal_calculation_method = DepreciationBookDisposal_calculation_method(disposal_calculation_methodInt)
-	t.Use_custom_1_depreciation = use_custom_1_depreciationBool.Bool
-	t.Allow_depr_below_zero = allow_depr_below_zeroBool.Bool
-	t.Use_fa_exch_rate_in_duplic = use_fa_exch_rate_in_duplicBool.Bool
-	t.Part_of_duplication_list = part_of_duplication_listBool.Bool
-	t.Last_date_modified, _ = types.NewDateFromString(last_date_modifiedNull.String)
-	t.Allow_indexation = allow_indexationBool.Bool
-	t.Use_same_fa_g_l_posting_dates = use_same_fa_g_l_posting_datesBool.Bool
-	t.Default_exchange_rate, _ = types.NewDecimalFromString(default_exchange_rateNull.String)
-	t.Use_fa_ledger_check = use_fa_ledger_checkBool.Bool
-	t.Use_rounding_in_periodic_depr = use_rounding_in_periodic_deprBool.Bool
-	t.New_fiscal_year_starting_date, _ = types.NewDateFromString(new_fiscal_year_starting_dateNull.String)
-	t.Allow_changes_in_depr_fields = allow_changes_in_depr_fieldsBool.Bool
-	t.Default_final_rounding_amount, _ = types.NewDecimalFromString(default_final_rounding_amountNull.String)
-	t.Default_ending_book_value, _ = types.NewDecimalFromString(default_ending_book_valueNull.String)
-	t.Periodic_depr_date_calc = DepreciationBookPeriodic_depr_date_calc(periodic_depr_date_calcInt)
-	t.Mark_errors_as_corrections = mark_errors_as_correctionsBool.Bool
-	t.Add_curr_exch_rate_acq_cost = add_curr_exch_rate_acq_costBool.Bool
-	t.Add_curr_exch_rate_depr = add_curr_exch_rate_deprBool.Bool
-	t.Add_curr_exch_rate_write_down = add_curr_exch_rate_write_downBool.Bool
-	t.Add_curr_exch_rate_apprec = add_curr_exch_rate_apprecBool.Bool
-	t.Add_curr_exch_rate_custom_1 = add_curr_exch_rate_custom_1Bool.Bool
-	t.Add_curr_exch_rate_custom_2 = add_curr_exch_rate_custom_2Bool.Bool
-	t.Add_curr_exch_rate_disp = add_curr_exch_rate_dispBool.Bool
-	t.Add_curr_exch_rate_maint = add_curr_exch_rate_maintBool.Bool
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindLast()
 }
 
 // Count returns the number of records matching current filters
 func (t *DepreciationBook) Count() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, DepreciationBookTableName)
-	where, args := t.buildWhereClause()
-
-	query := fmt.Sprintf(`SELECT COUNT(*) FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var count int
-	err := t.exec().QueryRow(query, args...).Scan(&count)
-	if err != nil {
-		fmt.Printf("Error: Failed to count Depreciation_Book: %v\n", err)
-		return 0
-	}
-
-	return count
+	return t.rec().Count()
 }
 
 // FindSet opens a result set matching current filters
 // Call Next() to iterate through the results
-// Returns true if at least one record found, false otherwise
+// Returns true if at least one record found, false otherwise. A temporary record, and a
+// record in a transaction, reads all at once (FindSetBuffered).
 func (t *DepreciationBook) FindSet() bool {
-	// A temporary record, and a record in a transaction, reads all at once: its in-memory
-	// database or the transaction has one connection, which an open result set would block for
-	// the statements of the loop (Modify while looping; on PostgreSQL a query while the rows are
-	// read breaks the connection — "unexpected Parse response")
-	if _, inTx := t.db.(*sql.Tx); t.temp != nil || inTx {
-		return t.FindSetBuffered()
-	}
-	// Close any existing result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	tableName := fmt.Sprintf("%s$%s", t.company, DepreciationBookTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT code, description, g_l_integration_acq_cost, g_l_integration_depreciation, g_l_integration_write_down, g_l_integration_appreciation, g_l_integration_custom_1, g_l_integration_custom_2, g_l_integration_disposal, g_l_integration_maintenance, disposal_calculation_method, use_custom_1_depreciation, allow_depr_below_zero, use_fa_exch_rate_in_duplic, part_of_duplication_list, last_date_modified, allow_indexation, use_same_fa_g_l_posting_dates, default_exchange_rate, use_fa_ledger_check, use_rounding_in_periodic_depr, new_fiscal_year_starting_date, no_of_days_in_fiscal_year, allow_changes_in_depr_fields, default_final_rounding_amount, default_ending_book_value, periodic_depr_date_calc, mark_errors_as_corrections, add_curr_exch_rate_acq_cost, add_curr_exch_rate_depr, add_curr_exch_rate_write_down, add_curr_exch_rate_apprec, add_curr_exch_rate_custom_1, add_curr_exch_rate_custom_2, add_curr_exch_rate_disp, add_curr_exch_rate_maint FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSet for Depreciation_Book: %v\n", err)
-		return false
-	}
-
-	t.currentRows = rows
-
-	// Load first record
-	return t.Next()
+	return t.rec().FindSet()
 }
 
 // Next advances to the next record: in the result set after FindSet() or FindSetBuffered(),
@@ -2067,417 +1586,14 @@ func (t *DepreciationBook) FindSet() bool {
 //
 // Returns true if a record was loaded, false if no more records or out of bounds
 func (t *DepreciationBook) Next(steps ...int) bool {
-	// Default to 1 step forward
-	step := 1
-	if len(steps) > 0 {
-		step = steps[0]
-	}
-
-	// BUFFERED MODE: Bidirectional navigation with in-memory records
-	if t.bufferedRecords != nil {
-		// Calculate new position
-		newPos := t.currentBufferPos + step
-
-		// Check bounds
-		if newPos < 0 || newPos >= len(t.bufferedRecords) {
-			return false // Out of bounds
-		}
-
-		// Move to new position
-		t.currentBufferPos = newPos
-		t.copyFromBuffered(t.bufferedRecords[t.currentBufferPos])
-		return true
-	}
-
-	// FORWARD-ONLY MODE: Streaming with sql.Rows (only positive steps allowed)
-	if t.currentRows != nil {
-		// Validate: only forward movement allowed
-		if step < 1 {
-			fmt.Printf("Error: Backward navigation (Next(%d)) requires FindSetBuffered()\n", step)
-			return false
-		}
-
-		// Advance 'step' times (1 = next record, 2 = skip 1 record, etc.)
-		for i := 0; i < step; i++ {
-			if !t.currentRows.Next() {
-				// No more rows - close result set
-				t.currentRows.Close()
-				t.currentRows = nil
-				return false
-			}
-		}
-
-		// Scan the row
-		var codeNull sql.NullString
-		var descriptionNull sql.NullString
-		var g_l_integration_acq_costBool sql.NullBool
-		var g_l_integration_depreciationBool sql.NullBool
-		var g_l_integration_write_downBool sql.NullBool
-		var g_l_integration_appreciationBool sql.NullBool
-		var g_l_integration_custom_1Bool sql.NullBool
-		var g_l_integration_custom_2Bool sql.NullBool
-		var g_l_integration_disposalBool sql.NullBool
-		var g_l_integration_maintenanceBool sql.NullBool
-		var disposal_calculation_methodInt int
-		var use_custom_1_depreciationBool sql.NullBool
-		var allow_depr_below_zeroBool sql.NullBool
-		var use_fa_exch_rate_in_duplicBool sql.NullBool
-		var part_of_duplication_listBool sql.NullBool
-		var last_date_modifiedNull sql.NullString
-		var allow_indexationBool sql.NullBool
-		var use_same_fa_g_l_posting_datesBool sql.NullBool
-		var default_exchange_rateNull sql.NullString
-		var use_fa_ledger_checkBool sql.NullBool
-		var use_rounding_in_periodic_deprBool sql.NullBool
-		var new_fiscal_year_starting_dateNull sql.NullString
-		var allow_changes_in_depr_fieldsBool sql.NullBool
-		var default_final_rounding_amountNull sql.NullString
-		var default_ending_book_valueNull sql.NullString
-		var periodic_depr_date_calcInt int
-		var mark_errors_as_correctionsBool sql.NullBool
-		var add_curr_exch_rate_acq_costBool sql.NullBool
-		var add_curr_exch_rate_deprBool sql.NullBool
-		var add_curr_exch_rate_write_downBool sql.NullBool
-		var add_curr_exch_rate_apprecBool sql.NullBool
-		var add_curr_exch_rate_custom_1Bool sql.NullBool
-		var add_curr_exch_rate_custom_2Bool sql.NullBool
-		var add_curr_exch_rate_dispBool sql.NullBool
-		var add_curr_exch_rate_maintBool sql.NullBool
-
-		err := t.currentRows.Scan(
-			&codeNull,
-			&descriptionNull,
-			&g_l_integration_acq_costBool,
-			&g_l_integration_depreciationBool,
-			&g_l_integration_write_downBool,
-			&g_l_integration_appreciationBool,
-			&g_l_integration_custom_1Bool,
-			&g_l_integration_custom_2Bool,
-			&g_l_integration_disposalBool,
-			&g_l_integration_maintenanceBool,
-			&disposal_calculation_methodInt,
-			&use_custom_1_depreciationBool,
-			&allow_depr_below_zeroBool,
-			&use_fa_exch_rate_in_duplicBool,
-			&part_of_duplication_listBool,
-			&last_date_modifiedNull,
-			&allow_indexationBool,
-			&use_same_fa_g_l_posting_datesBool,
-			&default_exchange_rateNull,
-			&use_fa_ledger_checkBool,
-			&use_rounding_in_periodic_deprBool,
-			&new_fiscal_year_starting_dateNull,
-			&t.No_of_days_in_fiscal_year,
-			&allow_changes_in_depr_fieldsBool,
-			&default_final_rounding_amountNull,
-			&default_ending_book_valueNull,
-			&periodic_depr_date_calcInt,
-			&mark_errors_as_correctionsBool,
-			&add_curr_exch_rate_acq_costBool,
-			&add_curr_exch_rate_deprBool,
-			&add_curr_exch_rate_write_downBool,
-			&add_curr_exch_rate_apprecBool,
-			&add_curr_exch_rate_custom_1Bool,
-			&add_curr_exch_rate_custom_2Bool,
-			&add_curr_exch_rate_dispBool,
-			&add_curr_exch_rate_maintBool,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan Depreciation_Book record: %v\n", err)
-			t.currentRows.Close()
-			t.currentRows = nil
-			return false
-		}
-
-		// Populate fields
-		t.Code = types.NewCode(codeNull.String)
-		t.Description = types.NewText(descriptionNull.String)
-		t.G_l_integration_acq_cost = g_l_integration_acq_costBool.Bool
-		t.G_l_integration_depreciation = g_l_integration_depreciationBool.Bool
-		t.G_l_integration_write_down = g_l_integration_write_downBool.Bool
-		t.G_l_integration_appreciation = g_l_integration_appreciationBool.Bool
-		t.G_l_integration_custom_1 = g_l_integration_custom_1Bool.Bool
-		t.G_l_integration_custom_2 = g_l_integration_custom_2Bool.Bool
-		t.G_l_integration_disposal = g_l_integration_disposalBool.Bool
-		t.G_l_integration_maintenance = g_l_integration_maintenanceBool.Bool
-		t.Disposal_calculation_method = DepreciationBookDisposal_calculation_method(disposal_calculation_methodInt)
-		t.Use_custom_1_depreciation = use_custom_1_depreciationBool.Bool
-		t.Allow_depr_below_zero = allow_depr_below_zeroBool.Bool
-		t.Use_fa_exch_rate_in_duplic = use_fa_exch_rate_in_duplicBool.Bool
-		t.Part_of_duplication_list = part_of_duplication_listBool.Bool
-		t.Last_date_modified, _ = types.NewDateFromString(last_date_modifiedNull.String)
-		t.Allow_indexation = allow_indexationBool.Bool
-		t.Use_same_fa_g_l_posting_dates = use_same_fa_g_l_posting_datesBool.Bool
-		t.Default_exchange_rate, _ = types.NewDecimalFromString(default_exchange_rateNull.String)
-		t.Use_fa_ledger_check = use_fa_ledger_checkBool.Bool
-		t.Use_rounding_in_periodic_depr = use_rounding_in_periodic_deprBool.Bool
-		t.New_fiscal_year_starting_date, _ = types.NewDateFromString(new_fiscal_year_starting_dateNull.String)
-		t.Allow_changes_in_depr_fields = allow_changes_in_depr_fieldsBool.Bool
-		t.Default_final_rounding_amount, _ = types.NewDecimalFromString(default_final_rounding_amountNull.String)
-		t.Default_ending_book_value, _ = types.NewDecimalFromString(default_ending_book_valueNull.String)
-		t.Periodic_depr_date_calc = DepreciationBookPeriodic_depr_date_calc(periodic_depr_date_calcInt)
-		t.Mark_errors_as_corrections = mark_errors_as_correctionsBool.Bool
-		t.Add_curr_exch_rate_acq_cost = add_curr_exch_rate_acq_costBool.Bool
-		t.Add_curr_exch_rate_depr = add_curr_exch_rate_deprBool.Bool
-		t.Add_curr_exch_rate_write_down = add_curr_exch_rate_write_downBool.Bool
-		t.Add_curr_exch_rate_apprec = add_curr_exch_rate_apprecBool.Bool
-		t.Add_curr_exch_rate_custom_1 = add_curr_exch_rate_custom_1Bool.Bool
-		t.Add_curr_exch_rate_custom_2 = add_curr_exch_rate_custom_2Bool.Bool
-		t.Add_curr_exch_rate_disp = add_curr_exch_rate_dispBool.Bool
-		t.Add_curr_exch_rate_maint = add_curr_exch_rate_maintBool.Bool
-
-		// Store old values for field tracking
-		t.StoreOldValues()
-
-		return true
-	}
-
-	// No record set (after Get, Find, FindFirst, FindLast): the next record in the current key
-	// and direction within the filters, one step at a time (classic NEXT after FIND); a step
-	// that finds none leaves the record on the last one reached
-	if step == 0 {
-		return false
-	}
-	for i := 0; i != step; {
-		if step > 0 {
-			if !t.findInKey(">", false) {
-				return false
-			}
-			i++
-		} else {
-			if !t.findInKey("<", true) {
-				return false
-			}
-			i--
-		}
-	}
-	return true
+	return t.rec().Next(steps, t.findInKey)
 }
 
 // FindSetBuffered loads all filtered records into memory for bidirectional navigation
 // Use this when you need to move backward/forward with Next(steps)
-// Filters (SetRange/SetFilter) are applied in SQL before buffering to minimize memory usage
 // Returns true if at least one record found, false otherwise
 func (t *DepreciationBook) FindSetBuffered() bool {
-	// Close any existing forward-only result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-
-	// Clear any existing buffer
-	t.bufferedRecords = nil
-	t.currentBufferPos = -1
-	tableName := fmt.Sprintf("%s$%s", t.company, DepreciationBookTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT code, description, g_l_integration_acq_cost, g_l_integration_depreciation, g_l_integration_write_down, g_l_integration_appreciation, g_l_integration_custom_1, g_l_integration_custom_2, g_l_integration_disposal, g_l_integration_maintenance, disposal_calculation_method, use_custom_1_depreciation, allow_depr_below_zero, use_fa_exch_rate_in_duplic, part_of_duplication_list, last_date_modified, allow_indexation, use_same_fa_g_l_posting_dates, default_exchange_rate, use_fa_ledger_check, use_rounding_in_periodic_depr, new_fiscal_year_starting_date, no_of_days_in_fiscal_year, allow_changes_in_depr_fields, default_final_rounding_amount, default_ending_book_value, periodic_depr_date_calc, mark_errors_as_corrections, add_curr_exch_rate_acq_cost, add_curr_exch_rate_depr, add_curr_exch_rate_write_down, add_curr_exch_rate_apprec, add_curr_exch_rate_custom_1, add_curr_exch_rate_custom_2, add_curr_exch_rate_disp, add_curr_exch_rate_maint FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSetBuffered for Depreciation_Book: %v\n", err)
-		return false
-	}
-	defer rows.Close()
-
-	// Load all records into memory
-	for rows.Next() {
-		// Create a new record instance
-		record := &DepreciationBook{}
-		record.db = t.db
-		record.temp = t.temp
-		record.company = t.company
-		record.dbType = t.dbType
-
-		// Scan the row
-		var codeNull sql.NullString
-		var descriptionNull sql.NullString
-		var g_l_integration_acq_costBool sql.NullBool
-		var g_l_integration_depreciationBool sql.NullBool
-		var g_l_integration_write_downBool sql.NullBool
-		var g_l_integration_appreciationBool sql.NullBool
-		var g_l_integration_custom_1Bool sql.NullBool
-		var g_l_integration_custom_2Bool sql.NullBool
-		var g_l_integration_disposalBool sql.NullBool
-		var g_l_integration_maintenanceBool sql.NullBool
-		var disposal_calculation_methodInt int
-		var use_custom_1_depreciationBool sql.NullBool
-		var allow_depr_below_zeroBool sql.NullBool
-		var use_fa_exch_rate_in_duplicBool sql.NullBool
-		var part_of_duplication_listBool sql.NullBool
-		var last_date_modifiedNull sql.NullString
-		var allow_indexationBool sql.NullBool
-		var use_same_fa_g_l_posting_datesBool sql.NullBool
-		var default_exchange_rateNull sql.NullString
-		var use_fa_ledger_checkBool sql.NullBool
-		var use_rounding_in_periodic_deprBool sql.NullBool
-		var new_fiscal_year_starting_dateNull sql.NullString
-		var allow_changes_in_depr_fieldsBool sql.NullBool
-		var default_final_rounding_amountNull sql.NullString
-		var default_ending_book_valueNull sql.NullString
-		var periodic_depr_date_calcInt int
-		var mark_errors_as_correctionsBool sql.NullBool
-		var add_curr_exch_rate_acq_costBool sql.NullBool
-		var add_curr_exch_rate_deprBool sql.NullBool
-		var add_curr_exch_rate_write_downBool sql.NullBool
-		var add_curr_exch_rate_apprecBool sql.NullBool
-		var add_curr_exch_rate_custom_1Bool sql.NullBool
-		var add_curr_exch_rate_custom_2Bool sql.NullBool
-		var add_curr_exch_rate_dispBool sql.NullBool
-		var add_curr_exch_rate_maintBool sql.NullBool
-
-		err := rows.Scan(
-			&codeNull,
-			&descriptionNull,
-			&g_l_integration_acq_costBool,
-			&g_l_integration_depreciationBool,
-			&g_l_integration_write_downBool,
-			&g_l_integration_appreciationBool,
-			&g_l_integration_custom_1Bool,
-			&g_l_integration_custom_2Bool,
-			&g_l_integration_disposalBool,
-			&g_l_integration_maintenanceBool,
-			&disposal_calculation_methodInt,
-			&use_custom_1_depreciationBool,
-			&allow_depr_below_zeroBool,
-			&use_fa_exch_rate_in_duplicBool,
-			&part_of_duplication_listBool,
-			&last_date_modifiedNull,
-			&allow_indexationBool,
-			&use_same_fa_g_l_posting_datesBool,
-			&default_exchange_rateNull,
-			&use_fa_ledger_checkBool,
-			&use_rounding_in_periodic_deprBool,
-			&new_fiscal_year_starting_dateNull,
-			&record.No_of_days_in_fiscal_year,
-			&allow_changes_in_depr_fieldsBool,
-			&default_final_rounding_amountNull,
-			&default_ending_book_valueNull,
-			&periodic_depr_date_calcInt,
-			&mark_errors_as_correctionsBool,
-			&add_curr_exch_rate_acq_costBool,
-			&add_curr_exch_rate_deprBool,
-			&add_curr_exch_rate_write_downBool,
-			&add_curr_exch_rate_apprecBool,
-			&add_curr_exch_rate_custom_1Bool,
-			&add_curr_exch_rate_custom_2Bool,
-			&add_curr_exch_rate_dispBool,
-			&add_curr_exch_rate_maintBool,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan Depreciation_Book record: %v\n", err)
-			return false
-		}
-
-		// Populate special type fields
-		record.Code = types.NewCode(codeNull.String)
-		record.Description = types.NewText(descriptionNull.String)
-		record.G_l_integration_acq_cost = g_l_integration_acq_costBool.Bool
-		record.G_l_integration_depreciation = g_l_integration_depreciationBool.Bool
-		record.G_l_integration_write_down = g_l_integration_write_downBool.Bool
-		record.G_l_integration_appreciation = g_l_integration_appreciationBool.Bool
-		record.G_l_integration_custom_1 = g_l_integration_custom_1Bool.Bool
-		record.G_l_integration_custom_2 = g_l_integration_custom_2Bool.Bool
-		record.G_l_integration_disposal = g_l_integration_disposalBool.Bool
-		record.G_l_integration_maintenance = g_l_integration_maintenanceBool.Bool
-		record.Disposal_calculation_method = DepreciationBookDisposal_calculation_method(disposal_calculation_methodInt)
-		record.Use_custom_1_depreciation = use_custom_1_depreciationBool.Bool
-		record.Allow_depr_below_zero = allow_depr_below_zeroBool.Bool
-		record.Use_fa_exch_rate_in_duplic = use_fa_exch_rate_in_duplicBool.Bool
-		record.Part_of_duplication_list = part_of_duplication_listBool.Bool
-		record.Last_date_modified, _ = types.NewDateFromString(last_date_modifiedNull.String)
-		record.Allow_indexation = allow_indexationBool.Bool
-		record.Use_same_fa_g_l_posting_dates = use_same_fa_g_l_posting_datesBool.Bool
-		record.Default_exchange_rate, _ = types.NewDecimalFromString(default_exchange_rateNull.String)
-		record.Use_fa_ledger_check = use_fa_ledger_checkBool.Bool
-		record.Use_rounding_in_periodic_depr = use_rounding_in_periodic_deprBool.Bool
-		record.New_fiscal_year_starting_date, _ = types.NewDateFromString(new_fiscal_year_starting_dateNull.String)
-		record.Allow_changes_in_depr_fields = allow_changes_in_depr_fieldsBool.Bool
-		record.Default_final_rounding_amount, _ = types.NewDecimalFromString(default_final_rounding_amountNull.String)
-		record.Default_ending_book_value, _ = types.NewDecimalFromString(default_ending_book_valueNull.String)
-		record.Periodic_depr_date_calc = DepreciationBookPeriodic_depr_date_calc(periodic_depr_date_calcInt)
-		record.Mark_errors_as_corrections = mark_errors_as_correctionsBool.Bool
-		record.Add_curr_exch_rate_acq_cost = add_curr_exch_rate_acq_costBool.Bool
-		record.Add_curr_exch_rate_depr = add_curr_exch_rate_deprBool.Bool
-		record.Add_curr_exch_rate_write_down = add_curr_exch_rate_write_downBool.Bool
-		record.Add_curr_exch_rate_apprec = add_curr_exch_rate_apprecBool.Bool
-		record.Add_curr_exch_rate_custom_1 = add_curr_exch_rate_custom_1Bool.Bool
-		record.Add_curr_exch_rate_custom_2 = add_curr_exch_rate_custom_2Bool.Bool
-		record.Add_curr_exch_rate_disp = add_curr_exch_rate_dispBool.Bool
-		record.Add_curr_exch_rate_maint = add_curr_exch_rate_maintBool.Bool
-
-		// Store old values
-		record.StoreOldValues()
-
-		// Add to buffer
-		t.bufferedRecords = append(t.bufferedRecords, record)
-	}
-
-	// Check for errors during iteration
-	if err := rows.Err(); err != nil {
-		fmt.Printf("Error: Failed to iterate Depreciation_Book records: %v\n", err)
-		return false
-	}
-
-	// If no records found, return false
-	if len(t.bufferedRecords) == 0 {
-		return false
-	}
-
-	// Load first record into current instance
-	t.currentBufferPos = 0
-	t.copyFromBuffered(t.bufferedRecords[0])
-
-	return true
-}
-
-// copyFromBuffered copies field values from a buffered record to the current instance
-func (t *DepreciationBook) copyFromBuffered(record *DepreciationBook) {
-	t.Code = record.Code
-	t.Description = record.Description
-	t.G_l_integration_acq_cost = record.G_l_integration_acq_cost
-	t.G_l_integration_depreciation = record.G_l_integration_depreciation
-	t.G_l_integration_write_down = record.G_l_integration_write_down
-	t.G_l_integration_appreciation = record.G_l_integration_appreciation
-	t.G_l_integration_custom_1 = record.G_l_integration_custom_1
-	t.G_l_integration_custom_2 = record.G_l_integration_custom_2
-	t.G_l_integration_disposal = record.G_l_integration_disposal
-	t.G_l_integration_maintenance = record.G_l_integration_maintenance
-	t.Disposal_calculation_method = record.Disposal_calculation_method
-	t.Use_custom_1_depreciation = record.Use_custom_1_depreciation
-	t.Allow_depr_below_zero = record.Allow_depr_below_zero
-	t.Use_fa_exch_rate_in_duplic = record.Use_fa_exch_rate_in_duplic
-	t.Part_of_duplication_list = record.Part_of_duplication_list
-	t.Last_date_modified = record.Last_date_modified
-	t.Allow_indexation = record.Allow_indexation
-	t.Use_same_fa_g_l_posting_dates = record.Use_same_fa_g_l_posting_dates
-	t.Default_exchange_rate = record.Default_exchange_rate
-	t.Use_fa_ledger_check = record.Use_fa_ledger_check
-	t.Use_rounding_in_periodic_depr = record.Use_rounding_in_periodic_depr
-	t.New_fiscal_year_starting_date = record.New_fiscal_year_starting_date
-	t.No_of_days_in_fiscal_year = record.No_of_days_in_fiscal_year
-	t.Allow_changes_in_depr_fields = record.Allow_changes_in_depr_fields
-	t.Default_final_rounding_amount = record.Default_final_rounding_amount
-	t.Default_ending_book_value = record.Default_ending_book_value
-	t.Periodic_depr_date_calc = record.Periodic_depr_date_calc
-	t.Mark_errors_as_corrections = record.Mark_errors_as_corrections
-	t.Add_curr_exch_rate_acq_cost = record.Add_curr_exch_rate_acq_cost
-	t.Add_curr_exch_rate_depr = record.Add_curr_exch_rate_depr
-	t.Add_curr_exch_rate_write_down = record.Add_curr_exch_rate_write_down
-	t.Add_curr_exch_rate_apprec = record.Add_curr_exch_rate_apprec
-	t.Add_curr_exch_rate_custom_1 = record.Add_curr_exch_rate_custom_1
-	t.Add_curr_exch_rate_custom_2 = record.Add_curr_exch_rate_custom_2
-	t.Add_curr_exch_rate_disp = record.Add_curr_exch_rate_disp
-	t.Add_curr_exch_rate_maint = record.Add_curr_exch_rate_maint
-	t.StoreOldValues()
+	return t.rec().FindSetBuffered()
 }
 
 // ========================================
@@ -2932,49 +2048,9 @@ func (t *DepreciationBook) Find(which ...string) bool {
 }
 
 // findInKey reads the first record in the current key and direction — reversed for the
-// last — and with seek ">"/"<" only after/before the current record (a row-value
-// comparison on the key and primary key columns). A key with a FlowField cannot seek.
+// last — and with seek ">"/"<" only after/before the current record
 func (t *DepreciationBook) findInKey(seek string, reverse bool) bool {
-	if seek != "" {
-		var columns, params []string
-		var values []interface{}
-		for _, column := range t.keyColumns() {
-			v, ok := t.columnValue(column)
-			if !ok {
-				fmt.Printf("Error: Find(%q) on Depreciation_Book needs a key of stored fields\n", seek)
-				return false
-			}
-			if t.isKeyDateColumn(column) {
-				v = types.KeyDate(v)
-			}
-			columns = append(columns, t.cmpColumn(column))
-			params = append(params, t.cmpParam(column))
-			values = append(values, v)
-		}
-		after := (seek == ">") != t.q.Descending
-		op := "<"
-		if after {
-			op = ">"
-		}
-		t.q.Seek = "(" + strings.Join(columns, ", ") + ") " + op + " (" + strings.Join(params, ", ") + ")"
-		t.q.SeekArgs = values
-	}
-	savedLimit, savedOffset, savedDescending := t.limit, t.offset, t.q.Descending
-	t.limit, t.offset = 1, 0
-	if reverse {
-		t.q.Descending = !t.q.Descending
-	}
-	found := t.FindSet()
-	// One record read: a later Next seeks from it in the key (inside a transaction FindSet
-	// buffers its rows — a one-row buffer would end the Next at once)
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	t.limit, t.offset, t.q.Descending = savedLimit, savedOffset, savedDescending
-	t.q.Seek, t.q.SeekArgs = "", nil
-	return found
+	return t.rec().FindInKey(seek, reverse)
 }
 
 // keyColumns returns the columns of the current key followed by the primary key's (the

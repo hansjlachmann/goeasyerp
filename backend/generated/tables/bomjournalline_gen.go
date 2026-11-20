@@ -152,19 +152,11 @@ type BOMJournalLine struct {
 	// Temporary: the record's own table is in a private in-memory database (InitTemporary)
 	temp *tables.TemporaryStore
 
-	// Iteration state for FindSet/Next
-	currentRows *sql.Rows
+	// The result set of FindSet/FindSetBuffered/Next and the paging window (SetPage)
+	cur tables.Cursor
 
 	// LockTable: the following reads lock the rows they read (SELECT … FOR UPDATE, Postgres)
 	lockForUpdate bool
-
-	// Pagination window for FindSet/FindSetBuffered (0 limit = all rows)
-	limit  int
-	offset int
-
-	// Buffered recordset for bidirectional navigation
-	bufferedRecords  []*BOMJournalLine
-	currentBufferPos int
 
 	// Business logic of this record only (SetLogic, tests); nil = the registered logic
 	// (RegisterBOMJournalLineLogic)
@@ -903,44 +895,11 @@ func (t *BOMJournalLine) convertPlaceholders(sql string, count int) string {
 // For single primary key: pass the value directly (string, int, etc.)
 // For composite keys: pass a map[string]interface{} with field names as keys
 func (t *BOMJournalLine) Get(primaryKey interface{}) bool {
-	// Handle composite primary key (map[string]interface{})
+	// A composite primary key (map[string]interface{}, values also as text)
 	if pkMap, ok := primaryKey.(map[string]interface{}); ok {
-		var journal_template_nameVal types.Code
-		if v, exists := pkMap["journal_template_name"]; exists {
-			switch val := v.(type) {
-			case types.Code:
-				journal_template_nameVal = val
-			case string:
-				journal_template_nameVal = types.NewCode(val)
-			}
-		}
-		var journal_batch_nameVal types.Code
-		if v, exists := pkMap["journal_batch_name"]; exists {
-			switch val := v.(type) {
-			case types.Code:
-				journal_batch_nameVal = val
-			case string:
-				journal_batch_nameVal = types.NewCode(val)
-			}
-		}
-		var line_noVal int
-		if v, exists := pkMap["line_no"]; exists {
-			switch val := v.(type) {
-			case int:
-				line_noVal = val
-			case float64:
-				line_noVal = int(val)
-			case string:
-				// the key part as text: the API's "CUSTOMER1,10000"
-				if n, err := strconv.Atoi(strings.TrimSpace(val)); err == nil {
-					line_noVal = n
-				}
-			}
-		}
-		return t.GetByPK(journal_template_nameVal, journal_batch_nameVal, line_noVal)
+		key := bOMJournalLineFields.KeyFromMap(pkMap)
+		return t.GetByPK(key[0].(types.Code), key[1].(types.Code), key[2].(int))
 	}
-	// For tables with composite keys, direct value is not supported
-	// Use a map[string]interface{} with field names as keys
 
 	fmt.Printf("Error: Invalid primary key type for BOM_Journal_Line.Get: %T (use map for composite keys)\n", primaryKey)
 	return false
@@ -948,134 +907,13 @@ func (t *BOMJournalLine) Get(primaryKey interface{}) bool {
 
 // GetByPK retrieves a record by its typed primary key(s) - for direct typed access
 func (t *BOMJournalLine) GetByPK(journal_template_name types.Code, journal_batch_name types.Code, line_no int) bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, BOMJournalLineTableName)
-	var journal_template_nameNull sql.NullString
-	var journal_batch_nameNull sql.NullString
-	var line_noVal int
-	var item_noNull sql.NullString
-	var posting_dateNull sql.NullString
-	var document_noNull sql.NullString
-	var descriptionNull sql.NullString
-	var dimension_1_codeNull sql.NullString
-	var dimension_2_codeNull sql.NullString
-	var location_codeNull sql.NullString
-	var quantityNull sql.NullString
-	var unit_costNull sql.NullString
-	var total_costNull sql.NullString
-	var inventory_posting_groupNull sql.NullString
-	var source_codeNull sql.NullString
-	var reason_codeNull sql.NullString
-	var document_dateNull sql.NullString
-	var external_document_noNull sql.NullString
-	var posting_no_seriesNull sql.NullString
-	var variant_codeNull sql.NullString
-	var qty_per_unit_of_measureNull sql.NullString
-	var unit_of_measure_codeNull sql.NullString
-	var quantity_baseNull sql.NullString
-	var recurring_methodInt int
-	var expiration_dateNull sql.NullString
-	var recurring_frequencyNull sql.NullString
-	var reserved_quantityNull sql.NullString
-	var reserveInt int
-	var reserved_qty_baseNull sql.NullString
-	var lot_noNull sql.NullString
-	var bin_codeNull sql.NullString
-
 	// Collect arguments for query
 	args := []interface{}{
 		journal_template_name,
 		journal_batch_name,
 		line_no,
 	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, document_no, description, dimension_1_code, dimension_2_code, location_code, quantity, unit_cost, total_cost, inventory_posting_group, source_code, reason_code, document_date, external_document_no, posting_no_series, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, recurring_method, expiration_date, recurring_frequency, reserved_quantity, reserve, reserved_qty_base, lot_no, bin_code FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-	sqlStr += t.forUpdate()
-
-	err := t.exec().QueryRow(sqlStr, args...).Scan(
-		&journal_template_nameNull,
-		&journal_batch_nameNull,
-		&line_noVal,
-		&item_noNull,
-		&posting_dateNull,
-		&document_noNull,
-		&descriptionNull,
-		&dimension_1_codeNull,
-		&dimension_2_codeNull,
-		&location_codeNull,
-		&quantityNull,
-		&unit_costNull,
-		&total_costNull,
-		&inventory_posting_groupNull,
-		&source_codeNull,
-		&reason_codeNull,
-		&document_dateNull,
-		&external_document_noNull,
-		&posting_no_seriesNull,
-		&variant_codeNull,
-		&qty_per_unit_of_measureNull,
-		&unit_of_measure_codeNull,
-		&quantity_baseNull,
-		&recurring_methodInt,
-		&expiration_dateNull,
-		&recurring_frequencyNull,
-		&reserved_quantityNull,
-		&reserveInt,
-		&reserved_qty_baseNull,
-		&lot_noNull,
-		&bin_codeNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			// Record not found - this is not an error, just return false
-			return false
-		}
-		// Actual database error
-		fmt.Printf("Error: Failed to get BOM_Journal_Line: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Journal_template_name = types.NewCode(journal_template_nameNull.String)
-	t.Journal_batch_name = types.NewCode(journal_batch_nameNull.String)
-	t.Line_no = line_noVal
-	t.Item_no = types.NewCode(item_noNull.String)
-	t.Posting_date, _ = types.NewDateFromString(posting_dateNull.String)
-	t.Document_no = types.NewCode(document_noNull.String)
-	t.Description = types.NewText(descriptionNull.String)
-	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
-	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
-	t.Location_code = types.NewCode(location_codeNull.String)
-	t.Quantity, _ = types.NewDecimalFromString(quantityNull.String)
-	t.Unit_cost, _ = types.NewDecimalFromString(unit_costNull.String)
-	t.Total_cost, _ = types.NewDecimalFromString(total_costNull.String)
-	t.Inventory_posting_group = types.NewCode(inventory_posting_groupNull.String)
-	t.Source_code = types.NewCode(source_codeNull.String)
-	t.Reason_code = types.NewCode(reason_codeNull.String)
-	t.Document_date, _ = types.NewDateFromString(document_dateNull.String)
-	t.External_document_no = types.NewCode(external_document_noNull.String)
-	t.Posting_no_series = types.NewCode(posting_no_seriesNull.String)
-	t.Variant_code = types.NewCode(variant_codeNull.String)
-	t.Qty_per_unit_of_measure, _ = types.NewDecimalFromString(qty_per_unit_of_measureNull.String)
-	t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
-	t.Quantity_base, _ = types.NewDecimalFromString(quantity_baseNull.String)
-	t.Recurring_method = BOMJournalLineRecurring_method(recurring_methodInt)
-	t.Expiration_date, _ = types.NewDateFromString(expiration_dateNull.String)
-	t.Recurring_frequency = types.NewCode(recurring_frequencyNull.String)
-	t.Reserved_quantity, _ = types.NewDecimalFromString(reserved_quantityNull.String)
-	t.Reserve = BOMJournalLineReserve(reserveInt)
-	t.Reserved_qty_base, _ = types.NewDecimalFromString(reserved_qty_baseNull.String)
-	t.Lot_no = types.NewCode(lot_noNull.String)
-	t.Bin_code = types.NewCode(bin_codeNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().Get(args)
 }
 
 // Insert inserts the record into the database
@@ -1595,10 +1433,7 @@ func (t *BOMJournalLine) columnName(fieldName string) (string, bool) {
 func (t *BOMJournalLine) Reset() {
 	t.q.Reset()
 	t.oldValues = nil
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
+	t.cur.CloseRows()
 }
 
 // buildWhereClause builds WHERE clause from current filters and search
@@ -1640,343 +1475,50 @@ func (t *BOMJournalLine) getOrderByClause() (string, []interface{}) {
 // limit rows, skipping the first offset rows. A limit of 0 disables pagination
 // (all matching rows are returned). Negative values are treated as 0.
 func (t *BOMJournalLine) SetPage(limit, offset int) {
-	if limit < 0 {
-		limit = 0
-	}
-	if offset < 0 {
-		offset = 0
-	}
-	t.limit = limit
-	t.offset = offset
+	t.cur.SetPage(limit, offset)
 }
 
-// getLimitClause builds the LIMIT/OFFSET clause from the pagination window.
-// Returns an empty string when no limit is set. LIMIT/OFFSET take integer
-// literals (not placeholders), which both SQLite and PostgreSQL accept.
-func (t *BOMJournalLine) getLimitClause() string {
-	if t.limit <= 0 {
-		return ""
+// rec is what the read functions of foundation/tables need of the record
+func (t *BOMJournalLine) rec() *tables.Rec {
+	_, inTx := t.db.(*sql.Tx)
+	return &tables.Rec{
+		Fields:    bOMJournalLineFields,
+		Ref:       t.fieldRef,
+		QT:        t.qt(),
+		Q:         &t.q,
+		Cur:       &t.cur,
+		Exec:      t.exec(),
+		Buffered:  t.temp != nil || inTx,
+		Postgres:  t.dbType == database.DBTypePostgres,
+		Table:     fmt.Sprintf("%s$%s", t.company, BOMJournalLineTableName),
+		ForUpdate: t.forUpdate(),
+		Store:     t.StoreOldValues,
 	}
-	if t.offset > 0 {
-		return fmt.Sprintf(" LIMIT %d OFFSET %d", t.limit, t.offset)
-	}
-	return fmt.Sprintf(" LIMIT %d", t.limit)
 }
 
 // FindFirst finds the first record matching current filters
 // Returns true if found, false if not found
 func (t *BOMJournalLine) FindFirst() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, BOMJournalLineTableName)
-	where, args := t.buildWhereClause()
-	// The first record in the current key and direction (classic FIND('-'))
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, document_no, description, dimension_1_code, dimension_2_code, location_code, quantity, unit_cost, total_cost, inventory_posting_group, source_code, reason_code, document_date, external_document_no, posting_no_series, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, recurring_method, expiration_date, recurring_frequency, reserved_quantity, reserve, reserved_qty_base, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var journal_template_nameNull sql.NullString
-	var journal_batch_nameNull sql.NullString
-	var item_noNull sql.NullString
-	var posting_dateNull sql.NullString
-	var document_noNull sql.NullString
-	var descriptionNull sql.NullString
-	var dimension_1_codeNull sql.NullString
-	var dimension_2_codeNull sql.NullString
-	var location_codeNull sql.NullString
-	var quantityNull sql.NullString
-	var unit_costNull sql.NullString
-	var total_costNull sql.NullString
-	var inventory_posting_groupNull sql.NullString
-	var source_codeNull sql.NullString
-	var reason_codeNull sql.NullString
-	var document_dateNull sql.NullString
-	var external_document_noNull sql.NullString
-	var posting_no_seriesNull sql.NullString
-	var variant_codeNull sql.NullString
-	var qty_per_unit_of_measureNull sql.NullString
-	var unit_of_measure_codeNull sql.NullString
-	var quantity_baseNull sql.NullString
-	var recurring_methodInt int
-	var expiration_dateNull sql.NullString
-	var recurring_frequencyNull sql.NullString
-	var reserved_quantityNull sql.NullString
-	var reserveInt int
-	var reserved_qty_baseNull sql.NullString
-	var lot_noNull sql.NullString
-	var bin_codeNull sql.NullString
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&journal_template_nameNull,
-		&journal_batch_nameNull,
-		&t.Line_no,
-		&item_noNull,
-		&posting_dateNull,
-		&document_noNull,
-		&descriptionNull,
-		&dimension_1_codeNull,
-		&dimension_2_codeNull,
-		&location_codeNull,
-		&quantityNull,
-		&unit_costNull,
-		&total_costNull,
-		&inventory_posting_groupNull,
-		&source_codeNull,
-		&reason_codeNull,
-		&document_dateNull,
-		&external_document_noNull,
-		&posting_no_seriesNull,
-		&variant_codeNull,
-		&qty_per_unit_of_measureNull,
-		&unit_of_measure_codeNull,
-		&quantity_baseNull,
-		&recurring_methodInt,
-		&expiration_dateNull,
-		&recurring_frequencyNull,
-		&reserved_quantityNull,
-		&reserveInt,
-		&reserved_qty_baseNull,
-		&lot_noNull,
-		&bin_codeNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find first BOM_Journal_Line: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Journal_template_name = types.NewCode(journal_template_nameNull.String)
-	t.Journal_batch_name = types.NewCode(journal_batch_nameNull.String)
-	t.Item_no = types.NewCode(item_noNull.String)
-	t.Posting_date, _ = types.NewDateFromString(posting_dateNull.String)
-	t.Document_no = types.NewCode(document_noNull.String)
-	t.Description = types.NewText(descriptionNull.String)
-	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
-	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
-	t.Location_code = types.NewCode(location_codeNull.String)
-	t.Quantity, _ = types.NewDecimalFromString(quantityNull.String)
-	t.Unit_cost, _ = types.NewDecimalFromString(unit_costNull.String)
-	t.Total_cost, _ = types.NewDecimalFromString(total_costNull.String)
-	t.Inventory_posting_group = types.NewCode(inventory_posting_groupNull.String)
-	t.Source_code = types.NewCode(source_codeNull.String)
-	t.Reason_code = types.NewCode(reason_codeNull.String)
-	t.Document_date, _ = types.NewDateFromString(document_dateNull.String)
-	t.External_document_no = types.NewCode(external_document_noNull.String)
-	t.Posting_no_series = types.NewCode(posting_no_seriesNull.String)
-	t.Variant_code = types.NewCode(variant_codeNull.String)
-	t.Qty_per_unit_of_measure, _ = types.NewDecimalFromString(qty_per_unit_of_measureNull.String)
-	t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
-	t.Quantity_base, _ = types.NewDecimalFromString(quantity_baseNull.String)
-	t.Recurring_method = BOMJournalLineRecurring_method(recurring_methodInt)
-	t.Expiration_date, _ = types.NewDateFromString(expiration_dateNull.String)
-	t.Recurring_frequency = types.NewCode(recurring_frequencyNull.String)
-	t.Reserved_quantity, _ = types.NewDecimalFromString(reserved_quantityNull.String)
-	t.Reserve = BOMJournalLineReserve(reserveInt)
-	t.Reserved_qty_base, _ = types.NewDecimalFromString(reserved_qty_baseNull.String)
-	t.Lot_no = types.NewCode(lot_noNull.String)
-	t.Bin_code = types.NewCode(bin_codeNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindFirst()
 }
 
 // FindLast finds the last record matching current filters
 // Returns true if found, false if not found
 func (t *BOMJournalLine) FindLast() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, BOMJournalLineTableName)
-	where, args := t.buildWhereClause()
-	// The last record in the current key and direction (classic FIND('+')): the key reversed,
-	// every column of it
-	t.q.Descending = !t.q.Descending
-	orderBy, orderArgs := t.getOrderByClause()
-	t.q.Descending = !t.q.Descending
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, document_no, description, dimension_1_code, dimension_2_code, location_code, quantity, unit_cost, total_cost, inventory_posting_group, source_code, reason_code, document_date, external_document_no, posting_no_series, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, recurring_method, expiration_date, recurring_frequency, reserved_quantity, reserve, reserved_qty_base, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var journal_template_nameNull sql.NullString
-	var journal_batch_nameNull sql.NullString
-	var item_noNull sql.NullString
-	var posting_dateNull sql.NullString
-	var document_noNull sql.NullString
-	var descriptionNull sql.NullString
-	var dimension_1_codeNull sql.NullString
-	var dimension_2_codeNull sql.NullString
-	var location_codeNull sql.NullString
-	var quantityNull sql.NullString
-	var unit_costNull sql.NullString
-	var total_costNull sql.NullString
-	var inventory_posting_groupNull sql.NullString
-	var source_codeNull sql.NullString
-	var reason_codeNull sql.NullString
-	var document_dateNull sql.NullString
-	var external_document_noNull sql.NullString
-	var posting_no_seriesNull sql.NullString
-	var variant_codeNull sql.NullString
-	var qty_per_unit_of_measureNull sql.NullString
-	var unit_of_measure_codeNull sql.NullString
-	var quantity_baseNull sql.NullString
-	var recurring_methodInt int
-	var expiration_dateNull sql.NullString
-	var recurring_frequencyNull sql.NullString
-	var reserved_quantityNull sql.NullString
-	var reserveInt int
-	var reserved_qty_baseNull sql.NullString
-	var lot_noNull sql.NullString
-	var bin_codeNull sql.NullString
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&journal_template_nameNull,
-		&journal_batch_nameNull,
-		&t.Line_no,
-		&item_noNull,
-		&posting_dateNull,
-		&document_noNull,
-		&descriptionNull,
-		&dimension_1_codeNull,
-		&dimension_2_codeNull,
-		&location_codeNull,
-		&quantityNull,
-		&unit_costNull,
-		&total_costNull,
-		&inventory_posting_groupNull,
-		&source_codeNull,
-		&reason_codeNull,
-		&document_dateNull,
-		&external_document_noNull,
-		&posting_no_seriesNull,
-		&variant_codeNull,
-		&qty_per_unit_of_measureNull,
-		&unit_of_measure_codeNull,
-		&quantity_baseNull,
-		&recurring_methodInt,
-		&expiration_dateNull,
-		&recurring_frequencyNull,
-		&reserved_quantityNull,
-		&reserveInt,
-		&reserved_qty_baseNull,
-		&lot_noNull,
-		&bin_codeNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find last BOM_Journal_Line: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Journal_template_name = types.NewCode(journal_template_nameNull.String)
-	t.Journal_batch_name = types.NewCode(journal_batch_nameNull.String)
-	t.Item_no = types.NewCode(item_noNull.String)
-	t.Posting_date, _ = types.NewDateFromString(posting_dateNull.String)
-	t.Document_no = types.NewCode(document_noNull.String)
-	t.Description = types.NewText(descriptionNull.String)
-	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
-	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
-	t.Location_code = types.NewCode(location_codeNull.String)
-	t.Quantity, _ = types.NewDecimalFromString(quantityNull.String)
-	t.Unit_cost, _ = types.NewDecimalFromString(unit_costNull.String)
-	t.Total_cost, _ = types.NewDecimalFromString(total_costNull.String)
-	t.Inventory_posting_group = types.NewCode(inventory_posting_groupNull.String)
-	t.Source_code = types.NewCode(source_codeNull.String)
-	t.Reason_code = types.NewCode(reason_codeNull.String)
-	t.Document_date, _ = types.NewDateFromString(document_dateNull.String)
-	t.External_document_no = types.NewCode(external_document_noNull.String)
-	t.Posting_no_series = types.NewCode(posting_no_seriesNull.String)
-	t.Variant_code = types.NewCode(variant_codeNull.String)
-	t.Qty_per_unit_of_measure, _ = types.NewDecimalFromString(qty_per_unit_of_measureNull.String)
-	t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
-	t.Quantity_base, _ = types.NewDecimalFromString(quantity_baseNull.String)
-	t.Recurring_method = BOMJournalLineRecurring_method(recurring_methodInt)
-	t.Expiration_date, _ = types.NewDateFromString(expiration_dateNull.String)
-	t.Recurring_frequency = types.NewCode(recurring_frequencyNull.String)
-	t.Reserved_quantity, _ = types.NewDecimalFromString(reserved_quantityNull.String)
-	t.Reserve = BOMJournalLineReserve(reserveInt)
-	t.Reserved_qty_base, _ = types.NewDecimalFromString(reserved_qty_baseNull.String)
-	t.Lot_no = types.NewCode(lot_noNull.String)
-	t.Bin_code = types.NewCode(bin_codeNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindLast()
 }
 
 // Count returns the number of records matching current filters
 func (t *BOMJournalLine) Count() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, BOMJournalLineTableName)
-	where, args := t.buildWhereClause()
-
-	query := fmt.Sprintf(`SELECT COUNT(*) FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var count int
-	err := t.exec().QueryRow(query, args...).Scan(&count)
-	if err != nil {
-		fmt.Printf("Error: Failed to count BOM_Journal_Line: %v\n", err)
-		return 0
-	}
-
-	return count
+	return t.rec().Count()
 }
 
 // FindSet opens a result set matching current filters
 // Call Next() to iterate through the results
-// Returns true if at least one record found, false otherwise
+// Returns true if at least one record found, false otherwise. A temporary record, and a
+// record in a transaction, reads all at once (FindSetBuffered).
 func (t *BOMJournalLine) FindSet() bool {
-	// A temporary record, and a record in a transaction, reads all at once: its in-memory
-	// database or the transaction has one connection, which an open result set would block for
-	// the statements of the loop (Modify while looping; on PostgreSQL a query while the rows are
-	// read breaks the connection — "unexpected Parse response")
-	if _, inTx := t.db.(*sql.Tx); t.temp != nil || inTx {
-		return t.FindSetBuffered()
-	}
-	// Close any existing result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	tableName := fmt.Sprintf("%s$%s", t.company, BOMJournalLineTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, document_no, description, dimension_1_code, dimension_2_code, location_code, quantity, unit_cost, total_cost, inventory_posting_group, source_code, reason_code, document_date, external_document_no, posting_no_series, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, recurring_method, expiration_date, recurring_frequency, reserved_quantity, reserve, reserved_qty_base, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSet for BOM_Journal_Line: %v\n", err)
-		return false
-	}
-
-	t.currentRows = rows
-
-	// Load first record
-	return t.Next()
+	return t.rec().FindSet()
 }
 
 // Next advances to the next record: in the result set after FindSet() or FindSetBuffered(),
@@ -1989,382 +1531,14 @@ func (t *BOMJournalLine) FindSet() bool {
 //
 // Returns true if a record was loaded, false if no more records or out of bounds
 func (t *BOMJournalLine) Next(steps ...int) bool {
-	// Default to 1 step forward
-	step := 1
-	if len(steps) > 0 {
-		step = steps[0]
-	}
-
-	// BUFFERED MODE: Bidirectional navigation with in-memory records
-	if t.bufferedRecords != nil {
-		// Calculate new position
-		newPos := t.currentBufferPos + step
-
-		// Check bounds
-		if newPos < 0 || newPos >= len(t.bufferedRecords) {
-			return false // Out of bounds
-		}
-
-		// Move to new position
-		t.currentBufferPos = newPos
-		t.copyFromBuffered(t.bufferedRecords[t.currentBufferPos])
-		return true
-	}
-
-	// FORWARD-ONLY MODE: Streaming with sql.Rows (only positive steps allowed)
-	if t.currentRows != nil {
-		// Validate: only forward movement allowed
-		if step < 1 {
-			fmt.Printf("Error: Backward navigation (Next(%d)) requires FindSetBuffered()\n", step)
-			return false
-		}
-
-		// Advance 'step' times (1 = next record, 2 = skip 1 record, etc.)
-		for i := 0; i < step; i++ {
-			if !t.currentRows.Next() {
-				// No more rows - close result set
-				t.currentRows.Close()
-				t.currentRows = nil
-				return false
-			}
-		}
-
-		// Scan the row
-		var journal_template_nameNull sql.NullString
-		var journal_batch_nameNull sql.NullString
-		var item_noNull sql.NullString
-		var posting_dateNull sql.NullString
-		var document_noNull sql.NullString
-		var descriptionNull sql.NullString
-		var dimension_1_codeNull sql.NullString
-		var dimension_2_codeNull sql.NullString
-		var location_codeNull sql.NullString
-		var quantityNull sql.NullString
-		var unit_costNull sql.NullString
-		var total_costNull sql.NullString
-		var inventory_posting_groupNull sql.NullString
-		var source_codeNull sql.NullString
-		var reason_codeNull sql.NullString
-		var document_dateNull sql.NullString
-		var external_document_noNull sql.NullString
-		var posting_no_seriesNull sql.NullString
-		var variant_codeNull sql.NullString
-		var qty_per_unit_of_measureNull sql.NullString
-		var unit_of_measure_codeNull sql.NullString
-		var quantity_baseNull sql.NullString
-		var recurring_methodInt int
-		var expiration_dateNull sql.NullString
-		var recurring_frequencyNull sql.NullString
-		var reserved_quantityNull sql.NullString
-		var reserveInt int
-		var reserved_qty_baseNull sql.NullString
-		var lot_noNull sql.NullString
-		var bin_codeNull sql.NullString
-
-		err := t.currentRows.Scan(
-			&journal_template_nameNull,
-			&journal_batch_nameNull,
-			&t.Line_no,
-			&item_noNull,
-			&posting_dateNull,
-			&document_noNull,
-			&descriptionNull,
-			&dimension_1_codeNull,
-			&dimension_2_codeNull,
-			&location_codeNull,
-			&quantityNull,
-			&unit_costNull,
-			&total_costNull,
-			&inventory_posting_groupNull,
-			&source_codeNull,
-			&reason_codeNull,
-			&document_dateNull,
-			&external_document_noNull,
-			&posting_no_seriesNull,
-			&variant_codeNull,
-			&qty_per_unit_of_measureNull,
-			&unit_of_measure_codeNull,
-			&quantity_baseNull,
-			&recurring_methodInt,
-			&expiration_dateNull,
-			&recurring_frequencyNull,
-			&reserved_quantityNull,
-			&reserveInt,
-			&reserved_qty_baseNull,
-			&lot_noNull,
-			&bin_codeNull,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan BOM_Journal_Line record: %v\n", err)
-			t.currentRows.Close()
-			t.currentRows = nil
-			return false
-		}
-
-		// Populate fields
-		t.Journal_template_name = types.NewCode(journal_template_nameNull.String)
-		t.Journal_batch_name = types.NewCode(journal_batch_nameNull.String)
-		t.Item_no = types.NewCode(item_noNull.String)
-		t.Posting_date, _ = types.NewDateFromString(posting_dateNull.String)
-		t.Document_no = types.NewCode(document_noNull.String)
-		t.Description = types.NewText(descriptionNull.String)
-		t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
-		t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
-		t.Location_code = types.NewCode(location_codeNull.String)
-		t.Quantity, _ = types.NewDecimalFromString(quantityNull.String)
-		t.Unit_cost, _ = types.NewDecimalFromString(unit_costNull.String)
-		t.Total_cost, _ = types.NewDecimalFromString(total_costNull.String)
-		t.Inventory_posting_group = types.NewCode(inventory_posting_groupNull.String)
-		t.Source_code = types.NewCode(source_codeNull.String)
-		t.Reason_code = types.NewCode(reason_codeNull.String)
-		t.Document_date, _ = types.NewDateFromString(document_dateNull.String)
-		t.External_document_no = types.NewCode(external_document_noNull.String)
-		t.Posting_no_series = types.NewCode(posting_no_seriesNull.String)
-		t.Variant_code = types.NewCode(variant_codeNull.String)
-		t.Qty_per_unit_of_measure, _ = types.NewDecimalFromString(qty_per_unit_of_measureNull.String)
-		t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
-		t.Quantity_base, _ = types.NewDecimalFromString(quantity_baseNull.String)
-		t.Recurring_method = BOMJournalLineRecurring_method(recurring_methodInt)
-		t.Expiration_date, _ = types.NewDateFromString(expiration_dateNull.String)
-		t.Recurring_frequency = types.NewCode(recurring_frequencyNull.String)
-		t.Reserved_quantity, _ = types.NewDecimalFromString(reserved_quantityNull.String)
-		t.Reserve = BOMJournalLineReserve(reserveInt)
-		t.Reserved_qty_base, _ = types.NewDecimalFromString(reserved_qty_baseNull.String)
-		t.Lot_no = types.NewCode(lot_noNull.String)
-		t.Bin_code = types.NewCode(bin_codeNull.String)
-
-		// Store old values for field tracking
-		t.StoreOldValues()
-
-		return true
-	}
-
-	// No record set (after Get, Find, FindFirst, FindLast): the next record in the current key
-	// and direction within the filters, one step at a time (classic NEXT after FIND); a step
-	// that finds none leaves the record on the last one reached
-	if step == 0 {
-		return false
-	}
-	for i := 0; i != step; {
-		if step > 0 {
-			if !t.findInKey(">", false) {
-				return false
-			}
-			i++
-		} else {
-			if !t.findInKey("<", true) {
-				return false
-			}
-			i--
-		}
-	}
-	return true
+	return t.rec().Next(steps, t.findInKey)
 }
 
 // FindSetBuffered loads all filtered records into memory for bidirectional navigation
 // Use this when you need to move backward/forward with Next(steps)
-// Filters (SetRange/SetFilter) are applied in SQL before buffering to minimize memory usage
 // Returns true if at least one record found, false otherwise
 func (t *BOMJournalLine) FindSetBuffered() bool {
-	// Close any existing forward-only result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-
-	// Clear any existing buffer
-	t.bufferedRecords = nil
-	t.currentBufferPos = -1
-	tableName := fmt.Sprintf("%s$%s", t.company, BOMJournalLineTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT journal_template_name, journal_batch_name, line_no, item_no, posting_date, document_no, description, dimension_1_code, dimension_2_code, location_code, quantity, unit_cost, total_cost, inventory_posting_group, source_code, reason_code, document_date, external_document_no, posting_no_series, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, recurring_method, expiration_date, recurring_frequency, reserved_quantity, reserve, reserved_qty_base, lot_no, bin_code FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSetBuffered for BOM_Journal_Line: %v\n", err)
-		return false
-	}
-	defer rows.Close()
-
-	// Load all records into memory
-	for rows.Next() {
-		// Create a new record instance
-		record := &BOMJournalLine{}
-		record.db = t.db
-		record.temp = t.temp
-		record.company = t.company
-		record.dbType = t.dbType
-
-		// Scan the row
-		var journal_template_nameNull sql.NullString
-		var journal_batch_nameNull sql.NullString
-		var item_noNull sql.NullString
-		var posting_dateNull sql.NullString
-		var document_noNull sql.NullString
-		var descriptionNull sql.NullString
-		var dimension_1_codeNull sql.NullString
-		var dimension_2_codeNull sql.NullString
-		var location_codeNull sql.NullString
-		var quantityNull sql.NullString
-		var unit_costNull sql.NullString
-		var total_costNull sql.NullString
-		var inventory_posting_groupNull sql.NullString
-		var source_codeNull sql.NullString
-		var reason_codeNull sql.NullString
-		var document_dateNull sql.NullString
-		var external_document_noNull sql.NullString
-		var posting_no_seriesNull sql.NullString
-		var variant_codeNull sql.NullString
-		var qty_per_unit_of_measureNull sql.NullString
-		var unit_of_measure_codeNull sql.NullString
-		var quantity_baseNull sql.NullString
-		var recurring_methodInt int
-		var expiration_dateNull sql.NullString
-		var recurring_frequencyNull sql.NullString
-		var reserved_quantityNull sql.NullString
-		var reserveInt int
-		var reserved_qty_baseNull sql.NullString
-		var lot_noNull sql.NullString
-		var bin_codeNull sql.NullString
-
-		err := rows.Scan(
-			&journal_template_nameNull,
-			&journal_batch_nameNull,
-			&record.Line_no,
-			&item_noNull,
-			&posting_dateNull,
-			&document_noNull,
-			&descriptionNull,
-			&dimension_1_codeNull,
-			&dimension_2_codeNull,
-			&location_codeNull,
-			&quantityNull,
-			&unit_costNull,
-			&total_costNull,
-			&inventory_posting_groupNull,
-			&source_codeNull,
-			&reason_codeNull,
-			&document_dateNull,
-			&external_document_noNull,
-			&posting_no_seriesNull,
-			&variant_codeNull,
-			&qty_per_unit_of_measureNull,
-			&unit_of_measure_codeNull,
-			&quantity_baseNull,
-			&recurring_methodInt,
-			&expiration_dateNull,
-			&recurring_frequencyNull,
-			&reserved_quantityNull,
-			&reserveInt,
-			&reserved_qty_baseNull,
-			&lot_noNull,
-			&bin_codeNull,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan BOM_Journal_Line record: %v\n", err)
-			return false
-		}
-
-		// Populate special type fields
-		record.Journal_template_name = types.NewCode(journal_template_nameNull.String)
-		record.Journal_batch_name = types.NewCode(journal_batch_nameNull.String)
-		record.Item_no = types.NewCode(item_noNull.String)
-		record.Posting_date, _ = types.NewDateFromString(posting_dateNull.String)
-		record.Document_no = types.NewCode(document_noNull.String)
-		record.Description = types.NewText(descriptionNull.String)
-		record.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
-		record.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
-		record.Location_code = types.NewCode(location_codeNull.String)
-		record.Quantity, _ = types.NewDecimalFromString(quantityNull.String)
-		record.Unit_cost, _ = types.NewDecimalFromString(unit_costNull.String)
-		record.Total_cost, _ = types.NewDecimalFromString(total_costNull.String)
-		record.Inventory_posting_group = types.NewCode(inventory_posting_groupNull.String)
-		record.Source_code = types.NewCode(source_codeNull.String)
-		record.Reason_code = types.NewCode(reason_codeNull.String)
-		record.Document_date, _ = types.NewDateFromString(document_dateNull.String)
-		record.External_document_no = types.NewCode(external_document_noNull.String)
-		record.Posting_no_series = types.NewCode(posting_no_seriesNull.String)
-		record.Variant_code = types.NewCode(variant_codeNull.String)
-		record.Qty_per_unit_of_measure, _ = types.NewDecimalFromString(qty_per_unit_of_measureNull.String)
-		record.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
-		record.Quantity_base, _ = types.NewDecimalFromString(quantity_baseNull.String)
-		record.Recurring_method = BOMJournalLineRecurring_method(recurring_methodInt)
-		record.Expiration_date, _ = types.NewDateFromString(expiration_dateNull.String)
-		record.Recurring_frequency = types.NewCode(recurring_frequencyNull.String)
-		record.Reserved_quantity, _ = types.NewDecimalFromString(reserved_quantityNull.String)
-		record.Reserve = BOMJournalLineReserve(reserveInt)
-		record.Reserved_qty_base, _ = types.NewDecimalFromString(reserved_qty_baseNull.String)
-		record.Lot_no = types.NewCode(lot_noNull.String)
-		record.Bin_code = types.NewCode(bin_codeNull.String)
-
-		// Store old values
-		record.StoreOldValues()
-
-		// Add to buffer
-		t.bufferedRecords = append(t.bufferedRecords, record)
-	}
-
-	// Check for errors during iteration
-	if err := rows.Err(); err != nil {
-		fmt.Printf("Error: Failed to iterate BOM_Journal_Line records: %v\n", err)
-		return false
-	}
-
-	// If no records found, return false
-	if len(t.bufferedRecords) == 0 {
-		return false
-	}
-
-	// Load first record into current instance
-	t.currentBufferPos = 0
-	t.copyFromBuffered(t.bufferedRecords[0])
-
-	return true
-}
-
-// copyFromBuffered copies field values from a buffered record to the current instance
-func (t *BOMJournalLine) copyFromBuffered(record *BOMJournalLine) {
-	t.Journal_template_name = record.Journal_template_name
-	t.Journal_batch_name = record.Journal_batch_name
-	t.Line_no = record.Line_no
-	t.Item_no = record.Item_no
-	t.Posting_date = record.Posting_date
-	t.Document_no = record.Document_no
-	t.Description = record.Description
-	t.Dimension_1_code = record.Dimension_1_code
-	t.Dimension_2_code = record.Dimension_2_code
-	t.Location_code = record.Location_code
-	t.Quantity = record.Quantity
-	t.Unit_cost = record.Unit_cost
-	t.Total_cost = record.Total_cost
-	t.Inventory_posting_group = record.Inventory_posting_group
-	t.Source_code = record.Source_code
-	t.Reason_code = record.Reason_code
-	t.Document_date = record.Document_date
-	t.External_document_no = record.External_document_no
-	t.Posting_no_series = record.Posting_no_series
-	t.Variant_code = record.Variant_code
-	t.Qty_per_unit_of_measure = record.Qty_per_unit_of_measure
-	t.Unit_of_measure_code = record.Unit_of_measure_code
-	t.Quantity_base = record.Quantity_base
-	t.Recurring_method = record.Recurring_method
-	t.Expiration_date = record.Expiration_date
-	t.Recurring_frequency = record.Recurring_frequency
-	t.Reserved_quantity = record.Reserved_quantity
-	t.Reserve = record.Reserve
-	t.Reserved_qty_base = record.Reserved_qty_base
-	t.Lot_no = record.Lot_no
-	t.Bin_code = record.Bin_code
-	t.StoreOldValues()
+	return t.rec().FindSetBuffered()
 }
 
 // ========================================
@@ -2853,49 +2027,9 @@ func (t *BOMJournalLine) Find(which ...string) bool {
 }
 
 // findInKey reads the first record in the current key and direction — reversed for the
-// last — and with seek ">"/"<" only after/before the current record (a row-value
-// comparison on the key and primary key columns). A key with a FlowField cannot seek.
+// last — and with seek ">"/"<" only after/before the current record
 func (t *BOMJournalLine) findInKey(seek string, reverse bool) bool {
-	if seek != "" {
-		var columns, params []string
-		var values []interface{}
-		for _, column := range t.keyColumns() {
-			v, ok := t.columnValue(column)
-			if !ok {
-				fmt.Printf("Error: Find(%q) on BOM_Journal_Line needs a key of stored fields\n", seek)
-				return false
-			}
-			if t.isKeyDateColumn(column) {
-				v = types.KeyDate(v)
-			}
-			columns = append(columns, t.cmpColumn(column))
-			params = append(params, t.cmpParam(column))
-			values = append(values, v)
-		}
-		after := (seek == ">") != t.q.Descending
-		op := "<"
-		if after {
-			op = ">"
-		}
-		t.q.Seek = "(" + strings.Join(columns, ", ") + ") " + op + " (" + strings.Join(params, ", ") + ")"
-		t.q.SeekArgs = values
-	}
-	savedLimit, savedOffset, savedDescending := t.limit, t.offset, t.q.Descending
-	t.limit, t.offset = 1, 0
-	if reverse {
-		t.q.Descending = !t.q.Descending
-	}
-	found := t.FindSet()
-	// One record read: a later Next seeks from it in the key (inside a transaction FindSet
-	// buffers its rows — a one-row buffer would end the Next at once)
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	t.limit, t.offset, t.q.Descending = savedLimit, savedOffset, savedDescending
-	t.q.Seek, t.q.SeekArgs = "", nil
-	return found
+	return t.rec().FindInKey(seek, reverse)
 }
 
 // keyColumns returns the columns of the current key followed by the primary key's (the

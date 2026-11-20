@@ -25,7 +25,6 @@ import (
 	"database/sql"
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -85,19 +84,11 @@ type ProjectJournalQuantity struct {
 	// Temporary: the record's own table is in a private in-memory database (InitTemporary)
 	temp *tables.TemporaryStore
 
-	// Iteration state for FindSet/Next
-	currentRows *sql.Rows
+	// The result set of FindSet/FindSetBuffered/Next and the paging window (SetPage)
+	cur tables.Cursor
 
 	// LockTable: the following reads lock the rows they read (SELECT … FOR UPDATE, Postgres)
 	lockForUpdate bool
-
-	// Pagination window for FindSet/FindSetBuffered (0 limit = all rows)
-	limit  int
-	offset int
-
-	// Buffered recordset for bidirectional navigation
-	bufferedRecords  []*ProjectJournalQuantity
-	currentBufferPos int
 
 	// Business logic of this record only (SetLogic, tests); nil = the registered logic
 	// (RegisterProjectJournalQuantityLogic)
@@ -662,55 +653,11 @@ func (t *ProjectJournalQuantity) convertPlaceholders(sql string, count int) stri
 // For single primary key: pass the value directly (string, int, etc.)
 // For composite keys: pass a map[string]interface{} with field names as keys
 func (t *ProjectJournalQuantity) Get(primaryKey interface{}) bool {
-	// Handle composite primary key (map[string]interface{})
+	// A composite primary key (map[string]interface{}, values also as text)
 	if pkMap, ok := primaryKey.(map[string]interface{}); ok {
-		var is_totalVal bool
-		if v, exists := pkMap["is_total"]; exists {
-			switch val := v.(type) {
-			case bool:
-				is_totalVal = val
-			case string:
-				// the key part as text: the API's "true,PCS,…"
-				is_totalVal, _ = strconv.ParseBool(strings.TrimSpace(val))
-			}
-		}
-		var unit_of_measure_codeVal types.Code
-		if v, exists := pkMap["unit_of_measure_code"]; exists {
-			switch val := v.(type) {
-			case types.Code:
-				unit_of_measure_codeVal = val
-			case string:
-				unit_of_measure_codeVal = types.NewCode(val)
-			}
-		}
-		var line_typeVal ProjectJournalQuantityLine_type
-		if v, exists := pkMap["line_type"]; exists {
-			switch val := v.(type) {
-			case ProjectJournalQuantityLine_type:
-				line_typeVal = val
-			case int:
-				line_typeVal = ProjectJournalQuantityLine_type(val)
-			case float64:
-				line_typeVal = ProjectJournalQuantityLine_type(int(val))
-			case string:
-				if n, err := strconv.Atoi(val); err == nil {
-					line_typeVal = ProjectJournalQuantityLine_type(n)
-				}
-			}
-		}
-		var work_type_codeVal types.Code
-		if v, exists := pkMap["work_type_code"]; exists {
-			switch val := v.(type) {
-			case types.Code:
-				work_type_codeVal = val
-			case string:
-				work_type_codeVal = types.NewCode(val)
-			}
-		}
-		return t.GetByPK(is_totalVal, unit_of_measure_codeVal, line_typeVal, work_type_codeVal)
+		key := projectJournalQuantityFields.KeyFromMap(pkMap)
+		return t.GetByPK(key[0].(bool), key[1].(types.Code), ProjectJournalQuantityLine_type(key[2].(int)), key[3].(types.Code))
 	}
-	// For tables with composite keys, direct value is not supported
-	// Use a map[string]interface{} with field names as keys
 
 	fmt.Printf("Error: Invalid primary key type for Project_Journal_Quantity.Get: %T (use map for composite keys)\n", primaryKey)
 	return false
@@ -718,14 +665,6 @@ func (t *ProjectJournalQuantity) Get(primaryKey interface{}) bool {
 
 // GetByPK retrieves a record by its typed primary key(s) - for direct typed access
 func (t *ProjectJournalQuantity) GetByPK(is_total bool, unit_of_measure_code types.Code, line_type ProjectJournalQuantityLine_type, work_type_code types.Code) bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, ProjectJournalQuantityTableName)
-	var is_totalBool sql.NullBool
-	var unit_of_measure_codeNull sql.NullString
-	var line_typeInt int
-	var work_type_codeNull sql.NullString
-	var quantityNull sql.NullString
-	var unit_of_measure_textNull sql.NullString
-
 	// Collect arguments for query
 	args := []interface{}{
 		is_total,
@@ -733,45 +672,7 @@ func (t *ProjectJournalQuantity) GetByPK(is_total bool, unit_of_measure_code typ
 		line_type,
 		work_type_code,
 	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT is_total, unit_of_measure_code, line_type, work_type_code, quantity, unit_of_measure_text FROM "%s" WHERE 1=1 AND is_total = ? AND unit_of_measure_code = ? AND line_type = ? AND work_type_code = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-	sqlStr += t.forUpdate()
-
-	err := t.exec().QueryRow(sqlStr, args...).Scan(
-		&is_totalBool,
-		&unit_of_measure_codeNull,
-		&line_typeInt,
-		&work_type_codeNull,
-		&quantityNull,
-		&unit_of_measure_textNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			// Record not found - this is not an error, just return false
-			return false
-		}
-		// Actual database error
-		fmt.Printf("Error: Failed to get Project_Journal_Quantity: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Is_total = is_totalBool.Bool
-	t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
-	t.Line_type = ProjectJournalQuantityLine_type(line_typeInt)
-	t.Work_type_code = types.NewCode(work_type_codeNull.String)
-	t.Quantity, _ = types.NewDecimalFromString(quantityNull.String)
-	t.Unit_of_measure_text = types.NewText(unit_of_measure_textNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().Get(args)
 }
 
 // Insert inserts the record into the database
@@ -1098,10 +999,7 @@ func (t *ProjectJournalQuantity) columnName(fieldName string) (string, bool) {
 func (t *ProjectJournalQuantity) Reset() {
 	t.q.Reset()
 	t.oldValues = nil
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
+	t.cur.CloseRows()
 }
 
 // buildWhereClause builds WHERE clause from current filters and search
@@ -1143,197 +1041,50 @@ func (t *ProjectJournalQuantity) getOrderByClause() (string, []interface{}) {
 // limit rows, skipping the first offset rows. A limit of 0 disables pagination
 // (all matching rows are returned). Negative values are treated as 0.
 func (t *ProjectJournalQuantity) SetPage(limit, offset int) {
-	if limit < 0 {
-		limit = 0
-	}
-	if offset < 0 {
-		offset = 0
-	}
-	t.limit = limit
-	t.offset = offset
+	t.cur.SetPage(limit, offset)
 }
 
-// getLimitClause builds the LIMIT/OFFSET clause from the pagination window.
-// Returns an empty string when no limit is set. LIMIT/OFFSET take integer
-// literals (not placeholders), which both SQLite and PostgreSQL accept.
-func (t *ProjectJournalQuantity) getLimitClause() string {
-	if t.limit <= 0 {
-		return ""
+// rec is what the read functions of foundation/tables need of the record
+func (t *ProjectJournalQuantity) rec() *tables.Rec {
+	_, inTx := t.db.(*sql.Tx)
+	return &tables.Rec{
+		Fields:    projectJournalQuantityFields,
+		Ref:       t.fieldRef,
+		QT:        t.qt(),
+		Q:         &t.q,
+		Cur:       &t.cur,
+		Exec:      t.exec(),
+		Buffered:  t.temp != nil || inTx,
+		Postgres:  t.dbType == database.DBTypePostgres,
+		Table:     fmt.Sprintf("%s$%s", t.company, ProjectJournalQuantityTableName),
+		ForUpdate: t.forUpdate(),
+		Store:     t.StoreOldValues,
 	}
-	if t.offset > 0 {
-		return fmt.Sprintf(" LIMIT %d OFFSET %d", t.limit, t.offset)
-	}
-	return fmt.Sprintf(" LIMIT %d", t.limit)
 }
 
 // FindFirst finds the first record matching current filters
 // Returns true if found, false if not found
 func (t *ProjectJournalQuantity) FindFirst() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, ProjectJournalQuantityTableName)
-	where, args := t.buildWhereClause()
-	// The first record in the current key and direction (classic FIND('-'))
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT is_total, unit_of_measure_code, line_type, work_type_code, quantity, unit_of_measure_text FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var is_totalBool sql.NullBool
-	var unit_of_measure_codeNull sql.NullString
-	var line_typeInt int
-	var work_type_codeNull sql.NullString
-	var quantityNull sql.NullString
-	var unit_of_measure_textNull sql.NullString
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&is_totalBool,
-		&unit_of_measure_codeNull,
-		&line_typeInt,
-		&work_type_codeNull,
-		&quantityNull,
-		&unit_of_measure_textNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find first Project_Journal_Quantity: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Is_total = is_totalBool.Bool
-	t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
-	t.Line_type = ProjectJournalQuantityLine_type(line_typeInt)
-	t.Work_type_code = types.NewCode(work_type_codeNull.String)
-	t.Quantity, _ = types.NewDecimalFromString(quantityNull.String)
-	t.Unit_of_measure_text = types.NewText(unit_of_measure_textNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindFirst()
 }
 
 // FindLast finds the last record matching current filters
 // Returns true if found, false if not found
 func (t *ProjectJournalQuantity) FindLast() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, ProjectJournalQuantityTableName)
-	where, args := t.buildWhereClause()
-	// The last record in the current key and direction (classic FIND('+')): the key reversed,
-	// every column of it
-	t.q.Descending = !t.q.Descending
-	orderBy, orderArgs := t.getOrderByClause()
-	t.q.Descending = !t.q.Descending
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT is_total, unit_of_measure_code, line_type, work_type_code, quantity, unit_of_measure_text FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var is_totalBool sql.NullBool
-	var unit_of_measure_codeNull sql.NullString
-	var line_typeInt int
-	var work_type_codeNull sql.NullString
-	var quantityNull sql.NullString
-	var unit_of_measure_textNull sql.NullString
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&is_totalBool,
-		&unit_of_measure_codeNull,
-		&line_typeInt,
-		&work_type_codeNull,
-		&quantityNull,
-		&unit_of_measure_textNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find last Project_Journal_Quantity: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Is_total = is_totalBool.Bool
-	t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
-	t.Line_type = ProjectJournalQuantityLine_type(line_typeInt)
-	t.Work_type_code = types.NewCode(work_type_codeNull.String)
-	t.Quantity, _ = types.NewDecimalFromString(quantityNull.String)
-	t.Unit_of_measure_text = types.NewText(unit_of_measure_textNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindLast()
 }
 
 // Count returns the number of records matching current filters
 func (t *ProjectJournalQuantity) Count() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, ProjectJournalQuantityTableName)
-	where, args := t.buildWhereClause()
-
-	query := fmt.Sprintf(`SELECT COUNT(*) FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var count int
-	err := t.exec().QueryRow(query, args...).Scan(&count)
-	if err != nil {
-		fmt.Printf("Error: Failed to count Project_Journal_Quantity: %v\n", err)
-		return 0
-	}
-
-	return count
+	return t.rec().Count()
 }
 
 // FindSet opens a result set matching current filters
 // Call Next() to iterate through the results
-// Returns true if at least one record found, false otherwise
+// Returns true if at least one record found, false otherwise. A temporary record, and a
+// record in a transaction, reads all at once (FindSetBuffered).
 func (t *ProjectJournalQuantity) FindSet() bool {
-	// A temporary record, and a record in a transaction, reads all at once: its in-memory
-	// database or the transaction has one connection, which an open result set would block for
-	// the statements of the loop (Modify while looping; on PostgreSQL a query while the rows are
-	// read breaks the connection — "unexpected Parse response")
-	if _, inTx := t.db.(*sql.Tx); t.temp != nil || inTx {
-		return t.FindSetBuffered()
-	}
-	// Close any existing result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	tableName := fmt.Sprintf("%s$%s", t.company, ProjectJournalQuantityTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT is_total, unit_of_measure_code, line_type, work_type_code, quantity, unit_of_measure_text FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSet for Project_Journal_Quantity: %v\n", err)
-		return false
-	}
-
-	t.currentRows = rows
-
-	// Load first record
-	return t.Next()
+	return t.rec().FindSet()
 }
 
 // Next advances to the next record: in the result set after FindSet() or FindSetBuffered(),
@@ -1346,211 +1097,14 @@ func (t *ProjectJournalQuantity) FindSet() bool {
 //
 // Returns true if a record was loaded, false if no more records or out of bounds
 func (t *ProjectJournalQuantity) Next(steps ...int) bool {
-	// Default to 1 step forward
-	step := 1
-	if len(steps) > 0 {
-		step = steps[0]
-	}
-
-	// BUFFERED MODE: Bidirectional navigation with in-memory records
-	if t.bufferedRecords != nil {
-		// Calculate new position
-		newPos := t.currentBufferPos + step
-
-		// Check bounds
-		if newPos < 0 || newPos >= len(t.bufferedRecords) {
-			return false // Out of bounds
-		}
-
-		// Move to new position
-		t.currentBufferPos = newPos
-		t.copyFromBuffered(t.bufferedRecords[t.currentBufferPos])
-		return true
-	}
-
-	// FORWARD-ONLY MODE: Streaming with sql.Rows (only positive steps allowed)
-	if t.currentRows != nil {
-		// Validate: only forward movement allowed
-		if step < 1 {
-			fmt.Printf("Error: Backward navigation (Next(%d)) requires FindSetBuffered()\n", step)
-			return false
-		}
-
-		// Advance 'step' times (1 = next record, 2 = skip 1 record, etc.)
-		for i := 0; i < step; i++ {
-			if !t.currentRows.Next() {
-				// No more rows - close result set
-				t.currentRows.Close()
-				t.currentRows = nil
-				return false
-			}
-		}
-
-		// Scan the row
-		var is_totalBool sql.NullBool
-		var unit_of_measure_codeNull sql.NullString
-		var line_typeInt int
-		var work_type_codeNull sql.NullString
-		var quantityNull sql.NullString
-		var unit_of_measure_textNull sql.NullString
-
-		err := t.currentRows.Scan(
-			&is_totalBool,
-			&unit_of_measure_codeNull,
-			&line_typeInt,
-			&work_type_codeNull,
-			&quantityNull,
-			&unit_of_measure_textNull,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan Project_Journal_Quantity record: %v\n", err)
-			t.currentRows.Close()
-			t.currentRows = nil
-			return false
-		}
-
-		// Populate fields
-		t.Is_total = is_totalBool.Bool
-		t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
-		t.Line_type = ProjectJournalQuantityLine_type(line_typeInt)
-		t.Work_type_code = types.NewCode(work_type_codeNull.String)
-		t.Quantity, _ = types.NewDecimalFromString(quantityNull.String)
-		t.Unit_of_measure_text = types.NewText(unit_of_measure_textNull.String)
-
-		// Store old values for field tracking
-		t.StoreOldValues()
-
-		return true
-	}
-
-	// No record set (after Get, Find, FindFirst, FindLast): the next record in the current key
-	// and direction within the filters, one step at a time (classic NEXT after FIND); a step
-	// that finds none leaves the record on the last one reached
-	if step == 0 {
-		return false
-	}
-	for i := 0; i != step; {
-		if step > 0 {
-			if !t.findInKey(">", false) {
-				return false
-			}
-			i++
-		} else {
-			if !t.findInKey("<", true) {
-				return false
-			}
-			i--
-		}
-	}
-	return true
+	return t.rec().Next(steps, t.findInKey)
 }
 
 // FindSetBuffered loads all filtered records into memory for bidirectional navigation
 // Use this when you need to move backward/forward with Next(steps)
-// Filters (SetRange/SetFilter) are applied in SQL before buffering to minimize memory usage
 // Returns true if at least one record found, false otherwise
 func (t *ProjectJournalQuantity) FindSetBuffered() bool {
-	// Close any existing forward-only result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-
-	// Clear any existing buffer
-	t.bufferedRecords = nil
-	t.currentBufferPos = -1
-	tableName := fmt.Sprintf("%s$%s", t.company, ProjectJournalQuantityTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT is_total, unit_of_measure_code, line_type, work_type_code, quantity, unit_of_measure_text FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSetBuffered for Project_Journal_Quantity: %v\n", err)
-		return false
-	}
-	defer rows.Close()
-
-	// Load all records into memory
-	for rows.Next() {
-		// Create a new record instance
-		record := &ProjectJournalQuantity{}
-		record.db = t.db
-		record.temp = t.temp
-		record.company = t.company
-		record.dbType = t.dbType
-
-		// Scan the row
-		var is_totalBool sql.NullBool
-		var unit_of_measure_codeNull sql.NullString
-		var line_typeInt int
-		var work_type_codeNull sql.NullString
-		var quantityNull sql.NullString
-		var unit_of_measure_textNull sql.NullString
-
-		err := rows.Scan(
-			&is_totalBool,
-			&unit_of_measure_codeNull,
-			&line_typeInt,
-			&work_type_codeNull,
-			&quantityNull,
-			&unit_of_measure_textNull,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan Project_Journal_Quantity record: %v\n", err)
-			return false
-		}
-
-		// Populate special type fields
-		record.Is_total = is_totalBool.Bool
-		record.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
-		record.Line_type = ProjectJournalQuantityLine_type(line_typeInt)
-		record.Work_type_code = types.NewCode(work_type_codeNull.String)
-		record.Quantity, _ = types.NewDecimalFromString(quantityNull.String)
-		record.Unit_of_measure_text = types.NewText(unit_of_measure_textNull.String)
-
-		// Store old values
-		record.StoreOldValues()
-
-		// Add to buffer
-		t.bufferedRecords = append(t.bufferedRecords, record)
-	}
-
-	// Check for errors during iteration
-	if err := rows.Err(); err != nil {
-		fmt.Printf("Error: Failed to iterate Project_Journal_Quantity records: %v\n", err)
-		return false
-	}
-
-	// If no records found, return false
-	if len(t.bufferedRecords) == 0 {
-		return false
-	}
-
-	// Load first record into current instance
-	t.currentBufferPos = 0
-	t.copyFromBuffered(t.bufferedRecords[0])
-
-	return true
-}
-
-// copyFromBuffered copies field values from a buffered record to the current instance
-func (t *ProjectJournalQuantity) copyFromBuffered(record *ProjectJournalQuantity) {
-	t.Is_total = record.Is_total
-	t.Unit_of_measure_code = record.Unit_of_measure_code
-	t.Line_type = record.Line_type
-	t.Work_type_code = record.Work_type_code
-	t.Quantity = record.Quantity
-	t.Unit_of_measure_text = record.Unit_of_measure_text
-	t.StoreOldValues()
+	return t.rec().FindSetBuffered()
 }
 
 // ========================================
@@ -1984,49 +1538,9 @@ func (t *ProjectJournalQuantity) Find(which ...string) bool {
 }
 
 // findInKey reads the first record in the current key and direction — reversed for the
-// last — and with seek ">"/"<" only after/before the current record (a row-value
-// comparison on the key and primary key columns). A key with a FlowField cannot seek.
+// last — and with seek ">"/"<" only after/before the current record
 func (t *ProjectJournalQuantity) findInKey(seek string, reverse bool) bool {
-	if seek != "" {
-		var columns, params []string
-		var values []interface{}
-		for _, column := range t.keyColumns() {
-			v, ok := t.columnValue(column)
-			if !ok {
-				fmt.Printf("Error: Find(%q) on Project_Journal_Quantity needs a key of stored fields\n", seek)
-				return false
-			}
-			if t.isKeyDateColumn(column) {
-				v = types.KeyDate(v)
-			}
-			columns = append(columns, t.cmpColumn(column))
-			params = append(params, t.cmpParam(column))
-			values = append(values, v)
-		}
-		after := (seek == ">") != t.q.Descending
-		op := "<"
-		if after {
-			op = ">"
-		}
-		t.q.Seek = "(" + strings.Join(columns, ", ") + ") " + op + " (" + strings.Join(params, ", ") + ")"
-		t.q.SeekArgs = values
-	}
-	savedLimit, savedOffset, savedDescending := t.limit, t.offset, t.q.Descending
-	t.limit, t.offset = 1, 0
-	if reverse {
-		t.q.Descending = !t.q.Descending
-	}
-	found := t.FindSet()
-	// One record read: a later Next seeks from it in the key (inside a transaction FindSet
-	// buffers its rows — a one-row buffer would end the Next at once)
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	t.limit, t.offset, t.q.Descending = savedLimit, savedOffset, savedDescending
-	t.q.Seek, t.q.SeekArgs = "", nil
-	return found
+	return t.rec().FindInKey(seek, reverse)
 }
 
 // keyColumns returns the columns of the current key followed by the primary key's (the

@@ -147,19 +147,11 @@ type EntryApplication struct {
 	// Temporary: the record's own table is in a private in-memory database (InitTemporary)
 	temp *tables.TemporaryStore
 
-	// Iteration state for FindSet/Next
-	currentRows *sql.Rows
+	// The result set of FindSet/FindSetBuffered/Next and the paging window (SetPage)
+	cur tables.Cursor
 
 	// LockTable: the following reads lock the rows they read (SELECT … FOR UPDATE, Postgres)
 	lockForUpdate bool
-
-	// Pagination window for FindSet/FindSetBuffered (0 limit = all rows)
-	limit  int
-	offset int
-
-	// Buffered recordset for bidirectional navigation
-	bufferedRecords  []*EntryApplication
-	currentBufferPos int
 
 	// Business logic of this record only (SetLogic, tests); nil = the registered logic
 	// (RegisterEntryApplicationLogic)
@@ -870,35 +862,14 @@ func (t *EntryApplication) convertPlaceholders(sql string, count int) string {
 // For single primary key: pass the value directly (string, int, etc.)
 // For composite keys: pass a map[string]interface{} with field names as keys
 func (t *EntryApplication) Get(primaryKey interface{}) bool {
-	// Handle composite primary key (map[string]interface{})
+	// A composite primary key (map[string]interface{}, values also as text)
 	if pkMap, ok := primaryKey.(map[string]interface{}); ok {
-		var entry_noVal int
-		if v, exists := pkMap["entry_no"]; exists {
-			switch val := v.(type) {
-			case int:
-				entry_noVal = val
-			case float64:
-				entry_noVal = int(val)
-			case string:
-				// the key part as text: the API's "CUSTOMER1,10000"
-				if n, err := strconv.Atoi(strings.TrimSpace(val)); err == nil {
-					entry_noVal = n
-				}
-			}
-		}
-		return t.GetByPK(entry_noVal)
+		key := entryApplicationFields.KeyFromMap(pkMap)
+		return t.GetByPK(key[0].(int))
 	}
-	// Handle single primary key (for tables with only one PK field)
-	switch pk := primaryKey.(type) {
-	case int:
-		return t.GetByPK(pk)
-	case float64:
-		return t.GetByPK(int(pk))
-	case string:
-		var intVal int
-		if _, err := fmt.Sscanf(pk, "%d", &intVal); err == nil {
-			return t.GetByPK(intVal)
-		}
+	// The primary key itself (a table with one primary key field)
+	if key, ok := entryApplicationFields.KeyFromValue(primaryKey); ok {
+		return t.GetByPK([]any{key}[0].(int))
 	}
 
 	fmt.Printf("Error: Invalid primary key type for Entry_Application.Get: %T (use map for composite keys)\n", primaryKey)
@@ -907,150 +878,11 @@ func (t *EntryApplication) Get(primaryKey interface{}) bool {
 
 // GetByPK retrieves a record by its typed primary key(s) - for direct typed access
 func (t *EntryApplication) GetByPK(entry_no int) bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, EntryApplicationTableName)
-	var entry_noVal int
-	var application_noVal int
-	var account_typeInt int
-	var account_noNull sql.NullString
-	var ledger_entry_noVal int
-	var applying_entryBool sql.NullBool
-	var posting_dateNull sql.NullString
-	var document_noNull sql.NullString
-	var amount_appliedNull sql.NullString
-	var transaction_noVal int
-	var user_idNull sql.NullString
-	var unappliedBool sql.NullBool
-	var unapplied_transaction_noVal int
-	var unapplied_dateNull sql.NullString
-	var unapplied_by_user_idNull sql.NullString
-	var amountNull sql.NullString
-	var amount_lcyNull sql.NullString
-	var original_amount_lcyNull sql.NullString
-	var remaining_amountNull sql.NullString
-	var remaining_amt_lcyNull sql.NullString
-	var openBool sql.NullBool
-	var debit_amountNull sql.NullString
-	var credit_amountNull sql.NullString
-	var debit_amount_lcyNull sql.NullString
-	var credit_amount_lcyNull sql.NullString
-	var closed_by_entry_noVal int
-	var closed_at_dateNull sql.NullString
-	var closed_by_amountNull sql.NullString
-	var closed_by_amount_lcyNull sql.NullString
-	var closed_by_currency_codeNull sql.NullString
-	var closed_by_currency_amountNull sql.NullString
-	var pmt_disc_lcyNull sql.NullString
-	var rounding_amountNull sql.NullString
-	var rounding_amount_lcyNull sql.NullString
-	var rounding_currencyNull sql.NullString
-	var applies_to_idNull sql.NullString
-	var calculate_interestBool sql.NullBool
-
 	// Collect arguments for query
 	args := []interface{}{
 		entry_no,
 	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT entry_no, application_no, account_type, account_no, ledger_entry_no, applying_entry, posting_date, document_no, amount_applied, transaction_no, user_id, unapplied, unapplied_transaction_no, unapplied_date, unapplied_by_user_id, amount, amount_lcy, original_amount_lcy, remaining_amount, remaining_amt_lcy, open, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, closed_by_entry_no, closed_at_date, closed_by_amount, closed_by_amount_lcy, closed_by_currency_code, closed_by_currency_amount, pmt_disc_lcy, rounding_amount, rounding_amount_lcy, rounding_currency, applies_to_id, calculate_interest FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-	sqlStr += t.forUpdate()
-
-	err := t.exec().QueryRow(sqlStr, args...).Scan(
-		&entry_noVal,
-		&application_noVal,
-		&account_typeInt,
-		&account_noNull,
-		&ledger_entry_noVal,
-		&applying_entryBool,
-		&posting_dateNull,
-		&document_noNull,
-		&amount_appliedNull,
-		&transaction_noVal,
-		&user_idNull,
-		&unappliedBool,
-		&unapplied_transaction_noVal,
-		&unapplied_dateNull,
-		&unapplied_by_user_idNull,
-		&amountNull,
-		&amount_lcyNull,
-		&original_amount_lcyNull,
-		&remaining_amountNull,
-		&remaining_amt_lcyNull,
-		&openBool,
-		&debit_amountNull,
-		&credit_amountNull,
-		&debit_amount_lcyNull,
-		&credit_amount_lcyNull,
-		&closed_by_entry_noVal,
-		&closed_at_dateNull,
-		&closed_by_amountNull,
-		&closed_by_amount_lcyNull,
-		&closed_by_currency_codeNull,
-		&closed_by_currency_amountNull,
-		&pmt_disc_lcyNull,
-		&rounding_amountNull,
-		&rounding_amount_lcyNull,
-		&rounding_currencyNull,
-		&applies_to_idNull,
-		&calculate_interestBool,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			// Record not found - this is not an error, just return false
-			return false
-		}
-		// Actual database error
-		fmt.Printf("Error: Failed to get Entry_Application: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Entry_no = entry_noVal
-	t.Application_no = application_noVal
-	t.Account_type = EntryApplicationAccount_type(account_typeInt)
-	t.Account_no = types.NewCode(account_noNull.String)
-	t.Ledger_entry_no = ledger_entry_noVal
-	t.Applying_entry = applying_entryBool.Bool
-	t.Posting_date, _ = types.NewDateFromString(posting_dateNull.String)
-	t.Document_no = types.NewCode(document_noNull.String)
-	t.Amount_applied, _ = types.NewDecimalFromString(amount_appliedNull.String)
-	t.Transaction_no = transaction_noVal
-	t.User_id = types.NewCode(user_idNull.String)
-	t.Unapplied = unappliedBool.Bool
-	t.Unapplied_transaction_no = unapplied_transaction_noVal
-	t.Unapplied_date, _ = types.NewDateFromString(unapplied_dateNull.String)
-	t.Unapplied_by_user_id = types.NewCode(unapplied_by_user_idNull.String)
-	t.Amount, _ = types.NewDecimalFromString(amountNull.String)
-	t.Amount_lcy, _ = types.NewDecimalFromString(amount_lcyNull.String)
-	t.Original_amount_lcy, _ = types.NewDecimalFromString(original_amount_lcyNull.String)
-	t.Remaining_amount, _ = types.NewDecimalFromString(remaining_amountNull.String)
-	t.Remaining_amt_lcy, _ = types.NewDecimalFromString(remaining_amt_lcyNull.String)
-	t.Open = openBool.Bool
-	t.Debit_amount, _ = types.NewDecimalFromString(debit_amountNull.String)
-	t.Credit_amount, _ = types.NewDecimalFromString(credit_amountNull.String)
-	t.Debit_amount_lcy, _ = types.NewDecimalFromString(debit_amount_lcyNull.String)
-	t.Credit_amount_lcy, _ = types.NewDecimalFromString(credit_amount_lcyNull.String)
-	t.Closed_by_entry_no = closed_by_entry_noVal
-	t.Closed_at_date, _ = types.NewDateFromString(closed_at_dateNull.String)
-	t.Closed_by_amount, _ = types.NewDecimalFromString(closed_by_amountNull.String)
-	t.Closed_by_amount_lcy, _ = types.NewDecimalFromString(closed_by_amount_lcyNull.String)
-	t.Closed_by_currency_code = types.NewCode(closed_by_currency_codeNull.String)
-	t.Closed_by_currency_amount, _ = types.NewDecimalFromString(closed_by_currency_amountNull.String)
-	t.Pmt_disc_lcy, _ = types.NewDecimalFromString(pmt_disc_lcyNull.String)
-	t.Rounding_amount, _ = types.NewDecimalFromString(rounding_amountNull.String)
-	t.Rounding_amount_lcy, _ = types.NewDecimalFromString(rounding_amount_lcyNull.String)
-	t.Rounding_currency = types.NewCode(rounding_currencyNull.String)
-	t.Applies_to_id = types.NewCode(applies_to_idNull.String)
-	t.Calculate_interest = calculate_interestBool.Bool
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().Get(args)
 }
 
 // Insert inserts the record into the database
@@ -1604,10 +1436,7 @@ func (t *EntryApplication) columnName(fieldName string) (string, bool) {
 func (t *EntryApplication) Reset() {
 	t.q.Reset()
 	t.oldValues = nil
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
+	t.cur.CloseRows()
 }
 
 // buildWhereClause builds WHERE clause from current filters and search
@@ -1649,359 +1478,50 @@ func (t *EntryApplication) getOrderByClause() (string, []interface{}) {
 // limit rows, skipping the first offset rows. A limit of 0 disables pagination
 // (all matching rows are returned). Negative values are treated as 0.
 func (t *EntryApplication) SetPage(limit, offset int) {
-	if limit < 0 {
-		limit = 0
-	}
-	if offset < 0 {
-		offset = 0
-	}
-	t.limit = limit
-	t.offset = offset
+	t.cur.SetPage(limit, offset)
 }
 
-// getLimitClause builds the LIMIT/OFFSET clause from the pagination window.
-// Returns an empty string when no limit is set. LIMIT/OFFSET take integer
-// literals (not placeholders), which both SQLite and PostgreSQL accept.
-func (t *EntryApplication) getLimitClause() string {
-	if t.limit <= 0 {
-		return ""
+// rec is what the read functions of foundation/tables need of the record
+func (t *EntryApplication) rec() *tables.Rec {
+	_, inTx := t.db.(*sql.Tx)
+	return &tables.Rec{
+		Fields:    entryApplicationFields,
+		Ref:       t.fieldRef,
+		QT:        t.qt(),
+		Q:         &t.q,
+		Cur:       &t.cur,
+		Exec:      t.exec(),
+		Buffered:  t.temp != nil || inTx,
+		Postgres:  t.dbType == database.DBTypePostgres,
+		Table:     fmt.Sprintf("%s$%s", t.company, EntryApplicationTableName),
+		ForUpdate: t.forUpdate(),
+		Store:     t.StoreOldValues,
 	}
-	if t.offset > 0 {
-		return fmt.Sprintf(" LIMIT %d OFFSET %d", t.limit, t.offset)
-	}
-	return fmt.Sprintf(" LIMIT %d", t.limit)
 }
 
 // FindFirst finds the first record matching current filters
 // Returns true if found, false if not found
 func (t *EntryApplication) FindFirst() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, EntryApplicationTableName)
-	where, args := t.buildWhereClause()
-	// The first record in the current key and direction (classic FIND('-'))
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, application_no, account_type, account_no, ledger_entry_no, applying_entry, posting_date, document_no, amount_applied, transaction_no, user_id, unapplied, unapplied_transaction_no, unapplied_date, unapplied_by_user_id, amount, amount_lcy, original_amount_lcy, remaining_amount, remaining_amt_lcy, open, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, closed_by_entry_no, closed_at_date, closed_by_amount, closed_by_amount_lcy, closed_by_currency_code, closed_by_currency_amount, pmt_disc_lcy, rounding_amount, rounding_amount_lcy, rounding_currency, applies_to_id, calculate_interest FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var account_typeInt int
-	var account_noNull sql.NullString
-	var applying_entryBool sql.NullBool
-	var posting_dateNull sql.NullString
-	var document_noNull sql.NullString
-	var amount_appliedNull sql.NullString
-	var user_idNull sql.NullString
-	var unappliedBool sql.NullBool
-	var unapplied_dateNull sql.NullString
-	var unapplied_by_user_idNull sql.NullString
-	var amountNull sql.NullString
-	var amount_lcyNull sql.NullString
-	var original_amount_lcyNull sql.NullString
-	var remaining_amountNull sql.NullString
-	var remaining_amt_lcyNull sql.NullString
-	var openBool sql.NullBool
-	var debit_amountNull sql.NullString
-	var credit_amountNull sql.NullString
-	var debit_amount_lcyNull sql.NullString
-	var credit_amount_lcyNull sql.NullString
-	var closed_at_dateNull sql.NullString
-	var closed_by_amountNull sql.NullString
-	var closed_by_amount_lcyNull sql.NullString
-	var closed_by_currency_codeNull sql.NullString
-	var closed_by_currency_amountNull sql.NullString
-	var pmt_disc_lcyNull sql.NullString
-	var rounding_amountNull sql.NullString
-	var rounding_amount_lcyNull sql.NullString
-	var rounding_currencyNull sql.NullString
-	var applies_to_idNull sql.NullString
-	var calculate_interestBool sql.NullBool
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&t.Entry_no,
-		&t.Application_no,
-		&account_typeInt,
-		&account_noNull,
-		&t.Ledger_entry_no,
-		&applying_entryBool,
-		&posting_dateNull,
-		&document_noNull,
-		&amount_appliedNull,
-		&t.Transaction_no,
-		&user_idNull,
-		&unappliedBool,
-		&t.Unapplied_transaction_no,
-		&unapplied_dateNull,
-		&unapplied_by_user_idNull,
-		&amountNull,
-		&amount_lcyNull,
-		&original_amount_lcyNull,
-		&remaining_amountNull,
-		&remaining_amt_lcyNull,
-		&openBool,
-		&debit_amountNull,
-		&credit_amountNull,
-		&debit_amount_lcyNull,
-		&credit_amount_lcyNull,
-		&t.Closed_by_entry_no,
-		&closed_at_dateNull,
-		&closed_by_amountNull,
-		&closed_by_amount_lcyNull,
-		&closed_by_currency_codeNull,
-		&closed_by_currency_amountNull,
-		&pmt_disc_lcyNull,
-		&rounding_amountNull,
-		&rounding_amount_lcyNull,
-		&rounding_currencyNull,
-		&applies_to_idNull,
-		&calculate_interestBool,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find first Entry_Application: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Account_type = EntryApplicationAccount_type(account_typeInt)
-	t.Account_no = types.NewCode(account_noNull.String)
-	t.Applying_entry = applying_entryBool.Bool
-	t.Posting_date, _ = types.NewDateFromString(posting_dateNull.String)
-	t.Document_no = types.NewCode(document_noNull.String)
-	t.Amount_applied, _ = types.NewDecimalFromString(amount_appliedNull.String)
-	t.User_id = types.NewCode(user_idNull.String)
-	t.Unapplied = unappliedBool.Bool
-	t.Unapplied_date, _ = types.NewDateFromString(unapplied_dateNull.String)
-	t.Unapplied_by_user_id = types.NewCode(unapplied_by_user_idNull.String)
-	t.Amount, _ = types.NewDecimalFromString(amountNull.String)
-	t.Amount_lcy, _ = types.NewDecimalFromString(amount_lcyNull.String)
-	t.Original_amount_lcy, _ = types.NewDecimalFromString(original_amount_lcyNull.String)
-	t.Remaining_amount, _ = types.NewDecimalFromString(remaining_amountNull.String)
-	t.Remaining_amt_lcy, _ = types.NewDecimalFromString(remaining_amt_lcyNull.String)
-	t.Open = openBool.Bool
-	t.Debit_amount, _ = types.NewDecimalFromString(debit_amountNull.String)
-	t.Credit_amount, _ = types.NewDecimalFromString(credit_amountNull.String)
-	t.Debit_amount_lcy, _ = types.NewDecimalFromString(debit_amount_lcyNull.String)
-	t.Credit_amount_lcy, _ = types.NewDecimalFromString(credit_amount_lcyNull.String)
-	t.Closed_at_date, _ = types.NewDateFromString(closed_at_dateNull.String)
-	t.Closed_by_amount, _ = types.NewDecimalFromString(closed_by_amountNull.String)
-	t.Closed_by_amount_lcy, _ = types.NewDecimalFromString(closed_by_amount_lcyNull.String)
-	t.Closed_by_currency_code = types.NewCode(closed_by_currency_codeNull.String)
-	t.Closed_by_currency_amount, _ = types.NewDecimalFromString(closed_by_currency_amountNull.String)
-	t.Pmt_disc_lcy, _ = types.NewDecimalFromString(pmt_disc_lcyNull.String)
-	t.Rounding_amount, _ = types.NewDecimalFromString(rounding_amountNull.String)
-	t.Rounding_amount_lcy, _ = types.NewDecimalFromString(rounding_amount_lcyNull.String)
-	t.Rounding_currency = types.NewCode(rounding_currencyNull.String)
-	t.Applies_to_id = types.NewCode(applies_to_idNull.String)
-	t.Calculate_interest = calculate_interestBool.Bool
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindFirst()
 }
 
 // FindLast finds the last record matching current filters
 // Returns true if found, false if not found
 func (t *EntryApplication) FindLast() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, EntryApplicationTableName)
-	where, args := t.buildWhereClause()
-	// The last record in the current key and direction (classic FIND('+')): the key reversed,
-	// every column of it
-	t.q.Descending = !t.q.Descending
-	orderBy, orderArgs := t.getOrderByClause()
-	t.q.Descending = !t.q.Descending
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, application_no, account_type, account_no, ledger_entry_no, applying_entry, posting_date, document_no, amount_applied, transaction_no, user_id, unapplied, unapplied_transaction_no, unapplied_date, unapplied_by_user_id, amount, amount_lcy, original_amount_lcy, remaining_amount, remaining_amt_lcy, open, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, closed_by_entry_no, closed_at_date, closed_by_amount, closed_by_amount_lcy, closed_by_currency_code, closed_by_currency_amount, pmt_disc_lcy, rounding_amount, rounding_amount_lcy, rounding_currency, applies_to_id, calculate_interest FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var account_typeInt int
-	var account_noNull sql.NullString
-	var applying_entryBool sql.NullBool
-	var posting_dateNull sql.NullString
-	var document_noNull sql.NullString
-	var amount_appliedNull sql.NullString
-	var user_idNull sql.NullString
-	var unappliedBool sql.NullBool
-	var unapplied_dateNull sql.NullString
-	var unapplied_by_user_idNull sql.NullString
-	var amountNull sql.NullString
-	var amount_lcyNull sql.NullString
-	var original_amount_lcyNull sql.NullString
-	var remaining_amountNull sql.NullString
-	var remaining_amt_lcyNull sql.NullString
-	var openBool sql.NullBool
-	var debit_amountNull sql.NullString
-	var credit_amountNull sql.NullString
-	var debit_amount_lcyNull sql.NullString
-	var credit_amount_lcyNull sql.NullString
-	var closed_at_dateNull sql.NullString
-	var closed_by_amountNull sql.NullString
-	var closed_by_amount_lcyNull sql.NullString
-	var closed_by_currency_codeNull sql.NullString
-	var closed_by_currency_amountNull sql.NullString
-	var pmt_disc_lcyNull sql.NullString
-	var rounding_amountNull sql.NullString
-	var rounding_amount_lcyNull sql.NullString
-	var rounding_currencyNull sql.NullString
-	var applies_to_idNull sql.NullString
-	var calculate_interestBool sql.NullBool
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&t.Entry_no,
-		&t.Application_no,
-		&account_typeInt,
-		&account_noNull,
-		&t.Ledger_entry_no,
-		&applying_entryBool,
-		&posting_dateNull,
-		&document_noNull,
-		&amount_appliedNull,
-		&t.Transaction_no,
-		&user_idNull,
-		&unappliedBool,
-		&t.Unapplied_transaction_no,
-		&unapplied_dateNull,
-		&unapplied_by_user_idNull,
-		&amountNull,
-		&amount_lcyNull,
-		&original_amount_lcyNull,
-		&remaining_amountNull,
-		&remaining_amt_lcyNull,
-		&openBool,
-		&debit_amountNull,
-		&credit_amountNull,
-		&debit_amount_lcyNull,
-		&credit_amount_lcyNull,
-		&t.Closed_by_entry_no,
-		&closed_at_dateNull,
-		&closed_by_amountNull,
-		&closed_by_amount_lcyNull,
-		&closed_by_currency_codeNull,
-		&closed_by_currency_amountNull,
-		&pmt_disc_lcyNull,
-		&rounding_amountNull,
-		&rounding_amount_lcyNull,
-		&rounding_currencyNull,
-		&applies_to_idNull,
-		&calculate_interestBool,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find last Entry_Application: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Account_type = EntryApplicationAccount_type(account_typeInt)
-	t.Account_no = types.NewCode(account_noNull.String)
-	t.Applying_entry = applying_entryBool.Bool
-	t.Posting_date, _ = types.NewDateFromString(posting_dateNull.String)
-	t.Document_no = types.NewCode(document_noNull.String)
-	t.Amount_applied, _ = types.NewDecimalFromString(amount_appliedNull.String)
-	t.User_id = types.NewCode(user_idNull.String)
-	t.Unapplied = unappliedBool.Bool
-	t.Unapplied_date, _ = types.NewDateFromString(unapplied_dateNull.String)
-	t.Unapplied_by_user_id = types.NewCode(unapplied_by_user_idNull.String)
-	t.Amount, _ = types.NewDecimalFromString(amountNull.String)
-	t.Amount_lcy, _ = types.NewDecimalFromString(amount_lcyNull.String)
-	t.Original_amount_lcy, _ = types.NewDecimalFromString(original_amount_lcyNull.String)
-	t.Remaining_amount, _ = types.NewDecimalFromString(remaining_amountNull.String)
-	t.Remaining_amt_lcy, _ = types.NewDecimalFromString(remaining_amt_lcyNull.String)
-	t.Open = openBool.Bool
-	t.Debit_amount, _ = types.NewDecimalFromString(debit_amountNull.String)
-	t.Credit_amount, _ = types.NewDecimalFromString(credit_amountNull.String)
-	t.Debit_amount_lcy, _ = types.NewDecimalFromString(debit_amount_lcyNull.String)
-	t.Credit_amount_lcy, _ = types.NewDecimalFromString(credit_amount_lcyNull.String)
-	t.Closed_at_date, _ = types.NewDateFromString(closed_at_dateNull.String)
-	t.Closed_by_amount, _ = types.NewDecimalFromString(closed_by_amountNull.String)
-	t.Closed_by_amount_lcy, _ = types.NewDecimalFromString(closed_by_amount_lcyNull.String)
-	t.Closed_by_currency_code = types.NewCode(closed_by_currency_codeNull.String)
-	t.Closed_by_currency_amount, _ = types.NewDecimalFromString(closed_by_currency_amountNull.String)
-	t.Pmt_disc_lcy, _ = types.NewDecimalFromString(pmt_disc_lcyNull.String)
-	t.Rounding_amount, _ = types.NewDecimalFromString(rounding_amountNull.String)
-	t.Rounding_amount_lcy, _ = types.NewDecimalFromString(rounding_amount_lcyNull.String)
-	t.Rounding_currency = types.NewCode(rounding_currencyNull.String)
-	t.Applies_to_id = types.NewCode(applies_to_idNull.String)
-	t.Calculate_interest = calculate_interestBool.Bool
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindLast()
 }
 
 // Count returns the number of records matching current filters
 func (t *EntryApplication) Count() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, EntryApplicationTableName)
-	where, args := t.buildWhereClause()
-
-	query := fmt.Sprintf(`SELECT COUNT(*) FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var count int
-	err := t.exec().QueryRow(query, args...).Scan(&count)
-	if err != nil {
-		fmt.Printf("Error: Failed to count Entry_Application: %v\n", err)
-		return 0
-	}
-
-	return count
+	return t.rec().Count()
 }
 
 // FindSet opens a result set matching current filters
 // Call Next() to iterate through the results
-// Returns true if at least one record found, false otherwise
+// Returns true if at least one record found, false otherwise. A temporary record, and a
+// record in a transaction, reads all at once (FindSetBuffered).
 func (t *EntryApplication) FindSet() bool {
-	// A temporary record, and a record in a transaction, reads all at once: its in-memory
-	// database or the transaction has one connection, which an open result set would block for
-	// the statements of the loop (Modify while looping; on PostgreSQL a query while the rows are
-	// read breaks the connection — "unexpected Parse response")
-	if _, inTx := t.db.(*sql.Tx); t.temp != nil || inTx {
-		return t.FindSetBuffered()
-	}
-	// Close any existing result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	tableName := fmt.Sprintf("%s$%s", t.company, EntryApplicationTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, application_no, account_type, account_no, ledger_entry_no, applying_entry, posting_date, document_no, amount_applied, transaction_no, user_id, unapplied, unapplied_transaction_no, unapplied_date, unapplied_by_user_id, amount, amount_lcy, original_amount_lcy, remaining_amount, remaining_amt_lcy, open, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, closed_by_entry_no, closed_at_date, closed_by_amount, closed_by_amount_lcy, closed_by_currency_code, closed_by_currency_amount, pmt_disc_lcy, rounding_amount, rounding_amount_lcy, rounding_currency, applies_to_id, calculate_interest FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSet for Entry_Application: %v\n", err)
-		return false
-	}
-
-	t.currentRows = rows
-
-	// Load first record
-	return t.Next()
+	return t.rec().FindSet()
 }
 
 // Next advances to the next record: in the result set after FindSet() or FindSetBuffered(),
@@ -2014,404 +1534,14 @@ func (t *EntryApplication) FindSet() bool {
 //
 // Returns true if a record was loaded, false if no more records or out of bounds
 func (t *EntryApplication) Next(steps ...int) bool {
-	// Default to 1 step forward
-	step := 1
-	if len(steps) > 0 {
-		step = steps[0]
-	}
-
-	// BUFFERED MODE: Bidirectional navigation with in-memory records
-	if t.bufferedRecords != nil {
-		// Calculate new position
-		newPos := t.currentBufferPos + step
-
-		// Check bounds
-		if newPos < 0 || newPos >= len(t.bufferedRecords) {
-			return false // Out of bounds
-		}
-
-		// Move to new position
-		t.currentBufferPos = newPos
-		t.copyFromBuffered(t.bufferedRecords[t.currentBufferPos])
-		return true
-	}
-
-	// FORWARD-ONLY MODE: Streaming with sql.Rows (only positive steps allowed)
-	if t.currentRows != nil {
-		// Validate: only forward movement allowed
-		if step < 1 {
-			fmt.Printf("Error: Backward navigation (Next(%d)) requires FindSetBuffered()\n", step)
-			return false
-		}
-
-		// Advance 'step' times (1 = next record, 2 = skip 1 record, etc.)
-		for i := 0; i < step; i++ {
-			if !t.currentRows.Next() {
-				// No more rows - close result set
-				t.currentRows.Close()
-				t.currentRows = nil
-				return false
-			}
-		}
-
-		// Scan the row
-		var account_typeInt int
-		var account_noNull sql.NullString
-		var applying_entryBool sql.NullBool
-		var posting_dateNull sql.NullString
-		var document_noNull sql.NullString
-		var amount_appliedNull sql.NullString
-		var user_idNull sql.NullString
-		var unappliedBool sql.NullBool
-		var unapplied_dateNull sql.NullString
-		var unapplied_by_user_idNull sql.NullString
-		var amountNull sql.NullString
-		var amount_lcyNull sql.NullString
-		var original_amount_lcyNull sql.NullString
-		var remaining_amountNull sql.NullString
-		var remaining_amt_lcyNull sql.NullString
-		var openBool sql.NullBool
-		var debit_amountNull sql.NullString
-		var credit_amountNull sql.NullString
-		var debit_amount_lcyNull sql.NullString
-		var credit_amount_lcyNull sql.NullString
-		var closed_at_dateNull sql.NullString
-		var closed_by_amountNull sql.NullString
-		var closed_by_amount_lcyNull sql.NullString
-		var closed_by_currency_codeNull sql.NullString
-		var closed_by_currency_amountNull sql.NullString
-		var pmt_disc_lcyNull sql.NullString
-		var rounding_amountNull sql.NullString
-		var rounding_amount_lcyNull sql.NullString
-		var rounding_currencyNull sql.NullString
-		var applies_to_idNull sql.NullString
-		var calculate_interestBool sql.NullBool
-
-		err := t.currentRows.Scan(
-			&t.Entry_no,
-			&t.Application_no,
-			&account_typeInt,
-			&account_noNull,
-			&t.Ledger_entry_no,
-			&applying_entryBool,
-			&posting_dateNull,
-			&document_noNull,
-			&amount_appliedNull,
-			&t.Transaction_no,
-			&user_idNull,
-			&unappliedBool,
-			&t.Unapplied_transaction_no,
-			&unapplied_dateNull,
-			&unapplied_by_user_idNull,
-			&amountNull,
-			&amount_lcyNull,
-			&original_amount_lcyNull,
-			&remaining_amountNull,
-			&remaining_amt_lcyNull,
-			&openBool,
-			&debit_amountNull,
-			&credit_amountNull,
-			&debit_amount_lcyNull,
-			&credit_amount_lcyNull,
-			&t.Closed_by_entry_no,
-			&closed_at_dateNull,
-			&closed_by_amountNull,
-			&closed_by_amount_lcyNull,
-			&closed_by_currency_codeNull,
-			&closed_by_currency_amountNull,
-			&pmt_disc_lcyNull,
-			&rounding_amountNull,
-			&rounding_amount_lcyNull,
-			&rounding_currencyNull,
-			&applies_to_idNull,
-			&calculate_interestBool,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan Entry_Application record: %v\n", err)
-			t.currentRows.Close()
-			t.currentRows = nil
-			return false
-		}
-
-		// Populate fields
-		t.Account_type = EntryApplicationAccount_type(account_typeInt)
-		t.Account_no = types.NewCode(account_noNull.String)
-		t.Applying_entry = applying_entryBool.Bool
-		t.Posting_date, _ = types.NewDateFromString(posting_dateNull.String)
-		t.Document_no = types.NewCode(document_noNull.String)
-		t.Amount_applied, _ = types.NewDecimalFromString(amount_appliedNull.String)
-		t.User_id = types.NewCode(user_idNull.String)
-		t.Unapplied = unappliedBool.Bool
-		t.Unapplied_date, _ = types.NewDateFromString(unapplied_dateNull.String)
-		t.Unapplied_by_user_id = types.NewCode(unapplied_by_user_idNull.String)
-		t.Amount, _ = types.NewDecimalFromString(amountNull.String)
-		t.Amount_lcy, _ = types.NewDecimalFromString(amount_lcyNull.String)
-		t.Original_amount_lcy, _ = types.NewDecimalFromString(original_amount_lcyNull.String)
-		t.Remaining_amount, _ = types.NewDecimalFromString(remaining_amountNull.String)
-		t.Remaining_amt_lcy, _ = types.NewDecimalFromString(remaining_amt_lcyNull.String)
-		t.Open = openBool.Bool
-		t.Debit_amount, _ = types.NewDecimalFromString(debit_amountNull.String)
-		t.Credit_amount, _ = types.NewDecimalFromString(credit_amountNull.String)
-		t.Debit_amount_lcy, _ = types.NewDecimalFromString(debit_amount_lcyNull.String)
-		t.Credit_amount_lcy, _ = types.NewDecimalFromString(credit_amount_lcyNull.String)
-		t.Closed_at_date, _ = types.NewDateFromString(closed_at_dateNull.String)
-		t.Closed_by_amount, _ = types.NewDecimalFromString(closed_by_amountNull.String)
-		t.Closed_by_amount_lcy, _ = types.NewDecimalFromString(closed_by_amount_lcyNull.String)
-		t.Closed_by_currency_code = types.NewCode(closed_by_currency_codeNull.String)
-		t.Closed_by_currency_amount, _ = types.NewDecimalFromString(closed_by_currency_amountNull.String)
-		t.Pmt_disc_lcy, _ = types.NewDecimalFromString(pmt_disc_lcyNull.String)
-		t.Rounding_amount, _ = types.NewDecimalFromString(rounding_amountNull.String)
-		t.Rounding_amount_lcy, _ = types.NewDecimalFromString(rounding_amount_lcyNull.String)
-		t.Rounding_currency = types.NewCode(rounding_currencyNull.String)
-		t.Applies_to_id = types.NewCode(applies_to_idNull.String)
-		t.Calculate_interest = calculate_interestBool.Bool
-
-		// Store old values for field tracking
-		t.StoreOldValues()
-
-		return true
-	}
-
-	// No record set (after Get, Find, FindFirst, FindLast): the next record in the current key
-	// and direction within the filters, one step at a time (classic NEXT after FIND); a step
-	// that finds none leaves the record on the last one reached
-	if step == 0 {
-		return false
-	}
-	for i := 0; i != step; {
-		if step > 0 {
-			if !t.findInKey(">", false) {
-				return false
-			}
-			i++
-		} else {
-			if !t.findInKey("<", true) {
-				return false
-			}
-			i--
-		}
-	}
-	return true
+	return t.rec().Next(steps, t.findInKey)
 }
 
 // FindSetBuffered loads all filtered records into memory for bidirectional navigation
 // Use this when you need to move backward/forward with Next(steps)
-// Filters (SetRange/SetFilter) are applied in SQL before buffering to minimize memory usage
 // Returns true if at least one record found, false otherwise
 func (t *EntryApplication) FindSetBuffered() bool {
-	// Close any existing forward-only result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-
-	// Clear any existing buffer
-	t.bufferedRecords = nil
-	t.currentBufferPos = -1
-	tableName := fmt.Sprintf("%s$%s", t.company, EntryApplicationTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, application_no, account_type, account_no, ledger_entry_no, applying_entry, posting_date, document_no, amount_applied, transaction_no, user_id, unapplied, unapplied_transaction_no, unapplied_date, unapplied_by_user_id, amount, amount_lcy, original_amount_lcy, remaining_amount, remaining_amt_lcy, open, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, closed_by_entry_no, closed_at_date, closed_by_amount, closed_by_amount_lcy, closed_by_currency_code, closed_by_currency_amount, pmt_disc_lcy, rounding_amount, rounding_amount_lcy, rounding_currency, applies_to_id, calculate_interest FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSetBuffered for Entry_Application: %v\n", err)
-		return false
-	}
-	defer rows.Close()
-
-	// Load all records into memory
-	for rows.Next() {
-		// Create a new record instance
-		record := &EntryApplication{}
-		record.db = t.db
-		record.temp = t.temp
-		record.company = t.company
-		record.dbType = t.dbType
-
-		// Scan the row
-		var account_typeInt int
-		var account_noNull sql.NullString
-		var applying_entryBool sql.NullBool
-		var posting_dateNull sql.NullString
-		var document_noNull sql.NullString
-		var amount_appliedNull sql.NullString
-		var user_idNull sql.NullString
-		var unappliedBool sql.NullBool
-		var unapplied_dateNull sql.NullString
-		var unapplied_by_user_idNull sql.NullString
-		var amountNull sql.NullString
-		var amount_lcyNull sql.NullString
-		var original_amount_lcyNull sql.NullString
-		var remaining_amountNull sql.NullString
-		var remaining_amt_lcyNull sql.NullString
-		var openBool sql.NullBool
-		var debit_amountNull sql.NullString
-		var credit_amountNull sql.NullString
-		var debit_amount_lcyNull sql.NullString
-		var credit_amount_lcyNull sql.NullString
-		var closed_at_dateNull sql.NullString
-		var closed_by_amountNull sql.NullString
-		var closed_by_amount_lcyNull sql.NullString
-		var closed_by_currency_codeNull sql.NullString
-		var closed_by_currency_amountNull sql.NullString
-		var pmt_disc_lcyNull sql.NullString
-		var rounding_amountNull sql.NullString
-		var rounding_amount_lcyNull sql.NullString
-		var rounding_currencyNull sql.NullString
-		var applies_to_idNull sql.NullString
-		var calculate_interestBool sql.NullBool
-
-		err := rows.Scan(
-			&record.Entry_no,
-			&record.Application_no,
-			&account_typeInt,
-			&account_noNull,
-			&record.Ledger_entry_no,
-			&applying_entryBool,
-			&posting_dateNull,
-			&document_noNull,
-			&amount_appliedNull,
-			&record.Transaction_no,
-			&user_idNull,
-			&unappliedBool,
-			&record.Unapplied_transaction_no,
-			&unapplied_dateNull,
-			&unapplied_by_user_idNull,
-			&amountNull,
-			&amount_lcyNull,
-			&original_amount_lcyNull,
-			&remaining_amountNull,
-			&remaining_amt_lcyNull,
-			&openBool,
-			&debit_amountNull,
-			&credit_amountNull,
-			&debit_amount_lcyNull,
-			&credit_amount_lcyNull,
-			&record.Closed_by_entry_no,
-			&closed_at_dateNull,
-			&closed_by_amountNull,
-			&closed_by_amount_lcyNull,
-			&closed_by_currency_codeNull,
-			&closed_by_currency_amountNull,
-			&pmt_disc_lcyNull,
-			&rounding_amountNull,
-			&rounding_amount_lcyNull,
-			&rounding_currencyNull,
-			&applies_to_idNull,
-			&calculate_interestBool,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan Entry_Application record: %v\n", err)
-			return false
-		}
-
-		// Populate special type fields
-		record.Account_type = EntryApplicationAccount_type(account_typeInt)
-		record.Account_no = types.NewCode(account_noNull.String)
-		record.Applying_entry = applying_entryBool.Bool
-		record.Posting_date, _ = types.NewDateFromString(posting_dateNull.String)
-		record.Document_no = types.NewCode(document_noNull.String)
-		record.Amount_applied, _ = types.NewDecimalFromString(amount_appliedNull.String)
-		record.User_id = types.NewCode(user_idNull.String)
-		record.Unapplied = unappliedBool.Bool
-		record.Unapplied_date, _ = types.NewDateFromString(unapplied_dateNull.String)
-		record.Unapplied_by_user_id = types.NewCode(unapplied_by_user_idNull.String)
-		record.Amount, _ = types.NewDecimalFromString(amountNull.String)
-		record.Amount_lcy, _ = types.NewDecimalFromString(amount_lcyNull.String)
-		record.Original_amount_lcy, _ = types.NewDecimalFromString(original_amount_lcyNull.String)
-		record.Remaining_amount, _ = types.NewDecimalFromString(remaining_amountNull.String)
-		record.Remaining_amt_lcy, _ = types.NewDecimalFromString(remaining_amt_lcyNull.String)
-		record.Open = openBool.Bool
-		record.Debit_amount, _ = types.NewDecimalFromString(debit_amountNull.String)
-		record.Credit_amount, _ = types.NewDecimalFromString(credit_amountNull.String)
-		record.Debit_amount_lcy, _ = types.NewDecimalFromString(debit_amount_lcyNull.String)
-		record.Credit_amount_lcy, _ = types.NewDecimalFromString(credit_amount_lcyNull.String)
-		record.Closed_at_date, _ = types.NewDateFromString(closed_at_dateNull.String)
-		record.Closed_by_amount, _ = types.NewDecimalFromString(closed_by_amountNull.String)
-		record.Closed_by_amount_lcy, _ = types.NewDecimalFromString(closed_by_amount_lcyNull.String)
-		record.Closed_by_currency_code = types.NewCode(closed_by_currency_codeNull.String)
-		record.Closed_by_currency_amount, _ = types.NewDecimalFromString(closed_by_currency_amountNull.String)
-		record.Pmt_disc_lcy, _ = types.NewDecimalFromString(pmt_disc_lcyNull.String)
-		record.Rounding_amount, _ = types.NewDecimalFromString(rounding_amountNull.String)
-		record.Rounding_amount_lcy, _ = types.NewDecimalFromString(rounding_amount_lcyNull.String)
-		record.Rounding_currency = types.NewCode(rounding_currencyNull.String)
-		record.Applies_to_id = types.NewCode(applies_to_idNull.String)
-		record.Calculate_interest = calculate_interestBool.Bool
-
-		// Store old values
-		record.StoreOldValues()
-
-		// Add to buffer
-		t.bufferedRecords = append(t.bufferedRecords, record)
-	}
-
-	// Check for errors during iteration
-	if err := rows.Err(); err != nil {
-		fmt.Printf("Error: Failed to iterate Entry_Application records: %v\n", err)
-		return false
-	}
-
-	// If no records found, return false
-	if len(t.bufferedRecords) == 0 {
-		return false
-	}
-
-	// Load first record into current instance
-	t.currentBufferPos = 0
-	t.copyFromBuffered(t.bufferedRecords[0])
-
-	return true
-}
-
-// copyFromBuffered copies field values from a buffered record to the current instance
-func (t *EntryApplication) copyFromBuffered(record *EntryApplication) {
-	t.Entry_no = record.Entry_no
-	t.Application_no = record.Application_no
-	t.Account_type = record.Account_type
-	t.Account_no = record.Account_no
-	t.Ledger_entry_no = record.Ledger_entry_no
-	t.Applying_entry = record.Applying_entry
-	t.Posting_date = record.Posting_date
-	t.Document_no = record.Document_no
-	t.Amount_applied = record.Amount_applied
-	t.Transaction_no = record.Transaction_no
-	t.User_id = record.User_id
-	t.Unapplied = record.Unapplied
-	t.Unapplied_transaction_no = record.Unapplied_transaction_no
-	t.Unapplied_date = record.Unapplied_date
-	t.Unapplied_by_user_id = record.Unapplied_by_user_id
-	t.Amount = record.Amount
-	t.Amount_lcy = record.Amount_lcy
-	t.Original_amount_lcy = record.Original_amount_lcy
-	t.Remaining_amount = record.Remaining_amount
-	t.Remaining_amt_lcy = record.Remaining_amt_lcy
-	t.Open = record.Open
-	t.Debit_amount = record.Debit_amount
-	t.Credit_amount = record.Credit_amount
-	t.Debit_amount_lcy = record.Debit_amount_lcy
-	t.Credit_amount_lcy = record.Credit_amount_lcy
-	t.Closed_by_entry_no = record.Closed_by_entry_no
-	t.Closed_at_date = record.Closed_at_date
-	t.Closed_by_amount = record.Closed_by_amount
-	t.Closed_by_amount_lcy = record.Closed_by_amount_lcy
-	t.Closed_by_currency_code = record.Closed_by_currency_code
-	t.Closed_by_currency_amount = record.Closed_by_currency_amount
-	t.Pmt_disc_lcy = record.Pmt_disc_lcy
-	t.Rounding_amount = record.Rounding_amount
-	t.Rounding_amount_lcy = record.Rounding_amount_lcy
-	t.Rounding_currency = record.Rounding_currency
-	t.Applies_to_id = record.Applies_to_id
-	t.Calculate_interest = record.Calculate_interest
-	t.StoreOldValues()
+	return t.rec().FindSetBuffered()
 }
 
 // ========================================
@@ -3010,49 +2140,9 @@ func (t *EntryApplication) Find(which ...string) bool {
 }
 
 // findInKey reads the first record in the current key and direction — reversed for the
-// last — and with seek ">"/"<" only after/before the current record (a row-value
-// comparison on the key and primary key columns). A key with a FlowField cannot seek.
+// last — and with seek ">"/"<" only after/before the current record
 func (t *EntryApplication) findInKey(seek string, reverse bool) bool {
-	if seek != "" {
-		var columns, params []string
-		var values []interface{}
-		for _, column := range t.keyColumns() {
-			v, ok := t.columnValue(column)
-			if !ok {
-				fmt.Printf("Error: Find(%q) on Entry_Application needs a key of stored fields\n", seek)
-				return false
-			}
-			if t.isKeyDateColumn(column) {
-				v = types.KeyDate(v)
-			}
-			columns = append(columns, t.cmpColumn(column))
-			params = append(params, t.cmpParam(column))
-			values = append(values, v)
-		}
-		after := (seek == ">") != t.q.Descending
-		op := "<"
-		if after {
-			op = ">"
-		}
-		t.q.Seek = "(" + strings.Join(columns, ", ") + ") " + op + " (" + strings.Join(params, ", ") + ")"
-		t.q.SeekArgs = values
-	}
-	savedLimit, savedOffset, savedDescending := t.limit, t.offset, t.q.Descending
-	t.limit, t.offset = 1, 0
-	if reverse {
-		t.q.Descending = !t.q.Descending
-	}
-	found := t.FindSet()
-	// One record read: a later Next seeks from it in the key (inside a transaction FindSet
-	// buffers its rows — a one-row buffer would end the Next at once)
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	t.limit, t.offset, t.q.Descending = savedLimit, savedOffset, savedDescending
-	t.q.Seek, t.q.SeekArgs = "", nil
-	return found
+	return t.rec().FindInKey(seek, reverse)
 }
 
 // keyColumns returns the columns of the current key followed by the primary key's (the

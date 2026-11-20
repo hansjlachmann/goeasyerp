@@ -91,19 +91,11 @@ type Permission struct {
 	// Temporary: the record's own table is in a private in-memory database (InitTemporary)
 	temp *tables.TemporaryStore
 
-	// Iteration state for FindSet/Next
-	currentRows *sql.Rows
+	// The result set of FindSet/FindSetBuffered/Next and the paging window (SetPage)
+	cur tables.Cursor
 
 	// LockTable: the following reads lock the rows they read (SELECT … FOR UPDATE, Postgres)
 	lockForUpdate bool
-
-	// Pagination window for FindSet/FindSetBuffered (0 limit = all rows)
-	limit  int
-	offset int
-
-	// Buffered recordset for bidirectional navigation
-	bufferedRecords  []*Permission
-	currentBufferPos int
 
 	// Business logic of this record only (SetLogic, tests); nil = the registered logic
 	// (RegisterPermissionLogic)
@@ -677,30 +669,11 @@ func (t *Permission) convertPlaceholders(sql string, count int) string {
 // For single primary key: pass the value directly (string, int, etc.)
 // For composite keys: pass a map[string]interface{} with field names as keys
 func (t *Permission) Get(primaryKey interface{}) bool {
-	// Handle composite primary key (map[string]interface{})
+	// A composite primary key (map[string]interface{}, values also as text)
 	if pkMap, ok := primaryKey.(map[string]interface{}); ok {
-		var role_idVal types.Code
-		if v, exists := pkMap["role_id"]; exists {
-			switch val := v.(type) {
-			case types.Code:
-				role_idVal = val
-			case string:
-				role_idVal = types.NewCode(val)
-			}
-		}
-		var table_nameVal types.Code
-		if v, exists := pkMap["table_name"]; exists {
-			switch val := v.(type) {
-			case types.Code:
-				table_nameVal = val
-			case string:
-				table_nameVal = types.NewCode(val)
-			}
-		}
-		return t.GetByPK(role_idVal, table_nameVal)
+		key := permissionFields.KeyFromMap(pkMap)
+		return t.GetByPK(key[0].(types.Code), key[1].(types.Code))
 	}
-	// For tables with composite keys, direct value is not supported
-	// Use a map[string]interface{} with field names as keys
 
 	fmt.Printf("Error: Invalid primary key type for Permission.Get: %T (use map for composite keys)\n", primaryKey)
 	return false
@@ -708,67 +681,12 @@ func (t *Permission) Get(primaryKey interface{}) bool {
 
 // GetByPK retrieves a record by its typed primary key(s) - for direct typed access
 func (t *Permission) GetByPK(role_id types.Code, table_name types.Code) bool {
-	tableName := PermissionTableName
-	var role_idNull sql.NullString
-	var table_nameNull sql.NullString
-	var can_readBool sql.NullBool
-	var can_insertBool sql.NullBool
-	var can_modifyBool sql.NullBool
-	var can_deleteBool sql.NullBool
-	var object_typeInt int
-	var object_idVal int
-	var can_executeBool sql.NullBool
-
 	// Collect arguments for query
 	args := []interface{}{
 		role_id,
 		table_name,
 	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT role_id, table_name, can_read, can_insert, can_modify, can_delete, object_type, object_id, can_execute FROM "%s" WHERE 1=1 AND role_id = ? AND table_name = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-	sqlStr += t.forUpdate()
-
-	err := t.exec().QueryRow(sqlStr, args...).Scan(
-		&role_idNull,
-		&table_nameNull,
-		&can_readBool,
-		&can_insertBool,
-		&can_modifyBool,
-		&can_deleteBool,
-		&object_typeInt,
-		&object_idVal,
-		&can_executeBool,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			// Record not found - this is not an error, just return false
-			return false
-		}
-		// Actual database error
-		fmt.Printf("Error: Failed to get Permission: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Role_id = types.NewCode(role_idNull.String)
-	t.Table_name = types.NewCode(table_nameNull.String)
-	t.Can_read = can_readBool.Bool
-	t.Can_insert = can_insertBool.Bool
-	t.Can_modify = can_modifyBool.Bool
-	t.Can_delete = can_deleteBool.Bool
-	t.Object_type = PermissionObject_type(object_typeInt)
-	t.Object_id = object_idVal
-	t.Can_execute = can_executeBool.Bool
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().Get(args)
 }
 
 // Insert inserts the record into the database
@@ -1105,10 +1023,7 @@ func (t *Permission) columnName(fieldName string) (string, bool) {
 func (t *Permission) Reset() {
 	t.q.Reset()
 	t.oldValues = nil
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
+	t.cur.CloseRows()
 }
 
 // buildWhereClause builds WHERE clause from current filters and search
@@ -1150,211 +1065,50 @@ func (t *Permission) getOrderByClause() (string, []interface{}) {
 // limit rows, skipping the first offset rows. A limit of 0 disables pagination
 // (all matching rows are returned). Negative values are treated as 0.
 func (t *Permission) SetPage(limit, offset int) {
-	if limit < 0 {
-		limit = 0
-	}
-	if offset < 0 {
-		offset = 0
-	}
-	t.limit = limit
-	t.offset = offset
+	t.cur.SetPage(limit, offset)
 }
 
-// getLimitClause builds the LIMIT/OFFSET clause from the pagination window.
-// Returns an empty string when no limit is set. LIMIT/OFFSET take integer
-// literals (not placeholders), which both SQLite and PostgreSQL accept.
-func (t *Permission) getLimitClause() string {
-	if t.limit <= 0 {
-		return ""
+// rec is what the read functions of foundation/tables need of the record
+func (t *Permission) rec() *tables.Rec {
+	_, inTx := t.db.(*sql.Tx)
+	return &tables.Rec{
+		Fields:    permissionFields,
+		Ref:       t.fieldRef,
+		QT:        t.qt(),
+		Q:         &t.q,
+		Cur:       &t.cur,
+		Exec:      t.exec(),
+		Buffered:  t.temp != nil || inTx,
+		Postgres:  t.dbType == database.DBTypePostgres,
+		Table:     PermissionTableName,
+		ForUpdate: t.forUpdate(),
+		Store:     t.StoreOldValues,
 	}
-	if t.offset > 0 {
-		return fmt.Sprintf(" LIMIT %d OFFSET %d", t.limit, t.offset)
-	}
-	return fmt.Sprintf(" LIMIT %d", t.limit)
 }
 
 // FindFirst finds the first record matching current filters
 // Returns true if found, false if not found
 func (t *Permission) FindFirst() bool {
-	tableName := PermissionTableName
-	where, args := t.buildWhereClause()
-	// The first record in the current key and direction (classic FIND('-'))
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT role_id, table_name, can_read, can_insert, can_modify, can_delete, object_type, object_id, can_execute FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var role_idNull sql.NullString
-	var table_nameNull sql.NullString
-	var can_readBool sql.NullBool
-	var can_insertBool sql.NullBool
-	var can_modifyBool sql.NullBool
-	var can_deleteBool sql.NullBool
-	var object_typeInt int
-	var can_executeBool sql.NullBool
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&role_idNull,
-		&table_nameNull,
-		&can_readBool,
-		&can_insertBool,
-		&can_modifyBool,
-		&can_deleteBool,
-		&object_typeInt,
-		&t.Object_id,
-		&can_executeBool,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find first Permission: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Role_id = types.NewCode(role_idNull.String)
-	t.Table_name = types.NewCode(table_nameNull.String)
-	t.Can_read = can_readBool.Bool
-	t.Can_insert = can_insertBool.Bool
-	t.Can_modify = can_modifyBool.Bool
-	t.Can_delete = can_deleteBool.Bool
-	t.Object_type = PermissionObject_type(object_typeInt)
-	t.Can_execute = can_executeBool.Bool
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindFirst()
 }
 
 // FindLast finds the last record matching current filters
 // Returns true if found, false if not found
 func (t *Permission) FindLast() bool {
-	tableName := PermissionTableName
-	where, args := t.buildWhereClause()
-	// The last record in the current key and direction (classic FIND('+')): the key reversed,
-	// every column of it
-	t.q.Descending = !t.q.Descending
-	orderBy, orderArgs := t.getOrderByClause()
-	t.q.Descending = !t.q.Descending
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT role_id, table_name, can_read, can_insert, can_modify, can_delete, object_type, object_id, can_execute FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var role_idNull sql.NullString
-	var table_nameNull sql.NullString
-	var can_readBool sql.NullBool
-	var can_insertBool sql.NullBool
-	var can_modifyBool sql.NullBool
-	var can_deleteBool sql.NullBool
-	var object_typeInt int
-	var can_executeBool sql.NullBool
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&role_idNull,
-		&table_nameNull,
-		&can_readBool,
-		&can_insertBool,
-		&can_modifyBool,
-		&can_deleteBool,
-		&object_typeInt,
-		&t.Object_id,
-		&can_executeBool,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find last Permission: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Role_id = types.NewCode(role_idNull.String)
-	t.Table_name = types.NewCode(table_nameNull.String)
-	t.Can_read = can_readBool.Bool
-	t.Can_insert = can_insertBool.Bool
-	t.Can_modify = can_modifyBool.Bool
-	t.Can_delete = can_deleteBool.Bool
-	t.Object_type = PermissionObject_type(object_typeInt)
-	t.Can_execute = can_executeBool.Bool
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindLast()
 }
 
 // Count returns the number of records matching current filters
 func (t *Permission) Count() int {
-	tableName := PermissionTableName
-	where, args := t.buildWhereClause()
-
-	query := fmt.Sprintf(`SELECT COUNT(*) FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var count int
-	err := t.exec().QueryRow(query, args...).Scan(&count)
-	if err != nil {
-		fmt.Printf("Error: Failed to count Permission: %v\n", err)
-		return 0
-	}
-
-	return count
+	return t.rec().Count()
 }
 
 // FindSet opens a result set matching current filters
 // Call Next() to iterate through the results
-// Returns true if at least one record found, false otherwise
+// Returns true if at least one record found, false otherwise. A temporary record, and a
+// record in a transaction, reads all at once (FindSetBuffered).
 func (t *Permission) FindSet() bool {
-	// A temporary record, and a record in a transaction, reads all at once: its in-memory
-	// database or the transaction has one connection, which an open result set would block for
-	// the statements of the loop (Modify while looping; on PostgreSQL a query while the rows are
-	// read breaks the connection — "unexpected Parse response")
-	if _, inTx := t.db.(*sql.Tx); t.temp != nil || inTx {
-		return t.FindSetBuffered()
-	}
-	// Close any existing result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	tableName := PermissionTableName
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT role_id, table_name, can_read, can_insert, can_modify, can_delete, object_type, object_id, can_execute FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSet for Permission: %v\n", err)
-		return false
-	}
-
-	t.currentRows = rows
-
-	// Load first record
-	return t.Next()
+	return t.rec().FindSet()
 }
 
 // Next advances to the next record: in the result set after FindSet() or FindSetBuffered(),
@@ -1367,228 +1121,14 @@ func (t *Permission) FindSet() bool {
 //
 // Returns true if a record was loaded, false if no more records or out of bounds
 func (t *Permission) Next(steps ...int) bool {
-	// Default to 1 step forward
-	step := 1
-	if len(steps) > 0 {
-		step = steps[0]
-	}
-
-	// BUFFERED MODE: Bidirectional navigation with in-memory records
-	if t.bufferedRecords != nil {
-		// Calculate new position
-		newPos := t.currentBufferPos + step
-
-		// Check bounds
-		if newPos < 0 || newPos >= len(t.bufferedRecords) {
-			return false // Out of bounds
-		}
-
-		// Move to new position
-		t.currentBufferPos = newPos
-		t.copyFromBuffered(t.bufferedRecords[t.currentBufferPos])
-		return true
-	}
-
-	// FORWARD-ONLY MODE: Streaming with sql.Rows (only positive steps allowed)
-	if t.currentRows != nil {
-		// Validate: only forward movement allowed
-		if step < 1 {
-			fmt.Printf("Error: Backward navigation (Next(%d)) requires FindSetBuffered()\n", step)
-			return false
-		}
-
-		// Advance 'step' times (1 = next record, 2 = skip 1 record, etc.)
-		for i := 0; i < step; i++ {
-			if !t.currentRows.Next() {
-				// No more rows - close result set
-				t.currentRows.Close()
-				t.currentRows = nil
-				return false
-			}
-		}
-
-		// Scan the row
-		var role_idNull sql.NullString
-		var table_nameNull sql.NullString
-		var can_readBool sql.NullBool
-		var can_insertBool sql.NullBool
-		var can_modifyBool sql.NullBool
-		var can_deleteBool sql.NullBool
-		var object_typeInt int
-		var can_executeBool sql.NullBool
-
-		err := t.currentRows.Scan(
-			&role_idNull,
-			&table_nameNull,
-			&can_readBool,
-			&can_insertBool,
-			&can_modifyBool,
-			&can_deleteBool,
-			&object_typeInt,
-			&t.Object_id,
-			&can_executeBool,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan Permission record: %v\n", err)
-			t.currentRows.Close()
-			t.currentRows = nil
-			return false
-		}
-
-		// Populate fields
-		t.Role_id = types.NewCode(role_idNull.String)
-		t.Table_name = types.NewCode(table_nameNull.String)
-		t.Can_read = can_readBool.Bool
-		t.Can_insert = can_insertBool.Bool
-		t.Can_modify = can_modifyBool.Bool
-		t.Can_delete = can_deleteBool.Bool
-		t.Object_type = PermissionObject_type(object_typeInt)
-		t.Can_execute = can_executeBool.Bool
-
-		// Store old values for field tracking
-		t.StoreOldValues()
-
-		return true
-	}
-
-	// No record set (after Get, Find, FindFirst, FindLast): the next record in the current key
-	// and direction within the filters, one step at a time (classic NEXT after FIND); a step
-	// that finds none leaves the record on the last one reached
-	if step == 0 {
-		return false
-	}
-	for i := 0; i != step; {
-		if step > 0 {
-			if !t.findInKey(">", false) {
-				return false
-			}
-			i++
-		} else {
-			if !t.findInKey("<", true) {
-				return false
-			}
-			i--
-		}
-	}
-	return true
+	return t.rec().Next(steps, t.findInKey)
 }
 
 // FindSetBuffered loads all filtered records into memory for bidirectional navigation
 // Use this when you need to move backward/forward with Next(steps)
-// Filters (SetRange/SetFilter) are applied in SQL before buffering to minimize memory usage
 // Returns true if at least one record found, false otherwise
 func (t *Permission) FindSetBuffered() bool {
-	// Close any existing forward-only result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-
-	// Clear any existing buffer
-	t.bufferedRecords = nil
-	t.currentBufferPos = -1
-	tableName := PermissionTableName
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT role_id, table_name, can_read, can_insert, can_modify, can_delete, object_type, object_id, can_execute FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSetBuffered for Permission: %v\n", err)
-		return false
-	}
-	defer rows.Close()
-
-	// Load all records into memory
-	for rows.Next() {
-		// Create a new record instance
-		record := &Permission{}
-		record.db = t.db
-		record.temp = t.temp
-		record.company = t.company
-		record.dbType = t.dbType
-
-		// Scan the row
-		var role_idNull sql.NullString
-		var table_nameNull sql.NullString
-		var can_readBool sql.NullBool
-		var can_insertBool sql.NullBool
-		var can_modifyBool sql.NullBool
-		var can_deleteBool sql.NullBool
-		var object_typeInt int
-		var can_executeBool sql.NullBool
-
-		err := rows.Scan(
-			&role_idNull,
-			&table_nameNull,
-			&can_readBool,
-			&can_insertBool,
-			&can_modifyBool,
-			&can_deleteBool,
-			&object_typeInt,
-			&record.Object_id,
-			&can_executeBool,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan Permission record: %v\n", err)
-			return false
-		}
-
-		// Populate special type fields
-		record.Role_id = types.NewCode(role_idNull.String)
-		record.Table_name = types.NewCode(table_nameNull.String)
-		record.Can_read = can_readBool.Bool
-		record.Can_insert = can_insertBool.Bool
-		record.Can_modify = can_modifyBool.Bool
-		record.Can_delete = can_deleteBool.Bool
-		record.Object_type = PermissionObject_type(object_typeInt)
-		record.Can_execute = can_executeBool.Bool
-
-		// Store old values
-		record.StoreOldValues()
-
-		// Add to buffer
-		t.bufferedRecords = append(t.bufferedRecords, record)
-	}
-
-	// Check for errors during iteration
-	if err := rows.Err(); err != nil {
-		fmt.Printf("Error: Failed to iterate Permission records: %v\n", err)
-		return false
-	}
-
-	// If no records found, return false
-	if len(t.bufferedRecords) == 0 {
-		return false
-	}
-
-	// Load first record into current instance
-	t.currentBufferPos = 0
-	t.copyFromBuffered(t.bufferedRecords[0])
-
-	return true
-}
-
-// copyFromBuffered copies field values from a buffered record to the current instance
-func (t *Permission) copyFromBuffered(record *Permission) {
-	t.Role_id = record.Role_id
-	t.Table_name = record.Table_name
-	t.Can_read = record.Can_read
-	t.Can_insert = record.Can_insert
-	t.Can_modify = record.Can_modify
-	t.Can_delete = record.Can_delete
-	t.Object_type = record.Object_type
-	t.Object_id = record.Object_id
-	t.Can_execute = record.Can_execute
-	t.StoreOldValues()
+	return t.rec().FindSetBuffered()
 }
 
 // ========================================
@@ -2020,49 +1560,9 @@ func (t *Permission) Find(which ...string) bool {
 }
 
 // findInKey reads the first record in the current key and direction — reversed for the
-// last — and with seek ">"/"<" only after/before the current record (a row-value
-// comparison on the key and primary key columns). A key with a FlowField cannot seek.
+// last — and with seek ">"/"<" only after/before the current record
 func (t *Permission) findInKey(seek string, reverse bool) bool {
-	if seek != "" {
-		var columns, params []string
-		var values []interface{}
-		for _, column := range t.keyColumns() {
-			v, ok := t.columnValue(column)
-			if !ok {
-				fmt.Printf("Error: Find(%q) on Permission needs a key of stored fields\n", seek)
-				return false
-			}
-			if t.isKeyDateColumn(column) {
-				v = types.KeyDate(v)
-			}
-			columns = append(columns, t.cmpColumn(column))
-			params = append(params, t.cmpParam(column))
-			values = append(values, v)
-		}
-		after := (seek == ">") != t.q.Descending
-		op := "<"
-		if after {
-			op = ">"
-		}
-		t.q.Seek = "(" + strings.Join(columns, ", ") + ") " + op + " (" + strings.Join(params, ", ") + ")"
-		t.q.SeekArgs = values
-	}
-	savedLimit, savedOffset, savedDescending := t.limit, t.offset, t.q.Descending
-	t.limit, t.offset = 1, 0
-	if reverse {
-		t.q.Descending = !t.q.Descending
-	}
-	found := t.FindSet()
-	// One record read: a later Next seeks from it in the key (inside a transaction FindSet
-	// buffers its rows — a one-row buffer would end the Next at once)
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	t.limit, t.offset, t.q.Descending = savedLimit, savedOffset, savedDescending
-	t.q.Seek, t.q.SeekArgs = "", nil
-	return found
+	return t.rec().FindInKey(seek, reverse)
 }
 
 // keyColumns returns the columns of the current key followed by the primary key's (the

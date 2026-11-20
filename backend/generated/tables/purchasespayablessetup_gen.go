@@ -127,19 +127,11 @@ type PurchasesPayablesSetup struct {
 	// Temporary: the record's own table is in a private in-memory database (InitTemporary)
 	temp *tables.TemporaryStore
 
-	// Iteration state for FindSet/Next
-	currentRows *sql.Rows
+	// The result set of FindSet/FindSetBuffered/Next and the paging window (SetPage)
+	cur tables.Cursor
 
 	// LockTable: the following reads lock the rows they read (SELECT … FOR UPDATE, Postgres)
 	lockForUpdate bool
-
-	// Pagination window for FindSet/FindSetBuffered (0 limit = all rows)
-	limit  int
-	offset int
-
-	// Buffered recordset for bidirectional navigation
-	bufferedRecords  []*PurchasesPayablesSetup
-	currentBufferPos int
 
 	// Business logic of this record only (SetLogic, tests); nil = the registered logic
 	// (RegisterPurchasesPayablesSetupLogic)
@@ -806,25 +798,14 @@ func (t *PurchasesPayablesSetup) convertPlaceholders(sql string, count int) stri
 // For single primary key: pass the value directly (string, int, etc.)
 // For composite keys: pass a map[string]interface{} with field names as keys
 func (t *PurchasesPayablesSetup) Get(primaryKey interface{}) bool {
-	// Handle composite primary key (map[string]interface{})
+	// A composite primary key (map[string]interface{}, values also as text)
 	if pkMap, ok := primaryKey.(map[string]interface{}); ok {
-		var primary_keyVal types.Code
-		if v, exists := pkMap["primary_key"]; exists {
-			switch val := v.(type) {
-			case types.Code:
-				primary_keyVal = val
-			case string:
-				primary_keyVal = types.NewCode(val)
-			}
-		}
-		return t.GetByPK(primary_keyVal)
+		key := purchasesPayablesSetupFields.KeyFromMap(pkMap)
+		return t.GetByPK(key[0].(types.Code))
 	}
-	// Handle single primary key (for tables with only one PK field)
-	switch pk := primaryKey.(type) {
-	case types.Code:
-		return t.GetByPK(pk)
-	case string:
-		return t.GetByPK(types.NewCode(pk))
+	// The primary key itself (a table with one primary key field)
+	if key, ok := purchasesPayablesSetupFields.KeyFromValue(primaryKey); ok {
+		return t.GetByPK([]any{key}[0].(types.Code))
 	}
 
 	fmt.Printf("Error: Invalid primary key type for Purchases_Payables_Setup.Get: %T (use map for composite keys)\n", primaryKey)
@@ -833,96 +814,11 @@ func (t *PurchasesPayablesSetup) Get(primaryKey interface{}) bool {
 
 // GetByPK retrieves a record by its typed primary key(s) - for direct typed access
 func (t *PurchasesPayablesSetup) GetByPK(primary_key types.Code) bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, PurchasesPayablesSetupTableName)
-	var primary_keyNull sql.NullString
-	var discount_postingInt int
-	var receipt_on_invoiceBool sql.NullBool
-	var invoice_roundingBool sql.NullBool
-	var ext_doc_no_mandatoryBool sql.NullBool
-	var vendor_nosNull sql.NullString
-	var quote_nosNull sql.NullString
-	var order_nosNull sql.NullString
-	var invoice_nosNull sql.NullString
-	var posted_invoice_nosNull sql.NullString
-	var credit_memo_nosNull sql.NullString
-	var posted_credit_memo_nosNull sql.NullString
-	var posted_receipt_nosNull sql.NullString
-	var blanket_order_nosNull sql.NullString
-	var calc_inv_discountBool sql.NullBool
-	var appln_between_currenciesInt int
-	var copy_comments_blanket_to_orderBool sql.NullBool
-	var copy_comments_order_to_invoiceBool sql.NullBool
-	var copy_comments_order_to_receiptBool sql.NullBool
-
 	// Collect arguments for query
 	args := []interface{}{
 		primary_key,
 	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT primary_key, discount_posting, receipt_on_invoice, invoice_rounding, ext_doc_no_mandatory, vendor_nos, quote_nos, order_nos, invoice_nos, posted_invoice_nos, credit_memo_nos, posted_credit_memo_nos, posted_receipt_nos, blanket_order_nos, calc_inv_discount, appln_between_currencies, copy_comments_blanket_to_order, copy_comments_order_to_invoice, copy_comments_order_to_receipt FROM "%s" WHERE 1=1 AND primary_key = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-	sqlStr += t.forUpdate()
-
-	err := t.exec().QueryRow(sqlStr, args...).Scan(
-		&primary_keyNull,
-		&discount_postingInt,
-		&receipt_on_invoiceBool,
-		&invoice_roundingBool,
-		&ext_doc_no_mandatoryBool,
-		&vendor_nosNull,
-		&quote_nosNull,
-		&order_nosNull,
-		&invoice_nosNull,
-		&posted_invoice_nosNull,
-		&credit_memo_nosNull,
-		&posted_credit_memo_nosNull,
-		&posted_receipt_nosNull,
-		&blanket_order_nosNull,
-		&calc_inv_discountBool,
-		&appln_between_currenciesInt,
-		&copy_comments_blanket_to_orderBool,
-		&copy_comments_order_to_invoiceBool,
-		&copy_comments_order_to_receiptBool,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			// Record not found - this is not an error, just return false
-			return false
-		}
-		// Actual database error
-		fmt.Printf("Error: Failed to get Purchases_Payables_Setup: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Primary_key = types.NewCode(primary_keyNull.String)
-	t.Discount_posting = PurchasesPayablesSetupDiscount_posting(discount_postingInt)
-	t.Receipt_on_invoice = receipt_on_invoiceBool.Bool
-	t.Invoice_rounding = invoice_roundingBool.Bool
-	t.Ext_doc_no_mandatory = ext_doc_no_mandatoryBool.Bool
-	t.Vendor_nos = types.NewCode(vendor_nosNull.String)
-	t.Quote_nos = types.NewCode(quote_nosNull.String)
-	t.Order_nos = types.NewCode(order_nosNull.String)
-	t.Invoice_nos = types.NewCode(invoice_nosNull.String)
-	t.Posted_invoice_nos = types.NewCode(posted_invoice_nosNull.String)
-	t.Credit_memo_nos = types.NewCode(credit_memo_nosNull.String)
-	t.Posted_credit_memo_nos = types.NewCode(posted_credit_memo_nosNull.String)
-	t.Posted_receipt_nos = types.NewCode(posted_receipt_nosNull.String)
-	t.Blanket_order_nos = types.NewCode(blanket_order_nosNull.String)
-	t.Calc_inv_discount = calc_inv_discountBool.Bool
-	t.Appln_between_currencies = PurchasesPayablesSetupAppln_between_currencies(appln_between_currenciesInt)
-	t.Copy_comments_blanket_to_order = copy_comments_blanket_to_orderBool.Bool
-	t.Copy_comments_order_to_invoice = copy_comments_order_to_invoiceBool.Bool
-	t.Copy_comments_order_to_receipt = copy_comments_order_to_receiptBool.Bool
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().Get(args)
 }
 
 // Insert inserts the record into the database
@@ -1332,10 +1228,7 @@ func (t *PurchasesPayablesSetup) columnName(fieldName string) (string, bool) {
 func (t *PurchasesPayablesSetup) Reset() {
 	t.q.Reset()
 	t.oldValues = nil
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
+	t.cur.CloseRows()
 }
 
 // buildWhereClause builds WHERE clause from current filters and search
@@ -1377,275 +1270,50 @@ func (t *PurchasesPayablesSetup) getOrderByClause() (string, []interface{}) {
 // limit rows, skipping the first offset rows. A limit of 0 disables pagination
 // (all matching rows are returned). Negative values are treated as 0.
 func (t *PurchasesPayablesSetup) SetPage(limit, offset int) {
-	if limit < 0 {
-		limit = 0
-	}
-	if offset < 0 {
-		offset = 0
-	}
-	t.limit = limit
-	t.offset = offset
+	t.cur.SetPage(limit, offset)
 }
 
-// getLimitClause builds the LIMIT/OFFSET clause from the pagination window.
-// Returns an empty string when no limit is set. LIMIT/OFFSET take integer
-// literals (not placeholders), which both SQLite and PostgreSQL accept.
-func (t *PurchasesPayablesSetup) getLimitClause() string {
-	if t.limit <= 0 {
-		return ""
+// rec is what the read functions of foundation/tables need of the record
+func (t *PurchasesPayablesSetup) rec() *tables.Rec {
+	_, inTx := t.db.(*sql.Tx)
+	return &tables.Rec{
+		Fields:    purchasesPayablesSetupFields,
+		Ref:       t.fieldRef,
+		QT:        t.qt(),
+		Q:         &t.q,
+		Cur:       &t.cur,
+		Exec:      t.exec(),
+		Buffered:  t.temp != nil || inTx,
+		Postgres:  t.dbType == database.DBTypePostgres,
+		Table:     fmt.Sprintf("%s$%s", t.company, PurchasesPayablesSetupTableName),
+		ForUpdate: t.forUpdate(),
+		Store:     t.StoreOldValues,
 	}
-	if t.offset > 0 {
-		return fmt.Sprintf(" LIMIT %d OFFSET %d", t.limit, t.offset)
-	}
-	return fmt.Sprintf(" LIMIT %d", t.limit)
 }
 
 // FindFirst finds the first record matching current filters
 // Returns true if found, false if not found
 func (t *PurchasesPayablesSetup) FindFirst() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, PurchasesPayablesSetupTableName)
-	where, args := t.buildWhereClause()
-	// The first record in the current key and direction (classic FIND('-'))
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT primary_key, discount_posting, receipt_on_invoice, invoice_rounding, ext_doc_no_mandatory, vendor_nos, quote_nos, order_nos, invoice_nos, posted_invoice_nos, credit_memo_nos, posted_credit_memo_nos, posted_receipt_nos, blanket_order_nos, calc_inv_discount, appln_between_currencies, copy_comments_blanket_to_order, copy_comments_order_to_invoice, copy_comments_order_to_receipt FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var primary_keyNull sql.NullString
-	var discount_postingInt int
-	var receipt_on_invoiceBool sql.NullBool
-	var invoice_roundingBool sql.NullBool
-	var ext_doc_no_mandatoryBool sql.NullBool
-	var vendor_nosNull sql.NullString
-	var quote_nosNull sql.NullString
-	var order_nosNull sql.NullString
-	var invoice_nosNull sql.NullString
-	var posted_invoice_nosNull sql.NullString
-	var credit_memo_nosNull sql.NullString
-	var posted_credit_memo_nosNull sql.NullString
-	var posted_receipt_nosNull sql.NullString
-	var blanket_order_nosNull sql.NullString
-	var calc_inv_discountBool sql.NullBool
-	var appln_between_currenciesInt int
-	var copy_comments_blanket_to_orderBool sql.NullBool
-	var copy_comments_order_to_invoiceBool sql.NullBool
-	var copy_comments_order_to_receiptBool sql.NullBool
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&primary_keyNull,
-		&discount_postingInt,
-		&receipt_on_invoiceBool,
-		&invoice_roundingBool,
-		&ext_doc_no_mandatoryBool,
-		&vendor_nosNull,
-		&quote_nosNull,
-		&order_nosNull,
-		&invoice_nosNull,
-		&posted_invoice_nosNull,
-		&credit_memo_nosNull,
-		&posted_credit_memo_nosNull,
-		&posted_receipt_nosNull,
-		&blanket_order_nosNull,
-		&calc_inv_discountBool,
-		&appln_between_currenciesInt,
-		&copy_comments_blanket_to_orderBool,
-		&copy_comments_order_to_invoiceBool,
-		&copy_comments_order_to_receiptBool,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find first Purchases_Payables_Setup: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Primary_key = types.NewCode(primary_keyNull.String)
-	t.Discount_posting = PurchasesPayablesSetupDiscount_posting(discount_postingInt)
-	t.Receipt_on_invoice = receipt_on_invoiceBool.Bool
-	t.Invoice_rounding = invoice_roundingBool.Bool
-	t.Ext_doc_no_mandatory = ext_doc_no_mandatoryBool.Bool
-	t.Vendor_nos = types.NewCode(vendor_nosNull.String)
-	t.Quote_nos = types.NewCode(quote_nosNull.String)
-	t.Order_nos = types.NewCode(order_nosNull.String)
-	t.Invoice_nos = types.NewCode(invoice_nosNull.String)
-	t.Posted_invoice_nos = types.NewCode(posted_invoice_nosNull.String)
-	t.Credit_memo_nos = types.NewCode(credit_memo_nosNull.String)
-	t.Posted_credit_memo_nos = types.NewCode(posted_credit_memo_nosNull.String)
-	t.Posted_receipt_nos = types.NewCode(posted_receipt_nosNull.String)
-	t.Blanket_order_nos = types.NewCode(blanket_order_nosNull.String)
-	t.Calc_inv_discount = calc_inv_discountBool.Bool
-	t.Appln_between_currencies = PurchasesPayablesSetupAppln_between_currencies(appln_between_currenciesInt)
-	t.Copy_comments_blanket_to_order = copy_comments_blanket_to_orderBool.Bool
-	t.Copy_comments_order_to_invoice = copy_comments_order_to_invoiceBool.Bool
-	t.Copy_comments_order_to_receipt = copy_comments_order_to_receiptBool.Bool
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindFirst()
 }
 
 // FindLast finds the last record matching current filters
 // Returns true if found, false if not found
 func (t *PurchasesPayablesSetup) FindLast() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, PurchasesPayablesSetupTableName)
-	where, args := t.buildWhereClause()
-	// The last record in the current key and direction (classic FIND('+')): the key reversed,
-	// every column of it
-	t.q.Descending = !t.q.Descending
-	orderBy, orderArgs := t.getOrderByClause()
-	t.q.Descending = !t.q.Descending
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT primary_key, discount_posting, receipt_on_invoice, invoice_rounding, ext_doc_no_mandatory, vendor_nos, quote_nos, order_nos, invoice_nos, posted_invoice_nos, credit_memo_nos, posted_credit_memo_nos, posted_receipt_nos, blanket_order_nos, calc_inv_discount, appln_between_currencies, copy_comments_blanket_to_order, copy_comments_order_to_invoice, copy_comments_order_to_receipt FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var primary_keyNull sql.NullString
-	var discount_postingInt int
-	var receipt_on_invoiceBool sql.NullBool
-	var invoice_roundingBool sql.NullBool
-	var ext_doc_no_mandatoryBool sql.NullBool
-	var vendor_nosNull sql.NullString
-	var quote_nosNull sql.NullString
-	var order_nosNull sql.NullString
-	var invoice_nosNull sql.NullString
-	var posted_invoice_nosNull sql.NullString
-	var credit_memo_nosNull sql.NullString
-	var posted_credit_memo_nosNull sql.NullString
-	var posted_receipt_nosNull sql.NullString
-	var blanket_order_nosNull sql.NullString
-	var calc_inv_discountBool sql.NullBool
-	var appln_between_currenciesInt int
-	var copy_comments_blanket_to_orderBool sql.NullBool
-	var copy_comments_order_to_invoiceBool sql.NullBool
-	var copy_comments_order_to_receiptBool sql.NullBool
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&primary_keyNull,
-		&discount_postingInt,
-		&receipt_on_invoiceBool,
-		&invoice_roundingBool,
-		&ext_doc_no_mandatoryBool,
-		&vendor_nosNull,
-		&quote_nosNull,
-		&order_nosNull,
-		&invoice_nosNull,
-		&posted_invoice_nosNull,
-		&credit_memo_nosNull,
-		&posted_credit_memo_nosNull,
-		&posted_receipt_nosNull,
-		&blanket_order_nosNull,
-		&calc_inv_discountBool,
-		&appln_between_currenciesInt,
-		&copy_comments_blanket_to_orderBool,
-		&copy_comments_order_to_invoiceBool,
-		&copy_comments_order_to_receiptBool,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find last Purchases_Payables_Setup: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Primary_key = types.NewCode(primary_keyNull.String)
-	t.Discount_posting = PurchasesPayablesSetupDiscount_posting(discount_postingInt)
-	t.Receipt_on_invoice = receipt_on_invoiceBool.Bool
-	t.Invoice_rounding = invoice_roundingBool.Bool
-	t.Ext_doc_no_mandatory = ext_doc_no_mandatoryBool.Bool
-	t.Vendor_nos = types.NewCode(vendor_nosNull.String)
-	t.Quote_nos = types.NewCode(quote_nosNull.String)
-	t.Order_nos = types.NewCode(order_nosNull.String)
-	t.Invoice_nos = types.NewCode(invoice_nosNull.String)
-	t.Posted_invoice_nos = types.NewCode(posted_invoice_nosNull.String)
-	t.Credit_memo_nos = types.NewCode(credit_memo_nosNull.String)
-	t.Posted_credit_memo_nos = types.NewCode(posted_credit_memo_nosNull.String)
-	t.Posted_receipt_nos = types.NewCode(posted_receipt_nosNull.String)
-	t.Blanket_order_nos = types.NewCode(blanket_order_nosNull.String)
-	t.Calc_inv_discount = calc_inv_discountBool.Bool
-	t.Appln_between_currencies = PurchasesPayablesSetupAppln_between_currencies(appln_between_currenciesInt)
-	t.Copy_comments_blanket_to_order = copy_comments_blanket_to_orderBool.Bool
-	t.Copy_comments_order_to_invoice = copy_comments_order_to_invoiceBool.Bool
-	t.Copy_comments_order_to_receipt = copy_comments_order_to_receiptBool.Bool
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindLast()
 }
 
 // Count returns the number of records matching current filters
 func (t *PurchasesPayablesSetup) Count() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, PurchasesPayablesSetupTableName)
-	where, args := t.buildWhereClause()
-
-	query := fmt.Sprintf(`SELECT COUNT(*) FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var count int
-	err := t.exec().QueryRow(query, args...).Scan(&count)
-	if err != nil {
-		fmt.Printf("Error: Failed to count Purchases_Payables_Setup: %v\n", err)
-		return 0
-	}
-
-	return count
+	return t.rec().Count()
 }
 
 // FindSet opens a result set matching current filters
 // Call Next() to iterate through the results
-// Returns true if at least one record found, false otherwise
+// Returns true if at least one record found, false otherwise. A temporary record, and a
+// record in a transaction, reads all at once (FindSetBuffered).
 func (t *PurchasesPayablesSetup) FindSet() bool {
-	// A temporary record, and a record in a transaction, reads all at once: its in-memory
-	// database or the transaction has one connection, which an open result set would block for
-	// the statements of the loop (Modify while looping; on PostgreSQL a query while the rows are
-	// read breaks the connection — "unexpected Parse response")
-	if _, inTx := t.db.(*sql.Tx); t.temp != nil || inTx {
-		return t.FindSetBuffered()
-	}
-	// Close any existing result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	tableName := fmt.Sprintf("%s$%s", t.company, PurchasesPayablesSetupTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT primary_key, discount_posting, receipt_on_invoice, invoice_rounding, ext_doc_no_mandatory, vendor_nos, quote_nos, order_nos, invoice_nos, posted_invoice_nos, credit_memo_nos, posted_credit_memo_nos, posted_receipt_nos, blanket_order_nos, calc_inv_discount, appln_between_currencies, copy_comments_blanket_to_order, copy_comments_order_to_invoice, copy_comments_order_to_receipt FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSet for Purchases_Payables_Setup: %v\n", err)
-		return false
-	}
-
-	t.currentRows = rows
-
-	// Load first record
-	return t.Next()
+	return t.rec().FindSet()
 }
 
 // Next advances to the next record: in the result set after FindSet() or FindSetBuffered(),
@@ -1658,302 +1326,14 @@ func (t *PurchasesPayablesSetup) FindSet() bool {
 //
 // Returns true if a record was loaded, false if no more records or out of bounds
 func (t *PurchasesPayablesSetup) Next(steps ...int) bool {
-	// Default to 1 step forward
-	step := 1
-	if len(steps) > 0 {
-		step = steps[0]
-	}
-
-	// BUFFERED MODE: Bidirectional navigation with in-memory records
-	if t.bufferedRecords != nil {
-		// Calculate new position
-		newPos := t.currentBufferPos + step
-
-		// Check bounds
-		if newPos < 0 || newPos >= len(t.bufferedRecords) {
-			return false // Out of bounds
-		}
-
-		// Move to new position
-		t.currentBufferPos = newPos
-		t.copyFromBuffered(t.bufferedRecords[t.currentBufferPos])
-		return true
-	}
-
-	// FORWARD-ONLY MODE: Streaming with sql.Rows (only positive steps allowed)
-	if t.currentRows != nil {
-		// Validate: only forward movement allowed
-		if step < 1 {
-			fmt.Printf("Error: Backward navigation (Next(%d)) requires FindSetBuffered()\n", step)
-			return false
-		}
-
-		// Advance 'step' times (1 = next record, 2 = skip 1 record, etc.)
-		for i := 0; i < step; i++ {
-			if !t.currentRows.Next() {
-				// No more rows - close result set
-				t.currentRows.Close()
-				t.currentRows = nil
-				return false
-			}
-		}
-
-		// Scan the row
-		var primary_keyNull sql.NullString
-		var discount_postingInt int
-		var receipt_on_invoiceBool sql.NullBool
-		var invoice_roundingBool sql.NullBool
-		var ext_doc_no_mandatoryBool sql.NullBool
-		var vendor_nosNull sql.NullString
-		var quote_nosNull sql.NullString
-		var order_nosNull sql.NullString
-		var invoice_nosNull sql.NullString
-		var posted_invoice_nosNull sql.NullString
-		var credit_memo_nosNull sql.NullString
-		var posted_credit_memo_nosNull sql.NullString
-		var posted_receipt_nosNull sql.NullString
-		var blanket_order_nosNull sql.NullString
-		var calc_inv_discountBool sql.NullBool
-		var appln_between_currenciesInt int
-		var copy_comments_blanket_to_orderBool sql.NullBool
-		var copy_comments_order_to_invoiceBool sql.NullBool
-		var copy_comments_order_to_receiptBool sql.NullBool
-
-		err := t.currentRows.Scan(
-			&primary_keyNull,
-			&discount_postingInt,
-			&receipt_on_invoiceBool,
-			&invoice_roundingBool,
-			&ext_doc_no_mandatoryBool,
-			&vendor_nosNull,
-			&quote_nosNull,
-			&order_nosNull,
-			&invoice_nosNull,
-			&posted_invoice_nosNull,
-			&credit_memo_nosNull,
-			&posted_credit_memo_nosNull,
-			&posted_receipt_nosNull,
-			&blanket_order_nosNull,
-			&calc_inv_discountBool,
-			&appln_between_currenciesInt,
-			&copy_comments_blanket_to_orderBool,
-			&copy_comments_order_to_invoiceBool,
-			&copy_comments_order_to_receiptBool,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan Purchases_Payables_Setup record: %v\n", err)
-			t.currentRows.Close()
-			t.currentRows = nil
-			return false
-		}
-
-		// Populate fields
-		t.Primary_key = types.NewCode(primary_keyNull.String)
-		t.Discount_posting = PurchasesPayablesSetupDiscount_posting(discount_postingInt)
-		t.Receipt_on_invoice = receipt_on_invoiceBool.Bool
-		t.Invoice_rounding = invoice_roundingBool.Bool
-		t.Ext_doc_no_mandatory = ext_doc_no_mandatoryBool.Bool
-		t.Vendor_nos = types.NewCode(vendor_nosNull.String)
-		t.Quote_nos = types.NewCode(quote_nosNull.String)
-		t.Order_nos = types.NewCode(order_nosNull.String)
-		t.Invoice_nos = types.NewCode(invoice_nosNull.String)
-		t.Posted_invoice_nos = types.NewCode(posted_invoice_nosNull.String)
-		t.Credit_memo_nos = types.NewCode(credit_memo_nosNull.String)
-		t.Posted_credit_memo_nos = types.NewCode(posted_credit_memo_nosNull.String)
-		t.Posted_receipt_nos = types.NewCode(posted_receipt_nosNull.String)
-		t.Blanket_order_nos = types.NewCode(blanket_order_nosNull.String)
-		t.Calc_inv_discount = calc_inv_discountBool.Bool
-		t.Appln_between_currencies = PurchasesPayablesSetupAppln_between_currencies(appln_between_currenciesInt)
-		t.Copy_comments_blanket_to_order = copy_comments_blanket_to_orderBool.Bool
-		t.Copy_comments_order_to_invoice = copy_comments_order_to_invoiceBool.Bool
-		t.Copy_comments_order_to_receipt = copy_comments_order_to_receiptBool.Bool
-
-		// Store old values for field tracking
-		t.StoreOldValues()
-
-		return true
-	}
-
-	// No record set (after Get, Find, FindFirst, FindLast): the next record in the current key
-	// and direction within the filters, one step at a time (classic NEXT after FIND); a step
-	// that finds none leaves the record on the last one reached
-	if step == 0 {
-		return false
-	}
-	for i := 0; i != step; {
-		if step > 0 {
-			if !t.findInKey(">", false) {
-				return false
-			}
-			i++
-		} else {
-			if !t.findInKey("<", true) {
-				return false
-			}
-			i--
-		}
-	}
-	return true
+	return t.rec().Next(steps, t.findInKey)
 }
 
 // FindSetBuffered loads all filtered records into memory for bidirectional navigation
 // Use this when you need to move backward/forward with Next(steps)
-// Filters (SetRange/SetFilter) are applied in SQL before buffering to minimize memory usage
 // Returns true if at least one record found, false otherwise
 func (t *PurchasesPayablesSetup) FindSetBuffered() bool {
-	// Close any existing forward-only result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-
-	// Clear any existing buffer
-	t.bufferedRecords = nil
-	t.currentBufferPos = -1
-	tableName := fmt.Sprintf("%s$%s", t.company, PurchasesPayablesSetupTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT primary_key, discount_posting, receipt_on_invoice, invoice_rounding, ext_doc_no_mandatory, vendor_nos, quote_nos, order_nos, invoice_nos, posted_invoice_nos, credit_memo_nos, posted_credit_memo_nos, posted_receipt_nos, blanket_order_nos, calc_inv_discount, appln_between_currencies, copy_comments_blanket_to_order, copy_comments_order_to_invoice, copy_comments_order_to_receipt FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSetBuffered for Purchases_Payables_Setup: %v\n", err)
-		return false
-	}
-	defer rows.Close()
-
-	// Load all records into memory
-	for rows.Next() {
-		// Create a new record instance
-		record := &PurchasesPayablesSetup{}
-		record.db = t.db
-		record.temp = t.temp
-		record.company = t.company
-		record.dbType = t.dbType
-
-		// Scan the row
-		var primary_keyNull sql.NullString
-		var discount_postingInt int
-		var receipt_on_invoiceBool sql.NullBool
-		var invoice_roundingBool sql.NullBool
-		var ext_doc_no_mandatoryBool sql.NullBool
-		var vendor_nosNull sql.NullString
-		var quote_nosNull sql.NullString
-		var order_nosNull sql.NullString
-		var invoice_nosNull sql.NullString
-		var posted_invoice_nosNull sql.NullString
-		var credit_memo_nosNull sql.NullString
-		var posted_credit_memo_nosNull sql.NullString
-		var posted_receipt_nosNull sql.NullString
-		var blanket_order_nosNull sql.NullString
-		var calc_inv_discountBool sql.NullBool
-		var appln_between_currenciesInt int
-		var copy_comments_blanket_to_orderBool sql.NullBool
-		var copy_comments_order_to_invoiceBool sql.NullBool
-		var copy_comments_order_to_receiptBool sql.NullBool
-
-		err := rows.Scan(
-			&primary_keyNull,
-			&discount_postingInt,
-			&receipt_on_invoiceBool,
-			&invoice_roundingBool,
-			&ext_doc_no_mandatoryBool,
-			&vendor_nosNull,
-			&quote_nosNull,
-			&order_nosNull,
-			&invoice_nosNull,
-			&posted_invoice_nosNull,
-			&credit_memo_nosNull,
-			&posted_credit_memo_nosNull,
-			&posted_receipt_nosNull,
-			&blanket_order_nosNull,
-			&calc_inv_discountBool,
-			&appln_between_currenciesInt,
-			&copy_comments_blanket_to_orderBool,
-			&copy_comments_order_to_invoiceBool,
-			&copy_comments_order_to_receiptBool,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan Purchases_Payables_Setup record: %v\n", err)
-			return false
-		}
-
-		// Populate special type fields
-		record.Primary_key = types.NewCode(primary_keyNull.String)
-		record.Discount_posting = PurchasesPayablesSetupDiscount_posting(discount_postingInt)
-		record.Receipt_on_invoice = receipt_on_invoiceBool.Bool
-		record.Invoice_rounding = invoice_roundingBool.Bool
-		record.Ext_doc_no_mandatory = ext_doc_no_mandatoryBool.Bool
-		record.Vendor_nos = types.NewCode(vendor_nosNull.String)
-		record.Quote_nos = types.NewCode(quote_nosNull.String)
-		record.Order_nos = types.NewCode(order_nosNull.String)
-		record.Invoice_nos = types.NewCode(invoice_nosNull.String)
-		record.Posted_invoice_nos = types.NewCode(posted_invoice_nosNull.String)
-		record.Credit_memo_nos = types.NewCode(credit_memo_nosNull.String)
-		record.Posted_credit_memo_nos = types.NewCode(posted_credit_memo_nosNull.String)
-		record.Posted_receipt_nos = types.NewCode(posted_receipt_nosNull.String)
-		record.Blanket_order_nos = types.NewCode(blanket_order_nosNull.String)
-		record.Calc_inv_discount = calc_inv_discountBool.Bool
-		record.Appln_between_currencies = PurchasesPayablesSetupAppln_between_currencies(appln_between_currenciesInt)
-		record.Copy_comments_blanket_to_order = copy_comments_blanket_to_orderBool.Bool
-		record.Copy_comments_order_to_invoice = copy_comments_order_to_invoiceBool.Bool
-		record.Copy_comments_order_to_receipt = copy_comments_order_to_receiptBool.Bool
-
-		// Store old values
-		record.StoreOldValues()
-
-		// Add to buffer
-		t.bufferedRecords = append(t.bufferedRecords, record)
-	}
-
-	// Check for errors during iteration
-	if err := rows.Err(); err != nil {
-		fmt.Printf("Error: Failed to iterate Purchases_Payables_Setup records: %v\n", err)
-		return false
-	}
-
-	// If no records found, return false
-	if len(t.bufferedRecords) == 0 {
-		return false
-	}
-
-	// Load first record into current instance
-	t.currentBufferPos = 0
-	t.copyFromBuffered(t.bufferedRecords[0])
-
-	return true
-}
-
-// copyFromBuffered copies field values from a buffered record to the current instance
-func (t *PurchasesPayablesSetup) copyFromBuffered(record *PurchasesPayablesSetup) {
-	t.Primary_key = record.Primary_key
-	t.Discount_posting = record.Discount_posting
-	t.Receipt_on_invoice = record.Receipt_on_invoice
-	t.Invoice_rounding = record.Invoice_rounding
-	t.Ext_doc_no_mandatory = record.Ext_doc_no_mandatory
-	t.Vendor_nos = record.Vendor_nos
-	t.Quote_nos = record.Quote_nos
-	t.Order_nos = record.Order_nos
-	t.Invoice_nos = record.Invoice_nos
-	t.Posted_invoice_nos = record.Posted_invoice_nos
-	t.Credit_memo_nos = record.Credit_memo_nos
-	t.Posted_credit_memo_nos = record.Posted_credit_memo_nos
-	t.Posted_receipt_nos = record.Posted_receipt_nos
-	t.Blanket_order_nos = record.Blanket_order_nos
-	t.Calc_inv_discount = record.Calc_inv_discount
-	t.Appln_between_currencies = record.Appln_between_currencies
-	t.Copy_comments_blanket_to_order = record.Copy_comments_blanket_to_order
-	t.Copy_comments_order_to_invoice = record.Copy_comments_order_to_invoice
-	t.Copy_comments_order_to_receipt = record.Copy_comments_order_to_receipt
-	t.StoreOldValues()
+	return t.rec().FindSetBuffered()
 }
 
 // ========================================
@@ -2363,49 +1743,9 @@ func (t *PurchasesPayablesSetup) Find(which ...string) bool {
 }
 
 // findInKey reads the first record in the current key and direction — reversed for the
-// last — and with seek ">"/"<" only after/before the current record (a row-value
-// comparison on the key and primary key columns). A key with a FlowField cannot seek.
+// last — and with seek ">"/"<" only after/before the current record
 func (t *PurchasesPayablesSetup) findInKey(seek string, reverse bool) bool {
-	if seek != "" {
-		var columns, params []string
-		var values []interface{}
-		for _, column := range t.keyColumns() {
-			v, ok := t.columnValue(column)
-			if !ok {
-				fmt.Printf("Error: Find(%q) on Purchases_Payables_Setup needs a key of stored fields\n", seek)
-				return false
-			}
-			if t.isKeyDateColumn(column) {
-				v = types.KeyDate(v)
-			}
-			columns = append(columns, t.cmpColumn(column))
-			params = append(params, t.cmpParam(column))
-			values = append(values, v)
-		}
-		after := (seek == ">") != t.q.Descending
-		op := "<"
-		if after {
-			op = ">"
-		}
-		t.q.Seek = "(" + strings.Join(columns, ", ") + ") " + op + " (" + strings.Join(params, ", ") + ")"
-		t.q.SeekArgs = values
-	}
-	savedLimit, savedOffset, savedDescending := t.limit, t.offset, t.q.Descending
-	t.limit, t.offset = 1, 0
-	if reverse {
-		t.q.Descending = !t.q.Descending
-	}
-	found := t.FindSet()
-	// One record read: a later Next seeks from it in the key (inside a transaction FindSet
-	// buffers its rows — a one-row buffer would end the Next at once)
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	t.limit, t.offset, t.q.Descending = savedLimit, savedOffset, savedDescending
-	t.q.Seek, t.q.SeekArgs = "", nil
-	return found
+	return t.rec().FindInKey(seek, reverse)
 }
 
 // keyColumns returns the columns of the current key followed by the primary key's (the

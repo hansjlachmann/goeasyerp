@@ -156,19 +156,11 @@ type BankAccount struct {
 	// Temporary: the record's own table is in a private in-memory database (InitTemporary)
 	temp *tables.TemporaryStore
 
-	// Iteration state for FindSet/Next
-	currentRows *sql.Rows
+	// The result set of FindSet/FindSetBuffered/Next and the paging window (SetPage)
+	cur tables.Cursor
 
 	// LockTable: the following reads lock the rows they read (SELECT … FOR UPDATE, Postgres)
 	lockForUpdate bool
-
-	// Pagination window for FindSet/FindSetBuffered (0 limit = all rows)
-	limit  int
-	offset int
-
-	// Buffered recordset for bidirectional navigation
-	bufferedRecords  []*BankAccount
-	currentBufferPos int
 
 	// Business logic of this record only (SetLogic, tests); nil = the registered logic
 	// (RegisterBankAccountLogic)
@@ -997,25 +989,14 @@ func (t *BankAccount) convertPlaceholders(sql string, count int) string {
 // For single primary key: pass the value directly (string, int, etc.)
 // For composite keys: pass a map[string]interface{} with field names as keys
 func (t *BankAccount) Get(primaryKey interface{}) bool {
-	// Handle composite primary key (map[string]interface{})
+	// A composite primary key (map[string]interface{}, values also as text)
 	if pkMap, ok := primaryKey.(map[string]interface{}); ok {
-		var noVal types.Code
-		if v, exists := pkMap["no"]; exists {
-			switch val := v.(type) {
-			case types.Code:
-				noVal = val
-			case string:
-				noVal = types.NewCode(val)
-			}
-		}
-		return t.GetByPK(noVal)
+		key := bankAccountFields.KeyFromMap(pkMap)
+		return t.GetByPK(key[0].(types.Code))
 	}
-	// Handle single primary key (for tables with only one PK field)
-	switch pk := primaryKey.(type) {
-	case types.Code:
-		return t.GetByPK(pk)
-	case string:
-		return t.GetByPK(types.NewCode(pk))
+	// The primary key itself (a table with one primary key field)
+	if key, ok := bankAccountFields.KeyFromValue(primaryKey); ok {
+		return t.GetByPK([]any{key}[0].(types.Code))
 	}
 
 	fmt.Printf("Error: Invalid primary key type for Bank_Account.Get: %T (use map for composite keys)\n", primaryKey)
@@ -1024,150 +1005,11 @@ func (t *BankAccount) Get(primaryKey interface{}) bool {
 
 // GetByPK retrieves a record by its typed primary key(s) - for direct typed access
 func (t *BankAccount) GetByPK(no types.Code) bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, BankAccountTableName)
-	var noNull sql.NullString
-	var nameNull sql.NullString
-	var search_nameNull sql.NullString
-	var name_2Null sql.NullString
-	var addressNull sql.NullString
-	var address_2Null sql.NullString
-	var cityNull sql.NullString
-	var contactNull sql.NullString
-	var phone_noNull sql.NullString
-	var telex_noNull sql.NullString
-	var bank_account_noNull sql.NullString
-	var transit_noNull sql.NullString
-	var territory_codeNull sql.NullString
-	var dimension_1_codeNull sql.NullString
-	var dimension_2_codeNull sql.NullString
-	var chain_nameNull sql.NullString
-	var min_balanceNull sql.NullString
-	var bank_acc_posting_groupNull sql.NullString
-	var currency_codeNull sql.NullString
-	var language_codeNull sql.NullString
-	var statistics_groupVal int
-	var our_contact_codeNull sql.NullString
-	var country_codeNull sql.NullString
-	var blockedBool sql.NullBool
-	var last_statement_noNull sql.NullString
-	var last_date_modifiedNull sql.NullString
-	var fax_noNull sql.NullString
-	var telex_answer_backNull sql.NullString
-	var pictureVal []byte
-	var post_codeNull sql.NullString
-	var stateNull sql.NullString
-	var last_check_noNull sql.NullString
-	var balance_last_statementNull sql.NullString
-	var bank_branch_noNull sql.NullString
-	var e_mailNull sql.NullString
-	var home_pageNull sql.NullString
-	var no_seriesNull sql.NullString
-
 	// Collect arguments for query
 	args := []interface{}{
 		no,
 	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT no, name, search_name, name_2, address, address_2, city, contact, phone_no, telex_no, bank_account_no, transit_no, territory_code, dimension_1_code, dimension_2_code, chain_name, min_balance, bank_acc_posting_group, currency_code, language_code, statistics_group, our_contact_code, country_code, blocked, last_statement_no, last_date_modified, fax_no, telex_answer_back, picture, post_code, state, last_check_no, balance_last_statement, bank_branch_no, e_mail, home_page, no_series FROM "%s" WHERE 1=1 AND no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-	sqlStr += t.forUpdate()
-
-	err := t.exec().QueryRow(sqlStr, args...).Scan(
-		&noNull,
-		&nameNull,
-		&search_nameNull,
-		&name_2Null,
-		&addressNull,
-		&address_2Null,
-		&cityNull,
-		&contactNull,
-		&phone_noNull,
-		&telex_noNull,
-		&bank_account_noNull,
-		&transit_noNull,
-		&territory_codeNull,
-		&dimension_1_codeNull,
-		&dimension_2_codeNull,
-		&chain_nameNull,
-		&min_balanceNull,
-		&bank_acc_posting_groupNull,
-		&currency_codeNull,
-		&language_codeNull,
-		&statistics_groupVal,
-		&our_contact_codeNull,
-		&country_codeNull,
-		&blockedBool,
-		&last_statement_noNull,
-		&last_date_modifiedNull,
-		&fax_noNull,
-		&telex_answer_backNull,
-		&pictureVal,
-		&post_codeNull,
-		&stateNull,
-		&last_check_noNull,
-		&balance_last_statementNull,
-		&bank_branch_noNull,
-		&e_mailNull,
-		&home_pageNull,
-		&no_seriesNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			// Record not found - this is not an error, just return false
-			return false
-		}
-		// Actual database error
-		fmt.Printf("Error: Failed to get Bank_Account: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.No = types.NewCode(noNull.String)
-	t.Name = types.NewText(nameNull.String)
-	t.Search_name = types.NewCode(search_nameNull.String)
-	t.Name_2 = types.NewText(name_2Null.String)
-	t.Address = types.NewText(addressNull.String)
-	t.Address_2 = types.NewText(address_2Null.String)
-	t.City = types.NewText(cityNull.String)
-	t.Contact = types.NewText(contactNull.String)
-	t.Phone_no = types.NewText(phone_noNull.String)
-	t.Telex_no = types.NewText(telex_noNull.String)
-	t.Bank_account_no = types.NewText(bank_account_noNull.String)
-	t.Transit_no = types.NewText(transit_noNull.String)
-	t.Territory_code = types.NewCode(territory_codeNull.String)
-	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
-	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
-	t.Chain_name = types.NewCode(chain_nameNull.String)
-	t.Min_balance, _ = types.NewDecimalFromString(min_balanceNull.String)
-	t.Bank_acc_posting_group = types.NewCode(bank_acc_posting_groupNull.String)
-	t.Currency_code = types.NewCode(currency_codeNull.String)
-	t.Language_code = types.NewCode(language_codeNull.String)
-	t.Statistics_group = statistics_groupVal
-	t.Our_contact_code = types.NewCode(our_contact_codeNull.String)
-	t.Country_code = types.NewCode(country_codeNull.String)
-	t.Blocked = blockedBool.Bool
-	t.Last_statement_no = types.NewCode(last_statement_noNull.String)
-	t.Last_date_modified, _ = types.NewDateFromString(last_date_modifiedNull.String)
-	t.Fax_no = types.NewText(fax_noNull.String)
-	t.Telex_answer_back = types.NewText(telex_answer_backNull.String)
-	t.Picture = pictureVal
-	t.Post_code = types.NewCode(post_codeNull.String)
-	t.State = types.NewText(stateNull.String)
-	t.Last_check_no = types.NewCode(last_check_noNull.String)
-	t.Balance_last_statement, _ = types.NewDecimalFromString(balance_last_statementNull.String)
-	t.Bank_branch_no = types.NewText(bank_branch_noNull.String)
-	t.E_mail = types.NewText(e_mailNull.String)
-	t.Home_page = types.NewText(home_pageNull.String)
-	t.No_series = types.NewCode(no_seriesNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().Get(args)
 }
 
 // Insert inserts the record into the database
@@ -3965,10 +3807,7 @@ func (t *BankAccount) columnName(fieldName string) (string, bool) {
 func (t *BankAccount) Reset() {
 	t.q.Reset()
 	t.oldValues = nil
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
+	t.cur.CloseRows()
 }
 
 // buildWhereClause builds WHERE clause from current filters and search
@@ -4010,375 +3849,50 @@ func (t *BankAccount) getOrderByClause() (string, []interface{}) {
 // limit rows, skipping the first offset rows. A limit of 0 disables pagination
 // (all matching rows are returned). Negative values are treated as 0.
 func (t *BankAccount) SetPage(limit, offset int) {
-	if limit < 0 {
-		limit = 0
-	}
-	if offset < 0 {
-		offset = 0
-	}
-	t.limit = limit
-	t.offset = offset
+	t.cur.SetPage(limit, offset)
 }
 
-// getLimitClause builds the LIMIT/OFFSET clause from the pagination window.
-// Returns an empty string when no limit is set. LIMIT/OFFSET take integer
-// literals (not placeholders), which both SQLite and PostgreSQL accept.
-func (t *BankAccount) getLimitClause() string {
-	if t.limit <= 0 {
-		return ""
+// rec is what the read functions of foundation/tables need of the record
+func (t *BankAccount) rec() *tables.Rec {
+	_, inTx := t.db.(*sql.Tx)
+	return &tables.Rec{
+		Fields:    bankAccountFields,
+		Ref:       t.fieldRef,
+		QT:        t.qt(),
+		Q:         &t.q,
+		Cur:       &t.cur,
+		Exec:      t.exec(),
+		Buffered:  t.temp != nil || inTx,
+		Postgres:  t.dbType == database.DBTypePostgres,
+		Table:     fmt.Sprintf("%s$%s", t.company, BankAccountTableName),
+		ForUpdate: t.forUpdate(),
+		Store:     t.StoreOldValues,
 	}
-	if t.offset > 0 {
-		return fmt.Sprintf(" LIMIT %d OFFSET %d", t.limit, t.offset)
-	}
-	return fmt.Sprintf(" LIMIT %d", t.limit)
 }
 
 // FindFirst finds the first record matching current filters
 // Returns true if found, false if not found
 func (t *BankAccount) FindFirst() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, BankAccountTableName)
-	where, args := t.buildWhereClause()
-	// The first record in the current key and direction (classic FIND('-'))
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, name, search_name, name_2, address, address_2, city, contact, phone_no, telex_no, bank_account_no, transit_no, territory_code, dimension_1_code, dimension_2_code, chain_name, min_balance, bank_acc_posting_group, currency_code, language_code, statistics_group, our_contact_code, country_code, blocked, last_statement_no, last_date_modified, fax_no, telex_answer_back, picture, post_code, state, last_check_no, balance_last_statement, bank_branch_no, e_mail, home_page, no_series FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var noNull sql.NullString
-	var nameNull sql.NullString
-	var search_nameNull sql.NullString
-	var name_2Null sql.NullString
-	var addressNull sql.NullString
-	var address_2Null sql.NullString
-	var cityNull sql.NullString
-	var contactNull sql.NullString
-	var phone_noNull sql.NullString
-	var telex_noNull sql.NullString
-	var bank_account_noNull sql.NullString
-	var transit_noNull sql.NullString
-	var territory_codeNull sql.NullString
-	var dimension_1_codeNull sql.NullString
-	var dimension_2_codeNull sql.NullString
-	var chain_nameNull sql.NullString
-	var min_balanceNull sql.NullString
-	var bank_acc_posting_groupNull sql.NullString
-	var currency_codeNull sql.NullString
-	var language_codeNull sql.NullString
-	var our_contact_codeNull sql.NullString
-	var country_codeNull sql.NullString
-	var blockedBool sql.NullBool
-	var last_statement_noNull sql.NullString
-	var last_date_modifiedNull sql.NullString
-	var fax_noNull sql.NullString
-	var telex_answer_backNull sql.NullString
-	var post_codeNull sql.NullString
-	var stateNull sql.NullString
-	var last_check_noNull sql.NullString
-	var balance_last_statementNull sql.NullString
-	var bank_branch_noNull sql.NullString
-	var e_mailNull sql.NullString
-	var home_pageNull sql.NullString
-	var no_seriesNull sql.NullString
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&noNull,
-		&nameNull,
-		&search_nameNull,
-		&name_2Null,
-		&addressNull,
-		&address_2Null,
-		&cityNull,
-		&contactNull,
-		&phone_noNull,
-		&telex_noNull,
-		&bank_account_noNull,
-		&transit_noNull,
-		&territory_codeNull,
-		&dimension_1_codeNull,
-		&dimension_2_codeNull,
-		&chain_nameNull,
-		&min_balanceNull,
-		&bank_acc_posting_groupNull,
-		&currency_codeNull,
-		&language_codeNull,
-		&t.Statistics_group,
-		&our_contact_codeNull,
-		&country_codeNull,
-		&blockedBool,
-		&last_statement_noNull,
-		&last_date_modifiedNull,
-		&fax_noNull,
-		&telex_answer_backNull,
-		&t.Picture,
-		&post_codeNull,
-		&stateNull,
-		&last_check_noNull,
-		&balance_last_statementNull,
-		&bank_branch_noNull,
-		&e_mailNull,
-		&home_pageNull,
-		&no_seriesNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find first Bank_Account: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.No = types.NewCode(noNull.String)
-	t.Name = types.NewText(nameNull.String)
-	t.Search_name = types.NewCode(search_nameNull.String)
-	t.Name_2 = types.NewText(name_2Null.String)
-	t.Address = types.NewText(addressNull.String)
-	t.Address_2 = types.NewText(address_2Null.String)
-	t.City = types.NewText(cityNull.String)
-	t.Contact = types.NewText(contactNull.String)
-	t.Phone_no = types.NewText(phone_noNull.String)
-	t.Telex_no = types.NewText(telex_noNull.String)
-	t.Bank_account_no = types.NewText(bank_account_noNull.String)
-	t.Transit_no = types.NewText(transit_noNull.String)
-	t.Territory_code = types.NewCode(territory_codeNull.String)
-	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
-	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
-	t.Chain_name = types.NewCode(chain_nameNull.String)
-	t.Min_balance, _ = types.NewDecimalFromString(min_balanceNull.String)
-	t.Bank_acc_posting_group = types.NewCode(bank_acc_posting_groupNull.String)
-	t.Currency_code = types.NewCode(currency_codeNull.String)
-	t.Language_code = types.NewCode(language_codeNull.String)
-	t.Our_contact_code = types.NewCode(our_contact_codeNull.String)
-	t.Country_code = types.NewCode(country_codeNull.String)
-	t.Blocked = blockedBool.Bool
-	t.Last_statement_no = types.NewCode(last_statement_noNull.String)
-	t.Last_date_modified, _ = types.NewDateFromString(last_date_modifiedNull.String)
-	t.Fax_no = types.NewText(fax_noNull.String)
-	t.Telex_answer_back = types.NewText(telex_answer_backNull.String)
-	t.Post_code = types.NewCode(post_codeNull.String)
-	t.State = types.NewText(stateNull.String)
-	t.Last_check_no = types.NewCode(last_check_noNull.String)
-	t.Balance_last_statement, _ = types.NewDecimalFromString(balance_last_statementNull.String)
-	t.Bank_branch_no = types.NewText(bank_branch_noNull.String)
-	t.E_mail = types.NewText(e_mailNull.String)
-	t.Home_page = types.NewText(home_pageNull.String)
-	t.No_series = types.NewCode(no_seriesNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindFirst()
 }
 
 // FindLast finds the last record matching current filters
 // Returns true if found, false if not found
 func (t *BankAccount) FindLast() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, BankAccountTableName)
-	where, args := t.buildWhereClause()
-	// The last record in the current key and direction (classic FIND('+')): the key reversed,
-	// every column of it
-	t.q.Descending = !t.q.Descending
-	orderBy, orderArgs := t.getOrderByClause()
-	t.q.Descending = !t.q.Descending
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, name, search_name, name_2, address, address_2, city, contact, phone_no, telex_no, bank_account_no, transit_no, territory_code, dimension_1_code, dimension_2_code, chain_name, min_balance, bank_acc_posting_group, currency_code, language_code, statistics_group, our_contact_code, country_code, blocked, last_statement_no, last_date_modified, fax_no, telex_answer_back, picture, post_code, state, last_check_no, balance_last_statement, bank_branch_no, e_mail, home_page, no_series FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var noNull sql.NullString
-	var nameNull sql.NullString
-	var search_nameNull sql.NullString
-	var name_2Null sql.NullString
-	var addressNull sql.NullString
-	var address_2Null sql.NullString
-	var cityNull sql.NullString
-	var contactNull sql.NullString
-	var phone_noNull sql.NullString
-	var telex_noNull sql.NullString
-	var bank_account_noNull sql.NullString
-	var transit_noNull sql.NullString
-	var territory_codeNull sql.NullString
-	var dimension_1_codeNull sql.NullString
-	var dimension_2_codeNull sql.NullString
-	var chain_nameNull sql.NullString
-	var min_balanceNull sql.NullString
-	var bank_acc_posting_groupNull sql.NullString
-	var currency_codeNull sql.NullString
-	var language_codeNull sql.NullString
-	var our_contact_codeNull sql.NullString
-	var country_codeNull sql.NullString
-	var blockedBool sql.NullBool
-	var last_statement_noNull sql.NullString
-	var last_date_modifiedNull sql.NullString
-	var fax_noNull sql.NullString
-	var telex_answer_backNull sql.NullString
-	var post_codeNull sql.NullString
-	var stateNull sql.NullString
-	var last_check_noNull sql.NullString
-	var balance_last_statementNull sql.NullString
-	var bank_branch_noNull sql.NullString
-	var e_mailNull sql.NullString
-	var home_pageNull sql.NullString
-	var no_seriesNull sql.NullString
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&noNull,
-		&nameNull,
-		&search_nameNull,
-		&name_2Null,
-		&addressNull,
-		&address_2Null,
-		&cityNull,
-		&contactNull,
-		&phone_noNull,
-		&telex_noNull,
-		&bank_account_noNull,
-		&transit_noNull,
-		&territory_codeNull,
-		&dimension_1_codeNull,
-		&dimension_2_codeNull,
-		&chain_nameNull,
-		&min_balanceNull,
-		&bank_acc_posting_groupNull,
-		&currency_codeNull,
-		&language_codeNull,
-		&t.Statistics_group,
-		&our_contact_codeNull,
-		&country_codeNull,
-		&blockedBool,
-		&last_statement_noNull,
-		&last_date_modifiedNull,
-		&fax_noNull,
-		&telex_answer_backNull,
-		&t.Picture,
-		&post_codeNull,
-		&stateNull,
-		&last_check_noNull,
-		&balance_last_statementNull,
-		&bank_branch_noNull,
-		&e_mailNull,
-		&home_pageNull,
-		&no_seriesNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find last Bank_Account: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.No = types.NewCode(noNull.String)
-	t.Name = types.NewText(nameNull.String)
-	t.Search_name = types.NewCode(search_nameNull.String)
-	t.Name_2 = types.NewText(name_2Null.String)
-	t.Address = types.NewText(addressNull.String)
-	t.Address_2 = types.NewText(address_2Null.String)
-	t.City = types.NewText(cityNull.String)
-	t.Contact = types.NewText(contactNull.String)
-	t.Phone_no = types.NewText(phone_noNull.String)
-	t.Telex_no = types.NewText(telex_noNull.String)
-	t.Bank_account_no = types.NewText(bank_account_noNull.String)
-	t.Transit_no = types.NewText(transit_noNull.String)
-	t.Territory_code = types.NewCode(territory_codeNull.String)
-	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
-	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
-	t.Chain_name = types.NewCode(chain_nameNull.String)
-	t.Min_balance, _ = types.NewDecimalFromString(min_balanceNull.String)
-	t.Bank_acc_posting_group = types.NewCode(bank_acc_posting_groupNull.String)
-	t.Currency_code = types.NewCode(currency_codeNull.String)
-	t.Language_code = types.NewCode(language_codeNull.String)
-	t.Our_contact_code = types.NewCode(our_contact_codeNull.String)
-	t.Country_code = types.NewCode(country_codeNull.String)
-	t.Blocked = blockedBool.Bool
-	t.Last_statement_no = types.NewCode(last_statement_noNull.String)
-	t.Last_date_modified, _ = types.NewDateFromString(last_date_modifiedNull.String)
-	t.Fax_no = types.NewText(fax_noNull.String)
-	t.Telex_answer_back = types.NewText(telex_answer_backNull.String)
-	t.Post_code = types.NewCode(post_codeNull.String)
-	t.State = types.NewText(stateNull.String)
-	t.Last_check_no = types.NewCode(last_check_noNull.String)
-	t.Balance_last_statement, _ = types.NewDecimalFromString(balance_last_statementNull.String)
-	t.Bank_branch_no = types.NewText(bank_branch_noNull.String)
-	t.E_mail = types.NewText(e_mailNull.String)
-	t.Home_page = types.NewText(home_pageNull.String)
-	t.No_series = types.NewCode(no_seriesNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindLast()
 }
 
 // Count returns the number of records matching current filters
 func (t *BankAccount) Count() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, BankAccountTableName)
-	where, args := t.buildWhereClause()
-
-	query := fmt.Sprintf(`SELECT COUNT(*) FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var count int
-	err := t.exec().QueryRow(query, args...).Scan(&count)
-	if err != nil {
-		fmt.Printf("Error: Failed to count Bank_Account: %v\n", err)
-		return 0
-	}
-
-	return count
+	return t.rec().Count()
 }
 
 // FindSet opens a result set matching current filters
 // Call Next() to iterate through the results
-// Returns true if at least one record found, false otherwise
+// Returns true if at least one record found, false otherwise. A temporary record, and a
+// record in a transaction, reads all at once (FindSetBuffered).
 func (t *BankAccount) FindSet() bool {
-	// A temporary record, and a record in a transaction, reads all at once: its in-memory
-	// database or the transaction has one connection, which an open result set would block for
-	// the statements of the loop (Modify while looping; on PostgreSQL a query while the rows are
-	// read breaks the connection — "unexpected Parse response")
-	if _, inTx := t.db.(*sql.Tx); t.temp != nil || inTx {
-		return t.FindSetBuffered()
-	}
-	// Close any existing result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	tableName := fmt.Sprintf("%s$%s", t.company, BankAccountTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, name, search_name, name_2, address, address_2, city, contact, phone_no, telex_no, bank_account_no, transit_no, territory_code, dimension_1_code, dimension_2_code, chain_name, min_balance, bank_acc_posting_group, currency_code, language_code, statistics_group, our_contact_code, country_code, blocked, last_statement_no, last_date_modified, fax_no, telex_answer_back, picture, post_code, state, last_check_no, balance_last_statement, bank_branch_no, e_mail, home_page, no_series FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSet for Bank_Account: %v\n", err)
-		return false
-	}
-
-	t.currentRows = rows
-
-	// Load first record
-	return t.Next()
+	return t.rec().FindSet()
 }
 
 // Next advances to the next record: in the result set after FindSet() or FindSetBuffered(),
@@ -4391,431 +3905,14 @@ func (t *BankAccount) FindSet() bool {
 //
 // Returns true if a record was loaded, false if no more records or out of bounds
 func (t *BankAccount) Next(steps ...int) bool {
-	// Default to 1 step forward
-	step := 1
-	if len(steps) > 0 {
-		step = steps[0]
-	}
-
-	// BUFFERED MODE: Bidirectional navigation with in-memory records
-	if t.bufferedRecords != nil {
-		// Calculate new position
-		newPos := t.currentBufferPos + step
-
-		// Check bounds
-		if newPos < 0 || newPos >= len(t.bufferedRecords) {
-			return false // Out of bounds
-		}
-
-		// Move to new position
-		t.currentBufferPos = newPos
-		t.copyFromBuffered(t.bufferedRecords[t.currentBufferPos])
-		return true
-	}
-
-	// FORWARD-ONLY MODE: Streaming with sql.Rows (only positive steps allowed)
-	if t.currentRows != nil {
-		// Validate: only forward movement allowed
-		if step < 1 {
-			fmt.Printf("Error: Backward navigation (Next(%d)) requires FindSetBuffered()\n", step)
-			return false
-		}
-
-		// Advance 'step' times (1 = next record, 2 = skip 1 record, etc.)
-		for i := 0; i < step; i++ {
-			if !t.currentRows.Next() {
-				// No more rows - close result set
-				t.currentRows.Close()
-				t.currentRows = nil
-				return false
-			}
-		}
-
-		// Scan the row
-		var noNull sql.NullString
-		var nameNull sql.NullString
-		var search_nameNull sql.NullString
-		var name_2Null sql.NullString
-		var addressNull sql.NullString
-		var address_2Null sql.NullString
-		var cityNull sql.NullString
-		var contactNull sql.NullString
-		var phone_noNull sql.NullString
-		var telex_noNull sql.NullString
-		var bank_account_noNull sql.NullString
-		var transit_noNull sql.NullString
-		var territory_codeNull sql.NullString
-		var dimension_1_codeNull sql.NullString
-		var dimension_2_codeNull sql.NullString
-		var chain_nameNull sql.NullString
-		var min_balanceNull sql.NullString
-		var bank_acc_posting_groupNull sql.NullString
-		var currency_codeNull sql.NullString
-		var language_codeNull sql.NullString
-		var our_contact_codeNull sql.NullString
-		var country_codeNull sql.NullString
-		var blockedBool sql.NullBool
-		var last_statement_noNull sql.NullString
-		var last_date_modifiedNull sql.NullString
-		var fax_noNull sql.NullString
-		var telex_answer_backNull sql.NullString
-		var post_codeNull sql.NullString
-		var stateNull sql.NullString
-		var last_check_noNull sql.NullString
-		var balance_last_statementNull sql.NullString
-		var bank_branch_noNull sql.NullString
-		var e_mailNull sql.NullString
-		var home_pageNull sql.NullString
-		var no_seriesNull sql.NullString
-
-		err := t.currentRows.Scan(
-			&noNull,
-			&nameNull,
-			&search_nameNull,
-			&name_2Null,
-			&addressNull,
-			&address_2Null,
-			&cityNull,
-			&contactNull,
-			&phone_noNull,
-			&telex_noNull,
-			&bank_account_noNull,
-			&transit_noNull,
-			&territory_codeNull,
-			&dimension_1_codeNull,
-			&dimension_2_codeNull,
-			&chain_nameNull,
-			&min_balanceNull,
-			&bank_acc_posting_groupNull,
-			&currency_codeNull,
-			&language_codeNull,
-			&t.Statistics_group,
-			&our_contact_codeNull,
-			&country_codeNull,
-			&blockedBool,
-			&last_statement_noNull,
-			&last_date_modifiedNull,
-			&fax_noNull,
-			&telex_answer_backNull,
-			&t.Picture,
-			&post_codeNull,
-			&stateNull,
-			&last_check_noNull,
-			&balance_last_statementNull,
-			&bank_branch_noNull,
-			&e_mailNull,
-			&home_pageNull,
-			&no_seriesNull,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan Bank_Account record: %v\n", err)
-			t.currentRows.Close()
-			t.currentRows = nil
-			return false
-		}
-
-		// Populate fields
-		t.No = types.NewCode(noNull.String)
-		t.Name = types.NewText(nameNull.String)
-		t.Search_name = types.NewCode(search_nameNull.String)
-		t.Name_2 = types.NewText(name_2Null.String)
-		t.Address = types.NewText(addressNull.String)
-		t.Address_2 = types.NewText(address_2Null.String)
-		t.City = types.NewText(cityNull.String)
-		t.Contact = types.NewText(contactNull.String)
-		t.Phone_no = types.NewText(phone_noNull.String)
-		t.Telex_no = types.NewText(telex_noNull.String)
-		t.Bank_account_no = types.NewText(bank_account_noNull.String)
-		t.Transit_no = types.NewText(transit_noNull.String)
-		t.Territory_code = types.NewCode(territory_codeNull.String)
-		t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
-		t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
-		t.Chain_name = types.NewCode(chain_nameNull.String)
-		t.Min_balance, _ = types.NewDecimalFromString(min_balanceNull.String)
-		t.Bank_acc_posting_group = types.NewCode(bank_acc_posting_groupNull.String)
-		t.Currency_code = types.NewCode(currency_codeNull.String)
-		t.Language_code = types.NewCode(language_codeNull.String)
-		t.Our_contact_code = types.NewCode(our_contact_codeNull.String)
-		t.Country_code = types.NewCode(country_codeNull.String)
-		t.Blocked = blockedBool.Bool
-		t.Last_statement_no = types.NewCode(last_statement_noNull.String)
-		t.Last_date_modified, _ = types.NewDateFromString(last_date_modifiedNull.String)
-		t.Fax_no = types.NewText(fax_noNull.String)
-		t.Telex_answer_back = types.NewText(telex_answer_backNull.String)
-		t.Post_code = types.NewCode(post_codeNull.String)
-		t.State = types.NewText(stateNull.String)
-		t.Last_check_no = types.NewCode(last_check_noNull.String)
-		t.Balance_last_statement, _ = types.NewDecimalFromString(balance_last_statementNull.String)
-		t.Bank_branch_no = types.NewText(bank_branch_noNull.String)
-		t.E_mail = types.NewText(e_mailNull.String)
-		t.Home_page = types.NewText(home_pageNull.String)
-		t.No_series = types.NewCode(no_seriesNull.String)
-
-		// Store old values for field tracking
-		t.StoreOldValues()
-
-		return true
-	}
-
-	// No record set (after Get, Find, FindFirst, FindLast): the next record in the current key
-	// and direction within the filters, one step at a time (classic NEXT after FIND); a step
-	// that finds none leaves the record on the last one reached
-	if step == 0 {
-		return false
-	}
-	for i := 0; i != step; {
-		if step > 0 {
-			if !t.findInKey(">", false) {
-				return false
-			}
-			i++
-		} else {
-			if !t.findInKey("<", true) {
-				return false
-			}
-			i--
-		}
-	}
-	return true
+	return t.rec().Next(steps, t.findInKey)
 }
 
 // FindSetBuffered loads all filtered records into memory for bidirectional navigation
 // Use this when you need to move backward/forward with Next(steps)
-// Filters (SetRange/SetFilter) are applied in SQL before buffering to minimize memory usage
 // Returns true if at least one record found, false otherwise
 func (t *BankAccount) FindSetBuffered() bool {
-	// Close any existing forward-only result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-
-	// Clear any existing buffer
-	t.bufferedRecords = nil
-	t.currentBufferPos = -1
-	tableName := fmt.Sprintf("%s$%s", t.company, BankAccountTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, name, search_name, name_2, address, address_2, city, contact, phone_no, telex_no, bank_account_no, transit_no, territory_code, dimension_1_code, dimension_2_code, chain_name, min_balance, bank_acc_posting_group, currency_code, language_code, statistics_group, our_contact_code, country_code, blocked, last_statement_no, last_date_modified, fax_no, telex_answer_back, picture, post_code, state, last_check_no, balance_last_statement, bank_branch_no, e_mail, home_page, no_series FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSetBuffered for Bank_Account: %v\n", err)
-		return false
-	}
-	defer rows.Close()
-
-	// Load all records into memory
-	for rows.Next() {
-		// Create a new record instance
-		record := &BankAccount{}
-		record.db = t.db
-		record.temp = t.temp
-		record.company = t.company
-		record.dbType = t.dbType
-
-		// Scan the row
-		var noNull sql.NullString
-		var nameNull sql.NullString
-		var search_nameNull sql.NullString
-		var name_2Null sql.NullString
-		var addressNull sql.NullString
-		var address_2Null sql.NullString
-		var cityNull sql.NullString
-		var contactNull sql.NullString
-		var phone_noNull sql.NullString
-		var telex_noNull sql.NullString
-		var bank_account_noNull sql.NullString
-		var transit_noNull sql.NullString
-		var territory_codeNull sql.NullString
-		var dimension_1_codeNull sql.NullString
-		var dimension_2_codeNull sql.NullString
-		var chain_nameNull sql.NullString
-		var min_balanceNull sql.NullString
-		var bank_acc_posting_groupNull sql.NullString
-		var currency_codeNull sql.NullString
-		var language_codeNull sql.NullString
-		var our_contact_codeNull sql.NullString
-		var country_codeNull sql.NullString
-		var blockedBool sql.NullBool
-		var last_statement_noNull sql.NullString
-		var last_date_modifiedNull sql.NullString
-		var fax_noNull sql.NullString
-		var telex_answer_backNull sql.NullString
-		var post_codeNull sql.NullString
-		var stateNull sql.NullString
-		var last_check_noNull sql.NullString
-		var balance_last_statementNull sql.NullString
-		var bank_branch_noNull sql.NullString
-		var e_mailNull sql.NullString
-		var home_pageNull sql.NullString
-		var no_seriesNull sql.NullString
-
-		err := rows.Scan(
-			&noNull,
-			&nameNull,
-			&search_nameNull,
-			&name_2Null,
-			&addressNull,
-			&address_2Null,
-			&cityNull,
-			&contactNull,
-			&phone_noNull,
-			&telex_noNull,
-			&bank_account_noNull,
-			&transit_noNull,
-			&territory_codeNull,
-			&dimension_1_codeNull,
-			&dimension_2_codeNull,
-			&chain_nameNull,
-			&min_balanceNull,
-			&bank_acc_posting_groupNull,
-			&currency_codeNull,
-			&language_codeNull,
-			&record.Statistics_group,
-			&our_contact_codeNull,
-			&country_codeNull,
-			&blockedBool,
-			&last_statement_noNull,
-			&last_date_modifiedNull,
-			&fax_noNull,
-			&telex_answer_backNull,
-			&record.Picture,
-			&post_codeNull,
-			&stateNull,
-			&last_check_noNull,
-			&balance_last_statementNull,
-			&bank_branch_noNull,
-			&e_mailNull,
-			&home_pageNull,
-			&no_seriesNull,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan Bank_Account record: %v\n", err)
-			return false
-		}
-
-		// Populate special type fields
-		record.No = types.NewCode(noNull.String)
-		record.Name = types.NewText(nameNull.String)
-		record.Search_name = types.NewCode(search_nameNull.String)
-		record.Name_2 = types.NewText(name_2Null.String)
-		record.Address = types.NewText(addressNull.String)
-		record.Address_2 = types.NewText(address_2Null.String)
-		record.City = types.NewText(cityNull.String)
-		record.Contact = types.NewText(contactNull.String)
-		record.Phone_no = types.NewText(phone_noNull.String)
-		record.Telex_no = types.NewText(telex_noNull.String)
-		record.Bank_account_no = types.NewText(bank_account_noNull.String)
-		record.Transit_no = types.NewText(transit_noNull.String)
-		record.Territory_code = types.NewCode(territory_codeNull.String)
-		record.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
-		record.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
-		record.Chain_name = types.NewCode(chain_nameNull.String)
-		record.Min_balance, _ = types.NewDecimalFromString(min_balanceNull.String)
-		record.Bank_acc_posting_group = types.NewCode(bank_acc_posting_groupNull.String)
-		record.Currency_code = types.NewCode(currency_codeNull.String)
-		record.Language_code = types.NewCode(language_codeNull.String)
-		record.Our_contact_code = types.NewCode(our_contact_codeNull.String)
-		record.Country_code = types.NewCode(country_codeNull.String)
-		record.Blocked = blockedBool.Bool
-		record.Last_statement_no = types.NewCode(last_statement_noNull.String)
-		record.Last_date_modified, _ = types.NewDateFromString(last_date_modifiedNull.String)
-		record.Fax_no = types.NewText(fax_noNull.String)
-		record.Telex_answer_back = types.NewText(telex_answer_backNull.String)
-		record.Post_code = types.NewCode(post_codeNull.String)
-		record.State = types.NewText(stateNull.String)
-		record.Last_check_no = types.NewCode(last_check_noNull.String)
-		record.Balance_last_statement, _ = types.NewDecimalFromString(balance_last_statementNull.String)
-		record.Bank_branch_no = types.NewText(bank_branch_noNull.String)
-		record.E_mail = types.NewText(e_mailNull.String)
-		record.Home_page = types.NewText(home_pageNull.String)
-		record.No_series = types.NewCode(no_seriesNull.String)
-
-		// Store old values
-		record.StoreOldValues()
-
-		// Add to buffer
-		t.bufferedRecords = append(t.bufferedRecords, record)
-	}
-
-	// Check for errors during iteration
-	if err := rows.Err(); err != nil {
-		fmt.Printf("Error: Failed to iterate Bank_Account records: %v\n", err)
-		return false
-	}
-
-	// If no records found, return false
-	if len(t.bufferedRecords) == 0 {
-		return false
-	}
-
-	// Load first record into current instance
-	t.currentBufferPos = 0
-	t.copyFromBuffered(t.bufferedRecords[0])
-
-	return true
-}
-
-// copyFromBuffered copies field values from a buffered record to the current instance
-func (t *BankAccount) copyFromBuffered(record *BankAccount) {
-	t.No = record.No
-	t.Name = record.Name
-	t.Search_name = record.Search_name
-	t.Name_2 = record.Name_2
-	t.Address = record.Address
-	t.Address_2 = record.Address_2
-	t.City = record.City
-	t.Contact = record.Contact
-	t.Phone_no = record.Phone_no
-	t.Telex_no = record.Telex_no
-	t.Bank_account_no = record.Bank_account_no
-	t.Transit_no = record.Transit_no
-	t.Territory_code = record.Territory_code
-	t.Dimension_1_code = record.Dimension_1_code
-	t.Dimension_2_code = record.Dimension_2_code
-	t.Chain_name = record.Chain_name
-	t.Min_balance = record.Min_balance
-	t.Bank_acc_posting_group = record.Bank_acc_posting_group
-	t.Currency_code = record.Currency_code
-	t.Language_code = record.Language_code
-	t.Statistics_group = record.Statistics_group
-	t.Our_contact_code = record.Our_contact_code
-	t.Country_code = record.Country_code
-	t.Comment = record.Comment
-	t.Blocked = record.Blocked
-	t.Last_statement_no = record.Last_statement_no
-	t.Last_date_modified = record.Last_date_modified
-	t.Balance = record.Balance
-	t.Balance_lcy = record.Balance_lcy
-	t.Net_change = record.Net_change
-	t.Net_change_lcy = record.Net_change_lcy
-	t.Fax_no = record.Fax_no
-	t.Telex_answer_back = record.Telex_answer_back
-	t.Picture = record.Picture
-	t.Post_code = record.Post_code
-	t.State = record.State
-	t.Last_check_no = record.Last_check_no
-	t.Balance_last_statement = record.Balance_last_statement
-	t.Balance_at_date = record.Balance_at_date
-	t.Balance_at_date_lcy = record.Balance_at_date_lcy
-	t.Debit_amount = record.Debit_amount
-	t.Credit_amount = record.Credit_amount
-	t.Debit_amount_lcy = record.Debit_amount_lcy
-	t.Credit_amount_lcy = record.Credit_amount_lcy
-	t.Bank_branch_no = record.Bank_branch_no
-	t.E_mail = record.E_mail
-	t.Home_page = record.Home_page
-	t.No_series = record.No_series
-	t.StoreOldValues()
+	return t.rec().FindSetBuffered()
 }
 
 // ========================================
@@ -5262,49 +4359,9 @@ func (t *BankAccount) Find(which ...string) bool {
 }
 
 // findInKey reads the first record in the current key and direction — reversed for the
-// last — and with seek ">"/"<" only after/before the current record (a row-value
-// comparison on the key and primary key columns). A key with a FlowField cannot seek.
+// last — and with seek ">"/"<" only after/before the current record
 func (t *BankAccount) findInKey(seek string, reverse bool) bool {
-	if seek != "" {
-		var columns, params []string
-		var values []interface{}
-		for _, column := range t.keyColumns() {
-			v, ok := t.columnValue(column)
-			if !ok {
-				fmt.Printf("Error: Find(%q) on Bank_Account needs a key of stored fields\n", seek)
-				return false
-			}
-			if t.isKeyDateColumn(column) {
-				v = types.KeyDate(v)
-			}
-			columns = append(columns, t.cmpColumn(column))
-			params = append(params, t.cmpParam(column))
-			values = append(values, v)
-		}
-		after := (seek == ">") != t.q.Descending
-		op := "<"
-		if after {
-			op = ">"
-		}
-		t.q.Seek = "(" + strings.Join(columns, ", ") + ") " + op + " (" + strings.Join(params, ", ") + ")"
-		t.q.SeekArgs = values
-	}
-	savedLimit, savedOffset, savedDescending := t.limit, t.offset, t.q.Descending
-	t.limit, t.offset = 1, 0
-	if reverse {
-		t.q.Descending = !t.q.Descending
-	}
-	found := t.FindSet()
-	// One record read: a later Next seeks from it in the key (inside a transaction FindSet
-	// buffers its rows — a one-row buffer would end the Next at once)
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	t.limit, t.offset, t.q.Descending = savedLimit, savedOffset, savedDescending
-	t.q.Seek, t.q.SeekArgs = "", nil
-	return found
+	return t.rec().FindInKey(seek, reverse)
 }
 
 // keyColumns returns the columns of the current key followed by the primary key's (the

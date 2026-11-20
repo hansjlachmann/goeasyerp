@@ -54,6 +54,7 @@ type TableFields struct {
 	byName     map[string]int // lower case name → index in Fields
 	byNo       map[int]int    // number → index in Fields
 	primaryKey []string       // the primary key's columns in key order
+	selectList string         // the stored fields' columns, comma separated
 }
 
 func (tf *TableFields) index() {
@@ -67,6 +68,13 @@ func (tf *TableFields) index() {
 				tf.primaryKey = append(tf.primaryKey, tf.Fields[i].Info.Name)
 			}
 		}
+		var columns []string
+		for i := range tf.Fields {
+			if !tf.Fields[i].Info.FlowField {
+				columns = append(columns, tf.Fields[i].Info.Name)
+			}
+		}
+		tf.selectList = strings.Join(columns, ", ")
 	})
 }
 

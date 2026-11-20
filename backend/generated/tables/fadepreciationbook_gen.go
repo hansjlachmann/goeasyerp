@@ -221,19 +221,11 @@ type FADepreciationBook struct {
 	// Temporary: the record's own table is in a private in-memory database (InitTemporary)
 	temp *tables.TemporaryStore
 
-	// Iteration state for FindSet/Next
-	currentRows *sql.Rows
+	// The result set of FindSet/FindSetBuffered/Next and the paging window (SetPage)
+	cur tables.Cursor
 
 	// LockTable: the following reads lock the rows they read (SELECT … FOR UPDATE, Postgres)
 	lockForUpdate bool
-
-	// Pagination window for FindSet/FindSetBuffered (0 limit = all rows)
-	limit  int
-	offset int
-
-	// Buffered recordset for bidirectional navigation
-	bufferedRecords  []*FADepreciationBook
-	currentBufferPos int
 
 	// Business logic of this record only (SetLogic, tests); nil = the registered logic
 	// (RegisterFADepreciationBookLogic)
@@ -1064,30 +1056,11 @@ func (t *FADepreciationBook) convertPlaceholders(sql string, count int) string {
 // For single primary key: pass the value directly (string, int, etc.)
 // For composite keys: pass a map[string]interface{} with field names as keys
 func (t *FADepreciationBook) Get(primaryKey interface{}) bool {
-	// Handle composite primary key (map[string]interface{})
+	// A composite primary key (map[string]interface{}, values also as text)
 	if pkMap, ok := primaryKey.(map[string]interface{}); ok {
-		var fa_noVal types.Code
-		if v, exists := pkMap["fa_no"]; exists {
-			switch val := v.(type) {
-			case types.Code:
-				fa_noVal = val
-			case string:
-				fa_noVal = types.NewCode(val)
-			}
-		}
-		var depreciation_book_codeVal types.Code
-		if v, exists := pkMap["depreciation_book_code"]; exists {
-			switch val := v.(type) {
-			case types.Code:
-				depreciation_book_codeVal = val
-			case string:
-				depreciation_book_codeVal = types.NewCode(val)
-			}
-		}
-		return t.GetByPK(fa_noVal, depreciation_book_codeVal)
+		key := fADepreciationBookFields.KeyFromMap(pkMap)
+		return t.GetByPK(key[0].(types.Code), key[1].(types.Code))
 	}
-	// For tables with composite keys, direct value is not supported
-	// Use a map[string]interface{} with field names as keys
 
 	fmt.Printf("Error: Invalid primary key type for FA_Depreciation_Book.Get: %T (use map for composite keys)\n", primaryKey)
 	return false
@@ -1095,166 +1068,12 @@ func (t *FADepreciationBook) Get(primaryKey interface{}) bool {
 
 // GetByPK retrieves a record by its typed primary key(s) - for direct typed access
 func (t *FADepreciationBook) GetByPK(fa_no types.Code, depreciation_book_code types.Code) bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, FADepreciationBookTableName)
-	var fa_noNull sql.NullString
-	var depreciation_book_codeNull sql.NullString
-	var depreciation_methodInt int
-	var depreciation_starting_dateNull sql.NullString
-	var straight_line_percentNull sql.NullString
-	var no_of_depreciation_yearsNull sql.NullString
-	var no_of_depreciation_monthsNull sql.NullString
-	var fixed_depr_amountNull sql.NullString
-	var declining_balance_percentNull sql.NullString
-	var depreciation_table_codeNull sql.NullString
-	var final_rounding_amountNull sql.NullString
-	var ending_book_valueNull sql.NullString
-	var fa_posting_groupNull sql.NullString
-	var depreciation_ending_dateNull sql.NullString
-	var acquisition_dateNull sql.NullString
-	var g_l_acquisition_dateNull sql.NullString
-	var disposal_dateNull sql.NullString
-	var last_acquisition_cost_dateNull sql.NullString
-	var last_depreciation_dateNull sql.NullString
-	var last_write_down_dateNull sql.NullString
-	var last_appreciation_dateNull sql.NullString
-	var last_custom_1_dateNull sql.NullString
-	var last_custom_2_dateNull sql.NullString
-	var last_salvage_value_dateNull sql.NullString
-	var fa_exchange_rateNull sql.NullString
-	var fixed_depr_amount_below_zeroNull sql.NullString
-	var last_date_modifiedNull sql.NullString
-	var first_user_defined_depr_dateNull sql.NullString
-	var use_fa_ledger_checkBool sql.NullBool
-	var last_maintenance_dateNull sql.NullString
-	var depr_below_zero_percentNull sql.NullString
-	var projected_disposal_dateNull sql.NullString
-	var projected_proceeds_on_disposalNull sql.NullString
-	var depr_starting_date_custom_1Null sql.NullString
-	var depr_ending_date_custom_1Null sql.NullString
-	var accum_depr_percent_custom_1Null sql.NullString
-	var depr_this_year_percent_custom_1Null sql.NullString
-	var property_class_custom_1Int int
-	var descriptionNull sql.NullString
-	var main_asset_componentInt int
-	var component_of_main_assetNull sql.NullString
-	var fa_add_currency_factorNull sql.NullString
-
 	// Collect arguments for query
 	args := []interface{}{
 		fa_no,
 		depreciation_book_code,
 	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT fa_no, depreciation_book_code, depreciation_method, depreciation_starting_date, straight_line_percent, no_of_depreciation_years, no_of_depreciation_months, fixed_depr_amount, declining_balance_percent, depreciation_table_code, final_rounding_amount, ending_book_value, fa_posting_group, depreciation_ending_date, acquisition_date, g_l_acquisition_date, disposal_date, last_acquisition_cost_date, last_depreciation_date, last_write_down_date, last_appreciation_date, last_custom_1_date, last_custom_2_date, last_salvage_value_date, fa_exchange_rate, fixed_depr_amount_below_zero, last_date_modified, first_user_defined_depr_date, use_fa_ledger_check, last_maintenance_date, depr_below_zero_percent, projected_disposal_date, projected_proceeds_on_disposal, depr_starting_date_custom_1, depr_ending_date_custom_1, accum_depr_percent_custom_1, depr_this_year_percent_custom_1, property_class_custom_1, description, main_asset_component, component_of_main_asset, fa_add_currency_factor FROM "%s" WHERE 1=1 AND fa_no = ? AND depreciation_book_code = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-	sqlStr += t.forUpdate()
-
-	err := t.exec().QueryRow(sqlStr, args...).Scan(
-		&fa_noNull,
-		&depreciation_book_codeNull,
-		&depreciation_methodInt,
-		&depreciation_starting_dateNull,
-		&straight_line_percentNull,
-		&no_of_depreciation_yearsNull,
-		&no_of_depreciation_monthsNull,
-		&fixed_depr_amountNull,
-		&declining_balance_percentNull,
-		&depreciation_table_codeNull,
-		&final_rounding_amountNull,
-		&ending_book_valueNull,
-		&fa_posting_groupNull,
-		&depreciation_ending_dateNull,
-		&acquisition_dateNull,
-		&g_l_acquisition_dateNull,
-		&disposal_dateNull,
-		&last_acquisition_cost_dateNull,
-		&last_depreciation_dateNull,
-		&last_write_down_dateNull,
-		&last_appreciation_dateNull,
-		&last_custom_1_dateNull,
-		&last_custom_2_dateNull,
-		&last_salvage_value_dateNull,
-		&fa_exchange_rateNull,
-		&fixed_depr_amount_below_zeroNull,
-		&last_date_modifiedNull,
-		&first_user_defined_depr_dateNull,
-		&use_fa_ledger_checkBool,
-		&last_maintenance_dateNull,
-		&depr_below_zero_percentNull,
-		&projected_disposal_dateNull,
-		&projected_proceeds_on_disposalNull,
-		&depr_starting_date_custom_1Null,
-		&depr_ending_date_custom_1Null,
-		&accum_depr_percent_custom_1Null,
-		&depr_this_year_percent_custom_1Null,
-		&property_class_custom_1Int,
-		&descriptionNull,
-		&main_asset_componentInt,
-		&component_of_main_assetNull,
-		&fa_add_currency_factorNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			// Record not found - this is not an error, just return false
-			return false
-		}
-		// Actual database error
-		fmt.Printf("Error: Failed to get FA_Depreciation_Book: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Fa_no = types.NewCode(fa_noNull.String)
-	t.Depreciation_book_code = types.NewCode(depreciation_book_codeNull.String)
-	t.Depreciation_method = FADepreciationBookDepreciation_method(depreciation_methodInt)
-	t.Depreciation_starting_date, _ = types.NewDateFromString(depreciation_starting_dateNull.String)
-	t.Straight_line_percent, _ = types.NewDecimalFromString(straight_line_percentNull.String)
-	t.No_of_depreciation_years, _ = types.NewDecimalFromString(no_of_depreciation_yearsNull.String)
-	t.No_of_depreciation_months, _ = types.NewDecimalFromString(no_of_depreciation_monthsNull.String)
-	t.Fixed_depr_amount, _ = types.NewDecimalFromString(fixed_depr_amountNull.String)
-	t.Declining_balance_percent, _ = types.NewDecimalFromString(declining_balance_percentNull.String)
-	t.Depreciation_table_code = types.NewCode(depreciation_table_codeNull.String)
-	t.Final_rounding_amount, _ = types.NewDecimalFromString(final_rounding_amountNull.String)
-	t.Ending_book_value, _ = types.NewDecimalFromString(ending_book_valueNull.String)
-	t.Fa_posting_group = types.NewCode(fa_posting_groupNull.String)
-	t.Depreciation_ending_date, _ = types.NewDateFromString(depreciation_ending_dateNull.String)
-	t.Acquisition_date, _ = types.NewDateFromString(acquisition_dateNull.String)
-	t.G_l_acquisition_date, _ = types.NewDateFromString(g_l_acquisition_dateNull.String)
-	t.Disposal_date, _ = types.NewDateFromString(disposal_dateNull.String)
-	t.Last_acquisition_cost_date, _ = types.NewDateFromString(last_acquisition_cost_dateNull.String)
-	t.Last_depreciation_date, _ = types.NewDateFromString(last_depreciation_dateNull.String)
-	t.Last_write_down_date, _ = types.NewDateFromString(last_write_down_dateNull.String)
-	t.Last_appreciation_date, _ = types.NewDateFromString(last_appreciation_dateNull.String)
-	t.Last_custom_1_date, _ = types.NewDateFromString(last_custom_1_dateNull.String)
-	t.Last_custom_2_date, _ = types.NewDateFromString(last_custom_2_dateNull.String)
-	t.Last_salvage_value_date, _ = types.NewDateFromString(last_salvage_value_dateNull.String)
-	t.Fa_exchange_rate, _ = types.NewDecimalFromString(fa_exchange_rateNull.String)
-	t.Fixed_depr_amount_below_zero, _ = types.NewDecimalFromString(fixed_depr_amount_below_zeroNull.String)
-	t.Last_date_modified, _ = types.NewDateFromString(last_date_modifiedNull.String)
-	t.First_user_defined_depr_date, _ = types.NewDateFromString(first_user_defined_depr_dateNull.String)
-	t.Use_fa_ledger_check = use_fa_ledger_checkBool.Bool
-	t.Last_maintenance_date, _ = types.NewDateFromString(last_maintenance_dateNull.String)
-	t.Depr_below_zero_percent, _ = types.NewDecimalFromString(depr_below_zero_percentNull.String)
-	t.Projected_disposal_date, _ = types.NewDateFromString(projected_disposal_dateNull.String)
-	t.Projected_proceeds_on_disposal, _ = types.NewDecimalFromString(projected_proceeds_on_disposalNull.String)
-	t.Depr_starting_date_custom_1, _ = types.NewDateFromString(depr_starting_date_custom_1Null.String)
-	t.Depr_ending_date_custom_1, _ = types.NewDateFromString(depr_ending_date_custom_1Null.String)
-	t.Accum_depr_percent_custom_1, _ = types.NewDecimalFromString(accum_depr_percent_custom_1Null.String)
-	t.Depr_this_year_percent_custom_1, _ = types.NewDecimalFromString(depr_this_year_percent_custom_1Null.String)
-	t.Property_class_custom_1 = FADepreciationBookProperty_class_custom_1(property_class_custom_1Int)
-	t.Description = types.NewText(descriptionNull.String)
-	t.Main_asset_component = FADepreciationBookMain_asset_component(main_asset_componentInt)
-	t.Component_of_main_asset = types.NewCode(component_of_main_assetNull.String)
-	t.Fa_add_currency_factor, _ = types.NewDecimalFromString(fa_add_currency_factorNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().Get(args)
 }
 
 // Insert inserts the record into the database
@@ -3296,10 +3115,7 @@ func (t *FADepreciationBook) columnName(fieldName string) (string, bool) {
 func (t *FADepreciationBook) Reset() {
 	t.q.Reset()
 	t.oldValues = nil
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
+	t.cur.CloseRows()
 }
 
 // buildWhereClause builds WHERE clause from current filters and search
@@ -3341,413 +3157,50 @@ func (t *FADepreciationBook) getOrderByClause() (string, []interface{}) {
 // limit rows, skipping the first offset rows. A limit of 0 disables pagination
 // (all matching rows are returned). Negative values are treated as 0.
 func (t *FADepreciationBook) SetPage(limit, offset int) {
-	if limit < 0 {
-		limit = 0
-	}
-	if offset < 0 {
-		offset = 0
-	}
-	t.limit = limit
-	t.offset = offset
+	t.cur.SetPage(limit, offset)
 }
 
-// getLimitClause builds the LIMIT/OFFSET clause from the pagination window.
-// Returns an empty string when no limit is set. LIMIT/OFFSET take integer
-// literals (not placeholders), which both SQLite and PostgreSQL accept.
-func (t *FADepreciationBook) getLimitClause() string {
-	if t.limit <= 0 {
-		return ""
+// rec is what the read functions of foundation/tables need of the record
+func (t *FADepreciationBook) rec() *tables.Rec {
+	_, inTx := t.db.(*sql.Tx)
+	return &tables.Rec{
+		Fields:    fADepreciationBookFields,
+		Ref:       t.fieldRef,
+		QT:        t.qt(),
+		Q:         &t.q,
+		Cur:       &t.cur,
+		Exec:      t.exec(),
+		Buffered:  t.temp != nil || inTx,
+		Postgres:  t.dbType == database.DBTypePostgres,
+		Table:     fmt.Sprintf("%s$%s", t.company, FADepreciationBookTableName),
+		ForUpdate: t.forUpdate(),
+		Store:     t.StoreOldValues,
 	}
-	if t.offset > 0 {
-		return fmt.Sprintf(" LIMIT %d OFFSET %d", t.limit, t.offset)
-	}
-	return fmt.Sprintf(" LIMIT %d", t.limit)
 }
 
 // FindFirst finds the first record matching current filters
 // Returns true if found, false if not found
 func (t *FADepreciationBook) FindFirst() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, FADepreciationBookTableName)
-	where, args := t.buildWhereClause()
-	// The first record in the current key and direction (classic FIND('-'))
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT fa_no, depreciation_book_code, depreciation_method, depreciation_starting_date, straight_line_percent, no_of_depreciation_years, no_of_depreciation_months, fixed_depr_amount, declining_balance_percent, depreciation_table_code, final_rounding_amount, ending_book_value, fa_posting_group, depreciation_ending_date, acquisition_date, g_l_acquisition_date, disposal_date, last_acquisition_cost_date, last_depreciation_date, last_write_down_date, last_appreciation_date, last_custom_1_date, last_custom_2_date, last_salvage_value_date, fa_exchange_rate, fixed_depr_amount_below_zero, last_date_modified, first_user_defined_depr_date, use_fa_ledger_check, last_maintenance_date, depr_below_zero_percent, projected_disposal_date, projected_proceeds_on_disposal, depr_starting_date_custom_1, depr_ending_date_custom_1, accum_depr_percent_custom_1, depr_this_year_percent_custom_1, property_class_custom_1, description, main_asset_component, component_of_main_asset, fa_add_currency_factor FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var fa_noNull sql.NullString
-	var depreciation_book_codeNull sql.NullString
-	var depreciation_methodInt int
-	var depreciation_starting_dateNull sql.NullString
-	var straight_line_percentNull sql.NullString
-	var no_of_depreciation_yearsNull sql.NullString
-	var no_of_depreciation_monthsNull sql.NullString
-	var fixed_depr_amountNull sql.NullString
-	var declining_balance_percentNull sql.NullString
-	var depreciation_table_codeNull sql.NullString
-	var final_rounding_amountNull sql.NullString
-	var ending_book_valueNull sql.NullString
-	var fa_posting_groupNull sql.NullString
-	var depreciation_ending_dateNull sql.NullString
-	var acquisition_dateNull sql.NullString
-	var g_l_acquisition_dateNull sql.NullString
-	var disposal_dateNull sql.NullString
-	var last_acquisition_cost_dateNull sql.NullString
-	var last_depreciation_dateNull sql.NullString
-	var last_write_down_dateNull sql.NullString
-	var last_appreciation_dateNull sql.NullString
-	var last_custom_1_dateNull sql.NullString
-	var last_custom_2_dateNull sql.NullString
-	var last_salvage_value_dateNull sql.NullString
-	var fa_exchange_rateNull sql.NullString
-	var fixed_depr_amount_below_zeroNull sql.NullString
-	var last_date_modifiedNull sql.NullString
-	var first_user_defined_depr_dateNull sql.NullString
-	var use_fa_ledger_checkBool sql.NullBool
-	var last_maintenance_dateNull sql.NullString
-	var depr_below_zero_percentNull sql.NullString
-	var projected_disposal_dateNull sql.NullString
-	var projected_proceeds_on_disposalNull sql.NullString
-	var depr_starting_date_custom_1Null sql.NullString
-	var depr_ending_date_custom_1Null sql.NullString
-	var accum_depr_percent_custom_1Null sql.NullString
-	var depr_this_year_percent_custom_1Null sql.NullString
-	var property_class_custom_1Int int
-	var descriptionNull sql.NullString
-	var main_asset_componentInt int
-	var component_of_main_assetNull sql.NullString
-	var fa_add_currency_factorNull sql.NullString
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&fa_noNull,
-		&depreciation_book_codeNull,
-		&depreciation_methodInt,
-		&depreciation_starting_dateNull,
-		&straight_line_percentNull,
-		&no_of_depreciation_yearsNull,
-		&no_of_depreciation_monthsNull,
-		&fixed_depr_amountNull,
-		&declining_balance_percentNull,
-		&depreciation_table_codeNull,
-		&final_rounding_amountNull,
-		&ending_book_valueNull,
-		&fa_posting_groupNull,
-		&depreciation_ending_dateNull,
-		&acquisition_dateNull,
-		&g_l_acquisition_dateNull,
-		&disposal_dateNull,
-		&last_acquisition_cost_dateNull,
-		&last_depreciation_dateNull,
-		&last_write_down_dateNull,
-		&last_appreciation_dateNull,
-		&last_custom_1_dateNull,
-		&last_custom_2_dateNull,
-		&last_salvage_value_dateNull,
-		&fa_exchange_rateNull,
-		&fixed_depr_amount_below_zeroNull,
-		&last_date_modifiedNull,
-		&first_user_defined_depr_dateNull,
-		&use_fa_ledger_checkBool,
-		&last_maintenance_dateNull,
-		&depr_below_zero_percentNull,
-		&projected_disposal_dateNull,
-		&projected_proceeds_on_disposalNull,
-		&depr_starting_date_custom_1Null,
-		&depr_ending_date_custom_1Null,
-		&accum_depr_percent_custom_1Null,
-		&depr_this_year_percent_custom_1Null,
-		&property_class_custom_1Int,
-		&descriptionNull,
-		&main_asset_componentInt,
-		&component_of_main_assetNull,
-		&fa_add_currency_factorNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find first FA_Depreciation_Book: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Fa_no = types.NewCode(fa_noNull.String)
-	t.Depreciation_book_code = types.NewCode(depreciation_book_codeNull.String)
-	t.Depreciation_method = FADepreciationBookDepreciation_method(depreciation_methodInt)
-	t.Depreciation_starting_date, _ = types.NewDateFromString(depreciation_starting_dateNull.String)
-	t.Straight_line_percent, _ = types.NewDecimalFromString(straight_line_percentNull.String)
-	t.No_of_depreciation_years, _ = types.NewDecimalFromString(no_of_depreciation_yearsNull.String)
-	t.No_of_depreciation_months, _ = types.NewDecimalFromString(no_of_depreciation_monthsNull.String)
-	t.Fixed_depr_amount, _ = types.NewDecimalFromString(fixed_depr_amountNull.String)
-	t.Declining_balance_percent, _ = types.NewDecimalFromString(declining_balance_percentNull.String)
-	t.Depreciation_table_code = types.NewCode(depreciation_table_codeNull.String)
-	t.Final_rounding_amount, _ = types.NewDecimalFromString(final_rounding_amountNull.String)
-	t.Ending_book_value, _ = types.NewDecimalFromString(ending_book_valueNull.String)
-	t.Fa_posting_group = types.NewCode(fa_posting_groupNull.String)
-	t.Depreciation_ending_date, _ = types.NewDateFromString(depreciation_ending_dateNull.String)
-	t.Acquisition_date, _ = types.NewDateFromString(acquisition_dateNull.String)
-	t.G_l_acquisition_date, _ = types.NewDateFromString(g_l_acquisition_dateNull.String)
-	t.Disposal_date, _ = types.NewDateFromString(disposal_dateNull.String)
-	t.Last_acquisition_cost_date, _ = types.NewDateFromString(last_acquisition_cost_dateNull.String)
-	t.Last_depreciation_date, _ = types.NewDateFromString(last_depreciation_dateNull.String)
-	t.Last_write_down_date, _ = types.NewDateFromString(last_write_down_dateNull.String)
-	t.Last_appreciation_date, _ = types.NewDateFromString(last_appreciation_dateNull.String)
-	t.Last_custom_1_date, _ = types.NewDateFromString(last_custom_1_dateNull.String)
-	t.Last_custom_2_date, _ = types.NewDateFromString(last_custom_2_dateNull.String)
-	t.Last_salvage_value_date, _ = types.NewDateFromString(last_salvage_value_dateNull.String)
-	t.Fa_exchange_rate, _ = types.NewDecimalFromString(fa_exchange_rateNull.String)
-	t.Fixed_depr_amount_below_zero, _ = types.NewDecimalFromString(fixed_depr_amount_below_zeroNull.String)
-	t.Last_date_modified, _ = types.NewDateFromString(last_date_modifiedNull.String)
-	t.First_user_defined_depr_date, _ = types.NewDateFromString(first_user_defined_depr_dateNull.String)
-	t.Use_fa_ledger_check = use_fa_ledger_checkBool.Bool
-	t.Last_maintenance_date, _ = types.NewDateFromString(last_maintenance_dateNull.String)
-	t.Depr_below_zero_percent, _ = types.NewDecimalFromString(depr_below_zero_percentNull.String)
-	t.Projected_disposal_date, _ = types.NewDateFromString(projected_disposal_dateNull.String)
-	t.Projected_proceeds_on_disposal, _ = types.NewDecimalFromString(projected_proceeds_on_disposalNull.String)
-	t.Depr_starting_date_custom_1, _ = types.NewDateFromString(depr_starting_date_custom_1Null.String)
-	t.Depr_ending_date_custom_1, _ = types.NewDateFromString(depr_ending_date_custom_1Null.String)
-	t.Accum_depr_percent_custom_1, _ = types.NewDecimalFromString(accum_depr_percent_custom_1Null.String)
-	t.Depr_this_year_percent_custom_1, _ = types.NewDecimalFromString(depr_this_year_percent_custom_1Null.String)
-	t.Property_class_custom_1 = FADepreciationBookProperty_class_custom_1(property_class_custom_1Int)
-	t.Description = types.NewText(descriptionNull.String)
-	t.Main_asset_component = FADepreciationBookMain_asset_component(main_asset_componentInt)
-	t.Component_of_main_asset = types.NewCode(component_of_main_assetNull.String)
-	t.Fa_add_currency_factor, _ = types.NewDecimalFromString(fa_add_currency_factorNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindFirst()
 }
 
 // FindLast finds the last record matching current filters
 // Returns true if found, false if not found
 func (t *FADepreciationBook) FindLast() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, FADepreciationBookTableName)
-	where, args := t.buildWhereClause()
-	// The last record in the current key and direction (classic FIND('+')): the key reversed,
-	// every column of it
-	t.q.Descending = !t.q.Descending
-	orderBy, orderArgs := t.getOrderByClause()
-	t.q.Descending = !t.q.Descending
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT fa_no, depreciation_book_code, depreciation_method, depreciation_starting_date, straight_line_percent, no_of_depreciation_years, no_of_depreciation_months, fixed_depr_amount, declining_balance_percent, depreciation_table_code, final_rounding_amount, ending_book_value, fa_posting_group, depreciation_ending_date, acquisition_date, g_l_acquisition_date, disposal_date, last_acquisition_cost_date, last_depreciation_date, last_write_down_date, last_appreciation_date, last_custom_1_date, last_custom_2_date, last_salvage_value_date, fa_exchange_rate, fixed_depr_amount_below_zero, last_date_modified, first_user_defined_depr_date, use_fa_ledger_check, last_maintenance_date, depr_below_zero_percent, projected_disposal_date, projected_proceeds_on_disposal, depr_starting_date_custom_1, depr_ending_date_custom_1, accum_depr_percent_custom_1, depr_this_year_percent_custom_1, property_class_custom_1, description, main_asset_component, component_of_main_asset, fa_add_currency_factor FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var fa_noNull sql.NullString
-	var depreciation_book_codeNull sql.NullString
-	var depreciation_methodInt int
-	var depreciation_starting_dateNull sql.NullString
-	var straight_line_percentNull sql.NullString
-	var no_of_depreciation_yearsNull sql.NullString
-	var no_of_depreciation_monthsNull sql.NullString
-	var fixed_depr_amountNull sql.NullString
-	var declining_balance_percentNull sql.NullString
-	var depreciation_table_codeNull sql.NullString
-	var final_rounding_amountNull sql.NullString
-	var ending_book_valueNull sql.NullString
-	var fa_posting_groupNull sql.NullString
-	var depreciation_ending_dateNull sql.NullString
-	var acquisition_dateNull sql.NullString
-	var g_l_acquisition_dateNull sql.NullString
-	var disposal_dateNull sql.NullString
-	var last_acquisition_cost_dateNull sql.NullString
-	var last_depreciation_dateNull sql.NullString
-	var last_write_down_dateNull sql.NullString
-	var last_appreciation_dateNull sql.NullString
-	var last_custom_1_dateNull sql.NullString
-	var last_custom_2_dateNull sql.NullString
-	var last_salvage_value_dateNull sql.NullString
-	var fa_exchange_rateNull sql.NullString
-	var fixed_depr_amount_below_zeroNull sql.NullString
-	var last_date_modifiedNull sql.NullString
-	var first_user_defined_depr_dateNull sql.NullString
-	var use_fa_ledger_checkBool sql.NullBool
-	var last_maintenance_dateNull sql.NullString
-	var depr_below_zero_percentNull sql.NullString
-	var projected_disposal_dateNull sql.NullString
-	var projected_proceeds_on_disposalNull sql.NullString
-	var depr_starting_date_custom_1Null sql.NullString
-	var depr_ending_date_custom_1Null sql.NullString
-	var accum_depr_percent_custom_1Null sql.NullString
-	var depr_this_year_percent_custom_1Null sql.NullString
-	var property_class_custom_1Int int
-	var descriptionNull sql.NullString
-	var main_asset_componentInt int
-	var component_of_main_assetNull sql.NullString
-	var fa_add_currency_factorNull sql.NullString
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&fa_noNull,
-		&depreciation_book_codeNull,
-		&depreciation_methodInt,
-		&depreciation_starting_dateNull,
-		&straight_line_percentNull,
-		&no_of_depreciation_yearsNull,
-		&no_of_depreciation_monthsNull,
-		&fixed_depr_amountNull,
-		&declining_balance_percentNull,
-		&depreciation_table_codeNull,
-		&final_rounding_amountNull,
-		&ending_book_valueNull,
-		&fa_posting_groupNull,
-		&depreciation_ending_dateNull,
-		&acquisition_dateNull,
-		&g_l_acquisition_dateNull,
-		&disposal_dateNull,
-		&last_acquisition_cost_dateNull,
-		&last_depreciation_dateNull,
-		&last_write_down_dateNull,
-		&last_appreciation_dateNull,
-		&last_custom_1_dateNull,
-		&last_custom_2_dateNull,
-		&last_salvage_value_dateNull,
-		&fa_exchange_rateNull,
-		&fixed_depr_amount_below_zeroNull,
-		&last_date_modifiedNull,
-		&first_user_defined_depr_dateNull,
-		&use_fa_ledger_checkBool,
-		&last_maintenance_dateNull,
-		&depr_below_zero_percentNull,
-		&projected_disposal_dateNull,
-		&projected_proceeds_on_disposalNull,
-		&depr_starting_date_custom_1Null,
-		&depr_ending_date_custom_1Null,
-		&accum_depr_percent_custom_1Null,
-		&depr_this_year_percent_custom_1Null,
-		&property_class_custom_1Int,
-		&descriptionNull,
-		&main_asset_componentInt,
-		&component_of_main_assetNull,
-		&fa_add_currency_factorNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find last FA_Depreciation_Book: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Fa_no = types.NewCode(fa_noNull.String)
-	t.Depreciation_book_code = types.NewCode(depreciation_book_codeNull.String)
-	t.Depreciation_method = FADepreciationBookDepreciation_method(depreciation_methodInt)
-	t.Depreciation_starting_date, _ = types.NewDateFromString(depreciation_starting_dateNull.String)
-	t.Straight_line_percent, _ = types.NewDecimalFromString(straight_line_percentNull.String)
-	t.No_of_depreciation_years, _ = types.NewDecimalFromString(no_of_depreciation_yearsNull.String)
-	t.No_of_depreciation_months, _ = types.NewDecimalFromString(no_of_depreciation_monthsNull.String)
-	t.Fixed_depr_amount, _ = types.NewDecimalFromString(fixed_depr_amountNull.String)
-	t.Declining_balance_percent, _ = types.NewDecimalFromString(declining_balance_percentNull.String)
-	t.Depreciation_table_code = types.NewCode(depreciation_table_codeNull.String)
-	t.Final_rounding_amount, _ = types.NewDecimalFromString(final_rounding_amountNull.String)
-	t.Ending_book_value, _ = types.NewDecimalFromString(ending_book_valueNull.String)
-	t.Fa_posting_group = types.NewCode(fa_posting_groupNull.String)
-	t.Depreciation_ending_date, _ = types.NewDateFromString(depreciation_ending_dateNull.String)
-	t.Acquisition_date, _ = types.NewDateFromString(acquisition_dateNull.String)
-	t.G_l_acquisition_date, _ = types.NewDateFromString(g_l_acquisition_dateNull.String)
-	t.Disposal_date, _ = types.NewDateFromString(disposal_dateNull.String)
-	t.Last_acquisition_cost_date, _ = types.NewDateFromString(last_acquisition_cost_dateNull.String)
-	t.Last_depreciation_date, _ = types.NewDateFromString(last_depreciation_dateNull.String)
-	t.Last_write_down_date, _ = types.NewDateFromString(last_write_down_dateNull.String)
-	t.Last_appreciation_date, _ = types.NewDateFromString(last_appreciation_dateNull.String)
-	t.Last_custom_1_date, _ = types.NewDateFromString(last_custom_1_dateNull.String)
-	t.Last_custom_2_date, _ = types.NewDateFromString(last_custom_2_dateNull.String)
-	t.Last_salvage_value_date, _ = types.NewDateFromString(last_salvage_value_dateNull.String)
-	t.Fa_exchange_rate, _ = types.NewDecimalFromString(fa_exchange_rateNull.String)
-	t.Fixed_depr_amount_below_zero, _ = types.NewDecimalFromString(fixed_depr_amount_below_zeroNull.String)
-	t.Last_date_modified, _ = types.NewDateFromString(last_date_modifiedNull.String)
-	t.First_user_defined_depr_date, _ = types.NewDateFromString(first_user_defined_depr_dateNull.String)
-	t.Use_fa_ledger_check = use_fa_ledger_checkBool.Bool
-	t.Last_maintenance_date, _ = types.NewDateFromString(last_maintenance_dateNull.String)
-	t.Depr_below_zero_percent, _ = types.NewDecimalFromString(depr_below_zero_percentNull.String)
-	t.Projected_disposal_date, _ = types.NewDateFromString(projected_disposal_dateNull.String)
-	t.Projected_proceeds_on_disposal, _ = types.NewDecimalFromString(projected_proceeds_on_disposalNull.String)
-	t.Depr_starting_date_custom_1, _ = types.NewDateFromString(depr_starting_date_custom_1Null.String)
-	t.Depr_ending_date_custom_1, _ = types.NewDateFromString(depr_ending_date_custom_1Null.String)
-	t.Accum_depr_percent_custom_1, _ = types.NewDecimalFromString(accum_depr_percent_custom_1Null.String)
-	t.Depr_this_year_percent_custom_1, _ = types.NewDecimalFromString(depr_this_year_percent_custom_1Null.String)
-	t.Property_class_custom_1 = FADepreciationBookProperty_class_custom_1(property_class_custom_1Int)
-	t.Description = types.NewText(descriptionNull.String)
-	t.Main_asset_component = FADepreciationBookMain_asset_component(main_asset_componentInt)
-	t.Component_of_main_asset = types.NewCode(component_of_main_assetNull.String)
-	t.Fa_add_currency_factor, _ = types.NewDecimalFromString(fa_add_currency_factorNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindLast()
 }
 
 // Count returns the number of records matching current filters
 func (t *FADepreciationBook) Count() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, FADepreciationBookTableName)
-	where, args := t.buildWhereClause()
-
-	query := fmt.Sprintf(`SELECT COUNT(*) FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var count int
-	err := t.exec().QueryRow(query, args...).Scan(&count)
-	if err != nil {
-		fmt.Printf("Error: Failed to count FA_Depreciation_Book: %v\n", err)
-		return 0
-	}
-
-	return count
+	return t.rec().Count()
 }
 
 // FindSet opens a result set matching current filters
 // Call Next() to iterate through the results
-// Returns true if at least one record found, false otherwise
+// Returns true if at least one record found, false otherwise. A temporary record, and a
+// record in a transaction, reads all at once (FindSetBuffered).
 func (t *FADepreciationBook) FindSet() bool {
-	// A temporary record, and a record in a transaction, reads all at once: its in-memory
-	// database or the transaction has one connection, which an open result set would block for
-	// the statements of the loop (Modify while looping; on PostgreSQL a query while the rows are
-	// read breaks the connection — "unexpected Parse response")
-	if _, inTx := t.db.(*sql.Tx); t.temp != nil || inTx {
-		return t.FindSetBuffered()
-	}
-	// Close any existing result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	tableName := fmt.Sprintf("%s$%s", t.company, FADepreciationBookTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT fa_no, depreciation_book_code, depreciation_method, depreciation_starting_date, straight_line_percent, no_of_depreciation_years, no_of_depreciation_months, fixed_depr_amount, declining_balance_percent, depreciation_table_code, final_rounding_amount, ending_book_value, fa_posting_group, depreciation_ending_date, acquisition_date, g_l_acquisition_date, disposal_date, last_acquisition_cost_date, last_depreciation_date, last_write_down_date, last_appreciation_date, last_custom_1_date, last_custom_2_date, last_salvage_value_date, fa_exchange_rate, fixed_depr_amount_below_zero, last_date_modified, first_user_defined_depr_date, use_fa_ledger_check, last_maintenance_date, depr_below_zero_percent, projected_disposal_date, projected_proceeds_on_disposal, depr_starting_date_custom_1, depr_ending_date_custom_1, accum_depr_percent_custom_1, depr_this_year_percent_custom_1, property_class_custom_1, description, main_asset_component, component_of_main_asset, fa_add_currency_factor FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSet for FA_Depreciation_Book: %v\n", err)
-		return false
-	}
-
-	t.currentRows = rows
-
-	// Load first record
-	return t.Next()
+	return t.rec().FindSet()
 }
 
 // Next advances to the next record: in the result set after FindSet() or FindSetBuffered(),
@@ -3760,476 +3213,14 @@ func (t *FADepreciationBook) FindSet() bool {
 //
 // Returns true if a record was loaded, false if no more records or out of bounds
 func (t *FADepreciationBook) Next(steps ...int) bool {
-	// Default to 1 step forward
-	step := 1
-	if len(steps) > 0 {
-		step = steps[0]
-	}
-
-	// BUFFERED MODE: Bidirectional navigation with in-memory records
-	if t.bufferedRecords != nil {
-		// Calculate new position
-		newPos := t.currentBufferPos + step
-
-		// Check bounds
-		if newPos < 0 || newPos >= len(t.bufferedRecords) {
-			return false // Out of bounds
-		}
-
-		// Move to new position
-		t.currentBufferPos = newPos
-		t.copyFromBuffered(t.bufferedRecords[t.currentBufferPos])
-		return true
-	}
-
-	// FORWARD-ONLY MODE: Streaming with sql.Rows (only positive steps allowed)
-	if t.currentRows != nil {
-		// Validate: only forward movement allowed
-		if step < 1 {
-			fmt.Printf("Error: Backward navigation (Next(%d)) requires FindSetBuffered()\n", step)
-			return false
-		}
-
-		// Advance 'step' times (1 = next record, 2 = skip 1 record, etc.)
-		for i := 0; i < step; i++ {
-			if !t.currentRows.Next() {
-				// No more rows - close result set
-				t.currentRows.Close()
-				t.currentRows = nil
-				return false
-			}
-		}
-
-		// Scan the row
-		var fa_noNull sql.NullString
-		var depreciation_book_codeNull sql.NullString
-		var depreciation_methodInt int
-		var depreciation_starting_dateNull sql.NullString
-		var straight_line_percentNull sql.NullString
-		var no_of_depreciation_yearsNull sql.NullString
-		var no_of_depreciation_monthsNull sql.NullString
-		var fixed_depr_amountNull sql.NullString
-		var declining_balance_percentNull sql.NullString
-		var depreciation_table_codeNull sql.NullString
-		var final_rounding_amountNull sql.NullString
-		var ending_book_valueNull sql.NullString
-		var fa_posting_groupNull sql.NullString
-		var depreciation_ending_dateNull sql.NullString
-		var acquisition_dateNull sql.NullString
-		var g_l_acquisition_dateNull sql.NullString
-		var disposal_dateNull sql.NullString
-		var last_acquisition_cost_dateNull sql.NullString
-		var last_depreciation_dateNull sql.NullString
-		var last_write_down_dateNull sql.NullString
-		var last_appreciation_dateNull sql.NullString
-		var last_custom_1_dateNull sql.NullString
-		var last_custom_2_dateNull sql.NullString
-		var last_salvage_value_dateNull sql.NullString
-		var fa_exchange_rateNull sql.NullString
-		var fixed_depr_amount_below_zeroNull sql.NullString
-		var last_date_modifiedNull sql.NullString
-		var first_user_defined_depr_dateNull sql.NullString
-		var use_fa_ledger_checkBool sql.NullBool
-		var last_maintenance_dateNull sql.NullString
-		var depr_below_zero_percentNull sql.NullString
-		var projected_disposal_dateNull sql.NullString
-		var projected_proceeds_on_disposalNull sql.NullString
-		var depr_starting_date_custom_1Null sql.NullString
-		var depr_ending_date_custom_1Null sql.NullString
-		var accum_depr_percent_custom_1Null sql.NullString
-		var depr_this_year_percent_custom_1Null sql.NullString
-		var property_class_custom_1Int int
-		var descriptionNull sql.NullString
-		var main_asset_componentInt int
-		var component_of_main_assetNull sql.NullString
-		var fa_add_currency_factorNull sql.NullString
-
-		err := t.currentRows.Scan(
-			&fa_noNull,
-			&depreciation_book_codeNull,
-			&depreciation_methodInt,
-			&depreciation_starting_dateNull,
-			&straight_line_percentNull,
-			&no_of_depreciation_yearsNull,
-			&no_of_depreciation_monthsNull,
-			&fixed_depr_amountNull,
-			&declining_balance_percentNull,
-			&depreciation_table_codeNull,
-			&final_rounding_amountNull,
-			&ending_book_valueNull,
-			&fa_posting_groupNull,
-			&depreciation_ending_dateNull,
-			&acquisition_dateNull,
-			&g_l_acquisition_dateNull,
-			&disposal_dateNull,
-			&last_acquisition_cost_dateNull,
-			&last_depreciation_dateNull,
-			&last_write_down_dateNull,
-			&last_appreciation_dateNull,
-			&last_custom_1_dateNull,
-			&last_custom_2_dateNull,
-			&last_salvage_value_dateNull,
-			&fa_exchange_rateNull,
-			&fixed_depr_amount_below_zeroNull,
-			&last_date_modifiedNull,
-			&first_user_defined_depr_dateNull,
-			&use_fa_ledger_checkBool,
-			&last_maintenance_dateNull,
-			&depr_below_zero_percentNull,
-			&projected_disposal_dateNull,
-			&projected_proceeds_on_disposalNull,
-			&depr_starting_date_custom_1Null,
-			&depr_ending_date_custom_1Null,
-			&accum_depr_percent_custom_1Null,
-			&depr_this_year_percent_custom_1Null,
-			&property_class_custom_1Int,
-			&descriptionNull,
-			&main_asset_componentInt,
-			&component_of_main_assetNull,
-			&fa_add_currency_factorNull,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan FA_Depreciation_Book record: %v\n", err)
-			t.currentRows.Close()
-			t.currentRows = nil
-			return false
-		}
-
-		// Populate fields
-		t.Fa_no = types.NewCode(fa_noNull.String)
-		t.Depreciation_book_code = types.NewCode(depreciation_book_codeNull.String)
-		t.Depreciation_method = FADepreciationBookDepreciation_method(depreciation_methodInt)
-		t.Depreciation_starting_date, _ = types.NewDateFromString(depreciation_starting_dateNull.String)
-		t.Straight_line_percent, _ = types.NewDecimalFromString(straight_line_percentNull.String)
-		t.No_of_depreciation_years, _ = types.NewDecimalFromString(no_of_depreciation_yearsNull.String)
-		t.No_of_depreciation_months, _ = types.NewDecimalFromString(no_of_depreciation_monthsNull.String)
-		t.Fixed_depr_amount, _ = types.NewDecimalFromString(fixed_depr_amountNull.String)
-		t.Declining_balance_percent, _ = types.NewDecimalFromString(declining_balance_percentNull.String)
-		t.Depreciation_table_code = types.NewCode(depreciation_table_codeNull.String)
-		t.Final_rounding_amount, _ = types.NewDecimalFromString(final_rounding_amountNull.String)
-		t.Ending_book_value, _ = types.NewDecimalFromString(ending_book_valueNull.String)
-		t.Fa_posting_group = types.NewCode(fa_posting_groupNull.String)
-		t.Depreciation_ending_date, _ = types.NewDateFromString(depreciation_ending_dateNull.String)
-		t.Acquisition_date, _ = types.NewDateFromString(acquisition_dateNull.String)
-		t.G_l_acquisition_date, _ = types.NewDateFromString(g_l_acquisition_dateNull.String)
-		t.Disposal_date, _ = types.NewDateFromString(disposal_dateNull.String)
-		t.Last_acquisition_cost_date, _ = types.NewDateFromString(last_acquisition_cost_dateNull.String)
-		t.Last_depreciation_date, _ = types.NewDateFromString(last_depreciation_dateNull.String)
-		t.Last_write_down_date, _ = types.NewDateFromString(last_write_down_dateNull.String)
-		t.Last_appreciation_date, _ = types.NewDateFromString(last_appreciation_dateNull.String)
-		t.Last_custom_1_date, _ = types.NewDateFromString(last_custom_1_dateNull.String)
-		t.Last_custom_2_date, _ = types.NewDateFromString(last_custom_2_dateNull.String)
-		t.Last_salvage_value_date, _ = types.NewDateFromString(last_salvage_value_dateNull.String)
-		t.Fa_exchange_rate, _ = types.NewDecimalFromString(fa_exchange_rateNull.String)
-		t.Fixed_depr_amount_below_zero, _ = types.NewDecimalFromString(fixed_depr_amount_below_zeroNull.String)
-		t.Last_date_modified, _ = types.NewDateFromString(last_date_modifiedNull.String)
-		t.First_user_defined_depr_date, _ = types.NewDateFromString(first_user_defined_depr_dateNull.String)
-		t.Use_fa_ledger_check = use_fa_ledger_checkBool.Bool
-		t.Last_maintenance_date, _ = types.NewDateFromString(last_maintenance_dateNull.String)
-		t.Depr_below_zero_percent, _ = types.NewDecimalFromString(depr_below_zero_percentNull.String)
-		t.Projected_disposal_date, _ = types.NewDateFromString(projected_disposal_dateNull.String)
-		t.Projected_proceeds_on_disposal, _ = types.NewDecimalFromString(projected_proceeds_on_disposalNull.String)
-		t.Depr_starting_date_custom_1, _ = types.NewDateFromString(depr_starting_date_custom_1Null.String)
-		t.Depr_ending_date_custom_1, _ = types.NewDateFromString(depr_ending_date_custom_1Null.String)
-		t.Accum_depr_percent_custom_1, _ = types.NewDecimalFromString(accum_depr_percent_custom_1Null.String)
-		t.Depr_this_year_percent_custom_1, _ = types.NewDecimalFromString(depr_this_year_percent_custom_1Null.String)
-		t.Property_class_custom_1 = FADepreciationBookProperty_class_custom_1(property_class_custom_1Int)
-		t.Description = types.NewText(descriptionNull.String)
-		t.Main_asset_component = FADepreciationBookMain_asset_component(main_asset_componentInt)
-		t.Component_of_main_asset = types.NewCode(component_of_main_assetNull.String)
-		t.Fa_add_currency_factor, _ = types.NewDecimalFromString(fa_add_currency_factorNull.String)
-
-		// Store old values for field tracking
-		t.StoreOldValues()
-
-		return true
-	}
-
-	// No record set (after Get, Find, FindFirst, FindLast): the next record in the current key
-	// and direction within the filters, one step at a time (classic NEXT after FIND); a step
-	// that finds none leaves the record on the last one reached
-	if step == 0 {
-		return false
-	}
-	for i := 0; i != step; {
-		if step > 0 {
-			if !t.findInKey(">", false) {
-				return false
-			}
-			i++
-		} else {
-			if !t.findInKey("<", true) {
-				return false
-			}
-			i--
-		}
-	}
-	return true
+	return t.rec().Next(steps, t.findInKey)
 }
 
 // FindSetBuffered loads all filtered records into memory for bidirectional navigation
 // Use this when you need to move backward/forward with Next(steps)
-// Filters (SetRange/SetFilter) are applied in SQL before buffering to minimize memory usage
 // Returns true if at least one record found, false otherwise
 func (t *FADepreciationBook) FindSetBuffered() bool {
-	// Close any existing forward-only result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-
-	// Clear any existing buffer
-	t.bufferedRecords = nil
-	t.currentBufferPos = -1
-	tableName := fmt.Sprintf("%s$%s", t.company, FADepreciationBookTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT fa_no, depreciation_book_code, depreciation_method, depreciation_starting_date, straight_line_percent, no_of_depreciation_years, no_of_depreciation_months, fixed_depr_amount, declining_balance_percent, depreciation_table_code, final_rounding_amount, ending_book_value, fa_posting_group, depreciation_ending_date, acquisition_date, g_l_acquisition_date, disposal_date, last_acquisition_cost_date, last_depreciation_date, last_write_down_date, last_appreciation_date, last_custom_1_date, last_custom_2_date, last_salvage_value_date, fa_exchange_rate, fixed_depr_amount_below_zero, last_date_modified, first_user_defined_depr_date, use_fa_ledger_check, last_maintenance_date, depr_below_zero_percent, projected_disposal_date, projected_proceeds_on_disposal, depr_starting_date_custom_1, depr_ending_date_custom_1, accum_depr_percent_custom_1, depr_this_year_percent_custom_1, property_class_custom_1, description, main_asset_component, component_of_main_asset, fa_add_currency_factor FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSetBuffered for FA_Depreciation_Book: %v\n", err)
-		return false
-	}
-	defer rows.Close()
-
-	// Load all records into memory
-	for rows.Next() {
-		// Create a new record instance
-		record := &FADepreciationBook{}
-		record.db = t.db
-		record.temp = t.temp
-		record.company = t.company
-		record.dbType = t.dbType
-
-		// Scan the row
-		var fa_noNull sql.NullString
-		var depreciation_book_codeNull sql.NullString
-		var depreciation_methodInt int
-		var depreciation_starting_dateNull sql.NullString
-		var straight_line_percentNull sql.NullString
-		var no_of_depreciation_yearsNull sql.NullString
-		var no_of_depreciation_monthsNull sql.NullString
-		var fixed_depr_amountNull sql.NullString
-		var declining_balance_percentNull sql.NullString
-		var depreciation_table_codeNull sql.NullString
-		var final_rounding_amountNull sql.NullString
-		var ending_book_valueNull sql.NullString
-		var fa_posting_groupNull sql.NullString
-		var depreciation_ending_dateNull sql.NullString
-		var acquisition_dateNull sql.NullString
-		var g_l_acquisition_dateNull sql.NullString
-		var disposal_dateNull sql.NullString
-		var last_acquisition_cost_dateNull sql.NullString
-		var last_depreciation_dateNull sql.NullString
-		var last_write_down_dateNull sql.NullString
-		var last_appreciation_dateNull sql.NullString
-		var last_custom_1_dateNull sql.NullString
-		var last_custom_2_dateNull sql.NullString
-		var last_salvage_value_dateNull sql.NullString
-		var fa_exchange_rateNull sql.NullString
-		var fixed_depr_amount_below_zeroNull sql.NullString
-		var last_date_modifiedNull sql.NullString
-		var first_user_defined_depr_dateNull sql.NullString
-		var use_fa_ledger_checkBool sql.NullBool
-		var last_maintenance_dateNull sql.NullString
-		var depr_below_zero_percentNull sql.NullString
-		var projected_disposal_dateNull sql.NullString
-		var projected_proceeds_on_disposalNull sql.NullString
-		var depr_starting_date_custom_1Null sql.NullString
-		var depr_ending_date_custom_1Null sql.NullString
-		var accum_depr_percent_custom_1Null sql.NullString
-		var depr_this_year_percent_custom_1Null sql.NullString
-		var property_class_custom_1Int int
-		var descriptionNull sql.NullString
-		var main_asset_componentInt int
-		var component_of_main_assetNull sql.NullString
-		var fa_add_currency_factorNull sql.NullString
-
-		err := rows.Scan(
-			&fa_noNull,
-			&depreciation_book_codeNull,
-			&depreciation_methodInt,
-			&depreciation_starting_dateNull,
-			&straight_line_percentNull,
-			&no_of_depreciation_yearsNull,
-			&no_of_depreciation_monthsNull,
-			&fixed_depr_amountNull,
-			&declining_balance_percentNull,
-			&depreciation_table_codeNull,
-			&final_rounding_amountNull,
-			&ending_book_valueNull,
-			&fa_posting_groupNull,
-			&depreciation_ending_dateNull,
-			&acquisition_dateNull,
-			&g_l_acquisition_dateNull,
-			&disposal_dateNull,
-			&last_acquisition_cost_dateNull,
-			&last_depreciation_dateNull,
-			&last_write_down_dateNull,
-			&last_appreciation_dateNull,
-			&last_custom_1_dateNull,
-			&last_custom_2_dateNull,
-			&last_salvage_value_dateNull,
-			&fa_exchange_rateNull,
-			&fixed_depr_amount_below_zeroNull,
-			&last_date_modifiedNull,
-			&first_user_defined_depr_dateNull,
-			&use_fa_ledger_checkBool,
-			&last_maintenance_dateNull,
-			&depr_below_zero_percentNull,
-			&projected_disposal_dateNull,
-			&projected_proceeds_on_disposalNull,
-			&depr_starting_date_custom_1Null,
-			&depr_ending_date_custom_1Null,
-			&accum_depr_percent_custom_1Null,
-			&depr_this_year_percent_custom_1Null,
-			&property_class_custom_1Int,
-			&descriptionNull,
-			&main_asset_componentInt,
-			&component_of_main_assetNull,
-			&fa_add_currency_factorNull,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan FA_Depreciation_Book record: %v\n", err)
-			return false
-		}
-
-		// Populate special type fields
-		record.Fa_no = types.NewCode(fa_noNull.String)
-		record.Depreciation_book_code = types.NewCode(depreciation_book_codeNull.String)
-		record.Depreciation_method = FADepreciationBookDepreciation_method(depreciation_methodInt)
-		record.Depreciation_starting_date, _ = types.NewDateFromString(depreciation_starting_dateNull.String)
-		record.Straight_line_percent, _ = types.NewDecimalFromString(straight_line_percentNull.String)
-		record.No_of_depreciation_years, _ = types.NewDecimalFromString(no_of_depreciation_yearsNull.String)
-		record.No_of_depreciation_months, _ = types.NewDecimalFromString(no_of_depreciation_monthsNull.String)
-		record.Fixed_depr_amount, _ = types.NewDecimalFromString(fixed_depr_amountNull.String)
-		record.Declining_balance_percent, _ = types.NewDecimalFromString(declining_balance_percentNull.String)
-		record.Depreciation_table_code = types.NewCode(depreciation_table_codeNull.String)
-		record.Final_rounding_amount, _ = types.NewDecimalFromString(final_rounding_amountNull.String)
-		record.Ending_book_value, _ = types.NewDecimalFromString(ending_book_valueNull.String)
-		record.Fa_posting_group = types.NewCode(fa_posting_groupNull.String)
-		record.Depreciation_ending_date, _ = types.NewDateFromString(depreciation_ending_dateNull.String)
-		record.Acquisition_date, _ = types.NewDateFromString(acquisition_dateNull.String)
-		record.G_l_acquisition_date, _ = types.NewDateFromString(g_l_acquisition_dateNull.String)
-		record.Disposal_date, _ = types.NewDateFromString(disposal_dateNull.String)
-		record.Last_acquisition_cost_date, _ = types.NewDateFromString(last_acquisition_cost_dateNull.String)
-		record.Last_depreciation_date, _ = types.NewDateFromString(last_depreciation_dateNull.String)
-		record.Last_write_down_date, _ = types.NewDateFromString(last_write_down_dateNull.String)
-		record.Last_appreciation_date, _ = types.NewDateFromString(last_appreciation_dateNull.String)
-		record.Last_custom_1_date, _ = types.NewDateFromString(last_custom_1_dateNull.String)
-		record.Last_custom_2_date, _ = types.NewDateFromString(last_custom_2_dateNull.String)
-		record.Last_salvage_value_date, _ = types.NewDateFromString(last_salvage_value_dateNull.String)
-		record.Fa_exchange_rate, _ = types.NewDecimalFromString(fa_exchange_rateNull.String)
-		record.Fixed_depr_amount_below_zero, _ = types.NewDecimalFromString(fixed_depr_amount_below_zeroNull.String)
-		record.Last_date_modified, _ = types.NewDateFromString(last_date_modifiedNull.String)
-		record.First_user_defined_depr_date, _ = types.NewDateFromString(first_user_defined_depr_dateNull.String)
-		record.Use_fa_ledger_check = use_fa_ledger_checkBool.Bool
-		record.Last_maintenance_date, _ = types.NewDateFromString(last_maintenance_dateNull.String)
-		record.Depr_below_zero_percent, _ = types.NewDecimalFromString(depr_below_zero_percentNull.String)
-		record.Projected_disposal_date, _ = types.NewDateFromString(projected_disposal_dateNull.String)
-		record.Projected_proceeds_on_disposal, _ = types.NewDecimalFromString(projected_proceeds_on_disposalNull.String)
-		record.Depr_starting_date_custom_1, _ = types.NewDateFromString(depr_starting_date_custom_1Null.String)
-		record.Depr_ending_date_custom_1, _ = types.NewDateFromString(depr_ending_date_custom_1Null.String)
-		record.Accum_depr_percent_custom_1, _ = types.NewDecimalFromString(accum_depr_percent_custom_1Null.String)
-		record.Depr_this_year_percent_custom_1, _ = types.NewDecimalFromString(depr_this_year_percent_custom_1Null.String)
-		record.Property_class_custom_1 = FADepreciationBookProperty_class_custom_1(property_class_custom_1Int)
-		record.Description = types.NewText(descriptionNull.String)
-		record.Main_asset_component = FADepreciationBookMain_asset_component(main_asset_componentInt)
-		record.Component_of_main_asset = types.NewCode(component_of_main_assetNull.String)
-		record.Fa_add_currency_factor, _ = types.NewDecimalFromString(fa_add_currency_factorNull.String)
-
-		// Store old values
-		record.StoreOldValues()
-
-		// Add to buffer
-		t.bufferedRecords = append(t.bufferedRecords, record)
-	}
-
-	// Check for errors during iteration
-	if err := rows.Err(); err != nil {
-		fmt.Printf("Error: Failed to iterate FA_Depreciation_Book records: %v\n", err)
-		return false
-	}
-
-	// If no records found, return false
-	if len(t.bufferedRecords) == 0 {
-		return false
-	}
-
-	// Load first record into current instance
-	t.currentBufferPos = 0
-	t.copyFromBuffered(t.bufferedRecords[0])
-
-	return true
-}
-
-// copyFromBuffered copies field values from a buffered record to the current instance
-func (t *FADepreciationBook) copyFromBuffered(record *FADepreciationBook) {
-	t.Fa_no = record.Fa_no
-	t.Depreciation_book_code = record.Depreciation_book_code
-	t.Depreciation_method = record.Depreciation_method
-	t.Depreciation_starting_date = record.Depreciation_starting_date
-	t.Straight_line_percent = record.Straight_line_percent
-	t.No_of_depreciation_years = record.No_of_depreciation_years
-	t.No_of_depreciation_months = record.No_of_depreciation_months
-	t.Fixed_depr_amount = record.Fixed_depr_amount
-	t.Declining_balance_percent = record.Declining_balance_percent
-	t.Depreciation_table_code = record.Depreciation_table_code
-	t.Final_rounding_amount = record.Final_rounding_amount
-	t.Ending_book_value = record.Ending_book_value
-	t.Fa_posting_group = record.Fa_posting_group
-	t.Depreciation_ending_date = record.Depreciation_ending_date
-	t.Acquisition_cost = record.Acquisition_cost
-	t.Depreciation = record.Depreciation
-	t.Book_value = record.Book_value
-	t.Proceeds_on_disposal = record.Proceeds_on_disposal
-	t.Gain_loss = record.Gain_loss
-	t.Write_down = record.Write_down
-	t.Appreciation = record.Appreciation
-	t.Custom_1 = record.Custom_1
-	t.Custom_2 = record.Custom_2
-	t.Depreciable_basis = record.Depreciable_basis
-	t.Salvage_value = record.Salvage_value
-	t.Book_value_on_disposal = record.Book_value_on_disposal
-	t.Maintenance = record.Maintenance
-	t.Acquisition_date = record.Acquisition_date
-	t.G_l_acquisition_date = record.G_l_acquisition_date
-	t.Disposal_date = record.Disposal_date
-	t.Last_acquisition_cost_date = record.Last_acquisition_cost_date
-	t.Last_depreciation_date = record.Last_depreciation_date
-	t.Last_write_down_date = record.Last_write_down_date
-	t.Last_appreciation_date = record.Last_appreciation_date
-	t.Last_custom_1_date = record.Last_custom_1_date
-	t.Last_custom_2_date = record.Last_custom_2_date
-	t.Last_salvage_value_date = record.Last_salvage_value_date
-	t.Fa_exchange_rate = record.Fa_exchange_rate
-	t.Fixed_depr_amount_below_zero = record.Fixed_depr_amount_below_zero
-	t.Last_date_modified = record.Last_date_modified
-	t.First_user_defined_depr_date = record.First_user_defined_depr_date
-	t.Use_fa_ledger_check = record.Use_fa_ledger_check
-	t.Last_maintenance_date = record.Last_maintenance_date
-	t.Depr_below_zero_percent = record.Depr_below_zero_percent
-	t.Projected_disposal_date = record.Projected_disposal_date
-	t.Projected_proceeds_on_disposal = record.Projected_proceeds_on_disposal
-	t.Depr_starting_date_custom_1 = record.Depr_starting_date_custom_1
-	t.Depr_ending_date_custom_1 = record.Depr_ending_date_custom_1
-	t.Accum_depr_percent_custom_1 = record.Accum_depr_percent_custom_1
-	t.Depr_this_year_percent_custom_1 = record.Depr_this_year_percent_custom_1
-	t.Property_class_custom_1 = record.Property_class_custom_1
-	t.Description = record.Description
-	t.Main_asset_component = record.Main_asset_component
-	t.Component_of_main_asset = record.Component_of_main_asset
-	t.Fa_add_currency_factor = record.Fa_add_currency_factor
-	t.StoreOldValues()
+	return t.rec().FindSetBuffered()
 }
 
 // ========================================
@@ -4765,49 +3756,9 @@ func (t *FADepreciationBook) Find(which ...string) bool {
 }
 
 // findInKey reads the first record in the current key and direction — reversed for the
-// last — and with seek ">"/"<" only after/before the current record (a row-value
-// comparison on the key and primary key columns). A key with a FlowField cannot seek.
+// last — and with seek ">"/"<" only after/before the current record
 func (t *FADepreciationBook) findInKey(seek string, reverse bool) bool {
-	if seek != "" {
-		var columns, params []string
-		var values []interface{}
-		for _, column := range t.keyColumns() {
-			v, ok := t.columnValue(column)
-			if !ok {
-				fmt.Printf("Error: Find(%q) on FA_Depreciation_Book needs a key of stored fields\n", seek)
-				return false
-			}
-			if t.isKeyDateColumn(column) {
-				v = types.KeyDate(v)
-			}
-			columns = append(columns, t.cmpColumn(column))
-			params = append(params, t.cmpParam(column))
-			values = append(values, v)
-		}
-		after := (seek == ">") != t.q.Descending
-		op := "<"
-		if after {
-			op = ">"
-		}
-		t.q.Seek = "(" + strings.Join(columns, ", ") + ") " + op + " (" + strings.Join(params, ", ") + ")"
-		t.q.SeekArgs = values
-	}
-	savedLimit, savedOffset, savedDescending := t.limit, t.offset, t.q.Descending
-	t.limit, t.offset = 1, 0
-	if reverse {
-		t.q.Descending = !t.q.Descending
-	}
-	found := t.FindSet()
-	// One record read: a later Next seeks from it in the key (inside a transaction FindSet
-	// buffers its rows — a one-row buffer would end the Next at once)
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	t.limit, t.offset, t.q.Descending = savedLimit, savedOffset, savedDescending
-	t.q.Seek, t.q.SeekArgs = "", nil
-	return found
+	return t.rec().FindInKey(seek, reverse)
 }
 
 // keyColumns returns the columns of the current key followed by the primary key's (the

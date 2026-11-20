@@ -153,19 +153,11 @@ type Currency struct {
 	// Temporary: the record's own table is in a private in-memory database (InitTemporary)
 	temp *tables.TemporaryStore
 
-	// Iteration state for FindSet/Next
-	currentRows *sql.Rows
+	// The result set of FindSet/FindSetBuffered/Next and the paging window (SetPage)
+	cur tables.Cursor
 
 	// LockTable: the following reads lock the rows they read (SELECT … FOR UPDATE, Postgres)
 	lockForUpdate bool
-
-	// Pagination window for FindSet/FindSetBuffered (0 limit = all rows)
-	limit  int
-	offset int
-
-	// Buffered recordset for bidirectional navigation
-	bufferedRecords  []*Currency
-	currentBufferPos int
 
 	// Business logic of this record only (SetLogic, tests); nil = the registered logic
 	// (RegisterCurrencyLogic)
@@ -910,25 +902,14 @@ func (t *Currency) convertPlaceholders(sql string, count int) string {
 // For single primary key: pass the value directly (string, int, etc.)
 // For composite keys: pass a map[string]interface{} with field names as keys
 func (t *Currency) Get(primaryKey interface{}) bool {
-	// Handle composite primary key (map[string]interface{})
+	// A composite primary key (map[string]interface{}, values also as text)
 	if pkMap, ok := primaryKey.(map[string]interface{}); ok {
-		var codeVal types.Code
-		if v, exists := pkMap["code"]; exists {
-			switch val := v.(type) {
-			case types.Code:
-				codeVal = val
-			case string:
-				codeVal = types.NewCode(val)
-			}
-		}
-		return t.GetByPK(codeVal)
+		key := currencyFields.KeyFromMap(pkMap)
+		return t.GetByPK(key[0].(types.Code))
 	}
-	// Handle single primary key (for tables with only one PK field)
-	switch pk := primaryKey.(type) {
-	case types.Code:
-		return t.GetByPK(pk)
-	case string:
-		return t.GetByPK(types.NewCode(pk))
+	// The primary key itself (a table with one primary key field)
+	if key, ok := currencyFields.KeyFromValue(primaryKey); ok {
+		return t.GetByPK([]any{key}[0].(types.Code))
 	}
 
 	fmt.Printf("Error: Invalid primary key type for Currency.Get: %T (use map for composite keys)\n", primaryKey)
@@ -937,108 +918,11 @@ func (t *Currency) Get(primaryKey interface{}) bool {
 
 // GetByPK retrieves a record by its typed primary key(s) - for direct typed access
 func (t *Currency) GetByPK(code types.Code) bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, CurrencyTableName)
-	var codeNull sql.NullString
-	var last_date_modifiedNull sql.NullString
-	var last_date_adjustedNull sql.NullString
-	var unrealized_gains_accNull sql.NullString
-	var realized_gains_accNull sql.NullString
-	var unrealized_losses_accNull sql.NullString
-	var realized_losses_accNull sql.NullString
-	var invoice_rounding_precisionNull sql.NullString
-	var invoice_rounding_typeInt int
-	var amount_rounding_precisionNull sql.NullString
-	var unit_amount_rounding_precisionNull sql.NullString
-	var descriptionNull sql.NullString
-	var amount_decimal_placesNull sql.NullString
-	var unit_amount_decimal_placesNull sql.NullString
-	var appln_rounding_precisionNull sql.NullString
-	var emu_currencyBool sql.NullBool
-	var currency_factorNull sql.NullString
-	var realized_gl_gains_accountNull sql.NullString
-	var realized_gl_losses_accountNull sql.NullString
-	var residual_gains_accountNull sql.NullString
-	var residual_losses_accountNull sql.NullString
-	var conv_lcy_rndg_debit_accNull sql.NullString
-	var conv_lcy_rndg_credit_accNull sql.NullString
-
 	// Collect arguments for query
 	args := []interface{}{
 		code,
 	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT code, last_date_modified, last_date_adjusted, unrealized_gains_acc, realized_gains_acc, unrealized_losses_acc, realized_losses_acc, invoice_rounding_precision, invoice_rounding_type, amount_rounding_precision, unit_amount_rounding_precision, description, amount_decimal_places, unit_amount_decimal_places, appln_rounding_precision, emu_currency, currency_factor, realized_gl_gains_account, realized_gl_losses_account, residual_gains_account, residual_losses_account, conv_lcy_rndg_debit_acc, conv_lcy_rndg_credit_acc FROM "%s" WHERE 1=1 AND code = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-	sqlStr += t.forUpdate()
-
-	err := t.exec().QueryRow(sqlStr, args...).Scan(
-		&codeNull,
-		&last_date_modifiedNull,
-		&last_date_adjustedNull,
-		&unrealized_gains_accNull,
-		&realized_gains_accNull,
-		&unrealized_losses_accNull,
-		&realized_losses_accNull,
-		&invoice_rounding_precisionNull,
-		&invoice_rounding_typeInt,
-		&amount_rounding_precisionNull,
-		&unit_amount_rounding_precisionNull,
-		&descriptionNull,
-		&amount_decimal_placesNull,
-		&unit_amount_decimal_placesNull,
-		&appln_rounding_precisionNull,
-		&emu_currencyBool,
-		&currency_factorNull,
-		&realized_gl_gains_accountNull,
-		&realized_gl_losses_accountNull,
-		&residual_gains_accountNull,
-		&residual_losses_accountNull,
-		&conv_lcy_rndg_debit_accNull,
-		&conv_lcy_rndg_credit_accNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			// Record not found - this is not an error, just return false
-			return false
-		}
-		// Actual database error
-		fmt.Printf("Error: Failed to get Currency: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Code = types.NewCode(codeNull.String)
-	t.Last_date_modified, _ = types.NewDateFromString(last_date_modifiedNull.String)
-	t.Last_date_adjusted, _ = types.NewDateFromString(last_date_adjustedNull.String)
-	t.Unrealized_gains_acc = types.NewCode(unrealized_gains_accNull.String)
-	t.Realized_gains_acc = types.NewCode(realized_gains_accNull.String)
-	t.Unrealized_losses_acc = types.NewCode(unrealized_losses_accNull.String)
-	t.Realized_losses_acc = types.NewCode(realized_losses_accNull.String)
-	t.Invoice_rounding_precision, _ = types.NewDecimalFromString(invoice_rounding_precisionNull.String)
-	t.Invoice_rounding_type = CurrencyInvoice_rounding_type(invoice_rounding_typeInt)
-	t.Amount_rounding_precision, _ = types.NewDecimalFromString(amount_rounding_precisionNull.String)
-	t.Unit_amount_rounding_precision, _ = types.NewDecimalFromString(unit_amount_rounding_precisionNull.String)
-	t.Description = types.NewText(descriptionNull.String)
-	t.Amount_decimal_places = types.NewText(amount_decimal_placesNull.String)
-	t.Unit_amount_decimal_places = types.NewText(unit_amount_decimal_placesNull.String)
-	t.Appln_rounding_precision, _ = types.NewDecimalFromString(appln_rounding_precisionNull.String)
-	t.Emu_currency = emu_currencyBool.Bool
-	t.Currency_factor, _ = types.NewDecimalFromString(currency_factorNull.String)
-	t.Realized_gl_gains_account = types.NewCode(realized_gl_gains_accountNull.String)
-	t.Realized_gl_losses_account = types.NewCode(realized_gl_losses_accountNull.String)
-	t.Residual_gains_account = types.NewCode(residual_gains_accountNull.String)
-	t.Residual_losses_account = types.NewCode(residual_losses_accountNull.String)
-	t.Conv_lcy_rndg_debit_acc = types.NewCode(conv_lcy_rndg_debit_accNull.String)
-	t.Conv_lcy_rndg_credit_acc = types.NewCode(conv_lcy_rndg_credit_accNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().Get(args)
 }
 
 // Insert inserts the record into the database
@@ -4091,10 +3975,7 @@ func (t *Currency) columnName(fieldName string) (string, bool) {
 func (t *Currency) Reset() {
 	t.q.Reset()
 	t.oldValues = nil
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
+	t.cur.CloseRows()
 }
 
 // buildWhereClause builds WHERE clause from current filters and search
@@ -4136,299 +4017,50 @@ func (t *Currency) getOrderByClause() (string, []interface{}) {
 // limit rows, skipping the first offset rows. A limit of 0 disables pagination
 // (all matching rows are returned). Negative values are treated as 0.
 func (t *Currency) SetPage(limit, offset int) {
-	if limit < 0 {
-		limit = 0
-	}
-	if offset < 0 {
-		offset = 0
-	}
-	t.limit = limit
-	t.offset = offset
+	t.cur.SetPage(limit, offset)
 }
 
-// getLimitClause builds the LIMIT/OFFSET clause from the pagination window.
-// Returns an empty string when no limit is set. LIMIT/OFFSET take integer
-// literals (not placeholders), which both SQLite and PostgreSQL accept.
-func (t *Currency) getLimitClause() string {
-	if t.limit <= 0 {
-		return ""
+// rec is what the read functions of foundation/tables need of the record
+func (t *Currency) rec() *tables.Rec {
+	_, inTx := t.db.(*sql.Tx)
+	return &tables.Rec{
+		Fields:    currencyFields,
+		Ref:       t.fieldRef,
+		QT:        t.qt(),
+		Q:         &t.q,
+		Cur:       &t.cur,
+		Exec:      t.exec(),
+		Buffered:  t.temp != nil || inTx,
+		Postgres:  t.dbType == database.DBTypePostgres,
+		Table:     fmt.Sprintf("%s$%s", t.company, CurrencyTableName),
+		ForUpdate: t.forUpdate(),
+		Store:     t.StoreOldValues,
 	}
-	if t.offset > 0 {
-		return fmt.Sprintf(" LIMIT %d OFFSET %d", t.limit, t.offset)
-	}
-	return fmt.Sprintf(" LIMIT %d", t.limit)
 }
 
 // FindFirst finds the first record matching current filters
 // Returns true if found, false if not found
 func (t *Currency) FindFirst() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, CurrencyTableName)
-	where, args := t.buildWhereClause()
-	// The first record in the current key and direction (classic FIND('-'))
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT code, last_date_modified, last_date_adjusted, unrealized_gains_acc, realized_gains_acc, unrealized_losses_acc, realized_losses_acc, invoice_rounding_precision, invoice_rounding_type, amount_rounding_precision, unit_amount_rounding_precision, description, amount_decimal_places, unit_amount_decimal_places, appln_rounding_precision, emu_currency, currency_factor, realized_gl_gains_account, realized_gl_losses_account, residual_gains_account, residual_losses_account, conv_lcy_rndg_debit_acc, conv_lcy_rndg_credit_acc FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var codeNull sql.NullString
-	var last_date_modifiedNull sql.NullString
-	var last_date_adjustedNull sql.NullString
-	var unrealized_gains_accNull sql.NullString
-	var realized_gains_accNull sql.NullString
-	var unrealized_losses_accNull sql.NullString
-	var realized_losses_accNull sql.NullString
-	var invoice_rounding_precisionNull sql.NullString
-	var invoice_rounding_typeInt int
-	var amount_rounding_precisionNull sql.NullString
-	var unit_amount_rounding_precisionNull sql.NullString
-	var descriptionNull sql.NullString
-	var amount_decimal_placesNull sql.NullString
-	var unit_amount_decimal_placesNull sql.NullString
-	var appln_rounding_precisionNull sql.NullString
-	var emu_currencyBool sql.NullBool
-	var currency_factorNull sql.NullString
-	var realized_gl_gains_accountNull sql.NullString
-	var realized_gl_losses_accountNull sql.NullString
-	var residual_gains_accountNull sql.NullString
-	var residual_losses_accountNull sql.NullString
-	var conv_lcy_rndg_debit_accNull sql.NullString
-	var conv_lcy_rndg_credit_accNull sql.NullString
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&codeNull,
-		&last_date_modifiedNull,
-		&last_date_adjustedNull,
-		&unrealized_gains_accNull,
-		&realized_gains_accNull,
-		&unrealized_losses_accNull,
-		&realized_losses_accNull,
-		&invoice_rounding_precisionNull,
-		&invoice_rounding_typeInt,
-		&amount_rounding_precisionNull,
-		&unit_amount_rounding_precisionNull,
-		&descriptionNull,
-		&amount_decimal_placesNull,
-		&unit_amount_decimal_placesNull,
-		&appln_rounding_precisionNull,
-		&emu_currencyBool,
-		&currency_factorNull,
-		&realized_gl_gains_accountNull,
-		&realized_gl_losses_accountNull,
-		&residual_gains_accountNull,
-		&residual_losses_accountNull,
-		&conv_lcy_rndg_debit_accNull,
-		&conv_lcy_rndg_credit_accNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find first Currency: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Code = types.NewCode(codeNull.String)
-	t.Last_date_modified, _ = types.NewDateFromString(last_date_modifiedNull.String)
-	t.Last_date_adjusted, _ = types.NewDateFromString(last_date_adjustedNull.String)
-	t.Unrealized_gains_acc = types.NewCode(unrealized_gains_accNull.String)
-	t.Realized_gains_acc = types.NewCode(realized_gains_accNull.String)
-	t.Unrealized_losses_acc = types.NewCode(unrealized_losses_accNull.String)
-	t.Realized_losses_acc = types.NewCode(realized_losses_accNull.String)
-	t.Invoice_rounding_precision, _ = types.NewDecimalFromString(invoice_rounding_precisionNull.String)
-	t.Invoice_rounding_type = CurrencyInvoice_rounding_type(invoice_rounding_typeInt)
-	t.Amount_rounding_precision, _ = types.NewDecimalFromString(amount_rounding_precisionNull.String)
-	t.Unit_amount_rounding_precision, _ = types.NewDecimalFromString(unit_amount_rounding_precisionNull.String)
-	t.Description = types.NewText(descriptionNull.String)
-	t.Amount_decimal_places = types.NewText(amount_decimal_placesNull.String)
-	t.Unit_amount_decimal_places = types.NewText(unit_amount_decimal_placesNull.String)
-	t.Appln_rounding_precision, _ = types.NewDecimalFromString(appln_rounding_precisionNull.String)
-	t.Emu_currency = emu_currencyBool.Bool
-	t.Currency_factor, _ = types.NewDecimalFromString(currency_factorNull.String)
-	t.Realized_gl_gains_account = types.NewCode(realized_gl_gains_accountNull.String)
-	t.Realized_gl_losses_account = types.NewCode(realized_gl_losses_accountNull.String)
-	t.Residual_gains_account = types.NewCode(residual_gains_accountNull.String)
-	t.Residual_losses_account = types.NewCode(residual_losses_accountNull.String)
-	t.Conv_lcy_rndg_debit_acc = types.NewCode(conv_lcy_rndg_debit_accNull.String)
-	t.Conv_lcy_rndg_credit_acc = types.NewCode(conv_lcy_rndg_credit_accNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindFirst()
 }
 
 // FindLast finds the last record matching current filters
 // Returns true if found, false if not found
 func (t *Currency) FindLast() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, CurrencyTableName)
-	where, args := t.buildWhereClause()
-	// The last record in the current key and direction (classic FIND('+')): the key reversed,
-	// every column of it
-	t.q.Descending = !t.q.Descending
-	orderBy, orderArgs := t.getOrderByClause()
-	t.q.Descending = !t.q.Descending
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT code, last_date_modified, last_date_adjusted, unrealized_gains_acc, realized_gains_acc, unrealized_losses_acc, realized_losses_acc, invoice_rounding_precision, invoice_rounding_type, amount_rounding_precision, unit_amount_rounding_precision, description, amount_decimal_places, unit_amount_decimal_places, appln_rounding_precision, emu_currency, currency_factor, realized_gl_gains_account, realized_gl_losses_account, residual_gains_account, residual_losses_account, conv_lcy_rndg_debit_acc, conv_lcy_rndg_credit_acc FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var codeNull sql.NullString
-	var last_date_modifiedNull sql.NullString
-	var last_date_adjustedNull sql.NullString
-	var unrealized_gains_accNull sql.NullString
-	var realized_gains_accNull sql.NullString
-	var unrealized_losses_accNull sql.NullString
-	var realized_losses_accNull sql.NullString
-	var invoice_rounding_precisionNull sql.NullString
-	var invoice_rounding_typeInt int
-	var amount_rounding_precisionNull sql.NullString
-	var unit_amount_rounding_precisionNull sql.NullString
-	var descriptionNull sql.NullString
-	var amount_decimal_placesNull sql.NullString
-	var unit_amount_decimal_placesNull sql.NullString
-	var appln_rounding_precisionNull sql.NullString
-	var emu_currencyBool sql.NullBool
-	var currency_factorNull sql.NullString
-	var realized_gl_gains_accountNull sql.NullString
-	var realized_gl_losses_accountNull sql.NullString
-	var residual_gains_accountNull sql.NullString
-	var residual_losses_accountNull sql.NullString
-	var conv_lcy_rndg_debit_accNull sql.NullString
-	var conv_lcy_rndg_credit_accNull sql.NullString
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&codeNull,
-		&last_date_modifiedNull,
-		&last_date_adjustedNull,
-		&unrealized_gains_accNull,
-		&realized_gains_accNull,
-		&unrealized_losses_accNull,
-		&realized_losses_accNull,
-		&invoice_rounding_precisionNull,
-		&invoice_rounding_typeInt,
-		&amount_rounding_precisionNull,
-		&unit_amount_rounding_precisionNull,
-		&descriptionNull,
-		&amount_decimal_placesNull,
-		&unit_amount_decimal_placesNull,
-		&appln_rounding_precisionNull,
-		&emu_currencyBool,
-		&currency_factorNull,
-		&realized_gl_gains_accountNull,
-		&realized_gl_losses_accountNull,
-		&residual_gains_accountNull,
-		&residual_losses_accountNull,
-		&conv_lcy_rndg_debit_accNull,
-		&conv_lcy_rndg_credit_accNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find last Currency: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Code = types.NewCode(codeNull.String)
-	t.Last_date_modified, _ = types.NewDateFromString(last_date_modifiedNull.String)
-	t.Last_date_adjusted, _ = types.NewDateFromString(last_date_adjustedNull.String)
-	t.Unrealized_gains_acc = types.NewCode(unrealized_gains_accNull.String)
-	t.Realized_gains_acc = types.NewCode(realized_gains_accNull.String)
-	t.Unrealized_losses_acc = types.NewCode(unrealized_losses_accNull.String)
-	t.Realized_losses_acc = types.NewCode(realized_losses_accNull.String)
-	t.Invoice_rounding_precision, _ = types.NewDecimalFromString(invoice_rounding_precisionNull.String)
-	t.Invoice_rounding_type = CurrencyInvoice_rounding_type(invoice_rounding_typeInt)
-	t.Amount_rounding_precision, _ = types.NewDecimalFromString(amount_rounding_precisionNull.String)
-	t.Unit_amount_rounding_precision, _ = types.NewDecimalFromString(unit_amount_rounding_precisionNull.String)
-	t.Description = types.NewText(descriptionNull.String)
-	t.Amount_decimal_places = types.NewText(amount_decimal_placesNull.String)
-	t.Unit_amount_decimal_places = types.NewText(unit_amount_decimal_placesNull.String)
-	t.Appln_rounding_precision, _ = types.NewDecimalFromString(appln_rounding_precisionNull.String)
-	t.Emu_currency = emu_currencyBool.Bool
-	t.Currency_factor, _ = types.NewDecimalFromString(currency_factorNull.String)
-	t.Realized_gl_gains_account = types.NewCode(realized_gl_gains_accountNull.String)
-	t.Realized_gl_losses_account = types.NewCode(realized_gl_losses_accountNull.String)
-	t.Residual_gains_account = types.NewCode(residual_gains_accountNull.String)
-	t.Residual_losses_account = types.NewCode(residual_losses_accountNull.String)
-	t.Conv_lcy_rndg_debit_acc = types.NewCode(conv_lcy_rndg_debit_accNull.String)
-	t.Conv_lcy_rndg_credit_acc = types.NewCode(conv_lcy_rndg_credit_accNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindLast()
 }
 
 // Count returns the number of records matching current filters
 func (t *Currency) Count() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, CurrencyTableName)
-	where, args := t.buildWhereClause()
-
-	query := fmt.Sprintf(`SELECT COUNT(*) FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var count int
-	err := t.exec().QueryRow(query, args...).Scan(&count)
-	if err != nil {
-		fmt.Printf("Error: Failed to count Currency: %v\n", err)
-		return 0
-	}
-
-	return count
+	return t.rec().Count()
 }
 
 // FindSet opens a result set matching current filters
 // Call Next() to iterate through the results
-// Returns true if at least one record found, false otherwise
+// Returns true if at least one record found, false otherwise. A temporary record, and a
+// record in a transaction, reads all at once (FindSetBuffered).
 func (t *Currency) FindSet() bool {
-	// A temporary record, and a record in a transaction, reads all at once: its in-memory
-	// database or the transaction has one connection, which an open result set would block for
-	// the statements of the loop (Modify while looping; on PostgreSQL a query while the rows are
-	// read breaks the connection — "unexpected Parse response")
-	if _, inTx := t.db.(*sql.Tx); t.temp != nil || inTx {
-		return t.FindSetBuffered()
-	}
-	// Close any existing result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	tableName := fmt.Sprintf("%s$%s", t.company, CurrencyTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT code, last_date_modified, last_date_adjusted, unrealized_gains_acc, realized_gains_acc, unrealized_losses_acc, realized_losses_acc, invoice_rounding_precision, invoice_rounding_type, amount_rounding_precision, unit_amount_rounding_precision, description, amount_decimal_places, unit_amount_decimal_places, appln_rounding_precision, emu_currency, currency_factor, realized_gl_gains_account, realized_gl_losses_account, residual_gains_account, residual_losses_account, conv_lcy_rndg_debit_acc, conv_lcy_rndg_credit_acc FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSet for Currency: %v\n", err)
-		return false
-	}
-
-	t.currentRows = rows
-
-	// Load first record
-	return t.Next()
+	return t.rec().FindSet()
 }
 
 // Next advances to the next record: in the result set after FindSet() or FindSetBuffered(),
@@ -4441,342 +4073,14 @@ func (t *Currency) FindSet() bool {
 //
 // Returns true if a record was loaded, false if no more records or out of bounds
 func (t *Currency) Next(steps ...int) bool {
-	// Default to 1 step forward
-	step := 1
-	if len(steps) > 0 {
-		step = steps[0]
-	}
-
-	// BUFFERED MODE: Bidirectional navigation with in-memory records
-	if t.bufferedRecords != nil {
-		// Calculate new position
-		newPos := t.currentBufferPos + step
-
-		// Check bounds
-		if newPos < 0 || newPos >= len(t.bufferedRecords) {
-			return false // Out of bounds
-		}
-
-		// Move to new position
-		t.currentBufferPos = newPos
-		t.copyFromBuffered(t.bufferedRecords[t.currentBufferPos])
-		return true
-	}
-
-	// FORWARD-ONLY MODE: Streaming with sql.Rows (only positive steps allowed)
-	if t.currentRows != nil {
-		// Validate: only forward movement allowed
-		if step < 1 {
-			fmt.Printf("Error: Backward navigation (Next(%d)) requires FindSetBuffered()\n", step)
-			return false
-		}
-
-		// Advance 'step' times (1 = next record, 2 = skip 1 record, etc.)
-		for i := 0; i < step; i++ {
-			if !t.currentRows.Next() {
-				// No more rows - close result set
-				t.currentRows.Close()
-				t.currentRows = nil
-				return false
-			}
-		}
-
-		// Scan the row
-		var codeNull sql.NullString
-		var last_date_modifiedNull sql.NullString
-		var last_date_adjustedNull sql.NullString
-		var unrealized_gains_accNull sql.NullString
-		var realized_gains_accNull sql.NullString
-		var unrealized_losses_accNull sql.NullString
-		var realized_losses_accNull sql.NullString
-		var invoice_rounding_precisionNull sql.NullString
-		var invoice_rounding_typeInt int
-		var amount_rounding_precisionNull sql.NullString
-		var unit_amount_rounding_precisionNull sql.NullString
-		var descriptionNull sql.NullString
-		var amount_decimal_placesNull sql.NullString
-		var unit_amount_decimal_placesNull sql.NullString
-		var appln_rounding_precisionNull sql.NullString
-		var emu_currencyBool sql.NullBool
-		var currency_factorNull sql.NullString
-		var realized_gl_gains_accountNull sql.NullString
-		var realized_gl_losses_accountNull sql.NullString
-		var residual_gains_accountNull sql.NullString
-		var residual_losses_accountNull sql.NullString
-		var conv_lcy_rndg_debit_accNull sql.NullString
-		var conv_lcy_rndg_credit_accNull sql.NullString
-
-		err := t.currentRows.Scan(
-			&codeNull,
-			&last_date_modifiedNull,
-			&last_date_adjustedNull,
-			&unrealized_gains_accNull,
-			&realized_gains_accNull,
-			&unrealized_losses_accNull,
-			&realized_losses_accNull,
-			&invoice_rounding_precisionNull,
-			&invoice_rounding_typeInt,
-			&amount_rounding_precisionNull,
-			&unit_amount_rounding_precisionNull,
-			&descriptionNull,
-			&amount_decimal_placesNull,
-			&unit_amount_decimal_placesNull,
-			&appln_rounding_precisionNull,
-			&emu_currencyBool,
-			&currency_factorNull,
-			&realized_gl_gains_accountNull,
-			&realized_gl_losses_accountNull,
-			&residual_gains_accountNull,
-			&residual_losses_accountNull,
-			&conv_lcy_rndg_debit_accNull,
-			&conv_lcy_rndg_credit_accNull,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan Currency record: %v\n", err)
-			t.currentRows.Close()
-			t.currentRows = nil
-			return false
-		}
-
-		// Populate fields
-		t.Code = types.NewCode(codeNull.String)
-		t.Last_date_modified, _ = types.NewDateFromString(last_date_modifiedNull.String)
-		t.Last_date_adjusted, _ = types.NewDateFromString(last_date_adjustedNull.String)
-		t.Unrealized_gains_acc = types.NewCode(unrealized_gains_accNull.String)
-		t.Realized_gains_acc = types.NewCode(realized_gains_accNull.String)
-		t.Unrealized_losses_acc = types.NewCode(unrealized_losses_accNull.String)
-		t.Realized_losses_acc = types.NewCode(realized_losses_accNull.String)
-		t.Invoice_rounding_precision, _ = types.NewDecimalFromString(invoice_rounding_precisionNull.String)
-		t.Invoice_rounding_type = CurrencyInvoice_rounding_type(invoice_rounding_typeInt)
-		t.Amount_rounding_precision, _ = types.NewDecimalFromString(amount_rounding_precisionNull.String)
-		t.Unit_amount_rounding_precision, _ = types.NewDecimalFromString(unit_amount_rounding_precisionNull.String)
-		t.Description = types.NewText(descriptionNull.String)
-		t.Amount_decimal_places = types.NewText(amount_decimal_placesNull.String)
-		t.Unit_amount_decimal_places = types.NewText(unit_amount_decimal_placesNull.String)
-		t.Appln_rounding_precision, _ = types.NewDecimalFromString(appln_rounding_precisionNull.String)
-		t.Emu_currency = emu_currencyBool.Bool
-		t.Currency_factor, _ = types.NewDecimalFromString(currency_factorNull.String)
-		t.Realized_gl_gains_account = types.NewCode(realized_gl_gains_accountNull.String)
-		t.Realized_gl_losses_account = types.NewCode(realized_gl_losses_accountNull.String)
-		t.Residual_gains_account = types.NewCode(residual_gains_accountNull.String)
-		t.Residual_losses_account = types.NewCode(residual_losses_accountNull.String)
-		t.Conv_lcy_rndg_debit_acc = types.NewCode(conv_lcy_rndg_debit_accNull.String)
-		t.Conv_lcy_rndg_credit_acc = types.NewCode(conv_lcy_rndg_credit_accNull.String)
-
-		// Store old values for field tracking
-		t.StoreOldValues()
-
-		return true
-	}
-
-	// No record set (after Get, Find, FindFirst, FindLast): the next record in the current key
-	// and direction within the filters, one step at a time (classic NEXT after FIND); a step
-	// that finds none leaves the record on the last one reached
-	if step == 0 {
-		return false
-	}
-	for i := 0; i != step; {
-		if step > 0 {
-			if !t.findInKey(">", false) {
-				return false
-			}
-			i++
-		} else {
-			if !t.findInKey("<", true) {
-				return false
-			}
-			i--
-		}
-	}
-	return true
+	return t.rec().Next(steps, t.findInKey)
 }
 
 // FindSetBuffered loads all filtered records into memory for bidirectional navigation
 // Use this when you need to move backward/forward with Next(steps)
-// Filters (SetRange/SetFilter) are applied in SQL before buffering to minimize memory usage
 // Returns true if at least one record found, false otherwise
 func (t *Currency) FindSetBuffered() bool {
-	// Close any existing forward-only result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-
-	// Clear any existing buffer
-	t.bufferedRecords = nil
-	t.currentBufferPos = -1
-	tableName := fmt.Sprintf("%s$%s", t.company, CurrencyTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT code, last_date_modified, last_date_adjusted, unrealized_gains_acc, realized_gains_acc, unrealized_losses_acc, realized_losses_acc, invoice_rounding_precision, invoice_rounding_type, amount_rounding_precision, unit_amount_rounding_precision, description, amount_decimal_places, unit_amount_decimal_places, appln_rounding_precision, emu_currency, currency_factor, realized_gl_gains_account, realized_gl_losses_account, residual_gains_account, residual_losses_account, conv_lcy_rndg_debit_acc, conv_lcy_rndg_credit_acc FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSetBuffered for Currency: %v\n", err)
-		return false
-	}
-	defer rows.Close()
-
-	// Load all records into memory
-	for rows.Next() {
-		// Create a new record instance
-		record := &Currency{}
-		record.db = t.db
-		record.temp = t.temp
-		record.company = t.company
-		record.dbType = t.dbType
-
-		// Scan the row
-		var codeNull sql.NullString
-		var last_date_modifiedNull sql.NullString
-		var last_date_adjustedNull sql.NullString
-		var unrealized_gains_accNull sql.NullString
-		var realized_gains_accNull sql.NullString
-		var unrealized_losses_accNull sql.NullString
-		var realized_losses_accNull sql.NullString
-		var invoice_rounding_precisionNull sql.NullString
-		var invoice_rounding_typeInt int
-		var amount_rounding_precisionNull sql.NullString
-		var unit_amount_rounding_precisionNull sql.NullString
-		var descriptionNull sql.NullString
-		var amount_decimal_placesNull sql.NullString
-		var unit_amount_decimal_placesNull sql.NullString
-		var appln_rounding_precisionNull sql.NullString
-		var emu_currencyBool sql.NullBool
-		var currency_factorNull sql.NullString
-		var realized_gl_gains_accountNull sql.NullString
-		var realized_gl_losses_accountNull sql.NullString
-		var residual_gains_accountNull sql.NullString
-		var residual_losses_accountNull sql.NullString
-		var conv_lcy_rndg_debit_accNull sql.NullString
-		var conv_lcy_rndg_credit_accNull sql.NullString
-
-		err := rows.Scan(
-			&codeNull,
-			&last_date_modifiedNull,
-			&last_date_adjustedNull,
-			&unrealized_gains_accNull,
-			&realized_gains_accNull,
-			&unrealized_losses_accNull,
-			&realized_losses_accNull,
-			&invoice_rounding_precisionNull,
-			&invoice_rounding_typeInt,
-			&amount_rounding_precisionNull,
-			&unit_amount_rounding_precisionNull,
-			&descriptionNull,
-			&amount_decimal_placesNull,
-			&unit_amount_decimal_placesNull,
-			&appln_rounding_precisionNull,
-			&emu_currencyBool,
-			&currency_factorNull,
-			&realized_gl_gains_accountNull,
-			&realized_gl_losses_accountNull,
-			&residual_gains_accountNull,
-			&residual_losses_accountNull,
-			&conv_lcy_rndg_debit_accNull,
-			&conv_lcy_rndg_credit_accNull,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan Currency record: %v\n", err)
-			return false
-		}
-
-		// Populate special type fields
-		record.Code = types.NewCode(codeNull.String)
-		record.Last_date_modified, _ = types.NewDateFromString(last_date_modifiedNull.String)
-		record.Last_date_adjusted, _ = types.NewDateFromString(last_date_adjustedNull.String)
-		record.Unrealized_gains_acc = types.NewCode(unrealized_gains_accNull.String)
-		record.Realized_gains_acc = types.NewCode(realized_gains_accNull.String)
-		record.Unrealized_losses_acc = types.NewCode(unrealized_losses_accNull.String)
-		record.Realized_losses_acc = types.NewCode(realized_losses_accNull.String)
-		record.Invoice_rounding_precision, _ = types.NewDecimalFromString(invoice_rounding_precisionNull.String)
-		record.Invoice_rounding_type = CurrencyInvoice_rounding_type(invoice_rounding_typeInt)
-		record.Amount_rounding_precision, _ = types.NewDecimalFromString(amount_rounding_precisionNull.String)
-		record.Unit_amount_rounding_precision, _ = types.NewDecimalFromString(unit_amount_rounding_precisionNull.String)
-		record.Description = types.NewText(descriptionNull.String)
-		record.Amount_decimal_places = types.NewText(amount_decimal_placesNull.String)
-		record.Unit_amount_decimal_places = types.NewText(unit_amount_decimal_placesNull.String)
-		record.Appln_rounding_precision, _ = types.NewDecimalFromString(appln_rounding_precisionNull.String)
-		record.Emu_currency = emu_currencyBool.Bool
-		record.Currency_factor, _ = types.NewDecimalFromString(currency_factorNull.String)
-		record.Realized_gl_gains_account = types.NewCode(realized_gl_gains_accountNull.String)
-		record.Realized_gl_losses_account = types.NewCode(realized_gl_losses_accountNull.String)
-		record.Residual_gains_account = types.NewCode(residual_gains_accountNull.String)
-		record.Residual_losses_account = types.NewCode(residual_losses_accountNull.String)
-		record.Conv_lcy_rndg_debit_acc = types.NewCode(conv_lcy_rndg_debit_accNull.String)
-		record.Conv_lcy_rndg_credit_acc = types.NewCode(conv_lcy_rndg_credit_accNull.String)
-
-		// Store old values
-		record.StoreOldValues()
-
-		// Add to buffer
-		t.bufferedRecords = append(t.bufferedRecords, record)
-	}
-
-	// Check for errors during iteration
-	if err := rows.Err(); err != nil {
-		fmt.Printf("Error: Failed to iterate Currency records: %v\n", err)
-		return false
-	}
-
-	// If no records found, return false
-	if len(t.bufferedRecords) == 0 {
-		return false
-	}
-
-	// Load first record into current instance
-	t.currentBufferPos = 0
-	t.copyFromBuffered(t.bufferedRecords[0])
-
-	return true
-}
-
-// copyFromBuffered copies field values from a buffered record to the current instance
-func (t *Currency) copyFromBuffered(record *Currency) {
-	t.Code = record.Code
-	t.Last_date_modified = record.Last_date_modified
-	t.Last_date_adjusted = record.Last_date_adjusted
-	t.Unrealized_gains_acc = record.Unrealized_gains_acc
-	t.Realized_gains_acc = record.Realized_gains_acc
-	t.Unrealized_losses_acc = record.Unrealized_losses_acc
-	t.Realized_losses_acc = record.Realized_losses_acc
-	t.Invoice_rounding_precision = record.Invoice_rounding_precision
-	t.Invoice_rounding_type = record.Invoice_rounding_type
-	t.Amount_rounding_precision = record.Amount_rounding_precision
-	t.Unit_amount_rounding_precision = record.Unit_amount_rounding_precision
-	t.Description = record.Description
-	t.Amount_decimal_places = record.Amount_decimal_places
-	t.Unit_amount_decimal_places = record.Unit_amount_decimal_places
-	t.Cust_ledg_entries_in_filter = record.Cust_ledg_entries_in_filter
-	t.Customer_balance = record.Customer_balance
-	t.Customer_outstanding_orders = record.Customer_outstanding_orders
-	t.Customer_shipped_not_invoiced = record.Customer_shipped_not_invoiced
-	t.Customer_balance_due = record.Customer_balance_due
-	t.Vendor_ledg_entries_in_filter = record.Vendor_ledg_entries_in_filter
-	t.Vendor_balance = record.Vendor_balance
-	t.Vendor_outstanding_orders = record.Vendor_outstanding_orders
-	t.Vendor_amt_rcd_not_invoiced = record.Vendor_amt_rcd_not_invoiced
-	t.Vendor_balance_due = record.Vendor_balance_due
-	t.Customer_balance_lcy = record.Customer_balance_lcy
-	t.Vendor_balance_lcy = record.Vendor_balance_lcy
-	t.Appln_rounding_precision = record.Appln_rounding_precision
-	t.Emu_currency = record.Emu_currency
-	t.Currency_factor = record.Currency_factor
-	t.Realized_gl_gains_account = record.Realized_gl_gains_account
-	t.Realized_gl_losses_account = record.Realized_gl_losses_account
-	t.Residual_gains_account = record.Residual_gains_account
-	t.Residual_losses_account = record.Residual_losses_account
-	t.Conv_lcy_rndg_debit_acc = record.Conv_lcy_rndg_debit_acc
-	t.Conv_lcy_rndg_credit_acc = record.Conv_lcy_rndg_credit_acc
-	t.StoreOldValues()
+	return t.rec().FindSetBuffered()
 }
 
 // ========================================
@@ -5239,49 +4543,9 @@ func (t *Currency) Find(which ...string) bool {
 }
 
 // findInKey reads the first record in the current key and direction — reversed for the
-// last — and with seek ">"/"<" only after/before the current record (a row-value
-// comparison on the key and primary key columns). A key with a FlowField cannot seek.
+// last — and with seek ">"/"<" only after/before the current record
 func (t *Currency) findInKey(seek string, reverse bool) bool {
-	if seek != "" {
-		var columns, params []string
-		var values []interface{}
-		for _, column := range t.keyColumns() {
-			v, ok := t.columnValue(column)
-			if !ok {
-				fmt.Printf("Error: Find(%q) on Currency needs a key of stored fields\n", seek)
-				return false
-			}
-			if t.isKeyDateColumn(column) {
-				v = types.KeyDate(v)
-			}
-			columns = append(columns, t.cmpColumn(column))
-			params = append(params, t.cmpParam(column))
-			values = append(values, v)
-		}
-		after := (seek == ">") != t.q.Descending
-		op := "<"
-		if after {
-			op = ">"
-		}
-		t.q.Seek = "(" + strings.Join(columns, ", ") + ") " + op + " (" + strings.Join(params, ", ") + ")"
-		t.q.SeekArgs = values
-	}
-	savedLimit, savedOffset, savedDescending := t.limit, t.offset, t.q.Descending
-	t.limit, t.offset = 1, 0
-	if reverse {
-		t.q.Descending = !t.q.Descending
-	}
-	found := t.FindSet()
-	// One record read: a later Next seeks from it in the key (inside a transaction FindSet
-	// buffers its rows — a one-row buffer would end the Next at once)
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	t.limit, t.offset, t.q.Descending = savedLimit, savedOffset, savedDescending
-	t.q.Seek, t.q.SeekArgs = "", nil
-	return found
+	return t.rec().FindInKey(seek, reverse)
 }
 
 // keyColumns returns the columns of the current key followed by the primary key's (the

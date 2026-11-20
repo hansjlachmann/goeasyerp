@@ -123,8 +123,8 @@ func (q *Query) SetRange(qt QueryTable, fieldName string, values ...interface{})
 	}
 }
 
-// SetFilter sets a filter expression on a field ("100..200|500", "<>0", "A*", "''"); on a
-// Sum/Count FlowField it applies to the FlowField's value
+// SetFilter sets a filter expression on a field ("100..200|500", "<>0", "A*", two single
+// quotes for the blank value); on a Sum/Count FlowField it applies to the FlowField's value
 func (q *Query) SetFilter(qt QueryTable, fieldName, filterExpr string) {
 	if q.filters == nil {
 		q.filters = make(map[string]*FilterCondition)
@@ -403,7 +403,8 @@ func (qt QueryTable) CmpParam(column string) string {
 }
 
 // filterClause turns a filter expression on a column into SQL: "100..200" (range), "..200",
-// "100..", "100|200" (or), "''" (blank), "<3000", "<>0", "A*" (wildcard), else equal
+// "100..", "100|200" (or), two single quotes (blank), "<3000", "<>0", "A*" (wildcard), else
+// equal
 func (q *Query) filterClause(qt QueryTable, fieldName, expr string) (string, []interface{}) {
 	var conditions []string
 	var args []interface{}

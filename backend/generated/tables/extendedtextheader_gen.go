@@ -107,19 +107,11 @@ type ExtendedTextHeader struct {
 	// Temporary: the record's own table is in a private in-memory database (InitTemporary)
 	temp *tables.TemporaryStore
 
-	// Iteration state for FindSet/Next
-	currentRows *sql.Rows
+	// The result set of FindSet/FindSetBuffered/Next and the paging window (SetPage)
+	cur tables.Cursor
 
 	// LockTable: the following reads lock the rows they read (SELECT … FOR UPDATE, Postgres)
 	lockForUpdate bool
-
-	// Pagination window for FindSet/FindSetBuffered (0 limit = all rows)
-	limit  int
-	offset int
-
-	// Buffered recordset for bidirectional navigation
-	bufferedRecords  []*ExtendedTextHeader
-	currentBufferPos int
 
 	// Business logic of this record only (SetLogic, tests); nil = the registered logic
 	// (RegisterExtendedTextHeaderLogic)
@@ -745,59 +737,11 @@ func (t *ExtendedTextHeader) convertPlaceholders(sql string, count int) string {
 // For single primary key: pass the value directly (string, int, etc.)
 // For composite keys: pass a map[string]interface{} with field names as keys
 func (t *ExtendedTextHeader) Get(primaryKey interface{}) bool {
-	// Handle composite primary key (map[string]interface{})
+	// A composite primary key (map[string]interface{}, values also as text)
 	if pkMap, ok := primaryKey.(map[string]interface{}); ok {
-		var table_nameVal ExtendedTextHeaderTable_name
-		if v, exists := pkMap["table_name"]; exists {
-			switch val := v.(type) {
-			case ExtendedTextHeaderTable_name:
-				table_nameVal = val
-			case int:
-				table_nameVal = ExtendedTextHeaderTable_name(val)
-			case float64:
-				table_nameVal = ExtendedTextHeaderTable_name(int(val))
-			case string:
-				if n, err := strconv.Atoi(val); err == nil {
-					table_nameVal = ExtendedTextHeaderTable_name(n)
-				}
-			}
-		}
-		var noVal types.Code
-		if v, exists := pkMap["no"]; exists {
-			switch val := v.(type) {
-			case types.Code:
-				noVal = val
-			case string:
-				noVal = types.NewCode(val)
-			}
-		}
-		var language_codeVal types.Code
-		if v, exists := pkMap["language_code"]; exists {
-			switch val := v.(type) {
-			case types.Code:
-				language_codeVal = val
-			case string:
-				language_codeVal = types.NewCode(val)
-			}
-		}
-		var text_noVal int
-		if v, exists := pkMap["text_no"]; exists {
-			switch val := v.(type) {
-			case int:
-				text_noVal = val
-			case float64:
-				text_noVal = int(val)
-			case string:
-				// the key part as text: the API's "CUSTOMER1,10000"
-				if n, err := strconv.Atoi(strings.TrimSpace(val)); err == nil {
-					text_noVal = n
-				}
-			}
-		}
-		return t.GetByPK(table_nameVal, noVal, language_codeVal, text_noVal)
+		key := extendedTextHeaderFields.KeyFromMap(pkMap)
+		return t.GetByPK(ExtendedTextHeaderTable_name(key[0].(int)), key[1].(types.Code), key[2].(types.Code), key[3].(int))
 	}
-	// For tables with composite keys, direct value is not supported
-	// Use a map[string]interface{} with field names as keys
 
 	fmt.Printf("Error: Invalid primary key type for Extended_Text_Header.Get: %T (use map for composite keys)\n", primaryKey)
 	return false
@@ -805,25 +749,6 @@ func (t *ExtendedTextHeader) Get(primaryKey interface{}) bool {
 
 // GetByPK retrieves a record by its typed primary key(s) - for direct typed access
 func (t *ExtendedTextHeader) GetByPK(table_name ExtendedTextHeaderTable_name, no types.Code, language_code types.Code, text_no int) bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, ExtendedTextHeaderTableName)
-	var table_nameInt int
-	var noNull sql.NullString
-	var language_codeNull sql.NullString
-	var text_noVal int
-	var starting_dateNull sql.NullString
-	var ending_dateNull sql.NullString
-	var all_language_codesBool sql.NullBool
-	var sales_quoteBool sql.NullBool
-	var sales_invoiceBool sql.NullBool
-	var sales_orderBool sql.NullBool
-	var sales_credit_memoBool sql.NullBool
-	var purchase_quoteBool sql.NullBool
-	var purchase_invoiceBool sql.NullBool
-	var purchase_orderBool sql.NullBool
-	var purchase_credit_memoBool sql.NullBool
-	var reminderBool sql.NullBool
-	var finance_charge_memoBool sql.NullBool
-
 	// Collect arguments for query
 	args := []interface{}{
 		table_name,
@@ -831,67 +756,7 @@ func (t *ExtendedTextHeader) GetByPK(table_name ExtendedTextHeaderTable_name, no
 		language_code,
 		text_no,
 	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT table_name, no, language_code, text_no, starting_date, ending_date, all_language_codes, sales_quote, sales_invoice, sales_order, sales_credit_memo, purchase_quote, purchase_invoice, purchase_order, purchase_credit_memo, reminder, finance_charge_memo FROM "%s" WHERE 1=1 AND table_name = ? AND no = ? AND language_code = ? AND text_no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-	sqlStr += t.forUpdate()
-
-	err := t.exec().QueryRow(sqlStr, args...).Scan(
-		&table_nameInt,
-		&noNull,
-		&language_codeNull,
-		&text_noVal,
-		&starting_dateNull,
-		&ending_dateNull,
-		&all_language_codesBool,
-		&sales_quoteBool,
-		&sales_invoiceBool,
-		&sales_orderBool,
-		&sales_credit_memoBool,
-		&purchase_quoteBool,
-		&purchase_invoiceBool,
-		&purchase_orderBool,
-		&purchase_credit_memoBool,
-		&reminderBool,
-		&finance_charge_memoBool,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			// Record not found - this is not an error, just return false
-			return false
-		}
-		// Actual database error
-		fmt.Printf("Error: Failed to get Extended_Text_Header: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Table_name = ExtendedTextHeaderTable_name(table_nameInt)
-	t.No = types.NewCode(noNull.String)
-	t.Language_code = types.NewCode(language_codeNull.String)
-	t.Text_no = text_noVal
-	t.Starting_date, _ = types.NewDateFromString(starting_dateNull.String)
-	t.Ending_date, _ = types.NewDateFromString(ending_dateNull.String)
-	t.All_language_codes = all_language_codesBool.Bool
-	t.Sales_quote = sales_quoteBool.Bool
-	t.Sales_invoice = sales_invoiceBool.Bool
-	t.Sales_order = sales_orderBool.Bool
-	t.Sales_credit_memo = sales_credit_memoBool.Bool
-	t.Purchase_quote = purchase_quoteBool.Bool
-	t.Purchase_invoice = purchase_invoiceBool.Bool
-	t.Purchase_order = purchase_orderBool.Bool
-	t.Purchase_credit_memo = purchase_credit_memoBool.Bool
-	t.Reminder = reminderBool.Bool
-	t.Finance_charge_memo = finance_charge_memoBool.Bool
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().Get(args)
 }
 
 // Insert inserts the record into the database
@@ -1306,10 +1171,7 @@ func (t *ExtendedTextHeader) columnName(fieldName string) (string, bool) {
 func (t *ExtendedTextHeader) Reset() {
 	t.q.Reset()
 	t.oldValues = nil
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
+	t.cur.CloseRows()
 }
 
 // buildWhereClause builds WHERE clause from current filters and search
@@ -1351,259 +1213,50 @@ func (t *ExtendedTextHeader) getOrderByClause() (string, []interface{}) {
 // limit rows, skipping the first offset rows. A limit of 0 disables pagination
 // (all matching rows are returned). Negative values are treated as 0.
 func (t *ExtendedTextHeader) SetPage(limit, offset int) {
-	if limit < 0 {
-		limit = 0
-	}
-	if offset < 0 {
-		offset = 0
-	}
-	t.limit = limit
-	t.offset = offset
+	t.cur.SetPage(limit, offset)
 }
 
-// getLimitClause builds the LIMIT/OFFSET clause from the pagination window.
-// Returns an empty string when no limit is set. LIMIT/OFFSET take integer
-// literals (not placeholders), which both SQLite and PostgreSQL accept.
-func (t *ExtendedTextHeader) getLimitClause() string {
-	if t.limit <= 0 {
-		return ""
+// rec is what the read functions of foundation/tables need of the record
+func (t *ExtendedTextHeader) rec() *tables.Rec {
+	_, inTx := t.db.(*sql.Tx)
+	return &tables.Rec{
+		Fields:    extendedTextHeaderFields,
+		Ref:       t.fieldRef,
+		QT:        t.qt(),
+		Q:         &t.q,
+		Cur:       &t.cur,
+		Exec:      t.exec(),
+		Buffered:  t.temp != nil || inTx,
+		Postgres:  t.dbType == database.DBTypePostgres,
+		Table:     fmt.Sprintf("%s$%s", t.company, ExtendedTextHeaderTableName),
+		ForUpdate: t.forUpdate(),
+		Store:     t.StoreOldValues,
 	}
-	if t.offset > 0 {
-		return fmt.Sprintf(" LIMIT %d OFFSET %d", t.limit, t.offset)
-	}
-	return fmt.Sprintf(" LIMIT %d", t.limit)
 }
 
 // FindFirst finds the first record matching current filters
 // Returns true if found, false if not found
 func (t *ExtendedTextHeader) FindFirst() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, ExtendedTextHeaderTableName)
-	where, args := t.buildWhereClause()
-	// The first record in the current key and direction (classic FIND('-'))
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT table_name, no, language_code, text_no, starting_date, ending_date, all_language_codes, sales_quote, sales_invoice, sales_order, sales_credit_memo, purchase_quote, purchase_invoice, purchase_order, purchase_credit_memo, reminder, finance_charge_memo FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var table_nameInt int
-	var noNull sql.NullString
-	var language_codeNull sql.NullString
-	var starting_dateNull sql.NullString
-	var ending_dateNull sql.NullString
-	var all_language_codesBool sql.NullBool
-	var sales_quoteBool sql.NullBool
-	var sales_invoiceBool sql.NullBool
-	var sales_orderBool sql.NullBool
-	var sales_credit_memoBool sql.NullBool
-	var purchase_quoteBool sql.NullBool
-	var purchase_invoiceBool sql.NullBool
-	var purchase_orderBool sql.NullBool
-	var purchase_credit_memoBool sql.NullBool
-	var reminderBool sql.NullBool
-	var finance_charge_memoBool sql.NullBool
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&table_nameInt,
-		&noNull,
-		&language_codeNull,
-		&t.Text_no,
-		&starting_dateNull,
-		&ending_dateNull,
-		&all_language_codesBool,
-		&sales_quoteBool,
-		&sales_invoiceBool,
-		&sales_orderBool,
-		&sales_credit_memoBool,
-		&purchase_quoteBool,
-		&purchase_invoiceBool,
-		&purchase_orderBool,
-		&purchase_credit_memoBool,
-		&reminderBool,
-		&finance_charge_memoBool,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find first Extended_Text_Header: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Table_name = ExtendedTextHeaderTable_name(table_nameInt)
-	t.No = types.NewCode(noNull.String)
-	t.Language_code = types.NewCode(language_codeNull.String)
-	t.Starting_date, _ = types.NewDateFromString(starting_dateNull.String)
-	t.Ending_date, _ = types.NewDateFromString(ending_dateNull.String)
-	t.All_language_codes = all_language_codesBool.Bool
-	t.Sales_quote = sales_quoteBool.Bool
-	t.Sales_invoice = sales_invoiceBool.Bool
-	t.Sales_order = sales_orderBool.Bool
-	t.Sales_credit_memo = sales_credit_memoBool.Bool
-	t.Purchase_quote = purchase_quoteBool.Bool
-	t.Purchase_invoice = purchase_invoiceBool.Bool
-	t.Purchase_order = purchase_orderBool.Bool
-	t.Purchase_credit_memo = purchase_credit_memoBool.Bool
-	t.Reminder = reminderBool.Bool
-	t.Finance_charge_memo = finance_charge_memoBool.Bool
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindFirst()
 }
 
 // FindLast finds the last record matching current filters
 // Returns true if found, false if not found
 func (t *ExtendedTextHeader) FindLast() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, ExtendedTextHeaderTableName)
-	where, args := t.buildWhereClause()
-	// The last record in the current key and direction (classic FIND('+')): the key reversed,
-	// every column of it
-	t.q.Descending = !t.q.Descending
-	orderBy, orderArgs := t.getOrderByClause()
-	t.q.Descending = !t.q.Descending
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT table_name, no, language_code, text_no, starting_date, ending_date, all_language_codes, sales_quote, sales_invoice, sales_order, sales_credit_memo, purchase_quote, purchase_invoice, purchase_order, purchase_credit_memo, reminder, finance_charge_memo FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var table_nameInt int
-	var noNull sql.NullString
-	var language_codeNull sql.NullString
-	var starting_dateNull sql.NullString
-	var ending_dateNull sql.NullString
-	var all_language_codesBool sql.NullBool
-	var sales_quoteBool sql.NullBool
-	var sales_invoiceBool sql.NullBool
-	var sales_orderBool sql.NullBool
-	var sales_credit_memoBool sql.NullBool
-	var purchase_quoteBool sql.NullBool
-	var purchase_invoiceBool sql.NullBool
-	var purchase_orderBool sql.NullBool
-	var purchase_credit_memoBool sql.NullBool
-	var reminderBool sql.NullBool
-	var finance_charge_memoBool sql.NullBool
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&table_nameInt,
-		&noNull,
-		&language_codeNull,
-		&t.Text_no,
-		&starting_dateNull,
-		&ending_dateNull,
-		&all_language_codesBool,
-		&sales_quoteBool,
-		&sales_invoiceBool,
-		&sales_orderBool,
-		&sales_credit_memoBool,
-		&purchase_quoteBool,
-		&purchase_invoiceBool,
-		&purchase_orderBool,
-		&purchase_credit_memoBool,
-		&reminderBool,
-		&finance_charge_memoBool,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find last Extended_Text_Header: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Table_name = ExtendedTextHeaderTable_name(table_nameInt)
-	t.No = types.NewCode(noNull.String)
-	t.Language_code = types.NewCode(language_codeNull.String)
-	t.Starting_date, _ = types.NewDateFromString(starting_dateNull.String)
-	t.Ending_date, _ = types.NewDateFromString(ending_dateNull.String)
-	t.All_language_codes = all_language_codesBool.Bool
-	t.Sales_quote = sales_quoteBool.Bool
-	t.Sales_invoice = sales_invoiceBool.Bool
-	t.Sales_order = sales_orderBool.Bool
-	t.Sales_credit_memo = sales_credit_memoBool.Bool
-	t.Purchase_quote = purchase_quoteBool.Bool
-	t.Purchase_invoice = purchase_invoiceBool.Bool
-	t.Purchase_order = purchase_orderBool.Bool
-	t.Purchase_credit_memo = purchase_credit_memoBool.Bool
-	t.Reminder = reminderBool.Bool
-	t.Finance_charge_memo = finance_charge_memoBool.Bool
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindLast()
 }
 
 // Count returns the number of records matching current filters
 func (t *ExtendedTextHeader) Count() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, ExtendedTextHeaderTableName)
-	where, args := t.buildWhereClause()
-
-	query := fmt.Sprintf(`SELECT COUNT(*) FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var count int
-	err := t.exec().QueryRow(query, args...).Scan(&count)
-	if err != nil {
-		fmt.Printf("Error: Failed to count Extended_Text_Header: %v\n", err)
-		return 0
-	}
-
-	return count
+	return t.rec().Count()
 }
 
 // FindSet opens a result set matching current filters
 // Call Next() to iterate through the results
-// Returns true if at least one record found, false otherwise
+// Returns true if at least one record found, false otherwise. A temporary record, and a
+// record in a transaction, reads all at once (FindSetBuffered).
 func (t *ExtendedTextHeader) FindSet() bool {
-	// A temporary record, and a record in a transaction, reads all at once: its in-memory
-	// database or the transaction has one connection, which an open result set would block for
-	// the statements of the loop (Modify while looping; on PostgreSQL a query while the rows are
-	// read breaks the connection — "unexpected Parse response")
-	if _, inTx := t.db.(*sql.Tx); t.temp != nil || inTx {
-		return t.FindSetBuffered()
-	}
-	// Close any existing result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	tableName := fmt.Sprintf("%s$%s", t.company, ExtendedTextHeaderTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT table_name, no, language_code, text_no, starting_date, ending_date, all_language_codes, sales_quote, sales_invoice, sales_order, sales_credit_memo, purchase_quote, purchase_invoice, purchase_order, purchase_credit_memo, reminder, finance_charge_memo FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSet for Extended_Text_Header: %v\n", err)
-		return false
-	}
-
-	t.currentRows = rows
-
-	// Load first record
-	return t.Next()
+	return t.rec().FindSet()
 }
 
 // Next advances to the next record: in the result set after FindSet() or FindSetBuffered(),
@@ -1616,284 +1269,14 @@ func (t *ExtendedTextHeader) FindSet() bool {
 //
 // Returns true if a record was loaded, false if no more records or out of bounds
 func (t *ExtendedTextHeader) Next(steps ...int) bool {
-	// Default to 1 step forward
-	step := 1
-	if len(steps) > 0 {
-		step = steps[0]
-	}
-
-	// BUFFERED MODE: Bidirectional navigation with in-memory records
-	if t.bufferedRecords != nil {
-		// Calculate new position
-		newPos := t.currentBufferPos + step
-
-		// Check bounds
-		if newPos < 0 || newPos >= len(t.bufferedRecords) {
-			return false // Out of bounds
-		}
-
-		// Move to new position
-		t.currentBufferPos = newPos
-		t.copyFromBuffered(t.bufferedRecords[t.currentBufferPos])
-		return true
-	}
-
-	// FORWARD-ONLY MODE: Streaming with sql.Rows (only positive steps allowed)
-	if t.currentRows != nil {
-		// Validate: only forward movement allowed
-		if step < 1 {
-			fmt.Printf("Error: Backward navigation (Next(%d)) requires FindSetBuffered()\n", step)
-			return false
-		}
-
-		// Advance 'step' times (1 = next record, 2 = skip 1 record, etc.)
-		for i := 0; i < step; i++ {
-			if !t.currentRows.Next() {
-				// No more rows - close result set
-				t.currentRows.Close()
-				t.currentRows = nil
-				return false
-			}
-		}
-
-		// Scan the row
-		var table_nameInt int
-		var noNull sql.NullString
-		var language_codeNull sql.NullString
-		var starting_dateNull sql.NullString
-		var ending_dateNull sql.NullString
-		var all_language_codesBool sql.NullBool
-		var sales_quoteBool sql.NullBool
-		var sales_invoiceBool sql.NullBool
-		var sales_orderBool sql.NullBool
-		var sales_credit_memoBool sql.NullBool
-		var purchase_quoteBool sql.NullBool
-		var purchase_invoiceBool sql.NullBool
-		var purchase_orderBool sql.NullBool
-		var purchase_credit_memoBool sql.NullBool
-		var reminderBool sql.NullBool
-		var finance_charge_memoBool sql.NullBool
-
-		err := t.currentRows.Scan(
-			&table_nameInt,
-			&noNull,
-			&language_codeNull,
-			&t.Text_no,
-			&starting_dateNull,
-			&ending_dateNull,
-			&all_language_codesBool,
-			&sales_quoteBool,
-			&sales_invoiceBool,
-			&sales_orderBool,
-			&sales_credit_memoBool,
-			&purchase_quoteBool,
-			&purchase_invoiceBool,
-			&purchase_orderBool,
-			&purchase_credit_memoBool,
-			&reminderBool,
-			&finance_charge_memoBool,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan Extended_Text_Header record: %v\n", err)
-			t.currentRows.Close()
-			t.currentRows = nil
-			return false
-		}
-
-		// Populate fields
-		t.Table_name = ExtendedTextHeaderTable_name(table_nameInt)
-		t.No = types.NewCode(noNull.String)
-		t.Language_code = types.NewCode(language_codeNull.String)
-		t.Starting_date, _ = types.NewDateFromString(starting_dateNull.String)
-		t.Ending_date, _ = types.NewDateFromString(ending_dateNull.String)
-		t.All_language_codes = all_language_codesBool.Bool
-		t.Sales_quote = sales_quoteBool.Bool
-		t.Sales_invoice = sales_invoiceBool.Bool
-		t.Sales_order = sales_orderBool.Bool
-		t.Sales_credit_memo = sales_credit_memoBool.Bool
-		t.Purchase_quote = purchase_quoteBool.Bool
-		t.Purchase_invoice = purchase_invoiceBool.Bool
-		t.Purchase_order = purchase_orderBool.Bool
-		t.Purchase_credit_memo = purchase_credit_memoBool.Bool
-		t.Reminder = reminderBool.Bool
-		t.Finance_charge_memo = finance_charge_memoBool.Bool
-
-		// Store old values for field tracking
-		t.StoreOldValues()
-
-		return true
-	}
-
-	// No record set (after Get, Find, FindFirst, FindLast): the next record in the current key
-	// and direction within the filters, one step at a time (classic NEXT after FIND); a step
-	// that finds none leaves the record on the last one reached
-	if step == 0 {
-		return false
-	}
-	for i := 0; i != step; {
-		if step > 0 {
-			if !t.findInKey(">", false) {
-				return false
-			}
-			i++
-		} else {
-			if !t.findInKey("<", true) {
-				return false
-			}
-			i--
-		}
-	}
-	return true
+	return t.rec().Next(steps, t.findInKey)
 }
 
 // FindSetBuffered loads all filtered records into memory for bidirectional navigation
 // Use this when you need to move backward/forward with Next(steps)
-// Filters (SetRange/SetFilter) are applied in SQL before buffering to minimize memory usage
 // Returns true if at least one record found, false otherwise
 func (t *ExtendedTextHeader) FindSetBuffered() bool {
-	// Close any existing forward-only result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-
-	// Clear any existing buffer
-	t.bufferedRecords = nil
-	t.currentBufferPos = -1
-	tableName := fmt.Sprintf("%s$%s", t.company, ExtendedTextHeaderTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT table_name, no, language_code, text_no, starting_date, ending_date, all_language_codes, sales_quote, sales_invoice, sales_order, sales_credit_memo, purchase_quote, purchase_invoice, purchase_order, purchase_credit_memo, reminder, finance_charge_memo FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSetBuffered for Extended_Text_Header: %v\n", err)
-		return false
-	}
-	defer rows.Close()
-
-	// Load all records into memory
-	for rows.Next() {
-		// Create a new record instance
-		record := &ExtendedTextHeader{}
-		record.db = t.db
-		record.temp = t.temp
-		record.company = t.company
-		record.dbType = t.dbType
-
-		// Scan the row
-		var table_nameInt int
-		var noNull sql.NullString
-		var language_codeNull sql.NullString
-		var starting_dateNull sql.NullString
-		var ending_dateNull sql.NullString
-		var all_language_codesBool sql.NullBool
-		var sales_quoteBool sql.NullBool
-		var sales_invoiceBool sql.NullBool
-		var sales_orderBool sql.NullBool
-		var sales_credit_memoBool sql.NullBool
-		var purchase_quoteBool sql.NullBool
-		var purchase_invoiceBool sql.NullBool
-		var purchase_orderBool sql.NullBool
-		var purchase_credit_memoBool sql.NullBool
-		var reminderBool sql.NullBool
-		var finance_charge_memoBool sql.NullBool
-
-		err := rows.Scan(
-			&table_nameInt,
-			&noNull,
-			&language_codeNull,
-			&record.Text_no,
-			&starting_dateNull,
-			&ending_dateNull,
-			&all_language_codesBool,
-			&sales_quoteBool,
-			&sales_invoiceBool,
-			&sales_orderBool,
-			&sales_credit_memoBool,
-			&purchase_quoteBool,
-			&purchase_invoiceBool,
-			&purchase_orderBool,
-			&purchase_credit_memoBool,
-			&reminderBool,
-			&finance_charge_memoBool,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan Extended_Text_Header record: %v\n", err)
-			return false
-		}
-
-		// Populate special type fields
-		record.Table_name = ExtendedTextHeaderTable_name(table_nameInt)
-		record.No = types.NewCode(noNull.String)
-		record.Language_code = types.NewCode(language_codeNull.String)
-		record.Starting_date, _ = types.NewDateFromString(starting_dateNull.String)
-		record.Ending_date, _ = types.NewDateFromString(ending_dateNull.String)
-		record.All_language_codes = all_language_codesBool.Bool
-		record.Sales_quote = sales_quoteBool.Bool
-		record.Sales_invoice = sales_invoiceBool.Bool
-		record.Sales_order = sales_orderBool.Bool
-		record.Sales_credit_memo = sales_credit_memoBool.Bool
-		record.Purchase_quote = purchase_quoteBool.Bool
-		record.Purchase_invoice = purchase_invoiceBool.Bool
-		record.Purchase_order = purchase_orderBool.Bool
-		record.Purchase_credit_memo = purchase_credit_memoBool.Bool
-		record.Reminder = reminderBool.Bool
-		record.Finance_charge_memo = finance_charge_memoBool.Bool
-
-		// Store old values
-		record.StoreOldValues()
-
-		// Add to buffer
-		t.bufferedRecords = append(t.bufferedRecords, record)
-	}
-
-	// Check for errors during iteration
-	if err := rows.Err(); err != nil {
-		fmt.Printf("Error: Failed to iterate Extended_Text_Header records: %v\n", err)
-		return false
-	}
-
-	// If no records found, return false
-	if len(t.bufferedRecords) == 0 {
-		return false
-	}
-
-	// Load first record into current instance
-	t.currentBufferPos = 0
-	t.copyFromBuffered(t.bufferedRecords[0])
-
-	return true
-}
-
-// copyFromBuffered copies field values from a buffered record to the current instance
-func (t *ExtendedTextHeader) copyFromBuffered(record *ExtendedTextHeader) {
-	t.Table_name = record.Table_name
-	t.No = record.No
-	t.Language_code = record.Language_code
-	t.Text_no = record.Text_no
-	t.Starting_date = record.Starting_date
-	t.Ending_date = record.Ending_date
-	t.All_language_codes = record.All_language_codes
-	t.Sales_quote = record.Sales_quote
-	t.Sales_invoice = record.Sales_invoice
-	t.Sales_order = record.Sales_order
-	t.Sales_credit_memo = record.Sales_credit_memo
-	t.Purchase_quote = record.Purchase_quote
-	t.Purchase_invoice = record.Purchase_invoice
-	t.Purchase_order = record.Purchase_order
-	t.Purchase_credit_memo = record.Purchase_credit_memo
-	t.Reminder = record.Reminder
-	t.Finance_charge_memo = record.Finance_charge_memo
-	t.StoreOldValues()
+	return t.rec().FindSetBuffered()
 }
 
 // ========================================
@@ -2327,49 +1710,9 @@ func (t *ExtendedTextHeader) Find(which ...string) bool {
 }
 
 // findInKey reads the first record in the current key and direction — reversed for the
-// last — and with seek ">"/"<" only after/before the current record (a row-value
-// comparison on the key and primary key columns). A key with a FlowField cannot seek.
+// last — and with seek ">"/"<" only after/before the current record
 func (t *ExtendedTextHeader) findInKey(seek string, reverse bool) bool {
-	if seek != "" {
-		var columns, params []string
-		var values []interface{}
-		for _, column := range t.keyColumns() {
-			v, ok := t.columnValue(column)
-			if !ok {
-				fmt.Printf("Error: Find(%q) on Extended_Text_Header needs a key of stored fields\n", seek)
-				return false
-			}
-			if t.isKeyDateColumn(column) {
-				v = types.KeyDate(v)
-			}
-			columns = append(columns, t.cmpColumn(column))
-			params = append(params, t.cmpParam(column))
-			values = append(values, v)
-		}
-		after := (seek == ">") != t.q.Descending
-		op := "<"
-		if after {
-			op = ">"
-		}
-		t.q.Seek = "(" + strings.Join(columns, ", ") + ") " + op + " (" + strings.Join(params, ", ") + ")"
-		t.q.SeekArgs = values
-	}
-	savedLimit, savedOffset, savedDescending := t.limit, t.offset, t.q.Descending
-	t.limit, t.offset = 1, 0
-	if reverse {
-		t.q.Descending = !t.q.Descending
-	}
-	found := t.FindSet()
-	// One record read: a later Next seeks from it in the key (inside a transaction FindSet
-	// buffers its rows — a one-row buffer would end the Next at once)
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	t.limit, t.offset, t.q.Descending = savedLimit, savedOffset, savedDescending
-	t.q.Seek, t.q.SeekArgs = "", nil
-	return found
+	return t.rec().FindInKey(seek, reverse)
 }
 
 // keyColumns returns the columns of the current key followed by the primary key's (the

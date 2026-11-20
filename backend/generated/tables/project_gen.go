@@ -217,19 +217,11 @@ type Project struct {
 	// Temporary: the record's own table is in a private in-memory database (InitTemporary)
 	temp *tables.TemporaryStore
 
-	// Iteration state for FindSet/Next
-	currentRows *sql.Rows
+	// The result set of FindSet/FindSetBuffered/Next and the paging window (SetPage)
+	cur tables.Cursor
 
 	// LockTable: the following reads lock the rows they read (SELECT … FOR UPDATE, Postgres)
 	lockForUpdate bool
-
-	// Pagination window for FindSet/FindSetBuffered (0 limit = all rows)
-	limit  int
-	offset int
-
-	// Buffered recordset for bidirectional navigation
-	bufferedRecords  []*Project
-	currentBufferPos int
 
 	// Business logic of this record only (SetLogic, tests); nil = the registered logic
 	// (RegisterProjectLogic)
@@ -1008,25 +1000,14 @@ func (t *Project) convertPlaceholders(sql string, count int) string {
 // For single primary key: pass the value directly (string, int, etc.)
 // For composite keys: pass a map[string]interface{} with field names as keys
 func (t *Project) Get(primaryKey interface{}) bool {
-	// Handle composite primary key (map[string]interface{})
+	// A composite primary key (map[string]interface{}, values also as text)
 	if pkMap, ok := primaryKey.(map[string]interface{}); ok {
-		var noVal types.Code
-		if v, exists := pkMap["no"]; exists {
-			switch val := v.(type) {
-			case types.Code:
-				noVal = val
-			case string:
-				noVal = types.NewCode(val)
-			}
-		}
-		return t.GetByPK(noVal)
+		key := projectFields.KeyFromMap(pkMap)
+		return t.GetByPK(key[0].(types.Code))
 	}
-	// Handle single primary key (for tables with only one PK field)
-	switch pk := primaryKey.(type) {
-	case types.Code:
-		return t.GetByPK(pk)
-	case string:
-		return t.GetByPK(types.NewCode(pk))
+	// The primary key itself (a table with one primary key field)
+	if key, ok := projectFields.KeyFromValue(primaryKey); ok {
+		return t.GetByPK([]any{key}[0].(types.Code))
 	}
 
 	fmt.Printf("Error: Invalid primary key type for Project.Get: %T (use map for composite keys)\n", primaryKey)
@@ -1035,111 +1016,11 @@ func (t *Project) Get(primaryKey interface{}) bool {
 
 // GetByPK retrieves a record by its typed primary key(s) - for direct typed access
 func (t *Project) GetByPK(no types.Code) bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, ProjectTableName)
-	var noNull sql.NullString
-	var search_descriptionNull sql.NullString
-	var descriptionNull sql.NullString
-	var description_2Null sql.NullString
-	var bill_to_customer_noNull sql.NullString
-	var creation_dateNull sql.NullString
-	var starting_dateNull sql.NullString
-	var ending_dateNull sql.NullString
-	var completion_dateNull sql.NullString
-	var project_posting_dateNull sql.NullString
-	var recognition_dateNull sql.NullString
-	var completion_percentNull sql.NullString
-	var statusInt int
-	var person_responsibleNull sql.NullString
-	var dimension_1_codeNull sql.NullString
-	var dimension_2_codeNull sql.NullString
-	var project_posting_groupNull sql.NullString
-	var blockedBool sql.NullBool
-	var recognition_methodInt int
-	var last_date_modifiedNull sql.NullString
-	var application_methodInt int
-	var project_usage_postingInt int
-	var pictureVal []byte
-	var no_seriesNull sql.NullString
-
 	// Collect arguments for query
 	args := []interface{}{
 		no,
 	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT no, search_description, description, description_2, bill_to_customer_no, creation_date, starting_date, ending_date, completion_date, project_posting_date, recognition_date, completion_percent, status, person_responsible, dimension_1_code, dimension_2_code, project_posting_group, blocked, recognition_method, last_date_modified, application_method, project_usage_posting, picture, no_series FROM "%s" WHERE 1=1 AND no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-	sqlStr += t.forUpdate()
-
-	err := t.exec().QueryRow(sqlStr, args...).Scan(
-		&noNull,
-		&search_descriptionNull,
-		&descriptionNull,
-		&description_2Null,
-		&bill_to_customer_noNull,
-		&creation_dateNull,
-		&starting_dateNull,
-		&ending_dateNull,
-		&completion_dateNull,
-		&project_posting_dateNull,
-		&recognition_dateNull,
-		&completion_percentNull,
-		&statusInt,
-		&person_responsibleNull,
-		&dimension_1_codeNull,
-		&dimension_2_codeNull,
-		&project_posting_groupNull,
-		&blockedBool,
-		&recognition_methodInt,
-		&last_date_modifiedNull,
-		&application_methodInt,
-		&project_usage_postingInt,
-		&pictureVal,
-		&no_seriesNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			// Record not found - this is not an error, just return false
-			return false
-		}
-		// Actual database error
-		fmt.Printf("Error: Failed to get Project: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.No = types.NewCode(noNull.String)
-	t.Search_description = types.NewCode(search_descriptionNull.String)
-	t.Description = types.NewText(descriptionNull.String)
-	t.Description_2 = types.NewText(description_2Null.String)
-	t.Bill_to_customer_no = types.NewCode(bill_to_customer_noNull.String)
-	t.Creation_date, _ = types.NewDateFromString(creation_dateNull.String)
-	t.Starting_date, _ = types.NewDateFromString(starting_dateNull.String)
-	t.Ending_date, _ = types.NewDateFromString(ending_dateNull.String)
-	t.Completion_date, _ = types.NewDateFromString(completion_dateNull.String)
-	t.Project_posting_date, _ = types.NewDateFromString(project_posting_dateNull.String)
-	t.Recognition_date, _ = types.NewDateFromString(recognition_dateNull.String)
-	t.Completion_percent, _ = types.NewDecimalFromString(completion_percentNull.String)
-	t.Status = ProjectStatus(statusInt)
-	t.Person_responsible = types.NewCode(person_responsibleNull.String)
-	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
-	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
-	t.Project_posting_group = types.NewCode(project_posting_groupNull.String)
-	t.Blocked = blockedBool.Bool
-	t.Recognition_method = ProjectRecognition_method(recognition_methodInt)
-	t.Last_date_modified, _ = types.NewDateFromString(last_date_modifiedNull.String)
-	t.Application_method = ProjectApplication_method(application_methodInt)
-	t.Project_usage_posting = ProjectProject_usage_posting(project_usage_postingInt)
-	t.Picture = pictureVal
-	t.No_series = types.NewCode(no_seriesNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().Get(args)
 }
 
 // Insert inserts the record into the database
@@ -3811,10 +3692,7 @@ func (t *Project) columnName(fieldName string) (string, bool) {
 func (t *Project) Reset() {
 	t.q.Reset()
 	t.oldValues = nil
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
+	t.cur.CloseRows()
 }
 
 // buildWhereClause builds WHERE clause from current filters and search
@@ -3856,301 +3734,50 @@ func (t *Project) getOrderByClause() (string, []interface{}) {
 // limit rows, skipping the first offset rows. A limit of 0 disables pagination
 // (all matching rows are returned). Negative values are treated as 0.
 func (t *Project) SetPage(limit, offset int) {
-	if limit < 0 {
-		limit = 0
-	}
-	if offset < 0 {
-		offset = 0
-	}
-	t.limit = limit
-	t.offset = offset
+	t.cur.SetPage(limit, offset)
 }
 
-// getLimitClause builds the LIMIT/OFFSET clause from the pagination window.
-// Returns an empty string when no limit is set. LIMIT/OFFSET take integer
-// literals (not placeholders), which both SQLite and PostgreSQL accept.
-func (t *Project) getLimitClause() string {
-	if t.limit <= 0 {
-		return ""
+// rec is what the read functions of foundation/tables need of the record
+func (t *Project) rec() *tables.Rec {
+	_, inTx := t.db.(*sql.Tx)
+	return &tables.Rec{
+		Fields:    projectFields,
+		Ref:       t.fieldRef,
+		QT:        t.qt(),
+		Q:         &t.q,
+		Cur:       &t.cur,
+		Exec:      t.exec(),
+		Buffered:  t.temp != nil || inTx,
+		Postgres:  t.dbType == database.DBTypePostgres,
+		Table:     fmt.Sprintf("%s$%s", t.company, ProjectTableName),
+		ForUpdate: t.forUpdate(),
+		Store:     t.StoreOldValues,
 	}
-	if t.offset > 0 {
-		return fmt.Sprintf(" LIMIT %d OFFSET %d", t.limit, t.offset)
-	}
-	return fmt.Sprintf(" LIMIT %d", t.limit)
 }
 
 // FindFirst finds the first record matching current filters
 // Returns true if found, false if not found
 func (t *Project) FindFirst() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, ProjectTableName)
-	where, args := t.buildWhereClause()
-	// The first record in the current key and direction (classic FIND('-'))
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, search_description, description, description_2, bill_to_customer_no, creation_date, starting_date, ending_date, completion_date, project_posting_date, recognition_date, completion_percent, status, person_responsible, dimension_1_code, dimension_2_code, project_posting_group, blocked, recognition_method, last_date_modified, application_method, project_usage_posting, picture, no_series FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var noNull sql.NullString
-	var search_descriptionNull sql.NullString
-	var descriptionNull sql.NullString
-	var description_2Null sql.NullString
-	var bill_to_customer_noNull sql.NullString
-	var creation_dateNull sql.NullString
-	var starting_dateNull sql.NullString
-	var ending_dateNull sql.NullString
-	var completion_dateNull sql.NullString
-	var project_posting_dateNull sql.NullString
-	var recognition_dateNull sql.NullString
-	var completion_percentNull sql.NullString
-	var statusInt int
-	var person_responsibleNull sql.NullString
-	var dimension_1_codeNull sql.NullString
-	var dimension_2_codeNull sql.NullString
-	var project_posting_groupNull sql.NullString
-	var blockedBool sql.NullBool
-	var recognition_methodInt int
-	var last_date_modifiedNull sql.NullString
-	var application_methodInt int
-	var project_usage_postingInt int
-	var no_seriesNull sql.NullString
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&noNull,
-		&search_descriptionNull,
-		&descriptionNull,
-		&description_2Null,
-		&bill_to_customer_noNull,
-		&creation_dateNull,
-		&starting_dateNull,
-		&ending_dateNull,
-		&completion_dateNull,
-		&project_posting_dateNull,
-		&recognition_dateNull,
-		&completion_percentNull,
-		&statusInt,
-		&person_responsibleNull,
-		&dimension_1_codeNull,
-		&dimension_2_codeNull,
-		&project_posting_groupNull,
-		&blockedBool,
-		&recognition_methodInt,
-		&last_date_modifiedNull,
-		&application_methodInt,
-		&project_usage_postingInt,
-		&t.Picture,
-		&no_seriesNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find first Project: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.No = types.NewCode(noNull.String)
-	t.Search_description = types.NewCode(search_descriptionNull.String)
-	t.Description = types.NewText(descriptionNull.String)
-	t.Description_2 = types.NewText(description_2Null.String)
-	t.Bill_to_customer_no = types.NewCode(bill_to_customer_noNull.String)
-	t.Creation_date, _ = types.NewDateFromString(creation_dateNull.String)
-	t.Starting_date, _ = types.NewDateFromString(starting_dateNull.String)
-	t.Ending_date, _ = types.NewDateFromString(ending_dateNull.String)
-	t.Completion_date, _ = types.NewDateFromString(completion_dateNull.String)
-	t.Project_posting_date, _ = types.NewDateFromString(project_posting_dateNull.String)
-	t.Recognition_date, _ = types.NewDateFromString(recognition_dateNull.String)
-	t.Completion_percent, _ = types.NewDecimalFromString(completion_percentNull.String)
-	t.Status = ProjectStatus(statusInt)
-	t.Person_responsible = types.NewCode(person_responsibleNull.String)
-	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
-	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
-	t.Project_posting_group = types.NewCode(project_posting_groupNull.String)
-	t.Blocked = blockedBool.Bool
-	t.Recognition_method = ProjectRecognition_method(recognition_methodInt)
-	t.Last_date_modified, _ = types.NewDateFromString(last_date_modifiedNull.String)
-	t.Application_method = ProjectApplication_method(application_methodInt)
-	t.Project_usage_posting = ProjectProject_usage_posting(project_usage_postingInt)
-	t.No_series = types.NewCode(no_seriesNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindFirst()
 }
 
 // FindLast finds the last record matching current filters
 // Returns true if found, false if not found
 func (t *Project) FindLast() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, ProjectTableName)
-	where, args := t.buildWhereClause()
-	// The last record in the current key and direction (classic FIND('+')): the key reversed,
-	// every column of it
-	t.q.Descending = !t.q.Descending
-	orderBy, orderArgs := t.getOrderByClause()
-	t.q.Descending = !t.q.Descending
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, search_description, description, description_2, bill_to_customer_no, creation_date, starting_date, ending_date, completion_date, project_posting_date, recognition_date, completion_percent, status, person_responsible, dimension_1_code, dimension_2_code, project_posting_group, blocked, recognition_method, last_date_modified, application_method, project_usage_posting, picture, no_series FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var noNull sql.NullString
-	var search_descriptionNull sql.NullString
-	var descriptionNull sql.NullString
-	var description_2Null sql.NullString
-	var bill_to_customer_noNull sql.NullString
-	var creation_dateNull sql.NullString
-	var starting_dateNull sql.NullString
-	var ending_dateNull sql.NullString
-	var completion_dateNull sql.NullString
-	var project_posting_dateNull sql.NullString
-	var recognition_dateNull sql.NullString
-	var completion_percentNull sql.NullString
-	var statusInt int
-	var person_responsibleNull sql.NullString
-	var dimension_1_codeNull sql.NullString
-	var dimension_2_codeNull sql.NullString
-	var project_posting_groupNull sql.NullString
-	var blockedBool sql.NullBool
-	var recognition_methodInt int
-	var last_date_modifiedNull sql.NullString
-	var application_methodInt int
-	var project_usage_postingInt int
-	var no_seriesNull sql.NullString
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&noNull,
-		&search_descriptionNull,
-		&descriptionNull,
-		&description_2Null,
-		&bill_to_customer_noNull,
-		&creation_dateNull,
-		&starting_dateNull,
-		&ending_dateNull,
-		&completion_dateNull,
-		&project_posting_dateNull,
-		&recognition_dateNull,
-		&completion_percentNull,
-		&statusInt,
-		&person_responsibleNull,
-		&dimension_1_codeNull,
-		&dimension_2_codeNull,
-		&project_posting_groupNull,
-		&blockedBool,
-		&recognition_methodInt,
-		&last_date_modifiedNull,
-		&application_methodInt,
-		&project_usage_postingInt,
-		&t.Picture,
-		&no_seriesNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find last Project: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.No = types.NewCode(noNull.String)
-	t.Search_description = types.NewCode(search_descriptionNull.String)
-	t.Description = types.NewText(descriptionNull.String)
-	t.Description_2 = types.NewText(description_2Null.String)
-	t.Bill_to_customer_no = types.NewCode(bill_to_customer_noNull.String)
-	t.Creation_date, _ = types.NewDateFromString(creation_dateNull.String)
-	t.Starting_date, _ = types.NewDateFromString(starting_dateNull.String)
-	t.Ending_date, _ = types.NewDateFromString(ending_dateNull.String)
-	t.Completion_date, _ = types.NewDateFromString(completion_dateNull.String)
-	t.Project_posting_date, _ = types.NewDateFromString(project_posting_dateNull.String)
-	t.Recognition_date, _ = types.NewDateFromString(recognition_dateNull.String)
-	t.Completion_percent, _ = types.NewDecimalFromString(completion_percentNull.String)
-	t.Status = ProjectStatus(statusInt)
-	t.Person_responsible = types.NewCode(person_responsibleNull.String)
-	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
-	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
-	t.Project_posting_group = types.NewCode(project_posting_groupNull.String)
-	t.Blocked = blockedBool.Bool
-	t.Recognition_method = ProjectRecognition_method(recognition_methodInt)
-	t.Last_date_modified, _ = types.NewDateFromString(last_date_modifiedNull.String)
-	t.Application_method = ProjectApplication_method(application_methodInt)
-	t.Project_usage_posting = ProjectProject_usage_posting(project_usage_postingInt)
-	t.No_series = types.NewCode(no_seriesNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindLast()
 }
 
 // Count returns the number of records matching current filters
 func (t *Project) Count() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, ProjectTableName)
-	where, args := t.buildWhereClause()
-
-	query := fmt.Sprintf(`SELECT COUNT(*) FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var count int
-	err := t.exec().QueryRow(query, args...).Scan(&count)
-	if err != nil {
-		fmt.Printf("Error: Failed to count Project: %v\n", err)
-		return 0
-	}
-
-	return count
+	return t.rec().Count()
 }
 
 // FindSet opens a result set matching current filters
 // Call Next() to iterate through the results
-// Returns true if at least one record found, false otherwise
+// Returns true if at least one record found, false otherwise. A temporary record, and a
+// record in a transaction, reads all at once (FindSetBuffered).
 func (t *Project) FindSet() bool {
-	// A temporary record, and a record in a transaction, reads all at once: its in-memory
-	// database or the transaction has one connection, which an open result set would block for
-	// the statements of the loop (Modify while looping; on PostgreSQL a query while the rows are
-	// read breaks the connection — "unexpected Parse response")
-	if _, inTx := t.db.(*sql.Tx); t.temp != nil || inTx {
-		return t.FindSetBuffered()
-	}
-	// Close any existing result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	tableName := fmt.Sprintf("%s$%s", t.company, ProjectTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, search_description, description, description_2, bill_to_customer_no, creation_date, starting_date, ending_date, completion_date, project_posting_date, recognition_date, completion_percent, status, person_responsible, dimension_1_code, dimension_2_code, project_posting_group, blocked, recognition_method, last_date_modified, application_method, project_usage_posting, picture, no_series FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSet for Project: %v\n", err)
-		return false
-	}
-
-	t.currentRows = rows
-
-	// Load first record
-	return t.Next()
+	return t.rec().FindSet()
 }
 
 // Next advances to the next record: in the result set after FindSet() or FindSetBuffered(),
@@ -4163,348 +3790,14 @@ func (t *Project) FindSet() bool {
 //
 // Returns true if a record was loaded, false if no more records or out of bounds
 func (t *Project) Next(steps ...int) bool {
-	// Default to 1 step forward
-	step := 1
-	if len(steps) > 0 {
-		step = steps[0]
-	}
-
-	// BUFFERED MODE: Bidirectional navigation with in-memory records
-	if t.bufferedRecords != nil {
-		// Calculate new position
-		newPos := t.currentBufferPos + step
-
-		// Check bounds
-		if newPos < 0 || newPos >= len(t.bufferedRecords) {
-			return false // Out of bounds
-		}
-
-		// Move to new position
-		t.currentBufferPos = newPos
-		t.copyFromBuffered(t.bufferedRecords[t.currentBufferPos])
-		return true
-	}
-
-	// FORWARD-ONLY MODE: Streaming with sql.Rows (only positive steps allowed)
-	if t.currentRows != nil {
-		// Validate: only forward movement allowed
-		if step < 1 {
-			fmt.Printf("Error: Backward navigation (Next(%d)) requires FindSetBuffered()\n", step)
-			return false
-		}
-
-		// Advance 'step' times (1 = next record, 2 = skip 1 record, etc.)
-		for i := 0; i < step; i++ {
-			if !t.currentRows.Next() {
-				// No more rows - close result set
-				t.currentRows.Close()
-				t.currentRows = nil
-				return false
-			}
-		}
-
-		// Scan the row
-		var noNull sql.NullString
-		var search_descriptionNull sql.NullString
-		var descriptionNull sql.NullString
-		var description_2Null sql.NullString
-		var bill_to_customer_noNull sql.NullString
-		var creation_dateNull sql.NullString
-		var starting_dateNull sql.NullString
-		var ending_dateNull sql.NullString
-		var completion_dateNull sql.NullString
-		var project_posting_dateNull sql.NullString
-		var recognition_dateNull sql.NullString
-		var completion_percentNull sql.NullString
-		var statusInt int
-		var person_responsibleNull sql.NullString
-		var dimension_1_codeNull sql.NullString
-		var dimension_2_codeNull sql.NullString
-		var project_posting_groupNull sql.NullString
-		var blockedBool sql.NullBool
-		var recognition_methodInt int
-		var last_date_modifiedNull sql.NullString
-		var application_methodInt int
-		var project_usage_postingInt int
-		var no_seriesNull sql.NullString
-
-		err := t.currentRows.Scan(
-			&noNull,
-			&search_descriptionNull,
-			&descriptionNull,
-			&description_2Null,
-			&bill_to_customer_noNull,
-			&creation_dateNull,
-			&starting_dateNull,
-			&ending_dateNull,
-			&completion_dateNull,
-			&project_posting_dateNull,
-			&recognition_dateNull,
-			&completion_percentNull,
-			&statusInt,
-			&person_responsibleNull,
-			&dimension_1_codeNull,
-			&dimension_2_codeNull,
-			&project_posting_groupNull,
-			&blockedBool,
-			&recognition_methodInt,
-			&last_date_modifiedNull,
-			&application_methodInt,
-			&project_usage_postingInt,
-			&t.Picture,
-			&no_seriesNull,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan Project record: %v\n", err)
-			t.currentRows.Close()
-			t.currentRows = nil
-			return false
-		}
-
-		// Populate fields
-		t.No = types.NewCode(noNull.String)
-		t.Search_description = types.NewCode(search_descriptionNull.String)
-		t.Description = types.NewText(descriptionNull.String)
-		t.Description_2 = types.NewText(description_2Null.String)
-		t.Bill_to_customer_no = types.NewCode(bill_to_customer_noNull.String)
-		t.Creation_date, _ = types.NewDateFromString(creation_dateNull.String)
-		t.Starting_date, _ = types.NewDateFromString(starting_dateNull.String)
-		t.Ending_date, _ = types.NewDateFromString(ending_dateNull.String)
-		t.Completion_date, _ = types.NewDateFromString(completion_dateNull.String)
-		t.Project_posting_date, _ = types.NewDateFromString(project_posting_dateNull.String)
-		t.Recognition_date, _ = types.NewDateFromString(recognition_dateNull.String)
-		t.Completion_percent, _ = types.NewDecimalFromString(completion_percentNull.String)
-		t.Status = ProjectStatus(statusInt)
-		t.Person_responsible = types.NewCode(person_responsibleNull.String)
-		t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
-		t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
-		t.Project_posting_group = types.NewCode(project_posting_groupNull.String)
-		t.Blocked = blockedBool.Bool
-		t.Recognition_method = ProjectRecognition_method(recognition_methodInt)
-		t.Last_date_modified, _ = types.NewDateFromString(last_date_modifiedNull.String)
-		t.Application_method = ProjectApplication_method(application_methodInt)
-		t.Project_usage_posting = ProjectProject_usage_posting(project_usage_postingInt)
-		t.No_series = types.NewCode(no_seriesNull.String)
-
-		// Store old values for field tracking
-		t.StoreOldValues()
-
-		return true
-	}
-
-	// No record set (after Get, Find, FindFirst, FindLast): the next record in the current key
-	// and direction within the filters, one step at a time (classic NEXT after FIND); a step
-	// that finds none leaves the record on the last one reached
-	if step == 0 {
-		return false
-	}
-	for i := 0; i != step; {
-		if step > 0 {
-			if !t.findInKey(">", false) {
-				return false
-			}
-			i++
-		} else {
-			if !t.findInKey("<", true) {
-				return false
-			}
-			i--
-		}
-	}
-	return true
+	return t.rec().Next(steps, t.findInKey)
 }
 
 // FindSetBuffered loads all filtered records into memory for bidirectional navigation
 // Use this when you need to move backward/forward with Next(steps)
-// Filters (SetRange/SetFilter) are applied in SQL before buffering to minimize memory usage
 // Returns true if at least one record found, false otherwise
 func (t *Project) FindSetBuffered() bool {
-	// Close any existing forward-only result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-
-	// Clear any existing buffer
-	t.bufferedRecords = nil
-	t.currentBufferPos = -1
-	tableName := fmt.Sprintf("%s$%s", t.company, ProjectTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT no, search_description, description, description_2, bill_to_customer_no, creation_date, starting_date, ending_date, completion_date, project_posting_date, recognition_date, completion_percent, status, person_responsible, dimension_1_code, dimension_2_code, project_posting_group, blocked, recognition_method, last_date_modified, application_method, project_usage_posting, picture, no_series FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSetBuffered for Project: %v\n", err)
-		return false
-	}
-	defer rows.Close()
-
-	// Load all records into memory
-	for rows.Next() {
-		// Create a new record instance
-		record := &Project{}
-		record.db = t.db
-		record.temp = t.temp
-		record.company = t.company
-		record.dbType = t.dbType
-
-		// Scan the row
-		var noNull sql.NullString
-		var search_descriptionNull sql.NullString
-		var descriptionNull sql.NullString
-		var description_2Null sql.NullString
-		var bill_to_customer_noNull sql.NullString
-		var creation_dateNull sql.NullString
-		var starting_dateNull sql.NullString
-		var ending_dateNull sql.NullString
-		var completion_dateNull sql.NullString
-		var project_posting_dateNull sql.NullString
-		var recognition_dateNull sql.NullString
-		var completion_percentNull sql.NullString
-		var statusInt int
-		var person_responsibleNull sql.NullString
-		var dimension_1_codeNull sql.NullString
-		var dimension_2_codeNull sql.NullString
-		var project_posting_groupNull sql.NullString
-		var blockedBool sql.NullBool
-		var recognition_methodInt int
-		var last_date_modifiedNull sql.NullString
-		var application_methodInt int
-		var project_usage_postingInt int
-		var no_seriesNull sql.NullString
-
-		err := rows.Scan(
-			&noNull,
-			&search_descriptionNull,
-			&descriptionNull,
-			&description_2Null,
-			&bill_to_customer_noNull,
-			&creation_dateNull,
-			&starting_dateNull,
-			&ending_dateNull,
-			&completion_dateNull,
-			&project_posting_dateNull,
-			&recognition_dateNull,
-			&completion_percentNull,
-			&statusInt,
-			&person_responsibleNull,
-			&dimension_1_codeNull,
-			&dimension_2_codeNull,
-			&project_posting_groupNull,
-			&blockedBool,
-			&recognition_methodInt,
-			&last_date_modifiedNull,
-			&application_methodInt,
-			&project_usage_postingInt,
-			&record.Picture,
-			&no_seriesNull,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan Project record: %v\n", err)
-			return false
-		}
-
-		// Populate special type fields
-		record.No = types.NewCode(noNull.String)
-		record.Search_description = types.NewCode(search_descriptionNull.String)
-		record.Description = types.NewText(descriptionNull.String)
-		record.Description_2 = types.NewText(description_2Null.String)
-		record.Bill_to_customer_no = types.NewCode(bill_to_customer_noNull.String)
-		record.Creation_date, _ = types.NewDateFromString(creation_dateNull.String)
-		record.Starting_date, _ = types.NewDateFromString(starting_dateNull.String)
-		record.Ending_date, _ = types.NewDateFromString(ending_dateNull.String)
-		record.Completion_date, _ = types.NewDateFromString(completion_dateNull.String)
-		record.Project_posting_date, _ = types.NewDateFromString(project_posting_dateNull.String)
-		record.Recognition_date, _ = types.NewDateFromString(recognition_dateNull.String)
-		record.Completion_percent, _ = types.NewDecimalFromString(completion_percentNull.String)
-		record.Status = ProjectStatus(statusInt)
-		record.Person_responsible = types.NewCode(person_responsibleNull.String)
-		record.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
-		record.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
-		record.Project_posting_group = types.NewCode(project_posting_groupNull.String)
-		record.Blocked = blockedBool.Bool
-		record.Recognition_method = ProjectRecognition_method(recognition_methodInt)
-		record.Last_date_modified, _ = types.NewDateFromString(last_date_modifiedNull.String)
-		record.Application_method = ProjectApplication_method(application_methodInt)
-		record.Project_usage_posting = ProjectProject_usage_posting(project_usage_postingInt)
-		record.No_series = types.NewCode(no_seriesNull.String)
-
-		// Store old values
-		record.StoreOldValues()
-
-		// Add to buffer
-		t.bufferedRecords = append(t.bufferedRecords, record)
-	}
-
-	// Check for errors during iteration
-	if err := rows.Err(); err != nil {
-		fmt.Printf("Error: Failed to iterate Project records: %v\n", err)
-		return false
-	}
-
-	// If no records found, return false
-	if len(t.bufferedRecords) == 0 {
-		return false
-	}
-
-	// Load first record into current instance
-	t.currentBufferPos = 0
-	t.copyFromBuffered(t.bufferedRecords[0])
-
-	return true
-}
-
-// copyFromBuffered copies field values from a buffered record to the current instance
-func (t *Project) copyFromBuffered(record *Project) {
-	t.No = record.No
-	t.Search_description = record.Search_description
-	t.Description = record.Description
-	t.Description_2 = record.Description_2
-	t.Bill_to_customer_no = record.Bill_to_customer_no
-	t.Creation_date = record.Creation_date
-	t.Starting_date = record.Starting_date
-	t.Ending_date = record.Ending_date
-	t.Completion_date = record.Completion_date
-	t.Project_posting_date = record.Project_posting_date
-	t.Recognition_date = record.Recognition_date
-	t.Completion_percent = record.Completion_percent
-	t.Status = record.Status
-	t.Person_responsible = record.Person_responsible
-	t.Dimension_1_code = record.Dimension_1_code
-	t.Dimension_2_code = record.Dimension_2_code
-	t.Project_posting_group = record.Project_posting_group
-	t.Blocked = record.Blocked
-	t.Recognition_method = record.Recognition_method
-	t.Last_date_modified = record.Last_date_modified
-	t.Comment = record.Comment
-	t.Application_method = record.Application_method
-	t.Project_usage_posting = record.Project_usage_posting
-	t.Budgeted_cost = record.Budgeted_cost
-	t.Budgeted_price = record.Budgeted_price
-	t.Usage_cost = record.Usage_cost
-	t.Usage_price = record.Usage_price
-	t.Invoiced_price = record.Invoiced_price
-	t.Budgeted_res_qty = record.Budgeted_res_qty
-	t.Budgeted_res_gr_qty = record.Budgeted_res_gr_qty
-	t.Picture = record.Picture
-	t.Name = record.Name
-	t.Address = record.Address
-	t.Address_2 = record.Address_2
-	t.City = record.City
-	t.Contact = record.Contact
-	t.State = record.State
-	t.Post_code = record.Post_code
-	t.No_series = record.No_series
-	t.StoreOldValues()
+	return t.rec().FindSetBuffered()
 }
 
 // ========================================
@@ -4935,49 +4228,9 @@ func (t *Project) Find(which ...string) bool {
 }
 
 // findInKey reads the first record in the current key and direction — reversed for the
-// last — and with seek ">"/"<" only after/before the current record (a row-value
-// comparison on the key and primary key columns). A key with a FlowField cannot seek.
+// last — and with seek ">"/"<" only after/before the current record
 func (t *Project) findInKey(seek string, reverse bool) bool {
-	if seek != "" {
-		var columns, params []string
-		var values []interface{}
-		for _, column := range t.keyColumns() {
-			v, ok := t.columnValue(column)
-			if !ok {
-				fmt.Printf("Error: Find(%q) on Project needs a key of stored fields\n", seek)
-				return false
-			}
-			if t.isKeyDateColumn(column) {
-				v = types.KeyDate(v)
-			}
-			columns = append(columns, t.cmpColumn(column))
-			params = append(params, t.cmpParam(column))
-			values = append(values, v)
-		}
-		after := (seek == ">") != t.q.Descending
-		op := "<"
-		if after {
-			op = ">"
-		}
-		t.q.Seek = "(" + strings.Join(columns, ", ") + ") " + op + " (" + strings.Join(params, ", ") + ")"
-		t.q.SeekArgs = values
-	}
-	savedLimit, savedOffset, savedDescending := t.limit, t.offset, t.q.Descending
-	t.limit, t.offset = 1, 0
-	if reverse {
-		t.q.Descending = !t.q.Descending
-	}
-	found := t.FindSet()
-	// One record read: a later Next seeks from it in the key (inside a transaction FindSet
-	// buffers its rows — a one-row buffer would end the Next at once)
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	t.limit, t.offset, t.q.Descending = savedLimit, savedOffset, savedDescending
-	t.q.Seek, t.q.SeekArgs = "", nil
-	return found
+	return t.rec().FindInKey(seek, reverse)
 }
 
 // keyColumns returns the columns of the current key followed by the primary key's (the

@@ -227,19 +227,11 @@ type GLEntry struct {
 	// Temporary: the record's own table is in a private in-memory database (InitTemporary)
 	temp *tables.TemporaryStore
 
-	// Iteration state for FindSet/Next
-	currentRows *sql.Rows
+	// The result set of FindSet/FindSetBuffered/Next and the paging window (SetPage)
+	cur tables.Cursor
 
 	// LockTable: the following reads lock the rows they read (SELECT … FOR UPDATE, Postgres)
 	lockForUpdate bool
-
-	// Pagination window for FindSet/FindSetBuffered (0 limit = all rows)
-	limit  int
-	offset int
-
-	// Buffered recordset for bidirectional navigation
-	bufferedRecords  []*GLEntry
-	currentBufferPos int
 
 	// Business logic of this record only (SetLogic, tests); nil = the registered logic
 	// (RegisterGLEntryLogic)
@@ -1103,35 +1095,14 @@ func (t *GLEntry) convertPlaceholders(sql string, count int) string {
 // For single primary key: pass the value directly (string, int, etc.)
 // For composite keys: pass a map[string]interface{} with field names as keys
 func (t *GLEntry) Get(primaryKey interface{}) bool {
-	// Handle composite primary key (map[string]interface{})
+	// A composite primary key (map[string]interface{}, values also as text)
 	if pkMap, ok := primaryKey.(map[string]interface{}); ok {
-		var entry_noVal int
-		if v, exists := pkMap["entry_no"]; exists {
-			switch val := v.(type) {
-			case int:
-				entry_noVal = val
-			case float64:
-				entry_noVal = int(val)
-			case string:
-				// the key part as text: the API's "CUSTOMER1,10000"
-				if n, err := strconv.Atoi(strings.TrimSpace(val)); err == nil {
-					entry_noVal = n
-				}
-			}
-		}
-		return t.GetByPK(entry_noVal)
+		key := gLEntryFields.KeyFromMap(pkMap)
+		return t.GetByPK(key[0].(int))
 	}
-	// Handle single primary key (for tables with only one PK field)
-	switch pk := primaryKey.(type) {
-	case int:
-		return t.GetByPK(pk)
-	case float64:
-		return t.GetByPK(int(pk))
-	case string:
-		var intVal int
-		if _, err := fmt.Sscanf(pk, "%d", &intVal); err == nil {
-			return t.GetByPK(intVal)
-		}
+	// The primary key itself (a table with one primary key field)
+	if key, ok := gLEntryFields.KeyFromValue(primaryKey); ok {
+		return t.GetByPK([]any{key}[0].(int))
 	}
 
 	fmt.Printf("Error: Invalid primary key type for G_L_Entry.Get: %T (use map for composite keys)\n", primaryKey)
@@ -1140,168 +1111,11 @@ func (t *GLEntry) Get(primaryKey interface{}) bool {
 
 // GetByPK retrieves a record by its typed primary key(s) - for direct typed access
 func (t *GLEntry) GetByPK(entry_no int) bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, GLEntryTableName)
-	var entry_noVal int
-	var gl_account_noNull sql.NullString
-	var posting_dateNull sql.NullString
-	var document_typeInt int
-	var document_noNull sql.NullString
-	var descriptionNull sql.NullString
-	var bal_account_noNull sql.NullString
-	var amountNull sql.NullString
-	var dimension_1_codeNull sql.NullString
-	var dimension_2_codeNull sql.NullString
-	var user_idNull sql.NullString
-	var source_codeNull sql.NullString
-	var system_created_entryBool sql.NullBool
-	var prior_year_entryBool sql.NullBool
-	var project_noNull sql.NullString
-	var quantityNull sql.NullString
-	var tax_amountNull sql.NullString
-	var business_unit_codeNull sql.NullString
-	var journal_batch_nameNull sql.NullString
-	var reason_codeNull sql.NullString
-	var gen_posting_typeInt int
-	var gen_bus_posting_groupNull sql.NullString
-	var gen_prod_posting_groupNull sql.NullString
-	var bal_account_typeInt int
-	var transaction_noVal int
-	var debit_amountNull sql.NullString
-	var credit_amountNull sql.NullString
-	var document_dateNull sql.NullString
-	var external_document_noNull sql.NullString
-	var source_typeInt int
-	var source_noNull sql.NullString
-	var no_seriesNull sql.NullString
-	var tax_area_codeNull sql.NullString
-	var tax_liableBool sql.NullBool
-	var tax_group_codeNull sql.NullString
-	var use_taxBool sql.NullBool
-	var tax_bus_posting_groupNull sql.NullString
-	var tax_prod_posting_groupNull sql.NullString
-	var additional_currency_amountNull sql.NullString
-	var add_currency_debit_amountNull sql.NullString
-	var add_currency_credit_amountNull sql.NullString
-	var fa_entry_typeInt int
-	var fa_entry_noVal int
-
 	// Collect arguments for query
 	args := []interface{}{
 		entry_no,
 	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT entry_no, gl_account_no, posting_date, document_type, document_no, description, bal_account_no, amount, dimension_1_code, dimension_2_code, user_id, source_code, system_created_entry, prior_year_entry, project_no, quantity, tax_amount, business_unit_code, journal_batch_name, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, bal_account_type, transaction_no, debit_amount, credit_amount, document_date, external_document_no, source_type, source_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount, add_currency_debit_amount, add_currency_credit_amount, fa_entry_type, fa_entry_no FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-	sqlStr += t.forUpdate()
-
-	err := t.exec().QueryRow(sqlStr, args...).Scan(
-		&entry_noVal,
-		&gl_account_noNull,
-		&posting_dateNull,
-		&document_typeInt,
-		&document_noNull,
-		&descriptionNull,
-		&bal_account_noNull,
-		&amountNull,
-		&dimension_1_codeNull,
-		&dimension_2_codeNull,
-		&user_idNull,
-		&source_codeNull,
-		&system_created_entryBool,
-		&prior_year_entryBool,
-		&project_noNull,
-		&quantityNull,
-		&tax_amountNull,
-		&business_unit_codeNull,
-		&journal_batch_nameNull,
-		&reason_codeNull,
-		&gen_posting_typeInt,
-		&gen_bus_posting_groupNull,
-		&gen_prod_posting_groupNull,
-		&bal_account_typeInt,
-		&transaction_noVal,
-		&debit_amountNull,
-		&credit_amountNull,
-		&document_dateNull,
-		&external_document_noNull,
-		&source_typeInt,
-		&source_noNull,
-		&no_seriesNull,
-		&tax_area_codeNull,
-		&tax_liableBool,
-		&tax_group_codeNull,
-		&use_taxBool,
-		&tax_bus_posting_groupNull,
-		&tax_prod_posting_groupNull,
-		&additional_currency_amountNull,
-		&add_currency_debit_amountNull,
-		&add_currency_credit_amountNull,
-		&fa_entry_typeInt,
-		&fa_entry_noVal,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			// Record not found - this is not an error, just return false
-			return false
-		}
-		// Actual database error
-		fmt.Printf("Error: Failed to get G_L_Entry: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Entry_no = entry_noVal
-	t.Gl_account_no = types.NewCode(gl_account_noNull.String)
-	t.Posting_date, _ = types.NewDateFromString(posting_dateNull.String)
-	t.Document_type = GLEntryDocument_type(document_typeInt)
-	t.Document_no = types.NewCode(document_noNull.String)
-	t.Description = types.NewText(descriptionNull.String)
-	t.Bal_account_no = types.NewCode(bal_account_noNull.String)
-	t.Amount, _ = types.NewDecimalFromString(amountNull.String)
-	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
-	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
-	t.User_id = types.NewCode(user_idNull.String)
-	t.Source_code = types.NewCode(source_codeNull.String)
-	t.System_created_entry = system_created_entryBool.Bool
-	t.Prior_year_entry = prior_year_entryBool.Bool
-	t.Project_no = types.NewCode(project_noNull.String)
-	t.Quantity, _ = types.NewDecimalFromString(quantityNull.String)
-	t.Tax_amount, _ = types.NewDecimalFromString(tax_amountNull.String)
-	t.Business_unit_code = types.NewCode(business_unit_codeNull.String)
-	t.Journal_batch_name = types.NewCode(journal_batch_nameNull.String)
-	t.Reason_code = types.NewCode(reason_codeNull.String)
-	t.Gen_posting_type = GLEntryGen_posting_type(gen_posting_typeInt)
-	t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
-	t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
-	t.Bal_account_type = GLEntryBal_account_type(bal_account_typeInt)
-	t.Transaction_no = transaction_noVal
-	t.Debit_amount, _ = types.NewDecimalFromString(debit_amountNull.String)
-	t.Credit_amount, _ = types.NewDecimalFromString(credit_amountNull.String)
-	t.Document_date, _ = types.NewDateFromString(document_dateNull.String)
-	t.External_document_no = types.NewCode(external_document_noNull.String)
-	t.Source_type = GLEntrySource_type(source_typeInt)
-	t.Source_no = types.NewCode(source_noNull.String)
-	t.No_series = types.NewCode(no_seriesNull.String)
-	t.Tax_area_code = types.NewCode(tax_area_codeNull.String)
-	t.Tax_liable = tax_liableBool.Bool
-	t.Tax_group_code = types.NewCode(tax_group_codeNull.String)
-	t.Use_tax = use_taxBool.Bool
-	t.Tax_bus_posting_group = types.NewCode(tax_bus_posting_groupNull.String)
-	t.Tax_prod_posting_group = types.NewCode(tax_prod_posting_groupNull.String)
-	t.Additional_currency_amount, _ = types.NewDecimalFromString(additional_currency_amountNull.String)
-	t.Add_currency_debit_amount, _ = types.NewDecimalFromString(add_currency_debit_amountNull.String)
-	t.Add_currency_credit_amount, _ = types.NewDecimalFromString(add_currency_credit_amountNull.String)
-	t.Fa_entry_type = GLEntryFa_entry_type(fa_entry_typeInt)
-	t.Fa_entry_no = fa_entry_noVal
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().Get(args)
 }
 
 // Insert inserts the record into the database
@@ -1903,10 +1717,7 @@ func (t *GLEntry) columnName(fieldName string) (string, bool) {
 func (t *GLEntry) Reset() {
 	t.q.Reset()
 	t.oldValues = nil
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
+	t.cur.CloseRows()
 }
 
 // buildWhereClause builds WHERE clause from current filters and search
@@ -1948,407 +1759,50 @@ func (t *GLEntry) getOrderByClause() (string, []interface{}) {
 // limit rows, skipping the first offset rows. A limit of 0 disables pagination
 // (all matching rows are returned). Negative values are treated as 0.
 func (t *GLEntry) SetPage(limit, offset int) {
-	if limit < 0 {
-		limit = 0
-	}
-	if offset < 0 {
-		offset = 0
-	}
-	t.limit = limit
-	t.offset = offset
+	t.cur.SetPage(limit, offset)
 }
 
-// getLimitClause builds the LIMIT/OFFSET clause from the pagination window.
-// Returns an empty string when no limit is set. LIMIT/OFFSET take integer
-// literals (not placeholders), which both SQLite and PostgreSQL accept.
-func (t *GLEntry) getLimitClause() string {
-	if t.limit <= 0 {
-		return ""
+// rec is what the read functions of foundation/tables need of the record
+func (t *GLEntry) rec() *tables.Rec {
+	_, inTx := t.db.(*sql.Tx)
+	return &tables.Rec{
+		Fields:    gLEntryFields,
+		Ref:       t.fieldRef,
+		QT:        t.qt(),
+		Q:         &t.q,
+		Cur:       &t.cur,
+		Exec:      t.exec(),
+		Buffered:  t.temp != nil || inTx,
+		Postgres:  t.dbType == database.DBTypePostgres,
+		Table:     fmt.Sprintf("%s$%s", t.company, GLEntryTableName),
+		ForUpdate: t.forUpdate(),
+		Store:     t.StoreOldValues,
 	}
-	if t.offset > 0 {
-		return fmt.Sprintf(" LIMIT %d OFFSET %d", t.limit, t.offset)
-	}
-	return fmt.Sprintf(" LIMIT %d", t.limit)
 }
 
 // FindFirst finds the first record matching current filters
 // Returns true if found, false if not found
 func (t *GLEntry) FindFirst() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, GLEntryTableName)
-	where, args := t.buildWhereClause()
-	// The first record in the current key and direction (classic FIND('-'))
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, gl_account_no, posting_date, document_type, document_no, description, bal_account_no, amount, dimension_1_code, dimension_2_code, user_id, source_code, system_created_entry, prior_year_entry, project_no, quantity, tax_amount, business_unit_code, journal_batch_name, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, bal_account_type, transaction_no, debit_amount, credit_amount, document_date, external_document_no, source_type, source_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount, add_currency_debit_amount, add_currency_credit_amount, fa_entry_type, fa_entry_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var gl_account_noNull sql.NullString
-	var posting_dateNull sql.NullString
-	var document_typeInt int
-	var document_noNull sql.NullString
-	var descriptionNull sql.NullString
-	var bal_account_noNull sql.NullString
-	var amountNull sql.NullString
-	var dimension_1_codeNull sql.NullString
-	var dimension_2_codeNull sql.NullString
-	var user_idNull sql.NullString
-	var source_codeNull sql.NullString
-	var system_created_entryBool sql.NullBool
-	var prior_year_entryBool sql.NullBool
-	var project_noNull sql.NullString
-	var quantityNull sql.NullString
-	var tax_amountNull sql.NullString
-	var business_unit_codeNull sql.NullString
-	var journal_batch_nameNull sql.NullString
-	var reason_codeNull sql.NullString
-	var gen_posting_typeInt int
-	var gen_bus_posting_groupNull sql.NullString
-	var gen_prod_posting_groupNull sql.NullString
-	var bal_account_typeInt int
-	var debit_amountNull sql.NullString
-	var credit_amountNull sql.NullString
-	var document_dateNull sql.NullString
-	var external_document_noNull sql.NullString
-	var source_typeInt int
-	var source_noNull sql.NullString
-	var no_seriesNull sql.NullString
-	var tax_area_codeNull sql.NullString
-	var tax_liableBool sql.NullBool
-	var tax_group_codeNull sql.NullString
-	var use_taxBool sql.NullBool
-	var tax_bus_posting_groupNull sql.NullString
-	var tax_prod_posting_groupNull sql.NullString
-	var additional_currency_amountNull sql.NullString
-	var add_currency_debit_amountNull sql.NullString
-	var add_currency_credit_amountNull sql.NullString
-	var fa_entry_typeInt int
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&t.Entry_no,
-		&gl_account_noNull,
-		&posting_dateNull,
-		&document_typeInt,
-		&document_noNull,
-		&descriptionNull,
-		&bal_account_noNull,
-		&amountNull,
-		&dimension_1_codeNull,
-		&dimension_2_codeNull,
-		&user_idNull,
-		&source_codeNull,
-		&system_created_entryBool,
-		&prior_year_entryBool,
-		&project_noNull,
-		&quantityNull,
-		&tax_amountNull,
-		&business_unit_codeNull,
-		&journal_batch_nameNull,
-		&reason_codeNull,
-		&gen_posting_typeInt,
-		&gen_bus_posting_groupNull,
-		&gen_prod_posting_groupNull,
-		&bal_account_typeInt,
-		&t.Transaction_no,
-		&debit_amountNull,
-		&credit_amountNull,
-		&document_dateNull,
-		&external_document_noNull,
-		&source_typeInt,
-		&source_noNull,
-		&no_seriesNull,
-		&tax_area_codeNull,
-		&tax_liableBool,
-		&tax_group_codeNull,
-		&use_taxBool,
-		&tax_bus_posting_groupNull,
-		&tax_prod_posting_groupNull,
-		&additional_currency_amountNull,
-		&add_currency_debit_amountNull,
-		&add_currency_credit_amountNull,
-		&fa_entry_typeInt,
-		&t.Fa_entry_no,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find first G_L_Entry: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Gl_account_no = types.NewCode(gl_account_noNull.String)
-	t.Posting_date, _ = types.NewDateFromString(posting_dateNull.String)
-	t.Document_type = GLEntryDocument_type(document_typeInt)
-	t.Document_no = types.NewCode(document_noNull.String)
-	t.Description = types.NewText(descriptionNull.String)
-	t.Bal_account_no = types.NewCode(bal_account_noNull.String)
-	t.Amount, _ = types.NewDecimalFromString(amountNull.String)
-	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
-	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
-	t.User_id = types.NewCode(user_idNull.String)
-	t.Source_code = types.NewCode(source_codeNull.String)
-	t.System_created_entry = system_created_entryBool.Bool
-	t.Prior_year_entry = prior_year_entryBool.Bool
-	t.Project_no = types.NewCode(project_noNull.String)
-	t.Quantity, _ = types.NewDecimalFromString(quantityNull.String)
-	t.Tax_amount, _ = types.NewDecimalFromString(tax_amountNull.String)
-	t.Business_unit_code = types.NewCode(business_unit_codeNull.String)
-	t.Journal_batch_name = types.NewCode(journal_batch_nameNull.String)
-	t.Reason_code = types.NewCode(reason_codeNull.String)
-	t.Gen_posting_type = GLEntryGen_posting_type(gen_posting_typeInt)
-	t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
-	t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
-	t.Bal_account_type = GLEntryBal_account_type(bal_account_typeInt)
-	t.Debit_amount, _ = types.NewDecimalFromString(debit_amountNull.String)
-	t.Credit_amount, _ = types.NewDecimalFromString(credit_amountNull.String)
-	t.Document_date, _ = types.NewDateFromString(document_dateNull.String)
-	t.External_document_no = types.NewCode(external_document_noNull.String)
-	t.Source_type = GLEntrySource_type(source_typeInt)
-	t.Source_no = types.NewCode(source_noNull.String)
-	t.No_series = types.NewCode(no_seriesNull.String)
-	t.Tax_area_code = types.NewCode(tax_area_codeNull.String)
-	t.Tax_liable = tax_liableBool.Bool
-	t.Tax_group_code = types.NewCode(tax_group_codeNull.String)
-	t.Use_tax = use_taxBool.Bool
-	t.Tax_bus_posting_group = types.NewCode(tax_bus_posting_groupNull.String)
-	t.Tax_prod_posting_group = types.NewCode(tax_prod_posting_groupNull.String)
-	t.Additional_currency_amount, _ = types.NewDecimalFromString(additional_currency_amountNull.String)
-	t.Add_currency_debit_amount, _ = types.NewDecimalFromString(add_currency_debit_amountNull.String)
-	t.Add_currency_credit_amount, _ = types.NewDecimalFromString(add_currency_credit_amountNull.String)
-	t.Fa_entry_type = GLEntryFa_entry_type(fa_entry_typeInt)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindFirst()
 }
 
 // FindLast finds the last record matching current filters
 // Returns true if found, false if not found
 func (t *GLEntry) FindLast() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, GLEntryTableName)
-	where, args := t.buildWhereClause()
-	// The last record in the current key and direction (classic FIND('+')): the key reversed,
-	// every column of it
-	t.q.Descending = !t.q.Descending
-	orderBy, orderArgs := t.getOrderByClause()
-	t.q.Descending = !t.q.Descending
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, gl_account_no, posting_date, document_type, document_no, description, bal_account_no, amount, dimension_1_code, dimension_2_code, user_id, source_code, system_created_entry, prior_year_entry, project_no, quantity, tax_amount, business_unit_code, journal_batch_name, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, bal_account_type, transaction_no, debit_amount, credit_amount, document_date, external_document_no, source_type, source_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount, add_currency_debit_amount, add_currency_credit_amount, fa_entry_type, fa_entry_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var gl_account_noNull sql.NullString
-	var posting_dateNull sql.NullString
-	var document_typeInt int
-	var document_noNull sql.NullString
-	var descriptionNull sql.NullString
-	var bal_account_noNull sql.NullString
-	var amountNull sql.NullString
-	var dimension_1_codeNull sql.NullString
-	var dimension_2_codeNull sql.NullString
-	var user_idNull sql.NullString
-	var source_codeNull sql.NullString
-	var system_created_entryBool sql.NullBool
-	var prior_year_entryBool sql.NullBool
-	var project_noNull sql.NullString
-	var quantityNull sql.NullString
-	var tax_amountNull sql.NullString
-	var business_unit_codeNull sql.NullString
-	var journal_batch_nameNull sql.NullString
-	var reason_codeNull sql.NullString
-	var gen_posting_typeInt int
-	var gen_bus_posting_groupNull sql.NullString
-	var gen_prod_posting_groupNull sql.NullString
-	var bal_account_typeInt int
-	var debit_amountNull sql.NullString
-	var credit_amountNull sql.NullString
-	var document_dateNull sql.NullString
-	var external_document_noNull sql.NullString
-	var source_typeInt int
-	var source_noNull sql.NullString
-	var no_seriesNull sql.NullString
-	var tax_area_codeNull sql.NullString
-	var tax_liableBool sql.NullBool
-	var tax_group_codeNull sql.NullString
-	var use_taxBool sql.NullBool
-	var tax_bus_posting_groupNull sql.NullString
-	var tax_prod_posting_groupNull sql.NullString
-	var additional_currency_amountNull sql.NullString
-	var add_currency_debit_amountNull sql.NullString
-	var add_currency_credit_amountNull sql.NullString
-	var fa_entry_typeInt int
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&t.Entry_no,
-		&gl_account_noNull,
-		&posting_dateNull,
-		&document_typeInt,
-		&document_noNull,
-		&descriptionNull,
-		&bal_account_noNull,
-		&amountNull,
-		&dimension_1_codeNull,
-		&dimension_2_codeNull,
-		&user_idNull,
-		&source_codeNull,
-		&system_created_entryBool,
-		&prior_year_entryBool,
-		&project_noNull,
-		&quantityNull,
-		&tax_amountNull,
-		&business_unit_codeNull,
-		&journal_batch_nameNull,
-		&reason_codeNull,
-		&gen_posting_typeInt,
-		&gen_bus_posting_groupNull,
-		&gen_prod_posting_groupNull,
-		&bal_account_typeInt,
-		&t.Transaction_no,
-		&debit_amountNull,
-		&credit_amountNull,
-		&document_dateNull,
-		&external_document_noNull,
-		&source_typeInt,
-		&source_noNull,
-		&no_seriesNull,
-		&tax_area_codeNull,
-		&tax_liableBool,
-		&tax_group_codeNull,
-		&use_taxBool,
-		&tax_bus_posting_groupNull,
-		&tax_prod_posting_groupNull,
-		&additional_currency_amountNull,
-		&add_currency_debit_amountNull,
-		&add_currency_credit_amountNull,
-		&fa_entry_typeInt,
-		&t.Fa_entry_no,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find last G_L_Entry: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Gl_account_no = types.NewCode(gl_account_noNull.String)
-	t.Posting_date, _ = types.NewDateFromString(posting_dateNull.String)
-	t.Document_type = GLEntryDocument_type(document_typeInt)
-	t.Document_no = types.NewCode(document_noNull.String)
-	t.Description = types.NewText(descriptionNull.String)
-	t.Bal_account_no = types.NewCode(bal_account_noNull.String)
-	t.Amount, _ = types.NewDecimalFromString(amountNull.String)
-	t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
-	t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
-	t.User_id = types.NewCode(user_idNull.String)
-	t.Source_code = types.NewCode(source_codeNull.String)
-	t.System_created_entry = system_created_entryBool.Bool
-	t.Prior_year_entry = prior_year_entryBool.Bool
-	t.Project_no = types.NewCode(project_noNull.String)
-	t.Quantity, _ = types.NewDecimalFromString(quantityNull.String)
-	t.Tax_amount, _ = types.NewDecimalFromString(tax_amountNull.String)
-	t.Business_unit_code = types.NewCode(business_unit_codeNull.String)
-	t.Journal_batch_name = types.NewCode(journal_batch_nameNull.String)
-	t.Reason_code = types.NewCode(reason_codeNull.String)
-	t.Gen_posting_type = GLEntryGen_posting_type(gen_posting_typeInt)
-	t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
-	t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
-	t.Bal_account_type = GLEntryBal_account_type(bal_account_typeInt)
-	t.Debit_amount, _ = types.NewDecimalFromString(debit_amountNull.String)
-	t.Credit_amount, _ = types.NewDecimalFromString(credit_amountNull.String)
-	t.Document_date, _ = types.NewDateFromString(document_dateNull.String)
-	t.External_document_no = types.NewCode(external_document_noNull.String)
-	t.Source_type = GLEntrySource_type(source_typeInt)
-	t.Source_no = types.NewCode(source_noNull.String)
-	t.No_series = types.NewCode(no_seriesNull.String)
-	t.Tax_area_code = types.NewCode(tax_area_codeNull.String)
-	t.Tax_liable = tax_liableBool.Bool
-	t.Tax_group_code = types.NewCode(tax_group_codeNull.String)
-	t.Use_tax = use_taxBool.Bool
-	t.Tax_bus_posting_group = types.NewCode(tax_bus_posting_groupNull.String)
-	t.Tax_prod_posting_group = types.NewCode(tax_prod_posting_groupNull.String)
-	t.Additional_currency_amount, _ = types.NewDecimalFromString(additional_currency_amountNull.String)
-	t.Add_currency_debit_amount, _ = types.NewDecimalFromString(add_currency_debit_amountNull.String)
-	t.Add_currency_credit_amount, _ = types.NewDecimalFromString(add_currency_credit_amountNull.String)
-	t.Fa_entry_type = GLEntryFa_entry_type(fa_entry_typeInt)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindLast()
 }
 
 // Count returns the number of records matching current filters
 func (t *GLEntry) Count() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, GLEntryTableName)
-	where, args := t.buildWhereClause()
-
-	query := fmt.Sprintf(`SELECT COUNT(*) FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var count int
-	err := t.exec().QueryRow(query, args...).Scan(&count)
-	if err != nil {
-		fmt.Printf("Error: Failed to count G_L_Entry: %v\n", err)
-		return 0
-	}
-
-	return count
+	return t.rec().Count()
 }
 
 // FindSet opens a result set matching current filters
 // Call Next() to iterate through the results
-// Returns true if at least one record found, false otherwise
+// Returns true if at least one record found, false otherwise. A temporary record, and a
+// record in a transaction, reads all at once (FindSetBuffered).
 func (t *GLEntry) FindSet() bool {
-	// A temporary record, and a record in a transaction, reads all at once: its in-memory
-	// database or the transaction has one connection, which an open result set would block for
-	// the statements of the loop (Modify while looping; on PostgreSQL a query while the rows are
-	// read breaks the connection — "unexpected Parse response")
-	if _, inTx := t.db.(*sql.Tx); t.temp != nil || inTx {
-		return t.FindSetBuffered()
-	}
-	// Close any existing result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	tableName := fmt.Sprintf("%s$%s", t.company, GLEntryTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, gl_account_no, posting_date, document_type, document_no, description, bal_account_no, amount, dimension_1_code, dimension_2_code, user_id, source_code, system_created_entry, prior_year_entry, project_no, quantity, tax_amount, business_unit_code, journal_batch_name, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, bal_account_type, transaction_no, debit_amount, credit_amount, document_date, external_document_no, source_type, source_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount, add_currency_debit_amount, add_currency_credit_amount, fa_entry_type, fa_entry_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSet for G_L_Entry: %v\n", err)
-		return false
-	}
-
-	t.currentRows = rows
-
-	// Load first record
-	return t.Next()
+	return t.rec().FindSet()
 }
 
 // Next advances to the next record: in the result set after FindSet() or FindSetBuffered(),
@@ -2361,458 +1815,14 @@ func (t *GLEntry) FindSet() bool {
 //
 // Returns true if a record was loaded, false if no more records or out of bounds
 func (t *GLEntry) Next(steps ...int) bool {
-	// Default to 1 step forward
-	step := 1
-	if len(steps) > 0 {
-		step = steps[0]
-	}
-
-	// BUFFERED MODE: Bidirectional navigation with in-memory records
-	if t.bufferedRecords != nil {
-		// Calculate new position
-		newPos := t.currentBufferPos + step
-
-		// Check bounds
-		if newPos < 0 || newPos >= len(t.bufferedRecords) {
-			return false // Out of bounds
-		}
-
-		// Move to new position
-		t.currentBufferPos = newPos
-		t.copyFromBuffered(t.bufferedRecords[t.currentBufferPos])
-		return true
-	}
-
-	// FORWARD-ONLY MODE: Streaming with sql.Rows (only positive steps allowed)
-	if t.currentRows != nil {
-		// Validate: only forward movement allowed
-		if step < 1 {
-			fmt.Printf("Error: Backward navigation (Next(%d)) requires FindSetBuffered()\n", step)
-			return false
-		}
-
-		// Advance 'step' times (1 = next record, 2 = skip 1 record, etc.)
-		for i := 0; i < step; i++ {
-			if !t.currentRows.Next() {
-				// No more rows - close result set
-				t.currentRows.Close()
-				t.currentRows = nil
-				return false
-			}
-		}
-
-		// Scan the row
-		var gl_account_noNull sql.NullString
-		var posting_dateNull sql.NullString
-		var document_typeInt int
-		var document_noNull sql.NullString
-		var descriptionNull sql.NullString
-		var bal_account_noNull sql.NullString
-		var amountNull sql.NullString
-		var dimension_1_codeNull sql.NullString
-		var dimension_2_codeNull sql.NullString
-		var user_idNull sql.NullString
-		var source_codeNull sql.NullString
-		var system_created_entryBool sql.NullBool
-		var prior_year_entryBool sql.NullBool
-		var project_noNull sql.NullString
-		var quantityNull sql.NullString
-		var tax_amountNull sql.NullString
-		var business_unit_codeNull sql.NullString
-		var journal_batch_nameNull sql.NullString
-		var reason_codeNull sql.NullString
-		var gen_posting_typeInt int
-		var gen_bus_posting_groupNull sql.NullString
-		var gen_prod_posting_groupNull sql.NullString
-		var bal_account_typeInt int
-		var debit_amountNull sql.NullString
-		var credit_amountNull sql.NullString
-		var document_dateNull sql.NullString
-		var external_document_noNull sql.NullString
-		var source_typeInt int
-		var source_noNull sql.NullString
-		var no_seriesNull sql.NullString
-		var tax_area_codeNull sql.NullString
-		var tax_liableBool sql.NullBool
-		var tax_group_codeNull sql.NullString
-		var use_taxBool sql.NullBool
-		var tax_bus_posting_groupNull sql.NullString
-		var tax_prod_posting_groupNull sql.NullString
-		var additional_currency_amountNull sql.NullString
-		var add_currency_debit_amountNull sql.NullString
-		var add_currency_credit_amountNull sql.NullString
-		var fa_entry_typeInt int
-
-		err := t.currentRows.Scan(
-			&t.Entry_no,
-			&gl_account_noNull,
-			&posting_dateNull,
-			&document_typeInt,
-			&document_noNull,
-			&descriptionNull,
-			&bal_account_noNull,
-			&amountNull,
-			&dimension_1_codeNull,
-			&dimension_2_codeNull,
-			&user_idNull,
-			&source_codeNull,
-			&system_created_entryBool,
-			&prior_year_entryBool,
-			&project_noNull,
-			&quantityNull,
-			&tax_amountNull,
-			&business_unit_codeNull,
-			&journal_batch_nameNull,
-			&reason_codeNull,
-			&gen_posting_typeInt,
-			&gen_bus_posting_groupNull,
-			&gen_prod_posting_groupNull,
-			&bal_account_typeInt,
-			&t.Transaction_no,
-			&debit_amountNull,
-			&credit_amountNull,
-			&document_dateNull,
-			&external_document_noNull,
-			&source_typeInt,
-			&source_noNull,
-			&no_seriesNull,
-			&tax_area_codeNull,
-			&tax_liableBool,
-			&tax_group_codeNull,
-			&use_taxBool,
-			&tax_bus_posting_groupNull,
-			&tax_prod_posting_groupNull,
-			&additional_currency_amountNull,
-			&add_currency_debit_amountNull,
-			&add_currency_credit_amountNull,
-			&fa_entry_typeInt,
-			&t.Fa_entry_no,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan G_L_Entry record: %v\n", err)
-			t.currentRows.Close()
-			t.currentRows = nil
-			return false
-		}
-
-		// Populate fields
-		t.Gl_account_no = types.NewCode(gl_account_noNull.String)
-		t.Posting_date, _ = types.NewDateFromString(posting_dateNull.String)
-		t.Document_type = GLEntryDocument_type(document_typeInt)
-		t.Document_no = types.NewCode(document_noNull.String)
-		t.Description = types.NewText(descriptionNull.String)
-		t.Bal_account_no = types.NewCode(bal_account_noNull.String)
-		t.Amount, _ = types.NewDecimalFromString(amountNull.String)
-		t.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
-		t.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
-		t.User_id = types.NewCode(user_idNull.String)
-		t.Source_code = types.NewCode(source_codeNull.String)
-		t.System_created_entry = system_created_entryBool.Bool
-		t.Prior_year_entry = prior_year_entryBool.Bool
-		t.Project_no = types.NewCode(project_noNull.String)
-		t.Quantity, _ = types.NewDecimalFromString(quantityNull.String)
-		t.Tax_amount, _ = types.NewDecimalFromString(tax_amountNull.String)
-		t.Business_unit_code = types.NewCode(business_unit_codeNull.String)
-		t.Journal_batch_name = types.NewCode(journal_batch_nameNull.String)
-		t.Reason_code = types.NewCode(reason_codeNull.String)
-		t.Gen_posting_type = GLEntryGen_posting_type(gen_posting_typeInt)
-		t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
-		t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
-		t.Bal_account_type = GLEntryBal_account_type(bal_account_typeInt)
-		t.Debit_amount, _ = types.NewDecimalFromString(debit_amountNull.String)
-		t.Credit_amount, _ = types.NewDecimalFromString(credit_amountNull.String)
-		t.Document_date, _ = types.NewDateFromString(document_dateNull.String)
-		t.External_document_no = types.NewCode(external_document_noNull.String)
-		t.Source_type = GLEntrySource_type(source_typeInt)
-		t.Source_no = types.NewCode(source_noNull.String)
-		t.No_series = types.NewCode(no_seriesNull.String)
-		t.Tax_area_code = types.NewCode(tax_area_codeNull.String)
-		t.Tax_liable = tax_liableBool.Bool
-		t.Tax_group_code = types.NewCode(tax_group_codeNull.String)
-		t.Use_tax = use_taxBool.Bool
-		t.Tax_bus_posting_group = types.NewCode(tax_bus_posting_groupNull.String)
-		t.Tax_prod_posting_group = types.NewCode(tax_prod_posting_groupNull.String)
-		t.Additional_currency_amount, _ = types.NewDecimalFromString(additional_currency_amountNull.String)
-		t.Add_currency_debit_amount, _ = types.NewDecimalFromString(add_currency_debit_amountNull.String)
-		t.Add_currency_credit_amount, _ = types.NewDecimalFromString(add_currency_credit_amountNull.String)
-		t.Fa_entry_type = GLEntryFa_entry_type(fa_entry_typeInt)
-
-		// Store old values for field tracking
-		t.StoreOldValues()
-
-		return true
-	}
-
-	// No record set (after Get, Find, FindFirst, FindLast): the next record in the current key
-	// and direction within the filters, one step at a time (classic NEXT after FIND); a step
-	// that finds none leaves the record on the last one reached
-	if step == 0 {
-		return false
-	}
-	for i := 0; i != step; {
-		if step > 0 {
-			if !t.findInKey(">", false) {
-				return false
-			}
-			i++
-		} else {
-			if !t.findInKey("<", true) {
-				return false
-			}
-			i--
-		}
-	}
-	return true
+	return t.rec().Next(steps, t.findInKey)
 }
 
 // FindSetBuffered loads all filtered records into memory for bidirectional navigation
 // Use this when you need to move backward/forward with Next(steps)
-// Filters (SetRange/SetFilter) are applied in SQL before buffering to minimize memory usage
 // Returns true if at least one record found, false otherwise
 func (t *GLEntry) FindSetBuffered() bool {
-	// Close any existing forward-only result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-
-	// Clear any existing buffer
-	t.bufferedRecords = nil
-	t.currentBufferPos = -1
-	tableName := fmt.Sprintf("%s$%s", t.company, GLEntryTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT entry_no, gl_account_no, posting_date, document_type, document_no, description, bal_account_no, amount, dimension_1_code, dimension_2_code, user_id, source_code, system_created_entry, prior_year_entry, project_no, quantity, tax_amount, business_unit_code, journal_batch_name, reason_code, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, bal_account_type, transaction_no, debit_amount, credit_amount, document_date, external_document_no, source_type, source_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount, add_currency_debit_amount, add_currency_credit_amount, fa_entry_type, fa_entry_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSetBuffered for G_L_Entry: %v\n", err)
-		return false
-	}
-	defer rows.Close()
-
-	// Load all records into memory
-	for rows.Next() {
-		// Create a new record instance
-		record := &GLEntry{}
-		record.db = t.db
-		record.temp = t.temp
-		record.company = t.company
-		record.dbType = t.dbType
-
-		// Scan the row
-		var gl_account_noNull sql.NullString
-		var posting_dateNull sql.NullString
-		var document_typeInt int
-		var document_noNull sql.NullString
-		var descriptionNull sql.NullString
-		var bal_account_noNull sql.NullString
-		var amountNull sql.NullString
-		var dimension_1_codeNull sql.NullString
-		var dimension_2_codeNull sql.NullString
-		var user_idNull sql.NullString
-		var source_codeNull sql.NullString
-		var system_created_entryBool sql.NullBool
-		var prior_year_entryBool sql.NullBool
-		var project_noNull sql.NullString
-		var quantityNull sql.NullString
-		var tax_amountNull sql.NullString
-		var business_unit_codeNull sql.NullString
-		var journal_batch_nameNull sql.NullString
-		var reason_codeNull sql.NullString
-		var gen_posting_typeInt int
-		var gen_bus_posting_groupNull sql.NullString
-		var gen_prod_posting_groupNull sql.NullString
-		var bal_account_typeInt int
-		var debit_amountNull sql.NullString
-		var credit_amountNull sql.NullString
-		var document_dateNull sql.NullString
-		var external_document_noNull sql.NullString
-		var source_typeInt int
-		var source_noNull sql.NullString
-		var no_seriesNull sql.NullString
-		var tax_area_codeNull sql.NullString
-		var tax_liableBool sql.NullBool
-		var tax_group_codeNull sql.NullString
-		var use_taxBool sql.NullBool
-		var tax_bus_posting_groupNull sql.NullString
-		var tax_prod_posting_groupNull sql.NullString
-		var additional_currency_amountNull sql.NullString
-		var add_currency_debit_amountNull sql.NullString
-		var add_currency_credit_amountNull sql.NullString
-		var fa_entry_typeInt int
-
-		err := rows.Scan(
-			&record.Entry_no,
-			&gl_account_noNull,
-			&posting_dateNull,
-			&document_typeInt,
-			&document_noNull,
-			&descriptionNull,
-			&bal_account_noNull,
-			&amountNull,
-			&dimension_1_codeNull,
-			&dimension_2_codeNull,
-			&user_idNull,
-			&source_codeNull,
-			&system_created_entryBool,
-			&prior_year_entryBool,
-			&project_noNull,
-			&quantityNull,
-			&tax_amountNull,
-			&business_unit_codeNull,
-			&journal_batch_nameNull,
-			&reason_codeNull,
-			&gen_posting_typeInt,
-			&gen_bus_posting_groupNull,
-			&gen_prod_posting_groupNull,
-			&bal_account_typeInt,
-			&record.Transaction_no,
-			&debit_amountNull,
-			&credit_amountNull,
-			&document_dateNull,
-			&external_document_noNull,
-			&source_typeInt,
-			&source_noNull,
-			&no_seriesNull,
-			&tax_area_codeNull,
-			&tax_liableBool,
-			&tax_group_codeNull,
-			&use_taxBool,
-			&tax_bus_posting_groupNull,
-			&tax_prod_posting_groupNull,
-			&additional_currency_amountNull,
-			&add_currency_debit_amountNull,
-			&add_currency_credit_amountNull,
-			&fa_entry_typeInt,
-			&record.Fa_entry_no,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan G_L_Entry record: %v\n", err)
-			return false
-		}
-
-		// Populate special type fields
-		record.Gl_account_no = types.NewCode(gl_account_noNull.String)
-		record.Posting_date, _ = types.NewDateFromString(posting_dateNull.String)
-		record.Document_type = GLEntryDocument_type(document_typeInt)
-		record.Document_no = types.NewCode(document_noNull.String)
-		record.Description = types.NewText(descriptionNull.String)
-		record.Bal_account_no = types.NewCode(bal_account_noNull.String)
-		record.Amount, _ = types.NewDecimalFromString(amountNull.String)
-		record.Dimension_1_code = types.NewCode(dimension_1_codeNull.String)
-		record.Dimension_2_code = types.NewCode(dimension_2_codeNull.String)
-		record.User_id = types.NewCode(user_idNull.String)
-		record.Source_code = types.NewCode(source_codeNull.String)
-		record.System_created_entry = system_created_entryBool.Bool
-		record.Prior_year_entry = prior_year_entryBool.Bool
-		record.Project_no = types.NewCode(project_noNull.String)
-		record.Quantity, _ = types.NewDecimalFromString(quantityNull.String)
-		record.Tax_amount, _ = types.NewDecimalFromString(tax_amountNull.String)
-		record.Business_unit_code = types.NewCode(business_unit_codeNull.String)
-		record.Journal_batch_name = types.NewCode(journal_batch_nameNull.String)
-		record.Reason_code = types.NewCode(reason_codeNull.String)
-		record.Gen_posting_type = GLEntryGen_posting_type(gen_posting_typeInt)
-		record.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
-		record.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
-		record.Bal_account_type = GLEntryBal_account_type(bal_account_typeInt)
-		record.Debit_amount, _ = types.NewDecimalFromString(debit_amountNull.String)
-		record.Credit_amount, _ = types.NewDecimalFromString(credit_amountNull.String)
-		record.Document_date, _ = types.NewDateFromString(document_dateNull.String)
-		record.External_document_no = types.NewCode(external_document_noNull.String)
-		record.Source_type = GLEntrySource_type(source_typeInt)
-		record.Source_no = types.NewCode(source_noNull.String)
-		record.No_series = types.NewCode(no_seriesNull.String)
-		record.Tax_area_code = types.NewCode(tax_area_codeNull.String)
-		record.Tax_liable = tax_liableBool.Bool
-		record.Tax_group_code = types.NewCode(tax_group_codeNull.String)
-		record.Use_tax = use_taxBool.Bool
-		record.Tax_bus_posting_group = types.NewCode(tax_bus_posting_groupNull.String)
-		record.Tax_prod_posting_group = types.NewCode(tax_prod_posting_groupNull.String)
-		record.Additional_currency_amount, _ = types.NewDecimalFromString(additional_currency_amountNull.String)
-		record.Add_currency_debit_amount, _ = types.NewDecimalFromString(add_currency_debit_amountNull.String)
-		record.Add_currency_credit_amount, _ = types.NewDecimalFromString(add_currency_credit_amountNull.String)
-		record.Fa_entry_type = GLEntryFa_entry_type(fa_entry_typeInt)
-
-		// Store old values
-		record.StoreOldValues()
-
-		// Add to buffer
-		t.bufferedRecords = append(t.bufferedRecords, record)
-	}
-
-	// Check for errors during iteration
-	if err := rows.Err(); err != nil {
-		fmt.Printf("Error: Failed to iterate G_L_Entry records: %v\n", err)
-		return false
-	}
-
-	// If no records found, return false
-	if len(t.bufferedRecords) == 0 {
-		return false
-	}
-
-	// Load first record into current instance
-	t.currentBufferPos = 0
-	t.copyFromBuffered(t.bufferedRecords[0])
-
-	return true
-}
-
-// copyFromBuffered copies field values from a buffered record to the current instance
-func (t *GLEntry) copyFromBuffered(record *GLEntry) {
-	t.Entry_no = record.Entry_no
-	t.Gl_account_no = record.Gl_account_no
-	t.Posting_date = record.Posting_date
-	t.Document_type = record.Document_type
-	t.Document_no = record.Document_no
-	t.Description = record.Description
-	t.Bal_account_no = record.Bal_account_no
-	t.Amount = record.Amount
-	t.Dimension_1_code = record.Dimension_1_code
-	t.Dimension_2_code = record.Dimension_2_code
-	t.User_id = record.User_id
-	t.Source_code = record.Source_code
-	t.System_created_entry = record.System_created_entry
-	t.Prior_year_entry = record.Prior_year_entry
-	t.Project_no = record.Project_no
-	t.Quantity = record.Quantity
-	t.Tax_amount = record.Tax_amount
-	t.Business_unit_code = record.Business_unit_code
-	t.Journal_batch_name = record.Journal_batch_name
-	t.Reason_code = record.Reason_code
-	t.Gen_posting_type = record.Gen_posting_type
-	t.Gen_bus_posting_group = record.Gen_bus_posting_group
-	t.Gen_prod_posting_group = record.Gen_prod_posting_group
-	t.Bal_account_type = record.Bal_account_type
-	t.Transaction_no = record.Transaction_no
-	t.Debit_amount = record.Debit_amount
-	t.Credit_amount = record.Credit_amount
-	t.Document_date = record.Document_date
-	t.External_document_no = record.External_document_no
-	t.Source_type = record.Source_type
-	t.Source_no = record.Source_no
-	t.No_series = record.No_series
-	t.Tax_area_code = record.Tax_area_code
-	t.Tax_liable = record.Tax_liable
-	t.Tax_group_code = record.Tax_group_code
-	t.Use_tax = record.Use_tax
-	t.Tax_bus_posting_group = record.Tax_bus_posting_group
-	t.Tax_prod_posting_group = record.Tax_prod_posting_group
-	t.Additional_currency_amount = record.Additional_currency_amount
-	t.Add_currency_debit_amount = record.Add_currency_debit_amount
-	t.Add_currency_credit_amount = record.Add_currency_credit_amount
-	t.Fa_entry_type = record.Fa_entry_type
-	t.Fa_entry_no = record.Fa_entry_no
-	t.StoreOldValues()
+	return t.rec().FindSetBuffered()
 }
 
 // ========================================
@@ -3323,49 +2333,9 @@ func (t *GLEntry) Find(which ...string) bool {
 }
 
 // findInKey reads the first record in the current key and direction — reversed for the
-// last — and with seek ">"/"<" only after/before the current record (a row-value
-// comparison on the key and primary key columns). A key with a FlowField cannot seek.
+// last — and with seek ">"/"<" only after/before the current record
 func (t *GLEntry) findInKey(seek string, reverse bool) bool {
-	if seek != "" {
-		var columns, params []string
-		var values []interface{}
-		for _, column := range t.keyColumns() {
-			v, ok := t.columnValue(column)
-			if !ok {
-				fmt.Printf("Error: Find(%q) on G_L_Entry needs a key of stored fields\n", seek)
-				return false
-			}
-			if t.isKeyDateColumn(column) {
-				v = types.KeyDate(v)
-			}
-			columns = append(columns, t.cmpColumn(column))
-			params = append(params, t.cmpParam(column))
-			values = append(values, v)
-		}
-		after := (seek == ">") != t.q.Descending
-		op := "<"
-		if after {
-			op = ">"
-		}
-		t.q.Seek = "(" + strings.Join(columns, ", ") + ") " + op + " (" + strings.Join(params, ", ") + ")"
-		t.q.SeekArgs = values
-	}
-	savedLimit, savedOffset, savedDescending := t.limit, t.offset, t.q.Descending
-	t.limit, t.offset = 1, 0
-	if reverse {
-		t.q.Descending = !t.q.Descending
-	}
-	found := t.FindSet()
-	// One record read: a later Next seeks from it in the key (inside a transaction FindSet
-	// buffers its rows — a one-row buffer would end the Next at once)
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	t.limit, t.offset, t.q.Descending = savedLimit, savedOffset, savedDescending
-	t.q.Seek, t.q.SeekArgs = "", nil
-	return found
+	return t.rec().FindInKey(seek, reverse)
 }
 
 // keyColumns returns the columns of the current key followed by the primary key's (the

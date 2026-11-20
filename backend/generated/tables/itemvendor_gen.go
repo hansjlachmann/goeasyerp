@@ -28,7 +28,6 @@ import (
 	"fmt"
 
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -68,19 +67,11 @@ type ItemVendor struct {
 	// Temporary: the record's own table is in a private in-memory database (InitTemporary)
 	temp *tables.TemporaryStore
 
-	// Iteration state for FindSet/Next
-	currentRows *sql.Rows
+	// The result set of FindSet/FindSetBuffered/Next and the paging window (SetPage)
+	cur tables.Cursor
 
 	// LockTable: the following reads lock the rows they read (SELECT … FOR UPDATE, Postgres)
 	lockForUpdate bool
-
-	// Pagination window for FindSet/FindSetBuffered (0 limit = all rows)
-	limit  int
-	offset int
-
-	// Buffered recordset for bidirectional navigation
-	bufferedRecords  []*ItemVendor
-	currentBufferPos int
 
 	// Business logic of this record only (SetLogic, tests); nil = the registered logic
 	// (RegisterItemVendorLogic)
@@ -653,50 +644,11 @@ func (t *ItemVendor) convertPlaceholders(sql string, count int) string {
 // For single primary key: pass the value directly (string, int, etc.)
 // For composite keys: pass a map[string]interface{} with field names as keys
 func (t *ItemVendor) Get(primaryKey interface{}) bool {
-	// Handle composite primary key (map[string]interface{})
+	// A composite primary key (map[string]interface{}, values also as text)
 	if pkMap, ok := primaryKey.(map[string]interface{}); ok {
-		var item_noVal types.Code
-		if v, exists := pkMap["item_no"]; exists {
-			switch val := v.(type) {
-			case types.Code:
-				item_noVal = val
-			case string:
-				item_noVal = types.NewCode(val)
-			}
-		}
-		var vendor_noVal types.Code
-		if v, exists := pkMap["vendor_no"]; exists {
-			switch val := v.(type) {
-			case types.Code:
-				vendor_noVal = val
-			case string:
-				vendor_noVal = types.NewCode(val)
-			}
-		}
-		var unit_of_measure_codeVal types.Code
-		if v, exists := pkMap["unit_of_measure_code"]; exists {
-			switch val := v.(type) {
-			case types.Code:
-				unit_of_measure_codeVal = val
-			case string:
-				unit_of_measure_codeVal = types.NewCode(val)
-			}
-		}
-		var starting_dateVal types.Date
-		if v, exists := pkMap["starting_date"]; exists {
-			switch val := v.(type) {
-			case types.Date:
-				starting_dateVal = val
-			case time.Time:
-				starting_dateVal = types.NewDate(val.Year(), val.Month(), val.Day())
-			case string:
-				starting_dateVal, _ = types.NewDateFromString(val)
-			}
-		}
-		return t.GetByPK(item_noVal, vendor_noVal, unit_of_measure_codeVal, starting_dateVal)
+		key := itemVendorFields.KeyFromMap(pkMap)
+		return t.GetByPK(key[0].(types.Code), key[1].(types.Code), key[2].(types.Code), key[3].(types.Date))
 	}
-	// For tables with composite keys, direct value is not supported
-	// Use a map[string]interface{} with field names as keys
 
 	fmt.Printf("Error: Invalid primary key type for Item_Vendor.Get: %T (use map for composite keys)\n", primaryKey)
 	return false
@@ -704,16 +656,6 @@ func (t *ItemVendor) Get(primaryKey interface{}) bool {
 
 // GetByPK retrieves a record by its typed primary key(s) - for direct typed access
 func (t *ItemVendor) GetByPK(item_no types.Code, vendor_no types.Code, unit_of_measure_code types.Code, starting_date types.Date) bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, ItemVendorTableName)
-	var item_noNull sql.NullString
-	var vendor_noNull sql.NullString
-	var unit_of_measure_codeNull sql.NullString
-	var starting_dateNull sql.NullString
-	var currency_codeNull sql.NullString
-	var direct_unit_costNull sql.NullString
-	var lead_time_calculationNull sql.NullString
-	var vendor_item_noNull sql.NullString
-
 	// Collect arguments for query
 	args := []interface{}{
 		item_no,
@@ -721,49 +663,7 @@ func (t *ItemVendor) GetByPK(item_no types.Code, vendor_no types.Code, unit_of_m
 		unit_of_measure_code,
 		types.KeyDate(starting_date),
 	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT item_no, vendor_no, unit_of_measure_code, starting_date, currency_code, direct_unit_cost, lead_time_calculation, vendor_item_no FROM "%s" WHERE 1=1 AND item_no = ? AND vendor_no = ? AND unit_of_measure_code = ? AND starting_date = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-	sqlStr += t.forUpdate()
-
-	err := t.exec().QueryRow(sqlStr, args...).Scan(
-		&item_noNull,
-		&vendor_noNull,
-		&unit_of_measure_codeNull,
-		&starting_dateNull,
-		&currency_codeNull,
-		&direct_unit_costNull,
-		&lead_time_calculationNull,
-		&vendor_item_noNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			// Record not found - this is not an error, just return false
-			return false
-		}
-		// Actual database error
-		fmt.Printf("Error: Failed to get Item_Vendor: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Item_no = types.NewCode(item_noNull.String)
-	t.Vendor_no = types.NewCode(vendor_noNull.String)
-	t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
-	t.Starting_date, _ = types.NewDateFromString(starting_dateNull.String)
-	t.Currency_code = types.NewCode(currency_codeNull.String)
-	t.Direct_unit_cost, _ = types.NewDecimalFromString(direct_unit_costNull.String)
-	t.Lead_time_calculation = types.NewCode(lead_time_calculationNull.String)
-	t.Vendor_item_no = types.NewText(vendor_item_noNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().Get(args)
 }
 
 // Insert inserts the record into the database
@@ -1106,10 +1006,7 @@ func (t *ItemVendor) columnName(fieldName string) (string, bool) {
 func (t *ItemVendor) Reset() {
 	t.q.Reset()
 	t.oldValues = nil
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
+	t.cur.CloseRows()
 }
 
 // buildWhereClause builds WHERE clause from current filters and search
@@ -1151,209 +1048,50 @@ func (t *ItemVendor) getOrderByClause() (string, []interface{}) {
 // limit rows, skipping the first offset rows. A limit of 0 disables pagination
 // (all matching rows are returned). Negative values are treated as 0.
 func (t *ItemVendor) SetPage(limit, offset int) {
-	if limit < 0 {
-		limit = 0
-	}
-	if offset < 0 {
-		offset = 0
-	}
-	t.limit = limit
-	t.offset = offset
+	t.cur.SetPage(limit, offset)
 }
 
-// getLimitClause builds the LIMIT/OFFSET clause from the pagination window.
-// Returns an empty string when no limit is set. LIMIT/OFFSET take integer
-// literals (not placeholders), which both SQLite and PostgreSQL accept.
-func (t *ItemVendor) getLimitClause() string {
-	if t.limit <= 0 {
-		return ""
+// rec is what the read functions of foundation/tables need of the record
+func (t *ItemVendor) rec() *tables.Rec {
+	_, inTx := t.db.(*sql.Tx)
+	return &tables.Rec{
+		Fields:    itemVendorFields,
+		Ref:       t.fieldRef,
+		QT:        t.qt(),
+		Q:         &t.q,
+		Cur:       &t.cur,
+		Exec:      t.exec(),
+		Buffered:  t.temp != nil || inTx,
+		Postgres:  t.dbType == database.DBTypePostgres,
+		Table:     fmt.Sprintf("%s$%s", t.company, ItemVendorTableName),
+		ForUpdate: t.forUpdate(),
+		Store:     t.StoreOldValues,
 	}
-	if t.offset > 0 {
-		return fmt.Sprintf(" LIMIT %d OFFSET %d", t.limit, t.offset)
-	}
-	return fmt.Sprintf(" LIMIT %d", t.limit)
 }
 
 // FindFirst finds the first record matching current filters
 // Returns true if found, false if not found
 func (t *ItemVendor) FindFirst() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, ItemVendorTableName)
-	where, args := t.buildWhereClause()
-	// The first record in the current key and direction (classic FIND('-'))
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT item_no, vendor_no, unit_of_measure_code, starting_date, currency_code, direct_unit_cost, lead_time_calculation, vendor_item_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var item_noNull sql.NullString
-	var vendor_noNull sql.NullString
-	var unit_of_measure_codeNull sql.NullString
-	var starting_dateNull sql.NullString
-	var currency_codeNull sql.NullString
-	var direct_unit_costNull sql.NullString
-	var lead_time_calculationNull sql.NullString
-	var vendor_item_noNull sql.NullString
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&item_noNull,
-		&vendor_noNull,
-		&unit_of_measure_codeNull,
-		&starting_dateNull,
-		&currency_codeNull,
-		&direct_unit_costNull,
-		&lead_time_calculationNull,
-		&vendor_item_noNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find first Item_Vendor: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Item_no = types.NewCode(item_noNull.String)
-	t.Vendor_no = types.NewCode(vendor_noNull.String)
-	t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
-	t.Starting_date, _ = types.NewDateFromString(starting_dateNull.String)
-	t.Currency_code = types.NewCode(currency_codeNull.String)
-	t.Direct_unit_cost, _ = types.NewDecimalFromString(direct_unit_costNull.String)
-	t.Lead_time_calculation = types.NewCode(lead_time_calculationNull.String)
-	t.Vendor_item_no = types.NewText(vendor_item_noNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindFirst()
 }
 
 // FindLast finds the last record matching current filters
 // Returns true if found, false if not found
 func (t *ItemVendor) FindLast() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, ItemVendorTableName)
-	where, args := t.buildWhereClause()
-	// The last record in the current key and direction (classic FIND('+')): the key reversed,
-	// every column of it
-	t.q.Descending = !t.q.Descending
-	orderBy, orderArgs := t.getOrderByClause()
-	t.q.Descending = !t.q.Descending
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT item_no, vendor_no, unit_of_measure_code, starting_date, currency_code, direct_unit_cost, lead_time_calculation, vendor_item_no FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var item_noNull sql.NullString
-	var vendor_noNull sql.NullString
-	var unit_of_measure_codeNull sql.NullString
-	var starting_dateNull sql.NullString
-	var currency_codeNull sql.NullString
-	var direct_unit_costNull sql.NullString
-	var lead_time_calculationNull sql.NullString
-	var vendor_item_noNull sql.NullString
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&item_noNull,
-		&vendor_noNull,
-		&unit_of_measure_codeNull,
-		&starting_dateNull,
-		&currency_codeNull,
-		&direct_unit_costNull,
-		&lead_time_calculationNull,
-		&vendor_item_noNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find last Item_Vendor: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Item_no = types.NewCode(item_noNull.String)
-	t.Vendor_no = types.NewCode(vendor_noNull.String)
-	t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
-	t.Starting_date, _ = types.NewDateFromString(starting_dateNull.String)
-	t.Currency_code = types.NewCode(currency_codeNull.String)
-	t.Direct_unit_cost, _ = types.NewDecimalFromString(direct_unit_costNull.String)
-	t.Lead_time_calculation = types.NewCode(lead_time_calculationNull.String)
-	t.Vendor_item_no = types.NewText(vendor_item_noNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindLast()
 }
 
 // Count returns the number of records matching current filters
 func (t *ItemVendor) Count() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, ItemVendorTableName)
-	where, args := t.buildWhereClause()
-
-	query := fmt.Sprintf(`SELECT COUNT(*) FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var count int
-	err := t.exec().QueryRow(query, args...).Scan(&count)
-	if err != nil {
-		fmt.Printf("Error: Failed to count Item_Vendor: %v\n", err)
-		return 0
-	}
-
-	return count
+	return t.rec().Count()
 }
 
 // FindSet opens a result set matching current filters
 // Call Next() to iterate through the results
-// Returns true if at least one record found, false otherwise
+// Returns true if at least one record found, false otherwise. A temporary record, and a
+// record in a transaction, reads all at once (FindSetBuffered).
 func (t *ItemVendor) FindSet() bool {
-	// A temporary record, and a record in a transaction, reads all at once: its in-memory
-	// database or the transaction has one connection, which an open result set would block for
-	// the statements of the loop (Modify while looping; on PostgreSQL a query while the rows are
-	// read breaks the connection — "unexpected Parse response")
-	if _, inTx := t.db.(*sql.Tx); t.temp != nil || inTx {
-		return t.FindSetBuffered()
-	}
-	// Close any existing result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	tableName := fmt.Sprintf("%s$%s", t.company, ItemVendorTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT item_no, vendor_no, unit_of_measure_code, starting_date, currency_code, direct_unit_cost, lead_time_calculation, vendor_item_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSet for Item_Vendor: %v\n", err)
-		return false
-	}
-
-	t.currentRows = rows
-
-	// Load first record
-	return t.Next()
+	return t.rec().FindSet()
 }
 
 // Next advances to the next record: in the result set after FindSet() or FindSetBuffered(),
@@ -1366,225 +1104,14 @@ func (t *ItemVendor) FindSet() bool {
 //
 // Returns true if a record was loaded, false if no more records or out of bounds
 func (t *ItemVendor) Next(steps ...int) bool {
-	// Default to 1 step forward
-	step := 1
-	if len(steps) > 0 {
-		step = steps[0]
-	}
-
-	// BUFFERED MODE: Bidirectional navigation with in-memory records
-	if t.bufferedRecords != nil {
-		// Calculate new position
-		newPos := t.currentBufferPos + step
-
-		// Check bounds
-		if newPos < 0 || newPos >= len(t.bufferedRecords) {
-			return false // Out of bounds
-		}
-
-		// Move to new position
-		t.currentBufferPos = newPos
-		t.copyFromBuffered(t.bufferedRecords[t.currentBufferPos])
-		return true
-	}
-
-	// FORWARD-ONLY MODE: Streaming with sql.Rows (only positive steps allowed)
-	if t.currentRows != nil {
-		// Validate: only forward movement allowed
-		if step < 1 {
-			fmt.Printf("Error: Backward navigation (Next(%d)) requires FindSetBuffered()\n", step)
-			return false
-		}
-
-		// Advance 'step' times (1 = next record, 2 = skip 1 record, etc.)
-		for i := 0; i < step; i++ {
-			if !t.currentRows.Next() {
-				// No more rows - close result set
-				t.currentRows.Close()
-				t.currentRows = nil
-				return false
-			}
-		}
-
-		// Scan the row
-		var item_noNull sql.NullString
-		var vendor_noNull sql.NullString
-		var unit_of_measure_codeNull sql.NullString
-		var starting_dateNull sql.NullString
-		var currency_codeNull sql.NullString
-		var direct_unit_costNull sql.NullString
-		var lead_time_calculationNull sql.NullString
-		var vendor_item_noNull sql.NullString
-
-		err := t.currentRows.Scan(
-			&item_noNull,
-			&vendor_noNull,
-			&unit_of_measure_codeNull,
-			&starting_dateNull,
-			&currency_codeNull,
-			&direct_unit_costNull,
-			&lead_time_calculationNull,
-			&vendor_item_noNull,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan Item_Vendor record: %v\n", err)
-			t.currentRows.Close()
-			t.currentRows = nil
-			return false
-		}
-
-		// Populate fields
-		t.Item_no = types.NewCode(item_noNull.String)
-		t.Vendor_no = types.NewCode(vendor_noNull.String)
-		t.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
-		t.Starting_date, _ = types.NewDateFromString(starting_dateNull.String)
-		t.Currency_code = types.NewCode(currency_codeNull.String)
-		t.Direct_unit_cost, _ = types.NewDecimalFromString(direct_unit_costNull.String)
-		t.Lead_time_calculation = types.NewCode(lead_time_calculationNull.String)
-		t.Vendor_item_no = types.NewText(vendor_item_noNull.String)
-
-		// Store old values for field tracking
-		t.StoreOldValues()
-
-		return true
-	}
-
-	// No record set (after Get, Find, FindFirst, FindLast): the next record in the current key
-	// and direction within the filters, one step at a time (classic NEXT after FIND); a step
-	// that finds none leaves the record on the last one reached
-	if step == 0 {
-		return false
-	}
-	for i := 0; i != step; {
-		if step > 0 {
-			if !t.findInKey(">", false) {
-				return false
-			}
-			i++
-		} else {
-			if !t.findInKey("<", true) {
-				return false
-			}
-			i--
-		}
-	}
-	return true
+	return t.rec().Next(steps, t.findInKey)
 }
 
 // FindSetBuffered loads all filtered records into memory for bidirectional navigation
 // Use this when you need to move backward/forward with Next(steps)
-// Filters (SetRange/SetFilter) are applied in SQL before buffering to minimize memory usage
 // Returns true if at least one record found, false otherwise
 func (t *ItemVendor) FindSetBuffered() bool {
-	// Close any existing forward-only result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-
-	// Clear any existing buffer
-	t.bufferedRecords = nil
-	t.currentBufferPos = -1
-	tableName := fmt.Sprintf("%s$%s", t.company, ItemVendorTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT item_no, vendor_no, unit_of_measure_code, starting_date, currency_code, direct_unit_cost, lead_time_calculation, vendor_item_no FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSetBuffered for Item_Vendor: %v\n", err)
-		return false
-	}
-	defer rows.Close()
-
-	// Load all records into memory
-	for rows.Next() {
-		// Create a new record instance
-		record := &ItemVendor{}
-		record.db = t.db
-		record.temp = t.temp
-		record.company = t.company
-		record.dbType = t.dbType
-
-		// Scan the row
-		var item_noNull sql.NullString
-		var vendor_noNull sql.NullString
-		var unit_of_measure_codeNull sql.NullString
-		var starting_dateNull sql.NullString
-		var currency_codeNull sql.NullString
-		var direct_unit_costNull sql.NullString
-		var lead_time_calculationNull sql.NullString
-		var vendor_item_noNull sql.NullString
-
-		err := rows.Scan(
-			&item_noNull,
-			&vendor_noNull,
-			&unit_of_measure_codeNull,
-			&starting_dateNull,
-			&currency_codeNull,
-			&direct_unit_costNull,
-			&lead_time_calculationNull,
-			&vendor_item_noNull,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan Item_Vendor record: %v\n", err)
-			return false
-		}
-
-		// Populate special type fields
-		record.Item_no = types.NewCode(item_noNull.String)
-		record.Vendor_no = types.NewCode(vendor_noNull.String)
-		record.Unit_of_measure_code = types.NewCode(unit_of_measure_codeNull.String)
-		record.Starting_date, _ = types.NewDateFromString(starting_dateNull.String)
-		record.Currency_code = types.NewCode(currency_codeNull.String)
-		record.Direct_unit_cost, _ = types.NewDecimalFromString(direct_unit_costNull.String)
-		record.Lead_time_calculation = types.NewCode(lead_time_calculationNull.String)
-		record.Vendor_item_no = types.NewText(vendor_item_noNull.String)
-
-		// Store old values
-		record.StoreOldValues()
-
-		// Add to buffer
-		t.bufferedRecords = append(t.bufferedRecords, record)
-	}
-
-	// Check for errors during iteration
-	if err := rows.Err(); err != nil {
-		fmt.Printf("Error: Failed to iterate Item_Vendor records: %v\n", err)
-		return false
-	}
-
-	// If no records found, return false
-	if len(t.bufferedRecords) == 0 {
-		return false
-	}
-
-	// Load first record into current instance
-	t.currentBufferPos = 0
-	t.copyFromBuffered(t.bufferedRecords[0])
-
-	return true
-}
-
-// copyFromBuffered copies field values from a buffered record to the current instance
-func (t *ItemVendor) copyFromBuffered(record *ItemVendor) {
-	t.Item_no = record.Item_no
-	t.Vendor_no = record.Vendor_no
-	t.Unit_of_measure_code = record.Unit_of_measure_code
-	t.Starting_date = record.Starting_date
-	t.Currency_code = record.Currency_code
-	t.Direct_unit_cost = record.Direct_unit_cost
-	t.Lead_time_calculation = record.Lead_time_calculation
-	t.Vendor_item_no = record.Vendor_item_no
-	t.StoreOldValues()
+	return t.rec().FindSetBuffered()
 }
 
 // ========================================
@@ -2018,49 +1545,9 @@ func (t *ItemVendor) Find(which ...string) bool {
 }
 
 // findInKey reads the first record in the current key and direction — reversed for the
-// last — and with seek ">"/"<" only after/before the current record (a row-value
-// comparison on the key and primary key columns). A key with a FlowField cannot seek.
+// last — and with seek ">"/"<" only after/before the current record
 func (t *ItemVendor) findInKey(seek string, reverse bool) bool {
-	if seek != "" {
-		var columns, params []string
-		var values []interface{}
-		for _, column := range t.keyColumns() {
-			v, ok := t.columnValue(column)
-			if !ok {
-				fmt.Printf("Error: Find(%q) on Item_Vendor needs a key of stored fields\n", seek)
-				return false
-			}
-			if t.isKeyDateColumn(column) {
-				v = types.KeyDate(v)
-			}
-			columns = append(columns, t.cmpColumn(column))
-			params = append(params, t.cmpParam(column))
-			values = append(values, v)
-		}
-		after := (seek == ">") != t.q.Descending
-		op := "<"
-		if after {
-			op = ">"
-		}
-		t.q.Seek = "(" + strings.Join(columns, ", ") + ") " + op + " (" + strings.Join(params, ", ") + ")"
-		t.q.SeekArgs = values
-	}
-	savedLimit, savedOffset, savedDescending := t.limit, t.offset, t.q.Descending
-	t.limit, t.offset = 1, 0
-	if reverse {
-		t.q.Descending = !t.q.Descending
-	}
-	found := t.FindSet()
-	// One record read: a later Next seeks from it in the key (inside a transaction FindSet
-	// buffers its rows — a one-row buffer would end the Next at once)
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	t.limit, t.offset, t.q.Descending = savedLimit, savedOffset, savedDescending
-	t.q.Seek, t.q.SeekArgs = "", nil
-	return found
+	return t.rec().FindInKey(seek, reverse)
 }
 
 // keyColumns returns the columns of the current key followed by the primary key's (the

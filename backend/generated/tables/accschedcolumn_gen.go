@@ -169,19 +169,11 @@ type AccSchedColumn struct {
 	// Temporary: the record's own table is in a private in-memory database (InitTemporary)
 	temp *tables.TemporaryStore
 
-	// Iteration state for FindSet/Next
-	currentRows *sql.Rows
+	// The result set of FindSet/FindSetBuffered/Next and the paging window (SetPage)
+	cur tables.Cursor
 
 	// LockTable: the following reads lock the rows they read (SELECT … FOR UPDATE, Postgres)
 	lockForUpdate bool
-
-	// Pagination window for FindSet/FindSetBuffered (0 limit = all rows)
-	limit  int
-	offset int
-
-	// Buffered recordset for bidirectional navigation
-	bufferedRecords  []*AccSchedColumn
-	currentBufferPos int
 
 	// Business logic of this record only (SetLogic, tests); nil = the registered logic
 	// (RegisterAccSchedColumnLogic)
@@ -853,35 +845,11 @@ func (t *AccSchedColumn) convertPlaceholders(sql string, count int) string {
 // For single primary key: pass the value directly (string, int, etc.)
 // For composite keys: pass a map[string]interface{} with field names as keys
 func (t *AccSchedColumn) Get(primaryKey interface{}) bool {
-	// Handle composite primary key (map[string]interface{})
+	// A composite primary key (map[string]interface{}, values also as text)
 	if pkMap, ok := primaryKey.(map[string]interface{}); ok {
-		var column_layout_nameVal types.Code
-		if v, exists := pkMap["column_layout_name"]; exists {
-			switch val := v.(type) {
-			case types.Code:
-				column_layout_nameVal = val
-			case string:
-				column_layout_nameVal = types.NewCode(val)
-			}
-		}
-		var line_noVal int
-		if v, exists := pkMap["line_no"]; exists {
-			switch val := v.(type) {
-			case int:
-				line_noVal = val
-			case float64:
-				line_noVal = int(val)
-			case string:
-				// the key part as text: the API's "CUSTOMER1,10000"
-				if n, err := strconv.Atoi(strings.TrimSpace(val)); err == nil {
-					line_noVal = n
-				}
-			}
-		}
-		return t.GetByPK(column_layout_nameVal, line_noVal)
+		key := accSchedColumnFields.KeyFromMap(pkMap)
+		return t.GetByPK(key[0].(types.Code), key[1].(int))
 	}
-	// For tables with composite keys, direct value is not supported
-	// Use a map[string]interface{} with field names as keys
 
 	fmt.Printf("Error: Invalid primary key type for Acc_Sched_Column.Get: %T (use map for composite keys)\n", primaryKey)
 	return false
@@ -889,82 +857,12 @@ func (t *AccSchedColumn) Get(primaryKey interface{}) bool {
 
 // GetByPK retrieves a record by its typed primary key(s) - for direct typed access
 func (t *AccSchedColumn) GetByPK(column_layout_name types.Code, line_no int) bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, AccSchedColumnTableName)
-	var column_layout_nameNull sql.NullString
-	var line_noVal int
-	var column_noNull sql.NullString
-	var column_headerNull sql.NullString
-	var column_typeInt int
-	var ledger_entry_typeInt int
-	var amount_typeInt int
-	var formulaNull sql.NullString
-	var comparison_period_formulaNull sql.NullString
-	var show_opposite_signBool sql.NullBool
-	var showInt int
-	var rounding_factorInt int
-	var dimension_1_filterNull sql.NullString
-	var dimension_2_filterNull sql.NullString
-
 	// Collect arguments for query
 	args := []interface{}{
 		column_layout_name,
 		line_no,
 	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT column_layout_name, line_no, column_no, column_header, column_type, ledger_entry_type, amount_type, formula, comparison_period_formula, show_opposite_sign, show, rounding_factor, dimension_1_filter, dimension_2_filter FROM "%s" WHERE 1=1 AND column_layout_name = ? AND line_no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-	sqlStr += t.forUpdate()
-
-	err := t.exec().QueryRow(sqlStr, args...).Scan(
-		&column_layout_nameNull,
-		&line_noVal,
-		&column_noNull,
-		&column_headerNull,
-		&column_typeInt,
-		&ledger_entry_typeInt,
-		&amount_typeInt,
-		&formulaNull,
-		&comparison_period_formulaNull,
-		&show_opposite_signBool,
-		&showInt,
-		&rounding_factorInt,
-		&dimension_1_filterNull,
-		&dimension_2_filterNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			// Record not found - this is not an error, just return false
-			return false
-		}
-		// Actual database error
-		fmt.Printf("Error: Failed to get Acc_Sched_Column: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Column_layout_name = types.NewCode(column_layout_nameNull.String)
-	t.Line_no = line_noVal
-	t.Column_no = types.NewCode(column_noNull.String)
-	t.Column_header = types.NewText(column_headerNull.String)
-	t.Column_type = AccSchedColumnColumn_type(column_typeInt)
-	t.Ledger_entry_type = AccSchedColumnLedger_entry_type(ledger_entry_typeInt)
-	t.Amount_type = AccSchedColumnAmount_type(amount_typeInt)
-	t.Formula = types.NewCode(formulaNull.String)
-	t.Comparison_period_formula = types.NewCode(comparison_period_formulaNull.String)
-	t.Show_opposite_sign = show_opposite_signBool.Bool
-	t.Show = AccSchedColumnShow(showInt)
-	t.Rounding_factor = AccSchedColumnRounding_factor(rounding_factorInt)
-	t.Dimension_1_filter = types.NewText(dimension_1_filterNull.String)
-	t.Dimension_2_filter = types.NewText(dimension_2_filterNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().Get(args)
 }
 
 // Insert inserts the record into the database
@@ -1341,10 +1239,7 @@ func (t *AccSchedColumn) columnName(fieldName string) (string, bool) {
 func (t *AccSchedColumn) Reset() {
 	t.q.Reset()
 	t.oldValues = nil
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
+	t.cur.CloseRows()
 }
 
 // buildWhereClause builds WHERE clause from current filters and search
@@ -1386,241 +1281,50 @@ func (t *AccSchedColumn) getOrderByClause() (string, []interface{}) {
 // limit rows, skipping the first offset rows. A limit of 0 disables pagination
 // (all matching rows are returned). Negative values are treated as 0.
 func (t *AccSchedColumn) SetPage(limit, offset int) {
-	if limit < 0 {
-		limit = 0
-	}
-	if offset < 0 {
-		offset = 0
-	}
-	t.limit = limit
-	t.offset = offset
+	t.cur.SetPage(limit, offset)
 }
 
-// getLimitClause builds the LIMIT/OFFSET clause from the pagination window.
-// Returns an empty string when no limit is set. LIMIT/OFFSET take integer
-// literals (not placeholders), which both SQLite and PostgreSQL accept.
-func (t *AccSchedColumn) getLimitClause() string {
-	if t.limit <= 0 {
-		return ""
+// rec is what the read functions of foundation/tables need of the record
+func (t *AccSchedColumn) rec() *tables.Rec {
+	_, inTx := t.db.(*sql.Tx)
+	return &tables.Rec{
+		Fields:    accSchedColumnFields,
+		Ref:       t.fieldRef,
+		QT:        t.qt(),
+		Q:         &t.q,
+		Cur:       &t.cur,
+		Exec:      t.exec(),
+		Buffered:  t.temp != nil || inTx,
+		Postgres:  t.dbType == database.DBTypePostgres,
+		Table:     fmt.Sprintf("%s$%s", t.company, AccSchedColumnTableName),
+		ForUpdate: t.forUpdate(),
+		Store:     t.StoreOldValues,
 	}
-	if t.offset > 0 {
-		return fmt.Sprintf(" LIMIT %d OFFSET %d", t.limit, t.offset)
-	}
-	return fmt.Sprintf(" LIMIT %d", t.limit)
 }
 
 // FindFirst finds the first record matching current filters
 // Returns true if found, false if not found
 func (t *AccSchedColumn) FindFirst() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, AccSchedColumnTableName)
-	where, args := t.buildWhereClause()
-	// The first record in the current key and direction (classic FIND('-'))
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT column_layout_name, line_no, column_no, column_header, column_type, ledger_entry_type, amount_type, formula, comparison_period_formula, show_opposite_sign, show, rounding_factor, dimension_1_filter, dimension_2_filter FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var column_layout_nameNull sql.NullString
-	var column_noNull sql.NullString
-	var column_headerNull sql.NullString
-	var column_typeInt int
-	var ledger_entry_typeInt int
-	var amount_typeInt int
-	var formulaNull sql.NullString
-	var comparison_period_formulaNull sql.NullString
-	var show_opposite_signBool sql.NullBool
-	var showInt int
-	var rounding_factorInt int
-	var dimension_1_filterNull sql.NullString
-	var dimension_2_filterNull sql.NullString
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&column_layout_nameNull,
-		&t.Line_no,
-		&column_noNull,
-		&column_headerNull,
-		&column_typeInt,
-		&ledger_entry_typeInt,
-		&amount_typeInt,
-		&formulaNull,
-		&comparison_period_formulaNull,
-		&show_opposite_signBool,
-		&showInt,
-		&rounding_factorInt,
-		&dimension_1_filterNull,
-		&dimension_2_filterNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find first Acc_Sched_Column: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Column_layout_name = types.NewCode(column_layout_nameNull.String)
-	t.Column_no = types.NewCode(column_noNull.String)
-	t.Column_header = types.NewText(column_headerNull.String)
-	t.Column_type = AccSchedColumnColumn_type(column_typeInt)
-	t.Ledger_entry_type = AccSchedColumnLedger_entry_type(ledger_entry_typeInt)
-	t.Amount_type = AccSchedColumnAmount_type(amount_typeInt)
-	t.Formula = types.NewCode(formulaNull.String)
-	t.Comparison_period_formula = types.NewCode(comparison_period_formulaNull.String)
-	t.Show_opposite_sign = show_opposite_signBool.Bool
-	t.Show = AccSchedColumnShow(showInt)
-	t.Rounding_factor = AccSchedColumnRounding_factor(rounding_factorInt)
-	t.Dimension_1_filter = types.NewText(dimension_1_filterNull.String)
-	t.Dimension_2_filter = types.NewText(dimension_2_filterNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindFirst()
 }
 
 // FindLast finds the last record matching current filters
 // Returns true if found, false if not found
 func (t *AccSchedColumn) FindLast() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, AccSchedColumnTableName)
-	where, args := t.buildWhereClause()
-	// The last record in the current key and direction (classic FIND('+')): the key reversed,
-	// every column of it
-	t.q.Descending = !t.q.Descending
-	orderBy, orderArgs := t.getOrderByClause()
-	t.q.Descending = !t.q.Descending
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT column_layout_name, line_no, column_no, column_header, column_type, ledger_entry_type, amount_type, formula, comparison_period_formula, show_opposite_sign, show, rounding_factor, dimension_1_filter, dimension_2_filter FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var column_layout_nameNull sql.NullString
-	var column_noNull sql.NullString
-	var column_headerNull sql.NullString
-	var column_typeInt int
-	var ledger_entry_typeInt int
-	var amount_typeInt int
-	var formulaNull sql.NullString
-	var comparison_period_formulaNull sql.NullString
-	var show_opposite_signBool sql.NullBool
-	var showInt int
-	var rounding_factorInt int
-	var dimension_1_filterNull sql.NullString
-	var dimension_2_filterNull sql.NullString
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&column_layout_nameNull,
-		&t.Line_no,
-		&column_noNull,
-		&column_headerNull,
-		&column_typeInt,
-		&ledger_entry_typeInt,
-		&amount_typeInt,
-		&formulaNull,
-		&comparison_period_formulaNull,
-		&show_opposite_signBool,
-		&showInt,
-		&rounding_factorInt,
-		&dimension_1_filterNull,
-		&dimension_2_filterNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find last Acc_Sched_Column: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Column_layout_name = types.NewCode(column_layout_nameNull.String)
-	t.Column_no = types.NewCode(column_noNull.String)
-	t.Column_header = types.NewText(column_headerNull.String)
-	t.Column_type = AccSchedColumnColumn_type(column_typeInt)
-	t.Ledger_entry_type = AccSchedColumnLedger_entry_type(ledger_entry_typeInt)
-	t.Amount_type = AccSchedColumnAmount_type(amount_typeInt)
-	t.Formula = types.NewCode(formulaNull.String)
-	t.Comparison_period_formula = types.NewCode(comparison_period_formulaNull.String)
-	t.Show_opposite_sign = show_opposite_signBool.Bool
-	t.Show = AccSchedColumnShow(showInt)
-	t.Rounding_factor = AccSchedColumnRounding_factor(rounding_factorInt)
-	t.Dimension_1_filter = types.NewText(dimension_1_filterNull.String)
-	t.Dimension_2_filter = types.NewText(dimension_2_filterNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindLast()
 }
 
 // Count returns the number of records matching current filters
 func (t *AccSchedColumn) Count() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, AccSchedColumnTableName)
-	where, args := t.buildWhereClause()
-
-	query := fmt.Sprintf(`SELECT COUNT(*) FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var count int
-	err := t.exec().QueryRow(query, args...).Scan(&count)
-	if err != nil {
-		fmt.Printf("Error: Failed to count Acc_Sched_Column: %v\n", err)
-		return 0
-	}
-
-	return count
+	return t.rec().Count()
 }
 
 // FindSet opens a result set matching current filters
 // Call Next() to iterate through the results
-// Returns true if at least one record found, false otherwise
+// Returns true if at least one record found, false otherwise. A temporary record, and a
+// record in a transaction, reads all at once (FindSetBuffered).
 func (t *AccSchedColumn) FindSet() bool {
-	// A temporary record, and a record in a transaction, reads all at once: its in-memory
-	// database or the transaction has one connection, which an open result set would block for
-	// the statements of the loop (Modify while looping; on PostgreSQL a query while the rows are
-	// read breaks the connection — "unexpected Parse response")
-	if _, inTx := t.db.(*sql.Tx); t.temp != nil || inTx {
-		return t.FindSetBuffered()
-	}
-	// Close any existing result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	tableName := fmt.Sprintf("%s$%s", t.company, AccSchedColumnTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT column_layout_name, line_no, column_no, column_header, column_type, ledger_entry_type, amount_type, formula, comparison_period_formula, show_opposite_sign, show, rounding_factor, dimension_1_filter, dimension_2_filter FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSet for Acc_Sched_Column: %v\n", err)
-		return false
-	}
-
-	t.currentRows = rows
-
-	// Load first record
-	return t.Next()
+	return t.rec().FindSet()
 }
 
 // Next advances to the next record: in the result set after FindSet() or FindSetBuffered(),
@@ -1633,263 +1337,14 @@ func (t *AccSchedColumn) FindSet() bool {
 //
 // Returns true if a record was loaded, false if no more records or out of bounds
 func (t *AccSchedColumn) Next(steps ...int) bool {
-	// Default to 1 step forward
-	step := 1
-	if len(steps) > 0 {
-		step = steps[0]
-	}
-
-	// BUFFERED MODE: Bidirectional navigation with in-memory records
-	if t.bufferedRecords != nil {
-		// Calculate new position
-		newPos := t.currentBufferPos + step
-
-		// Check bounds
-		if newPos < 0 || newPos >= len(t.bufferedRecords) {
-			return false // Out of bounds
-		}
-
-		// Move to new position
-		t.currentBufferPos = newPos
-		t.copyFromBuffered(t.bufferedRecords[t.currentBufferPos])
-		return true
-	}
-
-	// FORWARD-ONLY MODE: Streaming with sql.Rows (only positive steps allowed)
-	if t.currentRows != nil {
-		// Validate: only forward movement allowed
-		if step < 1 {
-			fmt.Printf("Error: Backward navigation (Next(%d)) requires FindSetBuffered()\n", step)
-			return false
-		}
-
-		// Advance 'step' times (1 = next record, 2 = skip 1 record, etc.)
-		for i := 0; i < step; i++ {
-			if !t.currentRows.Next() {
-				// No more rows - close result set
-				t.currentRows.Close()
-				t.currentRows = nil
-				return false
-			}
-		}
-
-		// Scan the row
-		var column_layout_nameNull sql.NullString
-		var column_noNull sql.NullString
-		var column_headerNull sql.NullString
-		var column_typeInt int
-		var ledger_entry_typeInt int
-		var amount_typeInt int
-		var formulaNull sql.NullString
-		var comparison_period_formulaNull sql.NullString
-		var show_opposite_signBool sql.NullBool
-		var showInt int
-		var rounding_factorInt int
-		var dimension_1_filterNull sql.NullString
-		var dimension_2_filterNull sql.NullString
-
-		err := t.currentRows.Scan(
-			&column_layout_nameNull,
-			&t.Line_no,
-			&column_noNull,
-			&column_headerNull,
-			&column_typeInt,
-			&ledger_entry_typeInt,
-			&amount_typeInt,
-			&formulaNull,
-			&comparison_period_formulaNull,
-			&show_opposite_signBool,
-			&showInt,
-			&rounding_factorInt,
-			&dimension_1_filterNull,
-			&dimension_2_filterNull,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan Acc_Sched_Column record: %v\n", err)
-			t.currentRows.Close()
-			t.currentRows = nil
-			return false
-		}
-
-		// Populate fields
-		t.Column_layout_name = types.NewCode(column_layout_nameNull.String)
-		t.Column_no = types.NewCode(column_noNull.String)
-		t.Column_header = types.NewText(column_headerNull.String)
-		t.Column_type = AccSchedColumnColumn_type(column_typeInt)
-		t.Ledger_entry_type = AccSchedColumnLedger_entry_type(ledger_entry_typeInt)
-		t.Amount_type = AccSchedColumnAmount_type(amount_typeInt)
-		t.Formula = types.NewCode(formulaNull.String)
-		t.Comparison_period_formula = types.NewCode(comparison_period_formulaNull.String)
-		t.Show_opposite_sign = show_opposite_signBool.Bool
-		t.Show = AccSchedColumnShow(showInt)
-		t.Rounding_factor = AccSchedColumnRounding_factor(rounding_factorInt)
-		t.Dimension_1_filter = types.NewText(dimension_1_filterNull.String)
-		t.Dimension_2_filter = types.NewText(dimension_2_filterNull.String)
-
-		// Store old values for field tracking
-		t.StoreOldValues()
-
-		return true
-	}
-
-	// No record set (after Get, Find, FindFirst, FindLast): the next record in the current key
-	// and direction within the filters, one step at a time (classic NEXT after FIND); a step
-	// that finds none leaves the record on the last one reached
-	if step == 0 {
-		return false
-	}
-	for i := 0; i != step; {
-		if step > 0 {
-			if !t.findInKey(">", false) {
-				return false
-			}
-			i++
-		} else {
-			if !t.findInKey("<", true) {
-				return false
-			}
-			i--
-		}
-	}
-	return true
+	return t.rec().Next(steps, t.findInKey)
 }
 
 // FindSetBuffered loads all filtered records into memory for bidirectional navigation
 // Use this when you need to move backward/forward with Next(steps)
-// Filters (SetRange/SetFilter) are applied in SQL before buffering to minimize memory usage
 // Returns true if at least one record found, false otherwise
 func (t *AccSchedColumn) FindSetBuffered() bool {
-	// Close any existing forward-only result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-
-	// Clear any existing buffer
-	t.bufferedRecords = nil
-	t.currentBufferPos = -1
-	tableName := fmt.Sprintf("%s$%s", t.company, AccSchedColumnTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT column_layout_name, line_no, column_no, column_header, column_type, ledger_entry_type, amount_type, formula, comparison_period_formula, show_opposite_sign, show, rounding_factor, dimension_1_filter, dimension_2_filter FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSetBuffered for Acc_Sched_Column: %v\n", err)
-		return false
-	}
-	defer rows.Close()
-
-	// Load all records into memory
-	for rows.Next() {
-		// Create a new record instance
-		record := &AccSchedColumn{}
-		record.db = t.db
-		record.temp = t.temp
-		record.company = t.company
-		record.dbType = t.dbType
-
-		// Scan the row
-		var column_layout_nameNull sql.NullString
-		var column_noNull sql.NullString
-		var column_headerNull sql.NullString
-		var column_typeInt int
-		var ledger_entry_typeInt int
-		var amount_typeInt int
-		var formulaNull sql.NullString
-		var comparison_period_formulaNull sql.NullString
-		var show_opposite_signBool sql.NullBool
-		var showInt int
-		var rounding_factorInt int
-		var dimension_1_filterNull sql.NullString
-		var dimension_2_filterNull sql.NullString
-
-		err := rows.Scan(
-			&column_layout_nameNull,
-			&record.Line_no,
-			&column_noNull,
-			&column_headerNull,
-			&column_typeInt,
-			&ledger_entry_typeInt,
-			&amount_typeInt,
-			&formulaNull,
-			&comparison_period_formulaNull,
-			&show_opposite_signBool,
-			&showInt,
-			&rounding_factorInt,
-			&dimension_1_filterNull,
-			&dimension_2_filterNull,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan Acc_Sched_Column record: %v\n", err)
-			return false
-		}
-
-		// Populate special type fields
-		record.Column_layout_name = types.NewCode(column_layout_nameNull.String)
-		record.Column_no = types.NewCode(column_noNull.String)
-		record.Column_header = types.NewText(column_headerNull.String)
-		record.Column_type = AccSchedColumnColumn_type(column_typeInt)
-		record.Ledger_entry_type = AccSchedColumnLedger_entry_type(ledger_entry_typeInt)
-		record.Amount_type = AccSchedColumnAmount_type(amount_typeInt)
-		record.Formula = types.NewCode(formulaNull.String)
-		record.Comparison_period_formula = types.NewCode(comparison_period_formulaNull.String)
-		record.Show_opposite_sign = show_opposite_signBool.Bool
-		record.Show = AccSchedColumnShow(showInt)
-		record.Rounding_factor = AccSchedColumnRounding_factor(rounding_factorInt)
-		record.Dimension_1_filter = types.NewText(dimension_1_filterNull.String)
-		record.Dimension_2_filter = types.NewText(dimension_2_filterNull.String)
-
-		// Store old values
-		record.StoreOldValues()
-
-		// Add to buffer
-		t.bufferedRecords = append(t.bufferedRecords, record)
-	}
-
-	// Check for errors during iteration
-	if err := rows.Err(); err != nil {
-		fmt.Printf("Error: Failed to iterate Acc_Sched_Column records: %v\n", err)
-		return false
-	}
-
-	// If no records found, return false
-	if len(t.bufferedRecords) == 0 {
-		return false
-	}
-
-	// Load first record into current instance
-	t.currentBufferPos = 0
-	t.copyFromBuffered(t.bufferedRecords[0])
-
-	return true
-}
-
-// copyFromBuffered copies field values from a buffered record to the current instance
-func (t *AccSchedColumn) copyFromBuffered(record *AccSchedColumn) {
-	t.Column_layout_name = record.Column_layout_name
-	t.Line_no = record.Line_no
-	t.Column_no = record.Column_no
-	t.Column_header = record.Column_header
-	t.Column_type = record.Column_type
-	t.Ledger_entry_type = record.Ledger_entry_type
-	t.Amount_type = record.Amount_type
-	t.Formula = record.Formula
-	t.Comparison_period_formula = record.Comparison_period_formula
-	t.Show_opposite_sign = record.Show_opposite_sign
-	t.Show = record.Show
-	t.Rounding_factor = record.Rounding_factor
-	t.Dimension_1_filter = record.Dimension_1_filter
-	t.Dimension_2_filter = record.Dimension_2_filter
-	t.StoreOldValues()
+	return t.rec().FindSetBuffered()
 }
 
 // ========================================
@@ -2321,49 +1776,9 @@ func (t *AccSchedColumn) Find(which ...string) bool {
 }
 
 // findInKey reads the first record in the current key and direction — reversed for the
-// last — and with seek ">"/"<" only after/before the current record (a row-value
-// comparison on the key and primary key columns). A key with a FlowField cannot seek.
+// last — and with seek ">"/"<" only after/before the current record
 func (t *AccSchedColumn) findInKey(seek string, reverse bool) bool {
-	if seek != "" {
-		var columns, params []string
-		var values []interface{}
-		for _, column := range t.keyColumns() {
-			v, ok := t.columnValue(column)
-			if !ok {
-				fmt.Printf("Error: Find(%q) on Acc_Sched_Column needs a key of stored fields\n", seek)
-				return false
-			}
-			if t.isKeyDateColumn(column) {
-				v = types.KeyDate(v)
-			}
-			columns = append(columns, t.cmpColumn(column))
-			params = append(params, t.cmpParam(column))
-			values = append(values, v)
-		}
-		after := (seek == ">") != t.q.Descending
-		op := "<"
-		if after {
-			op = ">"
-		}
-		t.q.Seek = "(" + strings.Join(columns, ", ") + ") " + op + " (" + strings.Join(params, ", ") + ")"
-		t.q.SeekArgs = values
-	}
-	savedLimit, savedOffset, savedDescending := t.limit, t.offset, t.q.Descending
-	t.limit, t.offset = 1, 0
-	if reverse {
-		t.q.Descending = !t.q.Descending
-	}
-	found := t.FindSet()
-	// One record read: a later Next seeks from it in the key (inside a transaction FindSet
-	// buffers its rows — a one-row buffer would end the Next at once)
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	t.limit, t.offset, t.q.Descending = savedLimit, savedOffset, savedDescending
-	t.q.Seek, t.q.SeekArgs = "", nil
-	return found
+	return t.rec().FindInKey(seek, reverse)
 }
 
 // keyColumns returns the columns of the current key followed by the primary key's (the

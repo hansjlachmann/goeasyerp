@@ -83,19 +83,11 @@ type GeneralPostingSetup struct {
 	// Temporary: the record's own table is in a private in-memory database (InitTemporary)
 	temp *tables.TemporaryStore
 
-	// Iteration state for FindSet/Next
-	currentRows *sql.Rows
+	// The result set of FindSet/FindSetBuffered/Next and the paging window (SetPage)
+	cur tables.Cursor
 
 	// LockTable: the following reads lock the rows they read (SELECT … FOR UPDATE, Postgres)
 	lockForUpdate bool
-
-	// Pagination window for FindSet/FindSetBuffered (0 limit = all rows)
-	limit  int
-	offset int
-
-	// Buffered recordset for bidirectional navigation
-	bufferedRecords  []*GeneralPostingSetup
-	currentBufferPos int
 
 	// Business logic of this record only (SetLogic, tests); nil = the registered logic
 	// (RegisterGeneralPostingSetupLogic)
@@ -729,30 +721,11 @@ func (t *GeneralPostingSetup) convertPlaceholders(sql string, count int) string 
 // For single primary key: pass the value directly (string, int, etc.)
 // For composite keys: pass a map[string]interface{} with field names as keys
 func (t *GeneralPostingSetup) Get(primaryKey interface{}) bool {
-	// Handle composite primary key (map[string]interface{})
+	// A composite primary key (map[string]interface{}, values also as text)
 	if pkMap, ok := primaryKey.(map[string]interface{}); ok {
-		var gen_bus_posting_groupVal types.Code
-		if v, exists := pkMap["gen_bus_posting_group"]; exists {
-			switch val := v.(type) {
-			case types.Code:
-				gen_bus_posting_groupVal = val
-			case string:
-				gen_bus_posting_groupVal = types.NewCode(val)
-			}
-		}
-		var gen_prod_posting_groupVal types.Code
-		if v, exists := pkMap["gen_prod_posting_group"]; exists {
-			switch val := v.(type) {
-			case types.Code:
-				gen_prod_posting_groupVal = val
-			case string:
-				gen_prod_posting_groupVal = types.NewCode(val)
-			}
-		}
-		return t.GetByPK(gen_bus_posting_groupVal, gen_prod_posting_groupVal)
+		key := generalPostingSetupFields.KeyFromMap(pkMap)
+		return t.GetByPK(key[0].(types.Code), key[1].(types.Code))
 	}
-	// For tables with composite keys, direct value is not supported
-	// Use a map[string]interface{} with field names as keys
 
 	fmt.Printf("Error: Invalid primary key type for General_Posting_Setup.Get: %T (use map for composite keys)\n", primaryKey)
 	return false
@@ -760,88 +733,12 @@ func (t *GeneralPostingSetup) Get(primaryKey interface{}) bool {
 
 // GetByPK retrieves a record by its typed primary key(s) - for direct typed access
 func (t *GeneralPostingSetup) GetByPK(gen_bus_posting_group types.Code, gen_prod_posting_group types.Code) bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, GeneralPostingSetupTableName)
-	var gen_bus_posting_groupNull sql.NullString
-	var gen_prod_posting_groupNull sql.NullString
-	var sales_accountNull sql.NullString
-	var sales_line_disc_accountNull sql.NullString
-	var sales_inv_disc_accountNull sql.NullString
-	var sales_payment_disc_accountNull sql.NullString
-	var purch_accountNull sql.NullString
-	var purch_line_disc_accountNull sql.NullString
-	var purch_inv_disc_accountNull sql.NullString
-	var purch_payment_disc_accountNull sql.NullString
-	var cogs_accountNull sql.NullString
-	var inventory_adjmt_accountNull sql.NullString
-	var project_sales_adjmt_accountNull sql.NullString
-	var project_cost_adjmt_accountNull sql.NullString
-	var sales_credit_memo_accountNull sql.NullString
-	var purch_credit_memo_accountNull sql.NullString
-
 	// Collect arguments for query
 	args := []interface{}{
 		gen_bus_posting_group,
 		gen_prod_posting_group,
 	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`SELECT gen_bus_posting_group, gen_prod_posting_group, sales_account, sales_line_disc_account, sales_inv_disc_account, sales_payment_disc_account, purch_account, purch_line_disc_account, purch_inv_disc_account, purch_payment_disc_account, cogs_account, inventory_adjmt_account, project_sales_adjmt_account, project_cost_adjmt_account, sales_credit_memo_account, purch_credit_memo_account FROM "%s" WHERE 1=1 AND gen_bus_posting_group = ? AND gen_prod_posting_group = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-	sqlStr += t.forUpdate()
-
-	err := t.exec().QueryRow(sqlStr, args...).Scan(
-		&gen_bus_posting_groupNull,
-		&gen_prod_posting_groupNull,
-		&sales_accountNull,
-		&sales_line_disc_accountNull,
-		&sales_inv_disc_accountNull,
-		&sales_payment_disc_accountNull,
-		&purch_accountNull,
-		&purch_line_disc_accountNull,
-		&purch_inv_disc_accountNull,
-		&purch_payment_disc_accountNull,
-		&cogs_accountNull,
-		&inventory_adjmt_accountNull,
-		&project_sales_adjmt_accountNull,
-		&project_cost_adjmt_accountNull,
-		&sales_credit_memo_accountNull,
-		&purch_credit_memo_accountNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			// Record not found - this is not an error, just return false
-			return false
-		}
-		// Actual database error
-		fmt.Printf("Error: Failed to get General_Posting_Setup: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
-	t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
-	t.Sales_account = types.NewCode(sales_accountNull.String)
-	t.Sales_line_disc_account = types.NewCode(sales_line_disc_accountNull.String)
-	t.Sales_inv_disc_account = types.NewCode(sales_inv_disc_accountNull.String)
-	t.Sales_payment_disc_account = types.NewCode(sales_payment_disc_accountNull.String)
-	t.Purch_account = types.NewCode(purch_accountNull.String)
-	t.Purch_line_disc_account = types.NewCode(purch_line_disc_accountNull.String)
-	t.Purch_inv_disc_account = types.NewCode(purch_inv_disc_accountNull.String)
-	t.Purch_payment_disc_account = types.NewCode(purch_payment_disc_accountNull.String)
-	t.Cogs_account = types.NewCode(cogs_accountNull.String)
-	t.Inventory_adjmt_account = types.NewCode(inventory_adjmt_accountNull.String)
-	t.Project_sales_adjmt_account = types.NewCode(project_sales_adjmt_accountNull.String)
-	t.Project_cost_adjmt_account = types.NewCode(project_cost_adjmt_accountNull.String)
-	t.Sales_credit_memo_account = types.NewCode(sales_credit_memo_accountNull.String)
-	t.Purch_credit_memo_account = types.NewCode(purch_credit_memo_accountNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().Get(args)
 }
 
 // Insert inserts the record into the database
@@ -1234,10 +1131,7 @@ func (t *GeneralPostingSetup) columnName(fieldName string) (string, bool) {
 func (t *GeneralPostingSetup) Reset() {
 	t.q.Reset()
 	t.oldValues = nil
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
+	t.cur.CloseRows()
 }
 
 // buildWhereClause builds WHERE clause from current filters and search
@@ -1279,257 +1173,50 @@ func (t *GeneralPostingSetup) getOrderByClause() (string, []interface{}) {
 // limit rows, skipping the first offset rows. A limit of 0 disables pagination
 // (all matching rows are returned). Negative values are treated as 0.
 func (t *GeneralPostingSetup) SetPage(limit, offset int) {
-	if limit < 0 {
-		limit = 0
-	}
-	if offset < 0 {
-		offset = 0
-	}
-	t.limit = limit
-	t.offset = offset
+	t.cur.SetPage(limit, offset)
 }
 
-// getLimitClause builds the LIMIT/OFFSET clause from the pagination window.
-// Returns an empty string when no limit is set. LIMIT/OFFSET take integer
-// literals (not placeholders), which both SQLite and PostgreSQL accept.
-func (t *GeneralPostingSetup) getLimitClause() string {
-	if t.limit <= 0 {
-		return ""
+// rec is what the read functions of foundation/tables need of the record
+func (t *GeneralPostingSetup) rec() *tables.Rec {
+	_, inTx := t.db.(*sql.Tx)
+	return &tables.Rec{
+		Fields:    generalPostingSetupFields,
+		Ref:       t.fieldRef,
+		QT:        t.qt(),
+		Q:         &t.q,
+		Cur:       &t.cur,
+		Exec:      t.exec(),
+		Buffered:  t.temp != nil || inTx,
+		Postgres:  t.dbType == database.DBTypePostgres,
+		Table:     fmt.Sprintf("%s$%s", t.company, GeneralPostingSetupTableName),
+		ForUpdate: t.forUpdate(),
+		Store:     t.StoreOldValues,
 	}
-	if t.offset > 0 {
-		return fmt.Sprintf(" LIMIT %d OFFSET %d", t.limit, t.offset)
-	}
-	return fmt.Sprintf(" LIMIT %d", t.limit)
 }
 
 // FindFirst finds the first record matching current filters
 // Returns true if found, false if not found
 func (t *GeneralPostingSetup) FindFirst() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, GeneralPostingSetupTableName)
-	where, args := t.buildWhereClause()
-	// The first record in the current key and direction (classic FIND('-'))
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT gen_bus_posting_group, gen_prod_posting_group, sales_account, sales_line_disc_account, sales_inv_disc_account, sales_payment_disc_account, purch_account, purch_line_disc_account, purch_inv_disc_account, purch_payment_disc_account, cogs_account, inventory_adjmt_account, project_sales_adjmt_account, project_cost_adjmt_account, sales_credit_memo_account, purch_credit_memo_account FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var gen_bus_posting_groupNull sql.NullString
-	var gen_prod_posting_groupNull sql.NullString
-	var sales_accountNull sql.NullString
-	var sales_line_disc_accountNull sql.NullString
-	var sales_inv_disc_accountNull sql.NullString
-	var sales_payment_disc_accountNull sql.NullString
-	var purch_accountNull sql.NullString
-	var purch_line_disc_accountNull sql.NullString
-	var purch_inv_disc_accountNull sql.NullString
-	var purch_payment_disc_accountNull sql.NullString
-	var cogs_accountNull sql.NullString
-	var inventory_adjmt_accountNull sql.NullString
-	var project_sales_adjmt_accountNull sql.NullString
-	var project_cost_adjmt_accountNull sql.NullString
-	var sales_credit_memo_accountNull sql.NullString
-	var purch_credit_memo_accountNull sql.NullString
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&gen_bus_posting_groupNull,
-		&gen_prod_posting_groupNull,
-		&sales_accountNull,
-		&sales_line_disc_accountNull,
-		&sales_inv_disc_accountNull,
-		&sales_payment_disc_accountNull,
-		&purch_accountNull,
-		&purch_line_disc_accountNull,
-		&purch_inv_disc_accountNull,
-		&purch_payment_disc_accountNull,
-		&cogs_accountNull,
-		&inventory_adjmt_accountNull,
-		&project_sales_adjmt_accountNull,
-		&project_cost_adjmt_accountNull,
-		&sales_credit_memo_accountNull,
-		&purch_credit_memo_accountNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find first General_Posting_Setup: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
-	t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
-	t.Sales_account = types.NewCode(sales_accountNull.String)
-	t.Sales_line_disc_account = types.NewCode(sales_line_disc_accountNull.String)
-	t.Sales_inv_disc_account = types.NewCode(sales_inv_disc_accountNull.String)
-	t.Sales_payment_disc_account = types.NewCode(sales_payment_disc_accountNull.String)
-	t.Purch_account = types.NewCode(purch_accountNull.String)
-	t.Purch_line_disc_account = types.NewCode(purch_line_disc_accountNull.String)
-	t.Purch_inv_disc_account = types.NewCode(purch_inv_disc_accountNull.String)
-	t.Purch_payment_disc_account = types.NewCode(purch_payment_disc_accountNull.String)
-	t.Cogs_account = types.NewCode(cogs_accountNull.String)
-	t.Inventory_adjmt_account = types.NewCode(inventory_adjmt_accountNull.String)
-	t.Project_sales_adjmt_account = types.NewCode(project_sales_adjmt_accountNull.String)
-	t.Project_cost_adjmt_account = types.NewCode(project_cost_adjmt_accountNull.String)
-	t.Sales_credit_memo_account = types.NewCode(sales_credit_memo_accountNull.String)
-	t.Purch_credit_memo_account = types.NewCode(purch_credit_memo_accountNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindFirst()
 }
 
 // FindLast finds the last record matching current filters
 // Returns true if found, false if not found
 func (t *GeneralPostingSetup) FindLast() bool {
-	tableName := fmt.Sprintf("%s$%s", t.company, GeneralPostingSetupTableName)
-	where, args := t.buildWhereClause()
-	// The last record in the current key and direction (classic FIND('+')): the key reversed,
-	// every column of it
-	t.q.Descending = !t.q.Descending
-	orderBy, orderArgs := t.getOrderByClause()
-	t.q.Descending = !t.q.Descending
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT gen_bus_posting_group, gen_prod_posting_group, sales_account, sales_line_disc_account, sales_inv_disc_account, sales_payment_disc_account, purch_account, purch_line_disc_account, purch_inv_disc_account, purch_payment_disc_account, cogs_account, inventory_adjmt_account, project_sales_adjmt_account, project_cost_adjmt_account, sales_credit_memo_account, purch_credit_memo_account FROM "%s" WHERE %s ORDER BY %s LIMIT 1`, tableName, where, orderBy)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-	var gen_bus_posting_groupNull sql.NullString
-	var gen_prod_posting_groupNull sql.NullString
-	var sales_accountNull sql.NullString
-	var sales_line_disc_accountNull sql.NullString
-	var sales_inv_disc_accountNull sql.NullString
-	var sales_payment_disc_accountNull sql.NullString
-	var purch_accountNull sql.NullString
-	var purch_line_disc_accountNull sql.NullString
-	var purch_inv_disc_accountNull sql.NullString
-	var purch_payment_disc_accountNull sql.NullString
-	var cogs_accountNull sql.NullString
-	var inventory_adjmt_accountNull sql.NullString
-	var project_sales_adjmt_accountNull sql.NullString
-	var project_cost_adjmt_accountNull sql.NullString
-	var sales_credit_memo_accountNull sql.NullString
-	var purch_credit_memo_accountNull sql.NullString
-
-	err := t.exec().QueryRow(query, args...).Scan(
-		&gen_bus_posting_groupNull,
-		&gen_prod_posting_groupNull,
-		&sales_accountNull,
-		&sales_line_disc_accountNull,
-		&sales_inv_disc_accountNull,
-		&sales_payment_disc_accountNull,
-		&purch_accountNull,
-		&purch_line_disc_accountNull,
-		&purch_inv_disc_accountNull,
-		&purch_payment_disc_accountNull,
-		&cogs_accountNull,
-		&inventory_adjmt_accountNull,
-		&project_sales_adjmt_accountNull,
-		&project_cost_adjmt_accountNull,
-		&sales_credit_memo_accountNull,
-		&purch_credit_memo_accountNull,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
-		fmt.Printf("Error: Failed to find last General_Posting_Setup: %v\n", err)
-		return false
-	}
-
-	// Populate fields
-	t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
-	t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
-	t.Sales_account = types.NewCode(sales_accountNull.String)
-	t.Sales_line_disc_account = types.NewCode(sales_line_disc_accountNull.String)
-	t.Sales_inv_disc_account = types.NewCode(sales_inv_disc_accountNull.String)
-	t.Sales_payment_disc_account = types.NewCode(sales_payment_disc_accountNull.String)
-	t.Purch_account = types.NewCode(purch_accountNull.String)
-	t.Purch_line_disc_account = types.NewCode(purch_line_disc_accountNull.String)
-	t.Purch_inv_disc_account = types.NewCode(purch_inv_disc_accountNull.String)
-	t.Purch_payment_disc_account = types.NewCode(purch_payment_disc_accountNull.String)
-	t.Cogs_account = types.NewCode(cogs_accountNull.String)
-	t.Inventory_adjmt_account = types.NewCode(inventory_adjmt_accountNull.String)
-	t.Project_sales_adjmt_account = types.NewCode(project_sales_adjmt_accountNull.String)
-	t.Project_cost_adjmt_account = types.NewCode(project_cost_adjmt_accountNull.String)
-	t.Sales_credit_memo_account = types.NewCode(sales_credit_memo_accountNull.String)
-	t.Purch_credit_memo_account = types.NewCode(purch_credit_memo_accountNull.String)
-
-	// Store old values for field tracking
-	t.StoreOldValues()
-
-	return true
+	return t.rec().FindLast()
 }
 
 // Count returns the number of records matching current filters
 func (t *GeneralPostingSetup) Count() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, GeneralPostingSetupTableName)
-	where, args := t.buildWhereClause()
-
-	query := fmt.Sprintf(`SELECT COUNT(*) FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var count int
-	err := t.exec().QueryRow(query, args...).Scan(&count)
-	if err != nil {
-		fmt.Printf("Error: Failed to count General_Posting_Setup: %v\n", err)
-		return 0
-	}
-
-	return count
+	return t.rec().Count()
 }
 
 // FindSet opens a result set matching current filters
 // Call Next() to iterate through the results
-// Returns true if at least one record found, false otherwise
+// Returns true if at least one record found, false otherwise. A temporary record, and a
+// record in a transaction, reads all at once (FindSetBuffered).
 func (t *GeneralPostingSetup) FindSet() bool {
-	// A temporary record, and a record in a transaction, reads all at once: its in-memory
-	// database or the transaction has one connection, which an open result set would block for
-	// the statements of the loop (Modify while looping; on PostgreSQL a query while the rows are
-	// read breaks the connection — "unexpected Parse response")
-	if _, inTx := t.db.(*sql.Tx); t.temp != nil || inTx {
-		return t.FindSetBuffered()
-	}
-	// Close any existing result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	tableName := fmt.Sprintf("%s$%s", t.company, GeneralPostingSetupTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT gen_bus_posting_group, gen_prod_posting_group, sales_account, sales_line_disc_account, sales_inv_disc_account, sales_payment_disc_account, purch_account, purch_line_disc_account, purch_inv_disc_account, purch_payment_disc_account, cogs_account, inventory_adjmt_account, project_sales_adjmt_account, project_cost_adjmt_account, sales_credit_memo_account, purch_credit_memo_account FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-	query += t.forUpdate()
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSet for General_Posting_Setup: %v\n", err)
-		return false
-	}
-
-	t.currentRows = rows
-
-	// Load first record
-	return t.Next()
+	return t.rec().FindSet()
 }
 
 // Next advances to the next record: in the result set after FindSet() or FindSetBuffered(),
@@ -1542,281 +1229,14 @@ func (t *GeneralPostingSetup) FindSet() bool {
 //
 // Returns true if a record was loaded, false if no more records or out of bounds
 func (t *GeneralPostingSetup) Next(steps ...int) bool {
-	// Default to 1 step forward
-	step := 1
-	if len(steps) > 0 {
-		step = steps[0]
-	}
-
-	// BUFFERED MODE: Bidirectional navigation with in-memory records
-	if t.bufferedRecords != nil {
-		// Calculate new position
-		newPos := t.currentBufferPos + step
-
-		// Check bounds
-		if newPos < 0 || newPos >= len(t.bufferedRecords) {
-			return false // Out of bounds
-		}
-
-		// Move to new position
-		t.currentBufferPos = newPos
-		t.copyFromBuffered(t.bufferedRecords[t.currentBufferPos])
-		return true
-	}
-
-	// FORWARD-ONLY MODE: Streaming with sql.Rows (only positive steps allowed)
-	if t.currentRows != nil {
-		// Validate: only forward movement allowed
-		if step < 1 {
-			fmt.Printf("Error: Backward navigation (Next(%d)) requires FindSetBuffered()\n", step)
-			return false
-		}
-
-		// Advance 'step' times (1 = next record, 2 = skip 1 record, etc.)
-		for i := 0; i < step; i++ {
-			if !t.currentRows.Next() {
-				// No more rows - close result set
-				t.currentRows.Close()
-				t.currentRows = nil
-				return false
-			}
-		}
-
-		// Scan the row
-		var gen_bus_posting_groupNull sql.NullString
-		var gen_prod_posting_groupNull sql.NullString
-		var sales_accountNull sql.NullString
-		var sales_line_disc_accountNull sql.NullString
-		var sales_inv_disc_accountNull sql.NullString
-		var sales_payment_disc_accountNull sql.NullString
-		var purch_accountNull sql.NullString
-		var purch_line_disc_accountNull sql.NullString
-		var purch_inv_disc_accountNull sql.NullString
-		var purch_payment_disc_accountNull sql.NullString
-		var cogs_accountNull sql.NullString
-		var inventory_adjmt_accountNull sql.NullString
-		var project_sales_adjmt_accountNull sql.NullString
-		var project_cost_adjmt_accountNull sql.NullString
-		var sales_credit_memo_accountNull sql.NullString
-		var purch_credit_memo_accountNull sql.NullString
-
-		err := t.currentRows.Scan(
-			&gen_bus_posting_groupNull,
-			&gen_prod_posting_groupNull,
-			&sales_accountNull,
-			&sales_line_disc_accountNull,
-			&sales_inv_disc_accountNull,
-			&sales_payment_disc_accountNull,
-			&purch_accountNull,
-			&purch_line_disc_accountNull,
-			&purch_inv_disc_accountNull,
-			&purch_payment_disc_accountNull,
-			&cogs_accountNull,
-			&inventory_adjmt_accountNull,
-			&project_sales_adjmt_accountNull,
-			&project_cost_adjmt_accountNull,
-			&sales_credit_memo_accountNull,
-			&purch_credit_memo_accountNull,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan General_Posting_Setup record: %v\n", err)
-			t.currentRows.Close()
-			t.currentRows = nil
-			return false
-		}
-
-		// Populate fields
-		t.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
-		t.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
-		t.Sales_account = types.NewCode(sales_accountNull.String)
-		t.Sales_line_disc_account = types.NewCode(sales_line_disc_accountNull.String)
-		t.Sales_inv_disc_account = types.NewCode(sales_inv_disc_accountNull.String)
-		t.Sales_payment_disc_account = types.NewCode(sales_payment_disc_accountNull.String)
-		t.Purch_account = types.NewCode(purch_accountNull.String)
-		t.Purch_line_disc_account = types.NewCode(purch_line_disc_accountNull.String)
-		t.Purch_inv_disc_account = types.NewCode(purch_inv_disc_accountNull.String)
-		t.Purch_payment_disc_account = types.NewCode(purch_payment_disc_accountNull.String)
-		t.Cogs_account = types.NewCode(cogs_accountNull.String)
-		t.Inventory_adjmt_account = types.NewCode(inventory_adjmt_accountNull.String)
-		t.Project_sales_adjmt_account = types.NewCode(project_sales_adjmt_accountNull.String)
-		t.Project_cost_adjmt_account = types.NewCode(project_cost_adjmt_accountNull.String)
-		t.Sales_credit_memo_account = types.NewCode(sales_credit_memo_accountNull.String)
-		t.Purch_credit_memo_account = types.NewCode(purch_credit_memo_accountNull.String)
-
-		// Store old values for field tracking
-		t.StoreOldValues()
-
-		return true
-	}
-
-	// No record set (after Get, Find, FindFirst, FindLast): the next record in the current key
-	// and direction within the filters, one step at a time (classic NEXT after FIND); a step
-	// that finds none leaves the record on the last one reached
-	if step == 0 {
-		return false
-	}
-	for i := 0; i != step; {
-		if step > 0 {
-			if !t.findInKey(">", false) {
-				return false
-			}
-			i++
-		} else {
-			if !t.findInKey("<", true) {
-				return false
-			}
-			i--
-		}
-	}
-	return true
+	return t.rec().Next(steps, t.findInKey)
 }
 
 // FindSetBuffered loads all filtered records into memory for bidirectional navigation
 // Use this when you need to move backward/forward with Next(steps)
-// Filters (SetRange/SetFilter) are applied in SQL before buffering to minimize memory usage
 // Returns true if at least one record found, false otherwise
 func (t *GeneralPostingSetup) FindSetBuffered() bool {
-	// Close any existing forward-only result set
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-
-	// Clear any existing buffer
-	t.bufferedRecords = nil
-	t.currentBufferPos = -1
-	tableName := fmt.Sprintf("%s$%s", t.company, GeneralPostingSetupTableName)
-	where, args := t.buildWhereClause()
-	orderBy, orderArgs := t.getOrderByClause()
-	args = append(args, orderArgs...)
-
-	// Build SELECT with all fields
-	query := fmt.Sprintf(`SELECT gen_bus_posting_group, gen_prod_posting_group, sales_account, sales_line_disc_account, sales_inv_disc_account, sales_payment_disc_account, purch_account, purch_line_disc_account, purch_inv_disc_account, purch_payment_disc_account, cogs_account, inventory_adjmt_account, project_sales_adjmt_account, project_cost_adjmt_account, sales_credit_memo_account, purch_credit_memo_account FROM "%s" WHERE %s ORDER BY %s%s`, tableName, where, orderBy, t.getLimitClause())
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	rows, err := t.exec().Query(query, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to execute FindSetBuffered for General_Posting_Setup: %v\n", err)
-		return false
-	}
-	defer rows.Close()
-
-	// Load all records into memory
-	for rows.Next() {
-		// Create a new record instance
-		record := &GeneralPostingSetup{}
-		record.db = t.db
-		record.temp = t.temp
-		record.company = t.company
-		record.dbType = t.dbType
-
-		// Scan the row
-		var gen_bus_posting_groupNull sql.NullString
-		var gen_prod_posting_groupNull sql.NullString
-		var sales_accountNull sql.NullString
-		var sales_line_disc_accountNull sql.NullString
-		var sales_inv_disc_accountNull sql.NullString
-		var sales_payment_disc_accountNull sql.NullString
-		var purch_accountNull sql.NullString
-		var purch_line_disc_accountNull sql.NullString
-		var purch_inv_disc_accountNull sql.NullString
-		var purch_payment_disc_accountNull sql.NullString
-		var cogs_accountNull sql.NullString
-		var inventory_adjmt_accountNull sql.NullString
-		var project_sales_adjmt_accountNull sql.NullString
-		var project_cost_adjmt_accountNull sql.NullString
-		var sales_credit_memo_accountNull sql.NullString
-		var purch_credit_memo_accountNull sql.NullString
-
-		err := rows.Scan(
-			&gen_bus_posting_groupNull,
-			&gen_prod_posting_groupNull,
-			&sales_accountNull,
-			&sales_line_disc_accountNull,
-			&sales_inv_disc_accountNull,
-			&sales_payment_disc_accountNull,
-			&purch_accountNull,
-			&purch_line_disc_accountNull,
-			&purch_inv_disc_accountNull,
-			&purch_payment_disc_accountNull,
-			&cogs_accountNull,
-			&inventory_adjmt_accountNull,
-			&project_sales_adjmt_accountNull,
-			&project_cost_adjmt_accountNull,
-			&sales_credit_memo_accountNull,
-			&purch_credit_memo_accountNull,
-		)
-
-		if err != nil {
-			fmt.Printf("Error: Failed to scan General_Posting_Setup record: %v\n", err)
-			return false
-		}
-
-		// Populate special type fields
-		record.Gen_bus_posting_group = types.NewCode(gen_bus_posting_groupNull.String)
-		record.Gen_prod_posting_group = types.NewCode(gen_prod_posting_groupNull.String)
-		record.Sales_account = types.NewCode(sales_accountNull.String)
-		record.Sales_line_disc_account = types.NewCode(sales_line_disc_accountNull.String)
-		record.Sales_inv_disc_account = types.NewCode(sales_inv_disc_accountNull.String)
-		record.Sales_payment_disc_account = types.NewCode(sales_payment_disc_accountNull.String)
-		record.Purch_account = types.NewCode(purch_accountNull.String)
-		record.Purch_line_disc_account = types.NewCode(purch_line_disc_accountNull.String)
-		record.Purch_inv_disc_account = types.NewCode(purch_inv_disc_accountNull.String)
-		record.Purch_payment_disc_account = types.NewCode(purch_payment_disc_accountNull.String)
-		record.Cogs_account = types.NewCode(cogs_accountNull.String)
-		record.Inventory_adjmt_account = types.NewCode(inventory_adjmt_accountNull.String)
-		record.Project_sales_adjmt_account = types.NewCode(project_sales_adjmt_accountNull.String)
-		record.Project_cost_adjmt_account = types.NewCode(project_cost_adjmt_accountNull.String)
-		record.Sales_credit_memo_account = types.NewCode(sales_credit_memo_accountNull.String)
-		record.Purch_credit_memo_account = types.NewCode(purch_credit_memo_accountNull.String)
-
-		// Store old values
-		record.StoreOldValues()
-
-		// Add to buffer
-		t.bufferedRecords = append(t.bufferedRecords, record)
-	}
-
-	// Check for errors during iteration
-	if err := rows.Err(); err != nil {
-		fmt.Printf("Error: Failed to iterate General_Posting_Setup records: %v\n", err)
-		return false
-	}
-
-	// If no records found, return false
-	if len(t.bufferedRecords) == 0 {
-		return false
-	}
-
-	// Load first record into current instance
-	t.currentBufferPos = 0
-	t.copyFromBuffered(t.bufferedRecords[0])
-
-	return true
-}
-
-// copyFromBuffered copies field values from a buffered record to the current instance
-func (t *GeneralPostingSetup) copyFromBuffered(record *GeneralPostingSetup) {
-	t.Gen_bus_posting_group = record.Gen_bus_posting_group
-	t.Gen_prod_posting_group = record.Gen_prod_posting_group
-	t.Sales_account = record.Sales_account
-	t.Sales_line_disc_account = record.Sales_line_disc_account
-	t.Sales_inv_disc_account = record.Sales_inv_disc_account
-	t.Sales_payment_disc_account = record.Sales_payment_disc_account
-	t.Purch_account = record.Purch_account
-	t.Purch_line_disc_account = record.Purch_line_disc_account
-	t.Purch_inv_disc_account = record.Purch_inv_disc_account
-	t.Purch_payment_disc_account = record.Purch_payment_disc_account
-	t.Cogs_account = record.Cogs_account
-	t.Inventory_adjmt_account = record.Inventory_adjmt_account
-	t.Project_sales_adjmt_account = record.Project_sales_adjmt_account
-	t.Project_cost_adjmt_account = record.Project_cost_adjmt_account
-	t.Sales_credit_memo_account = record.Sales_credit_memo_account
-	t.Purch_credit_memo_account = record.Purch_credit_memo_account
-	t.StoreOldValues()
+	return t.rec().FindSetBuffered()
 }
 
 // ========================================
@@ -2227,49 +1647,9 @@ func (t *GeneralPostingSetup) Find(which ...string) bool {
 }
 
 // findInKey reads the first record in the current key and direction — reversed for the
-// last — and with seek ">"/"<" only after/before the current record (a row-value
-// comparison on the key and primary key columns). A key with a FlowField cannot seek.
+// last — and with seek ">"/"<" only after/before the current record
 func (t *GeneralPostingSetup) findInKey(seek string, reverse bool) bool {
-	if seek != "" {
-		var columns, params []string
-		var values []interface{}
-		for _, column := range t.keyColumns() {
-			v, ok := t.columnValue(column)
-			if !ok {
-				fmt.Printf("Error: Find(%q) on General_Posting_Setup needs a key of stored fields\n", seek)
-				return false
-			}
-			if t.isKeyDateColumn(column) {
-				v = types.KeyDate(v)
-			}
-			columns = append(columns, t.cmpColumn(column))
-			params = append(params, t.cmpParam(column))
-			values = append(values, v)
-		}
-		after := (seek == ">") != t.q.Descending
-		op := "<"
-		if after {
-			op = ">"
-		}
-		t.q.Seek = "(" + strings.Join(columns, ", ") + ") " + op + " (" + strings.Join(params, ", ") + ")"
-		t.q.SeekArgs = values
-	}
-	savedLimit, savedOffset, savedDescending := t.limit, t.offset, t.q.Descending
-	t.limit, t.offset = 1, 0
-	if reverse {
-		t.q.Descending = !t.q.Descending
-	}
-	found := t.FindSet()
-	// One record read: a later Next seeks from it in the key (inside a transaction FindSet
-	// buffers its rows — a one-row buffer would end the Next at once)
-	if t.currentRows != nil {
-		t.currentRows.Close()
-		t.currentRows = nil
-	}
-	t.bufferedRecords = nil
-	t.limit, t.offset, t.q.Descending = savedLimit, savedOffset, savedDescending
-	t.q.Seek, t.q.SeekArgs = "", nil
-	return found
+	return t.rec().FindInKey(seek, reverse)
 }
 
 // keyColumns returns the columns of the current key followed by the primary key's (the
