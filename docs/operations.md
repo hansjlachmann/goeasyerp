@@ -99,6 +99,10 @@ database, so `scripts/backup.sh` covers them.
 1. Start the builder: put `COMPOSE_PROFILES=apps` in `prod.env` (the one-computer trial: in the
    `.env` next to the compose file), then `scripts/prod.sh pull && scripts/prod.sh up -d`.
    The builder image is large (the Go toolchain), so it is downloaded only with this profile.
+   A build needs about **5 GB of memory** while it compiles: the server's generated table code
+   is one large package. The builder compiles it with one thread, `GOGC=25` and two packages at
+   a time to stay there; a server with less memory should use the CI pipeline route below.
+   `GOFLAGS` (`-p=`, `-gcflags`) and `GOGC` in the builder's environment replace these settings.
 2. In App Build Setup, set **Builds By** to *Local Builder*, and **Allow Upload** if apps may
    come as packages.
 3. Choose the apps in Installed Apps:
@@ -125,6 +129,9 @@ and waits in **maintenance** until it is built: the login page says so, and `/he
   backend, which gets `APP_BUILDS_DIR=/builds` too.
 - With more than one backend replica the claim must be ReadWriteMany.
 - Keep the builder's image tag equal to the backend's.
+- Give the builder a memory limit of at least 6 GiB and no CPU limit (a CPU limit slows the
+  build directly). A build killed for memory shows in the node's kernel log (`dmesg`) as an
+  out-of-memory kill of `compile`.
 
 ### CI pipeline (installation repository)
 

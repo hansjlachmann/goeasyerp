@@ -137,7 +137,11 @@ func (b *builder) build(ctx context.Context, no int, list fapps.BuildList, log *
 
 	log.Printf("== Building the server program")
 	ldflags := "-X github.com/hansjlachmann/goeasyerp/backend/api.Version=" + list.Base.Version
-	err = b.run(ctx, src, log, "go", "build", "-trimpath", "-ldflags="+ldflags, "-o", appbundle.BinaryName, "./cmd/api-server")
+	args := []string{"build", "-trimpath", "-ldflags=" + ldflags}
+	memArgs, memEnv := lowMemoryBuild(os.Getenv)
+	args = append(args, memArgs...)
+	args = append(args, "-o", appbundle.BinaryName, "./cmd/api-server")
+	err = b.runEnv(ctx, src, log, memEnv, "go", args...)
 	if err != nil {
 		return "", err
 	}
@@ -182,11 +186,37 @@ func (b *builder) build(ctx context.Context, no int, list fapps.BuildList, log *
 	return sha, nil
 }
 
+// tablesPackage: the generated table code, the one package that needs much memory to compile
+const tablesPackage = "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
+
+// lowMemoryBuild: the go build flags and environment that keep the compile of the generated
+// table code within a small server's memory (one package of some 40 MB source: about 8 GB with
+// Go's defaults, about 4.6 GB with one compile thread and GOGC=25). What the operator sets in
+// the builder's environment wins: GOFLAGS with -gcflags or -p, and GOGC.
+func lowMemoryBuild(getenv func(string) string) (args, env []string) {
+	goflags := getenv("GOFLAGS")
+	if !strings.Contains(goflags, "-gcflags") {
+		args = append(args, "-gcflags="+tablesPackage+"=-c=1")
+	}
+	if !strings.Contains(goflags, "-p=") {
+		args = append(args, fmt.Sprintf("-p=%d", parallelCompiles))
+	}
+	if getenv("GOGC") == "" {
+		env = append(env, "GOGC=25")
+	}
+	return args, env
+}
+
 // run runs a command in dir, its output into the log
 func (b *builder) run(ctx context.Context, dir string, log *buildLog, name string, args ...string) error {
+	return b.runEnv(ctx, dir, log, nil, name, args...)
+}
+
+// runEnv runs a command in dir with extra environment, its output into the log
+func (b *builder) runEnv(ctx context.Context, dir string, log *buildLog, env []string, name string, args ...string) error {
 	cmd := exec.CommandContext(ctx, name, args...)
 	cmd.Dir = dir
-	cmd.Env = append(append(os.Environ(), "CGO_ENABLED=0"), b.env...)
+	cmd.Env = append(append(append(os.Environ(), "CGO_ENABLED=0"), b.env...), env...)
 	cmd.Stdout = log
 	cmd.Stderr = log
 	err := cmd.Run()
@@ -257,3 +287,8 @@ func copyFile(from, to string) error {
 	}
 	return closeErr
 }
+
+// parallelCompiles: the packages go build compiles at a time (Go's default is one per CPU);
+// the other packages of the server need far less than the table code, but four at once on top
+// of it would not fit a small server
+const parallelCompiles = 2

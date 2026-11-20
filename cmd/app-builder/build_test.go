@@ -187,3 +187,23 @@ func TestClaimPostgres(t *testing.T) {
 		t.Errorf("after recover: %+v", rec)
 	}
 }
+
+// The compile of the generated table code is kept small (one thread, GOGC=25, few parallel
+// compiles) unless the operator's environment says otherwise; the package path is the module's
+func TestLowMemoryBuild(t *testing.T) {
+	envOf := func(m map[string]string) func(string) string { return func(k string) string { return m[k] } }
+	args, env := lowMemoryBuild(envOf(nil))
+	if strings.Join(args, " ") != "-gcflags="+tablesPackage+"=-c=1 -p=2" || strings.Join(env, " ") != "GOGC=25" {
+		t.Errorf("defaults: %v %v", args, env)
+	}
+	args, env = lowMemoryBuild(envOf(map[string]string{"GOFLAGS": "-p=4 -gcflags=all=-c=2", "GOGC": "100"}))
+	if len(args) != 0 || len(env) != 0 {
+		t.Errorf("operator settings: %v %v", args, env)
+	}
+	if _, err := os.Stat(filepath.Join("..", "..", "backend", "generated", "tables")); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.HasPrefix(tablesPackage, "github.com/hansjlachmann/goeasyerp/") {
+		t.Errorf("package %s", tablesPackage)
+	}
+}
