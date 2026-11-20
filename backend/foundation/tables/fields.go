@@ -50,9 +50,10 @@ type TableFields struct {
 	Fields      []FieldMeta // the table's fields in definition order, FlowFields too
 	FlowFilters []FieldInfo // the FlowFilter fields (number and name only)
 
-	once   sync.Once
-	byName map[string]int // lower case name → index in Fields
-	byNo   map[int]int    // number → index in Fields
+	once       sync.Once
+	byName     map[string]int // lower case name → index in Fields
+	byNo       map[int]int    // number → index in Fields
+	primaryKey []string       // the primary key's columns in key order
 }
 
 func (tf *TableFields) index() {
@@ -62,6 +63,9 @@ func (tf *TableFields) index() {
 		for i := range tf.Fields {
 			tf.byName[strings.ToLower(tf.Fields[i].Info.Name)] = i
 			tf.byNo[tf.Fields[i].Info.No] = i
+			if tf.Fields[i].Info.PrimaryKey {
+				tf.primaryKey = append(tf.primaryKey, tf.Fields[i].Info.Name)
+			}
 		}
 	})
 }

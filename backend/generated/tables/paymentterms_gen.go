@@ -24,7 +24,7 @@ package tables
 import (
 	"database/sql"
 	"fmt"
-	"slices"
+
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -55,15 +55,9 @@ type PaymentTerms struct {
 	// Field tracking for optimal Modify() operations
 	oldValues map[string]interface{} // Stores original values from Get()
 
-	// Filter state for SetRange/FindFirst/FindLast: the current filter group's filters
-	filters map[string]*paymentTermsFilterCondition
-	// FilterGroup: the current filter group and the filters of the other groups; the
-	// filters of all groups apply together
-	filterGroup  int
-	otherFilters map[int]map[string]*paymentTermsFilterCondition
-	// Find(">") / Find("<"): the condition for the record after/before the current one
-	seek     string
-	seekArgs []interface{}
+	// The filters (per filter group), search, current key and direction, marks and Find
+	// seek of the record (SetRange, SetFilter, FilterGroup, SetCurrentKey …)
+	q tables.Query
 	// The records selected on the list a codeunit was run from (SetSelectionFilter)
 	selection map[string][]interface{}
 	// Temporary: the record's own table is in a private in-memory database (InitTemporary)
@@ -74,16 +68,6 @@ type PaymentTerms struct {
 
 	// LockTable: the following reads lock the rows they read (SELECT … FOR UPDATE, Postgres)
 	lockForUpdate bool
-
-	// Mark / MarkedOnly: the marked records (primary key values by key text)
-	marks         map[string][]interface{}
-	markedOnly    bool
-	orderByFields []string
-	descending    bool // sort order of the current key (SetAscending)
-
-	// Free-text search (SetSearch): rows where any of the columns contains the text
-	searchColumns []string
-	searchText    string
 
 	// Pagination window for FindSet/FindSetBuffered (0 limit = all rows)
 	limit  int
@@ -1047,15 +1031,12 @@ func (t *PaymentTerms) CalcFieldsForRecords(records []map[string]interface{}, fi
 // Filtering and Search
 // ========================================
 
-// paymentTermsFilterCondition represents a filter on a field
-type paymentTermsFilterCondition struct {
-	fieldName    string
-	minValue     interface{}
-	maxValue     interface{}
-	filterExpr   string // For complex SetFilter expressions
-	isExpression bool   // True if using filterExpr instead of min/max
-	invalidField bool   // Filter on an unknown field: matches no rows (fail closed)
-	blankDate    bool   // A date range from the blank date: blank dates (NULL) match too
+// qt is what the record's Query needs to know of the table
+func (t *PaymentTerms) qt() tables.QueryTable {
+	return tables.QueryTable{
+		Fields:          paymentTermsFields,
+		NumericDecimals: t.dbType != database.DBTypePostgres || t.temp != nil,
+	}
 }
 
 // SetRange sets a range filter on a field
@@ -1065,122 +1046,35 @@ type paymentTermsFilterCondition struct {
 //	SetRange("No", "10000", "20000") - range (No between "10000" and "20000")
 //	SetRange("No") - removes the filter on the field
 func (t *PaymentTerms) SetRange(fieldName string, values ...interface{}) {
-	if t.filters == nil {
-		t.filters = make(map[string]*paymentTermsFilterCondition)
-	}
-
-	var minValue, maxValue interface{}
-
-	switch len(values) {
-	case 0:
-		if column, ok := t.columnName(fieldName); ok {
-			delete(t.filters, column)
-		}
-		delete(t.filters, fieldName)
-		return
-	case 1:
-		// Exact match: SetRange("No", "10000")
-		minValue = values[0]
-		maxValue = values[0]
-	case 2:
-		// Range: SetRange("No", "10000", "20000")
-		minValue = values[0]
-		maxValue = values[1]
-	default:
-		fmt.Printf("Error: SetRange requires 1 or 2 values, got %d\n", len(values))
-		return
-	}
-
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		// Unknown field: fail closed (no rows) rather than drop the filter or put
-		// the name into SQL
-		fmt.Printf("Error: SetRange on unknown field %q of Payment Terms\n", fieldName)
-		t.filters[fieldName] = &paymentTermsFilterCondition{invalidField: true}
-		return
-	}
-
-	// Blank dates are stored as NULL and come before every date: a range from the blank date
-	// (or the blank date itself) matches them; a range up to the blank date (0D..0D) is the
-	// blank date only
-	blankDate := false
-	if d, ok := values[0].(types.Date); ok && d.IsZero() {
-		blankDate = true
-		minValue = nil
-		if len(values) == 1 {
-			maxValue = nil
-		}
-		if to, ok := maxValue.(types.Date); ok && to.IsZero() {
-			maxValue = nil
-		}
-	}
-
-	t.filters[column] = &paymentTermsFilterCondition{
-		fieldName: column,
-		minValue:  minValue,
-		maxValue:  maxValue,
-		blankDate: blankDate,
-	}
+	t.q.SetRange(t.qt(), fieldName, values...)
 }
 
-// SetFilter sets a complex filter expression on a field
+// SetFilter sets a filter expression on a field
 // Supports filter syntax: "100..200|500" (range OR exact value)
-// Operators: .. (range), | (OR), & (AND), * (wildcard), <> (not equal)
+// Operators: .. (range), | (OR), * (wildcard), <> (not equal), < <= > >=, ” (blank)
 // Example: customer.SetFilter("No", "001..003|005")
 func (t *PaymentTerms) SetFilter(fieldName, filterExpr string) {
-	if t.filters == nil {
-		t.filters = make(map[string]*paymentTermsFilterCondition)
-	}
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		// Unknown field: fail closed (no rows) rather than drop the filter or put
-		// the name into SQL
-		fmt.Printf("Error: SetFilter on unknown field %q of Payment Terms\n", fieldName)
-		t.filters[fieldName] = &paymentTermsFilterCondition{invalidField: true}
-		return
-	}
-	t.filters[column] = &paymentTermsFilterCondition{
-		fieldName:    column,
-		filterExpr:   filterExpr,
-		isExpression: true,
-	}
+	t.q.SetFilter(t.qt(), fieldName, filterExpr)
 }
 
 // SetCurrentKey sets the sort order for queries
 // Unknown fields are ignored (the primary key order is used if none remain).
 // Example: customer.SetCurrentKey("City", "Name")
 func (t *PaymentTerms) SetCurrentKey(fields ...string) {
-	t.orderByFields = nil
-	for _, field := range fields {
-		column, ok := t.columnName(field)
-		if !ok {
-			fmt.Printf("Error: SetCurrentKey on unknown field %q of Payment Terms\n", field)
-			continue
-		}
-		t.orderByFields = append(t.orderByFields, column)
-	}
+	t.q.SetCurrentKey(t.qt(), fields...)
 }
 
 // SetAscending sets the sort direction of the current key (Ascending).
 // The default is ascending.
 func (t *PaymentTerms) SetAscending(ascending bool) {
-	t.descending = !ascending
+	t.q.Descending = !ascending
 }
 
 // SetSearch limits the records to those where any of the given fields contains text,
 // case-insensitive (the list page search box). Unknown fields are ignored; an empty
 // text clears the search.
 func (t *PaymentTerms) SetSearch(fields []string, text string) {
-	t.searchColumns = nil
-	t.searchText = strings.ToLower(strings.TrimSpace(text))
-	if t.searchText == "" {
-		return
-	}
-	for _, field := range fields {
-		if column, ok := t.columnName(field); ok {
-			t.searchColumns = append(t.searchColumns, column)
-		}
-	}
+	t.q.SetSearch(t.qt(), fields, text)
 }
 
 // HasColumn reports whether fieldName (case-insensitive) is a stored column of this
@@ -1198,15 +1092,8 @@ func (t *PaymentTerms) columnName(fieldName string) (string, bool) {
 
 // Reset clears all filters (of all filter groups; back to group 0)
 func (t *PaymentTerms) Reset() {
-	t.filters = nil
-	t.otherFilters = nil
-	t.filterGroup = 0
-	t.seek, t.seekArgs = "", nil
+	t.q.Reset()
 	t.oldValues = nil
-	t.orderByFields = nil
-	t.descending = false
-	t.searchColumns = nil
-	t.searchText = ""
 	if t.currentRows != nil {
 		t.currentRows.Close()
 		t.currentRows = nil
@@ -1215,102 +1102,7 @@ func (t *PaymentTerms) Reset() {
 
 // buildWhereClause builds WHERE clause from current filters and search
 func (t *PaymentTerms) buildWhereClause() (string, []interface{}) {
-	filters := t.allFilters()
-	if len(filters) == 0 && t.searchText == "" && !t.markedOnly && t.seek == "" {
-		return "1=1", nil
-	}
-
-	var conditions []string
-	var args []interface{}
-
-	if t.searchText != "" {
-		if len(t.searchColumns) == 0 {
-			conditions = append(conditions, "1=0") // searching, but in no valid column
-		} else {
-			// LIKE wildcards in the text are matched literally
-			pattern := "%" + strings.NewReplacer("\\", "\\\\", "%", "\\%", "_", "\\_").Replace(t.searchText) + "%"
-			var ors []string
-			for _, column := range t.searchColumns {
-				ors = append(ors, "LOWER(CAST("+column+" AS TEXT)) LIKE ? ESCAPE '\\'")
-				args = append(args, pattern)
-			}
-			conditions = append(conditions, "("+strings.Join(ors, " OR ")+")")
-		}
-	}
-
-	for _, filter := range filters {
-		if filter.invalidField {
-			conditions = append(conditions, "1=0")
-		} else if filter.isExpression {
-			// Parse filter expression
-			clause, exprArgs := t.parseFilterExpression(filter.fieldName, filter.filterExpr)
-			conditions = append(conditions, clause)
-			args = append(args, exprArgs...)
-		} else {
-			// Simple range filter
-			if filter.blankDate && filter.maxValue != nil {
-				conditions = append(conditions, fmt.Sprintf("(%s <= ? OR %s IS NULL)", filter.fieldName, filter.fieldName))
-				args = append(args, filter.maxValue)
-			} else if filter.blankDate {
-				conditions = append(conditions, fmt.Sprintf("(%s IS NULL OR %s = '%s')", filter.fieldName, filter.fieldName, types.BlankKeyDate))
-			} else if filter.minValue != nil && filter.maxValue != nil {
-				conditions = append(conditions, fmt.Sprintf("%s BETWEEN %s AND %s", t.cmpColumn(filter.fieldName), t.cmpParam(filter.fieldName), t.cmpParam(filter.fieldName)))
-				args = append(args, filter.minValue, filter.maxValue)
-			} else if filter.minValue != nil {
-				conditions = append(conditions, fmt.Sprintf("%s >= %s", t.cmpColumn(filter.fieldName), t.cmpParam(filter.fieldName)))
-				args = append(args, filter.minValue)
-			} else if filter.maxValue != nil {
-				conditions = append(conditions, fmt.Sprintf("%s <= %s", t.cmpColumn(filter.fieldName), t.cmpParam(filter.fieldName)))
-				args = append(args, filter.maxValue)
-			}
-		}
-	}
-
-	// MarkedOnly: only the marked records
-	if t.markedOnly {
-		if len(t.marks) == 0 {
-			conditions = append(conditions, "1=0")
-		} else {
-			var keys []string
-			for _, key := range t.marks {
-				keys = append(keys, "(code = ?)")
-				args = append(args, key...)
-			}
-			conditions = append(conditions, "("+strings.Join(keys, " OR ")+")")
-		}
-	}
-
-	// Find(">") / Find("<"): after/before the current record in the current key
-	if t.seek != "" {
-		conditions = append(conditions, t.seek)
-		args = append(args, t.seekArgs...)
-	}
-
-	where := strings.Join(conditions, " AND ")
-	if where == "" {
-		where = "1=1"
-	}
-
-	return where, args
-}
-
-// allFilters returns the filters of all filter groups, the current group's first
-func (t *PaymentTerms) allFilters() []*paymentTermsFilterCondition {
-	filters := make([]*paymentTermsFilterCondition, 0, len(t.filters))
-	for _, f := range t.filters {
-		filters = append(filters, f)
-	}
-	groups := make([]int, 0, len(t.otherFilters))
-	for g := range t.otherFilters {
-		groups = append(groups, g)
-	}
-	slices.Sort(groups)
-	for _, g := range groups {
-		for _, f := range t.otherFilters[g] {
-			filters = append(filters, f)
-		}
-	}
-	return filters
+	return t.q.Where(t.qt())
 }
 
 // FilterGroup switches to filter group group and returns the current one; without an
@@ -1318,202 +1110,29 @@ func (t *PaymentTerms) allFilters() []*paymentTermsFilterCondition {
 // SetFilter, GetFilter and CopyFilter work on the current group — and the filters of all
 // groups apply together. Code sets filters the user must keep in group 2 and goes back to 0.
 func (t *PaymentTerms) FilterGroup(group ...int) int {
-	if len(group) == 0 || group[0] == t.filterGroup {
-		return t.filterGroup
-	}
-	if t.otherFilters == nil {
-		t.otherFilters = map[int]map[string]*paymentTermsFilterCondition{}
-	}
-	if len(t.filters) > 0 {
-		t.otherFilters[t.filterGroup] = t.filters
-	} else {
-		delete(t.otherFilters, t.filterGroup)
-	}
-	t.filterGroup = group[0]
-	t.filters = t.otherFilters[t.filterGroup]
-	delete(t.otherFilters, t.filterGroup)
-	return t.filterGroup
+	return t.q.FilterGroup(group...)
 }
 
 // isKeyDateColumn: a Date column of the primary key (a blank date is types.BlankKeyDate)
 func (t *PaymentTerms) isKeyDateColumn(column string) bool {
-	switch column {
-	}
-	return false
-}
-
-// isBoolColumn: a Boolean column
-func (t *PaymentTerms) isBoolColumn(column string) bool {
-	switch column {
-	case "active":
-		return true
-	}
-	return false
-}
-
-// isDateColumn: a Date column (blank dates are NULL, in the primary key types.BlankKeyDate)
-func (t *PaymentTerms) isDateColumn(column string) bool {
-	switch column {
-	}
-	return false
-}
-
-// isDecimalColumn: a Decimal column
-func (t *PaymentTerms) isDecimalColumn(column string) bool {
-	switch column {
-	case "discount_percent":
-		return true
-	}
-	return false
-}
-
-// sqliteDecimal: decimals are stored as text on SQLite (exact), so comparisons and the order
-// on them must be numeric there — as text 100 lies between 0 and 16.2
-func (t *PaymentTerms) sqliteDecimal(column string) bool {
-	return t.isDecimalColumn(column) && (t.dbType != database.DBTypePostgres || t.temp != nil)
+	return paymentTermsFields.IsKeyDateColumn(column)
 }
 
 // cmpColumn is a column as filters, keys and the order compare it (a decimal on SQLite as a number)
 func (t *PaymentTerms) cmpColumn(column string) string {
-	if t.sqliteDecimal(column) {
-		return "CAST(" + column + " AS REAL)"
-	}
-	return column
+	return t.qt().CmpColumn(column)
 }
 
 // cmpParam is the placeholder of a value compared with a column (a decimal on SQLite as a number)
 func (t *PaymentTerms) cmpParam(column string) string {
-	if t.sqliteDecimal(column) {
-		return "CAST(? AS REAL)"
-	}
-	return "?"
-}
-
-// parseFilterExpression parses filter expressions into SQL
-// Supports: "100..200" (range), "100|200|300" (OR), "100..200|500" (combined)
-func (t *PaymentTerms) parseFilterExpression(fieldName, expr string) (string, []interface{}) {
-	var conditions []string
-	var args []interface{}
-	// Blank dates are stored as NULL and come before every date
-	isDate := t.isDateColumn(fieldName)
-	orBlankDate := func(condition string) string {
-		if isDate {
-			return fmt.Sprintf("(%s OR %s IS NULL)", condition, fieldName)
-		}
-		return condition
-	}
-
-	// a decimal on SQLite compares as a number
-	col, param := t.cmpColumn(fieldName), t.cmpParam(fieldName)
-
-	// Split by | (OR operator)
-	orParts := strings.Split(expr, "|")
-
-	for _, part := range orParts {
-		part = strings.TrimSpace(part)
-
-		// Check for range (..); an open end ("..x", "x..") has one bound
-		if strings.Contains(part, "..") {
-			rangeParts := strings.Split(part, "..")
-			if len(rangeParts) == 2 {
-				min := strings.TrimSpace(rangeParts[0])
-				max := strings.TrimSpace(rangeParts[1])
-				switch {
-				case min == "" && max == "":
-					conditions = append(conditions, "1=1")
-				case min == "":
-					conditions = append(conditions, orBlankDate(fmt.Sprintf("%s <= %s", col, param)))
-					args = append(args, max)
-				case max == "":
-					conditions = append(conditions, fmt.Sprintf("%s >= %s", col, param))
-					args = append(args, min)
-				default:
-					conditions = append(conditions, fmt.Sprintf("%s BETWEEN %s AND %s", col, param, param))
-					args = append(args, min, max)
-				}
-			}
-		} else if part == "''" {
-			// '' is the blank value
-			if isDate {
-				conditions = append(conditions, fmt.Sprintf("(%s IS NULL OR %s = '%s')", fieldName, fieldName, types.BlankKeyDate))
-			} else {
-				conditions = append(conditions, fmt.Sprintf("%s = ?", fieldName))
-				args = append(args, "")
-			}
-		} else if op := tables.FilterComparison(part); op != "" {
-			// Comparison: <=, >=, <, > (a classic filter such as <3000)
-			if op == "<" || op == "<=" {
-				conditions = append(conditions, orBlankDate(fmt.Sprintf("%s %s %s", col, op, param)))
-			} else {
-				conditions = append(conditions, fmt.Sprintf("%s %s %s", col, op, param))
-			}
-			args = append(args, strings.TrimSpace(strings.TrimPrefix(part, op)))
-		} else if strings.Contains(part, "*") {
-			// Wildcard support: convert * to %
-			likePattern := strings.ReplaceAll(part, "*", "%")
-			conditions = append(conditions, fmt.Sprintf("%s LIKE ?", fieldName))
-			args = append(args, likePattern)
-		} else if strings.HasPrefix(part, "<>") {
-			// Not equal
-			value := strings.TrimSpace(strings.TrimPrefix(part, "<>"))
-			if isDate && (value == "''" || value == "") {
-				conditions = append(conditions, fmt.Sprintf("(%s IS NOT NULL AND %s <> '%s')", fieldName, fieldName, types.BlankKeyDate))
-			} else {
-				if value == "''" {
-					value = ""
-				}
-				conditions = append(conditions, orBlankDate(fmt.Sprintf("%s <> %s", col, param)))
-				args = append(args, value)
-			}
-		} else {
-			// Exact match (a boolean column takes Yes/No, true/false, 1/0)
-			conditions = append(conditions, fmt.Sprintf("%s = %s", col, param))
-			if t.isBoolColumn(fieldName) {
-				args = append(args, tables.FilterBool(part))
-			} else {
-				args = append(args, part)
-			}
-		}
-	}
-
-	// A date column compares its dates as the database keeps them (a closing date "C2026-12-31"
-	// as "2026-12-31 23:59:59")
-	if isDate {
-		for i, a := range args {
-			if v, ok := a.(string); ok {
-				args[i] = types.FilterArg(v)
-			}
-		}
-	}
-
-	// Join with OR
-	whereClause := "(" + strings.Join(conditions, " OR ") + ")"
-	return whereClause, args
+	return t.qt().CmpParam(column)
 }
 
 // getOrderByClause builds ORDER BY clause from current key and direction, with the
-// arguments of its placeholders (a FlowField key sorts on its subquery, which may have
-// some; they follow the WHERE arguments). The primary key columns always follow the
-// current key, so the order is unique and paging (SetPage) never repeats or skips rows
-// when the key has duplicate values.
+// arguments of its placeholders (they follow the WHERE arguments); the primary key columns
+// always follow the current key, so paging never repeats or skips rows
 func (t *PaymentTerms) getOrderByClause() (string, []interface{}) {
-	pk := []string{"code"}
-	var columns []string
-	var args []interface{}
-	for _, column := range t.orderByFields {
-		columns = append(columns, t.cmpColumn(column))
-	}
-	for _, column := range pk {
-		if !slices.Contains(t.orderByFields, column) {
-			columns = append(columns, t.cmpColumn(column))
-		}
-	}
-	if t.descending {
-		for i := range columns {
-			columns[i] += " DESC"
-		}
-	}
-	return strings.Join(columns, ", "), args
+	return t.q.OrderByClause(t.qt())
 }
 
 // SetPage sets a pagination window for FindSet/FindSetBuffered: return at most
@@ -1603,9 +1222,9 @@ func (t *PaymentTerms) FindLast() bool {
 	where, args := t.buildWhereClause()
 	// The last record in the current key and direction (classic FIND('+')): the key reversed,
 	// every column of it
-	t.descending = !t.descending
+	t.q.Descending = !t.q.Descending
 	orderBy, orderArgs := t.getOrderByClause()
-	t.descending = !t.descending
+	t.q.Descending = !t.q.Descending
 	args = append(args, orderArgs...)
 
 	// Build SELECT with all fields
@@ -1991,63 +1610,15 @@ func (t *PaymentTerms) DeleteAll() int {
 	return int(rowsAffected)
 }
 
-// CopyFilters copies filters from another record variable (all filter groups)
+// CopyFilters copies the filters (every filter group) and the current key of another record
 func (t *PaymentTerms) CopyFilters(from *PaymentTerms) {
-	t.filters = copyPaymentTermsFilters(from.filters)
-	t.filterGroup = from.filterGroup
-	t.otherFilters = nil
-	for g, filters := range from.otherFilters {
-		if t.otherFilters == nil {
-			t.otherFilters = map[int]map[string]*paymentTermsFilterCondition{}
-		}
-		t.otherFilters[g] = copyPaymentTermsFilters(filters)
-	}
-
-	// Also copy order by fields
-	if len(from.orderByFields) > 0 {
-		t.orderByFields = make([]string, len(from.orderByFields))
-		copy(t.orderByFields, from.orderByFields)
-	} else {
-		t.orderByFields = nil
-	}
-}
-
-// copyPaymentTermsFilters returns a deep copy of a filter group's filters (nil for none)
-func copyPaymentTermsFilters(from map[string]*paymentTermsFilterCondition) map[string]*paymentTermsFilterCondition {
-	if from == nil {
-		return nil
-	}
-	filters := make(map[string]*paymentTermsFilterCondition, len(from))
-	for key, filter := range from {
-		c := *filter
-		filters[key] = &c
-	}
-	return filters
+	t.q.CopyFilters(&from.q)
 }
 
 // GetFilters returns a string representation of current filters
 // Useful for debugging and logging
 func (t *PaymentTerms) GetFilters() string {
-	if len(t.filters) == 0 {
-		return ""
-	}
-
-	var parts []string
-	for _, filter := range t.filters {
-		if filter.invalidField {
-			parts = append(parts, "<invalid field>")
-		} else if filter.isExpression {
-			parts = append(parts, fmt.Sprintf("%s: %s", filter.fieldName, filter.filterExpr))
-		} else if filter.minValue != nil && filter.maxValue != nil {
-			parts = append(parts, fmt.Sprintf("%s: %v..%v", filter.fieldName, filter.minValue, filter.maxValue))
-		} else if filter.minValue != nil {
-			parts = append(parts, fmt.Sprintf("%s: >=%v", filter.fieldName, filter.minValue))
-		} else if filter.maxValue != nil {
-			parts = append(parts, fmt.Sprintf("%s: <=%v", filter.fieldName, filter.maxValue))
-		}
-	}
-
-	return strings.Join(parts, ", ")
+	return t.q.GetFilters()
 }
 
 // ========================================
@@ -2213,25 +1784,9 @@ func (t *PaymentTerms) MaxStrLen(fieldName string) int {
 	return 0
 }
 
-// GetFilter returns the filter on a field as text ("C1", "10..20", or the expression), ""
-// without one
+// GetFilter returns the filter on a field in the filter syntax ("" for none)
 func (t *PaymentTerms) GetFilter(fieldName string) string {
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		return ""
-	}
-	filter, ok := t.filters[column]
-	switch {
-	case !ok || filter.invalidField:
-		return ""
-	case filter.isExpression:
-		return filter.filterExpr
-	case filter.minValue != nil && filter.maxValue != nil && fmt.Sprint(filter.minValue) == fmt.Sprint(filter.maxValue):
-		return fmt.Sprint(filter.minValue)
-	case filter.minValue != nil && filter.maxValue != nil:
-		return fmt.Sprintf("%v..%v", filter.minValue, filter.maxValue)
-	}
-	return ""
+	return t.q.GetFilter(t.qt(), fieldName)
 }
 
 // exec is the database of the record's own table: the temporary record's in-memory
@@ -2273,60 +1828,16 @@ func (t *PaymentTerms) Consistent(ok bool) {
 	tables.SetConsistent(t.db, PaymentTermsTableName, ok)
 }
 
-// FilterExpressions returns the filters of all filter groups as field and expression (the
-// filter syntax: "C1", "10..20", the SetFilter expression) — for a page opened from code
-// (system.RunModal)
+// FilterExpressions returns the filters of all filter groups as field and expression
 func (t *PaymentTerms) FilterExpressions() []tables.FieldFilter {
-	var result []tables.FieldFilter
-	for _, f := range t.allFilters() {
-		filter, ok := t.filterExpression(f)
-		if ok {
-			result = append(result, filter)
-		}
-	}
-	return result
+	return t.q.FilterExpressions()
 }
 
 // FilterExpressionsByGroup returns the filters of each filter group (as FilterExpressions,
 // sorted by field) — a page opened from code shows group 0 as the user's filters and keeps the
 // other groups fixed, so two filters on one field in different groups both apply
 func (t *PaymentTerms) FilterExpressionsByGroup() map[int][]tables.FieldFilter {
-	result := map[int][]tables.FieldFilter{}
-	add := func(group int, filters map[string]*paymentTermsFilterCondition) {
-		for _, f := range filters {
-			filter, ok := t.filterExpression(f)
-			if ok {
-				result[group] = append(result[group], filter)
-			}
-		}
-		slices.SortFunc(result[group], func(a, b tables.FieldFilter) int { return strings.Compare(a.Field, b.Field) })
-	}
-	add(t.filterGroup, t.filters)
-	for group, filters := range t.otherFilters {
-		if group != t.filterGroup {
-			add(group, filters)
-		}
-	}
-	return result
-}
-
-// filterExpression is a filter as field and expression; false for one that has none
-func (t *PaymentTerms) filterExpression(f *paymentTermsFilterCondition) (tables.FieldFilter, bool) {
-	expr := ""
-	switch {
-	case f.invalidField:
-		return tables.FieldFilter{}, false
-	case f.isExpression:
-		expr = f.filterExpr
-	case f.minValue != nil && f.maxValue != nil && fmt.Sprint(f.minValue) == fmt.Sprint(f.maxValue):
-		expr = fmt.Sprint(f.minValue)
-	case f.minValue != nil && f.maxValue != nil:
-		expr = fmt.Sprintf("%v..%v", f.minValue, f.maxValue)
-	default:
-		return tables.FieldFilter{}, false
-	}
-	field := f.fieldName
-	return tables.FieldFilter{Field: field, Expression: expr}, true
+	return t.q.FilterExpressionsByGroup()
 }
 
 // KeyText returns the primary key of the current record as text, the values joined by ","
@@ -2336,44 +1847,19 @@ func (t *PaymentTerms) KeyText() string {
 	return text
 }
 
-// CopyFilter copies the filter on one field to a field of another record, also of another
-// table: cust.CopyFilter("no", &entry, "customer_no"). No filter on the field removes the
-// filter on the other record's field.
+// CopyFilter copies the filter on a field to a field of another record (CopyFilter)
 func (t *PaymentTerms) CopyFilter(fieldName string, to tables.FilterTarget, toFieldName string) {
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: CopyFilter from unknown field %q of Payment Terms\n", fieldName)
-		return
-	}
-	filter, ok := t.filters[column]
-	switch {
-	case !ok:
-		to.SetRange(toFieldName)
-	case filter.isExpression:
-		to.SetFilter(toFieldName, filter.filterExpr)
-	default:
-		to.SetRange(toFieldName, filter.minValue, filter.maxValue)
-	}
+	t.q.CopyFilter(t.qt(), fieldName, to, toFieldName)
 }
 
 // GetRangeMin returns the lower end of the SetRange filter on a field (nil without one)
 func (t *PaymentTerms) GetRangeMin(fieldName string) interface{} {
-	if column, ok := t.columnName(fieldName); ok {
-		if filter, ok := t.filters[column]; ok && !filter.isExpression {
-			return filter.minValue
-		}
-	}
-	return nil
+	return t.q.RangeMin(t.qt(), fieldName)
 }
 
 // GetRangeMax returns the upper end of the SetRange filter on a field (nil without one)
 func (t *PaymentTerms) GetRangeMax(fieldName string) interface{} {
-	if column, ok := t.columnName(fieldName); ok {
-		if filter, ok := t.filters[column]; ok && !filter.isExpression {
-			return filter.maxValue
-		}
-	}
-	return nil
+	return t.q.RangeMax(t.qt(), fieldName)
 }
 
 // SetRecFilter filters on the primary key of the current record (SetRecFilter)
@@ -2395,28 +1881,17 @@ func (t *PaymentTerms) recordKey() ([]interface{}, string) {
 // without an argument it only reports it (Mark)
 func (t *PaymentTerms) Mark(mark ...bool) bool {
 	values, key := t.recordKey()
-	if len(mark) > 0 {
-		if mark[0] {
-			if t.marks == nil {
-				t.marks = map[string][]interface{}{}
-			}
-			t.marks[key] = values
-		} else {
-			delete(t.marks, key)
-		}
-	}
-	_, marked := t.marks[key]
-	return marked
+	return t.q.Mark(key, values, mark...)
 }
 
 // MarkedOnly limits the following reads to the marked records (MarkedOnly)
 func (t *PaymentTerms) MarkedOnly(only bool) {
-	t.markedOnly = only
+	t.q.MarkedOnly(only)
 }
 
 // ClearMarks removes all marks (ClearMarks)
 func (t *PaymentTerms) ClearMarks() {
-	t.marks = nil
+	t.q.ClearMarks()
 }
 
 // RecordId returns the table and the primary key of the current record: "Customer: C1"
@@ -2483,10 +1958,10 @@ func (t *PaymentTerms) Find(which ...string) bool {
 		// on key fields)
 		group := t.FilterGroup()
 		t.FilterGroup(tables.FindKeyFilterGroup)
-		t.filters = nil
+		t.q.ClearGroupFilters()
 		t.SetRecFilter()
 		found := t.FindFirst()
-		t.filters = nil
+		t.q.ClearGroupFilters()
 		t.FilterGroup(group)
 		if found {
 			return true
@@ -2521,18 +1996,18 @@ func (t *PaymentTerms) findInKey(seek string, reverse bool) bool {
 			params = append(params, t.cmpParam(column))
 			values = append(values, v)
 		}
-		after := (seek == ">") != t.descending
+		after := (seek == ">") != t.q.Descending
 		op := "<"
 		if after {
 			op = ">"
 		}
-		t.seek = "(" + strings.Join(columns, ", ") + ") " + op + " (" + strings.Join(params, ", ") + ")"
-		t.seekArgs = values
+		t.q.Seek = "(" + strings.Join(columns, ", ") + ") " + op + " (" + strings.Join(params, ", ") + ")"
+		t.q.SeekArgs = values
 	}
-	savedLimit, savedOffset, savedDescending := t.limit, t.offset, t.descending
+	savedLimit, savedOffset, savedDescending := t.limit, t.offset, t.q.Descending
 	t.limit, t.offset = 1, 0
 	if reverse {
-		t.descending = !t.descending
+		t.q.Descending = !t.q.Descending
 	}
 	found := t.FindSet()
 	// One record read: a later Next seeks from it in the key (inside a transaction FindSet
@@ -2542,21 +2017,15 @@ func (t *PaymentTerms) findInKey(seek string, reverse bool) bool {
 		t.currentRows = nil
 	}
 	t.bufferedRecords = nil
-	t.limit, t.offset, t.descending = savedLimit, savedOffset, savedDescending
-	t.seek, t.seekArgs = "", nil
+	t.limit, t.offset, t.q.Descending = savedLimit, savedOffset, savedDescending
+	t.q.Seek, t.q.SeekArgs = "", nil
 	return found
 }
 
 // keyColumns returns the columns of the current key followed by the primary key's (the
 // sort order of FindSet)
 func (t *PaymentTerms) keyColumns() []string {
-	columns := slices.Clone(t.orderByFields)
-	for _, column := range []string{"code"} {
-		if !slices.Contains(columns, column) {
-			columns = append(columns, column)
-		}
-	}
-	return columns
+	return t.q.KeyColumns(t.qt())
 }
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
@@ -2594,11 +2063,7 @@ func (t *PaymentTerms) SetSelectionFilter() {
 		t.SetRecFilter()
 		return
 	}
-	t.marks = make(map[string][]interface{}, len(t.selection))
-	for key, values := range t.selection {
-		t.marks[key] = values
-	}
-	t.markedOnly = true
+	t.q.MarkOnly(t.selection)
 }
 
 // setKeyValues sets the primary key fields from their values (recordKey order)
@@ -2641,12 +2106,9 @@ func (t *PaymentTerms) FieldCaption(fieldName string, language ...string) string
 // Interface Implementation (tables.Table)
 // ========================================
 
-// ClearFilters removes all filters (alias for Reset)
+// ClearFilters clears the filters of all filter groups and the current key
 func (t *PaymentTerms) ClearFilters() {
-	t.filters = nil
-	t.otherFilters = nil
-	t.filterGroup = 0
-	t.orderByFields = nil
+	t.q.ClearFilters()
 	// Note: Don't clear oldValues or iteration state here
 }
 
