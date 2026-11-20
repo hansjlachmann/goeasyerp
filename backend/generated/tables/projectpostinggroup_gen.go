@@ -129,40 +129,12 @@ var ProjectPostingGroup_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *ProjectPostingGroup) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "code":
-		return 1
-	case "wip_cost_account":
-		return 2
-	case "wip_sales_account":
-		return 3
-	case "cost_account":
-		return 4
-	case "sales_account":
-		return 5
-	case "g_l_exp_sales_acc":
-		return 6
-	}
-	return 0
+	return projectPostingGroupFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *ProjectPostingGroup) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "code"
-	case 2:
-		return "wip_cost_account"
-	case 3:
-		return "wip_sales_account"
-	case 4:
-		return "cost_account"
-	case 5:
-		return "sales_account"
-	case 6:
-		return "g_l_exp_sales_acc"
-	}
-	return ""
+	return projectPostingGroupFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -274,24 +246,6 @@ type (
 	ProjectPostingGroupOnBeforeRename interface {
 		OnBeforeRename(rec *ProjectPostingGroup, handled *bool) error
 	}
-	ProjectPostingGroupOnValidate_Code interface {
-		OnValidate_Code(rec *ProjectPostingGroup) error
-	}
-	ProjectPostingGroupOnValidate_Wip_cost_account interface {
-		OnValidate_Wip_cost_account(rec *ProjectPostingGroup) error
-	}
-	ProjectPostingGroupOnValidate_Wip_sales_account interface {
-		OnValidate_Wip_sales_account(rec *ProjectPostingGroup) error
-	}
-	ProjectPostingGroupOnValidate_Cost_account interface {
-		OnValidate_Cost_account(rec *ProjectPostingGroup) error
-	}
-	ProjectPostingGroupOnValidate_Sales_account interface {
-		OnValidate_Sales_account(rec *ProjectPostingGroup) error
-	}
-	ProjectPostingGroupOnValidate_G_l_exp_sales_acc interface {
-		OnValidate_G_l_exp_sales_acc(rec *ProjectPostingGroup) error
-	}
 )
 
 // projectPostingGroupLogic is the registered business logic of Project_Posting_Group, in
@@ -334,20 +288,9 @@ func projectPostingGroupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ProjectPostingGroupOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(ProjectPostingGroupOnBeforeRename)
-	case "OnValidate_Code":
-		_, ok = logic.(ProjectPostingGroupOnValidate_Code)
-	case "OnValidate_Wip_cost_account":
-		_, ok = logic.(ProjectPostingGroupOnValidate_Wip_cost_account)
-	case "OnValidate_Wip_sales_account":
-		_, ok = logic.(ProjectPostingGroupOnValidate_Wip_sales_account)
-	case "OnValidate_Cost_account":
-		_, ok = logic.(ProjectPostingGroupOnValidate_Cost_account)
-	case "OnValidate_Sales_account":
-		_, ok = logic.(ProjectPostingGroupOnValidate_Sales_account)
-	case "OnValidate_G_l_exp_sales_acc":
-		_, ok = logic.(ProjectPostingGroupOnValidate_G_l_exp_sales_acc)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return projectPostingGroupFields.IsOnValidateTrigger(name, logic, (*ProjectPostingGroup)(nil))
 	}
 	return true, ok
 }
@@ -655,13 +598,7 @@ func (t *ProjectPostingGroup) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *ProjectPostingGroup) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["code"] = t.Code
-	t.oldValues["wip_cost_account"] = t.Wip_cost_account
-	t.oldValues["wip_sales_account"] = t.Wip_sales_account
-	t.oldValues["cost_account"] = t.Cost_account
-	t.oldValues["sales_account"] = t.Sales_account
-	t.oldValues["g_l_exp_sales_acc"] = t.G_l_exp_sales_acc
+	t.oldValues = projectPostingGroupFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -676,24 +613,7 @@ func (t *ProjectPostingGroup) OldValue(fieldName string) interface{} {
 func (t *ProjectPostingGroup) XRec() *ProjectPostingGroup {
 	x := &ProjectPostingGroup{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["code"].(types.Code); ok {
-		x.Code = v
-	}
-	if v, ok := t.oldValues["wip_cost_account"].(types.Code); ok {
-		x.Wip_cost_account = v
-	}
-	if v, ok := t.oldValues["wip_sales_account"].(types.Code); ok {
-		x.Wip_sales_account = v
-	}
-	if v, ok := t.oldValues["cost_account"].(types.Code); ok {
-		x.Cost_account = v
-	}
-	if v, ok := t.oldValues["sales_account"].(types.Code); ok {
-		x.Sales_account = v
-	}
-	if v, ok := t.oldValues["g_l_exp_sales_acc"].(types.Code); ok {
-		x.G_l_exp_sales_acc = v
-	}
+	projectPostingGroupFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1014,45 +934,7 @@ func (t *ProjectPostingGroup) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *ProjectPostingGroup) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Code.Equal(old)
-		}
-	case "wip_cost_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Wip_cost_account.Equal(old)
-		}
-	case "wip_sales_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Wip_sales_account.Equal(old)
-		}
-	case "cost_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Cost_account.Equal(old)
-		}
-	case "sales_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Sales_account.Equal(old)
-		}
-	case "g_l_exp_sales_acc":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.G_l_exp_sales_acc.Equal(old)
-		}
-	}
-
-	return false
+	return projectPostingGroupFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1310,21 +1192,7 @@ func (t *ProjectPostingGroup) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *ProjectPostingGroup) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("code"):
-		return "code", true
-	case strings.ToLower("wip_cost_account"):
-		return "wip_cost_account", true
-	case strings.ToLower("wip_sales_account"):
-		return "wip_sales_account", true
-	case strings.ToLower("cost_account"):
-		return "cost_account", true
-	case strings.ToLower("sales_account"):
-		return "sales_account", true
-	case strings.ToLower("g_l_exp_sales_acc"):
-		return "g_l_exp_sales_acc", true
-	}
-	return "", false
+	return projectPostingGroupFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2185,140 +2053,20 @@ func (t *ProjectPostingGroup) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *ProjectPostingGroup) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-		} else if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectPostingGroupOnValidate_Code); ok {
-				if err := trg.OnValidate_Code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "wip_cost_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Wip_cost_account = v
-		} else if v, ok := value.(string); ok {
-			t.Wip_cost_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field wip_cost_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "wip_cost_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectPostingGroupOnValidate_Wip_cost_account); ok {
-				if err := trg.OnValidate_Wip_cost_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "wip_sales_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Wip_sales_account = v
-		} else if v, ok := value.(string); ok {
-			t.Wip_sales_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field wip_sales_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "wip_sales_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectPostingGroupOnValidate_Wip_sales_account); ok {
-				if err := trg.OnValidate_Wip_sales_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "cost_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Cost_account = v
-		} else if v, ok := value.(string); ok {
-			t.Cost_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field cost_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "cost_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectPostingGroupOnValidate_Cost_account); ok {
-				if err := trg.OnValidate_Cost_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sales_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Sales_account = v
-		} else if v, ok := value.(string); ok {
-			t.Sales_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field sales_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "sales_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectPostingGroupOnValidate_Sales_account); ok {
-				if err := trg.OnValidate_Sales_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "g_l_exp_sales_acc":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.G_l_exp_sales_acc = v
-		} else if v, ok := value.(string); ok {
-			t.G_l_exp_sales_acc = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field g_l_exp_sales_acc")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "g_l_exp_sales_acc"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectPostingGroupOnValidate_G_l_exp_sales_acc); ok {
-				if err := trg.OnValidate_G_l_exp_sales_acc(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := projectPostingGroupFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &projectPostingGroupFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2327,90 +2075,18 @@ func (t *ProjectPostingGroup) ValidateField(fieldName string, value interface{})
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *ProjectPostingGroup) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Code, true
-	case 2:
-		return t.Wip_cost_account, true
-	case 3:
-		return t.Wip_sales_account, true
-	case 4:
-		return t.Cost_account, true
-	case 5:
-		return t.Sales_account, true
-	case 6:
-		return t.G_l_exp_sales_acc, true
-	}
-	return nil, false
+	return projectPostingGroupFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *ProjectPostingGroup) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return projectPostingGroupFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *ProjectPostingGroup) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Wip_cost_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Wip_cost_account = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Code); ok {
-			t.Wip_sales_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Wip_sales_account = types.NewCode(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Code); ok {
-			t.Cost_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Cost_account = types.NewCode(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Code); ok {
-			t.Sales_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Sales_account = types.NewCode(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Code); ok {
-			t.G_l_exp_sales_acc = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.G_l_exp_sales_acc = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return projectPostingGroupFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2859,21 +2535,7 @@ func (t *ProjectPostingGroup) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *ProjectPostingGroup) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "code":
-		return t.Code, true
-	case "wip_cost_account":
-		return t.Wip_cost_account, true
-	case "wip_sales_account":
-		return t.Wip_sales_account, true
-	case "cost_account":
-		return t.Cost_account, true
-	case "sales_account":
-		return t.Sales_account, true
-	case "g_l_exp_sales_acc":
-		return t.G_l_exp_sales_acc, true
-	}
-	return nil, false
+	return projectPostingGroupFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2964,48 +2626,12 @@ func (t *ProjectPostingGroup) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *ProjectPostingGroup) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"code":              t.Code.String(),
-		"wip_cost_account":  t.Wip_cost_account.String(),
-		"wip_sales_account": t.Wip_sales_account.String(),
-		"cost_account":      t.Cost_account.String(),
-		"sales_account":     t.Sales_account.String(),
-		"g_l_exp_sales_acc": t.G_l_exp_sales_acc.String(),
-	}
+	return projectPostingGroupFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *ProjectPostingGroup) FromMap(data map[string]interface{}) {
-	if v, ok := data["code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["wip_cost_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Wip_cost_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["wip_sales_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Wip_sales_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["cost_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Cost_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["sales_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Sales_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["g_l_exp_sales_acc"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.G_l_exp_sales_acc = types.NewCode(s)
-		}
-	}
+	projectPostingGroupFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3026,68 +2652,123 @@ func (t *ProjectPostingGroup) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *ProjectPostingGroup) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "wip_cost_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "wip_sales_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "cost_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "sales_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "g_l_exp_sales_acc",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return projectPostingGroupFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in projectPostingGroupFields.Fields
+func (t *ProjectPostingGroup) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Code
+	case 1:
+		return &t.Wip_cost_account
+	case 2:
+		return &t.Wip_sales_account
+	case 3:
+		return &t.Cost_account
+	case 4:
+		return &t.Sales_account
+	case 5:
+		return &t.G_l_exp_sales_acc
 	}
+	return nil
+}
+
+// projectPostingGroupFields describes the fields of Project_Posting_Group for the record functions
+// written once in foundation/tables
+var projectPostingGroupFields = &tables.TableFields{
+	Table: ProjectPostingGroupTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "wip_cost_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Wip_cost_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "wip_sales_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Wip_sales_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "cost_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Cost_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "sales_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Sales_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "g_l_exp_sales_acc",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_G_l_exp_sales_acc",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

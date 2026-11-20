@@ -25,7 +25,6 @@ import (
 	"fmt"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -126,36 +125,12 @@ var BankAccountStatement_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *BankAccountStatement) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "bank_account_no":
-		return 1
-	case "statement_no":
-		return 2
-	case "statement_ending_balance":
-		return 3
-	case "statement_date":
-		return 4
-	case "balance_last_statement":
-		return 5
-	}
-	return 0
+	return bankAccountStatementFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *BankAccountStatement) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "bank_account_no"
-	case 2:
-		return "statement_no"
-	case 3:
-		return "statement_ending_balance"
-	case 4:
-		return "statement_date"
-	case 5:
-		return "balance_last_statement"
-	}
-	return ""
+	return bankAccountStatementFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -267,21 +242,6 @@ type (
 	BankAccountStatementOnBeforeRename interface {
 		OnBeforeRename(rec *BankAccountStatement, handled *bool) error
 	}
-	BankAccountStatementOnValidate_Bank_account_no interface {
-		OnValidate_Bank_account_no(rec *BankAccountStatement) error
-	}
-	BankAccountStatementOnValidate_Statement_no interface {
-		OnValidate_Statement_no(rec *BankAccountStatement) error
-	}
-	BankAccountStatementOnValidate_Statement_ending_balance interface {
-		OnValidate_Statement_ending_balance(rec *BankAccountStatement) error
-	}
-	BankAccountStatementOnValidate_Statement_date interface {
-		OnValidate_Statement_date(rec *BankAccountStatement) error
-	}
-	BankAccountStatementOnValidate_Balance_last_statement interface {
-		OnValidate_Balance_last_statement(rec *BankAccountStatement) error
-	}
 )
 
 // bankAccountStatementLogic is the registered business logic of Bank_Account_Statement, in
@@ -324,18 +284,9 @@ func bankAccountStatementTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(BankAccountStatementOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(BankAccountStatementOnBeforeRename)
-	case "OnValidate_Bank_account_no":
-		_, ok = logic.(BankAccountStatementOnValidate_Bank_account_no)
-	case "OnValidate_Statement_no":
-		_, ok = logic.(BankAccountStatementOnValidate_Statement_no)
-	case "OnValidate_Statement_ending_balance":
-		_, ok = logic.(BankAccountStatementOnValidate_Statement_ending_balance)
-	case "OnValidate_Statement_date":
-		_, ok = logic.(BankAccountStatementOnValidate_Statement_date)
-	case "OnValidate_Balance_last_statement":
-		_, ok = logic.(BankAccountStatementOnValidate_Balance_last_statement)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return bankAccountStatementFields.IsOnValidateTrigger(name, logic, (*BankAccountStatement)(nil))
 	}
 	return true, ok
 }
@@ -634,12 +585,7 @@ func (t *BankAccountStatement) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *BankAccountStatement) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["bank_account_no"] = t.Bank_account_no
-	t.oldValues["statement_no"] = t.Statement_no
-	t.oldValues["statement_ending_balance"] = t.Statement_ending_balance
-	t.oldValues["statement_date"] = t.Statement_date
-	t.oldValues["balance_last_statement"] = t.Balance_last_statement
+	t.oldValues = bankAccountStatementFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -654,21 +600,7 @@ func (t *BankAccountStatement) OldValue(fieldName string) interface{} {
 func (t *BankAccountStatement) XRec() *BankAccountStatement {
 	x := &BankAccountStatement{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["bank_account_no"].(types.Code); ok {
-		x.Bank_account_no = v
-	}
-	if v, ok := t.oldValues["statement_no"].(types.Code); ok {
-		x.Statement_no = v
-	}
-	if v, ok := t.oldValues["statement_ending_balance"].(types.Decimal); ok {
-		x.Statement_ending_balance = v
-	}
-	if v, ok := t.oldValues["statement_date"].(types.Date); ok {
-		x.Statement_date = v
-	}
-	if v, ok := t.oldValues["balance_last_statement"].(types.Decimal); ok {
-		x.Balance_last_statement = v
-	}
+	bankAccountStatementFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -967,41 +899,7 @@ func (t *BankAccountStatement) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *BankAccountStatement) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "bank_account_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Bank_account_no.Equal(old)
-		}
-	case "statement_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Statement_no.Equal(old)
-		}
-	case "statement_ending_balance":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Statement_ending_balance.Equal(old)
-		}
-	case "statement_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Statement_date.Equal(old)
-		}
-	case "balance_last_statement":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Balance_last_statement.Equal(old)
-		}
-	}
-
-	return false
+	return bankAccountStatementFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1203,19 +1101,7 @@ func (t *BankAccountStatement) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *BankAccountStatement) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("bank_account_no"):
-		return "bank_account_no", true
-	case strings.ToLower("statement_no"):
-		return "statement_no", true
-	case strings.ToLower("statement_ending_balance"):
-		return "statement_ending_balance", true
-	case strings.ToLower("statement_date"):
-		return "statement_date", true
-	case strings.ToLower("balance_last_statement"):
-		return "balance_last_statement", true
-	}
-	return "", false
+	return bankAccountStatementFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2069,132 +1955,20 @@ func (t *BankAccountStatement) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *BankAccountStatement) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "bank_account_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Bank_account_no = v
-		} else if v, ok := value.(string); ok {
-			t.Bank_account_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field bank_account_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "bank_account_no"); err != nil {
+	i, err := bankAccountStatementFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
+	}
+	f := &bankAccountStatementFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
 			return err
 		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(BankAccountStatementOnValidate_Bank_account_no); ok {
-				if err := trg.OnValidate_Bank_account_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "statement_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Statement_no = v
-		} else if v, ok := value.(string); ok {
-			t.Statement_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field statement_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(BankAccountStatementOnValidate_Statement_no); ok {
-				if err := trg.OnValidate_Statement_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "statement_ending_balance":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Statement_ending_balance = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Statement_ending_balance, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field statement_ending_balance: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Statement_ending_balance = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Statement_ending_balance = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Statement_ending_balance = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field statement_ending_balance (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(BankAccountStatementOnValidate_Statement_ending_balance); ok {
-				if err := trg.OnValidate_Statement_ending_balance(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "statement_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Statement_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Statement_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field statement_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Statement_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field statement_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(BankAccountStatementOnValidate_Statement_date); ok {
-				if err := trg.OnValidate_Statement_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "balance_last_statement":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Balance_last_statement = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Balance_last_statement, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field balance_last_statement: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Balance_last_statement = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Balance_last_statement = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Balance_last_statement = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field balance_last_statement (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(BankAccountStatementOnValidate_Balance_last_statement); ok {
-				if err := trg.OnValidate_Balance_last_statement(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2203,67 +1977,18 @@ func (t *BankAccountStatement) ValidateField(fieldName string, value interface{}
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *BankAccountStatement) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Bank_account_no, true
-	case 2:
-		return t.Statement_no, true
-	case 3:
-		return t.Statement_ending_balance, true
-	case 4:
-		return t.Statement_date, true
-	case 5:
-		return t.Balance_last_statement, true
-	}
-	return nil, false
+	return bankAccountStatementFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *BankAccountStatement) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return bankAccountStatementFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *BankAccountStatement) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Bank_account_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Bank_account_no = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Statement_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Statement_no = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Decimal); ok {
-			t.Statement_ending_balance = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Date); ok {
-			t.Statement_date = v
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Decimal); ok {
-			t.Balance_last_statement = v
-			return true
-		}
-	}
-	return false
+	return bankAccountStatementFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2742,19 +2467,7 @@ func (t *BankAccountStatement) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *BankAccountStatement) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "bank_account_no":
-		return t.Bank_account_no, true
-	case "statement_no":
-		return t.Statement_no, true
-	case "statement_ending_balance":
-		return t.Statement_ending_balance, true
-	case "statement_date":
-		return t.Statement_date, true
-	case "balance_last_statement":
-		return t.Balance_last_statement, true
-	}
-	return nil, false
+	return bankAccountStatementFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2847,56 +2560,12 @@ func (t *BankAccountStatement) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *BankAccountStatement) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"bank_account_no":          t.Bank_account_no.String(),
-		"statement_no":             t.Statement_no.String(),
-		"statement_ending_balance": t.Statement_ending_balance.String(),
-		"statement_date":           t.Statement_date.String(),
-		"balance_last_statement":   t.Balance_last_statement.String(),
-	}
+	return bankAccountStatementFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *BankAccountStatement) FromMap(data map[string]interface{}) {
-	if v, ok := data["bank_account_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Bank_account_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["statement_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Statement_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["statement_ending_balance"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Statement_ending_balance, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Statement_ending_balance = types.NewDecimal(val)
-		case int:
-			t.Statement_ending_balance = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Statement_ending_balance = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["statement_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Statement_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["balance_last_statement"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Balance_last_statement, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Balance_last_statement = types.NewDecimal(val)
-		case int:
-			t.Balance_last_statement = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Balance_last_statement = types.NewDecimalFromInt(val)
-		}
-	}
+	bankAccountStatementFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2917,61 +2586,106 @@ func (t *BankAccountStatement) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *BankAccountStatement) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "bank_account_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "statement_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:            3,
-			Name:          "statement_ending_balance",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         4,
-			Name:       "statement_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            5,
-			Name:          "balance_last_statement",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "2:2",
-		},
+	return bankAccountStatementFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in bankAccountStatementFields.Fields
+func (t *BankAccountStatement) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Bank_account_no
+	case 1:
+		return &t.Statement_no
+	case 2:
+		return &t.Statement_ending_balance
+	case 3:
+		return &t.Statement_date
+	case 4:
+		return &t.Balance_last_statement
 	}
+	return nil
+}
+
+// bankAccountStatementFields describes the fields of Bank_Account_Statement for the record functions
+// written once in foundation/tables
+var bankAccountStatementFields = &tables.TableFields{
+	Table: BankAccountStatementTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "bank_account_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Bank_account_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "statement_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Statement_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            3,
+				Name:          "statement_ending_balance",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Statement_ending_balance",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "statement_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Statement_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            5,
+				Name:          "balance_last_statement",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Balance_last_statement",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

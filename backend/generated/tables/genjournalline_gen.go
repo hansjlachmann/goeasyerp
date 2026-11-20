@@ -127,7 +127,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -992,444 +991,12 @@ var GenJournalLine_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *GenJournalLine) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "journal_template_name":
-		return 1
-	case "business_unit_code":
-		return 50
-	case "journal_batch_name":
-		return 51
-	case "line_no":
-		return 2
-	case "account_type":
-		return 3
-	case "account_no":
-		return 4
-	case "posting_date":
-		return 5
-	case "document_type":
-		return 6
-	case "document_no":
-		return 7
-	case "description":
-		return 8
-	case "tax_percent":
-		return 10
-	case "bal_account_no":
-		return 11
-	case "currency_code":
-		return 12
-	case "amount":
-		return 13
-	case "debit_amount":
-		return 14
-	case "credit_amount":
-		return 15
-	case "amount_lcy":
-		return 16
-	case "balance_lcy":
-		return 17
-	case "currency_factor":
-		return 18
-	case "sales_purch_lcy":
-		return 19
-	case "profit_lcy":
-		return 20
-	case "inv_discount_lcy":
-		return 21
-	case "sell_to_buy_from_no":
-		return 22
-	case "posting_group":
-		return 23
-	case "dimension_1_code":
-		return 24
-	case "dimension_2_code":
-		return 25
-	case "salespers_purch_code":
-		return 26
-	case "source_code":
-		return 29
-	case "system_created_entry":
-		return 30
-	case "on_hold":
-		return 34
-	case "applies_to_doc_type":
-		return 35
-	case "applies_to_doc_no":
-		return 36
-	case "due_date":
-		return 38
-	case "pmt_discount_date":
-		return 39
-	case "payment_discount_percent":
-		return 40
-	case "quantity":
-		return 43
-	case "tax_amount":
-		return 44
-	case "vat_posting":
-		return 45
-	case "payment_terms_code":
-		return 47
-	case "applies_to_id":
-		return 48
-	case "reason_code":
-		return 52
-	case "recurring_method":
-		return 53
-	case "expiration_date":
-		return 54
-	case "recurring_frequency":
-		return 55
-	case "allocated_amt_lcy":
-		return 56
-	case "gen_posting_type":
-		return 57
-	case "gen_bus_posting_group":
-		return 58
-	case "gen_prod_posting_group":
-		return 59
-	case "tax_calculation_type":
-		return 60
-	case "allow_application":
-		return 62
-	case "bal_account_type":
-		return 63
-	case "bal_gen_posting_type":
-		return 64
-	case "bal_gen_bus_posting_group":
-		return 65
-	case "bal_gen_prod_posting_group":
-		return 66
-	case "bal_tax_calculation_type":
-		return 67
-	case "bal_tax_percent":
-		return 68
-	case "bal_tax_amount":
-		return 69
-	case "bank_payment_type":
-		return 70
-	case "tax_base_amount":
-		return 71
-	case "bal_tax_base_amount":
-		return 72
-	case "correction":
-		return 73
-	case "check_printed":
-		return 75
-	case "document_date":
-		return 76
-	case "external_document_no":
-		return 77
-	case "source_type":
-		return 78
-	case "source_no":
-		return 79
-	case "posting_no_series":
-		return 80
-	case "tax_area_code":
-		return 82
-	case "tax_liable":
-		return 83
-	case "tax_group_code":
-		return 84
-	case "use_tax":
-		return 85
-	case "bal_tax_area_code":
-		return 86
-	case "bal_tax_liable":
-		return 87
-	case "bal_tax_group_code":
-		return 88
-	case "bal_use_tax":
-		return 89
-	case "tax_bus_posting_group":
-		return 90
-	case "tax_prod_posting_group":
-		return 91
-	case "bal_tax_bus_posting_group":
-		return 92
-	case "bal_tax_prod_posting_group":
-		return 93
-	case "source_currency_code":
-		return 99
-	case "source_currency_amount":
-		return 100
-	case "source_curr_tax_base_amount":
-		return 101
-	case "additional_currency_posting":
-		return 95
-	case "fa_add_currency_factor":
-		return 98
-	case "source_curr_tax_amount":
-		return 102
-	case "tax_amount_lcy":
-		return 104
-	case "tax_base_amount_lcy":
-		return 105
-	case "bal_tax_amount_lcy":
-		return 106
-	case "bal_tax_base_amount_lcy":
-		return 107
-	case "reversing_entry":
-		return 108
-	case "fa_posting_date":
-		return 5600
-	case "fa_posting_type":
-		return 5601
-	case "depreciation_book_code":
-		return 5602
-	case "salvage_value":
-		return 5603
-	case "no_of_depreciation_days":
-		return 5604
-	case "depr_until_fa_posting_date":
-		return 5605
-	case "depr_acquisition_cost":
-		return 5606
-	case "maintenance_code":
-		return 5609
-	case "insurance_no":
-		return 5610
-	case "budgeted_fa_no":
-		return 5611
-	case "duplicate_in_depreciation_book":
-		return 5612
-	case "use_duplication_list":
-		return 5613
-	case "fa_reclassification_entry":
-		return 5614
-	case "fa_error_entry_no":
-		return 5615
-	case "index_entry":
-		return 5616
-	case "project_no":
-		return 42
-	case "eu_3_party_trade":
-		return 61
-	}
-	return 0
+	return genJournalLineFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *GenJournalLine) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "journal_template_name"
-	case 50:
-		return "business_unit_code"
-	case 51:
-		return "journal_batch_name"
-	case 2:
-		return "line_no"
-	case 3:
-		return "account_type"
-	case 4:
-		return "account_no"
-	case 5:
-		return "posting_date"
-	case 6:
-		return "document_type"
-	case 7:
-		return "document_no"
-	case 8:
-		return "description"
-	case 10:
-		return "tax_percent"
-	case 11:
-		return "bal_account_no"
-	case 12:
-		return "currency_code"
-	case 13:
-		return "amount"
-	case 14:
-		return "debit_amount"
-	case 15:
-		return "credit_amount"
-	case 16:
-		return "amount_lcy"
-	case 17:
-		return "balance_lcy"
-	case 18:
-		return "currency_factor"
-	case 19:
-		return "sales_purch_lcy"
-	case 20:
-		return "profit_lcy"
-	case 21:
-		return "inv_discount_lcy"
-	case 22:
-		return "sell_to_buy_from_no"
-	case 23:
-		return "posting_group"
-	case 24:
-		return "dimension_1_code"
-	case 25:
-		return "dimension_2_code"
-	case 26:
-		return "salespers_purch_code"
-	case 29:
-		return "source_code"
-	case 30:
-		return "system_created_entry"
-	case 34:
-		return "on_hold"
-	case 35:
-		return "applies_to_doc_type"
-	case 36:
-		return "applies_to_doc_no"
-	case 38:
-		return "due_date"
-	case 39:
-		return "pmt_discount_date"
-	case 40:
-		return "payment_discount_percent"
-	case 43:
-		return "quantity"
-	case 44:
-		return "tax_amount"
-	case 45:
-		return "vat_posting"
-	case 47:
-		return "payment_terms_code"
-	case 48:
-		return "applies_to_id"
-	case 52:
-		return "reason_code"
-	case 53:
-		return "recurring_method"
-	case 54:
-		return "expiration_date"
-	case 55:
-		return "recurring_frequency"
-	case 56:
-		return "allocated_amt_lcy"
-	case 57:
-		return "gen_posting_type"
-	case 58:
-		return "gen_bus_posting_group"
-	case 59:
-		return "gen_prod_posting_group"
-	case 60:
-		return "tax_calculation_type"
-	case 62:
-		return "allow_application"
-	case 63:
-		return "bal_account_type"
-	case 64:
-		return "bal_gen_posting_type"
-	case 65:
-		return "bal_gen_bus_posting_group"
-	case 66:
-		return "bal_gen_prod_posting_group"
-	case 67:
-		return "bal_tax_calculation_type"
-	case 68:
-		return "bal_tax_percent"
-	case 69:
-		return "bal_tax_amount"
-	case 70:
-		return "bank_payment_type"
-	case 71:
-		return "tax_base_amount"
-	case 72:
-		return "bal_tax_base_amount"
-	case 73:
-		return "correction"
-	case 75:
-		return "check_printed"
-	case 76:
-		return "document_date"
-	case 77:
-		return "external_document_no"
-	case 78:
-		return "source_type"
-	case 79:
-		return "source_no"
-	case 80:
-		return "posting_no_series"
-	case 82:
-		return "tax_area_code"
-	case 83:
-		return "tax_liable"
-	case 84:
-		return "tax_group_code"
-	case 85:
-		return "use_tax"
-	case 86:
-		return "bal_tax_area_code"
-	case 87:
-		return "bal_tax_liable"
-	case 88:
-		return "bal_tax_group_code"
-	case 89:
-		return "bal_use_tax"
-	case 90:
-		return "tax_bus_posting_group"
-	case 91:
-		return "tax_prod_posting_group"
-	case 92:
-		return "bal_tax_bus_posting_group"
-	case 93:
-		return "bal_tax_prod_posting_group"
-	case 99:
-		return "source_currency_code"
-	case 100:
-		return "source_currency_amount"
-	case 101:
-		return "source_curr_tax_base_amount"
-	case 95:
-		return "additional_currency_posting"
-	case 98:
-		return "fa_add_currency_factor"
-	case 102:
-		return "source_curr_tax_amount"
-	case 104:
-		return "tax_amount_lcy"
-	case 105:
-		return "tax_base_amount_lcy"
-	case 106:
-		return "bal_tax_amount_lcy"
-	case 107:
-		return "bal_tax_base_amount_lcy"
-	case 108:
-		return "reversing_entry"
-	case 5600:
-		return "fa_posting_date"
-	case 5601:
-		return "fa_posting_type"
-	case 5602:
-		return "depreciation_book_code"
-	case 5603:
-		return "salvage_value"
-	case 5604:
-		return "no_of_depreciation_days"
-	case 5605:
-		return "depr_until_fa_posting_date"
-	case 5606:
-		return "depr_acquisition_cost"
-	case 5609:
-		return "maintenance_code"
-	case 5610:
-		return "insurance_no"
-	case 5611:
-		return "budgeted_fa_no"
-	case 5612:
-		return "duplicate_in_depreciation_book"
-	case 5613:
-		return "use_duplication_list"
-	case 5614:
-		return "fa_reclassification_entry"
-	case 5615:
-		return "fa_error_entry_no"
-	case 5616:
-		return "index_entry"
-	case 42:
-		return "project_no"
-	case 61:
-		return "eu_3_party_trade"
-	}
-	return ""
+	return genJournalLineFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -1541,324 +1108,6 @@ type (
 	GenJournalLineOnBeforeRename interface {
 		OnBeforeRename(rec *GenJournalLine, handled *bool) error
 	}
-	GenJournalLineOnValidate_Journal_template_name interface {
-		OnValidate_Journal_template_name(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Business_unit_code interface {
-		OnValidate_Business_unit_code(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Journal_batch_name interface {
-		OnValidate_Journal_batch_name(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Line_no interface {
-		OnValidate_Line_no(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Account_type interface {
-		OnValidate_Account_type(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Account_no interface {
-		OnValidate_Account_no(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Posting_date interface {
-		OnValidate_Posting_date(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Document_type interface {
-		OnValidate_Document_type(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Document_no interface {
-		OnValidate_Document_no(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Description interface {
-		OnValidate_Description(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Tax_percent interface {
-		OnValidate_Tax_percent(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Bal_account_no interface {
-		OnValidate_Bal_account_no(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Currency_code interface {
-		OnValidate_Currency_code(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Amount interface {
-		OnValidate_Amount(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Debit_amount interface {
-		OnValidate_Debit_amount(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Credit_amount interface {
-		OnValidate_Credit_amount(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Amount_lcy interface {
-		OnValidate_Amount_lcy(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Balance_lcy interface {
-		OnValidate_Balance_lcy(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Currency_factor interface {
-		OnValidate_Currency_factor(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Sales_purch_lcy interface {
-		OnValidate_Sales_purch_lcy(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Profit_lcy interface {
-		OnValidate_Profit_lcy(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Inv_discount_lcy interface {
-		OnValidate_Inv_discount_lcy(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Sell_to_buy_from_no interface {
-		OnValidate_Sell_to_buy_from_no(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Posting_group interface {
-		OnValidate_Posting_group(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Dimension_1_code interface {
-		OnValidate_Dimension_1_code(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Dimension_2_code interface {
-		OnValidate_Dimension_2_code(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Salespers_purch_code interface {
-		OnValidate_Salespers_purch_code(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Source_code interface {
-		OnValidate_Source_code(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_System_created_entry interface {
-		OnValidate_System_created_entry(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_On_hold interface {
-		OnValidate_On_hold(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Applies_to_doc_type interface {
-		OnValidate_Applies_to_doc_type(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Applies_to_doc_no interface {
-		OnValidate_Applies_to_doc_no(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Due_date interface {
-		OnValidate_Due_date(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Pmt_discount_date interface {
-		OnValidate_Pmt_discount_date(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Payment_discount_percent interface {
-		OnValidate_Payment_discount_percent(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Quantity interface {
-		OnValidate_Quantity(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Tax_amount interface {
-		OnValidate_Tax_amount(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Vat_posting interface {
-		OnValidate_Vat_posting(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Payment_terms_code interface {
-		OnValidate_Payment_terms_code(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Applies_to_id interface {
-		OnValidate_Applies_to_id(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Reason_code interface {
-		OnValidate_Reason_code(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Recurring_method interface {
-		OnValidate_Recurring_method(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Expiration_date interface {
-		OnValidate_Expiration_date(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Recurring_frequency interface {
-		OnValidate_Recurring_frequency(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Gen_posting_type interface {
-		OnValidate_Gen_posting_type(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Gen_bus_posting_group interface {
-		OnValidate_Gen_bus_posting_group(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Gen_prod_posting_group interface {
-		OnValidate_Gen_prod_posting_group(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Tax_calculation_type interface {
-		OnValidate_Tax_calculation_type(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Allow_application interface {
-		OnValidate_Allow_application(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Bal_account_type interface {
-		OnValidate_Bal_account_type(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Bal_gen_posting_type interface {
-		OnValidate_Bal_gen_posting_type(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Bal_gen_bus_posting_group interface {
-		OnValidate_Bal_gen_bus_posting_group(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Bal_gen_prod_posting_group interface {
-		OnValidate_Bal_gen_prod_posting_group(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Bal_tax_calculation_type interface {
-		OnValidate_Bal_tax_calculation_type(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Bal_tax_percent interface {
-		OnValidate_Bal_tax_percent(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Bal_tax_amount interface {
-		OnValidate_Bal_tax_amount(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Bank_payment_type interface {
-		OnValidate_Bank_payment_type(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Tax_base_amount interface {
-		OnValidate_Tax_base_amount(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Bal_tax_base_amount interface {
-		OnValidate_Bal_tax_base_amount(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Correction interface {
-		OnValidate_Correction(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Check_printed interface {
-		OnValidate_Check_printed(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Document_date interface {
-		OnValidate_Document_date(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_External_document_no interface {
-		OnValidate_External_document_no(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Source_type interface {
-		OnValidate_Source_type(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Source_no interface {
-		OnValidate_Source_no(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Posting_no_series interface {
-		OnValidate_Posting_no_series(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Tax_area_code interface {
-		OnValidate_Tax_area_code(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Tax_liable interface {
-		OnValidate_Tax_liable(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Tax_group_code interface {
-		OnValidate_Tax_group_code(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Use_tax interface {
-		OnValidate_Use_tax(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Bal_tax_area_code interface {
-		OnValidate_Bal_tax_area_code(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Bal_tax_liable interface {
-		OnValidate_Bal_tax_liable(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Bal_tax_group_code interface {
-		OnValidate_Bal_tax_group_code(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Bal_use_tax interface {
-		OnValidate_Bal_use_tax(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Tax_bus_posting_group interface {
-		OnValidate_Tax_bus_posting_group(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Tax_prod_posting_group interface {
-		OnValidate_Tax_prod_posting_group(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Bal_tax_bus_posting_group interface {
-		OnValidate_Bal_tax_bus_posting_group(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Bal_tax_prod_posting_group interface {
-		OnValidate_Bal_tax_prod_posting_group(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Source_currency_code interface {
-		OnValidate_Source_currency_code(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Source_currency_amount interface {
-		OnValidate_Source_currency_amount(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Source_curr_tax_base_amount interface {
-		OnValidate_Source_curr_tax_base_amount(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Additional_currency_posting interface {
-		OnValidate_Additional_currency_posting(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Fa_add_currency_factor interface {
-		OnValidate_Fa_add_currency_factor(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Source_curr_tax_amount interface {
-		OnValidate_Source_curr_tax_amount(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Tax_amount_lcy interface {
-		OnValidate_Tax_amount_lcy(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Tax_base_amount_lcy interface {
-		OnValidate_Tax_base_amount_lcy(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Bal_tax_amount_lcy interface {
-		OnValidate_Bal_tax_amount_lcy(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Bal_tax_base_amount_lcy interface {
-		OnValidate_Bal_tax_base_amount_lcy(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Reversing_entry interface {
-		OnValidate_Reversing_entry(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Fa_posting_date interface {
-		OnValidate_Fa_posting_date(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Fa_posting_type interface {
-		OnValidate_Fa_posting_type(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Depreciation_book_code interface {
-		OnValidate_Depreciation_book_code(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Salvage_value interface {
-		OnValidate_Salvage_value(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_No_of_depreciation_days interface {
-		OnValidate_No_of_depreciation_days(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Depr_until_fa_posting_date interface {
-		OnValidate_Depr_until_fa_posting_date(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Depr_acquisition_cost interface {
-		OnValidate_Depr_acquisition_cost(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Maintenance_code interface {
-		OnValidate_Maintenance_code(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Insurance_no interface {
-		OnValidate_Insurance_no(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Budgeted_fa_no interface {
-		OnValidate_Budgeted_fa_no(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Duplicate_in_depreciation_book interface {
-		OnValidate_Duplicate_in_depreciation_book(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Use_duplication_list interface {
-		OnValidate_Use_duplication_list(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Fa_reclassification_entry interface {
-		OnValidate_Fa_reclassification_entry(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Fa_error_entry_no interface {
-		OnValidate_Fa_error_entry_no(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Index_entry interface {
-		OnValidate_Index_entry(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Project_no interface {
-		OnValidate_Project_no(rec *GenJournalLine) error
-	}
-	GenJournalLineOnValidate_Eu_3_party_trade interface {
-		OnValidate_Eu_3_party_trade(rec *GenJournalLine) error
-	}
 )
 
 // genJournalLineLogic is the registered business logic of Gen_Journal_Line, in
@@ -1901,220 +1150,9 @@ func genJournalLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(GenJournalLineOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(GenJournalLineOnBeforeRename)
-	case "OnValidate_Journal_template_name":
-		_, ok = logic.(GenJournalLineOnValidate_Journal_template_name)
-	case "OnValidate_Business_unit_code":
-		_, ok = logic.(GenJournalLineOnValidate_Business_unit_code)
-	case "OnValidate_Journal_batch_name":
-		_, ok = logic.(GenJournalLineOnValidate_Journal_batch_name)
-	case "OnValidate_Line_no":
-		_, ok = logic.(GenJournalLineOnValidate_Line_no)
-	case "OnValidate_Account_type":
-		_, ok = logic.(GenJournalLineOnValidate_Account_type)
-	case "OnValidate_Account_no":
-		_, ok = logic.(GenJournalLineOnValidate_Account_no)
-	case "OnValidate_Posting_date":
-		_, ok = logic.(GenJournalLineOnValidate_Posting_date)
-	case "OnValidate_Document_type":
-		_, ok = logic.(GenJournalLineOnValidate_Document_type)
-	case "OnValidate_Document_no":
-		_, ok = logic.(GenJournalLineOnValidate_Document_no)
-	case "OnValidate_Description":
-		_, ok = logic.(GenJournalLineOnValidate_Description)
-	case "OnValidate_Tax_percent":
-		_, ok = logic.(GenJournalLineOnValidate_Tax_percent)
-	case "OnValidate_Bal_account_no":
-		_, ok = logic.(GenJournalLineOnValidate_Bal_account_no)
-	case "OnValidate_Currency_code":
-		_, ok = logic.(GenJournalLineOnValidate_Currency_code)
-	case "OnValidate_Amount":
-		_, ok = logic.(GenJournalLineOnValidate_Amount)
-	case "OnValidate_Debit_amount":
-		_, ok = logic.(GenJournalLineOnValidate_Debit_amount)
-	case "OnValidate_Credit_amount":
-		_, ok = logic.(GenJournalLineOnValidate_Credit_amount)
-	case "OnValidate_Amount_lcy":
-		_, ok = logic.(GenJournalLineOnValidate_Amount_lcy)
-	case "OnValidate_Balance_lcy":
-		_, ok = logic.(GenJournalLineOnValidate_Balance_lcy)
-	case "OnValidate_Currency_factor":
-		_, ok = logic.(GenJournalLineOnValidate_Currency_factor)
-	case "OnValidate_Sales_purch_lcy":
-		_, ok = logic.(GenJournalLineOnValidate_Sales_purch_lcy)
-	case "OnValidate_Profit_lcy":
-		_, ok = logic.(GenJournalLineOnValidate_Profit_lcy)
-	case "OnValidate_Inv_discount_lcy":
-		_, ok = logic.(GenJournalLineOnValidate_Inv_discount_lcy)
-	case "OnValidate_Sell_to_buy_from_no":
-		_, ok = logic.(GenJournalLineOnValidate_Sell_to_buy_from_no)
-	case "OnValidate_Posting_group":
-		_, ok = logic.(GenJournalLineOnValidate_Posting_group)
-	case "OnValidate_Dimension_1_code":
-		_, ok = logic.(GenJournalLineOnValidate_Dimension_1_code)
-	case "OnValidate_Dimension_2_code":
-		_, ok = logic.(GenJournalLineOnValidate_Dimension_2_code)
-	case "OnValidate_Salespers_purch_code":
-		_, ok = logic.(GenJournalLineOnValidate_Salespers_purch_code)
-	case "OnValidate_Source_code":
-		_, ok = logic.(GenJournalLineOnValidate_Source_code)
-	case "OnValidate_System_created_entry":
-		_, ok = logic.(GenJournalLineOnValidate_System_created_entry)
-	case "OnValidate_On_hold":
-		_, ok = logic.(GenJournalLineOnValidate_On_hold)
-	case "OnValidate_Applies_to_doc_type":
-		_, ok = logic.(GenJournalLineOnValidate_Applies_to_doc_type)
-	case "OnValidate_Applies_to_doc_no":
-		_, ok = logic.(GenJournalLineOnValidate_Applies_to_doc_no)
-	case "OnValidate_Due_date":
-		_, ok = logic.(GenJournalLineOnValidate_Due_date)
-	case "OnValidate_Pmt_discount_date":
-		_, ok = logic.(GenJournalLineOnValidate_Pmt_discount_date)
-	case "OnValidate_Payment_discount_percent":
-		_, ok = logic.(GenJournalLineOnValidate_Payment_discount_percent)
-	case "OnValidate_Quantity":
-		_, ok = logic.(GenJournalLineOnValidate_Quantity)
-	case "OnValidate_Tax_amount":
-		_, ok = logic.(GenJournalLineOnValidate_Tax_amount)
-	case "OnValidate_Vat_posting":
-		_, ok = logic.(GenJournalLineOnValidate_Vat_posting)
-	case "OnValidate_Payment_terms_code":
-		_, ok = logic.(GenJournalLineOnValidate_Payment_terms_code)
-	case "OnValidate_Applies_to_id":
-		_, ok = logic.(GenJournalLineOnValidate_Applies_to_id)
-	case "OnValidate_Reason_code":
-		_, ok = logic.(GenJournalLineOnValidate_Reason_code)
-	case "OnValidate_Recurring_method":
-		_, ok = logic.(GenJournalLineOnValidate_Recurring_method)
-	case "OnValidate_Expiration_date":
-		_, ok = logic.(GenJournalLineOnValidate_Expiration_date)
-	case "OnValidate_Recurring_frequency":
-		_, ok = logic.(GenJournalLineOnValidate_Recurring_frequency)
-	case "OnValidate_Gen_posting_type":
-		_, ok = logic.(GenJournalLineOnValidate_Gen_posting_type)
-	case "OnValidate_Gen_bus_posting_group":
-		_, ok = logic.(GenJournalLineOnValidate_Gen_bus_posting_group)
-	case "OnValidate_Gen_prod_posting_group":
-		_, ok = logic.(GenJournalLineOnValidate_Gen_prod_posting_group)
-	case "OnValidate_Tax_calculation_type":
-		_, ok = logic.(GenJournalLineOnValidate_Tax_calculation_type)
-	case "OnValidate_Allow_application":
-		_, ok = logic.(GenJournalLineOnValidate_Allow_application)
-	case "OnValidate_Bal_account_type":
-		_, ok = logic.(GenJournalLineOnValidate_Bal_account_type)
-	case "OnValidate_Bal_gen_posting_type":
-		_, ok = logic.(GenJournalLineOnValidate_Bal_gen_posting_type)
-	case "OnValidate_Bal_gen_bus_posting_group":
-		_, ok = logic.(GenJournalLineOnValidate_Bal_gen_bus_posting_group)
-	case "OnValidate_Bal_gen_prod_posting_group":
-		_, ok = logic.(GenJournalLineOnValidate_Bal_gen_prod_posting_group)
-	case "OnValidate_Bal_tax_calculation_type":
-		_, ok = logic.(GenJournalLineOnValidate_Bal_tax_calculation_type)
-	case "OnValidate_Bal_tax_percent":
-		_, ok = logic.(GenJournalLineOnValidate_Bal_tax_percent)
-	case "OnValidate_Bal_tax_amount":
-		_, ok = logic.(GenJournalLineOnValidate_Bal_tax_amount)
-	case "OnValidate_Bank_payment_type":
-		_, ok = logic.(GenJournalLineOnValidate_Bank_payment_type)
-	case "OnValidate_Tax_base_amount":
-		_, ok = logic.(GenJournalLineOnValidate_Tax_base_amount)
-	case "OnValidate_Bal_tax_base_amount":
-		_, ok = logic.(GenJournalLineOnValidate_Bal_tax_base_amount)
-	case "OnValidate_Correction":
-		_, ok = logic.(GenJournalLineOnValidate_Correction)
-	case "OnValidate_Check_printed":
-		_, ok = logic.(GenJournalLineOnValidate_Check_printed)
-	case "OnValidate_Document_date":
-		_, ok = logic.(GenJournalLineOnValidate_Document_date)
-	case "OnValidate_External_document_no":
-		_, ok = logic.(GenJournalLineOnValidate_External_document_no)
-	case "OnValidate_Source_type":
-		_, ok = logic.(GenJournalLineOnValidate_Source_type)
-	case "OnValidate_Source_no":
-		_, ok = logic.(GenJournalLineOnValidate_Source_no)
-	case "OnValidate_Posting_no_series":
-		_, ok = logic.(GenJournalLineOnValidate_Posting_no_series)
-	case "OnValidate_Tax_area_code":
-		_, ok = logic.(GenJournalLineOnValidate_Tax_area_code)
-	case "OnValidate_Tax_liable":
-		_, ok = logic.(GenJournalLineOnValidate_Tax_liable)
-	case "OnValidate_Tax_group_code":
-		_, ok = logic.(GenJournalLineOnValidate_Tax_group_code)
-	case "OnValidate_Use_tax":
-		_, ok = logic.(GenJournalLineOnValidate_Use_tax)
-	case "OnValidate_Bal_tax_area_code":
-		_, ok = logic.(GenJournalLineOnValidate_Bal_tax_area_code)
-	case "OnValidate_Bal_tax_liable":
-		_, ok = logic.(GenJournalLineOnValidate_Bal_tax_liable)
-	case "OnValidate_Bal_tax_group_code":
-		_, ok = logic.(GenJournalLineOnValidate_Bal_tax_group_code)
-	case "OnValidate_Bal_use_tax":
-		_, ok = logic.(GenJournalLineOnValidate_Bal_use_tax)
-	case "OnValidate_Tax_bus_posting_group":
-		_, ok = logic.(GenJournalLineOnValidate_Tax_bus_posting_group)
-	case "OnValidate_Tax_prod_posting_group":
-		_, ok = logic.(GenJournalLineOnValidate_Tax_prod_posting_group)
-	case "OnValidate_Bal_tax_bus_posting_group":
-		_, ok = logic.(GenJournalLineOnValidate_Bal_tax_bus_posting_group)
-	case "OnValidate_Bal_tax_prod_posting_group":
-		_, ok = logic.(GenJournalLineOnValidate_Bal_tax_prod_posting_group)
-	case "OnValidate_Source_currency_code":
-		_, ok = logic.(GenJournalLineOnValidate_Source_currency_code)
-	case "OnValidate_Source_currency_amount":
-		_, ok = logic.(GenJournalLineOnValidate_Source_currency_amount)
-	case "OnValidate_Source_curr_tax_base_amount":
-		_, ok = logic.(GenJournalLineOnValidate_Source_curr_tax_base_amount)
-	case "OnValidate_Additional_currency_posting":
-		_, ok = logic.(GenJournalLineOnValidate_Additional_currency_posting)
-	case "OnValidate_Fa_add_currency_factor":
-		_, ok = logic.(GenJournalLineOnValidate_Fa_add_currency_factor)
-	case "OnValidate_Source_curr_tax_amount":
-		_, ok = logic.(GenJournalLineOnValidate_Source_curr_tax_amount)
-	case "OnValidate_Tax_amount_lcy":
-		_, ok = logic.(GenJournalLineOnValidate_Tax_amount_lcy)
-	case "OnValidate_Tax_base_amount_lcy":
-		_, ok = logic.(GenJournalLineOnValidate_Tax_base_amount_lcy)
-	case "OnValidate_Bal_tax_amount_lcy":
-		_, ok = logic.(GenJournalLineOnValidate_Bal_tax_amount_lcy)
-	case "OnValidate_Bal_tax_base_amount_lcy":
-		_, ok = logic.(GenJournalLineOnValidate_Bal_tax_base_amount_lcy)
-	case "OnValidate_Reversing_entry":
-		_, ok = logic.(GenJournalLineOnValidate_Reversing_entry)
-	case "OnValidate_Fa_posting_date":
-		_, ok = logic.(GenJournalLineOnValidate_Fa_posting_date)
-	case "OnValidate_Fa_posting_type":
-		_, ok = logic.(GenJournalLineOnValidate_Fa_posting_type)
-	case "OnValidate_Depreciation_book_code":
-		_, ok = logic.(GenJournalLineOnValidate_Depreciation_book_code)
-	case "OnValidate_Salvage_value":
-		_, ok = logic.(GenJournalLineOnValidate_Salvage_value)
-	case "OnValidate_No_of_depreciation_days":
-		_, ok = logic.(GenJournalLineOnValidate_No_of_depreciation_days)
-	case "OnValidate_Depr_until_fa_posting_date":
-		_, ok = logic.(GenJournalLineOnValidate_Depr_until_fa_posting_date)
-	case "OnValidate_Depr_acquisition_cost":
-		_, ok = logic.(GenJournalLineOnValidate_Depr_acquisition_cost)
-	case "OnValidate_Maintenance_code":
-		_, ok = logic.(GenJournalLineOnValidate_Maintenance_code)
-	case "OnValidate_Insurance_no":
-		_, ok = logic.(GenJournalLineOnValidate_Insurance_no)
-	case "OnValidate_Budgeted_fa_no":
-		_, ok = logic.(GenJournalLineOnValidate_Budgeted_fa_no)
-	case "OnValidate_Duplicate_in_depreciation_book":
-		_, ok = logic.(GenJournalLineOnValidate_Duplicate_in_depreciation_book)
-	case "OnValidate_Use_duplication_list":
-		_, ok = logic.(GenJournalLineOnValidate_Use_duplication_list)
-	case "OnValidate_Fa_reclassification_entry":
-		_, ok = logic.(GenJournalLineOnValidate_Fa_reclassification_entry)
-	case "OnValidate_Fa_error_entry_no":
-		_, ok = logic.(GenJournalLineOnValidate_Fa_error_entry_no)
-	case "OnValidate_Index_entry":
-		_, ok = logic.(GenJournalLineOnValidate_Index_entry)
-	case "OnValidate_Project_no":
-		_, ok = logic.(GenJournalLineOnValidate_Project_no)
-	case "OnValidate_Eu_3_party_trade":
-		_, ok = logic.(GenJournalLineOnValidate_Eu_3_party_trade)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return genJournalLineFields.IsOnValidateTrigger(name, logic, (*GenJournalLine)(nil))
 	}
 	return true, ok
 }
@@ -2777,113 +1815,7 @@ func (t *GenJournalLine) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *GenJournalLine) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["journal_template_name"] = t.Journal_template_name
-	t.oldValues["business_unit_code"] = t.Business_unit_code
-	t.oldValues["journal_batch_name"] = t.Journal_batch_name
-	t.oldValues["line_no"] = t.Line_no
-	t.oldValues["account_type"] = t.Account_type
-	t.oldValues["account_no"] = t.Account_no
-	t.oldValues["posting_date"] = t.Posting_date
-	t.oldValues["document_type"] = t.Document_type
-	t.oldValues["document_no"] = t.Document_no
-	t.oldValues["description"] = t.Description
-	t.oldValues["tax_percent"] = t.Tax_percent
-	t.oldValues["bal_account_no"] = t.Bal_account_no
-	t.oldValues["currency_code"] = t.Currency_code
-	t.oldValues["amount"] = t.Amount
-	t.oldValues["debit_amount"] = t.Debit_amount
-	t.oldValues["credit_amount"] = t.Credit_amount
-	t.oldValues["amount_lcy"] = t.Amount_lcy
-	t.oldValues["balance_lcy"] = t.Balance_lcy
-	t.oldValues["currency_factor"] = t.Currency_factor
-	t.oldValues["sales_purch_lcy"] = t.Sales_purch_lcy
-	t.oldValues["profit_lcy"] = t.Profit_lcy
-	t.oldValues["inv_discount_lcy"] = t.Inv_discount_lcy
-	t.oldValues["sell_to_buy_from_no"] = t.Sell_to_buy_from_no
-	t.oldValues["posting_group"] = t.Posting_group
-	t.oldValues["dimension_1_code"] = t.Dimension_1_code
-	t.oldValues["dimension_2_code"] = t.Dimension_2_code
-	t.oldValues["salespers_purch_code"] = t.Salespers_purch_code
-	t.oldValues["source_code"] = t.Source_code
-	t.oldValues["system_created_entry"] = t.System_created_entry
-	t.oldValues["on_hold"] = t.On_hold
-	t.oldValues["applies_to_doc_type"] = t.Applies_to_doc_type
-	t.oldValues["applies_to_doc_no"] = t.Applies_to_doc_no
-	t.oldValues["due_date"] = t.Due_date
-	t.oldValues["pmt_discount_date"] = t.Pmt_discount_date
-	t.oldValues["payment_discount_percent"] = t.Payment_discount_percent
-	t.oldValues["quantity"] = t.Quantity
-	t.oldValues["tax_amount"] = t.Tax_amount
-	t.oldValues["vat_posting"] = t.Vat_posting
-	t.oldValues["payment_terms_code"] = t.Payment_terms_code
-	t.oldValues["applies_to_id"] = t.Applies_to_id
-	t.oldValues["reason_code"] = t.Reason_code
-	t.oldValues["recurring_method"] = t.Recurring_method
-	t.oldValues["expiration_date"] = t.Expiration_date
-	t.oldValues["recurring_frequency"] = t.Recurring_frequency
-	t.oldValues["gen_posting_type"] = t.Gen_posting_type
-	t.oldValues["gen_bus_posting_group"] = t.Gen_bus_posting_group
-	t.oldValues["gen_prod_posting_group"] = t.Gen_prod_posting_group
-	t.oldValues["tax_calculation_type"] = t.Tax_calculation_type
-	t.oldValues["allow_application"] = t.Allow_application
-	t.oldValues["bal_account_type"] = t.Bal_account_type
-	t.oldValues["bal_gen_posting_type"] = t.Bal_gen_posting_type
-	t.oldValues["bal_gen_bus_posting_group"] = t.Bal_gen_bus_posting_group
-	t.oldValues["bal_gen_prod_posting_group"] = t.Bal_gen_prod_posting_group
-	t.oldValues["bal_tax_calculation_type"] = t.Bal_tax_calculation_type
-	t.oldValues["bal_tax_percent"] = t.Bal_tax_percent
-	t.oldValues["bal_tax_amount"] = t.Bal_tax_amount
-	t.oldValues["bank_payment_type"] = t.Bank_payment_type
-	t.oldValues["tax_base_amount"] = t.Tax_base_amount
-	t.oldValues["bal_tax_base_amount"] = t.Bal_tax_base_amount
-	t.oldValues["correction"] = t.Correction
-	t.oldValues["check_printed"] = t.Check_printed
-	t.oldValues["document_date"] = t.Document_date
-	t.oldValues["external_document_no"] = t.External_document_no
-	t.oldValues["source_type"] = t.Source_type
-	t.oldValues["source_no"] = t.Source_no
-	t.oldValues["posting_no_series"] = t.Posting_no_series
-	t.oldValues["tax_area_code"] = t.Tax_area_code
-	t.oldValues["tax_liable"] = t.Tax_liable
-	t.oldValues["tax_group_code"] = t.Tax_group_code
-	t.oldValues["use_tax"] = t.Use_tax
-	t.oldValues["bal_tax_area_code"] = t.Bal_tax_area_code
-	t.oldValues["bal_tax_liable"] = t.Bal_tax_liable
-	t.oldValues["bal_tax_group_code"] = t.Bal_tax_group_code
-	t.oldValues["bal_use_tax"] = t.Bal_use_tax
-	t.oldValues["tax_bus_posting_group"] = t.Tax_bus_posting_group
-	t.oldValues["tax_prod_posting_group"] = t.Tax_prod_posting_group
-	t.oldValues["bal_tax_bus_posting_group"] = t.Bal_tax_bus_posting_group
-	t.oldValues["bal_tax_prod_posting_group"] = t.Bal_tax_prod_posting_group
-	t.oldValues["source_currency_code"] = t.Source_currency_code
-	t.oldValues["source_currency_amount"] = t.Source_currency_amount
-	t.oldValues["source_curr_tax_base_amount"] = t.Source_curr_tax_base_amount
-	t.oldValues["additional_currency_posting"] = t.Additional_currency_posting
-	t.oldValues["fa_add_currency_factor"] = t.Fa_add_currency_factor
-	t.oldValues["source_curr_tax_amount"] = t.Source_curr_tax_amount
-	t.oldValues["tax_amount_lcy"] = t.Tax_amount_lcy
-	t.oldValues["tax_base_amount_lcy"] = t.Tax_base_amount_lcy
-	t.oldValues["bal_tax_amount_lcy"] = t.Bal_tax_amount_lcy
-	t.oldValues["bal_tax_base_amount_lcy"] = t.Bal_tax_base_amount_lcy
-	t.oldValues["reversing_entry"] = t.Reversing_entry
-	t.oldValues["fa_posting_date"] = t.Fa_posting_date
-	t.oldValues["fa_posting_type"] = t.Fa_posting_type
-	t.oldValues["depreciation_book_code"] = t.Depreciation_book_code
-	t.oldValues["salvage_value"] = t.Salvage_value
-	t.oldValues["no_of_depreciation_days"] = t.No_of_depreciation_days
-	t.oldValues["depr_until_fa_posting_date"] = t.Depr_until_fa_posting_date
-	t.oldValues["depr_acquisition_cost"] = t.Depr_acquisition_cost
-	t.oldValues["maintenance_code"] = t.Maintenance_code
-	t.oldValues["insurance_no"] = t.Insurance_no
-	t.oldValues["budgeted_fa_no"] = t.Budgeted_fa_no
-	t.oldValues["duplicate_in_depreciation_book"] = t.Duplicate_in_depreciation_book
-	t.oldValues["use_duplication_list"] = t.Use_duplication_list
-	t.oldValues["fa_reclassification_entry"] = t.Fa_reclassification_entry
-	t.oldValues["fa_error_entry_no"] = t.Fa_error_entry_no
-	t.oldValues["index_entry"] = t.Index_entry
-	t.oldValues["project_no"] = t.Project_no
-	t.oldValues["eu_3_party_trade"] = t.Eu_3_party_trade
+	t.oldValues = genJournalLineFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -2898,324 +1830,7 @@ func (t *GenJournalLine) OldValue(fieldName string) interface{} {
 func (t *GenJournalLine) XRec() *GenJournalLine {
 	x := &GenJournalLine{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["journal_template_name"].(types.Code); ok {
-		x.Journal_template_name = v
-	}
-	if v, ok := t.oldValues["business_unit_code"].(types.Code); ok {
-		x.Business_unit_code = v
-	}
-	if v, ok := t.oldValues["journal_batch_name"].(types.Code); ok {
-		x.Journal_batch_name = v
-	}
-	if v, ok := t.oldValues["line_no"].(int); ok {
-		x.Line_no = v
-	}
-	if v, ok := t.oldValues["account_type"].(GenJournalLineAccount_type); ok {
-		x.Account_type = v
-	}
-	if v, ok := t.oldValues["account_no"].(types.Code); ok {
-		x.Account_no = v
-	}
-	if v, ok := t.oldValues["posting_date"].(types.Date); ok {
-		x.Posting_date = v
-	}
-	if v, ok := t.oldValues["document_type"].(GenJournalLineDocument_type); ok {
-		x.Document_type = v
-	}
-	if v, ok := t.oldValues["document_no"].(types.Code); ok {
-		x.Document_no = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["tax_percent"].(types.Decimal); ok {
-		x.Tax_percent = v
-	}
-	if v, ok := t.oldValues["bal_account_no"].(types.Code); ok {
-		x.Bal_account_no = v
-	}
-	if v, ok := t.oldValues["currency_code"].(types.Code); ok {
-		x.Currency_code = v
-	}
-	if v, ok := t.oldValues["amount"].(types.Decimal); ok {
-		x.Amount = v
-	}
-	if v, ok := t.oldValues["debit_amount"].(types.Decimal); ok {
-		x.Debit_amount = v
-	}
-	if v, ok := t.oldValues["credit_amount"].(types.Decimal); ok {
-		x.Credit_amount = v
-	}
-	if v, ok := t.oldValues["amount_lcy"].(types.Decimal); ok {
-		x.Amount_lcy = v
-	}
-	if v, ok := t.oldValues["balance_lcy"].(types.Decimal); ok {
-		x.Balance_lcy = v
-	}
-	if v, ok := t.oldValues["currency_factor"].(types.Decimal); ok {
-		x.Currency_factor = v
-	}
-	if v, ok := t.oldValues["sales_purch_lcy"].(types.Decimal); ok {
-		x.Sales_purch_lcy = v
-	}
-	if v, ok := t.oldValues["profit_lcy"].(types.Decimal); ok {
-		x.Profit_lcy = v
-	}
-	if v, ok := t.oldValues["inv_discount_lcy"].(types.Decimal); ok {
-		x.Inv_discount_lcy = v
-	}
-	if v, ok := t.oldValues["sell_to_buy_from_no"].(types.Code); ok {
-		x.Sell_to_buy_from_no = v
-	}
-	if v, ok := t.oldValues["posting_group"].(types.Code); ok {
-		x.Posting_group = v
-	}
-	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
-		x.Dimension_1_code = v
-	}
-	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
-		x.Dimension_2_code = v
-	}
-	if v, ok := t.oldValues["salespers_purch_code"].(types.Code); ok {
-		x.Salespers_purch_code = v
-	}
-	if v, ok := t.oldValues["source_code"].(types.Code); ok {
-		x.Source_code = v
-	}
-	if v, ok := t.oldValues["system_created_entry"].(bool); ok {
-		x.System_created_entry = v
-	}
-	if v, ok := t.oldValues["on_hold"].(types.Code); ok {
-		x.On_hold = v
-	}
-	if v, ok := t.oldValues["applies_to_doc_type"].(GenJournalLineApplies_to_doc_type); ok {
-		x.Applies_to_doc_type = v
-	}
-	if v, ok := t.oldValues["applies_to_doc_no"].(types.Code); ok {
-		x.Applies_to_doc_no = v
-	}
-	if v, ok := t.oldValues["due_date"].(types.Date); ok {
-		x.Due_date = v
-	}
-	if v, ok := t.oldValues["pmt_discount_date"].(types.Date); ok {
-		x.Pmt_discount_date = v
-	}
-	if v, ok := t.oldValues["payment_discount_percent"].(types.Decimal); ok {
-		x.Payment_discount_percent = v
-	}
-	if v, ok := t.oldValues["quantity"].(types.Decimal); ok {
-		x.Quantity = v
-	}
-	if v, ok := t.oldValues["tax_amount"].(types.Decimal); ok {
-		x.Tax_amount = v
-	}
-	if v, ok := t.oldValues["vat_posting"].(GenJournalLineVat_posting); ok {
-		x.Vat_posting = v
-	}
-	if v, ok := t.oldValues["payment_terms_code"].(types.Code); ok {
-		x.Payment_terms_code = v
-	}
-	if v, ok := t.oldValues["applies_to_id"].(types.Code); ok {
-		x.Applies_to_id = v
-	}
-	if v, ok := t.oldValues["reason_code"].(types.Code); ok {
-		x.Reason_code = v
-	}
-	if v, ok := t.oldValues["recurring_method"].(GenJournalLineRecurring_method); ok {
-		x.Recurring_method = v
-	}
-	if v, ok := t.oldValues["expiration_date"].(types.Date); ok {
-		x.Expiration_date = v
-	}
-	if v, ok := t.oldValues["recurring_frequency"].(types.Code); ok {
-		x.Recurring_frequency = v
-	}
-	if v, ok := t.oldValues["gen_posting_type"].(GenJournalLineGen_posting_type); ok {
-		x.Gen_posting_type = v
-	}
-	if v, ok := t.oldValues["gen_bus_posting_group"].(types.Code); ok {
-		x.Gen_bus_posting_group = v
-	}
-	if v, ok := t.oldValues["gen_prod_posting_group"].(types.Code); ok {
-		x.Gen_prod_posting_group = v
-	}
-	if v, ok := t.oldValues["tax_calculation_type"].(GenJournalLineTax_calculation_type); ok {
-		x.Tax_calculation_type = v
-	}
-	if v, ok := t.oldValues["allow_application"].(bool); ok {
-		x.Allow_application = v
-	}
-	if v, ok := t.oldValues["bal_account_type"].(GenJournalLineBal_account_type); ok {
-		x.Bal_account_type = v
-	}
-	if v, ok := t.oldValues["bal_gen_posting_type"].(GenJournalLineBal_gen_posting_type); ok {
-		x.Bal_gen_posting_type = v
-	}
-	if v, ok := t.oldValues["bal_gen_bus_posting_group"].(types.Code); ok {
-		x.Bal_gen_bus_posting_group = v
-	}
-	if v, ok := t.oldValues["bal_gen_prod_posting_group"].(types.Code); ok {
-		x.Bal_gen_prod_posting_group = v
-	}
-	if v, ok := t.oldValues["bal_tax_calculation_type"].(GenJournalLineBal_tax_calculation_type); ok {
-		x.Bal_tax_calculation_type = v
-	}
-	if v, ok := t.oldValues["bal_tax_percent"].(types.Decimal); ok {
-		x.Bal_tax_percent = v
-	}
-	if v, ok := t.oldValues["bal_tax_amount"].(types.Decimal); ok {
-		x.Bal_tax_amount = v
-	}
-	if v, ok := t.oldValues["bank_payment_type"].(GenJournalLineBank_payment_type); ok {
-		x.Bank_payment_type = v
-	}
-	if v, ok := t.oldValues["tax_base_amount"].(types.Decimal); ok {
-		x.Tax_base_amount = v
-	}
-	if v, ok := t.oldValues["bal_tax_base_amount"].(types.Decimal); ok {
-		x.Bal_tax_base_amount = v
-	}
-	if v, ok := t.oldValues["correction"].(bool); ok {
-		x.Correction = v
-	}
-	if v, ok := t.oldValues["check_printed"].(bool); ok {
-		x.Check_printed = v
-	}
-	if v, ok := t.oldValues["document_date"].(types.Date); ok {
-		x.Document_date = v
-	}
-	if v, ok := t.oldValues["external_document_no"].(types.Code); ok {
-		x.External_document_no = v
-	}
-	if v, ok := t.oldValues["source_type"].(GenJournalLineSource_type); ok {
-		x.Source_type = v
-	}
-	if v, ok := t.oldValues["source_no"].(types.Code); ok {
-		x.Source_no = v
-	}
-	if v, ok := t.oldValues["posting_no_series"].(types.Code); ok {
-		x.Posting_no_series = v
-	}
-	if v, ok := t.oldValues["tax_area_code"].(types.Code); ok {
-		x.Tax_area_code = v
-	}
-	if v, ok := t.oldValues["tax_liable"].(bool); ok {
-		x.Tax_liable = v
-	}
-	if v, ok := t.oldValues["tax_group_code"].(types.Code); ok {
-		x.Tax_group_code = v
-	}
-	if v, ok := t.oldValues["use_tax"].(bool); ok {
-		x.Use_tax = v
-	}
-	if v, ok := t.oldValues["bal_tax_area_code"].(types.Code); ok {
-		x.Bal_tax_area_code = v
-	}
-	if v, ok := t.oldValues["bal_tax_liable"].(bool); ok {
-		x.Bal_tax_liable = v
-	}
-	if v, ok := t.oldValues["bal_tax_group_code"].(types.Code); ok {
-		x.Bal_tax_group_code = v
-	}
-	if v, ok := t.oldValues["bal_use_tax"].(bool); ok {
-		x.Bal_use_tax = v
-	}
-	if v, ok := t.oldValues["tax_bus_posting_group"].(types.Code); ok {
-		x.Tax_bus_posting_group = v
-	}
-	if v, ok := t.oldValues["tax_prod_posting_group"].(types.Code); ok {
-		x.Tax_prod_posting_group = v
-	}
-	if v, ok := t.oldValues["bal_tax_bus_posting_group"].(types.Code); ok {
-		x.Bal_tax_bus_posting_group = v
-	}
-	if v, ok := t.oldValues["bal_tax_prod_posting_group"].(types.Code); ok {
-		x.Bal_tax_prod_posting_group = v
-	}
-	if v, ok := t.oldValues["source_currency_code"].(types.Code); ok {
-		x.Source_currency_code = v
-	}
-	if v, ok := t.oldValues["source_currency_amount"].(types.Decimal); ok {
-		x.Source_currency_amount = v
-	}
-	if v, ok := t.oldValues["source_curr_tax_base_amount"].(types.Decimal); ok {
-		x.Source_curr_tax_base_amount = v
-	}
-	if v, ok := t.oldValues["additional_currency_posting"].(GenJournalLineAdditional_currency_posting); ok {
-		x.Additional_currency_posting = v
-	}
-	if v, ok := t.oldValues["fa_add_currency_factor"].(types.Decimal); ok {
-		x.Fa_add_currency_factor = v
-	}
-	if v, ok := t.oldValues["source_curr_tax_amount"].(types.Decimal); ok {
-		x.Source_curr_tax_amount = v
-	}
-	if v, ok := t.oldValues["tax_amount_lcy"].(types.Decimal); ok {
-		x.Tax_amount_lcy = v
-	}
-	if v, ok := t.oldValues["tax_base_amount_lcy"].(types.Decimal); ok {
-		x.Tax_base_amount_lcy = v
-	}
-	if v, ok := t.oldValues["bal_tax_amount_lcy"].(types.Decimal); ok {
-		x.Bal_tax_amount_lcy = v
-	}
-	if v, ok := t.oldValues["bal_tax_base_amount_lcy"].(types.Decimal); ok {
-		x.Bal_tax_base_amount_lcy = v
-	}
-	if v, ok := t.oldValues["reversing_entry"].(bool); ok {
-		x.Reversing_entry = v
-	}
-	if v, ok := t.oldValues["fa_posting_date"].(types.Date); ok {
-		x.Fa_posting_date = v
-	}
-	if v, ok := t.oldValues["fa_posting_type"].(GenJournalLineFa_posting_type); ok {
-		x.Fa_posting_type = v
-	}
-	if v, ok := t.oldValues["depreciation_book_code"].(types.Code); ok {
-		x.Depreciation_book_code = v
-	}
-	if v, ok := t.oldValues["salvage_value"].(types.Decimal); ok {
-		x.Salvage_value = v
-	}
-	if v, ok := t.oldValues["no_of_depreciation_days"].(int); ok {
-		x.No_of_depreciation_days = v
-	}
-	if v, ok := t.oldValues["depr_until_fa_posting_date"].(bool); ok {
-		x.Depr_until_fa_posting_date = v
-	}
-	if v, ok := t.oldValues["depr_acquisition_cost"].(bool); ok {
-		x.Depr_acquisition_cost = v
-	}
-	if v, ok := t.oldValues["maintenance_code"].(types.Code); ok {
-		x.Maintenance_code = v
-	}
-	if v, ok := t.oldValues["insurance_no"].(types.Code); ok {
-		x.Insurance_no = v
-	}
-	if v, ok := t.oldValues["budgeted_fa_no"].(types.Code); ok {
-		x.Budgeted_fa_no = v
-	}
-	if v, ok := t.oldValues["duplicate_in_depreciation_book"].(types.Code); ok {
-		x.Duplicate_in_depreciation_book = v
-	}
-	if v, ok := t.oldValues["use_duplication_list"].(bool); ok {
-		x.Use_duplication_list = v
-	}
-	if v, ok := t.oldValues["fa_reclassification_entry"].(bool); ok {
-		x.Fa_reclassification_entry = v
-	}
-	if v, ok := t.oldValues["fa_error_entry_no"].(int); ok {
-		x.Fa_error_entry_no = v
-	}
-	if v, ok := t.oldValues["index_entry"].(bool); ok {
-		x.Index_entry = v
-	}
-	if v, ok := t.oldValues["project_no"].(types.Code); ok {
-		x.Project_no = v
-	}
-	if v, ok := t.oldValues["eu_3_party_trade"].(bool); ok {
-		x.Eu_3_party_trade = v
-	}
+	genJournalLineFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -4646,463 +3261,7 @@ func (t *GenJournalLine) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *GenJournalLine) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "journal_template_name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Journal_template_name.Equal(old)
-		}
-	case "business_unit_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Business_unit_code.Equal(old)
-		}
-	case "journal_batch_name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Journal_batch_name.Equal(old)
-		}
-	case "line_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Line_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "account_type":
-		if old, ok := oldValue.(GenJournalLineAccount_type); ok {
-			return t.Account_type != old
-		}
-	case "account_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Account_no.Equal(old)
-		}
-	case "posting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Posting_date.Equal(old)
-		}
-	case "document_type":
-		if old, ok := oldValue.(GenJournalLineDocument_type); ok {
-			return t.Document_type != old
-		}
-	case "document_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Document_no.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "tax_percent":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Tax_percent.Equal(old)
-		}
-	case "bal_account_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Bal_account_no.Equal(old)
-		}
-	case "currency_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Currency_code.Equal(old)
-		}
-	case "amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Amount.Equal(old)
-		}
-	case "debit_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Debit_amount.Equal(old)
-		}
-	case "credit_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Credit_amount.Equal(old)
-		}
-	case "amount_lcy":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Amount_lcy.Equal(old)
-		}
-	case "balance_lcy":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Balance_lcy.Equal(old)
-		}
-	case "currency_factor":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Currency_factor.Equal(old)
-		}
-	case "sales_purch_lcy":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Sales_purch_lcy.Equal(old)
-		}
-	case "profit_lcy":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Profit_lcy.Equal(old)
-		}
-	case "inv_discount_lcy":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Inv_discount_lcy.Equal(old)
-		}
-	case "sell_to_buy_from_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Sell_to_buy_from_no.Equal(old)
-		}
-	case "posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Posting_group.Equal(old)
-		}
-	case "dimension_1_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_1_code.Equal(old)
-		}
-	case "dimension_2_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_2_code.Equal(old)
-		}
-	case "salespers_purch_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Salespers_purch_code.Equal(old)
-		}
-	case "source_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Source_code.Equal(old)
-		}
-	case "system_created_entry":
-		if old, ok := oldValue.(bool); ok {
-			return t.System_created_entry != old
-		}
-		return true // Type mismatch, assume changed
-	case "on_hold":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.On_hold.Equal(old)
-		}
-	case "applies_to_doc_type":
-		if old, ok := oldValue.(GenJournalLineApplies_to_doc_type); ok {
-			return t.Applies_to_doc_type != old
-		}
-	case "applies_to_doc_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Applies_to_doc_no.Equal(old)
-		}
-	case "due_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Due_date.Equal(old)
-		}
-	case "pmt_discount_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Pmt_discount_date.Equal(old)
-		}
-	case "payment_discount_percent":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Payment_discount_percent.Equal(old)
-		}
-	case "quantity":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Quantity.Equal(old)
-		}
-	case "tax_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Tax_amount.Equal(old)
-		}
-	case "vat_posting":
-		if old, ok := oldValue.(GenJournalLineVat_posting); ok {
-			return t.Vat_posting != old
-		}
-	case "payment_terms_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Payment_terms_code.Equal(old)
-		}
-	case "applies_to_id":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Applies_to_id.Equal(old)
-		}
-	case "reason_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Reason_code.Equal(old)
-		}
-	case "recurring_method":
-		if old, ok := oldValue.(GenJournalLineRecurring_method); ok {
-			return t.Recurring_method != old
-		}
-	case "expiration_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Expiration_date.Equal(old)
-		}
-	case "recurring_frequency":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Recurring_frequency.Equal(old)
-		}
-	case "gen_posting_type":
-		if old, ok := oldValue.(GenJournalLineGen_posting_type); ok {
-			return t.Gen_posting_type != old
-		}
-	case "gen_bus_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Gen_bus_posting_group.Equal(old)
-		}
-	case "gen_prod_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Gen_prod_posting_group.Equal(old)
-		}
-	case "tax_calculation_type":
-		if old, ok := oldValue.(GenJournalLineTax_calculation_type); ok {
-			return t.Tax_calculation_type != old
-		}
-	case "allow_application":
-		if old, ok := oldValue.(bool); ok {
-			return t.Allow_application != old
-		}
-		return true // Type mismatch, assume changed
-	case "bal_account_type":
-		if old, ok := oldValue.(GenJournalLineBal_account_type); ok {
-			return t.Bal_account_type != old
-		}
-	case "bal_gen_posting_type":
-		if old, ok := oldValue.(GenJournalLineBal_gen_posting_type); ok {
-			return t.Bal_gen_posting_type != old
-		}
-	case "bal_gen_bus_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Bal_gen_bus_posting_group.Equal(old)
-		}
-	case "bal_gen_prod_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Bal_gen_prod_posting_group.Equal(old)
-		}
-	case "bal_tax_calculation_type":
-		if old, ok := oldValue.(GenJournalLineBal_tax_calculation_type); ok {
-			return t.Bal_tax_calculation_type != old
-		}
-	case "bal_tax_percent":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Bal_tax_percent.Equal(old)
-		}
-	case "bal_tax_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Bal_tax_amount.Equal(old)
-		}
-	case "bank_payment_type":
-		if old, ok := oldValue.(GenJournalLineBank_payment_type); ok {
-			return t.Bank_payment_type != old
-		}
-	case "tax_base_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Tax_base_amount.Equal(old)
-		}
-	case "bal_tax_base_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Bal_tax_base_amount.Equal(old)
-		}
-	case "correction":
-		if old, ok := oldValue.(bool); ok {
-			return t.Correction != old
-		}
-		return true // Type mismatch, assume changed
-	case "check_printed":
-		if old, ok := oldValue.(bool); ok {
-			return t.Check_printed != old
-		}
-		return true // Type mismatch, assume changed
-	case "document_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Document_date.Equal(old)
-		}
-	case "external_document_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.External_document_no.Equal(old)
-		}
-	case "source_type":
-		if old, ok := oldValue.(GenJournalLineSource_type); ok {
-			return t.Source_type != old
-		}
-	case "source_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Source_no.Equal(old)
-		}
-	case "posting_no_series":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Posting_no_series.Equal(old)
-		}
-	case "tax_area_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_area_code.Equal(old)
-		}
-	case "tax_liable":
-		if old, ok := oldValue.(bool); ok {
-			return t.Tax_liable != old
-		}
-		return true // Type mismatch, assume changed
-	case "tax_group_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_group_code.Equal(old)
-		}
-	case "use_tax":
-		if old, ok := oldValue.(bool); ok {
-			return t.Use_tax != old
-		}
-		return true // Type mismatch, assume changed
-	case "bal_tax_area_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Bal_tax_area_code.Equal(old)
-		}
-	case "bal_tax_liable":
-		if old, ok := oldValue.(bool); ok {
-			return t.Bal_tax_liable != old
-		}
-		return true // Type mismatch, assume changed
-	case "bal_tax_group_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Bal_tax_group_code.Equal(old)
-		}
-	case "bal_use_tax":
-		if old, ok := oldValue.(bool); ok {
-			return t.Bal_use_tax != old
-		}
-		return true // Type mismatch, assume changed
-	case "tax_bus_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_bus_posting_group.Equal(old)
-		}
-	case "tax_prod_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_prod_posting_group.Equal(old)
-		}
-	case "bal_tax_bus_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Bal_tax_bus_posting_group.Equal(old)
-		}
-	case "bal_tax_prod_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Bal_tax_prod_posting_group.Equal(old)
-		}
-	case "source_currency_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Source_currency_code.Equal(old)
-		}
-	case "source_currency_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Source_currency_amount.Equal(old)
-		}
-	case "source_curr_tax_base_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Source_curr_tax_base_amount.Equal(old)
-		}
-	case "additional_currency_posting":
-		if old, ok := oldValue.(GenJournalLineAdditional_currency_posting); ok {
-			return t.Additional_currency_posting != old
-		}
-	case "fa_add_currency_factor":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Fa_add_currency_factor.Equal(old)
-		}
-	case "source_curr_tax_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Source_curr_tax_amount.Equal(old)
-		}
-	case "tax_amount_lcy":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Tax_amount_lcy.Equal(old)
-		}
-	case "tax_base_amount_lcy":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Tax_base_amount_lcy.Equal(old)
-		}
-	case "bal_tax_amount_lcy":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Bal_tax_amount_lcy.Equal(old)
-		}
-	case "bal_tax_base_amount_lcy":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Bal_tax_base_amount_lcy.Equal(old)
-		}
-	case "reversing_entry":
-		if old, ok := oldValue.(bool); ok {
-			return t.Reversing_entry != old
-		}
-		return true // Type mismatch, assume changed
-	case "fa_posting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Fa_posting_date.Equal(old)
-		}
-	case "fa_posting_type":
-		if old, ok := oldValue.(GenJournalLineFa_posting_type); ok {
-			return t.Fa_posting_type != old
-		}
-	case "depreciation_book_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Depreciation_book_code.Equal(old)
-		}
-	case "salvage_value":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Salvage_value.Equal(old)
-		}
-	case "no_of_depreciation_days":
-		if old, ok := oldValue.(int); ok {
-			return t.No_of_depreciation_days != old
-		}
-		return true // Type mismatch, assume changed
-	case "depr_until_fa_posting_date":
-		if old, ok := oldValue.(bool); ok {
-			return t.Depr_until_fa_posting_date != old
-		}
-		return true // Type mismatch, assume changed
-	case "depr_acquisition_cost":
-		if old, ok := oldValue.(bool); ok {
-			return t.Depr_acquisition_cost != old
-		}
-		return true // Type mismatch, assume changed
-	case "maintenance_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Maintenance_code.Equal(old)
-		}
-	case "insurance_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Insurance_no.Equal(old)
-		}
-	case "budgeted_fa_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Budgeted_fa_no.Equal(old)
-		}
-	case "duplicate_in_depreciation_book":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Duplicate_in_depreciation_book.Equal(old)
-		}
-	case "use_duplication_list":
-		if old, ok := oldValue.(bool); ok {
-			return t.Use_duplication_list != old
-		}
-		return true // Type mismatch, assume changed
-	case "fa_reclassification_entry":
-		if old, ok := oldValue.(bool); ok {
-			return t.Fa_reclassification_entry != old
-		}
-		return true // Type mismatch, assume changed
-	case "fa_error_entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Fa_error_entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "index_entry":
-		if old, ok := oldValue.(bool); ok {
-			return t.Index_entry != old
-		}
-		return true // Type mismatch, assume changed
-	case "project_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_no.Equal(old)
-		}
-	case "eu_3_party_trade":
-		if old, ok := oldValue.(bool); ok {
-			return t.Eu_3_party_trade != old
-		}
-		return true // Type mismatch, assume changed
-	}
-
-	return false
+	return genJournalLineFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -5449,221 +3608,7 @@ func (t *GenJournalLine) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *GenJournalLine) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("journal_template_name"):
-		return "journal_template_name", true
-	case strings.ToLower("business_unit_code"):
-		return "business_unit_code", true
-	case strings.ToLower("journal_batch_name"):
-		return "journal_batch_name", true
-	case strings.ToLower("line_no"):
-		return "line_no", true
-	case strings.ToLower("account_type"):
-		return "account_type", true
-	case strings.ToLower("account_no"):
-		return "account_no", true
-	case strings.ToLower("posting_date"):
-		return "posting_date", true
-	case strings.ToLower("document_type"):
-		return "document_type", true
-	case strings.ToLower("document_no"):
-		return "document_no", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("tax_percent"):
-		return "tax_percent", true
-	case strings.ToLower("bal_account_no"):
-		return "bal_account_no", true
-	case strings.ToLower("currency_code"):
-		return "currency_code", true
-	case strings.ToLower("amount"):
-		return "amount", true
-	case strings.ToLower("debit_amount"):
-		return "debit_amount", true
-	case strings.ToLower("credit_amount"):
-		return "credit_amount", true
-	case strings.ToLower("amount_lcy"):
-		return "amount_lcy", true
-	case strings.ToLower("balance_lcy"):
-		return "balance_lcy", true
-	case strings.ToLower("currency_factor"):
-		return "currency_factor", true
-	case strings.ToLower("sales_purch_lcy"):
-		return "sales_purch_lcy", true
-	case strings.ToLower("profit_lcy"):
-		return "profit_lcy", true
-	case strings.ToLower("inv_discount_lcy"):
-		return "inv_discount_lcy", true
-	case strings.ToLower("sell_to_buy_from_no"):
-		return "sell_to_buy_from_no", true
-	case strings.ToLower("posting_group"):
-		return "posting_group", true
-	case strings.ToLower("dimension_1_code"):
-		return "dimension_1_code", true
-	case strings.ToLower("dimension_2_code"):
-		return "dimension_2_code", true
-	case strings.ToLower("salespers_purch_code"):
-		return "salespers_purch_code", true
-	case strings.ToLower("source_code"):
-		return "source_code", true
-	case strings.ToLower("system_created_entry"):
-		return "system_created_entry", true
-	case strings.ToLower("on_hold"):
-		return "on_hold", true
-	case strings.ToLower("applies_to_doc_type"):
-		return "applies_to_doc_type", true
-	case strings.ToLower("applies_to_doc_no"):
-		return "applies_to_doc_no", true
-	case strings.ToLower("due_date"):
-		return "due_date", true
-	case strings.ToLower("pmt_discount_date"):
-		return "pmt_discount_date", true
-	case strings.ToLower("payment_discount_percent"):
-		return "payment_discount_percent", true
-	case strings.ToLower("quantity"):
-		return "quantity", true
-	case strings.ToLower("tax_amount"):
-		return "tax_amount", true
-	case strings.ToLower("vat_posting"):
-		return "vat_posting", true
-	case strings.ToLower("payment_terms_code"):
-		return "payment_terms_code", true
-	case strings.ToLower("applies_to_id"):
-		return "applies_to_id", true
-	case strings.ToLower("reason_code"):
-		return "reason_code", true
-	case strings.ToLower("recurring_method"):
-		return "recurring_method", true
-	case strings.ToLower("expiration_date"):
-		return "expiration_date", true
-	case strings.ToLower("recurring_frequency"):
-		return "recurring_frequency", true
-	case strings.ToLower("gen_posting_type"):
-		return "gen_posting_type", true
-	case strings.ToLower("gen_bus_posting_group"):
-		return "gen_bus_posting_group", true
-	case strings.ToLower("gen_prod_posting_group"):
-		return "gen_prod_posting_group", true
-	case strings.ToLower("tax_calculation_type"):
-		return "tax_calculation_type", true
-	case strings.ToLower("allow_application"):
-		return "allow_application", true
-	case strings.ToLower("bal_account_type"):
-		return "bal_account_type", true
-	case strings.ToLower("bal_gen_posting_type"):
-		return "bal_gen_posting_type", true
-	case strings.ToLower("bal_gen_bus_posting_group"):
-		return "bal_gen_bus_posting_group", true
-	case strings.ToLower("bal_gen_prod_posting_group"):
-		return "bal_gen_prod_posting_group", true
-	case strings.ToLower("bal_tax_calculation_type"):
-		return "bal_tax_calculation_type", true
-	case strings.ToLower("bal_tax_percent"):
-		return "bal_tax_percent", true
-	case strings.ToLower("bal_tax_amount"):
-		return "bal_tax_amount", true
-	case strings.ToLower("bank_payment_type"):
-		return "bank_payment_type", true
-	case strings.ToLower("tax_base_amount"):
-		return "tax_base_amount", true
-	case strings.ToLower("bal_tax_base_amount"):
-		return "bal_tax_base_amount", true
-	case strings.ToLower("correction"):
-		return "correction", true
-	case strings.ToLower("check_printed"):
-		return "check_printed", true
-	case strings.ToLower("document_date"):
-		return "document_date", true
-	case strings.ToLower("external_document_no"):
-		return "external_document_no", true
-	case strings.ToLower("source_type"):
-		return "source_type", true
-	case strings.ToLower("source_no"):
-		return "source_no", true
-	case strings.ToLower("posting_no_series"):
-		return "posting_no_series", true
-	case strings.ToLower("tax_area_code"):
-		return "tax_area_code", true
-	case strings.ToLower("tax_liable"):
-		return "tax_liable", true
-	case strings.ToLower("tax_group_code"):
-		return "tax_group_code", true
-	case strings.ToLower("use_tax"):
-		return "use_tax", true
-	case strings.ToLower("bal_tax_area_code"):
-		return "bal_tax_area_code", true
-	case strings.ToLower("bal_tax_liable"):
-		return "bal_tax_liable", true
-	case strings.ToLower("bal_tax_group_code"):
-		return "bal_tax_group_code", true
-	case strings.ToLower("bal_use_tax"):
-		return "bal_use_tax", true
-	case strings.ToLower("tax_bus_posting_group"):
-		return "tax_bus_posting_group", true
-	case strings.ToLower("tax_prod_posting_group"):
-		return "tax_prod_posting_group", true
-	case strings.ToLower("bal_tax_bus_posting_group"):
-		return "bal_tax_bus_posting_group", true
-	case strings.ToLower("bal_tax_prod_posting_group"):
-		return "bal_tax_prod_posting_group", true
-	case strings.ToLower("source_currency_code"):
-		return "source_currency_code", true
-	case strings.ToLower("source_currency_amount"):
-		return "source_currency_amount", true
-	case strings.ToLower("source_curr_tax_base_amount"):
-		return "source_curr_tax_base_amount", true
-	case strings.ToLower("additional_currency_posting"):
-		return "additional_currency_posting", true
-	case strings.ToLower("fa_add_currency_factor"):
-		return "fa_add_currency_factor", true
-	case strings.ToLower("source_curr_tax_amount"):
-		return "source_curr_tax_amount", true
-	case strings.ToLower("tax_amount_lcy"):
-		return "tax_amount_lcy", true
-	case strings.ToLower("tax_base_amount_lcy"):
-		return "tax_base_amount_lcy", true
-	case strings.ToLower("bal_tax_amount_lcy"):
-		return "bal_tax_amount_lcy", true
-	case strings.ToLower("bal_tax_base_amount_lcy"):
-		return "bal_tax_base_amount_lcy", true
-	case strings.ToLower("reversing_entry"):
-		return "reversing_entry", true
-	case strings.ToLower("fa_posting_date"):
-		return "fa_posting_date", true
-	case strings.ToLower("fa_posting_type"):
-		return "fa_posting_type", true
-	case strings.ToLower("depreciation_book_code"):
-		return "depreciation_book_code", true
-	case strings.ToLower("salvage_value"):
-		return "salvage_value", true
-	case strings.ToLower("no_of_depreciation_days"):
-		return "no_of_depreciation_days", true
-	case strings.ToLower("depr_until_fa_posting_date"):
-		return "depr_until_fa_posting_date", true
-	case strings.ToLower("depr_acquisition_cost"):
-		return "depr_acquisition_cost", true
-	case strings.ToLower("maintenance_code"):
-		return "maintenance_code", true
-	case strings.ToLower("insurance_no"):
-		return "insurance_no", true
-	case strings.ToLower("budgeted_fa_no"):
-		return "budgeted_fa_no", true
-	case strings.ToLower("duplicate_in_depreciation_book"):
-		return "duplicate_in_depreciation_book", true
-	case strings.ToLower("use_duplication_list"):
-		return "use_duplication_list", true
-	case strings.ToLower("fa_reclassification_entry"):
-		return "fa_reclassification_entry", true
-	case strings.ToLower("fa_error_entry_no"):
-		return "fa_error_entry_no", true
-	case strings.ToLower("index_entry"):
-		return "index_entry", true
-	case strings.ToLower("project_no"):
-		return "project_no", true
-	case strings.ToLower("eu_3_party_trade"):
-		return "eu_3_party_trade", true
-	}
-	return "", false
+	return genJournalLineFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -7913,2831 +5858,20 @@ func (t *GenJournalLine) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *GenJournalLine) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "journal_template_name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Journal_template_name = v
-		} else if v, ok := value.(string); ok {
-			t.Journal_template_name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field journal_template_name")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "journal_template_name"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Journal_template_name); ok {
-				if err := trg.OnValidate_Journal_template_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "business_unit_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Business_unit_code = v
-		} else if v, ok := value.(string); ok {
-			t.Business_unit_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field business_unit_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "business_unit_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Business_unit_code); ok {
-				if err := trg.OnValidate_Business_unit_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "journal_batch_name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Journal_batch_name = v
-		} else if v, ok := value.(string); ok {
-			t.Journal_batch_name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field journal_batch_name")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "journal_batch_name"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Journal_batch_name); ok {
-				if err := trg.OnValidate_Journal_batch_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "line_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Line_no = v
-		case float64:
-			t.Line_no = int(v)
-		case string:
-			if v == "" {
-				t.Line_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Line_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field line_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field line_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Line_no); ok {
-				if err := trg.OnValidate_Line_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "account_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(GenJournalLineAccount_type); ok {
-			t.Account_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 5 {
-				return fmt.Errorf("invalid option value %d for field account_type (valid range: 0-%d)", v, 5-1)
-			}
-			t.Account_type = GenJournalLineAccount_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 5 {
-				return fmt.Errorf("invalid option value %d for field account_type (valid range: 0-%d)", intVal, 5-1)
-			}
-			t.Account_type = GenJournalLineAccount_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Account_type = 0
-			} else {
-				options := []string{"G/L Account", "Customer", "Vendor", "Bank Account", "Fixed Asset"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Account_type = GenJournalLineAccount_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field account_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field account_type (expected GenJournalLineAccount_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Account_type); ok {
-				if err := trg.OnValidate_Account_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "account_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Account_no = v
-		} else if v, ok := value.(string); ok {
-			t.Account_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field account_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "account_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Account_no); ok {
-				if err := trg.OnValidate_Account_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "posting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Posting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Posting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field posting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Posting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field posting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Posting_date); ok {
-				if err := trg.OnValidate_Posting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(GenJournalLineDocument_type); ok {
-			t.Document_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 6 {
-				return fmt.Errorf("invalid option value %d for field document_type (valid range: 0-%d)", v, 6-1)
-			}
-			t.Document_type = GenJournalLineDocument_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 6 {
-				return fmt.Errorf("invalid option value %d for field document_type (valid range: 0-%d)", intVal, 6-1)
-			}
-			t.Document_type = GenJournalLineDocument_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Document_type = 0
-			} else {
-				options := []string{" ", "Payment", "Invoice", "Credit Memo", "Finance Charge Memo", "Reminder"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Document_type = GenJournalLineDocument_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field document_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field document_type (expected GenJournalLineDocument_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Document_type); ok {
-				if err := trg.OnValidate_Document_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Document_no = v
-		} else if v, ok := value.(string); ok {
-			t.Document_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field document_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Document_no); ok {
-				if err := trg.OnValidate_Document_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_percent":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Tax_percent = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Tax_percent, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field tax_percent: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Tax_percent = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Tax_percent = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Tax_percent = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_percent (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Tax_percent); ok {
-				if err := trg.OnValidate_Tax_percent(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bal_account_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Bal_account_no = v
-		} else if v, ok := value.(string); ok {
-			t.Bal_account_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field bal_account_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "bal_account_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Bal_account_no); ok {
-				if err := trg.OnValidate_Bal_account_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "currency_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Currency_code = v
-		} else if v, ok := value.(string); ok {
-			t.Currency_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field currency_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "currency_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Currency_code); ok {
-				if err := trg.OnValidate_Currency_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Amount); ok {
-				if err := trg.OnValidate_Amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "debit_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Debit_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Debit_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field debit_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Debit_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Debit_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Debit_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field debit_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Debit_amount); ok {
-				if err := trg.OnValidate_Debit_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "credit_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Credit_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Credit_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field credit_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Credit_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Credit_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Credit_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field credit_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Credit_amount); ok {
-				if err := trg.OnValidate_Credit_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "amount_lcy":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount_lcy = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Amount_lcy, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field amount_lcy: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Amount_lcy = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Amount_lcy = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Amount_lcy = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field amount_lcy (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Amount_lcy); ok {
-				if err := trg.OnValidate_Amount_lcy(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "balance_lcy":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Balance_lcy = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Balance_lcy, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field balance_lcy: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Balance_lcy = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Balance_lcy = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Balance_lcy = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field balance_lcy (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Balance_lcy); ok {
-				if err := trg.OnValidate_Balance_lcy(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "currency_factor":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Currency_factor = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Currency_factor, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field currency_factor: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Currency_factor = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Currency_factor = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Currency_factor = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field currency_factor (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Currency_factor); ok {
-				if err := trg.OnValidate_Currency_factor(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sales_purch_lcy":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Sales_purch_lcy = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Sales_purch_lcy, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field sales_purch_lcy: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Sales_purch_lcy = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Sales_purch_lcy = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Sales_purch_lcy = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field sales_purch_lcy (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Sales_purch_lcy); ok {
-				if err := trg.OnValidate_Sales_purch_lcy(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "profit_lcy":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Profit_lcy = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Profit_lcy, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field profit_lcy: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Profit_lcy = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Profit_lcy = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Profit_lcy = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field profit_lcy (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Profit_lcy); ok {
-				if err := trg.OnValidate_Profit_lcy(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "inv_discount_lcy":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Inv_discount_lcy = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Inv_discount_lcy, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field inv_discount_lcy: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Inv_discount_lcy = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Inv_discount_lcy = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Inv_discount_lcy = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field inv_discount_lcy (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Inv_discount_lcy); ok {
-				if err := trg.OnValidate_Inv_discount_lcy(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sell_to_buy_from_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Sell_to_buy_from_no = v
-		} else if v, ok := value.(string); ok {
-			t.Sell_to_buy_from_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field sell_to_buy_from_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Sell_to_buy_from_no); ok {
-				if err := trg.OnValidate_Sell_to_buy_from_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field posting_group")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Posting_group); ok {
-				if err := trg.OnValidate_Posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_1_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_1_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Dimension_1_code); ok {
-				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_2_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_2_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Dimension_2_code); ok {
-				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "salespers_purch_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Salespers_purch_code = v
-		} else if v, ok := value.(string); ok {
-			t.Salespers_purch_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field salespers_purch_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "salespers_purch_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Salespers_purch_code); ok {
-				if err := trg.OnValidate_Salespers_purch_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "source_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Source_code = v
-		} else if v, ok := value.(string); ok {
-			t.Source_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field source_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "source_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Source_code); ok {
-				if err := trg.OnValidate_Source_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "system_created_entry":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.System_created_entry = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.System_created_entry = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field system_created_entry")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_System_created_entry); ok {
-				if err := trg.OnValidate_System_created_entry(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "on_hold":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.On_hold = v
-		} else if v, ok := value.(string); ok {
-			t.On_hold = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field on_hold")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_On_hold); ok {
-				if err := trg.OnValidate_On_hold(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "applies_to_doc_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(GenJournalLineApplies_to_doc_type); ok {
-			t.Applies_to_doc_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 6 {
-				return fmt.Errorf("invalid option value %d for field applies_to_doc_type (valid range: 0-%d)", v, 6-1)
-			}
-			t.Applies_to_doc_type = GenJournalLineApplies_to_doc_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 6 {
-				return fmt.Errorf("invalid option value %d for field applies_to_doc_type (valid range: 0-%d)", intVal, 6-1)
-			}
-			t.Applies_to_doc_type = GenJournalLineApplies_to_doc_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Applies_to_doc_type = 0
-			} else {
-				options := []string{" ", "Payment", "Invoice", "Credit Memo", "Finance Charge Memo", "Reminder"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Applies_to_doc_type = GenJournalLineApplies_to_doc_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field applies_to_doc_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field applies_to_doc_type (expected GenJournalLineApplies_to_doc_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Applies_to_doc_type); ok {
-				if err := trg.OnValidate_Applies_to_doc_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "applies_to_doc_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Applies_to_doc_no = v
-		} else if v, ok := value.(string); ok {
-			t.Applies_to_doc_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field applies_to_doc_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Applies_to_doc_no); ok {
-				if err := trg.OnValidate_Applies_to_doc_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "due_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Due_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Due_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field due_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Due_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field due_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Due_date); ok {
-				if err := trg.OnValidate_Due_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "pmt_discount_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Pmt_discount_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Pmt_discount_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field pmt_discount_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Pmt_discount_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field pmt_discount_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Pmt_discount_date); ok {
-				if err := trg.OnValidate_Pmt_discount_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "payment_discount_percent":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Payment_discount_percent = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Payment_discount_percent, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field payment_discount_percent: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Payment_discount_percent = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Payment_discount_percent = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Payment_discount_percent = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field payment_discount_percent (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Payment_discount_percent); ok {
-				if err := trg.OnValidate_Payment_discount_percent(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "quantity":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Quantity, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field quantity: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Quantity = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Quantity = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Quantity = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field quantity (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Quantity); ok {
-				if err := trg.OnValidate_Quantity(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Tax_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Tax_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field tax_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Tax_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Tax_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Tax_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Tax_amount); ok {
-				if err := trg.OnValidate_Tax_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "vat_posting":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(GenJournalLineVat_posting); ok {
-			t.Vat_posting = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 2 {
-				return fmt.Errorf("invalid option value %d for field vat_posting (valid range: 0-%d)", v, 2-1)
-			}
-			t.Vat_posting = GenJournalLineVat_posting(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 2 {
-				return fmt.Errorf("invalid option value %d for field vat_posting (valid range: 0-%d)", intVal, 2-1)
-			}
-			t.Vat_posting = GenJournalLineVat_posting(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Vat_posting = 0
-			} else {
-				options := []string{"Automatic VAT Entry", "Manual VAT Entry"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Vat_posting = GenJournalLineVat_posting(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field vat_posting (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field vat_posting (expected GenJournalLineVat_posting, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Vat_posting); ok {
-				if err := trg.OnValidate_Vat_posting(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "payment_terms_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Payment_terms_code = v
-		} else if v, ok := value.(string); ok {
-			t.Payment_terms_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field payment_terms_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "payment_terms_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Payment_terms_code); ok {
-				if err := trg.OnValidate_Payment_terms_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "applies_to_id":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Applies_to_id = v
-		} else if v, ok := value.(string); ok {
-			t.Applies_to_id = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field applies_to_id")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Applies_to_id); ok {
-				if err := trg.OnValidate_Applies_to_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reason_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Reason_code = v
-		} else if v, ok := value.(string); ok {
-			t.Reason_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field reason_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "reason_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Reason_code); ok {
-				if err := trg.OnValidate_Reason_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "recurring_method":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(GenJournalLineRecurring_method); ok {
-			t.Recurring_method = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 7 {
-				return fmt.Errorf("invalid option value %d for field recurring_method (valid range: 0-%d)", v, 7-1)
-			}
-			t.Recurring_method = GenJournalLineRecurring_method(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 7 {
-				return fmt.Errorf("invalid option value %d for field recurring_method (valid range: 0-%d)", intVal, 7-1)
-			}
-			t.Recurring_method = GenJournalLineRecurring_method(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Recurring_method = 0
-			} else {
-				options := []string{" ", "F Fixed", "V Variable", "B Balance", "RF Reversing Fixed", "RV Reversing Variable", "RB Reversing Balance"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Recurring_method = GenJournalLineRecurring_method(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field recurring_method (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field recurring_method (expected GenJournalLineRecurring_method, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Recurring_method); ok {
-				if err := trg.OnValidate_Recurring_method(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "expiration_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Expiration_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Expiration_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field expiration_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Expiration_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field expiration_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Expiration_date); ok {
-				if err := trg.OnValidate_Expiration_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "recurring_frequency":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Recurring_frequency = v
-		} else if v, ok := value.(string); ok {
-			t.Recurring_frequency = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field recurring_frequency")
-		}
-		if err := tables.CheckDateFormula(GenJournalLineTableName, "recurring_frequency", string(t.Recurring_frequency)); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Recurring_frequency); ok {
-				if err := trg.OnValidate_Recurring_frequency(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "gen_posting_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(GenJournalLineGen_posting_type); ok {
-			t.Gen_posting_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field gen_posting_type (valid range: 0-%d)", v, 4-1)
-			}
-			t.Gen_posting_type = GenJournalLineGen_posting_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field gen_posting_type (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Gen_posting_type = GenJournalLineGen_posting_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Gen_posting_type = 0
-			} else {
-				options := []string{" ", "Purchase", "Sale", "Settlement"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Gen_posting_type = GenJournalLineGen_posting_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field gen_posting_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field gen_posting_type (expected GenJournalLineGen_posting_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Gen_posting_type); ok {
-				if err := trg.OnValidate_Gen_posting_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "gen_bus_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Gen_bus_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Gen_bus_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field gen_bus_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "gen_bus_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Gen_bus_posting_group); ok {
-				if err := trg.OnValidate_Gen_bus_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "gen_prod_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Gen_prod_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Gen_prod_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field gen_prod_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "gen_prod_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Gen_prod_posting_group); ok {
-				if err := trg.OnValidate_Gen_prod_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_calculation_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(GenJournalLineTax_calculation_type); ok {
-			t.Tax_calculation_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field tax_calculation_type (valid range: 0-%d)", v, 4-1)
-			}
-			t.Tax_calculation_type = GenJournalLineTax_calculation_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field tax_calculation_type (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Tax_calculation_type = GenJournalLineTax_calculation_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Tax_calculation_type = 0
-			} else {
-				options := []string{"Normal VAT", "Reverse Charge VAT", "Full VAT", "Sales Tax"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Tax_calculation_type = GenJournalLineTax_calculation_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field tax_calculation_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field tax_calculation_type (expected GenJournalLineTax_calculation_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Tax_calculation_type); ok {
-				if err := trg.OnValidate_Tax_calculation_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "allow_application":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Allow_application = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Allow_application = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field allow_application")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Allow_application); ok {
-				if err := trg.OnValidate_Allow_application(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bal_account_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(GenJournalLineBal_account_type); ok {
-			t.Bal_account_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 6 {
-				return fmt.Errorf("invalid option value %d for field bal_account_type (valid range: 0-%d)", v, 6-1)
-			}
-			t.Bal_account_type = GenJournalLineBal_account_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 6 {
-				return fmt.Errorf("invalid option value %d for field bal_account_type (valid range: 0-%d)", intVal, 6-1)
-			}
-			t.Bal_account_type = GenJournalLineBal_account_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Bal_account_type = 0
-			} else {
-				options := []string{"G/L Account", "Customer", "Vendor", "Bank Account", "Fixed Asset", "Employee"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Bal_account_type = GenJournalLineBal_account_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field bal_account_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field bal_account_type (expected GenJournalLineBal_account_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Bal_account_type); ok {
-				if err := trg.OnValidate_Bal_account_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bal_gen_posting_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(GenJournalLineBal_gen_posting_type); ok {
-			t.Bal_gen_posting_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field bal_gen_posting_type (valid range: 0-%d)", v, 4-1)
-			}
-			t.Bal_gen_posting_type = GenJournalLineBal_gen_posting_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field bal_gen_posting_type (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Bal_gen_posting_type = GenJournalLineBal_gen_posting_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Bal_gen_posting_type = 0
-			} else {
-				options := []string{" ", "Purchase", "Sale", "Settlement"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Bal_gen_posting_type = GenJournalLineBal_gen_posting_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field bal_gen_posting_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field bal_gen_posting_type (expected GenJournalLineBal_gen_posting_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Bal_gen_posting_type); ok {
-				if err := trg.OnValidate_Bal_gen_posting_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bal_gen_bus_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Bal_gen_bus_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Bal_gen_bus_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field bal_gen_bus_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "bal_gen_bus_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Bal_gen_bus_posting_group); ok {
-				if err := trg.OnValidate_Bal_gen_bus_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bal_gen_prod_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Bal_gen_prod_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Bal_gen_prod_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field bal_gen_prod_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "bal_gen_prod_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Bal_gen_prod_posting_group); ok {
-				if err := trg.OnValidate_Bal_gen_prod_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bal_tax_calculation_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(GenJournalLineBal_tax_calculation_type); ok {
-			t.Bal_tax_calculation_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field bal_tax_calculation_type (valid range: 0-%d)", v, 4-1)
-			}
-			t.Bal_tax_calculation_type = GenJournalLineBal_tax_calculation_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field bal_tax_calculation_type (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Bal_tax_calculation_type = GenJournalLineBal_tax_calculation_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Bal_tax_calculation_type = 0
-			} else {
-				options := []string{"Normal VAT", "Reverse Charge VAT", "Full VAT", "Sales Tax"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Bal_tax_calculation_type = GenJournalLineBal_tax_calculation_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field bal_tax_calculation_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field bal_tax_calculation_type (expected GenJournalLineBal_tax_calculation_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Bal_tax_calculation_type); ok {
-				if err := trg.OnValidate_Bal_tax_calculation_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bal_tax_percent":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Bal_tax_percent = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Bal_tax_percent, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field bal_tax_percent: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Bal_tax_percent = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Bal_tax_percent = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Bal_tax_percent = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field bal_tax_percent (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Bal_tax_percent); ok {
-				if err := trg.OnValidate_Bal_tax_percent(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bal_tax_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Bal_tax_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Bal_tax_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field bal_tax_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Bal_tax_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Bal_tax_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Bal_tax_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field bal_tax_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Bal_tax_amount); ok {
-				if err := trg.OnValidate_Bal_tax_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bank_payment_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(GenJournalLineBank_payment_type); ok {
-			t.Bank_payment_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field bank_payment_type (valid range: 0-%d)", v, 4-1)
-			}
-			t.Bank_payment_type = GenJournalLineBank_payment_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field bank_payment_type (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Bank_payment_type = GenJournalLineBank_payment_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Bank_payment_type = 0
-			} else {
-				options := []string{" ", "Computer Check", "Manual Check", "Electronic Payment"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Bank_payment_type = GenJournalLineBank_payment_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field bank_payment_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field bank_payment_type (expected GenJournalLineBank_payment_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Bank_payment_type); ok {
-				if err := trg.OnValidate_Bank_payment_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_base_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Tax_base_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Tax_base_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field tax_base_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Tax_base_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Tax_base_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Tax_base_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_base_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Tax_base_amount); ok {
-				if err := trg.OnValidate_Tax_base_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bal_tax_base_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Bal_tax_base_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Bal_tax_base_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field bal_tax_base_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Bal_tax_base_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Bal_tax_base_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Bal_tax_base_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field bal_tax_base_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Bal_tax_base_amount); ok {
-				if err := trg.OnValidate_Bal_tax_base_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "correction":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Correction = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Correction = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field correction")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Correction); ok {
-				if err := trg.OnValidate_Correction(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "check_printed":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Check_printed = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Check_printed = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field check_printed")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Check_printed); ok {
-				if err := trg.OnValidate_Check_printed(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Document_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Document_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field document_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Document_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field document_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Document_date); ok {
-				if err := trg.OnValidate_Document_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "external_document_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.External_document_no = v
-		} else if v, ok := value.(string); ok {
-			t.External_document_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field external_document_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_External_document_no); ok {
-				if err := trg.OnValidate_External_document_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "source_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(GenJournalLineSource_type); ok {
-			t.Source_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 6 {
-				return fmt.Errorf("invalid option value %d for field source_type (valid range: 0-%d)", v, 6-1)
-			}
-			t.Source_type = GenJournalLineSource_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 6 {
-				return fmt.Errorf("invalid option value %d for field source_type (valid range: 0-%d)", intVal, 6-1)
-			}
-			t.Source_type = GenJournalLineSource_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Source_type = 0
-			} else {
-				options := []string{" ", "Customer", "Vendor", "Bank Account", "Fixed Asset", "Employee"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Source_type = GenJournalLineSource_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field source_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field source_type (expected GenJournalLineSource_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Source_type); ok {
-				if err := trg.OnValidate_Source_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "source_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Source_no = v
-		} else if v, ok := value.(string); ok {
-			t.Source_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field source_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "source_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Source_no); ok {
-				if err := trg.OnValidate_Source_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "posting_no_series":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Posting_no_series = v
-		} else if v, ok := value.(string); ok {
-			t.Posting_no_series = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field posting_no_series")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "posting_no_series"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Posting_no_series); ok {
-				if err := trg.OnValidate_Posting_no_series(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_area_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_area_code = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_area_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_area_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_area_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Tax_area_code); ok {
-				if err := trg.OnValidate_Tax_area_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_liable":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Tax_liable = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Tax_liable = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field tax_liable")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Tax_liable); ok {
-				if err := trg.OnValidate_Tax_liable(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_group_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_group_code = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_group_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_group_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_group_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Tax_group_code); ok {
-				if err := trg.OnValidate_Tax_group_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "use_tax":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Use_tax = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Use_tax = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field use_tax")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Use_tax); ok {
-				if err := trg.OnValidate_Use_tax(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bal_tax_area_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Bal_tax_area_code = v
-		} else if v, ok := value.(string); ok {
-			t.Bal_tax_area_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field bal_tax_area_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "bal_tax_area_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Bal_tax_area_code); ok {
-				if err := trg.OnValidate_Bal_tax_area_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bal_tax_liable":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Bal_tax_liable = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Bal_tax_liable = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field bal_tax_liable")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Bal_tax_liable); ok {
-				if err := trg.OnValidate_Bal_tax_liable(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bal_tax_group_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Bal_tax_group_code = v
-		} else if v, ok := value.(string); ok {
-			t.Bal_tax_group_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field bal_tax_group_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "bal_tax_group_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Bal_tax_group_code); ok {
-				if err := trg.OnValidate_Bal_tax_group_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bal_use_tax":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Bal_use_tax = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Bal_use_tax = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field bal_use_tax")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Bal_use_tax); ok {
-				if err := trg.OnValidate_Bal_use_tax(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_bus_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_bus_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_bus_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_bus_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_bus_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Tax_bus_posting_group); ok {
-				if err := trg.OnValidate_Tax_bus_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_prod_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_prod_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_prod_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_prod_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_prod_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Tax_prod_posting_group); ok {
-				if err := trg.OnValidate_Tax_prod_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bal_tax_bus_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Bal_tax_bus_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Bal_tax_bus_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field bal_tax_bus_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "bal_tax_bus_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Bal_tax_bus_posting_group); ok {
-				if err := trg.OnValidate_Bal_tax_bus_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bal_tax_prod_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Bal_tax_prod_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Bal_tax_prod_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field bal_tax_prod_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "bal_tax_prod_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Bal_tax_prod_posting_group); ok {
-				if err := trg.OnValidate_Bal_tax_prod_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "source_currency_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Source_currency_code = v
-		} else if v, ok := value.(string); ok {
-			t.Source_currency_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field source_currency_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "source_currency_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Source_currency_code); ok {
-				if err := trg.OnValidate_Source_currency_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "source_currency_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Source_currency_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Source_currency_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field source_currency_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Source_currency_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Source_currency_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Source_currency_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field source_currency_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Source_currency_amount); ok {
-				if err := trg.OnValidate_Source_currency_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "source_curr_tax_base_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Source_curr_tax_base_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Source_curr_tax_base_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field source_curr_tax_base_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Source_curr_tax_base_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Source_curr_tax_base_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Source_curr_tax_base_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field source_curr_tax_base_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Source_curr_tax_base_amount); ok {
-				if err := trg.OnValidate_Source_curr_tax_base_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "additional_currency_posting":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(GenJournalLineAdditional_currency_posting); ok {
-			t.Additional_currency_posting = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field additional_currency_posting (valid range: 0-%d)", v, 3-1)
-			}
-			t.Additional_currency_posting = GenJournalLineAdditional_currency_posting(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field additional_currency_posting (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Additional_currency_posting = GenJournalLineAdditional_currency_posting(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Additional_currency_posting = 0
-			} else {
-				options := []string{"None", "Amount Only", "Additional-Currency Amount Only"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Additional_currency_posting = GenJournalLineAdditional_currency_posting(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field additional_currency_posting (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field additional_currency_posting (expected GenJournalLineAdditional_currency_posting, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Additional_currency_posting); ok {
-				if err := trg.OnValidate_Additional_currency_posting(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_add_currency_factor":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Fa_add_currency_factor = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Fa_add_currency_factor, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field fa_add_currency_factor: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Fa_add_currency_factor = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Fa_add_currency_factor = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Fa_add_currency_factor = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_add_currency_factor (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Fa_add_currency_factor); ok {
-				if err := trg.OnValidate_Fa_add_currency_factor(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "source_curr_tax_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Source_curr_tax_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Source_curr_tax_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field source_curr_tax_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Source_curr_tax_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Source_curr_tax_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Source_curr_tax_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field source_curr_tax_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Source_curr_tax_amount); ok {
-				if err := trg.OnValidate_Source_curr_tax_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_amount_lcy":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Tax_amount_lcy = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Tax_amount_lcy, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field tax_amount_lcy: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Tax_amount_lcy = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Tax_amount_lcy = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Tax_amount_lcy = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_amount_lcy (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Tax_amount_lcy); ok {
-				if err := trg.OnValidate_Tax_amount_lcy(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_base_amount_lcy":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Tax_base_amount_lcy = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Tax_base_amount_lcy, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field tax_base_amount_lcy: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Tax_base_amount_lcy = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Tax_base_amount_lcy = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Tax_base_amount_lcy = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_base_amount_lcy (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Tax_base_amount_lcy); ok {
-				if err := trg.OnValidate_Tax_base_amount_lcy(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bal_tax_amount_lcy":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Bal_tax_amount_lcy = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Bal_tax_amount_lcy, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field bal_tax_amount_lcy: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Bal_tax_amount_lcy = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Bal_tax_amount_lcy = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Bal_tax_amount_lcy = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field bal_tax_amount_lcy (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Bal_tax_amount_lcy); ok {
-				if err := trg.OnValidate_Bal_tax_amount_lcy(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bal_tax_base_amount_lcy":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Bal_tax_base_amount_lcy = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Bal_tax_base_amount_lcy, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field bal_tax_base_amount_lcy: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Bal_tax_base_amount_lcy = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Bal_tax_base_amount_lcy = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Bal_tax_base_amount_lcy = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field bal_tax_base_amount_lcy (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Bal_tax_base_amount_lcy); ok {
-				if err := trg.OnValidate_Bal_tax_base_amount_lcy(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reversing_entry":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Reversing_entry = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Reversing_entry = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field reversing_entry")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Reversing_entry); ok {
-				if err := trg.OnValidate_Reversing_entry(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_posting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Fa_posting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Fa_posting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field fa_posting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Fa_posting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_posting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Fa_posting_date); ok {
-				if err := trg.OnValidate_Fa_posting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_posting_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(GenJournalLineFa_posting_type); ok {
-			t.Fa_posting_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 9 {
-				return fmt.Errorf("invalid option value %d for field fa_posting_type (valid range: 0-%d)", v, 9-1)
-			}
-			t.Fa_posting_type = GenJournalLineFa_posting_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 9 {
-				return fmt.Errorf("invalid option value %d for field fa_posting_type (valid range: 0-%d)", intVal, 9-1)
-			}
-			t.Fa_posting_type = GenJournalLineFa_posting_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Fa_posting_type = 0
-			} else {
-				options := []string{" ", "Acquisition Cost", "Depreciation", "Write-Down", "Appreciation", "Custom 1", "Custom 2", "Disposal", "Maintenance"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Fa_posting_type = GenJournalLineFa_posting_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field fa_posting_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field fa_posting_type (expected GenJournalLineFa_posting_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Fa_posting_type); ok {
-				if err := trg.OnValidate_Fa_posting_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "depreciation_book_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Depreciation_book_code = v
-		} else if v, ok := value.(string); ok {
-			t.Depreciation_book_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field depreciation_book_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "depreciation_book_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Depreciation_book_code); ok {
-				if err := trg.OnValidate_Depreciation_book_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "salvage_value":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Salvage_value = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Salvage_value, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field salvage_value: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Salvage_value = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Salvage_value = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Salvage_value = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field salvage_value (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Salvage_value); ok {
-				if err := trg.OnValidate_Salvage_value(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no_of_depreciation_days":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.No_of_depreciation_days = v
-		case float64:
-			t.No_of_depreciation_days = int(v)
-		case string:
-			if v == "" {
-				t.No_of_depreciation_days = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.No_of_depreciation_days = i
-			} else {
-				return fmt.Errorf("invalid integer value for field no_of_depreciation_days: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field no_of_depreciation_days")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_No_of_depreciation_days); ok {
-				if err := trg.OnValidate_No_of_depreciation_days(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "depr_until_fa_posting_date":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Depr_until_fa_posting_date = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Depr_until_fa_posting_date = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field depr_until_fa_posting_date")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Depr_until_fa_posting_date); ok {
-				if err := trg.OnValidate_Depr_until_fa_posting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "depr_acquisition_cost":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Depr_acquisition_cost = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Depr_acquisition_cost = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field depr_acquisition_cost")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Depr_acquisition_cost); ok {
-				if err := trg.OnValidate_Depr_acquisition_cost(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "maintenance_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Maintenance_code = v
-		} else if v, ok := value.(string); ok {
-			t.Maintenance_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field maintenance_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "maintenance_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Maintenance_code); ok {
-				if err := trg.OnValidate_Maintenance_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "insurance_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Insurance_no = v
-		} else if v, ok := value.(string); ok {
-			t.Insurance_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field insurance_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "insurance_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Insurance_no); ok {
-				if err := trg.OnValidate_Insurance_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "budgeted_fa_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Budgeted_fa_no = v
-		} else if v, ok := value.(string); ok {
-			t.Budgeted_fa_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field budgeted_fa_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "budgeted_fa_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Budgeted_fa_no); ok {
-				if err := trg.OnValidate_Budgeted_fa_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "duplicate_in_depreciation_book":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Duplicate_in_depreciation_book = v
-		} else if v, ok := value.(string); ok {
-			t.Duplicate_in_depreciation_book = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field duplicate_in_depreciation_book")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "duplicate_in_depreciation_book"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Duplicate_in_depreciation_book); ok {
-				if err := trg.OnValidate_Duplicate_in_depreciation_book(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "use_duplication_list":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Use_duplication_list = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Use_duplication_list = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field use_duplication_list")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Use_duplication_list); ok {
-				if err := trg.OnValidate_Use_duplication_list(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_reclassification_entry":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Fa_reclassification_entry = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Fa_reclassification_entry = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field fa_reclassification_entry")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Fa_reclassification_entry); ok {
-				if err := trg.OnValidate_Fa_reclassification_entry(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_error_entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Fa_error_entry_no = v
-		case float64:
-			t.Fa_error_entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Fa_error_entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Fa_error_entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field fa_error_entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field fa_error_entry_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fa_error_entry_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Fa_error_entry_no); ok {
-				if err := trg.OnValidate_Fa_error_entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "index_entry":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Index_entry = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Index_entry = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field index_entry")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Index_entry); ok {
-				if err := trg.OnValidate_Index_entry(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "project_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Project_no = v
-		} else if v, ok := value.(string); ok {
-			t.Project_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field project_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Project_no); ok {
-				if err := trg.OnValidate_Project_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "eu_3_party_trade":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Eu_3_party_trade = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Eu_3_party_trade = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field eu_3_party_trade")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalLineOnValidate_Eu_3_party_trade); ok {
-				if err := trg.OnValidate_Eu_3_party_trade(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := genJournalLineFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &genJournalLineFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -10746,936 +5880,18 @@ func (t *GenJournalLine) ValidateField(fieldName string, value interface{}) erro
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *GenJournalLine) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Journal_template_name, true
-	case 50:
-		return t.Business_unit_code, true
-	case 51:
-		return t.Journal_batch_name, true
-	case 2:
-		return t.Line_no, true
-	case 3:
-		return t.Account_type, true
-	case 4:
-		return t.Account_no, true
-	case 5:
-		return t.Posting_date, true
-	case 6:
-		return t.Document_type, true
-	case 7:
-		return t.Document_no, true
-	case 8:
-		return t.Description, true
-	case 10:
-		return t.Tax_percent, true
-	case 11:
-		return t.Bal_account_no, true
-	case 12:
-		return t.Currency_code, true
-	case 13:
-		return t.Amount, true
-	case 14:
-		return t.Debit_amount, true
-	case 15:
-		return t.Credit_amount, true
-	case 16:
-		return t.Amount_lcy, true
-	case 17:
-		return t.Balance_lcy, true
-	case 18:
-		return t.Currency_factor, true
-	case 19:
-		return t.Sales_purch_lcy, true
-	case 20:
-		return t.Profit_lcy, true
-	case 21:
-		return t.Inv_discount_lcy, true
-	case 22:
-		return t.Sell_to_buy_from_no, true
-	case 23:
-		return t.Posting_group, true
-	case 24:
-		return t.Dimension_1_code, true
-	case 25:
-		return t.Dimension_2_code, true
-	case 26:
-		return t.Salespers_purch_code, true
-	case 29:
-		return t.Source_code, true
-	case 30:
-		return t.System_created_entry, true
-	case 34:
-		return t.On_hold, true
-	case 35:
-		return t.Applies_to_doc_type, true
-	case 36:
-		return t.Applies_to_doc_no, true
-	case 38:
-		return t.Due_date, true
-	case 39:
-		return t.Pmt_discount_date, true
-	case 40:
-		return t.Payment_discount_percent, true
-	case 43:
-		return t.Quantity, true
-	case 44:
-		return t.Tax_amount, true
-	case 45:
-		return t.Vat_posting, true
-	case 47:
-		return t.Payment_terms_code, true
-	case 48:
-		return t.Applies_to_id, true
-	case 52:
-		return t.Reason_code, true
-	case 53:
-		return t.Recurring_method, true
-	case 54:
-		return t.Expiration_date, true
-	case 55:
-		return t.Recurring_frequency, true
-	case 57:
-		return t.Gen_posting_type, true
-	case 58:
-		return t.Gen_bus_posting_group, true
-	case 59:
-		return t.Gen_prod_posting_group, true
-	case 60:
-		return t.Tax_calculation_type, true
-	case 62:
-		return t.Allow_application, true
-	case 63:
-		return t.Bal_account_type, true
-	case 64:
-		return t.Bal_gen_posting_type, true
-	case 65:
-		return t.Bal_gen_bus_posting_group, true
-	case 66:
-		return t.Bal_gen_prod_posting_group, true
-	case 67:
-		return t.Bal_tax_calculation_type, true
-	case 68:
-		return t.Bal_tax_percent, true
-	case 69:
-		return t.Bal_tax_amount, true
-	case 70:
-		return t.Bank_payment_type, true
-	case 71:
-		return t.Tax_base_amount, true
-	case 72:
-		return t.Bal_tax_base_amount, true
-	case 73:
-		return t.Correction, true
-	case 75:
-		return t.Check_printed, true
-	case 76:
-		return t.Document_date, true
-	case 77:
-		return t.External_document_no, true
-	case 78:
-		return t.Source_type, true
-	case 79:
-		return t.Source_no, true
-	case 80:
-		return t.Posting_no_series, true
-	case 82:
-		return t.Tax_area_code, true
-	case 83:
-		return t.Tax_liable, true
-	case 84:
-		return t.Tax_group_code, true
-	case 85:
-		return t.Use_tax, true
-	case 86:
-		return t.Bal_tax_area_code, true
-	case 87:
-		return t.Bal_tax_liable, true
-	case 88:
-		return t.Bal_tax_group_code, true
-	case 89:
-		return t.Bal_use_tax, true
-	case 90:
-		return t.Tax_bus_posting_group, true
-	case 91:
-		return t.Tax_prod_posting_group, true
-	case 92:
-		return t.Bal_tax_bus_posting_group, true
-	case 93:
-		return t.Bal_tax_prod_posting_group, true
-	case 99:
-		return t.Source_currency_code, true
-	case 100:
-		return t.Source_currency_amount, true
-	case 101:
-		return t.Source_curr_tax_base_amount, true
-	case 95:
-		return t.Additional_currency_posting, true
-	case 98:
-		return t.Fa_add_currency_factor, true
-	case 102:
-		return t.Source_curr_tax_amount, true
-	case 104:
-		return t.Tax_amount_lcy, true
-	case 105:
-		return t.Tax_base_amount_lcy, true
-	case 106:
-		return t.Bal_tax_amount_lcy, true
-	case 107:
-		return t.Bal_tax_base_amount_lcy, true
-	case 108:
-		return t.Reversing_entry, true
-	case 5600:
-		return t.Fa_posting_date, true
-	case 5601:
-		return t.Fa_posting_type, true
-	case 5602:
-		return t.Depreciation_book_code, true
-	case 5603:
-		return t.Salvage_value, true
-	case 5604:
-		return t.No_of_depreciation_days, true
-	case 5605:
-		return t.Depr_until_fa_posting_date, true
-	case 5606:
-		return t.Depr_acquisition_cost, true
-	case 5609:
-		return t.Maintenance_code, true
-	case 5610:
-		return t.Insurance_no, true
-	case 5611:
-		return t.Budgeted_fa_no, true
-	case 5612:
-		return t.Duplicate_in_depreciation_book, true
-	case 5613:
-		return t.Use_duplication_list, true
-	case 5614:
-		return t.Fa_reclassification_entry, true
-	case 5615:
-		return t.Fa_error_entry_no, true
-	case 5616:
-		return t.Index_entry, true
-	case 42:
-		return t.Project_no, true
-	case 61:
-		return t.Eu_3_party_trade, true
-	}
-	return nil, false
+	return genJournalLineFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *GenJournalLine) flowFieldValue(no int) (any, bool) {
-	switch no {
-	case 56:
-		return t.Allocated_amt_lcy, true
-	}
-	return nil, false
+	return genJournalLineFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *GenJournalLine) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Journal_template_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Journal_template_name = types.NewCode(v)
-			return true
-		}
-	case 50:
-		if v, ok := value.(types.Code); ok {
-			t.Business_unit_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Business_unit_code = types.NewCode(v)
-			return true
-		}
-	case 51:
-		if v, ok := value.(types.Code); ok {
-			t.Journal_batch_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Journal_batch_name = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(int); ok {
-			t.Line_no = v
-			return true
-		}
-	case 3:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 5 {
-			t.Account_type = GenJournalLineAccount_type(i)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Code); ok {
-			t.Account_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Account_no = types.NewCode(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Date); ok {
-			t.Posting_date = v
-			return true
-		}
-	case 6:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 6 {
-			t.Document_type = GenJournalLineDocument_type(i)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Code); ok {
-			t.Document_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Document_no = types.NewCode(v)
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Decimal); ok {
-			t.Tax_percent = v
-			return true
-		}
-	case 11:
-		if v, ok := value.(types.Code); ok {
-			t.Bal_account_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Bal_account_no = types.NewCode(v)
-			return true
-		}
-	case 12:
-		if v, ok := value.(types.Code); ok {
-			t.Currency_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Currency_code = types.NewCode(v)
-			return true
-		}
-	case 13:
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount = v
-			return true
-		}
-	case 14:
-		if v, ok := value.(types.Decimal); ok {
-			t.Debit_amount = v
-			return true
-		}
-	case 15:
-		if v, ok := value.(types.Decimal); ok {
-			t.Credit_amount = v
-			return true
-		}
-	case 16:
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount_lcy = v
-			return true
-		}
-	case 17:
-		if v, ok := value.(types.Decimal); ok {
-			t.Balance_lcy = v
-			return true
-		}
-	case 18:
-		if v, ok := value.(types.Decimal); ok {
-			t.Currency_factor = v
-			return true
-		}
-	case 19:
-		if v, ok := value.(types.Decimal); ok {
-			t.Sales_purch_lcy = v
-			return true
-		}
-	case 20:
-		if v, ok := value.(types.Decimal); ok {
-			t.Profit_lcy = v
-			return true
-		}
-	case 21:
-		if v, ok := value.(types.Decimal); ok {
-			t.Inv_discount_lcy = v
-			return true
-		}
-	case 22:
-		if v, ok := value.(types.Code); ok {
-			t.Sell_to_buy_from_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Sell_to_buy_from_no = types.NewCode(v)
-			return true
-		}
-	case 23:
-		if v, ok := value.(types.Code); ok {
-			t.Posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Posting_group = types.NewCode(v)
-			return true
-		}
-	case 24:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-			return true
-		}
-	case 25:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-			return true
-		}
-	case 26:
-		if v, ok := value.(types.Code); ok {
-			t.Salespers_purch_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Salespers_purch_code = types.NewCode(v)
-			return true
-		}
-	case 29:
-		if v, ok := value.(types.Code); ok {
-			t.Source_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Source_code = types.NewCode(v)
-			return true
-		}
-	case 30:
-		if v, ok := value.(bool); ok {
-			t.System_created_entry = v
-			return true
-		}
-	case 34:
-		if v, ok := value.(types.Code); ok {
-			t.On_hold = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.On_hold = types.NewCode(v)
-			return true
-		}
-	case 35:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 6 {
-			t.Applies_to_doc_type = GenJournalLineApplies_to_doc_type(i)
-			return true
-		}
-	case 36:
-		if v, ok := value.(types.Code); ok {
-			t.Applies_to_doc_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Applies_to_doc_no = types.NewCode(v)
-			return true
-		}
-	case 38:
-		if v, ok := value.(types.Date); ok {
-			t.Due_date = v
-			return true
-		}
-	case 39:
-		if v, ok := value.(types.Date); ok {
-			t.Pmt_discount_date = v
-			return true
-		}
-	case 40:
-		if v, ok := value.(types.Decimal); ok {
-			t.Payment_discount_percent = v
-			return true
-		}
-	case 43:
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity = v
-			return true
-		}
-	case 44:
-		if v, ok := value.(types.Decimal); ok {
-			t.Tax_amount = v
-			return true
-		}
-	case 45:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 2 {
-			t.Vat_posting = GenJournalLineVat_posting(i)
-			return true
-		}
-	case 47:
-		if v, ok := value.(types.Code); ok {
-			t.Payment_terms_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Payment_terms_code = types.NewCode(v)
-			return true
-		}
-	case 48:
-		if v, ok := value.(types.Code); ok {
-			t.Applies_to_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Applies_to_id = types.NewCode(v)
-			return true
-		}
-	case 52:
-		if v, ok := value.(types.Code); ok {
-			t.Reason_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Reason_code = types.NewCode(v)
-			return true
-		}
-	case 53:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 7 {
-			t.Recurring_method = GenJournalLineRecurring_method(i)
-			return true
-		}
-	case 54:
-		if v, ok := value.(types.Date); ok {
-			t.Expiration_date = v
-			return true
-		}
-	case 55:
-		if v, ok := value.(types.Code); ok {
-			t.Recurring_frequency = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Recurring_frequency = types.NewCode(v)
-			return true
-		}
-	case 57:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Gen_posting_type = GenJournalLineGen_posting_type(i)
-			return true
-		}
-	case 58:
-		if v, ok := value.(types.Code); ok {
-			t.Gen_bus_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Gen_bus_posting_group = types.NewCode(v)
-			return true
-		}
-	case 59:
-		if v, ok := value.(types.Code); ok {
-			t.Gen_prod_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Gen_prod_posting_group = types.NewCode(v)
-			return true
-		}
-	case 60:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Tax_calculation_type = GenJournalLineTax_calculation_type(i)
-			return true
-		}
-	case 62:
-		if v, ok := value.(bool); ok {
-			t.Allow_application = v
-			return true
-		}
-	case 63:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 6 {
-			t.Bal_account_type = GenJournalLineBal_account_type(i)
-			return true
-		}
-	case 64:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Bal_gen_posting_type = GenJournalLineBal_gen_posting_type(i)
-			return true
-		}
-	case 65:
-		if v, ok := value.(types.Code); ok {
-			t.Bal_gen_bus_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Bal_gen_bus_posting_group = types.NewCode(v)
-			return true
-		}
-	case 66:
-		if v, ok := value.(types.Code); ok {
-			t.Bal_gen_prod_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Bal_gen_prod_posting_group = types.NewCode(v)
-			return true
-		}
-	case 67:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Bal_tax_calculation_type = GenJournalLineBal_tax_calculation_type(i)
-			return true
-		}
-	case 68:
-		if v, ok := value.(types.Decimal); ok {
-			t.Bal_tax_percent = v
-			return true
-		}
-	case 69:
-		if v, ok := value.(types.Decimal); ok {
-			t.Bal_tax_amount = v
-			return true
-		}
-	case 70:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Bank_payment_type = GenJournalLineBank_payment_type(i)
-			return true
-		}
-	case 71:
-		if v, ok := value.(types.Decimal); ok {
-			t.Tax_base_amount = v
-			return true
-		}
-	case 72:
-		if v, ok := value.(types.Decimal); ok {
-			t.Bal_tax_base_amount = v
-			return true
-		}
-	case 73:
-		if v, ok := value.(bool); ok {
-			t.Correction = v
-			return true
-		}
-	case 75:
-		if v, ok := value.(bool); ok {
-			t.Check_printed = v
-			return true
-		}
-	case 76:
-		if v, ok := value.(types.Date); ok {
-			t.Document_date = v
-			return true
-		}
-	case 77:
-		if v, ok := value.(types.Code); ok {
-			t.External_document_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.External_document_no = types.NewCode(v)
-			return true
-		}
-	case 78:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 6 {
-			t.Source_type = GenJournalLineSource_type(i)
-			return true
-		}
-	case 79:
-		if v, ok := value.(types.Code); ok {
-			t.Source_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Source_no = types.NewCode(v)
-			return true
-		}
-	case 80:
-		if v, ok := value.(types.Code); ok {
-			t.Posting_no_series = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Posting_no_series = types.NewCode(v)
-			return true
-		}
-	case 82:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_area_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_area_code = types.NewCode(v)
-			return true
-		}
-	case 83:
-		if v, ok := value.(bool); ok {
-			t.Tax_liable = v
-			return true
-		}
-	case 84:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_group_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_group_code = types.NewCode(v)
-			return true
-		}
-	case 85:
-		if v, ok := value.(bool); ok {
-			t.Use_tax = v
-			return true
-		}
-	case 86:
-		if v, ok := value.(types.Code); ok {
-			t.Bal_tax_area_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Bal_tax_area_code = types.NewCode(v)
-			return true
-		}
-	case 87:
-		if v, ok := value.(bool); ok {
-			t.Bal_tax_liable = v
-			return true
-		}
-	case 88:
-		if v, ok := value.(types.Code); ok {
-			t.Bal_tax_group_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Bal_tax_group_code = types.NewCode(v)
-			return true
-		}
-	case 89:
-		if v, ok := value.(bool); ok {
-			t.Bal_use_tax = v
-			return true
-		}
-	case 90:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_bus_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_bus_posting_group = types.NewCode(v)
-			return true
-		}
-	case 91:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_prod_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_prod_posting_group = types.NewCode(v)
-			return true
-		}
-	case 92:
-		if v, ok := value.(types.Code); ok {
-			t.Bal_tax_bus_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Bal_tax_bus_posting_group = types.NewCode(v)
-			return true
-		}
-	case 93:
-		if v, ok := value.(types.Code); ok {
-			t.Bal_tax_prod_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Bal_tax_prod_posting_group = types.NewCode(v)
-			return true
-		}
-	case 99:
-		if v, ok := value.(types.Code); ok {
-			t.Source_currency_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Source_currency_code = types.NewCode(v)
-			return true
-		}
-	case 100:
-		if v, ok := value.(types.Decimal); ok {
-			t.Source_currency_amount = v
-			return true
-		}
-	case 101:
-		if v, ok := value.(types.Decimal); ok {
-			t.Source_curr_tax_base_amount = v
-			return true
-		}
-	case 95:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Additional_currency_posting = GenJournalLineAdditional_currency_posting(i)
-			return true
-		}
-	case 98:
-		if v, ok := value.(types.Decimal); ok {
-			t.Fa_add_currency_factor = v
-			return true
-		}
-	case 102:
-		if v, ok := value.(types.Decimal); ok {
-			t.Source_curr_tax_amount = v
-			return true
-		}
-	case 104:
-		if v, ok := value.(types.Decimal); ok {
-			t.Tax_amount_lcy = v
-			return true
-		}
-	case 105:
-		if v, ok := value.(types.Decimal); ok {
-			t.Tax_base_amount_lcy = v
-			return true
-		}
-	case 106:
-		if v, ok := value.(types.Decimal); ok {
-			t.Bal_tax_amount_lcy = v
-			return true
-		}
-	case 107:
-		if v, ok := value.(types.Decimal); ok {
-			t.Bal_tax_base_amount_lcy = v
-			return true
-		}
-	case 108:
-		if v, ok := value.(bool); ok {
-			t.Reversing_entry = v
-			return true
-		}
-	case 5600:
-		if v, ok := value.(types.Date); ok {
-			t.Fa_posting_date = v
-			return true
-		}
-	case 5601:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 9 {
-			t.Fa_posting_type = GenJournalLineFa_posting_type(i)
-			return true
-		}
-	case 5602:
-		if v, ok := value.(types.Code); ok {
-			t.Depreciation_book_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Depreciation_book_code = types.NewCode(v)
-			return true
-		}
-	case 5603:
-		if v, ok := value.(types.Decimal); ok {
-			t.Salvage_value = v
-			return true
-		}
-	case 5604:
-		if v, ok := value.(int); ok {
-			t.No_of_depreciation_days = v
-			return true
-		}
-	case 5605:
-		if v, ok := value.(bool); ok {
-			t.Depr_until_fa_posting_date = v
-			return true
-		}
-	case 5606:
-		if v, ok := value.(bool); ok {
-			t.Depr_acquisition_cost = v
-			return true
-		}
-	case 5609:
-		if v, ok := value.(types.Code); ok {
-			t.Maintenance_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Maintenance_code = types.NewCode(v)
-			return true
-		}
-	case 5610:
-		if v, ok := value.(types.Code); ok {
-			t.Insurance_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Insurance_no = types.NewCode(v)
-			return true
-		}
-	case 5611:
-		if v, ok := value.(types.Code); ok {
-			t.Budgeted_fa_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Budgeted_fa_no = types.NewCode(v)
-			return true
-		}
-	case 5612:
-		if v, ok := value.(types.Code); ok {
-			t.Duplicate_in_depreciation_book = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Duplicate_in_depreciation_book = types.NewCode(v)
-			return true
-		}
-	case 5613:
-		if v, ok := value.(bool); ok {
-			t.Use_duplication_list = v
-			return true
-		}
-	case 5614:
-		if v, ok := value.(bool); ok {
-			t.Fa_reclassification_entry = v
-			return true
-		}
-	case 5615:
-		if v, ok := value.(int); ok {
-			t.Fa_error_entry_no = v
-			return true
-		}
-	case 5616:
-		if v, ok := value.(bool); ok {
-			t.Index_entry = v
-			return true
-		}
-	case 42:
-		if v, ok := value.(types.Code); ok {
-			t.Project_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Project_no = types.NewCode(v)
-			return true
-		}
-	case 61:
-		if v, ok := value.(bool); ok {
-			t.Eu_3_party_trade = v
-			return true
-		}
-	}
-	return false
+	return genJournalLineFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -12374,221 +6590,7 @@ func (t *GenJournalLine) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *GenJournalLine) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "journal_template_name":
-		return t.Journal_template_name, true
-	case "business_unit_code":
-		return t.Business_unit_code, true
-	case "journal_batch_name":
-		return t.Journal_batch_name, true
-	case "line_no":
-		return t.Line_no, true
-	case "account_type":
-		return int(t.Account_type), true
-	case "account_no":
-		return t.Account_no, true
-	case "posting_date":
-		return t.Posting_date, true
-	case "document_type":
-		return int(t.Document_type), true
-	case "document_no":
-		return t.Document_no, true
-	case "description":
-		return t.Description, true
-	case "tax_percent":
-		return t.Tax_percent, true
-	case "bal_account_no":
-		return t.Bal_account_no, true
-	case "currency_code":
-		return t.Currency_code, true
-	case "amount":
-		return t.Amount, true
-	case "debit_amount":
-		return t.Debit_amount, true
-	case "credit_amount":
-		return t.Credit_amount, true
-	case "amount_lcy":
-		return t.Amount_lcy, true
-	case "balance_lcy":
-		return t.Balance_lcy, true
-	case "currency_factor":
-		return t.Currency_factor, true
-	case "sales_purch_lcy":
-		return t.Sales_purch_lcy, true
-	case "profit_lcy":
-		return t.Profit_lcy, true
-	case "inv_discount_lcy":
-		return t.Inv_discount_lcy, true
-	case "sell_to_buy_from_no":
-		return t.Sell_to_buy_from_no, true
-	case "posting_group":
-		return t.Posting_group, true
-	case "dimension_1_code":
-		return t.Dimension_1_code, true
-	case "dimension_2_code":
-		return t.Dimension_2_code, true
-	case "salespers_purch_code":
-		return t.Salespers_purch_code, true
-	case "source_code":
-		return t.Source_code, true
-	case "system_created_entry":
-		return t.System_created_entry, true
-	case "on_hold":
-		return t.On_hold, true
-	case "applies_to_doc_type":
-		return int(t.Applies_to_doc_type), true
-	case "applies_to_doc_no":
-		return t.Applies_to_doc_no, true
-	case "due_date":
-		return t.Due_date, true
-	case "pmt_discount_date":
-		return t.Pmt_discount_date, true
-	case "payment_discount_percent":
-		return t.Payment_discount_percent, true
-	case "quantity":
-		return t.Quantity, true
-	case "tax_amount":
-		return t.Tax_amount, true
-	case "vat_posting":
-		return int(t.Vat_posting), true
-	case "payment_terms_code":
-		return t.Payment_terms_code, true
-	case "applies_to_id":
-		return t.Applies_to_id, true
-	case "reason_code":
-		return t.Reason_code, true
-	case "recurring_method":
-		return int(t.Recurring_method), true
-	case "expiration_date":
-		return t.Expiration_date, true
-	case "recurring_frequency":
-		return t.Recurring_frequency, true
-	case "gen_posting_type":
-		return int(t.Gen_posting_type), true
-	case "gen_bus_posting_group":
-		return t.Gen_bus_posting_group, true
-	case "gen_prod_posting_group":
-		return t.Gen_prod_posting_group, true
-	case "tax_calculation_type":
-		return int(t.Tax_calculation_type), true
-	case "allow_application":
-		return t.Allow_application, true
-	case "bal_account_type":
-		return int(t.Bal_account_type), true
-	case "bal_gen_posting_type":
-		return int(t.Bal_gen_posting_type), true
-	case "bal_gen_bus_posting_group":
-		return t.Bal_gen_bus_posting_group, true
-	case "bal_gen_prod_posting_group":
-		return t.Bal_gen_prod_posting_group, true
-	case "bal_tax_calculation_type":
-		return int(t.Bal_tax_calculation_type), true
-	case "bal_tax_percent":
-		return t.Bal_tax_percent, true
-	case "bal_tax_amount":
-		return t.Bal_tax_amount, true
-	case "bank_payment_type":
-		return int(t.Bank_payment_type), true
-	case "tax_base_amount":
-		return t.Tax_base_amount, true
-	case "bal_tax_base_amount":
-		return t.Bal_tax_base_amount, true
-	case "correction":
-		return t.Correction, true
-	case "check_printed":
-		return t.Check_printed, true
-	case "document_date":
-		return t.Document_date, true
-	case "external_document_no":
-		return t.External_document_no, true
-	case "source_type":
-		return int(t.Source_type), true
-	case "source_no":
-		return t.Source_no, true
-	case "posting_no_series":
-		return t.Posting_no_series, true
-	case "tax_area_code":
-		return t.Tax_area_code, true
-	case "tax_liable":
-		return t.Tax_liable, true
-	case "tax_group_code":
-		return t.Tax_group_code, true
-	case "use_tax":
-		return t.Use_tax, true
-	case "bal_tax_area_code":
-		return t.Bal_tax_area_code, true
-	case "bal_tax_liable":
-		return t.Bal_tax_liable, true
-	case "bal_tax_group_code":
-		return t.Bal_tax_group_code, true
-	case "bal_use_tax":
-		return t.Bal_use_tax, true
-	case "tax_bus_posting_group":
-		return t.Tax_bus_posting_group, true
-	case "tax_prod_posting_group":
-		return t.Tax_prod_posting_group, true
-	case "bal_tax_bus_posting_group":
-		return t.Bal_tax_bus_posting_group, true
-	case "bal_tax_prod_posting_group":
-		return t.Bal_tax_prod_posting_group, true
-	case "source_currency_code":
-		return t.Source_currency_code, true
-	case "source_currency_amount":
-		return t.Source_currency_amount, true
-	case "source_curr_tax_base_amount":
-		return t.Source_curr_tax_base_amount, true
-	case "additional_currency_posting":
-		return int(t.Additional_currency_posting), true
-	case "fa_add_currency_factor":
-		return t.Fa_add_currency_factor, true
-	case "source_curr_tax_amount":
-		return t.Source_curr_tax_amount, true
-	case "tax_amount_lcy":
-		return t.Tax_amount_lcy, true
-	case "tax_base_amount_lcy":
-		return t.Tax_base_amount_lcy, true
-	case "bal_tax_amount_lcy":
-		return t.Bal_tax_amount_lcy, true
-	case "bal_tax_base_amount_lcy":
-		return t.Bal_tax_base_amount_lcy, true
-	case "reversing_entry":
-		return t.Reversing_entry, true
-	case "fa_posting_date":
-		return t.Fa_posting_date, true
-	case "fa_posting_type":
-		return int(t.Fa_posting_type), true
-	case "depreciation_book_code":
-		return t.Depreciation_book_code, true
-	case "salvage_value":
-		return t.Salvage_value, true
-	case "no_of_depreciation_days":
-		return t.No_of_depreciation_days, true
-	case "depr_until_fa_posting_date":
-		return t.Depr_until_fa_posting_date, true
-	case "depr_acquisition_cost":
-		return t.Depr_acquisition_cost, true
-	case "maintenance_code":
-		return t.Maintenance_code, true
-	case "insurance_no":
-		return t.Insurance_no, true
-	case "budgeted_fa_no":
-		return t.Budgeted_fa_no, true
-	case "duplicate_in_depreciation_book":
-		return t.Duplicate_in_depreciation_book, true
-	case "use_duplication_list":
-		return t.Use_duplication_list, true
-	case "fa_reclassification_entry":
-		return t.Fa_reclassification_entry, true
-	case "fa_error_entry_no":
-		return t.Fa_error_entry_no, true
-	case "index_entry":
-		return t.Index_entry, true
-	case "project_no":
-		return t.Project_no, true
-	case "eu_3_party_trade":
-		return t.Eu_3_party_trade, true
-	}
-	return nil, false
+	return genJournalLineFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -12785,1024 +6787,12 @@ func (t *GenJournalLine) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *GenJournalLine) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"journal_template_name":    t.Journal_template_name.String(),
-		"business_unit_code":       t.Business_unit_code.String(),
-		"journal_batch_name":       t.Journal_batch_name.String(),
-		"line_no":                  t.Line_no,
-		"account_type":             int(t.Account_type),
-		"account_no":               t.Account_no.String(),
-		"posting_date":             t.Posting_date.String(),
-		"document_type":            int(t.Document_type),
-		"document_no":              t.Document_no.String(),
-		"description":              t.Description.String(),
-		"tax_percent":              t.Tax_percent.String(),
-		"bal_account_no":           t.Bal_account_no.String(),
-		"currency_code":            t.Currency_code.String(),
-		"amount":                   t.Amount.String(),
-		"debit_amount":             t.Debit_amount.String(),
-		"credit_amount":            t.Credit_amount.String(),
-		"amount_lcy":               t.Amount_lcy.String(),
-		"balance_lcy":              t.Balance_lcy.String(),
-		"currency_factor":          t.Currency_factor.String(),
-		"sales_purch_lcy":          t.Sales_purch_lcy.String(),
-		"profit_lcy":               t.Profit_lcy.String(),
-		"inv_discount_lcy":         t.Inv_discount_lcy.String(),
-		"sell_to_buy_from_no":      t.Sell_to_buy_from_no.String(),
-		"posting_group":            t.Posting_group.String(),
-		"dimension_1_code":         t.Dimension_1_code.String(),
-		"dimension_2_code":         t.Dimension_2_code.String(),
-		"salespers_purch_code":     t.Salespers_purch_code.String(),
-		"source_code":              t.Source_code.String(),
-		"system_created_entry":     t.System_created_entry,
-		"on_hold":                  t.On_hold.String(),
-		"applies_to_doc_type":      int(t.Applies_to_doc_type),
-		"applies_to_doc_no":        t.Applies_to_doc_no.String(),
-		"due_date":                 t.Due_date.String(),
-		"pmt_discount_date":        t.Pmt_discount_date.String(),
-		"payment_discount_percent": t.Payment_discount_percent.String(),
-		"quantity":                 t.Quantity.String(),
-		"tax_amount":               t.Tax_amount.String(),
-		"vat_posting":              int(t.Vat_posting),
-		"payment_terms_code":       t.Payment_terms_code.String(),
-		"applies_to_id":            t.Applies_to_id.String(),
-		"reason_code":              t.Reason_code.String(),
-		"recurring_method":         int(t.Recurring_method),
-		"expiration_date":          t.Expiration_date.String(),
-		"recurring_frequency":      t.Recurring_frequency.String(),
-		// FlowField: allocated_amt_lcy
-		"allocated_amt_lcy":              t.Allocated_amt_lcy.String(),
-		"gen_posting_type":               int(t.Gen_posting_type),
-		"gen_bus_posting_group":          t.Gen_bus_posting_group.String(),
-		"gen_prod_posting_group":         t.Gen_prod_posting_group.String(),
-		"tax_calculation_type":           int(t.Tax_calculation_type),
-		"allow_application":              t.Allow_application,
-		"bal_account_type":               int(t.Bal_account_type),
-		"bal_gen_posting_type":           int(t.Bal_gen_posting_type),
-		"bal_gen_bus_posting_group":      t.Bal_gen_bus_posting_group.String(),
-		"bal_gen_prod_posting_group":     t.Bal_gen_prod_posting_group.String(),
-		"bal_tax_calculation_type":       int(t.Bal_tax_calculation_type),
-		"bal_tax_percent":                t.Bal_tax_percent.String(),
-		"bal_tax_amount":                 t.Bal_tax_amount.String(),
-		"bank_payment_type":              int(t.Bank_payment_type),
-		"tax_base_amount":                t.Tax_base_amount.String(),
-		"bal_tax_base_amount":            t.Bal_tax_base_amount.String(),
-		"correction":                     t.Correction,
-		"check_printed":                  t.Check_printed,
-		"document_date":                  t.Document_date.String(),
-		"external_document_no":           t.External_document_no.String(),
-		"source_type":                    int(t.Source_type),
-		"source_no":                      t.Source_no.String(),
-		"posting_no_series":              t.Posting_no_series.String(),
-		"tax_area_code":                  t.Tax_area_code.String(),
-		"tax_liable":                     t.Tax_liable,
-		"tax_group_code":                 t.Tax_group_code.String(),
-		"use_tax":                        t.Use_tax,
-		"bal_tax_area_code":              t.Bal_tax_area_code.String(),
-		"bal_tax_liable":                 t.Bal_tax_liable,
-		"bal_tax_group_code":             t.Bal_tax_group_code.String(),
-		"bal_use_tax":                    t.Bal_use_tax,
-		"tax_bus_posting_group":          t.Tax_bus_posting_group.String(),
-		"tax_prod_posting_group":         t.Tax_prod_posting_group.String(),
-		"bal_tax_bus_posting_group":      t.Bal_tax_bus_posting_group.String(),
-		"bal_tax_prod_posting_group":     t.Bal_tax_prod_posting_group.String(),
-		"source_currency_code":           t.Source_currency_code.String(),
-		"source_currency_amount":         t.Source_currency_amount.String(),
-		"source_curr_tax_base_amount":    t.Source_curr_tax_base_amount.String(),
-		"additional_currency_posting":    int(t.Additional_currency_posting),
-		"fa_add_currency_factor":         t.Fa_add_currency_factor.String(),
-		"source_curr_tax_amount":         t.Source_curr_tax_amount.String(),
-		"tax_amount_lcy":                 t.Tax_amount_lcy.String(),
-		"tax_base_amount_lcy":            t.Tax_base_amount_lcy.String(),
-		"bal_tax_amount_lcy":             t.Bal_tax_amount_lcy.String(),
-		"bal_tax_base_amount_lcy":        t.Bal_tax_base_amount_lcy.String(),
-		"reversing_entry":                t.Reversing_entry,
-		"fa_posting_date":                t.Fa_posting_date.String(),
-		"fa_posting_type":                int(t.Fa_posting_type),
-		"depreciation_book_code":         t.Depreciation_book_code.String(),
-		"salvage_value":                  t.Salvage_value.String(),
-		"no_of_depreciation_days":        t.No_of_depreciation_days,
-		"depr_until_fa_posting_date":     t.Depr_until_fa_posting_date,
-		"depr_acquisition_cost":          t.Depr_acquisition_cost,
-		"maintenance_code":               t.Maintenance_code.String(),
-		"insurance_no":                   t.Insurance_no.String(),
-		"budgeted_fa_no":                 t.Budgeted_fa_no.String(),
-		"duplicate_in_depreciation_book": t.Duplicate_in_depreciation_book.String(),
-		"use_duplication_list":           t.Use_duplication_list,
-		"fa_reclassification_entry":      t.Fa_reclassification_entry,
-		"fa_error_entry_no":              t.Fa_error_entry_no,
-		"index_entry":                    t.Index_entry,
-		"project_no":                     t.Project_no.String(),
-		"eu_3_party_trade":               t.Eu_3_party_trade,
-	}
+	return genJournalLineFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *GenJournalLine) FromMap(data map[string]interface{}) {
-	if v, ok := data["journal_template_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Journal_template_name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["business_unit_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Business_unit_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["journal_batch_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Journal_batch_name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["line_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Line_no = int(val)
-		case int:
-			t.Line_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Line_no = n
-			}
-		}
-	}
-	if v, ok := data["account_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Account_type = GenJournalLineAccount_type(int(val))
-		case int:
-			t.Account_type = GenJournalLineAccount_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"G/L Account", "Customer", "Vendor", "Bank Account", "Fixed Asset"}
-			for i, opt := range options {
-				if opt == val {
-					t.Account_type = GenJournalLineAccount_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["account_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Account_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["posting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Posting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["document_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Document_type = GenJournalLineDocument_type(int(val))
-		case int:
-			t.Document_type = GenJournalLineDocument_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Payment", "Invoice", "Credit Memo", "Finance Charge Memo", "Reminder"}
-			for i, opt := range options {
-				if opt == val {
-					t.Document_type = GenJournalLineDocument_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["document_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Document_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["tax_percent"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Tax_percent, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Tax_percent = types.NewDecimal(val)
-		case int:
-			t.Tax_percent = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Tax_percent = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["bal_account_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Bal_account_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["currency_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Currency_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Amount = types.NewDecimal(val)
-		case int:
-			t.Amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["debit_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Debit_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Debit_amount = types.NewDecimal(val)
-		case int:
-			t.Debit_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Debit_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["credit_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Credit_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Credit_amount = types.NewDecimal(val)
-		case int:
-			t.Credit_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Credit_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["amount_lcy"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Amount_lcy, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Amount_lcy = types.NewDecimal(val)
-		case int:
-			t.Amount_lcy = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Amount_lcy = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["balance_lcy"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Balance_lcy, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Balance_lcy = types.NewDecimal(val)
-		case int:
-			t.Balance_lcy = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Balance_lcy = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["currency_factor"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Currency_factor, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Currency_factor = types.NewDecimal(val)
-		case int:
-			t.Currency_factor = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Currency_factor = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["sales_purch_lcy"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Sales_purch_lcy, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Sales_purch_lcy = types.NewDecimal(val)
-		case int:
-			t.Sales_purch_lcy = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Sales_purch_lcy = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["profit_lcy"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Profit_lcy, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Profit_lcy = types.NewDecimal(val)
-		case int:
-			t.Profit_lcy = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Profit_lcy = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["inv_discount_lcy"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Inv_discount_lcy, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Inv_discount_lcy = types.NewDecimal(val)
-		case int:
-			t.Inv_discount_lcy = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Inv_discount_lcy = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["sell_to_buy_from_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Sell_to_buy_from_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["dimension_1_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_1_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["dimension_2_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_2_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["salespers_purch_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Salespers_purch_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["source_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Source_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["system_created_entry"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.System_created_entry = b
-		}
-	}
-	if v, ok := data["on_hold"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.On_hold = types.NewCode(s)
-		}
-	}
-	if v, ok := data["applies_to_doc_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Applies_to_doc_type = GenJournalLineApplies_to_doc_type(int(val))
-		case int:
-			t.Applies_to_doc_type = GenJournalLineApplies_to_doc_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Payment", "Invoice", "Credit Memo", "Finance Charge Memo", "Reminder"}
-			for i, opt := range options {
-				if opt == val {
-					t.Applies_to_doc_type = GenJournalLineApplies_to_doc_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["applies_to_doc_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Applies_to_doc_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["due_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Due_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["pmt_discount_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Pmt_discount_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["payment_discount_percent"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Payment_discount_percent, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Payment_discount_percent = types.NewDecimal(val)
-		case int:
-			t.Payment_discount_percent = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Payment_discount_percent = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["quantity"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Quantity, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Quantity = types.NewDecimal(val)
-		case int:
-			t.Quantity = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Quantity = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["tax_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Tax_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Tax_amount = types.NewDecimal(val)
-		case int:
-			t.Tax_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Tax_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["vat_posting"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Vat_posting = GenJournalLineVat_posting(int(val))
-		case int:
-			t.Vat_posting = GenJournalLineVat_posting(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Automatic VAT Entry", "Manual VAT Entry"}
-			for i, opt := range options {
-				if opt == val {
-					t.Vat_posting = GenJournalLineVat_posting(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["payment_terms_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Payment_terms_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["applies_to_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Applies_to_id = types.NewCode(s)
-		}
-	}
-	if v, ok := data["reason_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Reason_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["recurring_method"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Recurring_method = GenJournalLineRecurring_method(int(val))
-		case int:
-			t.Recurring_method = GenJournalLineRecurring_method(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "F Fixed", "V Variable", "B Balance", "RF Reversing Fixed", "RV Reversing Variable", "RB Reversing Balance"}
-			for i, opt := range options {
-				if opt == val {
-					t.Recurring_method = GenJournalLineRecurring_method(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["expiration_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Expiration_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["recurring_frequency"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Recurring_frequency = types.NewCode(s)
-		}
-	}
-	if v, ok := data["gen_posting_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Gen_posting_type = GenJournalLineGen_posting_type(int(val))
-		case int:
-			t.Gen_posting_type = GenJournalLineGen_posting_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Purchase", "Sale", "Settlement"}
-			for i, opt := range options {
-				if opt == val {
-					t.Gen_posting_type = GenJournalLineGen_posting_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["gen_bus_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Gen_bus_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["gen_prod_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Gen_prod_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_calculation_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Tax_calculation_type = GenJournalLineTax_calculation_type(int(val))
-		case int:
-			t.Tax_calculation_type = GenJournalLineTax_calculation_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Normal VAT", "Reverse Charge VAT", "Full VAT", "Sales Tax"}
-			for i, opt := range options {
-				if opt == val {
-					t.Tax_calculation_type = GenJournalLineTax_calculation_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["allow_application"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Allow_application = b
-		}
-	}
-	if v, ok := data["bal_account_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Bal_account_type = GenJournalLineBal_account_type(int(val))
-		case int:
-			t.Bal_account_type = GenJournalLineBal_account_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"G/L Account", "Customer", "Vendor", "Bank Account", "Fixed Asset", "Employee"}
-			for i, opt := range options {
-				if opt == val {
-					t.Bal_account_type = GenJournalLineBal_account_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["bal_gen_posting_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Bal_gen_posting_type = GenJournalLineBal_gen_posting_type(int(val))
-		case int:
-			t.Bal_gen_posting_type = GenJournalLineBal_gen_posting_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Purchase", "Sale", "Settlement"}
-			for i, opt := range options {
-				if opt == val {
-					t.Bal_gen_posting_type = GenJournalLineBal_gen_posting_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["bal_gen_bus_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Bal_gen_bus_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["bal_gen_prod_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Bal_gen_prod_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["bal_tax_calculation_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Bal_tax_calculation_type = GenJournalLineBal_tax_calculation_type(int(val))
-		case int:
-			t.Bal_tax_calculation_type = GenJournalLineBal_tax_calculation_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Normal VAT", "Reverse Charge VAT", "Full VAT", "Sales Tax"}
-			for i, opt := range options {
-				if opt == val {
-					t.Bal_tax_calculation_type = GenJournalLineBal_tax_calculation_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["bal_tax_percent"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Bal_tax_percent, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Bal_tax_percent = types.NewDecimal(val)
-		case int:
-			t.Bal_tax_percent = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Bal_tax_percent = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["bal_tax_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Bal_tax_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Bal_tax_amount = types.NewDecimal(val)
-		case int:
-			t.Bal_tax_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Bal_tax_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["bank_payment_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Bank_payment_type = GenJournalLineBank_payment_type(int(val))
-		case int:
-			t.Bank_payment_type = GenJournalLineBank_payment_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Computer Check", "Manual Check", "Electronic Payment"}
-			for i, opt := range options {
-				if opt == val {
-					t.Bank_payment_type = GenJournalLineBank_payment_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["tax_base_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Tax_base_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Tax_base_amount = types.NewDecimal(val)
-		case int:
-			t.Tax_base_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Tax_base_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["bal_tax_base_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Bal_tax_base_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Bal_tax_base_amount = types.NewDecimal(val)
-		case int:
-			t.Bal_tax_base_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Bal_tax_base_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["correction"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Correction = b
-		}
-	}
-	if v, ok := data["check_printed"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Check_printed = b
-		}
-	}
-	if v, ok := data["document_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Document_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["external_document_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.External_document_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["source_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Source_type = GenJournalLineSource_type(int(val))
-		case int:
-			t.Source_type = GenJournalLineSource_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Customer", "Vendor", "Bank Account", "Fixed Asset", "Employee"}
-			for i, opt := range options {
-				if opt == val {
-					t.Source_type = GenJournalLineSource_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["source_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Source_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["posting_no_series"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Posting_no_series = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_area_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_area_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_liable"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Tax_liable = b
-		}
-	}
-	if v, ok := data["tax_group_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_group_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["use_tax"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Use_tax = b
-		}
-	}
-	if v, ok := data["bal_tax_area_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Bal_tax_area_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["bal_tax_liable"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Bal_tax_liable = b
-		}
-	}
-	if v, ok := data["bal_tax_group_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Bal_tax_group_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["bal_use_tax"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Bal_use_tax = b
-		}
-	}
-	if v, ok := data["tax_bus_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_bus_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_prod_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_prod_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["bal_tax_bus_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Bal_tax_bus_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["bal_tax_prod_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Bal_tax_prod_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["source_currency_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Source_currency_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["source_currency_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Source_currency_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Source_currency_amount = types.NewDecimal(val)
-		case int:
-			t.Source_currency_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Source_currency_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["source_curr_tax_base_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Source_curr_tax_base_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Source_curr_tax_base_amount = types.NewDecimal(val)
-		case int:
-			t.Source_curr_tax_base_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Source_curr_tax_base_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["additional_currency_posting"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Additional_currency_posting = GenJournalLineAdditional_currency_posting(int(val))
-		case int:
-			t.Additional_currency_posting = GenJournalLineAdditional_currency_posting(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"None", "Amount Only", "Additional-Currency Amount Only"}
-			for i, opt := range options {
-				if opt == val {
-					t.Additional_currency_posting = GenJournalLineAdditional_currency_posting(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["fa_add_currency_factor"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Fa_add_currency_factor, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Fa_add_currency_factor = types.NewDecimal(val)
-		case int:
-			t.Fa_add_currency_factor = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Fa_add_currency_factor = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["source_curr_tax_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Source_curr_tax_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Source_curr_tax_amount = types.NewDecimal(val)
-		case int:
-			t.Source_curr_tax_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Source_curr_tax_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["tax_amount_lcy"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Tax_amount_lcy, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Tax_amount_lcy = types.NewDecimal(val)
-		case int:
-			t.Tax_amount_lcy = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Tax_amount_lcy = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["tax_base_amount_lcy"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Tax_base_amount_lcy, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Tax_base_amount_lcy = types.NewDecimal(val)
-		case int:
-			t.Tax_base_amount_lcy = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Tax_base_amount_lcy = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["bal_tax_amount_lcy"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Bal_tax_amount_lcy, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Bal_tax_amount_lcy = types.NewDecimal(val)
-		case int:
-			t.Bal_tax_amount_lcy = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Bal_tax_amount_lcy = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["bal_tax_base_amount_lcy"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Bal_tax_base_amount_lcy, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Bal_tax_base_amount_lcy = types.NewDecimal(val)
-		case int:
-			t.Bal_tax_base_amount_lcy = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Bal_tax_base_amount_lcy = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["reversing_entry"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Reversing_entry = b
-		}
-	}
-	if v, ok := data["fa_posting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fa_posting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["fa_posting_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Fa_posting_type = GenJournalLineFa_posting_type(int(val))
-		case int:
-			t.Fa_posting_type = GenJournalLineFa_posting_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Acquisition Cost", "Depreciation", "Write-Down", "Appreciation", "Custom 1", "Custom 2", "Disposal", "Maintenance"}
-			for i, opt := range options {
-				if opt == val {
-					t.Fa_posting_type = GenJournalLineFa_posting_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["depreciation_book_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Depreciation_book_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["salvage_value"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Salvage_value, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Salvage_value = types.NewDecimal(val)
-		case int:
-			t.Salvage_value = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Salvage_value = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["no_of_depreciation_days"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.No_of_depreciation_days = int(val)
-		case int:
-			t.No_of_depreciation_days = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.No_of_depreciation_days = n
-			}
-		}
-	}
-	if v, ok := data["depr_until_fa_posting_date"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Depr_until_fa_posting_date = b
-		}
-	}
-	if v, ok := data["depr_acquisition_cost"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Depr_acquisition_cost = b
-		}
-	}
-	if v, ok := data["maintenance_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Maintenance_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["insurance_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Insurance_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["budgeted_fa_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Budgeted_fa_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["duplicate_in_depreciation_book"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Duplicate_in_depreciation_book = types.NewCode(s)
-		}
-	}
-	if v, ok := data["use_duplication_list"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Use_duplication_list = b
-		}
-	}
-	if v, ok := data["fa_reclassification_entry"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Fa_reclassification_entry = b
-		}
-	}
-	if v, ok := data["fa_error_entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Fa_error_entry_no = int(val)
-		case int:
-			t.Fa_error_entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Fa_error_entry_no = n
-			}
-		}
-	}
-	if v, ok := data["index_entry"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Index_entry = b
-		}
-	}
-	if v, ok := data["project_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Project_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["eu_3_party_trade"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Eu_3_party_trade = b
-		}
-	}
+	genJournalLineFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -13823,1132 +6813,1837 @@ func (t *GenJournalLine) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *GenJournalLine) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "journal_template_name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         50,
-			Name:       "business_unit_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         51,
-			Name:       "journal_batch_name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "line_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "account_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "account_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "posting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "document_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "document_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            10,
-			Name:          "tax_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         11,
-			Name:       "bal_account_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "currency_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            13,
-			Name:          "amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            14,
-			Name:          "debit_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            15,
-			Name:          "credit_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            16,
-			Name:          "amount_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            17,
-			Name:          "balance_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            18,
-			Name:          "currency_factor",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "0:15",
-		},
-		{
-			No:            19,
-			Name:          "sales_purch_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            20,
-			Name:          "profit_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            21,
-			Name:          "inv_discount_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         22,
-			Name:       "sell_to_buy_from_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         23,
-			Name:       "posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         24,
-			Name:       "dimension_1_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         25,
-			Name:       "dimension_2_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         26,
-			Name:       "salespers_purch_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         29,
-			Name:       "source_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         30,
-			Name:       "system_created_entry",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         34,
-			Name:       "on_hold",
-			Type:       tables.FieldTypeCode,
-			Length:     3,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         35,
-			Name:       "applies_to_doc_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         36,
-			Name:       "applies_to_doc_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         38,
-			Name:       "due_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         39,
-			Name:       "pmt_discount_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            40,
-			Name:          "payment_discount_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            43,
-			Name:          "quantity",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            44,
-			Name:          "tax_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         45,
-			Name:       "vat_posting",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         47,
-			Name:       "payment_terms_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         48,
-			Name:       "applies_to_id",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         52,
-			Name:       "reason_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         53,
-			Name:       "recurring_method",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         54,
-			Name:       "expiration_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         55,
-			Name:       "recurring_frequency",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            56,
-			Name:          "allocated_amt_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			ReadOnly:      true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         57,
-			Name:       "gen_posting_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         58,
-			Name:       "gen_bus_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         59,
-			Name:       "gen_prod_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         60,
-			Name:       "tax_calculation_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         62,
-			Name:       "allow_application",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         63,
-			Name:       "bal_account_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         64,
-			Name:       "bal_gen_posting_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         65,
-			Name:       "bal_gen_bus_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         66,
-			Name:       "bal_gen_prod_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         67,
-			Name:       "bal_tax_calculation_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:            68,
-			Name:          "bal_tax_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            69,
-			Name:          "bal_tax_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         70,
-			Name:       "bank_payment_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            71,
-			Name:          "tax_base_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            72,
-			Name:          "bal_tax_base_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         73,
-			Name:       "correction",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         75,
-			Name:       "check_printed",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         76,
-			Name:       "document_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         77,
-			Name:       "external_document_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         78,
-			Name:       "source_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         79,
-			Name:       "source_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         80,
-			Name:       "posting_no_series",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         82,
-			Name:       "tax_area_code",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         83,
-			Name:       "tax_liable",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         84,
-			Name:       "tax_group_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         85,
-			Name:       "use_tax",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         86,
-			Name:       "bal_tax_area_code",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         87,
-			Name:       "bal_tax_liable",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         88,
-			Name:       "bal_tax_group_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         89,
-			Name:       "bal_use_tax",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         90,
-			Name:       "tax_bus_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         91,
-			Name:       "tax_prod_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         92,
-			Name:       "bal_tax_bus_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         93,
-			Name:       "bal_tax_prod_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         99,
-			Name:       "source_currency_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:            100,
-			Name:          "source_currency_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            101,
-			Name:          "source_curr_tax_base_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         95,
-			Name:       "additional_currency_posting",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:            98,
-			Name:          "fa_add_currency_factor",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "0:15",
-		},
-		{
-			No:            102,
-			Name:          "source_curr_tax_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            104,
-			Name:          "tax_amount_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            105,
-			Name:          "tax_base_amount_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            106,
-			Name:          "bal_tax_amount_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            107,
-			Name:          "bal_tax_base_amount_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         108,
-			Name:       "reversing_entry",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         5600,
-			Name:       "fa_posting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5601,
-			Name:       "fa_posting_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5602,
-			Name:       "depreciation_book_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            5603,
-			Name:          "salvage_value",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         5604,
-			Name:       "no_of_depreciation_days",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5605,
-			Name:       "depr_until_fa_posting_date",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5606,
-			Name:       "depr_acquisition_cost",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5609,
-			Name:       "maintenance_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5610,
-			Name:       "insurance_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5611,
-			Name:       "budgeted_fa_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5612,
-			Name:       "duplicate_in_depreciation_book",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5613,
-			Name:       "use_duplication_list",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5614,
-			Name:       "fa_reclassification_entry",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5615,
-			Name:       "fa_error_entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5616,
-			Name:       "index_entry",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         42,
-			Name:       "project_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         61,
-			Name:       "eu_3_party_trade",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return genJournalLineFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in genJournalLineFields.Fields
+func (t *GenJournalLine) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Journal_template_name
+	case 1:
+		return &t.Business_unit_code
+	case 2:
+		return &t.Journal_batch_name
+	case 3:
+		return &t.Line_no
+	case 4:
+		return &t.Account_type
+	case 5:
+		return &t.Account_no
+	case 6:
+		return &t.Posting_date
+	case 7:
+		return &t.Document_type
+	case 8:
+		return &t.Document_no
+	case 9:
+		return &t.Description
+	case 10:
+		return &t.Tax_percent
+	case 11:
+		return &t.Bal_account_no
+	case 12:
+		return &t.Currency_code
+	case 13:
+		return &t.Amount
+	case 14:
+		return &t.Debit_amount
+	case 15:
+		return &t.Credit_amount
+	case 16:
+		return &t.Amount_lcy
+	case 17:
+		return &t.Balance_lcy
+	case 18:
+		return &t.Currency_factor
+	case 19:
+		return &t.Sales_purch_lcy
+	case 20:
+		return &t.Profit_lcy
+	case 21:
+		return &t.Inv_discount_lcy
+	case 22:
+		return &t.Sell_to_buy_from_no
+	case 23:
+		return &t.Posting_group
+	case 24:
+		return &t.Dimension_1_code
+	case 25:
+		return &t.Dimension_2_code
+	case 26:
+		return &t.Salespers_purch_code
+	case 27:
+		return &t.Source_code
+	case 28:
+		return &t.System_created_entry
+	case 29:
+		return &t.On_hold
+	case 30:
+		return &t.Applies_to_doc_type
+	case 31:
+		return &t.Applies_to_doc_no
+	case 32:
+		return &t.Due_date
+	case 33:
+		return &t.Pmt_discount_date
+	case 34:
+		return &t.Payment_discount_percent
+	case 35:
+		return &t.Quantity
+	case 36:
+		return &t.Tax_amount
+	case 37:
+		return &t.Vat_posting
+	case 38:
+		return &t.Payment_terms_code
+	case 39:
+		return &t.Applies_to_id
+	case 40:
+		return &t.Reason_code
+	case 41:
+		return &t.Recurring_method
+	case 42:
+		return &t.Expiration_date
+	case 43:
+		return &t.Recurring_frequency
+	case 44:
+		return &t.Allocated_amt_lcy
+	case 45:
+		return &t.Gen_posting_type
+	case 46:
+		return &t.Gen_bus_posting_group
+	case 47:
+		return &t.Gen_prod_posting_group
+	case 48:
+		return &t.Tax_calculation_type
+	case 49:
+		return &t.Allow_application
+	case 50:
+		return &t.Bal_account_type
+	case 51:
+		return &t.Bal_gen_posting_type
+	case 52:
+		return &t.Bal_gen_bus_posting_group
+	case 53:
+		return &t.Bal_gen_prod_posting_group
+	case 54:
+		return &t.Bal_tax_calculation_type
+	case 55:
+		return &t.Bal_tax_percent
+	case 56:
+		return &t.Bal_tax_amount
+	case 57:
+		return &t.Bank_payment_type
+	case 58:
+		return &t.Tax_base_amount
+	case 59:
+		return &t.Bal_tax_base_amount
+	case 60:
+		return &t.Correction
+	case 61:
+		return &t.Check_printed
+	case 62:
+		return &t.Document_date
+	case 63:
+		return &t.External_document_no
+	case 64:
+		return &t.Source_type
+	case 65:
+		return &t.Source_no
+	case 66:
+		return &t.Posting_no_series
+	case 67:
+		return &t.Tax_area_code
+	case 68:
+		return &t.Tax_liable
+	case 69:
+		return &t.Tax_group_code
+	case 70:
+		return &t.Use_tax
+	case 71:
+		return &t.Bal_tax_area_code
+	case 72:
+		return &t.Bal_tax_liable
+	case 73:
+		return &t.Bal_tax_group_code
+	case 74:
+		return &t.Bal_use_tax
+	case 75:
+		return &t.Tax_bus_posting_group
+	case 76:
+		return &t.Tax_prod_posting_group
+	case 77:
+		return &t.Bal_tax_bus_posting_group
+	case 78:
+		return &t.Bal_tax_prod_posting_group
+	case 79:
+		return &t.Source_currency_code
+	case 80:
+		return &t.Source_currency_amount
+	case 81:
+		return &t.Source_curr_tax_base_amount
+	case 82:
+		return &t.Additional_currency_posting
+	case 83:
+		return &t.Fa_add_currency_factor
+	case 84:
+		return &t.Source_curr_tax_amount
+	case 85:
+		return &t.Tax_amount_lcy
+	case 86:
+		return &t.Tax_base_amount_lcy
+	case 87:
+		return &t.Bal_tax_amount_lcy
+	case 88:
+		return &t.Bal_tax_base_amount_lcy
+	case 89:
+		return &t.Reversing_entry
+	case 90:
+		return &t.Fa_posting_date
+	case 91:
+		return &t.Fa_posting_type
+	case 92:
+		return &t.Depreciation_book_code
+	case 93:
+		return &t.Salvage_value
+	case 94:
+		return &t.No_of_depreciation_days
+	case 95:
+		return &t.Depr_until_fa_posting_date
+	case 96:
+		return &t.Depr_acquisition_cost
+	case 97:
+		return &t.Maintenance_code
+	case 98:
+		return &t.Insurance_no
+	case 99:
+		return &t.Budgeted_fa_no
+	case 100:
+		return &t.Duplicate_in_depreciation_book
+	case 101:
+		return &t.Use_duplication_list
+	case 102:
+		return &t.Fa_reclassification_entry
+	case 103:
+		return &t.Fa_error_entry_no
+	case 104:
+		return &t.Index_entry
+	case 105:
+		return &t.Project_no
+	case 106:
+		return &t.Eu_3_party_trade
 	}
+	return nil
+}
+
+// genJournalLineFields describes the fields of Gen_Journal_Line for the record functions
+// written once in foundation/tables
+var genJournalLineFields = &tables.TableFields{
+	Table: GenJournalLineTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "journal_template_name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Journal_template_name",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         50,
+				Name:       "business_unit_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Business_unit_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         51,
+				Name:       "journal_batch_name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Journal_batch_name",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "line_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Line_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "account_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Account_type",
+			Options: []string{"G/L Account", "Customer", "Vendor", "Bank Account", "Fixed Asset"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "account_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Account_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "posting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Posting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "document_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Document_type",
+			Options: []string{" ", "Payment", "Invoice", "Credit Memo", "Finance Charge Memo", "Reminder"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "document_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Document_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            10,
+				Name:          "tax_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Tax_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "bal_account_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Bal_account_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "currency_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Currency_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            13,
+				Name:          "amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            14,
+				Name:          "debit_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Debit_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            15,
+				Name:          "credit_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Credit_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            16,
+				Name:          "amount_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Amount_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            17,
+				Name:          "balance_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Balance_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            18,
+				Name:          "currency_factor",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "0:15",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Currency_factor",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            19,
+				Name:          "sales_purch_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Sales_purch_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            20,
+				Name:          "profit_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Profit_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            21,
+				Name:          "inv_discount_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Inv_discount_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         22,
+				Name:       "sell_to_buy_from_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Sell_to_buy_from_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         23,
+				Name:       "posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Posting_group",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         24,
+				Name:       "dimension_1_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_1_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         25,
+				Name:       "dimension_2_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_2_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         26,
+				Name:       "salespers_purch_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Salespers_purch_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         29,
+				Name:       "source_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Source_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         30,
+				Name:       "system_created_entry",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_System_created_entry",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         34,
+				Name:       "on_hold",
+				Type:       tables.FieldTypeCode,
+				Length:     3,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_On_hold",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         35,
+				Name:       "applies_to_doc_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Applies_to_doc_type",
+			Options: []string{" ", "Payment", "Invoice", "Credit Memo", "Finance Charge Memo", "Reminder"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         36,
+				Name:       "applies_to_doc_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Applies_to_doc_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         38,
+				Name:       "due_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Due_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         39,
+				Name:       "pmt_discount_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Pmt_discount_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            40,
+				Name:          "payment_discount_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Payment_discount_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            43,
+				Name:          "quantity",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Quantity",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            44,
+				Name:          "tax_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Tax_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         45,
+				Name:       "vat_posting",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Vat_posting",
+			Options: []string{"Automatic VAT Entry", "Manual VAT Entry"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         47,
+				Name:       "payment_terms_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Payment_terms_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         48,
+				Name:       "applies_to_id",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Applies_to_id",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         52,
+				Name:       "reason_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Reason_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         53,
+				Name:       "recurring_method",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Recurring_method",
+			Options: []string{" ", "F Fixed", "V Variable", "B Balance", "RF Reversing Fixed", "RV Reversing Variable", "RB Reversing Balance"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         54,
+				Name:       "expiration_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Expiration_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         55,
+				Name:       "recurring_frequency",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:        tables.KindCode,
+			Trigger:     "OnValidate_Recurring_frequency",
+			DateFormula: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            56,
+				Name:          "allocated_amt_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				ReadOnly:      true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Allocated_amt_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         57,
+				Name:       "gen_posting_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Gen_posting_type",
+			Options: []string{" ", "Purchase", "Sale", "Settlement"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         58,
+				Name:       "gen_bus_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Gen_bus_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         59,
+				Name:       "gen_prod_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Gen_prod_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         60,
+				Name:       "tax_calculation_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Tax_calculation_type",
+			Options: []string{"Normal VAT", "Reverse Charge VAT", "Full VAT", "Sales Tax"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         62,
+				Name:       "allow_application",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Allow_application",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         63,
+				Name:       "bal_account_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Bal_account_type",
+			Options: []string{"G/L Account", "Customer", "Vendor", "Bank Account", "Fixed Asset", "Employee"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         64,
+				Name:       "bal_gen_posting_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Bal_gen_posting_type",
+			Options: []string{" ", "Purchase", "Sale", "Settlement"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         65,
+				Name:       "bal_gen_bus_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Bal_gen_bus_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         66,
+				Name:       "bal_gen_prod_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Bal_gen_prod_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         67,
+				Name:       "bal_tax_calculation_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Bal_tax_calculation_type",
+			Options: []string{"Normal VAT", "Reverse Charge VAT", "Full VAT", "Sales Tax"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            68,
+				Name:          "bal_tax_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Bal_tax_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            69,
+				Name:          "bal_tax_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Bal_tax_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         70,
+				Name:       "bank_payment_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Bank_payment_type",
+			Options: []string{" ", "Computer Check", "Manual Check", "Electronic Payment"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            71,
+				Name:          "tax_base_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Tax_base_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            72,
+				Name:          "bal_tax_base_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Bal_tax_base_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         73,
+				Name:       "correction",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Correction",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         75,
+				Name:       "check_printed",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Check_printed",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         76,
+				Name:       "document_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Document_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         77,
+				Name:       "external_document_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_External_document_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         78,
+				Name:       "source_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Source_type",
+			Options: []string{" ", "Customer", "Vendor", "Bank Account", "Fixed Asset", "Employee"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         79,
+				Name:       "source_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Source_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         80,
+				Name:       "posting_no_series",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Posting_no_series",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         82,
+				Name:       "tax_area_code",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_area_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         83,
+				Name:       "tax_liable",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Tax_liable",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         84,
+				Name:       "tax_group_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_group_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         85,
+				Name:       "use_tax",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Use_tax",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         86,
+				Name:       "bal_tax_area_code",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Bal_tax_area_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         87,
+				Name:       "bal_tax_liable",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Bal_tax_liable",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         88,
+				Name:       "bal_tax_group_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Bal_tax_group_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         89,
+				Name:       "bal_use_tax",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Bal_use_tax",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         90,
+				Name:       "tax_bus_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_bus_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         91,
+				Name:       "tax_prod_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_prod_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         92,
+				Name:       "bal_tax_bus_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Bal_tax_bus_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         93,
+				Name:       "bal_tax_prod_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Bal_tax_prod_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         99,
+				Name:       "source_currency_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Source_currency_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            100,
+				Name:          "source_currency_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Source_currency_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            101,
+				Name:          "source_curr_tax_base_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Source_curr_tax_base_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         95,
+				Name:       "additional_currency_posting",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Additional_currency_posting",
+			Options: []string{"None", "Amount Only", "Additional-Currency Amount Only"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            98,
+				Name:          "fa_add_currency_factor",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "0:15",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Fa_add_currency_factor",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            102,
+				Name:          "source_curr_tax_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Source_curr_tax_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            104,
+				Name:          "tax_amount_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Tax_amount_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            105,
+				Name:          "tax_base_amount_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Tax_base_amount_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            106,
+				Name:          "bal_tax_amount_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Bal_tax_amount_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            107,
+				Name:          "bal_tax_base_amount_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Bal_tax_base_amount_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         108,
+				Name:       "reversing_entry",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Reversing_entry",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5600,
+				Name:       "fa_posting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Fa_posting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5601,
+				Name:       "fa_posting_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Fa_posting_type",
+			Options: []string{" ", "Acquisition Cost", "Depreciation", "Write-Down", "Appreciation", "Custom 1", "Custom 2", "Disposal", "Maintenance"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5602,
+				Name:       "depreciation_book_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Depreciation_book_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            5603,
+				Name:          "salvage_value",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Salvage_value",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5604,
+				Name:       "no_of_depreciation_days",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_No_of_depreciation_days",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5605,
+				Name:       "depr_until_fa_posting_date",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Depr_until_fa_posting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5606,
+				Name:       "depr_acquisition_cost",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Depr_acquisition_cost",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5609,
+				Name:       "maintenance_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Maintenance_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5610,
+				Name:       "insurance_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Insurance_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5611,
+				Name:       "budgeted_fa_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Budgeted_fa_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5612,
+				Name:       "duplicate_in_depreciation_book",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Duplicate_in_depreciation_book",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5613,
+				Name:       "use_duplication_list",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Use_duplication_list",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5614,
+				Name:       "fa_reclassification_entry",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Fa_reclassification_entry",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5615,
+				Name:       "fa_error_entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindInt,
+			Trigger:  "OnValidate_Fa_error_entry_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5616,
+				Name:       "index_entry",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Index_entry",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         42,
+				Name:       "project_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Project_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         61,
+				Name:       "eu_3_party_trade",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Eu_3_party_trade",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

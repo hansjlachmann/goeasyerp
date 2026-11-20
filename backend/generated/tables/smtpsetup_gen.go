@@ -136,44 +136,12 @@ var SMTPSetup_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *SMTPSetup) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "primary_key":
-		return 1
-	case "enabled":
-		return 2
-	case "smtp_server":
-		return 3
-	case "smtp_server_port":
-		return 4
-	case "user_id":
-		return 5
-	case "password":
-		return 6
-	case "from_address":
-		return 7
-	}
-	return 0
+	return sMTPSetupFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *SMTPSetup) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "primary_key"
-	case 2:
-		return "enabled"
-	case 3:
-		return "smtp_server"
-	case 4:
-		return "smtp_server_port"
-	case 5:
-		return "user_id"
-	case 6:
-		return "password"
-	case 7:
-		return "from_address"
-	}
-	return ""
+	return sMTPSetupFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -277,13 +245,6 @@ type (
 	SMTPSetupOnBeforeRename interface {
 		OnBeforeRename(rec *SMTPSetup, handled *bool) error
 	}
-	SMTPSetupOnValidate_Primary_key      interface{ OnValidate_Primary_key(rec *SMTPSetup) error }
-	SMTPSetupOnValidate_Enabled          interface{ OnValidate_Enabled(rec *SMTPSetup) error }
-	SMTPSetupOnValidate_Smtp_server      interface{ OnValidate_Smtp_server(rec *SMTPSetup) error }
-	SMTPSetupOnValidate_Smtp_server_port interface{ OnValidate_Smtp_server_port(rec *SMTPSetup) error }
-	SMTPSetupOnValidate_User_id          interface{ OnValidate_User_id(rec *SMTPSetup) error }
-	SMTPSetupOnValidate_Password         interface{ OnValidate_Password(rec *SMTPSetup) error }
-	SMTPSetupOnValidate_From_address     interface{ OnValidate_From_address(rec *SMTPSetup) error }
 )
 
 // sMTPSetupLogic is the registered business logic of SMTP_Setup, in
@@ -326,22 +287,9 @@ func sMTPSetupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(SMTPSetupOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(SMTPSetupOnBeforeRename)
-	case "OnValidate_Primary_key":
-		_, ok = logic.(SMTPSetupOnValidate_Primary_key)
-	case "OnValidate_Enabled":
-		_, ok = logic.(SMTPSetupOnValidate_Enabled)
-	case "OnValidate_Smtp_server":
-		_, ok = logic.(SMTPSetupOnValidate_Smtp_server)
-	case "OnValidate_Smtp_server_port":
-		_, ok = logic.(SMTPSetupOnValidate_Smtp_server_port)
-	case "OnValidate_User_id":
-		_, ok = logic.(SMTPSetupOnValidate_User_id)
-	case "OnValidate_Password":
-		_, ok = logic.(SMTPSetupOnValidate_Password)
-	case "OnValidate_From_address":
-		_, ok = logic.(SMTPSetupOnValidate_From_address)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return sMTPSetupFields.IsOnValidateTrigger(name, logic, (*SMTPSetup)(nil))
 	}
 	return true, ok
 }
@@ -650,14 +598,7 @@ func (t *SMTPSetup) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *SMTPSetup) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["primary_key"] = t.Primary_key
-	t.oldValues["enabled"] = t.Enabled
-	t.oldValues["smtp_server"] = t.Smtp_server
-	t.oldValues["smtp_server_port"] = t.Smtp_server_port
-	t.oldValues["user_id"] = t.User_id
-	t.oldValues["password"] = t.Password
-	t.oldValues["from_address"] = t.From_address
+	t.oldValues = sMTPSetupFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -672,27 +613,7 @@ func (t *SMTPSetup) OldValue(fieldName string) interface{} {
 func (t *SMTPSetup) XRec() *SMTPSetup {
 	x := &SMTPSetup{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["primary_key"].(types.Code); ok {
-		x.Primary_key = v
-	}
-	if v, ok := t.oldValues["enabled"].(bool); ok {
-		x.Enabled = v
-	}
-	if v, ok := t.oldValues["smtp_server"].(types.Text); ok {
-		x.Smtp_server = v
-	}
-	if v, ok := t.oldValues["smtp_server_port"].(int); ok {
-		x.Smtp_server_port = v
-	}
-	if v, ok := t.oldValues["user_id"].(types.Text); ok {
-		x.User_id = v
-	}
-	if v, ok := t.oldValues["password"].(types.Text); ok {
-		x.Password = v
-	}
-	if v, ok := t.oldValues["from_address"].(types.Text); ok {
-		x.From_address = v
-	}
+	sMTPSetupFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1102,51 +1023,7 @@ func (t *SMTPSetup) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *SMTPSetup) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "primary_key":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Primary_key.Equal(old)
-		}
-	case "enabled":
-		if old, ok := oldValue.(bool); ok {
-			return t.Enabled != old
-		}
-		return true // Type mismatch, assume changed
-	case "smtp_server":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Smtp_server.Equal(old)
-		}
-	case "smtp_server_port":
-		if old, ok := oldValue.(int); ok {
-			return t.Smtp_server_port != old
-		}
-		return true // Type mismatch, assume changed
-	case "user_id":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.User_id.Equal(old)
-		}
-	case "password":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Password.Equal(old)
-		}
-	case "from_address":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.From_address.Equal(old)
-		}
-	}
-
-	return false
+	return sMTPSetupFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1347,23 +1224,7 @@ func (t *SMTPSetup) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *SMTPSetup) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("primary_key"):
-		return "primary_key", true
-	case strings.ToLower("enabled"):
-		return "enabled", true
-	case strings.ToLower("smtp_server"):
-		return "smtp_server", true
-	case strings.ToLower("smtp_server_port"):
-		return "smtp_server_port", true
-	case strings.ToLower("user_id"):
-		return "user_id", true
-	case strings.ToLower("password"):
-		return "password", true
-	case strings.ToLower("from_address"):
-		return "from_address", true
-	}
-	return "", false
+	return sMTPSetupFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2231,148 +2092,20 @@ func (t *SMTPSetup) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *SMTPSetup) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "primary_key":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Primary_key = v
-		} else if v, ok := value.(string); ok {
-			t.Primary_key = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field primary_key")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SMTPSetupOnValidate_Primary_key); ok {
-				if err := trg.OnValidate_Primary_key(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "enabled":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Enabled = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Enabled = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field enabled")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SMTPSetupOnValidate_Enabled); ok {
-				if err := trg.OnValidate_Enabled(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "smtp_server":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Smtp_server = v
-		} else if v, ok := value.(string); ok {
-			t.Smtp_server = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field smtp_server")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SMTPSetupOnValidate_Smtp_server); ok {
-				if err := trg.OnValidate_Smtp_server(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "smtp_server_port":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Smtp_server_port = v
-		case float64:
-			t.Smtp_server_port = int(v)
-		case string:
-			if v == "" {
-				t.Smtp_server_port = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Smtp_server_port = i
-			} else {
-				return fmt.Errorf("invalid integer value for field smtp_server_port: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field smtp_server_port")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SMTPSetupOnValidate_Smtp_server_port); ok {
-				if err := trg.OnValidate_Smtp_server_port(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "user_id":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.User_id = v
-		} else if v, ok := value.(string); ok {
-			t.User_id = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field user_id")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SMTPSetupOnValidate_User_id); ok {
-				if err := trg.OnValidate_User_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "password":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Password = v
-		} else if v, ok := value.(string); ok {
-			t.Password = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field password")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SMTPSetupOnValidate_Password); ok {
-				if err := trg.OnValidate_Password(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "from_address":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.From_address = v
-		} else if v, ok := value.(string); ok {
-			t.From_address = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field from_address")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SMTPSetupOnValidate_From_address); ok {
-				if err := trg.OnValidate_From_address(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := sMTPSetupFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &sMTPSetupFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2381,93 +2114,18 @@ func (t *SMTPSetup) ValidateField(fieldName string, value interface{}) error {
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *SMTPSetup) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Primary_key, true
-	case 2:
-		return t.Enabled, true
-	case 3:
-		return t.Smtp_server, true
-	case 4:
-		return t.Smtp_server_port, true
-	case 5:
-		return t.User_id, true
-	case 6:
-		return t.Password, true
-	case 7:
-		return t.From_address, true
-	}
-	return nil, false
+	return sMTPSetupFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *SMTPSetup) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return sMTPSetupFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *SMTPSetup) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Primary_key = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Primary_key = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(bool); ok {
-			t.Enabled = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Text); ok {
-			t.Smtp_server = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Smtp_server = types.NewText(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(int); ok {
-			t.Smtp_server_port = v
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Text); ok {
-			t.User_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.User_id = types.NewText(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Text); ok {
-			t.Password = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Password = types.NewText(v)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Text); ok {
-			t.From_address = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.From_address = types.NewText(v)
-			return true
-		}
-	}
-	return false
+	return sMTPSetupFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2937,23 +2595,7 @@ func (t *SMTPSetup) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *SMTPSetup) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "primary_key":
-		return t.Primary_key, true
-	case "enabled":
-		return t.Enabled, true
-	case "smtp_server":
-		return t.Smtp_server, true
-	case "smtp_server_port":
-		return t.Smtp_server_port, true
-	case "user_id":
-		return t.User_id, true
-	case "password":
-		return t.Password, true
-	case "from_address":
-		return t.From_address, true
-	}
-	return nil, false
+	return sMTPSetupFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3045,62 +2687,12 @@ func (t *SMTPSetup) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *SMTPSetup) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"primary_key":      t.Primary_key.String(),
-		"enabled":          t.Enabled,
-		"smtp_server":      t.Smtp_server.String(),
-		"smtp_server_port": t.Smtp_server_port,
-		"user_id":          t.User_id.String(),
-		"password":         t.Password.String(),
-		"from_address":     t.From_address.String(),
-	}
+	return sMTPSetupFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *SMTPSetup) FromMap(data map[string]interface{}) {
-	if v, ok := data["primary_key"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Primary_key = types.NewCode(s)
-		}
-	}
-	if v, ok := data["enabled"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Enabled = b
-		}
-	}
-	if v, ok := data["smtp_server"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Smtp_server = types.NewText(s)
-		}
-	}
-	if v, ok := data["smtp_server_port"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Smtp_server_port = int(val)
-		case int:
-			t.Smtp_server_port = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Smtp_server_port = n
-			}
-		}
-	}
-	if v, ok := data["user_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.User_id = types.NewText(s)
-		}
-	}
-	if v, ok := data["password"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Password = types.NewText(s)
-		}
-	}
-	if v, ok := data["from_address"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.From_address = types.NewText(s)
-		}
-	}
+	sMTPSetupFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3121,79 +2713,135 @@ func (t *SMTPSetup) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *SMTPSetup) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "primary_key",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "enabled",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "smtp_server",
-			Type:       tables.FieldTypeText,
-			Length:     250,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "smtp_server_port",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "user_id",
-			Type:       tables.FieldTypeText,
-			Length:     100,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "password",
-			Type:       tables.FieldTypeText,
-			Length:     250,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			Masked:     true,
-		},
-		{
-			No:         7,
-			Name:       "from_address",
-			Type:       tables.FieldTypeText,
-			Length:     100,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return sMTPSetupFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in sMTPSetupFields.Fields
+func (t *SMTPSetup) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Primary_key
+	case 1:
+		return &t.Enabled
+	case 2:
+		return &t.Smtp_server
+	case 3:
+		return &t.Smtp_server_port
+	case 4:
+		return &t.User_id
+	case 5:
+		return &t.Password
+	case 6:
+		return &t.From_address
 	}
+	return nil
+}
+
+// sMTPSetupFields describes the fields of SMTP_Setup for the record functions
+// written once in foundation/tables
+var sMTPSetupFields = &tables.TableFields{
+	Table: SMTPSetupTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "primary_key",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Primary_key",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "enabled",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Enabled",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "smtp_server",
+				Type:       tables.FieldTypeText,
+				Length:     250,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Smtp_server",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "smtp_server_port",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Smtp_server_port",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "user_id",
+				Type:       tables.FieldTypeText,
+				Length:     100,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_User_id",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "password",
+				Type:       tables.FieldTypeText,
+				Length:     250,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				Masked:     true,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Password",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "from_address",
+				Type:       tables.FieldTypeText,
+				Length:     100,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_From_address",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

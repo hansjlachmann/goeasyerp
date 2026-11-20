@@ -113,24 +113,12 @@ var ProjectsSetup_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *ProjectsSetup) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "primary_key":
-		return 1
-	case "project_nos":
-		return 2
-	}
-	return 0
+	return projectsSetupFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *ProjectsSetup) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "primary_key"
-	case 2:
-		return "project_nos"
-	}
-	return ""
+	return projectsSetupFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -242,12 +230,6 @@ type (
 	ProjectsSetupOnBeforeRename interface {
 		OnBeforeRename(rec *ProjectsSetup, handled *bool) error
 	}
-	ProjectsSetupOnValidate_Primary_key interface {
-		OnValidate_Primary_key(rec *ProjectsSetup) error
-	}
-	ProjectsSetupOnValidate_Project_nos interface {
-		OnValidate_Project_nos(rec *ProjectsSetup) error
-	}
 )
 
 // projectsSetupLogic is the registered business logic of Projects_Setup, in
@@ -290,12 +272,9 @@ func projectsSetupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ProjectsSetupOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(ProjectsSetupOnBeforeRename)
-	case "OnValidate_Primary_key":
-		_, ok = logic.(ProjectsSetupOnValidate_Primary_key)
-	case "OnValidate_Project_nos":
-		_, ok = logic.(ProjectsSetupOnValidate_Project_nos)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return projectsSetupFields.IsOnValidateTrigger(name, logic, (*ProjectsSetup)(nil))
 	}
 	return true, ok
 }
@@ -592,9 +571,7 @@ func (t *ProjectsSetup) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *ProjectsSetup) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["primary_key"] = t.Primary_key
-	t.oldValues["project_nos"] = t.Project_nos
+	t.oldValues = projectsSetupFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -609,12 +586,7 @@ func (t *ProjectsSetup) OldValue(fieldName string) interface{} {
 func (t *ProjectsSetup) XRec() *ProjectsSetup {
 	x := &ProjectsSetup{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["primary_key"].(types.Code); ok {
-		x.Primary_key = v
-	}
-	if v, ok := t.oldValues["project_nos"].(types.Code); ok {
-		x.Project_nos = v
-	}
+	projectsSetupFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -869,29 +841,7 @@ func (t *ProjectsSetup) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *ProjectsSetup) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "primary_key":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Primary_key.Equal(old)
-		}
-	case "project_nos":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_nos.Equal(old)
-		}
-	}
-
-	return false
+	return projectsSetupFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1092,13 +1042,7 @@ func (t *ProjectsSetup) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *ProjectsSetup) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("primary_key"):
-		return "primary_key", true
-	case strings.ToLower("project_nos"):
-		return "project_nos", true
-	}
-	return "", false
+	return projectsSetupFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -1907,52 +1851,20 @@ func (t *ProjectsSetup) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *ProjectsSetup) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "primary_key":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Primary_key = v
-		} else if v, ok := value.(string); ok {
-			t.Primary_key = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field primary_key")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectsSetupOnValidate_Primary_key); ok {
-				if err := trg.OnValidate_Primary_key(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "project_nos":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Project_nos = v
-		} else if v, ok := value.(string); ok {
-			t.Project_nos = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field project_nos")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_nos"); err != nil {
+	i, err := projectsSetupFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
+	}
+	f := &projectsSetupFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
 			return err
 		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectsSetupOnValidate_Project_nos); ok {
-				if err := trg.OnValidate_Project_nos(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -1961,46 +1873,18 @@ func (t *ProjectsSetup) ValidateField(fieldName string, value interface{}) error
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *ProjectsSetup) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Primary_key, true
-	case 2:
-		return t.Project_nos, true
-	}
-	return nil, false
+	return projectsSetupFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *ProjectsSetup) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return projectsSetupFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *ProjectsSetup) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Primary_key = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Primary_key = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Project_nos = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Project_nos = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return projectsSetupFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2449,13 +2333,7 @@ func (t *ProjectsSetup) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *ProjectsSetup) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "primary_key":
-		return t.Primary_key, true
-	case "project_nos":
-		return t.Project_nos, true
-	}
-	return nil, false
+	return projectsSetupFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2542,24 +2420,12 @@ func (t *ProjectsSetup) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *ProjectsSetup) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"primary_key": t.Primary_key.String(),
-		"project_nos": t.Project_nos.String(),
-	}
+	return projectsSetupFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *ProjectsSetup) FromMap(data map[string]interface{}) {
-	if v, ok := data["primary_key"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Primary_key = types.NewCode(s)
-		}
-	}
-	if v, ok := data["project_nos"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Project_nos = types.NewCode(s)
-		}
-	}
+	projectsSetupFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2580,28 +2446,55 @@ func (t *ProjectsSetup) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *ProjectsSetup) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "primary_key",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "project_nos",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return projectsSetupFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in projectsSetupFields.Fields
+func (t *ProjectsSetup) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Primary_key
+	case 1:
+		return &t.Project_nos
 	}
+	return nil
+}
+
+// projectsSetupFields describes the fields of Projects_Setup for the record functions
+// written once in foundation/tables
+var projectsSetupFields = &tables.TableFields{
+	Table: ProjectsSetupTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "primary_key",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Primary_key",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "project_nos",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Project_nos",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

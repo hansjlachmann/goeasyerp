@@ -60,7 +60,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -355,172 +354,12 @@ var RequisitionLine_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *RequisitionLine) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "worksheet_template_name":
-		return 1
-	case "journal_batch_name":
-		return 2
-	case "line_no":
-		return 3
-	case "type":
-		return 4
-	case "no":
-		return 5
-	case "description":
-		return 6
-	case "description_2":
-		return 7
-	case "quantity":
-		return 8
-	case "vendor_no":
-		return 9
-	case "direct_unit_cost":
-		return 10
-	case "quantity_disc_percent":
-		return 11
-	case "expected_receipt_date":
-		return 12
-	case "requester_id":
-		return 13
-	case "confirmed":
-		return 14
-	case "dimension_1_code":
-		return 15
-	case "dimension_2_code":
-		return 16
-	case "location_code":
-		return 17
-	case "recurring_method":
-		return 18
-	case "expiration_date":
-		return 19
-	case "recurring_frequency":
-		return 20
-	case "order_date":
-		return 21
-	case "vendor_item_no":
-		return 22
-	case "order_address_code":
-		return 28
-	case "currency_code":
-		return 29
-	case "currency_factor":
-		return 30
-	case "variant_code":
-		return 5402
-	case "qty_per_unit_of_measure":
-		return 5404
-	case "unit_of_measure_code":
-		return 5407
-	case "quantity_base":
-		return 5408
-	case "reserved_quantity":
-		return 31
-	case "reserve":
-		return 32
-	case "reserved_qty_base":
-		return 5431
-	case "serial_no":
-		return 27
-	case "lot_no":
-		return 5400
-	case "bin_code":
-		return 5403
-	case "sales_order_no":
-		return 23
-	case "sales_order_line_no":
-		return 24
-	case "sell_to_customer_no":
-		return 25
-	case "ship_to_code":
-		return 26
-	}
-	return 0
+	return requisitionLineFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *RequisitionLine) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "worksheet_template_name"
-	case 2:
-		return "journal_batch_name"
-	case 3:
-		return "line_no"
-	case 4:
-		return "type"
-	case 5:
-		return "no"
-	case 6:
-		return "description"
-	case 7:
-		return "description_2"
-	case 8:
-		return "quantity"
-	case 9:
-		return "vendor_no"
-	case 10:
-		return "direct_unit_cost"
-	case 11:
-		return "quantity_disc_percent"
-	case 12:
-		return "expected_receipt_date"
-	case 13:
-		return "requester_id"
-	case 14:
-		return "confirmed"
-	case 15:
-		return "dimension_1_code"
-	case 16:
-		return "dimension_2_code"
-	case 17:
-		return "location_code"
-	case 18:
-		return "recurring_method"
-	case 19:
-		return "expiration_date"
-	case 20:
-		return "recurring_frequency"
-	case 21:
-		return "order_date"
-	case 22:
-		return "vendor_item_no"
-	case 28:
-		return "order_address_code"
-	case 29:
-		return "currency_code"
-	case 30:
-		return "currency_factor"
-	case 5402:
-		return "variant_code"
-	case 5404:
-		return "qty_per_unit_of_measure"
-	case 5407:
-		return "unit_of_measure_code"
-	case 5408:
-		return "quantity_base"
-	case 31:
-		return "reserved_quantity"
-	case 32:
-		return "reserve"
-	case 5431:
-		return "reserved_qty_base"
-	case 27:
-		return "serial_no"
-	case 5400:
-		return "lot_no"
-	case 5403:
-		return "bin_code"
-	case 23:
-		return "sales_order_no"
-	case 24:
-		return "sales_order_line_no"
-	case 25:
-		return "sell_to_customer_no"
-	case 26:
-		return "ship_to_code"
-	}
-	return ""
+	return requisitionLineFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -632,123 +471,6 @@ type (
 	RequisitionLineOnBeforeRename interface {
 		OnBeforeRename(rec *RequisitionLine, handled *bool) error
 	}
-	RequisitionLineOnValidate_Worksheet_template_name interface {
-		OnValidate_Worksheet_template_name(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Journal_batch_name interface {
-		OnValidate_Journal_batch_name(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Line_no interface {
-		OnValidate_Line_no(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Type interface {
-		OnValidate_Type(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_No interface {
-		OnValidate_No(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Description interface {
-		OnValidate_Description(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Description_2 interface {
-		OnValidate_Description_2(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Quantity interface {
-		OnValidate_Quantity(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Vendor_no interface {
-		OnValidate_Vendor_no(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Direct_unit_cost interface {
-		OnValidate_Direct_unit_cost(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Quantity_disc_percent interface {
-		OnValidate_Quantity_disc_percent(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Expected_receipt_date interface {
-		OnValidate_Expected_receipt_date(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Requester_id interface {
-		OnValidate_Requester_id(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Confirmed interface {
-		OnValidate_Confirmed(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Dimension_1_code interface {
-		OnValidate_Dimension_1_code(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Dimension_2_code interface {
-		OnValidate_Dimension_2_code(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Location_code interface {
-		OnValidate_Location_code(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Recurring_method interface {
-		OnValidate_Recurring_method(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Expiration_date interface {
-		OnValidate_Expiration_date(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Recurring_frequency interface {
-		OnValidate_Recurring_frequency(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Order_date interface {
-		OnValidate_Order_date(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Vendor_item_no interface {
-		OnValidate_Vendor_item_no(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Order_address_code interface {
-		OnValidate_Order_address_code(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Currency_code interface {
-		OnValidate_Currency_code(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Currency_factor interface {
-		OnValidate_Currency_factor(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Variant_code interface {
-		OnValidate_Variant_code(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Qty_per_unit_of_measure interface {
-		OnValidate_Qty_per_unit_of_measure(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Unit_of_measure_code interface {
-		OnValidate_Unit_of_measure_code(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Quantity_base interface {
-		OnValidate_Quantity_base(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Reserved_quantity interface {
-		OnValidate_Reserved_quantity(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Reserve interface {
-		OnValidate_Reserve(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Reserved_qty_base interface {
-		OnValidate_Reserved_qty_base(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Serial_no interface {
-		OnValidate_Serial_no(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Lot_no interface {
-		OnValidate_Lot_no(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Bin_code interface {
-		OnValidate_Bin_code(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Sales_order_no interface {
-		OnValidate_Sales_order_no(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Sales_order_line_no interface {
-		OnValidate_Sales_order_line_no(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Sell_to_customer_no interface {
-		OnValidate_Sell_to_customer_no(rec *RequisitionLine) error
-	}
-	RequisitionLineOnValidate_Ship_to_code interface {
-		OnValidate_Ship_to_code(rec *RequisitionLine) error
-	}
 )
 
 // requisitionLineLogic is the registered business logic of Requisition_Line, in
@@ -791,86 +513,9 @@ func requisitionLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(RequisitionLineOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(RequisitionLineOnBeforeRename)
-	case "OnValidate_Worksheet_template_name":
-		_, ok = logic.(RequisitionLineOnValidate_Worksheet_template_name)
-	case "OnValidate_Journal_batch_name":
-		_, ok = logic.(RequisitionLineOnValidate_Journal_batch_name)
-	case "OnValidate_Line_no":
-		_, ok = logic.(RequisitionLineOnValidate_Line_no)
-	case "OnValidate_Type":
-		_, ok = logic.(RequisitionLineOnValidate_Type)
-	case "OnValidate_No":
-		_, ok = logic.(RequisitionLineOnValidate_No)
-	case "OnValidate_Description":
-		_, ok = logic.(RequisitionLineOnValidate_Description)
-	case "OnValidate_Description_2":
-		_, ok = logic.(RequisitionLineOnValidate_Description_2)
-	case "OnValidate_Quantity":
-		_, ok = logic.(RequisitionLineOnValidate_Quantity)
-	case "OnValidate_Vendor_no":
-		_, ok = logic.(RequisitionLineOnValidate_Vendor_no)
-	case "OnValidate_Direct_unit_cost":
-		_, ok = logic.(RequisitionLineOnValidate_Direct_unit_cost)
-	case "OnValidate_Quantity_disc_percent":
-		_, ok = logic.(RequisitionLineOnValidate_Quantity_disc_percent)
-	case "OnValidate_Expected_receipt_date":
-		_, ok = logic.(RequisitionLineOnValidate_Expected_receipt_date)
-	case "OnValidate_Requester_id":
-		_, ok = logic.(RequisitionLineOnValidate_Requester_id)
-	case "OnValidate_Confirmed":
-		_, ok = logic.(RequisitionLineOnValidate_Confirmed)
-	case "OnValidate_Dimension_1_code":
-		_, ok = logic.(RequisitionLineOnValidate_Dimension_1_code)
-	case "OnValidate_Dimension_2_code":
-		_, ok = logic.(RequisitionLineOnValidate_Dimension_2_code)
-	case "OnValidate_Location_code":
-		_, ok = logic.(RequisitionLineOnValidate_Location_code)
-	case "OnValidate_Recurring_method":
-		_, ok = logic.(RequisitionLineOnValidate_Recurring_method)
-	case "OnValidate_Expiration_date":
-		_, ok = logic.(RequisitionLineOnValidate_Expiration_date)
-	case "OnValidate_Recurring_frequency":
-		_, ok = logic.(RequisitionLineOnValidate_Recurring_frequency)
-	case "OnValidate_Order_date":
-		_, ok = logic.(RequisitionLineOnValidate_Order_date)
-	case "OnValidate_Vendor_item_no":
-		_, ok = logic.(RequisitionLineOnValidate_Vendor_item_no)
-	case "OnValidate_Order_address_code":
-		_, ok = logic.(RequisitionLineOnValidate_Order_address_code)
-	case "OnValidate_Currency_code":
-		_, ok = logic.(RequisitionLineOnValidate_Currency_code)
-	case "OnValidate_Currency_factor":
-		_, ok = logic.(RequisitionLineOnValidate_Currency_factor)
-	case "OnValidate_Variant_code":
-		_, ok = logic.(RequisitionLineOnValidate_Variant_code)
-	case "OnValidate_Qty_per_unit_of_measure":
-		_, ok = logic.(RequisitionLineOnValidate_Qty_per_unit_of_measure)
-	case "OnValidate_Unit_of_measure_code":
-		_, ok = logic.(RequisitionLineOnValidate_Unit_of_measure_code)
-	case "OnValidate_Quantity_base":
-		_, ok = logic.(RequisitionLineOnValidate_Quantity_base)
-	case "OnValidate_Reserved_quantity":
-		_, ok = logic.(RequisitionLineOnValidate_Reserved_quantity)
-	case "OnValidate_Reserve":
-		_, ok = logic.(RequisitionLineOnValidate_Reserve)
-	case "OnValidate_Reserved_qty_base":
-		_, ok = logic.(RequisitionLineOnValidate_Reserved_qty_base)
-	case "OnValidate_Serial_no":
-		_, ok = logic.(RequisitionLineOnValidate_Serial_no)
-	case "OnValidate_Lot_no":
-		_, ok = logic.(RequisitionLineOnValidate_Lot_no)
-	case "OnValidate_Bin_code":
-		_, ok = logic.(RequisitionLineOnValidate_Bin_code)
-	case "OnValidate_Sales_order_no":
-		_, ok = logic.(RequisitionLineOnValidate_Sales_order_no)
-	case "OnValidate_Sales_order_line_no":
-		_, ok = logic.(RequisitionLineOnValidate_Sales_order_line_no)
-	case "OnValidate_Sell_to_customer_no":
-		_, ok = logic.(RequisitionLineOnValidate_Sell_to_customer_no)
-	case "OnValidate_Ship_to_code":
-		_, ok = logic.(RequisitionLineOnValidate_Ship_to_code)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return requisitionLineFields.IsOnValidateTrigger(name, logic, (*RequisitionLine)(nil))
 	}
 	return true, ok
 }
@@ -1325,46 +970,7 @@ func (t *RequisitionLine) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *RequisitionLine) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["worksheet_template_name"] = t.Worksheet_template_name
-	t.oldValues["journal_batch_name"] = t.Journal_batch_name
-	t.oldValues["line_no"] = t.Line_no
-	t.oldValues["type"] = t.Type
-	t.oldValues["no"] = t.No
-	t.oldValues["description"] = t.Description
-	t.oldValues["description_2"] = t.Description_2
-	t.oldValues["quantity"] = t.Quantity
-	t.oldValues["vendor_no"] = t.Vendor_no
-	t.oldValues["direct_unit_cost"] = t.Direct_unit_cost
-	t.oldValues["quantity_disc_percent"] = t.Quantity_disc_percent
-	t.oldValues["expected_receipt_date"] = t.Expected_receipt_date
-	t.oldValues["requester_id"] = t.Requester_id
-	t.oldValues["confirmed"] = t.Confirmed
-	t.oldValues["dimension_1_code"] = t.Dimension_1_code
-	t.oldValues["dimension_2_code"] = t.Dimension_2_code
-	t.oldValues["location_code"] = t.Location_code
-	t.oldValues["recurring_method"] = t.Recurring_method
-	t.oldValues["expiration_date"] = t.Expiration_date
-	t.oldValues["recurring_frequency"] = t.Recurring_frequency
-	t.oldValues["order_date"] = t.Order_date
-	t.oldValues["vendor_item_no"] = t.Vendor_item_no
-	t.oldValues["order_address_code"] = t.Order_address_code
-	t.oldValues["currency_code"] = t.Currency_code
-	t.oldValues["currency_factor"] = t.Currency_factor
-	t.oldValues["variant_code"] = t.Variant_code
-	t.oldValues["qty_per_unit_of_measure"] = t.Qty_per_unit_of_measure
-	t.oldValues["unit_of_measure_code"] = t.Unit_of_measure_code
-	t.oldValues["quantity_base"] = t.Quantity_base
-	t.oldValues["reserved_quantity"] = t.Reserved_quantity
-	t.oldValues["reserve"] = t.Reserve
-	t.oldValues["reserved_qty_base"] = t.Reserved_qty_base
-	t.oldValues["serial_no"] = t.Serial_no
-	t.oldValues["lot_no"] = t.Lot_no
-	t.oldValues["bin_code"] = t.Bin_code
-	t.oldValues["sales_order_no"] = t.Sales_order_no
-	t.oldValues["sales_order_line_no"] = t.Sales_order_line_no
-	t.oldValues["sell_to_customer_no"] = t.Sell_to_customer_no
-	t.oldValues["ship_to_code"] = t.Ship_to_code
+	t.oldValues = requisitionLineFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1379,123 +985,7 @@ func (t *RequisitionLine) OldValue(fieldName string) interface{} {
 func (t *RequisitionLine) XRec() *RequisitionLine {
 	x := &RequisitionLine{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["worksheet_template_name"].(types.Code); ok {
-		x.Worksheet_template_name = v
-	}
-	if v, ok := t.oldValues["journal_batch_name"].(types.Code); ok {
-		x.Journal_batch_name = v
-	}
-	if v, ok := t.oldValues["line_no"].(int); ok {
-		x.Line_no = v
-	}
-	if v, ok := t.oldValues["type"].(RequisitionLineType); ok {
-		x.Type = v
-	}
-	if v, ok := t.oldValues["no"].(types.Code); ok {
-		x.No = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["description_2"].(types.Text); ok {
-		x.Description_2 = v
-	}
-	if v, ok := t.oldValues["quantity"].(types.Decimal); ok {
-		x.Quantity = v
-	}
-	if v, ok := t.oldValues["vendor_no"].(types.Code); ok {
-		x.Vendor_no = v
-	}
-	if v, ok := t.oldValues["direct_unit_cost"].(types.Decimal); ok {
-		x.Direct_unit_cost = v
-	}
-	if v, ok := t.oldValues["quantity_disc_percent"].(types.Decimal); ok {
-		x.Quantity_disc_percent = v
-	}
-	if v, ok := t.oldValues["expected_receipt_date"].(types.Date); ok {
-		x.Expected_receipt_date = v
-	}
-	if v, ok := t.oldValues["requester_id"].(types.Code); ok {
-		x.Requester_id = v
-	}
-	if v, ok := t.oldValues["confirmed"].(bool); ok {
-		x.Confirmed = v
-	}
-	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
-		x.Dimension_1_code = v
-	}
-	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
-		x.Dimension_2_code = v
-	}
-	if v, ok := t.oldValues["location_code"].(types.Code); ok {
-		x.Location_code = v
-	}
-	if v, ok := t.oldValues["recurring_method"].(RequisitionLineRecurring_method); ok {
-		x.Recurring_method = v
-	}
-	if v, ok := t.oldValues["expiration_date"].(types.Date); ok {
-		x.Expiration_date = v
-	}
-	if v, ok := t.oldValues["recurring_frequency"].(types.Code); ok {
-		x.Recurring_frequency = v
-	}
-	if v, ok := t.oldValues["order_date"].(types.Date); ok {
-		x.Order_date = v
-	}
-	if v, ok := t.oldValues["vendor_item_no"].(types.Text); ok {
-		x.Vendor_item_no = v
-	}
-	if v, ok := t.oldValues["order_address_code"].(types.Code); ok {
-		x.Order_address_code = v
-	}
-	if v, ok := t.oldValues["currency_code"].(types.Code); ok {
-		x.Currency_code = v
-	}
-	if v, ok := t.oldValues["currency_factor"].(types.Decimal); ok {
-		x.Currency_factor = v
-	}
-	if v, ok := t.oldValues["variant_code"].(types.Code); ok {
-		x.Variant_code = v
-	}
-	if v, ok := t.oldValues["qty_per_unit_of_measure"].(types.Decimal); ok {
-		x.Qty_per_unit_of_measure = v
-	}
-	if v, ok := t.oldValues["unit_of_measure_code"].(types.Code); ok {
-		x.Unit_of_measure_code = v
-	}
-	if v, ok := t.oldValues["quantity_base"].(types.Decimal); ok {
-		x.Quantity_base = v
-	}
-	if v, ok := t.oldValues["reserved_quantity"].(types.Decimal); ok {
-		x.Reserved_quantity = v
-	}
-	if v, ok := t.oldValues["reserve"].(RequisitionLineReserve); ok {
-		x.Reserve = v
-	}
-	if v, ok := t.oldValues["reserved_qty_base"].(types.Decimal); ok {
-		x.Reserved_qty_base = v
-	}
-	if v, ok := t.oldValues["serial_no"].(types.Code); ok {
-		x.Serial_no = v
-	}
-	if v, ok := t.oldValues["lot_no"].(types.Code); ok {
-		x.Lot_no = v
-	}
-	if v, ok := t.oldValues["bin_code"].(types.Code); ok {
-		x.Bin_code = v
-	}
-	if v, ok := t.oldValues["sales_order_no"].(types.Code); ok {
-		x.Sales_order_no = v
-	}
-	if v, ok := t.oldValues["sales_order_line_no"].(int); ok {
-		x.Sales_order_line_no = v
-	}
-	if v, ok := t.oldValues["sell_to_customer_no"].(types.Code); ok {
-		x.Sell_to_customer_no = v
-	}
-	if v, ok := t.oldValues["ship_to_code"].(types.Code); ok {
-		x.Ship_to_code = v
-	}
+	requisitionLineFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -2189,180 +1679,7 @@ func (t *RequisitionLine) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *RequisitionLine) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "worksheet_template_name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Worksheet_template_name.Equal(old)
-		}
-	case "journal_batch_name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Journal_batch_name.Equal(old)
-		}
-	case "line_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Line_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "type":
-		if old, ok := oldValue.(RequisitionLineType); ok {
-			return t.Type != old
-		}
-	case "no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "description_2":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description_2.Equal(old)
-		}
-	case "quantity":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Quantity.Equal(old)
-		}
-	case "vendor_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Vendor_no.Equal(old)
-		}
-	case "direct_unit_cost":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Direct_unit_cost.Equal(old)
-		}
-	case "quantity_disc_percent":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Quantity_disc_percent.Equal(old)
-		}
-	case "expected_receipt_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Expected_receipt_date.Equal(old)
-		}
-	case "requester_id":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Requester_id.Equal(old)
-		}
-	case "confirmed":
-		if old, ok := oldValue.(bool); ok {
-			return t.Confirmed != old
-		}
-		return true // Type mismatch, assume changed
-	case "dimension_1_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_1_code.Equal(old)
-		}
-	case "dimension_2_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_2_code.Equal(old)
-		}
-	case "location_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Location_code.Equal(old)
-		}
-	case "recurring_method":
-		if old, ok := oldValue.(RequisitionLineRecurring_method); ok {
-			return t.Recurring_method != old
-		}
-	case "expiration_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Expiration_date.Equal(old)
-		}
-	case "recurring_frequency":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Recurring_frequency.Equal(old)
-		}
-	case "order_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Order_date.Equal(old)
-		}
-	case "vendor_item_no":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Vendor_item_no.Equal(old)
-		}
-	case "order_address_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Order_address_code.Equal(old)
-		}
-	case "currency_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Currency_code.Equal(old)
-		}
-	case "currency_factor":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Currency_factor.Equal(old)
-		}
-	case "variant_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Variant_code.Equal(old)
-		}
-	case "qty_per_unit_of_measure":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Qty_per_unit_of_measure.Equal(old)
-		}
-	case "unit_of_measure_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Unit_of_measure_code.Equal(old)
-		}
-	case "quantity_base":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Quantity_base.Equal(old)
-		}
-	case "reserved_quantity":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Reserved_quantity.Equal(old)
-		}
-	case "reserve":
-		if old, ok := oldValue.(RequisitionLineReserve); ok {
-			return t.Reserve != old
-		}
-	case "reserved_qty_base":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Reserved_qty_base.Equal(old)
-		}
-	case "serial_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Serial_no.Equal(old)
-		}
-	case "lot_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Lot_no.Equal(old)
-		}
-	case "bin_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Bin_code.Equal(old)
-		}
-	case "sales_order_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Sales_order_no.Equal(old)
-		}
-	case "sales_order_line_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Sales_order_line_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "sell_to_customer_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Sell_to_customer_no.Equal(old)
-		}
-	case "ship_to_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Ship_to_code.Equal(old)
-		}
-	}
-
-	return false
+	return requisitionLineFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -2565,87 +1882,7 @@ func (t *RequisitionLine) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *RequisitionLine) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("worksheet_template_name"):
-		return "worksheet_template_name", true
-	case strings.ToLower("journal_batch_name"):
-		return "journal_batch_name", true
-	case strings.ToLower("line_no"):
-		return "line_no", true
-	case strings.ToLower("type"):
-		return "type", true
-	case strings.ToLower("no"):
-		return "no", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("description_2"):
-		return "description_2", true
-	case strings.ToLower("quantity"):
-		return "quantity", true
-	case strings.ToLower("vendor_no"):
-		return "vendor_no", true
-	case strings.ToLower("direct_unit_cost"):
-		return "direct_unit_cost", true
-	case strings.ToLower("quantity_disc_percent"):
-		return "quantity_disc_percent", true
-	case strings.ToLower("expected_receipt_date"):
-		return "expected_receipt_date", true
-	case strings.ToLower("requester_id"):
-		return "requester_id", true
-	case strings.ToLower("confirmed"):
-		return "confirmed", true
-	case strings.ToLower("dimension_1_code"):
-		return "dimension_1_code", true
-	case strings.ToLower("dimension_2_code"):
-		return "dimension_2_code", true
-	case strings.ToLower("location_code"):
-		return "location_code", true
-	case strings.ToLower("recurring_method"):
-		return "recurring_method", true
-	case strings.ToLower("expiration_date"):
-		return "expiration_date", true
-	case strings.ToLower("recurring_frequency"):
-		return "recurring_frequency", true
-	case strings.ToLower("order_date"):
-		return "order_date", true
-	case strings.ToLower("vendor_item_no"):
-		return "vendor_item_no", true
-	case strings.ToLower("order_address_code"):
-		return "order_address_code", true
-	case strings.ToLower("currency_code"):
-		return "currency_code", true
-	case strings.ToLower("currency_factor"):
-		return "currency_factor", true
-	case strings.ToLower("variant_code"):
-		return "variant_code", true
-	case strings.ToLower("qty_per_unit_of_measure"):
-		return "qty_per_unit_of_measure", true
-	case strings.ToLower("unit_of_measure_code"):
-		return "unit_of_measure_code", true
-	case strings.ToLower("quantity_base"):
-		return "quantity_base", true
-	case strings.ToLower("reserved_quantity"):
-		return "reserved_quantity", true
-	case strings.ToLower("reserve"):
-		return "reserve", true
-	case strings.ToLower("reserved_qty_base"):
-		return "reserved_qty_base", true
-	case strings.ToLower("serial_no"):
-		return "serial_no", true
-	case strings.ToLower("lot_no"):
-		return "lot_no", true
-	case strings.ToLower("bin_code"):
-		return "bin_code", true
-	case strings.ToLower("sales_order_no"):
-		return "sales_order_no", true
-	case strings.ToLower("sales_order_line_no"):
-		return "sales_order_line_no", true
-	case strings.ToLower("sell_to_customer_no"):
-		return "sell_to_customer_no", true
-	case strings.ToLower("ship_to_code"):
-		return "ship_to_code", true
-	}
-	return "", false
+	return requisitionLineFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -3943,991 +3180,20 @@ func (t *RequisitionLine) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *RequisitionLine) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "worksheet_template_name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Worksheet_template_name = v
-		} else if v, ok := value.(string); ok {
-			t.Worksheet_template_name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field worksheet_template_name")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "worksheet_template_name"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Worksheet_template_name); ok {
-				if err := trg.OnValidate_Worksheet_template_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "journal_batch_name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Journal_batch_name = v
-		} else if v, ok := value.(string); ok {
-			t.Journal_batch_name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field journal_batch_name")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "journal_batch_name"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Journal_batch_name); ok {
-				if err := trg.OnValidate_Journal_batch_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "line_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Line_no = v
-		case float64:
-			t.Line_no = int(v)
-		case string:
-			if v == "" {
-				t.Line_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Line_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field line_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field line_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Line_no); ok {
-				if err := trg.OnValidate_Line_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(RequisitionLineType); ok {
-			t.Type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", v, 3-1)
-			}
-			t.Type = RequisitionLineType(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Type = RequisitionLineType(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Type = 0
-			} else {
-				options := []string{" ", "Account (G/L)", "Item"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Type = RequisitionLineType(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field type (expected RequisitionLineType, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Type); ok {
-				if err := trg.OnValidate_Type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-		} else if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_No); ok {
-				if err := trg.OnValidate_No(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description_2":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description_2 = v
-		} else if v, ok := value.(string); ok {
-			t.Description_2 = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description_2")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Description_2); ok {
-				if err := trg.OnValidate_Description_2(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "quantity":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Quantity, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field quantity: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Quantity = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Quantity = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Quantity = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field quantity (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Quantity); ok {
-				if err := trg.OnValidate_Quantity(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "vendor_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Vendor_no = v
-		} else if v, ok := value.(string); ok {
-			t.Vendor_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field vendor_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "vendor_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Vendor_no); ok {
-				if err := trg.OnValidate_Vendor_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "direct_unit_cost":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Direct_unit_cost = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Direct_unit_cost, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field direct_unit_cost: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Direct_unit_cost = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Direct_unit_cost = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Direct_unit_cost = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field direct_unit_cost (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Direct_unit_cost); ok {
-				if err := trg.OnValidate_Direct_unit_cost(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "quantity_disc_percent":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity_disc_percent = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Quantity_disc_percent, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field quantity_disc_percent: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Quantity_disc_percent = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Quantity_disc_percent = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Quantity_disc_percent = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field quantity_disc_percent (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Quantity_disc_percent); ok {
-				if err := trg.OnValidate_Quantity_disc_percent(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "expected_receipt_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Expected_receipt_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Expected_receipt_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field expected_receipt_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Expected_receipt_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field expected_receipt_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Expected_receipt_date); ok {
-				if err := trg.OnValidate_Expected_receipt_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "requester_id":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Requester_id = v
-		} else if v, ok := value.(string); ok {
-			t.Requester_id = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field requester_id")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "requester_id"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Requester_id); ok {
-				if err := trg.OnValidate_Requester_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "confirmed":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Confirmed = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Confirmed = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field confirmed")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Confirmed); ok {
-				if err := trg.OnValidate_Confirmed(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_1_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_1_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Dimension_1_code); ok {
-				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_2_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_2_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Dimension_2_code); ok {
-				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "location_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Location_code = v
-		} else if v, ok := value.(string); ok {
-			t.Location_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field location_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "location_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Location_code); ok {
-				if err := trg.OnValidate_Location_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "recurring_method":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(RequisitionLineRecurring_method); ok {
-			t.Recurring_method = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field recurring_method (valid range: 0-%d)", v, 3-1)
-			}
-			t.Recurring_method = RequisitionLineRecurring_method(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field recurring_method (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Recurring_method = RequisitionLineRecurring_method(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Recurring_method = 0
-			} else {
-				options := []string{" ", "Fixed", "Variable"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Recurring_method = RequisitionLineRecurring_method(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field recurring_method (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field recurring_method (expected RequisitionLineRecurring_method, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Recurring_method); ok {
-				if err := trg.OnValidate_Recurring_method(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "expiration_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Expiration_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Expiration_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field expiration_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Expiration_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field expiration_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Expiration_date); ok {
-				if err := trg.OnValidate_Expiration_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "recurring_frequency":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Recurring_frequency = v
-		} else if v, ok := value.(string); ok {
-			t.Recurring_frequency = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field recurring_frequency")
-		}
-		if err := tables.CheckDateFormula(RequisitionLineTableName, "recurring_frequency", string(t.Recurring_frequency)); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Recurring_frequency); ok {
-				if err := trg.OnValidate_Recurring_frequency(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "order_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Order_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Order_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field order_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Order_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field order_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Order_date); ok {
-				if err := trg.OnValidate_Order_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "vendor_item_no":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Vendor_item_no = v
-		} else if v, ok := value.(string); ok {
-			t.Vendor_item_no = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field vendor_item_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Vendor_item_no); ok {
-				if err := trg.OnValidate_Vendor_item_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "order_address_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Order_address_code = v
-		} else if v, ok := value.(string); ok {
-			t.Order_address_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field order_address_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "order_address_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Order_address_code); ok {
-				if err := trg.OnValidate_Order_address_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "currency_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Currency_code = v
-		} else if v, ok := value.(string); ok {
-			t.Currency_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field currency_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "currency_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Currency_code); ok {
-				if err := trg.OnValidate_Currency_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "currency_factor":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Currency_factor = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Currency_factor, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field currency_factor: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Currency_factor = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Currency_factor = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Currency_factor = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field currency_factor (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Currency_factor); ok {
-				if err := trg.OnValidate_Currency_factor(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "variant_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Variant_code = v
-		} else if v, ok := value.(string); ok {
-			t.Variant_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field variant_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "variant_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Variant_code); ok {
-				if err := trg.OnValidate_Variant_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "qty_per_unit_of_measure":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Qty_per_unit_of_measure = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Qty_per_unit_of_measure, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field qty_per_unit_of_measure: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Qty_per_unit_of_measure = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Qty_per_unit_of_measure = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Qty_per_unit_of_measure = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field qty_per_unit_of_measure (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Qty_per_unit_of_measure); ok {
-				if err := trg.OnValidate_Qty_per_unit_of_measure(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unit_of_measure_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Unit_of_measure_code = v
-		} else if v, ok := value.(string); ok {
-			t.Unit_of_measure_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field unit_of_measure_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "unit_of_measure_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Unit_of_measure_code); ok {
-				if err := trg.OnValidate_Unit_of_measure_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "quantity_base":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity_base = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Quantity_base, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field quantity_base: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Quantity_base = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Quantity_base = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Quantity_base = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field quantity_base (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Quantity_base); ok {
-				if err := trg.OnValidate_Quantity_base(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reserved_quantity":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Reserved_quantity = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Reserved_quantity, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field reserved_quantity: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Reserved_quantity = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Reserved_quantity = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Reserved_quantity = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field reserved_quantity (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Reserved_quantity); ok {
-				if err := trg.OnValidate_Reserved_quantity(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reserve":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(RequisitionLineReserve); ok {
-			t.Reserve = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field reserve (valid range: 0-%d)", v, 3-1)
-			}
-			t.Reserve = RequisitionLineReserve(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field reserve (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Reserve = RequisitionLineReserve(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Reserve = 0
-			} else {
-				options := []string{"Never", "Optional", "Always"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Reserve = RequisitionLineReserve(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field reserve (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field reserve (expected RequisitionLineReserve, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Reserve); ok {
-				if err := trg.OnValidate_Reserve(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reserved_qty_base":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Reserved_qty_base = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Reserved_qty_base, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field reserved_qty_base: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Reserved_qty_base = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Reserved_qty_base = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Reserved_qty_base = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field reserved_qty_base (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Reserved_qty_base); ok {
-				if err := trg.OnValidate_Reserved_qty_base(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "serial_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Serial_no = v
-		} else if v, ok := value.(string); ok {
-			t.Serial_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field serial_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Serial_no); ok {
-				if err := trg.OnValidate_Serial_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "lot_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Lot_no = v
-		} else if v, ok := value.(string); ok {
-			t.Lot_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field lot_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Lot_no); ok {
-				if err := trg.OnValidate_Lot_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bin_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Bin_code = v
-		} else if v, ok := value.(string); ok {
-			t.Bin_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field bin_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "bin_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Bin_code); ok {
-				if err := trg.OnValidate_Bin_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sales_order_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Sales_order_no = v
-		} else if v, ok := value.(string); ok {
-			t.Sales_order_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field sales_order_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "sales_order_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Sales_order_no); ok {
-				if err := trg.OnValidate_Sales_order_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sales_order_line_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Sales_order_line_no = v
-		case float64:
-			t.Sales_order_line_no = int(v)
-		case string:
-			if v == "" {
-				t.Sales_order_line_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Sales_order_line_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field sales_order_line_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field sales_order_line_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Sales_order_line_no); ok {
-				if err := trg.OnValidate_Sales_order_line_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sell_to_customer_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Sell_to_customer_no = v
-		} else if v, ok := value.(string); ok {
-			t.Sell_to_customer_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field sell_to_customer_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "sell_to_customer_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Sell_to_customer_no); ok {
-				if err := trg.OnValidate_Sell_to_customer_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "ship_to_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Ship_to_code = v
-		} else if v, ok := value.(string); ok {
-			t.Ship_to_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field ship_to_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "ship_to_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionLineOnValidate_Ship_to_code); ok {
-				if err := trg.OnValidate_Ship_to_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := requisitionLineFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &requisitionLineFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -4936,385 +3202,18 @@ func (t *RequisitionLine) ValidateField(fieldName string, value interface{}) err
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *RequisitionLine) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Worksheet_template_name, true
-	case 2:
-		return t.Journal_batch_name, true
-	case 3:
-		return t.Line_no, true
-	case 4:
-		return t.Type, true
-	case 5:
-		return t.No, true
-	case 6:
-		return t.Description, true
-	case 7:
-		return t.Description_2, true
-	case 8:
-		return t.Quantity, true
-	case 9:
-		return t.Vendor_no, true
-	case 10:
-		return t.Direct_unit_cost, true
-	case 11:
-		return t.Quantity_disc_percent, true
-	case 12:
-		return t.Expected_receipt_date, true
-	case 13:
-		return t.Requester_id, true
-	case 14:
-		return t.Confirmed, true
-	case 15:
-		return t.Dimension_1_code, true
-	case 16:
-		return t.Dimension_2_code, true
-	case 17:
-		return t.Location_code, true
-	case 18:
-		return t.Recurring_method, true
-	case 19:
-		return t.Expiration_date, true
-	case 20:
-		return t.Recurring_frequency, true
-	case 21:
-		return t.Order_date, true
-	case 22:
-		return t.Vendor_item_no, true
-	case 28:
-		return t.Order_address_code, true
-	case 29:
-		return t.Currency_code, true
-	case 30:
-		return t.Currency_factor, true
-	case 5402:
-		return t.Variant_code, true
-	case 5404:
-		return t.Qty_per_unit_of_measure, true
-	case 5407:
-		return t.Unit_of_measure_code, true
-	case 5408:
-		return t.Quantity_base, true
-	case 31:
-		return t.Reserved_quantity, true
-	case 32:
-		return t.Reserve, true
-	case 5431:
-		return t.Reserved_qty_base, true
-	case 27:
-		return t.Serial_no, true
-	case 5400:
-		return t.Lot_no, true
-	case 5403:
-		return t.Bin_code, true
-	case 23:
-		return t.Sales_order_no, true
-	case 24:
-		return t.Sales_order_line_no, true
-	case 25:
-		return t.Sell_to_customer_no, true
-	case 26:
-		return t.Ship_to_code, true
-	}
-	return nil, false
+	return requisitionLineFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *RequisitionLine) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return requisitionLineFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *RequisitionLine) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Worksheet_template_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Worksheet_template_name = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Journal_batch_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Journal_batch_name = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(int); ok {
-			t.Line_no = v
-			return true
-		}
-	case 4:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Type = RequisitionLineType(i)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Text); ok {
-			t.Description_2 = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description_2 = types.NewText(v)
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity = v
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.Code); ok {
-			t.Vendor_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Vendor_no = types.NewCode(v)
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Decimal); ok {
-			t.Direct_unit_cost = v
-			return true
-		}
-	case 11:
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity_disc_percent = v
-			return true
-		}
-	case 12:
-		if v, ok := value.(types.Date); ok {
-			t.Expected_receipt_date = v
-			return true
-		}
-	case 13:
-		if v, ok := value.(types.Code); ok {
-			t.Requester_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Requester_id = types.NewCode(v)
-			return true
-		}
-	case 14:
-		if v, ok := value.(bool); ok {
-			t.Confirmed = v
-			return true
-		}
-	case 15:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-			return true
-		}
-	case 16:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-			return true
-		}
-	case 17:
-		if v, ok := value.(types.Code); ok {
-			t.Location_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Location_code = types.NewCode(v)
-			return true
-		}
-	case 18:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Recurring_method = RequisitionLineRecurring_method(i)
-			return true
-		}
-	case 19:
-		if v, ok := value.(types.Date); ok {
-			t.Expiration_date = v
-			return true
-		}
-	case 20:
-		if v, ok := value.(types.Code); ok {
-			t.Recurring_frequency = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Recurring_frequency = types.NewCode(v)
-			return true
-		}
-	case 21:
-		if v, ok := value.(types.Date); ok {
-			t.Order_date = v
-			return true
-		}
-	case 22:
-		if v, ok := value.(types.Text); ok {
-			t.Vendor_item_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Vendor_item_no = types.NewText(v)
-			return true
-		}
-	case 28:
-		if v, ok := value.(types.Code); ok {
-			t.Order_address_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Order_address_code = types.NewCode(v)
-			return true
-		}
-	case 29:
-		if v, ok := value.(types.Code); ok {
-			t.Currency_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Currency_code = types.NewCode(v)
-			return true
-		}
-	case 30:
-		if v, ok := value.(types.Decimal); ok {
-			t.Currency_factor = v
-			return true
-		}
-	case 5402:
-		if v, ok := value.(types.Code); ok {
-			t.Variant_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Variant_code = types.NewCode(v)
-			return true
-		}
-	case 5404:
-		if v, ok := value.(types.Decimal); ok {
-			t.Qty_per_unit_of_measure = v
-			return true
-		}
-	case 5407:
-		if v, ok := value.(types.Code); ok {
-			t.Unit_of_measure_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Unit_of_measure_code = types.NewCode(v)
-			return true
-		}
-	case 5408:
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity_base = v
-			return true
-		}
-	case 31:
-		if v, ok := value.(types.Decimal); ok {
-			t.Reserved_quantity = v
-			return true
-		}
-	case 32:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Reserve = RequisitionLineReserve(i)
-			return true
-		}
-	case 5431:
-		if v, ok := value.(types.Decimal); ok {
-			t.Reserved_qty_base = v
-			return true
-		}
-	case 27:
-		if v, ok := value.(types.Code); ok {
-			t.Serial_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Serial_no = types.NewCode(v)
-			return true
-		}
-	case 5400:
-		if v, ok := value.(types.Code); ok {
-			t.Lot_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Lot_no = types.NewCode(v)
-			return true
-		}
-	case 5403:
-		if v, ok := value.(types.Code); ok {
-			t.Bin_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Bin_code = types.NewCode(v)
-			return true
-		}
-	case 23:
-		if v, ok := value.(types.Code); ok {
-			t.Sales_order_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Sales_order_no = types.NewCode(v)
-			return true
-		}
-	case 24:
-		if v, ok := value.(int); ok {
-			t.Sales_order_line_no = v
-			return true
-		}
-	case 25:
-		if v, ok := value.(types.Code); ok {
-			t.Sell_to_customer_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Sell_to_customer_no = types.NewCode(v)
-			return true
-		}
-	case 26:
-		if v, ok := value.(types.Code); ok {
-			t.Ship_to_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Ship_to_code = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return requisitionLineFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -5858,87 +3757,7 @@ func (t *RequisitionLine) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *RequisitionLine) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "worksheet_template_name":
-		return t.Worksheet_template_name, true
-	case "journal_batch_name":
-		return t.Journal_batch_name, true
-	case "line_no":
-		return t.Line_no, true
-	case "type":
-		return int(t.Type), true
-	case "no":
-		return t.No, true
-	case "description":
-		return t.Description, true
-	case "description_2":
-		return t.Description_2, true
-	case "quantity":
-		return t.Quantity, true
-	case "vendor_no":
-		return t.Vendor_no, true
-	case "direct_unit_cost":
-		return t.Direct_unit_cost, true
-	case "quantity_disc_percent":
-		return t.Quantity_disc_percent, true
-	case "expected_receipt_date":
-		return t.Expected_receipt_date, true
-	case "requester_id":
-		return t.Requester_id, true
-	case "confirmed":
-		return t.Confirmed, true
-	case "dimension_1_code":
-		return t.Dimension_1_code, true
-	case "dimension_2_code":
-		return t.Dimension_2_code, true
-	case "location_code":
-		return t.Location_code, true
-	case "recurring_method":
-		return int(t.Recurring_method), true
-	case "expiration_date":
-		return t.Expiration_date, true
-	case "recurring_frequency":
-		return t.Recurring_frequency, true
-	case "order_date":
-		return t.Order_date, true
-	case "vendor_item_no":
-		return t.Vendor_item_no, true
-	case "order_address_code":
-		return t.Order_address_code, true
-	case "currency_code":
-		return t.Currency_code, true
-	case "currency_factor":
-		return t.Currency_factor, true
-	case "variant_code":
-		return t.Variant_code, true
-	case "qty_per_unit_of_measure":
-		return t.Qty_per_unit_of_measure, true
-	case "unit_of_measure_code":
-		return t.Unit_of_measure_code, true
-	case "quantity_base":
-		return t.Quantity_base, true
-	case "reserved_quantity":
-		return t.Reserved_quantity, true
-	case "reserve":
-		return int(t.Reserve), true
-	case "reserved_qty_base":
-		return t.Reserved_qty_base, true
-	case "serial_no":
-		return t.Serial_no, true
-	case "lot_no":
-		return t.Lot_no, true
-	case "bin_code":
-		return t.Bin_code, true
-	case "sales_order_no":
-		return t.Sales_order_no, true
-	case "sales_order_line_no":
-		return t.Sales_order_line_no, true
-	case "sell_to_customer_no":
-		return t.Sell_to_customer_no, true
-	case "ship_to_code":
-		return t.Ship_to_code, true
-	}
-	return nil, false
+	return requisitionLineFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -6068,354 +3887,12 @@ func (t *RequisitionLine) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *RequisitionLine) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"worksheet_template_name": t.Worksheet_template_name.String(),
-		"journal_batch_name":      t.Journal_batch_name.String(),
-		"line_no":                 t.Line_no,
-		"type":                    int(t.Type),
-		"no":                      t.No.String(),
-		"description":             t.Description.String(),
-		"description_2":           t.Description_2.String(),
-		"quantity":                t.Quantity.String(),
-		"vendor_no":               t.Vendor_no.String(),
-		"direct_unit_cost":        t.Direct_unit_cost.String(),
-		"quantity_disc_percent":   t.Quantity_disc_percent.String(),
-		"expected_receipt_date":   t.Expected_receipt_date.String(),
-		"requester_id":            t.Requester_id.String(),
-		"confirmed":               t.Confirmed,
-		"dimension_1_code":        t.Dimension_1_code.String(),
-		"dimension_2_code":        t.Dimension_2_code.String(),
-		"location_code":           t.Location_code.String(),
-		"recurring_method":        int(t.Recurring_method),
-		"expiration_date":         t.Expiration_date.String(),
-		"recurring_frequency":     t.Recurring_frequency.String(),
-		"order_date":              t.Order_date.String(),
-		"vendor_item_no":          t.Vendor_item_no.String(),
-		"order_address_code":      t.Order_address_code.String(),
-		"currency_code":           t.Currency_code.String(),
-		"currency_factor":         t.Currency_factor.String(),
-		"variant_code":            t.Variant_code.String(),
-		"qty_per_unit_of_measure": t.Qty_per_unit_of_measure.String(),
-		"unit_of_measure_code":    t.Unit_of_measure_code.String(),
-		"quantity_base":           t.Quantity_base.String(),
-		"reserved_quantity":       t.Reserved_quantity.String(),
-		"reserve":                 int(t.Reserve),
-		"reserved_qty_base":       t.Reserved_qty_base.String(),
-		"serial_no":               t.Serial_no.String(),
-		"lot_no":                  t.Lot_no.String(),
-		"bin_code":                t.Bin_code.String(),
-		"sales_order_no":          t.Sales_order_no.String(),
-		"sales_order_line_no":     t.Sales_order_line_no,
-		"sell_to_customer_no":     t.Sell_to_customer_no.String(),
-		"ship_to_code":            t.Ship_to_code.String(),
-	}
+	return requisitionLineFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *RequisitionLine) FromMap(data map[string]interface{}) {
-	if v, ok := data["worksheet_template_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Worksheet_template_name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["journal_batch_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Journal_batch_name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["line_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Line_no = int(val)
-		case int:
-			t.Line_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Line_no = n
-			}
-		}
-	}
-	if v, ok := data["type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Type = RequisitionLineType(int(val))
-		case int:
-			t.Type = RequisitionLineType(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Account (G/L)", "Item"}
-			for i, opt := range options {
-				if opt == val {
-					t.Type = RequisitionLineType(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["description_2"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description_2 = types.NewText(s)
-		}
-	}
-	if v, ok := data["quantity"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Quantity, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Quantity = types.NewDecimal(val)
-		case int:
-			t.Quantity = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Quantity = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["vendor_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Vendor_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["direct_unit_cost"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Direct_unit_cost, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Direct_unit_cost = types.NewDecimal(val)
-		case int:
-			t.Direct_unit_cost = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Direct_unit_cost = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["quantity_disc_percent"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Quantity_disc_percent, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Quantity_disc_percent = types.NewDecimal(val)
-		case int:
-			t.Quantity_disc_percent = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Quantity_disc_percent = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["expected_receipt_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Expected_receipt_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["requester_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Requester_id = types.NewCode(s)
-		}
-	}
-	if v, ok := data["confirmed"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Confirmed = b
-		}
-	}
-	if v, ok := data["dimension_1_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_1_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["dimension_2_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_2_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["location_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Location_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["recurring_method"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Recurring_method = RequisitionLineRecurring_method(int(val))
-		case int:
-			t.Recurring_method = RequisitionLineRecurring_method(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Fixed", "Variable"}
-			for i, opt := range options {
-				if opt == val {
-					t.Recurring_method = RequisitionLineRecurring_method(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["expiration_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Expiration_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["recurring_frequency"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Recurring_frequency = types.NewCode(s)
-		}
-	}
-	if v, ok := data["order_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Order_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["vendor_item_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Vendor_item_no = types.NewText(s)
-		}
-	}
-	if v, ok := data["order_address_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Order_address_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["currency_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Currency_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["currency_factor"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Currency_factor, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Currency_factor = types.NewDecimal(val)
-		case int:
-			t.Currency_factor = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Currency_factor = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["variant_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Variant_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["qty_per_unit_of_measure"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Qty_per_unit_of_measure, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Qty_per_unit_of_measure = types.NewDecimal(val)
-		case int:
-			t.Qty_per_unit_of_measure = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Qty_per_unit_of_measure = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["unit_of_measure_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Unit_of_measure_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["quantity_base"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Quantity_base, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Quantity_base = types.NewDecimal(val)
-		case int:
-			t.Quantity_base = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Quantity_base = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["reserved_quantity"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Reserved_quantity, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Reserved_quantity = types.NewDecimal(val)
-		case int:
-			t.Reserved_quantity = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Reserved_quantity = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["reserve"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Reserve = RequisitionLineReserve(int(val))
-		case int:
-			t.Reserve = RequisitionLineReserve(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Never", "Optional", "Always"}
-			for i, opt := range options {
-				if opt == val {
-					t.Reserve = RequisitionLineReserve(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["reserved_qty_base"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Reserved_qty_base, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Reserved_qty_base = types.NewDecimal(val)
-		case int:
-			t.Reserved_qty_base = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Reserved_qty_base = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["serial_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Serial_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["lot_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Lot_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["bin_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Bin_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["sales_order_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Sales_order_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["sales_order_line_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Sales_order_line_no = int(val)
-		case int:
-			t.Sales_order_line_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Sales_order_line_no = n
-			}
-		}
-	}
-	if v, ok := data["sell_to_customer_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Sell_to_customer_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["ship_to_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Ship_to_code = types.NewCode(s)
-		}
-	}
+	requisitionLineFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -6436,413 +3913,681 @@ func (t *RequisitionLine) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *RequisitionLine) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "worksheet_template_name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "journal_batch_name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "line_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "description_2",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            8,
-			Name:          "quantity",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         9,
-			Name:       "vendor_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            10,
-			Name:          "direct_unit_cost",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:5",
-		},
-		{
-			No:            11,
-			Name:          "quantity_disc_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         12,
-			Name:       "expected_receipt_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         13,
-			Name:       "requester_id",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         14,
-			Name:       "confirmed",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         15,
-			Name:       "dimension_1_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         16,
-			Name:       "dimension_2_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         17,
-			Name:       "location_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         18,
-			Name:       "recurring_method",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         19,
-			Name:       "expiration_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         20,
-			Name:       "recurring_frequency",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         21,
-			Name:       "order_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         22,
-			Name:       "vendor_item_no",
-			Type:       tables.FieldTypeText,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         28,
-			Name:       "order_address_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         29,
-			Name:       "currency_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            30,
-			Name:          "currency_factor",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:15",
-		},
-		{
-			No:         5402,
-			Name:       "variant_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            5404,
-			Name:          "qty_per_unit_of_measure",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         5407,
-			Name:       "unit_of_measure_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            5408,
-			Name:          "quantity_base",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            31,
-			Name:          "reserved_quantity",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         32,
-			Name:       "reserve",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            5431,
-			Name:          "reserved_qty_base",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         27,
-			Name:       "serial_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5400,
-			Name:       "lot_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5403,
-			Name:       "bin_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         23,
-			Name:       "sales_order_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         24,
-			Name:       "sales_order_line_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         25,
-			Name:       "sell_to_customer_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         26,
-			Name:       "ship_to_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
+	return requisitionLineFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in requisitionLineFields.Fields
+func (t *RequisitionLine) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Worksheet_template_name
+	case 1:
+		return &t.Journal_batch_name
+	case 2:
+		return &t.Line_no
+	case 3:
+		return &t.Type
+	case 4:
+		return &t.No
+	case 5:
+		return &t.Description
+	case 6:
+		return &t.Description_2
+	case 7:
+		return &t.Quantity
+	case 8:
+		return &t.Vendor_no
+	case 9:
+		return &t.Direct_unit_cost
+	case 10:
+		return &t.Quantity_disc_percent
+	case 11:
+		return &t.Expected_receipt_date
+	case 12:
+		return &t.Requester_id
+	case 13:
+		return &t.Confirmed
+	case 14:
+		return &t.Dimension_1_code
+	case 15:
+		return &t.Dimension_2_code
+	case 16:
+		return &t.Location_code
+	case 17:
+		return &t.Recurring_method
+	case 18:
+		return &t.Expiration_date
+	case 19:
+		return &t.Recurring_frequency
+	case 20:
+		return &t.Order_date
+	case 21:
+		return &t.Vendor_item_no
+	case 22:
+		return &t.Order_address_code
+	case 23:
+		return &t.Currency_code
+	case 24:
+		return &t.Currency_factor
+	case 25:
+		return &t.Variant_code
+	case 26:
+		return &t.Qty_per_unit_of_measure
+	case 27:
+		return &t.Unit_of_measure_code
+	case 28:
+		return &t.Quantity_base
+	case 29:
+		return &t.Reserved_quantity
+	case 30:
+		return &t.Reserve
+	case 31:
+		return &t.Reserved_qty_base
+	case 32:
+		return &t.Serial_no
+	case 33:
+		return &t.Lot_no
+	case 34:
+		return &t.Bin_code
+	case 35:
+		return &t.Sales_order_no
+	case 36:
+		return &t.Sales_order_line_no
+	case 37:
+		return &t.Sell_to_customer_no
+	case 38:
+		return &t.Ship_to_code
 	}
+	return nil
+}
+
+// requisitionLineFields describes the fields of Requisition_Line for the record functions
+// written once in foundation/tables
+var requisitionLineFields = &tables.TableFields{
+	Table: RequisitionLineTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "worksheet_template_name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Worksheet_template_name",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "journal_batch_name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Journal_batch_name",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "line_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Line_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Type",
+			Options: []string{" ", "Account (G/L)", "Item"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_No",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "description_2",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description_2",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            8,
+				Name:          "quantity",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Quantity",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "vendor_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Vendor_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            10,
+				Name:          "direct_unit_cost",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Direct_unit_cost",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            11,
+				Name:          "quantity_disc_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Quantity_disc_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "expected_receipt_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Expected_receipt_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "requester_id",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Requester_id",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "confirmed",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Confirmed",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         15,
+				Name:       "dimension_1_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_1_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         16,
+				Name:       "dimension_2_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_2_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         17,
+				Name:       "location_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Location_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         18,
+				Name:       "recurring_method",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Recurring_method",
+			Options: []string{" ", "Fixed", "Variable"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         19,
+				Name:       "expiration_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Expiration_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         20,
+				Name:       "recurring_frequency",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:        tables.KindCode,
+			Trigger:     "OnValidate_Recurring_frequency",
+			DateFormula: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         21,
+				Name:       "order_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Order_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         22,
+				Name:       "vendor_item_no",
+				Type:       tables.FieldTypeText,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Vendor_item_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         28,
+				Name:       "order_address_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Order_address_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         29,
+				Name:       "currency_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Currency_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            30,
+				Name:          "currency_factor",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:15",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Currency_factor",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5402,
+				Name:       "variant_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Variant_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            5404,
+				Name:          "qty_per_unit_of_measure",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Qty_per_unit_of_measure",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5407,
+				Name:       "unit_of_measure_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Unit_of_measure_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            5408,
+				Name:          "quantity_base",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Quantity_base",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            31,
+				Name:          "reserved_quantity",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Reserved_quantity",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         32,
+				Name:       "reserve",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Reserve",
+			Options: []string{"Never", "Optional", "Always"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            5431,
+				Name:          "reserved_qty_base",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Reserved_qty_base",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         27,
+				Name:       "serial_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Serial_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5400,
+				Name:       "lot_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Lot_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5403,
+				Name:       "bin_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Bin_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         23,
+				Name:       "sales_order_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Sales_order_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         24,
+				Name:       "sales_order_line_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Sales_order_line_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         25,
+				Name:       "sell_to_customer_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Sell_to_customer_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         26,
+				Name:       "ship_to_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Ship_to_code",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

@@ -118,28 +118,12 @@ var UserTimeRegister_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *UserTimeRegister) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "user_id":
-		return 1
-	case "date":
-		return 2
-	case "minutes":
-		return 3
-	}
-	return 0
+	return userTimeRegisterFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *UserTimeRegister) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "user_id"
-	case 2:
-		return "date"
-	case 3:
-		return "minutes"
-	}
-	return ""
+	return userTimeRegisterFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -251,15 +235,6 @@ type (
 	UserTimeRegisterOnBeforeRename interface {
 		OnBeforeRename(rec *UserTimeRegister, handled *bool) error
 	}
-	UserTimeRegisterOnValidate_User_id interface {
-		OnValidate_User_id(rec *UserTimeRegister) error
-	}
-	UserTimeRegisterOnValidate_Date interface {
-		OnValidate_Date(rec *UserTimeRegister) error
-	}
-	UserTimeRegisterOnValidate_Minutes interface {
-		OnValidate_Minutes(rec *UserTimeRegister) error
-	}
 )
 
 // userTimeRegisterLogic is the registered business logic of User_Time_Register, in
@@ -302,14 +277,9 @@ func userTimeRegisterTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(UserTimeRegisterOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(UserTimeRegisterOnBeforeRename)
-	case "OnValidate_User_id":
-		_, ok = logic.(UserTimeRegisterOnValidate_User_id)
-	case "OnValidate_Date":
-		_, ok = logic.(UserTimeRegisterOnValidate_Date)
-	case "OnValidate_Minutes":
-		_, ok = logic.(UserTimeRegisterOnValidate_Minutes)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return userTimeRegisterFields.IsOnValidateTrigger(name, logic, (*UserTimeRegister)(nil))
 	}
 	return true, ok
 }
@@ -601,10 +571,7 @@ func (t *UserTimeRegister) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *UserTimeRegister) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["user_id"] = t.User_id
-	t.oldValues["date"] = t.Date
-	t.oldValues["minutes"] = t.Minutes
+	t.oldValues = userTimeRegisterFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -619,15 +586,7 @@ func (t *UserTimeRegister) OldValue(fieldName string) interface{} {
 func (t *UserTimeRegister) XRec() *UserTimeRegister {
 	x := &UserTimeRegister{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["user_id"].(types.Code); ok {
-		x.User_id = v
-	}
-	if v, ok := t.oldValues["date"].(types.Date); ok {
-		x.Date = v
-	}
-	if v, ok := t.oldValues["minutes"].(types.Decimal); ok {
-		x.Minutes = v
-	}
+	userTimeRegisterFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -906,33 +865,7 @@ func (t *UserTimeRegister) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *UserTimeRegister) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "user_id":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.User_id.Equal(old)
-		}
-	case "date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Date.Equal(old)
-		}
-	case "minutes":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Minutes.Equal(old)
-		}
-	}
-
-	return false
+	return userTimeRegisterFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1134,15 +1067,7 @@ func (t *UserTimeRegister) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *UserTimeRegister) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("user_id"):
-		return "user_id", true
-	case strings.ToLower("date"):
-		return "date", true
-	case strings.ToLower("minutes"):
-		return "minutes", true
-	}
-	return "", false
+	return userTimeRegisterFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -1970,86 +1895,20 @@ func (t *UserTimeRegister) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *UserTimeRegister) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "user_id":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-		} else if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field user_id")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "user_id"); err != nil {
+	i, err := userTimeRegisterFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
+	}
+	f := &userTimeRegisterFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
 			return err
 		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserTimeRegisterOnValidate_User_id); ok {
-				if err := trg.OnValidate_User_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserTimeRegisterOnValidate_Date); ok {
-				if err := trg.OnValidate_Date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "minutes":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Minutes = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Minutes, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field minutes: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Minutes = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Minutes = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Minutes = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field minutes (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserTimeRegisterOnValidate_Minutes); ok {
-				if err := trg.OnValidate_Minutes(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2058,49 +1917,18 @@ func (t *UserTimeRegister) ValidateField(fieldName string, value interface{}) er
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *UserTimeRegister) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.User_id, true
-	case 2:
-		return t.Date, true
-	case 3:
-		return t.Minutes, true
-	}
-	return nil, false
+	return userTimeRegisterFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *UserTimeRegister) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return userTimeRegisterFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *UserTimeRegister) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Date); ok {
-			t.Date = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Decimal); ok {
-			t.Minutes = v
-			return true
-		}
-	}
-	return false
+	return userTimeRegisterFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2571,15 +2399,7 @@ func (t *UserTimeRegister) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *UserTimeRegister) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "user_id":
-		return t.User_id, true
-	case "date":
-		return t.Date, true
-	case "minutes":
-		return t.Minutes, true
-	}
-	return nil, false
+	return userTimeRegisterFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2670,37 +2490,12 @@ func (t *UserTimeRegister) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *UserTimeRegister) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"user_id": t.User_id.String(),
-		"date":    t.Date.String(),
-		"minutes": t.Minutes.String(),
-	}
+	return userTimeRegisterFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *UserTimeRegister) FromMap(data map[string]interface{}) {
-	if v, ok := data["user_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.User_id = types.NewCode(s)
-		}
-	}
-	if v, ok := data["date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["minutes"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Minutes, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Minutes = types.NewDecimal(val)
-		case int:
-			t.Minutes = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Minutes = types.NewDecimalFromInt(val)
-		}
-	}
+	userTimeRegisterFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2721,39 +2516,72 @@ func (t *UserTimeRegister) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *UserTimeRegister) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "user_id",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:            3,
-			Name:          "minutes",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:0",
-		},
+	return userTimeRegisterFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in userTimeRegisterFields.Fields
+func (t *UserTimeRegister) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.User_id
+	case 1:
+		return &t.Date
+	case 2:
+		return &t.Minutes
 	}
+	return nil
+}
+
+// userTimeRegisterFields describes the fields of User_Time_Register for the record functions
+// written once in foundation/tables
+var userTimeRegisterFields = &tables.TableFields{
+	Table: UserTimeRegisterTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "user_id",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_User_id",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            3,
+				Name:          "minutes",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:0",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Minutes",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

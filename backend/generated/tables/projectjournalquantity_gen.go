@@ -164,40 +164,12 @@ var ProjectJournalQuantity_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *ProjectJournalQuantity) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "is_total":
-		return 1
-	case "unit_of_measure_code":
-		return 2
-	case "line_type":
-		return 3
-	case "work_type_code":
-		return 4
-	case "quantity":
-		return 5
-	case "unit_of_measure_text":
-		return 900
-	}
-	return 0
+	return projectJournalQuantityFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *ProjectJournalQuantity) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "is_total"
-	case 2:
-		return "unit_of_measure_code"
-	case 3:
-		return "line_type"
-	case 4:
-		return "work_type_code"
-	case 5:
-		return "quantity"
-	case 900:
-		return "unit_of_measure_text"
-	}
-	return ""
+	return projectJournalQuantityFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -309,24 +281,6 @@ type (
 	ProjectJournalQuantityOnBeforeRename interface {
 		OnBeforeRename(rec *ProjectJournalQuantity, handled *bool) error
 	}
-	ProjectJournalQuantityOnValidate_Is_total interface {
-		OnValidate_Is_total(rec *ProjectJournalQuantity) error
-	}
-	ProjectJournalQuantityOnValidate_Unit_of_measure_code interface {
-		OnValidate_Unit_of_measure_code(rec *ProjectJournalQuantity) error
-	}
-	ProjectJournalQuantityOnValidate_Line_type interface {
-		OnValidate_Line_type(rec *ProjectJournalQuantity) error
-	}
-	ProjectJournalQuantityOnValidate_Work_type_code interface {
-		OnValidate_Work_type_code(rec *ProjectJournalQuantity) error
-	}
-	ProjectJournalQuantityOnValidate_Quantity interface {
-		OnValidate_Quantity(rec *ProjectJournalQuantity) error
-	}
-	ProjectJournalQuantityOnValidate_Unit_of_measure_text interface {
-		OnValidate_Unit_of_measure_text(rec *ProjectJournalQuantity) error
-	}
 )
 
 // projectJournalQuantityLogic is the registered business logic of Project_Journal_Quantity, in
@@ -369,20 +323,9 @@ func projectJournalQuantityTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ProjectJournalQuantityOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(ProjectJournalQuantityOnBeforeRename)
-	case "OnValidate_Is_total":
-		_, ok = logic.(ProjectJournalQuantityOnValidate_Is_total)
-	case "OnValidate_Unit_of_measure_code":
-		_, ok = logic.(ProjectJournalQuantityOnValidate_Unit_of_measure_code)
-	case "OnValidate_Line_type":
-		_, ok = logic.(ProjectJournalQuantityOnValidate_Line_type)
-	case "OnValidate_Work_type_code":
-		_, ok = logic.(ProjectJournalQuantityOnValidate_Work_type_code)
-	case "OnValidate_Quantity":
-		_, ok = logic.(ProjectJournalQuantityOnValidate_Quantity)
-	case "OnValidate_Unit_of_measure_text":
-		_, ok = logic.(ProjectJournalQuantityOnValidate_Unit_of_measure_text)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return projectJournalQuantityFields.IsOnValidateTrigger(name, logic, (*ProjectJournalQuantity)(nil))
 	}
 	return true, ok
 }
@@ -686,13 +629,7 @@ func (t *ProjectJournalQuantity) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *ProjectJournalQuantity) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["is_total"] = t.Is_total
-	t.oldValues["unit_of_measure_code"] = t.Unit_of_measure_code
-	t.oldValues["line_type"] = t.Line_type
-	t.oldValues["work_type_code"] = t.Work_type_code
-	t.oldValues["quantity"] = t.Quantity
-	t.oldValues["unit_of_measure_text"] = t.Unit_of_measure_text
+	t.oldValues = projectJournalQuantityFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -707,24 +644,7 @@ func (t *ProjectJournalQuantity) OldValue(fieldName string) interface{} {
 func (t *ProjectJournalQuantity) XRec() *ProjectJournalQuantity {
 	x := &ProjectJournalQuantity{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["is_total"].(bool); ok {
-		x.Is_total = v
-	}
-	if v, ok := t.oldValues["unit_of_measure_code"].(types.Code); ok {
-		x.Unit_of_measure_code = v
-	}
-	if v, ok := t.oldValues["line_type"].(ProjectJournalQuantityLine_type); ok {
-		x.Line_type = v
-	}
-	if v, ok := t.oldValues["work_type_code"].(types.Code); ok {
-		x.Work_type_code = v
-	}
-	if v, ok := t.oldValues["quantity"].(types.Decimal); ok {
-		x.Quantity = v
-	}
-	if v, ok := t.oldValues["unit_of_measure_text"].(types.Text); ok {
-		x.Unit_of_measure_text = v
-	}
+	projectJournalQuantityFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1073,46 +993,7 @@ func (t *ProjectJournalQuantity) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *ProjectJournalQuantity) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "is_total":
-		if old, ok := oldValue.(bool); ok {
-			return t.Is_total != old
-		}
-		return true // Type mismatch, assume changed
-	case "unit_of_measure_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Unit_of_measure_code.Equal(old)
-		}
-	case "line_type":
-		if old, ok := oldValue.(ProjectJournalQuantityLine_type); ok {
-			return t.Line_type != old
-		}
-	case "work_type_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Work_type_code.Equal(old)
-		}
-	case "quantity":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Quantity.Equal(old)
-		}
-	case "unit_of_measure_text":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Unit_of_measure_text.Equal(old)
-		}
-	}
-
-	return false
+	return projectJournalQuantityFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1316,21 +1197,7 @@ func (t *ProjectJournalQuantity) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *ProjectJournalQuantity) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("is_total"):
-		return "is_total", true
-	case strings.ToLower("unit_of_measure_code"):
-		return "unit_of_measure_code", true
-	case strings.ToLower("line_type"):
-		return "line_type", true
-	case strings.ToLower("work_type_code"):
-		return "work_type_code", true
-	case strings.ToLower("quantity"):
-		return "quantity", true
-	case strings.ToLower("unit_of_measure_text"):
-		return "unit_of_measure_text", true
-	}
-	return "", false
+	return projectJournalQuantityFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2195,170 +2062,20 @@ func (t *ProjectJournalQuantity) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *ProjectJournalQuantity) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "is_total":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Is_total = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Is_total = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field is_total")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectJournalQuantityOnValidate_Is_total); ok {
-				if err := trg.OnValidate_Is_total(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unit_of_measure_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Unit_of_measure_code = v
-		} else if v, ok := value.(string); ok {
-			t.Unit_of_measure_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field unit_of_measure_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "unit_of_measure_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectJournalQuantityOnValidate_Unit_of_measure_code); ok {
-				if err := trg.OnValidate_Unit_of_measure_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "line_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ProjectJournalQuantityLine_type); ok {
-			t.Line_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 2 {
-				return fmt.Errorf("invalid option value %d for field line_type (valid range: 0-%d)", v, 2-1)
-			}
-			t.Line_type = ProjectJournalQuantityLine_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 2 {
-				return fmt.Errorf("invalid option value %d for field line_type (valid range: 0-%d)", intVal, 2-1)
-			}
-			t.Line_type = ProjectJournalQuantityLine_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Line_type = 0
-			} else {
-				options := []string{" ", "Total"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Line_type = ProjectJournalQuantityLine_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field line_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field line_type (expected ProjectJournalQuantityLine_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectJournalQuantityOnValidate_Line_type); ok {
-				if err := trg.OnValidate_Line_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "work_type_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Work_type_code = v
-		} else if v, ok := value.(string); ok {
-			t.Work_type_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field work_type_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "work_type_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectJournalQuantityOnValidate_Work_type_code); ok {
-				if err := trg.OnValidate_Work_type_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "quantity":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Quantity, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field quantity: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Quantity = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Quantity = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Quantity = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field quantity (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectJournalQuantityOnValidate_Quantity); ok {
-				if err := trg.OnValidate_Quantity(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unit_of_measure_text":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Unit_of_measure_text = v
-		} else if v, ok := value.(string); ok {
-			t.Unit_of_measure_text = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field unit_of_measure_text")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectJournalQuantityOnValidate_Unit_of_measure_text); ok {
-				if err := trg.OnValidate_Unit_of_measure_text(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := projectJournalQuantityFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &projectJournalQuantityFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2367,78 +2084,18 @@ func (t *ProjectJournalQuantity) ValidateField(fieldName string, value interface
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *ProjectJournalQuantity) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Is_total, true
-	case 2:
-		return t.Unit_of_measure_code, true
-	case 3:
-		return t.Line_type, true
-	case 4:
-		return t.Work_type_code, true
-	case 5:
-		return t.Quantity, true
-	case 900:
-		return t.Unit_of_measure_text, true
-	}
-	return nil, false
+	return projectJournalQuantityFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *ProjectJournalQuantity) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return projectJournalQuantityFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *ProjectJournalQuantity) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(bool); ok {
-			t.Is_total = v
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Unit_of_measure_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Unit_of_measure_code = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 2 {
-			t.Line_type = ProjectJournalQuantityLine_type(i)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Code); ok {
-			t.Work_type_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Work_type_code = types.NewCode(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity = v
-			return true
-		}
-	case 900:
-		if v, ok := value.(types.Text); ok {
-			t.Unit_of_measure_text = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Unit_of_measure_text = types.NewText(v)
-			return true
-		}
-	}
-	return false
+	return projectJournalQuantityFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2911,21 +2568,7 @@ func (t *ProjectJournalQuantity) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *ProjectJournalQuantity) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "is_total":
-		return t.Is_total, true
-	case "unit_of_measure_code":
-		return t.Unit_of_measure_code, true
-	case "line_type":
-		return int(t.Line_type), true
-	case "work_type_code":
-		return t.Work_type_code, true
-	case "quantity":
-		return t.Quantity, true
-	case "unit_of_measure_text":
-		return t.Unit_of_measure_text, true
-	}
-	return nil, false
+	return projectJournalQuantityFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3025,67 +2668,12 @@ func (t *ProjectJournalQuantity) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *ProjectJournalQuantity) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"is_total":             t.Is_total,
-		"unit_of_measure_code": t.Unit_of_measure_code.String(),
-		"line_type":            int(t.Line_type),
-		"work_type_code":       t.Work_type_code.String(),
-		"quantity":             t.Quantity.String(),
-		"unit_of_measure_text": t.Unit_of_measure_text.String(),
-	}
+	return projectJournalQuantityFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *ProjectJournalQuantity) FromMap(data map[string]interface{}) {
-	if v, ok := data["is_total"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Is_total = b
-		}
-	}
-	if v, ok := data["unit_of_measure_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Unit_of_measure_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["line_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Line_type = ProjectJournalQuantityLine_type(int(val))
-		case int:
-			t.Line_type = ProjectJournalQuantityLine_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Total"}
-			for i, opt := range options {
-				if opt == val {
-					t.Line_type = ProjectJournalQuantityLine_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["work_type_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Work_type_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["quantity"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Quantity, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Quantity = types.NewDecimal(val)
-		case int:
-			t.Quantity = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Quantity = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["unit_of_measure_text"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Unit_of_measure_text = types.NewText(s)
-		}
-	}
+	projectJournalQuantityFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3106,69 +2694,122 @@ func (t *ProjectJournalQuantity) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *ProjectJournalQuantity) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "is_total",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "unit_of_measure_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "line_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "work_type_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:            5,
-			Name:          "quantity",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         900,
-			Name:       "unit_of_measure_text",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return projectJournalQuantityFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in projectJournalQuantityFields.Fields
+func (t *ProjectJournalQuantity) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Is_total
+	case 1:
+		return &t.Unit_of_measure_code
+	case 2:
+		return &t.Line_type
+	case 3:
+		return &t.Work_type_code
+	case 4:
+		return &t.Quantity
+	case 5:
+		return &t.Unit_of_measure_text
 	}
+	return nil
+}
+
+// projectJournalQuantityFields describes the fields of Project_Journal_Quantity for the record functions
+// written once in foundation/tables
+var projectJournalQuantityFields = &tables.TableFields{
+	Table: ProjectJournalQuantityTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "is_total",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Is_total",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "unit_of_measure_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Unit_of_measure_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "line_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Line_type",
+			Options: []string{" ", "Total"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "work_type_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Work_type_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            5,
+				Name:          "quantity",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Quantity",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         900,
+				Name:       "unit_of_measure_text",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Unit_of_measure_text",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

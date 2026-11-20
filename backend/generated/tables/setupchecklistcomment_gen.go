@@ -26,7 +26,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -131,40 +130,12 @@ var SetupChecklistComment_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *SetupChecklistComment) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "table_name":
-		return 1
-	case "table_id":
-		return 2
-	case "line_no":
-		return 3
-	case "date":
-		return 4
-	case "code":
-		return 5
-	case "comment":
-		return 6
-	}
-	return 0
+	return setupChecklistCommentFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *SetupChecklistComment) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "table_name"
-	case 2:
-		return "table_id"
-	case 3:
-		return "line_no"
-	case 4:
-		return "date"
-	case 5:
-		return "code"
-	case 6:
-		return "comment"
-	}
-	return ""
+	return setupChecklistCommentFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -276,21 +247,6 @@ type (
 	SetupChecklistCommentOnBeforeRename interface {
 		OnBeforeRename(rec *SetupChecklistComment, handled *bool) error
 	}
-	SetupChecklistCommentOnValidate_Table_id interface {
-		OnValidate_Table_id(rec *SetupChecklistComment) error
-	}
-	SetupChecklistCommentOnValidate_Line_no interface {
-		OnValidate_Line_no(rec *SetupChecklistComment) error
-	}
-	SetupChecklistCommentOnValidate_Date interface {
-		OnValidate_Date(rec *SetupChecklistComment) error
-	}
-	SetupChecklistCommentOnValidate_Code interface {
-		OnValidate_Code(rec *SetupChecklistComment) error
-	}
-	SetupChecklistCommentOnValidate_Comment interface {
-		OnValidate_Comment(rec *SetupChecklistComment) error
-	}
 )
 
 // setupChecklistCommentLogic is the registered business logic of Setup_Checklist_Comment, in
@@ -333,18 +289,9 @@ func setupChecklistCommentTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(SetupChecklistCommentOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(SetupChecklistCommentOnBeforeRename)
-	case "OnValidate_Table_id":
-		_, ok = logic.(SetupChecklistCommentOnValidate_Table_id)
-	case "OnValidate_Line_no":
-		_, ok = logic.(SetupChecklistCommentOnValidate_Line_no)
-	case "OnValidate_Date":
-		_, ok = logic.(SetupChecklistCommentOnValidate_Date)
-	case "OnValidate_Code":
-		_, ok = logic.(SetupChecklistCommentOnValidate_Code)
-	case "OnValidate_Comment":
-		_, ok = logic.(SetupChecklistCommentOnValidate_Comment)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return setupChecklistCommentFields.IsOnValidateTrigger(name, logic, (*SetupChecklistComment)(nil))
 	}
 	return true, ok
 }
@@ -639,12 +586,7 @@ func (t *SetupChecklistComment) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *SetupChecklistComment) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["table_id"] = t.Table_id
-	t.oldValues["line_no"] = t.Line_no
-	t.oldValues["date"] = t.Date
-	t.oldValues["code"] = t.Code
-	t.oldValues["comment"] = t.Comment
+	t.oldValues = setupChecklistCommentFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -659,21 +601,7 @@ func (t *SetupChecklistComment) OldValue(fieldName string) interface{} {
 func (t *SetupChecklistComment) XRec() *SetupChecklistComment {
 	x := &SetupChecklistComment{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["table_id"].(int); ok {
-		x.Table_id = v
-	}
-	if v, ok := t.oldValues["line_no"].(int); ok {
-		x.Line_no = v
-	}
-	if v, ok := t.oldValues["date"].(types.Date); ok {
-		x.Date = v
-	}
-	if v, ok := t.oldValues["code"].(types.Code); ok {
-		x.Code = v
-	}
-	if v, ok := t.oldValues["comment"].(types.Text); ok {
-		x.Comment = v
-	}
+	setupChecklistCommentFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -982,43 +910,7 @@ func (t *SetupChecklistComment) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *SetupChecklistComment) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "table_id":
-		if old, ok := oldValue.(int); ok {
-			return t.Table_id != old
-		}
-		return true // Type mismatch, assume changed
-	case "line_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Line_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Date.Equal(old)
-		}
-	case "code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Code.Equal(old)
-		}
-	case "comment":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Comment.Equal(old)
-		}
-	}
-
-	return false
+	return setupChecklistCommentFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1294,19 +1186,7 @@ func (t *SetupChecklistComment) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *SetupChecklistComment) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("table_id"):
-		return "table_id", true
-	case strings.ToLower("line_no"):
-		return "line_no", true
-	case strings.ToLower("date"):
-		return "date", true
-	case strings.ToLower("code"):
-		return "code", true
-	case strings.ToLower("comment"):
-		return "comment", true
-	}
-	return "", false
+	return setupChecklistCommentFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2141,130 +2021,20 @@ func (t *SetupChecklistComment) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *SetupChecklistComment) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "table_id":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Table_id = v
-		case float64:
-			t.Table_id = int(v)
-		case string:
-			if v == "" {
-				t.Table_id = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Table_id = i
-			} else {
-				return fmt.Errorf("invalid integer value for field table_id: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field table_id")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "table_id"); err != nil {
+	i, err := setupChecklistCommentFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
+	}
+	f := &setupChecklistCommentFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
 			return err
 		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SetupChecklistCommentOnValidate_Table_id); ok {
-				if err := trg.OnValidate_Table_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "line_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Line_no = v
-		case float64:
-			t.Line_no = int(v)
-		case string:
-			if v == "" {
-				t.Line_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Line_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field line_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field line_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SetupChecklistCommentOnValidate_Line_no); ok {
-				if err := trg.OnValidate_Line_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SetupChecklistCommentOnValidate_Date); ok {
-				if err := trg.OnValidate_Date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-		} else if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SetupChecklistCommentOnValidate_Code); ok {
-				if err := trg.OnValidate_Code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "comment":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Comment = v
-		} else if v, ok := value.(string); ok {
-			t.Comment = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field comment")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SetupChecklistCommentOnValidate_Comment); ok {
-				if err := trg.OnValidate_Comment(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2273,69 +2043,18 @@ func (t *SetupChecklistComment) ValidateField(fieldName string, value interface{
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *SetupChecklistComment) FieldValue(no int) (any, bool) {
-	switch no {
-	case 2:
-		return t.Table_id, true
-	case 3:
-		return t.Line_no, true
-	case 4:
-		return t.Date, true
-	case 5:
-		return t.Code, true
-	case 6:
-		return t.Comment, true
-	}
-	return nil, false
+	return setupChecklistCommentFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *SetupChecklistComment) flowFieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Table_name, true
-	}
-	return nil, false
+	return setupChecklistCommentFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *SetupChecklistComment) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 2:
-		if v, ok := value.(int); ok {
-			t.Table_id = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(int); ok {
-			t.Line_no = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Date); ok {
-			t.Date = v
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Text); ok {
-			t.Comment = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Comment = types.NewText(v)
-			return true
-		}
-	}
-	return false
+	return setupChecklistCommentFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2814,19 +2533,7 @@ func (t *SetupChecklistComment) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *SetupChecklistComment) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "table_id":
-		return t.Table_id, true
-	case "line_no":
-		return t.Line_no, true
-	case "date":
-		return t.Date, true
-	case "code":
-		return t.Code, true
-	case "comment":
-		return t.Comment, true
-	}
-	return nil, false
+	return setupChecklistCommentFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2919,60 +2626,12 @@ func (t *SetupChecklistComment) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *SetupChecklistComment) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		// FlowField: table_name
-		"table_name": t.Table_name,
-		"table_id":   t.Table_id,
-		"line_no":    t.Line_no,
-		"date":       t.Date.String(),
-		"code":       t.Code.String(),
-		"comment":    t.Comment.String(),
-	}
+	return setupChecklistCommentFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *SetupChecklistComment) FromMap(data map[string]interface{}) {
-	if v, ok := data["table_id"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Table_id = int(val)
-		case int:
-			t.Table_id = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Table_id = n
-			}
-		}
-	}
-	if v, ok := data["line_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Line_no = int(val)
-		case int:
-			t.Line_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Line_no = n
-			}
-		}
-	}
-	if v, ok := data["date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["comment"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Comment = types.NewText(s)
-		}
-	}
+	setupChecklistCommentFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2993,68 +2652,119 @@ func (t *SetupChecklistComment) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *SetupChecklistComment) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "table_name",
-			Type:       tables.FieldTypeText,
-			Length:     80,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  true,
-		},
-		{
-			No:         2,
-			Name:       "table_id",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "line_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "comment",
-			Type:       tables.FieldTypeText,
-			Length:     80,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return setupChecklistCommentFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in setupChecklistCommentFields.Fields
+func (t *SetupChecklistComment) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Table_name
+	case 1:
+		return &t.Table_id
+	case 2:
+		return &t.Line_no
+	case 3:
+		return &t.Date
+	case 4:
+		return &t.Code
+	case 5:
+		return &t.Comment
 	}
+	return nil
+}
+
+// setupChecklistCommentFields describes the fields of Setup_Checklist_Comment for the record functions
+// written once in foundation/tables
+var setupChecklistCommentFields = &tables.TableFields{
+	Table: SetupChecklistCommentTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "table_name",
+				Type:       tables.FieldTypeText,
+				Length:     80,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  true,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Table_name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "table_id",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindInt,
+			Trigger:  "OnValidate_Table_id",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "line_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Line_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "comment",
+				Type:       tables.FieldTypeText,
+				Length:     80,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Comment",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

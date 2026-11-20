@@ -156,32 +156,12 @@ var FinanceChargeText_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *FinanceChargeText) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "fin_charge_terms_code":
-		return 1
-	case "position":
-		return 2
-	case "line_no":
-		return 3
-	case "text":
-		return 4
-	}
-	return 0
+	return financeChargeTextFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *FinanceChargeText) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "fin_charge_terms_code"
-	case 2:
-		return "position"
-	case 3:
-		return "line_no"
-	case 4:
-		return "text"
-	}
-	return ""
+	return financeChargeTextFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -293,18 +273,6 @@ type (
 	FinanceChargeTextOnBeforeRename interface {
 		OnBeforeRename(rec *FinanceChargeText, handled *bool) error
 	}
-	FinanceChargeTextOnValidate_Fin_charge_terms_code interface {
-		OnValidate_Fin_charge_terms_code(rec *FinanceChargeText) error
-	}
-	FinanceChargeTextOnValidate_Position interface {
-		OnValidate_Position(rec *FinanceChargeText) error
-	}
-	FinanceChargeTextOnValidate_Line_no interface {
-		OnValidate_Line_no(rec *FinanceChargeText) error
-	}
-	FinanceChargeTextOnValidate_Text interface {
-		OnValidate_Text(rec *FinanceChargeText) error
-	}
 )
 
 // financeChargeTextLogic is the registered business logic of Finance_Charge_Text, in
@@ -347,16 +315,9 @@ func financeChargeTextTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(FinanceChargeTextOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(FinanceChargeTextOnBeforeRename)
-	case "OnValidate_Fin_charge_terms_code":
-		_, ok = logic.(FinanceChargeTextOnValidate_Fin_charge_terms_code)
-	case "OnValidate_Position":
-		_, ok = logic.(FinanceChargeTextOnValidate_Position)
-	case "OnValidate_Line_no":
-		_, ok = logic.(FinanceChargeTextOnValidate_Line_no)
-	case "OnValidate_Text":
-		_, ok = logic.(FinanceChargeTextOnValidate_Text)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return financeChargeTextFields.IsOnValidateTrigger(name, logic, (*FinanceChargeText)(nil))
 	}
 	return true, ok
 }
@@ -656,11 +617,7 @@ func (t *FinanceChargeText) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *FinanceChargeText) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["fin_charge_terms_code"] = t.Fin_charge_terms_code
-	t.oldValues["position"] = t.Position
-	t.oldValues["line_no"] = t.Line_no
-	t.oldValues["text"] = t.Text
+	t.oldValues = financeChargeTextFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -675,18 +632,7 @@ func (t *FinanceChargeText) OldValue(fieldName string) interface{} {
 func (t *FinanceChargeText) XRec() *FinanceChargeText {
 	x := &FinanceChargeText{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["fin_charge_terms_code"].(types.Code); ok {
-		x.Fin_charge_terms_code = v
-	}
-	if v, ok := t.oldValues["position"].(FinanceChargeTextPosition); ok {
-		x.Position = v
-	}
-	if v, ok := t.oldValues["line_no"].(int); ok {
-		x.Line_no = v
-	}
-	if v, ok := t.oldValues["text"].(types.Text); ok {
-		x.Text = v
-	}
+	financeChargeTextFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1001,38 +947,7 @@ func (t *FinanceChargeText) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *FinanceChargeText) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "fin_charge_terms_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Fin_charge_terms_code.Equal(old)
-		}
-	case "position":
-		if old, ok := oldValue.(FinanceChargeTextPosition); ok {
-			return t.Position != old
-		}
-	case "line_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Line_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "text":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Text.Equal(old)
-		}
-	}
-
-	return false
+	return financeChargeTextFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1235,17 +1150,7 @@ func (t *FinanceChargeText) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *FinanceChargeText) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("fin_charge_terms_code"):
-		return "fin_charge_terms_code", true
-	case strings.ToLower("position"):
-		return "position", true
-	case strings.ToLower("line_no"):
-		return "line_no", true
-	case strings.ToLower("text"):
-		return "text", true
-	}
-	return "", false
+	return financeChargeTextFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2072,128 +1977,20 @@ func (t *FinanceChargeText) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *FinanceChargeText) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "fin_charge_terms_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Fin_charge_terms_code = v
-		} else if v, ok := value.(string); ok {
-			t.Fin_charge_terms_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field fin_charge_terms_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fin_charge_terms_code"); err != nil {
+	i, err := financeChargeTextFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
+	}
+	f := &financeChargeTextFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
 			return err
 		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FinanceChargeTextOnValidate_Fin_charge_terms_code); ok {
-				if err := trg.OnValidate_Fin_charge_terms_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "position":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(FinanceChargeTextPosition); ok {
-			t.Position = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 2 {
-				return fmt.Errorf("invalid option value %d for field position (valid range: 0-%d)", v, 2-1)
-			}
-			t.Position = FinanceChargeTextPosition(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 2 {
-				return fmt.Errorf("invalid option value %d for field position (valid range: 0-%d)", intVal, 2-1)
-			}
-			t.Position = FinanceChargeTextPosition(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Position = 0
-			} else {
-				options := []string{"Beginning", "Ending"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Position = FinanceChargeTextPosition(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field position (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field position (expected FinanceChargeTextPosition, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FinanceChargeTextOnValidate_Position); ok {
-				if err := trg.OnValidate_Position(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "line_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Line_no = v
-		case float64:
-			t.Line_no = int(v)
-		case string:
-			if v == "" {
-				t.Line_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Line_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field line_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field line_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FinanceChargeTextOnValidate_Line_no); ok {
-				if err := trg.OnValidate_Line_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "text":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Text = v
-		} else if v, ok := value.(string); ok {
-			t.Text = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field text")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FinanceChargeTextOnValidate_Text); ok {
-				if err := trg.OnValidate_Text(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2202,60 +1999,18 @@ func (t *FinanceChargeText) ValidateField(fieldName string, value interface{}) e
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *FinanceChargeText) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Fin_charge_terms_code, true
-	case 2:
-		return t.Position, true
-	case 3:
-		return t.Line_no, true
-	case 4:
-		return t.Text, true
-	}
-	return nil, false
+	return financeChargeTextFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *FinanceChargeText) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return financeChargeTextFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *FinanceChargeText) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Fin_charge_terms_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Fin_charge_terms_code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 2 {
-			t.Position = FinanceChargeTextPosition(i)
-			return true
-		}
-	case 3:
-		if v, ok := value.(int); ok {
-			t.Line_no = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Text); ok {
-			t.Text = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Text = types.NewText(v)
-			return true
-		}
-	}
-	return false
+	return financeChargeTextFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2727,17 +2482,7 @@ func (t *FinanceChargeText) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *FinanceChargeText) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "fin_charge_terms_code":
-		return t.Fin_charge_terms_code, true
-	case "position":
-		return int(t.Position), true
-	case "line_no":
-		return t.Line_no, true
-	case "text":
-		return t.Text, true
-	}
-	return nil, false
+	return financeChargeTextFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2832,56 +2577,12 @@ func (t *FinanceChargeText) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *FinanceChargeText) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"fin_charge_terms_code": t.Fin_charge_terms_code.String(),
-		"position":              int(t.Position),
-		"line_no":               t.Line_no,
-		"text":                  t.Text.String(),
-	}
+	return financeChargeTextFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *FinanceChargeText) FromMap(data map[string]interface{}) {
-	if v, ok := data["fin_charge_terms_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fin_charge_terms_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["position"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Position = FinanceChargeTextPosition(int(val))
-		case int:
-			t.Position = FinanceChargeTextPosition(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Beginning", "Ending"}
-			for i, opt := range options {
-				if opt == val {
-					t.Position = FinanceChargeTextPosition(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["line_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Line_no = int(val)
-		case int:
-			t.Line_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Line_no = n
-			}
-		}
-	}
-	if v, ok := data["text"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Text = types.NewText(s)
-		}
-	}
+	financeChargeTextFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2902,48 +2603,88 @@ func (t *FinanceChargeText) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *FinanceChargeText) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "fin_charge_terms_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "position",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "line_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "text",
-			Type:       tables.FieldTypeText,
-			Length:     100,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return financeChargeTextFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in financeChargeTextFields.Fields
+func (t *FinanceChargeText) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Fin_charge_terms_code
+	case 1:
+		return &t.Position
+	case 2:
+		return &t.Line_no
+	case 3:
+		return &t.Text
 	}
+	return nil
+}
+
+// financeChargeTextFields describes the fields of Finance_Charge_Text for the record functions
+// written once in foundation/tables
+var financeChargeTextFields = &tables.TableFields{
+	Table: FinanceChargeTextTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "fin_charge_terms_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Fin_charge_terms_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "position",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Position",
+			Options: []string{"Beginning", "Ending"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "line_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Line_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "text",
+				Type:       tables.FieldTypeText,
+				Length:     100,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Text",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

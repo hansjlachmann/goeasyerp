@@ -129,40 +129,12 @@ var PaymentTerms_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *PaymentTerms) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "code":
-		return 1
-	case "due_date_calculation":
-		return 2
-	case "discount_date_calculation":
-		return 3
-	case "discount_percent":
-		return 4
-	case "description":
-		return 5
-	case "active":
-		return 900
-	}
-	return 0
+	return paymentTermsFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *PaymentTerms) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "code"
-	case 2:
-		return "due_date_calculation"
-	case 3:
-		return "discount_date_calculation"
-	case 4:
-		return "discount_percent"
-	case 5:
-		return "description"
-	case 900:
-		return "active"
-	}
-	return ""
+	return paymentTermsFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -266,12 +238,6 @@ type (
 	PaymentTermsOnBeforeRename interface {
 		OnBeforeRename(rec *PaymentTerms, handled *bool) error
 	}
-	PaymentTermsOnValidate_Code                      interface{ OnValidate_Code(rec *PaymentTerms) error }
-	PaymentTermsOnValidate_Due_date_calculation      interface{ OnValidate_Due_date_calculation(rec *PaymentTerms) error }
-	PaymentTermsOnValidate_Discount_date_calculation interface{ OnValidate_Discount_date_calculation(rec *PaymentTerms) error }
-	PaymentTermsOnValidate_Discount_percent          interface{ OnValidate_Discount_percent(rec *PaymentTerms) error }
-	PaymentTermsOnValidate_Description               interface{ OnValidate_Description(rec *PaymentTerms) error }
-	PaymentTermsOnValidate_Active                    interface{ OnValidate_Active(rec *PaymentTerms) error }
 )
 
 // paymentTermsLogic is the registered business logic of Payment Terms, in
@@ -314,20 +280,9 @@ func paymentTermsTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(PaymentTermsOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(PaymentTermsOnBeforeRename)
-	case "OnValidate_Code":
-		_, ok = logic.(PaymentTermsOnValidate_Code)
-	case "OnValidate_Due_date_calculation":
-		_, ok = logic.(PaymentTermsOnValidate_Due_date_calculation)
-	case "OnValidate_Discount_date_calculation":
-		_, ok = logic.(PaymentTermsOnValidate_Discount_date_calculation)
-	case "OnValidate_Discount_percent":
-		_, ok = logic.(PaymentTermsOnValidate_Discount_percent)
-	case "OnValidate_Description":
-		_, ok = logic.(PaymentTermsOnValidate_Description)
-	case "OnValidate_Active":
-		_, ok = logic.(PaymentTermsOnValidate_Active)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return paymentTermsFields.IsOnValidateTrigger(name, logic, (*PaymentTerms)(nil))
 	}
 	return true, ok
 }
@@ -634,13 +589,7 @@ func (t *PaymentTerms) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *PaymentTerms) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["code"] = t.Code
-	t.oldValues["due_date_calculation"] = t.Due_date_calculation
-	t.oldValues["discount_date_calculation"] = t.Discount_date_calculation
-	t.oldValues["discount_percent"] = t.Discount_percent
-	t.oldValues["description"] = t.Description
-	t.oldValues["active"] = t.Active
+	t.oldValues = paymentTermsFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -655,24 +604,7 @@ func (t *PaymentTerms) OldValue(fieldName string) interface{} {
 func (t *PaymentTerms) XRec() *PaymentTerms {
 	x := &PaymentTerms{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["code"].(types.Code); ok {
-		x.Code = v
-	}
-	if v, ok := t.oldValues["due_date_calculation"].(types.Code); ok {
-		x.Due_date_calculation = v
-	}
-	if v, ok := t.oldValues["discount_date_calculation"].(types.Code); ok {
-		x.Discount_date_calculation = v
-	}
-	if v, ok := t.oldValues["discount_percent"].(types.Decimal); ok {
-		x.Discount_percent = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["active"].(bool); ok {
-		x.Active = v
-	}
+	paymentTermsFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -993,46 +925,7 @@ func (t *PaymentTerms) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *PaymentTerms) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Code.Equal(old)
-		}
-	case "due_date_calculation":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Due_date_calculation.Equal(old)
-		}
-	case "discount_date_calculation":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Discount_date_calculation.Equal(old)
-		}
-	case "discount_percent":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Discount_percent.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "active":
-		if old, ok := oldValue.(bool); ok {
-			return t.Active != old
-		}
-		return true // Type mismatch, assume changed
-	}
-
-	return false
+	return paymentTermsFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1300,21 +1193,7 @@ func (t *PaymentTerms) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *PaymentTerms) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("code"):
-		return "code", true
-	case strings.ToLower("due_date_calculation"):
-		return "due_date_calculation", true
-	case strings.ToLower("discount_date_calculation"):
-		return "discount_date_calculation", true
-	case strings.ToLower("discount_percent"):
-		return "discount_percent", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("active"):
-		return "active", true
-	}
-	return "", false
+	return paymentTermsFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2179,137 +2058,20 @@ func (t *PaymentTerms) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *PaymentTerms) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-		} else if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PaymentTermsOnValidate_Code); ok {
-				if err := trg.OnValidate_Code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "due_date_calculation":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Due_date_calculation = v
-		} else if v, ok := value.(string); ok {
-			t.Due_date_calculation = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field due_date_calculation")
-		}
-		if err := tables.CheckDateFormula(PaymentTermsTableName, "due_date_calculation", string(t.Due_date_calculation)); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PaymentTermsOnValidate_Due_date_calculation); ok {
-				if err := trg.OnValidate_Due_date_calculation(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "discount_date_calculation":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Discount_date_calculation = v
-		} else if v, ok := value.(string); ok {
-			t.Discount_date_calculation = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field discount_date_calculation")
-		}
-		if err := tables.CheckDateFormula(PaymentTermsTableName, "discount_date_calculation", string(t.Discount_date_calculation)); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PaymentTermsOnValidate_Discount_date_calculation); ok {
-				if err := trg.OnValidate_Discount_date_calculation(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "discount_percent":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Discount_percent = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Discount_percent, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field discount_percent: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Discount_percent = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Discount_percent = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Discount_percent = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field discount_percent (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PaymentTermsOnValidate_Discount_percent); ok {
-				if err := trg.OnValidate_Discount_percent(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PaymentTermsOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "active":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Active = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Active = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field active")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PaymentTermsOnValidate_Active); ok {
-				if err := trg.OnValidate_Active(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := paymentTermsFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &paymentTermsFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2318,82 +2080,18 @@ func (t *PaymentTerms) ValidateField(fieldName string, value interface{}) error 
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *PaymentTerms) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Code, true
-	case 2:
-		return t.Due_date_calculation, true
-	case 3:
-		return t.Discount_date_calculation, true
-	case 4:
-		return t.Discount_percent, true
-	case 5:
-		return t.Description, true
-	case 900:
-		return t.Active, true
-	}
-	return nil, false
+	return paymentTermsFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *PaymentTerms) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return paymentTermsFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *PaymentTerms) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Due_date_calculation = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Due_date_calculation = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Code); ok {
-			t.Discount_date_calculation = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Discount_date_calculation = types.NewCode(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Decimal); ok {
-			t.Discount_percent = v
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 900:
-		if v, ok := value.(bool); ok {
-			t.Active = v
-			return true
-		}
-	}
-	return false
+	return paymentTermsFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2863,21 +2561,7 @@ func (t *PaymentTerms) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *PaymentTerms) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "code":
-		return t.Code, true
-	case "due_date_calculation":
-		return t.Due_date_calculation, true
-	case "discount_date_calculation":
-		return t.Discount_date_calculation, true
-	case "discount_percent":
-		return t.Discount_percent, true
-	case "description":
-		return t.Description, true
-	case "active":
-		return t.Active, true
-	}
-	return nil, false
+	return paymentTermsFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2968,55 +2652,12 @@ func (t *PaymentTerms) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *PaymentTerms) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"code":                      t.Code.String(),
-		"due_date_calculation":      t.Due_date_calculation.String(),
-		"discount_date_calculation": t.Discount_date_calculation.String(),
-		"discount_percent":          t.Discount_percent.String(),
-		"description":               t.Description.String(),
-		"active":                    t.Active,
-	}
+	return paymentTermsFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *PaymentTerms) FromMap(data map[string]interface{}) {
-	if v, ok := data["code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["due_date_calculation"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Due_date_calculation = types.NewCode(s)
-		}
-	}
-	if v, ok := data["discount_date_calculation"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Discount_date_calculation = types.NewCode(s)
-		}
-	}
-	if v, ok := data["discount_percent"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Discount_percent, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Discount_percent = types.NewDecimal(val)
-		case int:
-			t.Discount_percent = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Discount_percent = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["active"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Active = b
-		}
-	}
+	paymentTermsFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3037,69 +2678,121 @@ func (t *PaymentTerms) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *PaymentTerms) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "due_date_calculation",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "discount_date_calculation",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            4,
-			Name:          "discount_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         5,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         900,
-			Name:       "active",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return paymentTermsFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in paymentTermsFields.Fields
+func (t *PaymentTerms) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Code
+	case 1:
+		return &t.Due_date_calculation
+	case 2:
+		return &t.Discount_date_calculation
+	case 3:
+		return &t.Discount_percent
+	case 4:
+		return &t.Description
+	case 5:
+		return &t.Active
 	}
+	return nil
+}
+
+// paymentTermsFields describes the fields of Payment Terms for the record functions
+// written once in foundation/tables
+var paymentTermsFields = &tables.TableFields{
+	Table: PaymentTermsTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "due_date_calculation",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:        tables.KindCode,
+			Trigger:     "OnValidate_Due_date_calculation",
+			DateFormula: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "discount_date_calculation",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:        tables.KindCode,
+			Trigger:     "OnValidate_Discount_date_calculation",
+			DateFormula: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            4,
+				Name:          "discount_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Discount_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         900,
+				Name:       "active",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Active",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

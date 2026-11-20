@@ -41,7 +41,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -187,96 +186,12 @@ var FAReclassJournalLine_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *FAReclassJournalLine) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "journal_template_name":
-		return 1
-	case "journal_batch_name":
-		return 2
-	case "line_no":
-		return 3
-	case "fa_no":
-		return 4
-	case "new_fa_no":
-		return 5
-	case "fa_posting_date":
-		return 6
-	case "posting_date":
-		return 7
-	case "depreciation_book_code":
-		return 8
-	case "reclassify_acq_cost_amount":
-		return 9
-	case "reclassify_acq_cost_percent":
-		return 10
-	case "reclassify_acquisition_cost":
-		return 11
-	case "reclassify_depreciation":
-		return 12
-	case "reclassify_write_down":
-		return 13
-	case "reclassify_appreciation":
-		return 14
-	case "reclassify_custom_1":
-		return 15
-	case "reclassify_custom_2":
-		return 16
-	case "reclassify_salvage_value":
-		return 17
-	case "insert_bal_account":
-		return 18
-	case "description":
-		return 19
-	case "document_no":
-		return 20
-	}
-	return 0
+	return fAReclassJournalLineFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *FAReclassJournalLine) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "journal_template_name"
-	case 2:
-		return "journal_batch_name"
-	case 3:
-		return "line_no"
-	case 4:
-		return "fa_no"
-	case 5:
-		return "new_fa_no"
-	case 6:
-		return "fa_posting_date"
-	case 7:
-		return "posting_date"
-	case 8:
-		return "depreciation_book_code"
-	case 9:
-		return "reclassify_acq_cost_amount"
-	case 10:
-		return "reclassify_acq_cost_percent"
-	case 11:
-		return "reclassify_acquisition_cost"
-	case 12:
-		return "reclassify_depreciation"
-	case 13:
-		return "reclassify_write_down"
-	case 14:
-		return "reclassify_appreciation"
-	case 15:
-		return "reclassify_custom_1"
-	case 16:
-		return "reclassify_custom_2"
-	case 17:
-		return "reclassify_salvage_value"
-	case 18:
-		return "insert_bal_account"
-	case 19:
-		return "description"
-	case 20:
-		return "document_no"
-	}
-	return ""
+	return fAReclassJournalLineFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -388,66 +303,6 @@ type (
 	FAReclassJournalLineOnBeforeRename interface {
 		OnBeforeRename(rec *FAReclassJournalLine, handled *bool) error
 	}
-	FAReclassJournalLineOnValidate_Journal_template_name interface {
-		OnValidate_Journal_template_name(rec *FAReclassJournalLine) error
-	}
-	FAReclassJournalLineOnValidate_Journal_batch_name interface {
-		OnValidate_Journal_batch_name(rec *FAReclassJournalLine) error
-	}
-	FAReclassJournalLineOnValidate_Line_no interface {
-		OnValidate_Line_no(rec *FAReclassJournalLine) error
-	}
-	FAReclassJournalLineOnValidate_Fa_no interface {
-		OnValidate_Fa_no(rec *FAReclassJournalLine) error
-	}
-	FAReclassJournalLineOnValidate_New_fa_no interface {
-		OnValidate_New_fa_no(rec *FAReclassJournalLine) error
-	}
-	FAReclassJournalLineOnValidate_Fa_posting_date interface {
-		OnValidate_Fa_posting_date(rec *FAReclassJournalLine) error
-	}
-	FAReclassJournalLineOnValidate_Posting_date interface {
-		OnValidate_Posting_date(rec *FAReclassJournalLine) error
-	}
-	FAReclassJournalLineOnValidate_Depreciation_book_code interface {
-		OnValidate_Depreciation_book_code(rec *FAReclassJournalLine) error
-	}
-	FAReclassJournalLineOnValidate_Reclassify_acq_cost_amount interface {
-		OnValidate_Reclassify_acq_cost_amount(rec *FAReclassJournalLine) error
-	}
-	FAReclassJournalLineOnValidate_Reclassify_acq_cost_percent interface {
-		OnValidate_Reclassify_acq_cost_percent(rec *FAReclassJournalLine) error
-	}
-	FAReclassJournalLineOnValidate_Reclassify_acquisition_cost interface {
-		OnValidate_Reclassify_acquisition_cost(rec *FAReclassJournalLine) error
-	}
-	FAReclassJournalLineOnValidate_Reclassify_depreciation interface {
-		OnValidate_Reclassify_depreciation(rec *FAReclassJournalLine) error
-	}
-	FAReclassJournalLineOnValidate_Reclassify_write_down interface {
-		OnValidate_Reclassify_write_down(rec *FAReclassJournalLine) error
-	}
-	FAReclassJournalLineOnValidate_Reclassify_appreciation interface {
-		OnValidate_Reclassify_appreciation(rec *FAReclassJournalLine) error
-	}
-	FAReclassJournalLineOnValidate_Reclassify_custom_1 interface {
-		OnValidate_Reclassify_custom_1(rec *FAReclassJournalLine) error
-	}
-	FAReclassJournalLineOnValidate_Reclassify_custom_2 interface {
-		OnValidate_Reclassify_custom_2(rec *FAReclassJournalLine) error
-	}
-	FAReclassJournalLineOnValidate_Reclassify_salvage_value interface {
-		OnValidate_Reclassify_salvage_value(rec *FAReclassJournalLine) error
-	}
-	FAReclassJournalLineOnValidate_Insert_bal_account interface {
-		OnValidate_Insert_bal_account(rec *FAReclassJournalLine) error
-	}
-	FAReclassJournalLineOnValidate_Description interface {
-		OnValidate_Description(rec *FAReclassJournalLine) error
-	}
-	FAReclassJournalLineOnValidate_Document_no interface {
-		OnValidate_Document_no(rec *FAReclassJournalLine) error
-	}
 )
 
 // fAReclassJournalLineLogic is the registered business logic of FA_Reclass_Journal_Line, in
@@ -490,48 +345,9 @@ func fAReclassJournalLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(FAReclassJournalLineOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(FAReclassJournalLineOnBeforeRename)
-	case "OnValidate_Journal_template_name":
-		_, ok = logic.(FAReclassJournalLineOnValidate_Journal_template_name)
-	case "OnValidate_Journal_batch_name":
-		_, ok = logic.(FAReclassJournalLineOnValidate_Journal_batch_name)
-	case "OnValidate_Line_no":
-		_, ok = logic.(FAReclassJournalLineOnValidate_Line_no)
-	case "OnValidate_Fa_no":
-		_, ok = logic.(FAReclassJournalLineOnValidate_Fa_no)
-	case "OnValidate_New_fa_no":
-		_, ok = logic.(FAReclassJournalLineOnValidate_New_fa_no)
-	case "OnValidate_Fa_posting_date":
-		_, ok = logic.(FAReclassJournalLineOnValidate_Fa_posting_date)
-	case "OnValidate_Posting_date":
-		_, ok = logic.(FAReclassJournalLineOnValidate_Posting_date)
-	case "OnValidate_Depreciation_book_code":
-		_, ok = logic.(FAReclassJournalLineOnValidate_Depreciation_book_code)
-	case "OnValidate_Reclassify_acq_cost_amount":
-		_, ok = logic.(FAReclassJournalLineOnValidate_Reclassify_acq_cost_amount)
-	case "OnValidate_Reclassify_acq_cost_percent":
-		_, ok = logic.(FAReclassJournalLineOnValidate_Reclassify_acq_cost_percent)
-	case "OnValidate_Reclassify_acquisition_cost":
-		_, ok = logic.(FAReclassJournalLineOnValidate_Reclassify_acquisition_cost)
-	case "OnValidate_Reclassify_depreciation":
-		_, ok = logic.(FAReclassJournalLineOnValidate_Reclassify_depreciation)
-	case "OnValidate_Reclassify_write_down":
-		_, ok = logic.(FAReclassJournalLineOnValidate_Reclassify_write_down)
-	case "OnValidate_Reclassify_appreciation":
-		_, ok = logic.(FAReclassJournalLineOnValidate_Reclassify_appreciation)
-	case "OnValidate_Reclassify_custom_1":
-		_, ok = logic.(FAReclassJournalLineOnValidate_Reclassify_custom_1)
-	case "OnValidate_Reclassify_custom_2":
-		_, ok = logic.(FAReclassJournalLineOnValidate_Reclassify_custom_2)
-	case "OnValidate_Reclassify_salvage_value":
-		_, ok = logic.(FAReclassJournalLineOnValidate_Reclassify_salvage_value)
-	case "OnValidate_Insert_bal_account":
-		_, ok = logic.(FAReclassJournalLineOnValidate_Insert_bal_account)
-	case "OnValidate_Description":
-		_, ok = logic.(FAReclassJournalLineOnValidate_Description)
-	case "OnValidate_Document_no":
-		_, ok = logic.(FAReclassJournalLineOnValidate_Document_no)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return fAReclassJournalLineFields.IsOnValidateTrigger(name, logic, (*FAReclassJournalLine)(nil))
 	}
 	return true, ok
 }
@@ -881,27 +697,7 @@ func (t *FAReclassJournalLine) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *FAReclassJournalLine) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["journal_template_name"] = t.Journal_template_name
-	t.oldValues["journal_batch_name"] = t.Journal_batch_name
-	t.oldValues["line_no"] = t.Line_no
-	t.oldValues["fa_no"] = t.Fa_no
-	t.oldValues["new_fa_no"] = t.New_fa_no
-	t.oldValues["fa_posting_date"] = t.Fa_posting_date
-	t.oldValues["posting_date"] = t.Posting_date
-	t.oldValues["depreciation_book_code"] = t.Depreciation_book_code
-	t.oldValues["reclassify_acq_cost_amount"] = t.Reclassify_acq_cost_amount
-	t.oldValues["reclassify_acq_cost_percent"] = t.Reclassify_acq_cost_percent
-	t.oldValues["reclassify_acquisition_cost"] = t.Reclassify_acquisition_cost
-	t.oldValues["reclassify_depreciation"] = t.Reclassify_depreciation
-	t.oldValues["reclassify_write_down"] = t.Reclassify_write_down
-	t.oldValues["reclassify_appreciation"] = t.Reclassify_appreciation
-	t.oldValues["reclassify_custom_1"] = t.Reclassify_custom_1
-	t.oldValues["reclassify_custom_2"] = t.Reclassify_custom_2
-	t.oldValues["reclassify_salvage_value"] = t.Reclassify_salvage_value
-	t.oldValues["insert_bal_account"] = t.Insert_bal_account
-	t.oldValues["description"] = t.Description
-	t.oldValues["document_no"] = t.Document_no
+	t.oldValues = fAReclassJournalLineFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -916,66 +712,7 @@ func (t *FAReclassJournalLine) OldValue(fieldName string) interface{} {
 func (t *FAReclassJournalLine) XRec() *FAReclassJournalLine {
 	x := &FAReclassJournalLine{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["journal_template_name"].(types.Code); ok {
-		x.Journal_template_name = v
-	}
-	if v, ok := t.oldValues["journal_batch_name"].(types.Code); ok {
-		x.Journal_batch_name = v
-	}
-	if v, ok := t.oldValues["line_no"].(int); ok {
-		x.Line_no = v
-	}
-	if v, ok := t.oldValues["fa_no"].(types.Code); ok {
-		x.Fa_no = v
-	}
-	if v, ok := t.oldValues["new_fa_no"].(types.Code); ok {
-		x.New_fa_no = v
-	}
-	if v, ok := t.oldValues["fa_posting_date"].(types.Date); ok {
-		x.Fa_posting_date = v
-	}
-	if v, ok := t.oldValues["posting_date"].(types.Date); ok {
-		x.Posting_date = v
-	}
-	if v, ok := t.oldValues["depreciation_book_code"].(types.Code); ok {
-		x.Depreciation_book_code = v
-	}
-	if v, ok := t.oldValues["reclassify_acq_cost_amount"].(types.Decimal); ok {
-		x.Reclassify_acq_cost_amount = v
-	}
-	if v, ok := t.oldValues["reclassify_acq_cost_percent"].(types.Decimal); ok {
-		x.Reclassify_acq_cost_percent = v
-	}
-	if v, ok := t.oldValues["reclassify_acquisition_cost"].(bool); ok {
-		x.Reclassify_acquisition_cost = v
-	}
-	if v, ok := t.oldValues["reclassify_depreciation"].(bool); ok {
-		x.Reclassify_depreciation = v
-	}
-	if v, ok := t.oldValues["reclassify_write_down"].(bool); ok {
-		x.Reclassify_write_down = v
-	}
-	if v, ok := t.oldValues["reclassify_appreciation"].(bool); ok {
-		x.Reclassify_appreciation = v
-	}
-	if v, ok := t.oldValues["reclassify_custom_1"].(bool); ok {
-		x.Reclassify_custom_1 = v
-	}
-	if v, ok := t.oldValues["reclassify_custom_2"].(bool); ok {
-		x.Reclassify_custom_2 = v
-	}
-	if v, ok := t.oldValues["reclassify_salvage_value"].(bool); ok {
-		x.Reclassify_salvage_value = v
-	}
-	if v, ok := t.oldValues["insert_bal_account"].(bool); ok {
-		x.Insert_bal_account = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["document_no"].(types.Code); ok {
-		x.Document_no = v
-	}
+	fAReclassJournalLineFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1460,110 +1197,7 @@ func (t *FAReclassJournalLine) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *FAReclassJournalLine) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "journal_template_name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Journal_template_name.Equal(old)
-		}
-	case "journal_batch_name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Journal_batch_name.Equal(old)
-		}
-	case "line_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Line_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "fa_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Fa_no.Equal(old)
-		}
-	case "new_fa_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.New_fa_no.Equal(old)
-		}
-	case "fa_posting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Fa_posting_date.Equal(old)
-		}
-	case "posting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Posting_date.Equal(old)
-		}
-	case "depreciation_book_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Depreciation_book_code.Equal(old)
-		}
-	case "reclassify_acq_cost_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Reclassify_acq_cost_amount.Equal(old)
-		}
-	case "reclassify_acq_cost_percent":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Reclassify_acq_cost_percent.Equal(old)
-		}
-	case "reclassify_acquisition_cost":
-		if old, ok := oldValue.(bool); ok {
-			return t.Reclassify_acquisition_cost != old
-		}
-		return true // Type mismatch, assume changed
-	case "reclassify_depreciation":
-		if old, ok := oldValue.(bool); ok {
-			return t.Reclassify_depreciation != old
-		}
-		return true // Type mismatch, assume changed
-	case "reclassify_write_down":
-		if old, ok := oldValue.(bool); ok {
-			return t.Reclassify_write_down != old
-		}
-		return true // Type mismatch, assume changed
-	case "reclassify_appreciation":
-		if old, ok := oldValue.(bool); ok {
-			return t.Reclassify_appreciation != old
-		}
-		return true // Type mismatch, assume changed
-	case "reclassify_custom_1":
-		if old, ok := oldValue.(bool); ok {
-			return t.Reclassify_custom_1 != old
-		}
-		return true // Type mismatch, assume changed
-	case "reclassify_custom_2":
-		if old, ok := oldValue.(bool); ok {
-			return t.Reclassify_custom_2 != old
-		}
-		return true // Type mismatch, assume changed
-	case "reclassify_salvage_value":
-		if old, ok := oldValue.(bool); ok {
-			return t.Reclassify_salvage_value != old
-		}
-		return true // Type mismatch, assume changed
-	case "insert_bal_account":
-		if old, ok := oldValue.(bool); ok {
-			return t.Insert_bal_account != old
-		}
-		return true // Type mismatch, assume changed
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "document_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Document_no.Equal(old)
-		}
-	}
-
-	return false
+	return fAReclassJournalLineFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1766,49 +1400,7 @@ func (t *FAReclassJournalLine) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *FAReclassJournalLine) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("journal_template_name"):
-		return "journal_template_name", true
-	case strings.ToLower("journal_batch_name"):
-		return "journal_batch_name", true
-	case strings.ToLower("line_no"):
-		return "line_no", true
-	case strings.ToLower("fa_no"):
-		return "fa_no", true
-	case strings.ToLower("new_fa_no"):
-		return "new_fa_no", true
-	case strings.ToLower("fa_posting_date"):
-		return "fa_posting_date", true
-	case strings.ToLower("posting_date"):
-		return "posting_date", true
-	case strings.ToLower("depreciation_book_code"):
-		return "depreciation_book_code", true
-	case strings.ToLower("reclassify_acq_cost_amount"):
-		return "reclassify_acq_cost_amount", true
-	case strings.ToLower("reclassify_acq_cost_percent"):
-		return "reclassify_acq_cost_percent", true
-	case strings.ToLower("reclassify_acquisition_cost"):
-		return "reclassify_acquisition_cost", true
-	case strings.ToLower("reclassify_depreciation"):
-		return "reclassify_depreciation", true
-	case strings.ToLower("reclassify_write_down"):
-		return "reclassify_write_down", true
-	case strings.ToLower("reclassify_appreciation"):
-		return "reclassify_appreciation", true
-	case strings.ToLower("reclassify_custom_1"):
-		return "reclassify_custom_1", true
-	case strings.ToLower("reclassify_custom_2"):
-		return "reclassify_custom_2", true
-	case strings.ToLower("reclassify_salvage_value"):
-		return "reclassify_salvage_value", true
-	case strings.ToLower("insert_bal_account"):
-		return "insert_bal_account", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("document_no"):
-		return "document_no", true
-	}
-	return "", false
+	return fAReclassJournalLineFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2867,441 +2459,20 @@ func (t *FAReclassJournalLine) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *FAReclassJournalLine) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "journal_template_name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Journal_template_name = v
-		} else if v, ok := value.(string); ok {
-			t.Journal_template_name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field journal_template_name")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "journal_template_name"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAReclassJournalLineOnValidate_Journal_template_name); ok {
-				if err := trg.OnValidate_Journal_template_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "journal_batch_name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Journal_batch_name = v
-		} else if v, ok := value.(string); ok {
-			t.Journal_batch_name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field journal_batch_name")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "journal_batch_name"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAReclassJournalLineOnValidate_Journal_batch_name); ok {
-				if err := trg.OnValidate_Journal_batch_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "line_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Line_no = v
-		case float64:
-			t.Line_no = int(v)
-		case string:
-			if v == "" {
-				t.Line_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Line_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field line_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field line_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAReclassJournalLineOnValidate_Line_no); ok {
-				if err := trg.OnValidate_Line_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Fa_no = v
-		} else if v, ok := value.(string); ok {
-			t.Fa_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fa_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAReclassJournalLineOnValidate_Fa_no); ok {
-				if err := trg.OnValidate_Fa_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "new_fa_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.New_fa_no = v
-		} else if v, ok := value.(string); ok {
-			t.New_fa_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field new_fa_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "new_fa_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAReclassJournalLineOnValidate_New_fa_no); ok {
-				if err := trg.OnValidate_New_fa_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_posting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Fa_posting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Fa_posting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field fa_posting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Fa_posting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_posting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAReclassJournalLineOnValidate_Fa_posting_date); ok {
-				if err := trg.OnValidate_Fa_posting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "posting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Posting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Posting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field posting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Posting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field posting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAReclassJournalLineOnValidate_Posting_date); ok {
-				if err := trg.OnValidate_Posting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "depreciation_book_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Depreciation_book_code = v
-		} else if v, ok := value.(string); ok {
-			t.Depreciation_book_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field depreciation_book_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "depreciation_book_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAReclassJournalLineOnValidate_Depreciation_book_code); ok {
-				if err := trg.OnValidate_Depreciation_book_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reclassify_acq_cost_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Reclassify_acq_cost_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Reclassify_acq_cost_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field reclassify_acq_cost_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Reclassify_acq_cost_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Reclassify_acq_cost_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Reclassify_acq_cost_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field reclassify_acq_cost_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAReclassJournalLineOnValidate_Reclassify_acq_cost_amount); ok {
-				if err := trg.OnValidate_Reclassify_acq_cost_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reclassify_acq_cost_percent":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Reclassify_acq_cost_percent = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Reclassify_acq_cost_percent, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field reclassify_acq_cost_percent: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Reclassify_acq_cost_percent = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Reclassify_acq_cost_percent = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Reclassify_acq_cost_percent = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field reclassify_acq_cost_percent (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAReclassJournalLineOnValidate_Reclassify_acq_cost_percent); ok {
-				if err := trg.OnValidate_Reclassify_acq_cost_percent(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reclassify_acquisition_cost":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Reclassify_acquisition_cost = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Reclassify_acquisition_cost = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field reclassify_acquisition_cost")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAReclassJournalLineOnValidate_Reclassify_acquisition_cost); ok {
-				if err := trg.OnValidate_Reclassify_acquisition_cost(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reclassify_depreciation":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Reclassify_depreciation = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Reclassify_depreciation = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field reclassify_depreciation")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAReclassJournalLineOnValidate_Reclassify_depreciation); ok {
-				if err := trg.OnValidate_Reclassify_depreciation(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reclassify_write_down":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Reclassify_write_down = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Reclassify_write_down = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field reclassify_write_down")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAReclassJournalLineOnValidate_Reclassify_write_down); ok {
-				if err := trg.OnValidate_Reclassify_write_down(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reclassify_appreciation":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Reclassify_appreciation = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Reclassify_appreciation = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field reclassify_appreciation")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAReclassJournalLineOnValidate_Reclassify_appreciation); ok {
-				if err := trg.OnValidate_Reclassify_appreciation(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reclassify_custom_1":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Reclassify_custom_1 = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Reclassify_custom_1 = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field reclassify_custom_1")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAReclassJournalLineOnValidate_Reclassify_custom_1); ok {
-				if err := trg.OnValidate_Reclassify_custom_1(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reclassify_custom_2":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Reclassify_custom_2 = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Reclassify_custom_2 = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field reclassify_custom_2")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAReclassJournalLineOnValidate_Reclassify_custom_2); ok {
-				if err := trg.OnValidate_Reclassify_custom_2(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reclassify_salvage_value":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Reclassify_salvage_value = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Reclassify_salvage_value = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field reclassify_salvage_value")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAReclassJournalLineOnValidate_Reclassify_salvage_value); ok {
-				if err := trg.OnValidate_Reclassify_salvage_value(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "insert_bal_account":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Insert_bal_account = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Insert_bal_account = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field insert_bal_account")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAReclassJournalLineOnValidate_Insert_bal_account); ok {
-				if err := trg.OnValidate_Insert_bal_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAReclassJournalLineOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Document_no = v
-		} else if v, ok := value.(string); ok {
-			t.Document_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field document_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAReclassJournalLineOnValidate_Document_no); ok {
-				if err := trg.OnValidate_Document_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := fAReclassJournalLineFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &fAReclassJournalLineFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -3310,192 +2481,18 @@ func (t *FAReclassJournalLine) ValidateField(fieldName string, value interface{}
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *FAReclassJournalLine) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Journal_template_name, true
-	case 2:
-		return t.Journal_batch_name, true
-	case 3:
-		return t.Line_no, true
-	case 4:
-		return t.Fa_no, true
-	case 5:
-		return t.New_fa_no, true
-	case 6:
-		return t.Fa_posting_date, true
-	case 7:
-		return t.Posting_date, true
-	case 8:
-		return t.Depreciation_book_code, true
-	case 9:
-		return t.Reclassify_acq_cost_amount, true
-	case 10:
-		return t.Reclassify_acq_cost_percent, true
-	case 11:
-		return t.Reclassify_acquisition_cost, true
-	case 12:
-		return t.Reclassify_depreciation, true
-	case 13:
-		return t.Reclassify_write_down, true
-	case 14:
-		return t.Reclassify_appreciation, true
-	case 15:
-		return t.Reclassify_custom_1, true
-	case 16:
-		return t.Reclassify_custom_2, true
-	case 17:
-		return t.Reclassify_salvage_value, true
-	case 18:
-		return t.Insert_bal_account, true
-	case 19:
-		return t.Description, true
-	case 20:
-		return t.Document_no, true
-	}
-	return nil, false
+	return fAReclassJournalLineFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *FAReclassJournalLine) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return fAReclassJournalLineFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *FAReclassJournalLine) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Journal_template_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Journal_template_name = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Journal_batch_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Journal_batch_name = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(int); ok {
-			t.Line_no = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Code); ok {
-			t.Fa_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Fa_no = types.NewCode(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Code); ok {
-			t.New_fa_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.New_fa_no = types.NewCode(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Date); ok {
-			t.Fa_posting_date = v
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Date); ok {
-			t.Posting_date = v
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Code); ok {
-			t.Depreciation_book_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Depreciation_book_code = types.NewCode(v)
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.Decimal); ok {
-			t.Reclassify_acq_cost_amount = v
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Decimal); ok {
-			t.Reclassify_acq_cost_percent = v
-			return true
-		}
-	case 11:
-		if v, ok := value.(bool); ok {
-			t.Reclassify_acquisition_cost = v
-			return true
-		}
-	case 12:
-		if v, ok := value.(bool); ok {
-			t.Reclassify_depreciation = v
-			return true
-		}
-	case 13:
-		if v, ok := value.(bool); ok {
-			t.Reclassify_write_down = v
-			return true
-		}
-	case 14:
-		if v, ok := value.(bool); ok {
-			t.Reclassify_appreciation = v
-			return true
-		}
-	case 15:
-		if v, ok := value.(bool); ok {
-			t.Reclassify_custom_1 = v
-			return true
-		}
-	case 16:
-		if v, ok := value.(bool); ok {
-			t.Reclassify_custom_2 = v
-			return true
-		}
-	case 17:
-		if v, ok := value.(bool); ok {
-			t.Reclassify_salvage_value = v
-			return true
-		}
-	case 18:
-		if v, ok := value.(bool); ok {
-			t.Insert_bal_account = v
-			return true
-		}
-	case 19:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 20:
-		if v, ok := value.(types.Code); ok {
-			t.Document_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Document_no = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return fAReclassJournalLineFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3983,49 +2980,7 @@ func (t *FAReclassJournalLine) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *FAReclassJournalLine) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "journal_template_name":
-		return t.Journal_template_name, true
-	case "journal_batch_name":
-		return t.Journal_batch_name, true
-	case "line_no":
-		return t.Line_no, true
-	case "fa_no":
-		return t.Fa_no, true
-	case "new_fa_no":
-		return t.New_fa_no, true
-	case "fa_posting_date":
-		return t.Fa_posting_date, true
-	case "posting_date":
-		return t.Posting_date, true
-	case "depreciation_book_code":
-		return t.Depreciation_book_code, true
-	case "reclassify_acq_cost_amount":
-		return t.Reclassify_acq_cost_amount, true
-	case "reclassify_acq_cost_percent":
-		return t.Reclassify_acq_cost_percent, true
-	case "reclassify_acquisition_cost":
-		return t.Reclassify_acquisition_cost, true
-	case "reclassify_depreciation":
-		return t.Reclassify_depreciation, true
-	case "reclassify_write_down":
-		return t.Reclassify_write_down, true
-	case "reclassify_appreciation":
-		return t.Reclassify_appreciation, true
-	case "reclassify_custom_1":
-		return t.Reclassify_custom_1, true
-	case "reclassify_custom_2":
-		return t.Reclassify_custom_2, true
-	case "reclassify_salvage_value":
-		return t.Reclassify_salvage_value, true
-	case "insert_bal_account":
-		return t.Insert_bal_account, true
-	case "description":
-		return t.Description, true
-	case "document_no":
-		return t.Document_no, true
-	}
-	return nil, false
+	return fAReclassJournalLineFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -4136,154 +3091,12 @@ func (t *FAReclassJournalLine) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *FAReclassJournalLine) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"journal_template_name":       t.Journal_template_name.String(),
-		"journal_batch_name":          t.Journal_batch_name.String(),
-		"line_no":                     t.Line_no,
-		"fa_no":                       t.Fa_no.String(),
-		"new_fa_no":                   t.New_fa_no.String(),
-		"fa_posting_date":             t.Fa_posting_date.String(),
-		"posting_date":                t.Posting_date.String(),
-		"depreciation_book_code":      t.Depreciation_book_code.String(),
-		"reclassify_acq_cost_amount":  t.Reclassify_acq_cost_amount.String(),
-		"reclassify_acq_cost_percent": t.Reclassify_acq_cost_percent.String(),
-		"reclassify_acquisition_cost": t.Reclassify_acquisition_cost,
-		"reclassify_depreciation":     t.Reclassify_depreciation,
-		"reclassify_write_down":       t.Reclassify_write_down,
-		"reclassify_appreciation":     t.Reclassify_appreciation,
-		"reclassify_custom_1":         t.Reclassify_custom_1,
-		"reclassify_custom_2":         t.Reclassify_custom_2,
-		"reclassify_salvage_value":    t.Reclassify_salvage_value,
-		"insert_bal_account":          t.Insert_bal_account,
-		"description":                 t.Description.String(),
-		"document_no":                 t.Document_no.String(),
-	}
+	return fAReclassJournalLineFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *FAReclassJournalLine) FromMap(data map[string]interface{}) {
-	if v, ok := data["journal_template_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Journal_template_name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["journal_batch_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Journal_batch_name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["line_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Line_no = int(val)
-		case int:
-			t.Line_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Line_no = n
-			}
-		}
-	}
-	if v, ok := data["fa_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fa_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["new_fa_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.New_fa_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["fa_posting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fa_posting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["posting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Posting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["depreciation_book_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Depreciation_book_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["reclassify_acq_cost_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Reclassify_acq_cost_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Reclassify_acq_cost_amount = types.NewDecimal(val)
-		case int:
-			t.Reclassify_acq_cost_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Reclassify_acq_cost_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["reclassify_acq_cost_percent"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Reclassify_acq_cost_percent, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Reclassify_acq_cost_percent = types.NewDecimal(val)
-		case int:
-			t.Reclassify_acq_cost_percent = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Reclassify_acq_cost_percent = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["reclassify_acquisition_cost"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Reclassify_acquisition_cost = b
-		}
-	}
-	if v, ok := data["reclassify_depreciation"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Reclassify_depreciation = b
-		}
-	}
-	if v, ok := data["reclassify_write_down"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Reclassify_write_down = b
-		}
-	}
-	if v, ok := data["reclassify_appreciation"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Reclassify_appreciation = b
-		}
-	}
-	if v, ok := data["reclassify_custom_1"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Reclassify_custom_1 = b
-		}
-	}
-	if v, ok := data["reclassify_custom_2"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Reclassify_custom_2 = b
-		}
-	}
-	if v, ok := data["reclassify_salvage_value"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Reclassify_salvage_value = b
-		}
-	}
-	if v, ok := data["insert_bal_account"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Insert_bal_account = b
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["document_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Document_no = types.NewCode(s)
-		}
-	}
+	fAReclassJournalLineFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -4304,210 +3117,349 @@ func (t *FAReclassJournalLine) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *FAReclassJournalLine) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "journal_template_name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "journal_batch_name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "line_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "fa_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "new_fa_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "fa_posting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "posting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "depreciation_book_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            9,
-			Name:          "reclassify_acq_cost_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            10,
-			Name:          "reclassify_acq_cost_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:8",
-		},
-		{
-			No:         11,
-			Name:       "reclassify_acquisition_cost",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "reclassify_depreciation",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         13,
-			Name:       "reclassify_write_down",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         14,
-			Name:       "reclassify_appreciation",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         15,
-			Name:       "reclassify_custom_1",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         16,
-			Name:       "reclassify_custom_2",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         17,
-			Name:       "reclassify_salvage_value",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         18,
-			Name:       "insert_bal_account",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         19,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         20,
-			Name:       "document_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return fAReclassJournalLineFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in fAReclassJournalLineFields.Fields
+func (t *FAReclassJournalLine) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Journal_template_name
+	case 1:
+		return &t.Journal_batch_name
+	case 2:
+		return &t.Line_no
+	case 3:
+		return &t.Fa_no
+	case 4:
+		return &t.New_fa_no
+	case 5:
+		return &t.Fa_posting_date
+	case 6:
+		return &t.Posting_date
+	case 7:
+		return &t.Depreciation_book_code
+	case 8:
+		return &t.Reclassify_acq_cost_amount
+	case 9:
+		return &t.Reclassify_acq_cost_percent
+	case 10:
+		return &t.Reclassify_acquisition_cost
+	case 11:
+		return &t.Reclassify_depreciation
+	case 12:
+		return &t.Reclassify_write_down
+	case 13:
+		return &t.Reclassify_appreciation
+	case 14:
+		return &t.Reclassify_custom_1
+	case 15:
+		return &t.Reclassify_custom_2
+	case 16:
+		return &t.Reclassify_salvage_value
+	case 17:
+		return &t.Insert_bal_account
+	case 18:
+		return &t.Description
+	case 19:
+		return &t.Document_no
 	}
+	return nil
+}
+
+// fAReclassJournalLineFields describes the fields of FA_Reclass_Journal_Line for the record functions
+// written once in foundation/tables
+var fAReclassJournalLineFields = &tables.TableFields{
+	Table: FAReclassJournalLineTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "journal_template_name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Journal_template_name",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "journal_batch_name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Journal_batch_name",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "line_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Line_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "fa_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Fa_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "new_fa_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_New_fa_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "fa_posting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Fa_posting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "posting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Posting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "depreciation_book_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Depreciation_book_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            9,
+				Name:          "reclassify_acq_cost_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Reclassify_acq_cost_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            10,
+				Name:          "reclassify_acq_cost_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:8",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Reclassify_acq_cost_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "reclassify_acquisition_cost",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Reclassify_acquisition_cost",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "reclassify_depreciation",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Reclassify_depreciation",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "reclassify_write_down",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Reclassify_write_down",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "reclassify_appreciation",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Reclassify_appreciation",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         15,
+				Name:       "reclassify_custom_1",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Reclassify_custom_1",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         16,
+				Name:       "reclassify_custom_2",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Reclassify_custom_2",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         17,
+				Name:       "reclassify_salvage_value",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Reclassify_salvage_value",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         18,
+				Name:       "insert_bal_account",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Insert_bal_account",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         19,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         20,
+				Name:       "document_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Document_no",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

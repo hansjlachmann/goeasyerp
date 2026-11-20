@@ -918,316 +918,12 @@ var ReservationSetup_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *ReservationSetup) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "primary_key":
-		return 1
-	case "track_changes":
-		return 2
-	case "valid_to_formula":
-		return 3
-	case "auto_req_wksh_template":
-		return 4
-	case "auto_req_wksh_name":
-		return 5
-	case "show_item_ledger_entry":
-		return 6
-	case "item_ledger_entry_priority":
-		return 7
-	case "show_purchase_quote":
-		return 8
-	case "purchase_quote_priority":
-		return 9
-	case "auto_purchase_quote":
-		return 10
-	case "show_blanket_purchase_order":
-		return 11
-	case "blanket_purch_order_priority":
-		return 12
-	case "auto_blanket_purchase_order":
-		return 13
-	case "show_purchase_order":
-		return 14
-	case "purchase_order_priority":
-		return 15
-	case "auto_purchase_order":
-		return 16
-	case "show_purchase_invoice":
-		return 17
-	case "purchase_invoice_priority":
-		return 18
-	case "auto_purchase_invoice":
-		return 19
-	case "show_purchase_credit_memo":
-		return 20
-	case "purchase_credit_memo_priority":
-		return 21
-	case "auto_purchase_credit_memo":
-		return 22
-	case "show_requisition_line":
-		return 23
-	case "requisition_line_priority":
-		return 24
-	case "auto_requisition_line":
-		return 25
-	case "show_sales_quote":
-		return 26
-	case "sales_quote_priority":
-		return 27
-	case "auto_sales_quote":
-		return 28
-	case "show_blanket_sales_order":
-		return 29
-	case "blanket_sales_order_priority":
-		return 30
-	case "auto_blanket_sales_order":
-		return 31
-	case "show_sales_order":
-		return 32
-	case "sales_order_priority":
-		return 33
-	case "auto_sales_order":
-		return 34
-	case "show_sales_invoice":
-		return 35
-	case "sales_invoice_priority":
-		return 36
-	case "auto_sales_invoice":
-		return 37
-	case "show_sales_credit_memo":
-		return 38
-	case "sales_credit_memo_priority":
-		return 39
-	case "auto_sales_credit_memo":
-		return 40
-	case "show_item_jnl_line_purchases":
-		return 41
-	case "item_jnl_line_purch_priority":
-		return 42
-	case "auto_item_jnl_line_purchases":
-		return 43
-	case "show_item_jnl_line_sales":
-		return 44
-	case "item_jnl_line_sales_priority":
-		return 45
-	case "auto_item_jnl_line_sales":
-		return 46
-	case "show_item_jnl_line_pos":
-		return 47
-	case "item_jnl_line_pos_priority":
-		return 48
-	case "auto_item_jnl_line_pos":
-		return 49
-	case "show_item_jnl_line_neg":
-		return 50
-	case "item_jnl_line_neg_priority":
-		return 51
-	case "auto_item_jnl_line_neg":
-		return 52
-	case "show_item_jnl_line_transfer":
-		return 53
-	case "item_jnl_line_trans_priority":
-		return 54
-	case "auto_item_jnl_line_transfer":
-		return 55
-	case "show_bom_journal_line":
-		return 56
-	case "bom_journal_line_priority":
-		return 57
-	case "auto_bom_journal_line":
-		return 58
-	case "reserve_purchase_quote":
-		return 59
-	case "reserve_blanket_purchase_order":
-		return 60
-	case "reserve_purchase_order":
-		return 61
-	case "reserve_purchase_invoice":
-		return 62
-	case "reserve_purchase_credit_memo":
-		return 63
-	case "reserve_requisition_line":
-		return 64
-	case "reserve_sales_quote":
-		return 65
-	case "reserve_blanket_sales_order":
-		return 66
-	case "reserve_sales_order":
-		return 67
-	case "reserve_sales_invoice":
-		return 68
-	case "reserve_sales_credit_memo":
-		return 69
-	case "reserve_item_jnl_line_purch":
-		return 70
-	case "reserve_item_jnl_line_sales":
-		return 71
-	case "reserve_item_jnl_line_pos":
-		return 72
-	case "reserve_item_jnl_line_neg":
-		return 73
-	case "reserve_item_jnl_line_trans":
-		return 74
-	case "reserve_bom_journal_line":
-		return 75
-	}
-	return 0
+	return reservationSetupFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *ReservationSetup) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "primary_key"
-	case 2:
-		return "track_changes"
-	case 3:
-		return "valid_to_formula"
-	case 4:
-		return "auto_req_wksh_template"
-	case 5:
-		return "auto_req_wksh_name"
-	case 6:
-		return "show_item_ledger_entry"
-	case 7:
-		return "item_ledger_entry_priority"
-	case 8:
-		return "show_purchase_quote"
-	case 9:
-		return "purchase_quote_priority"
-	case 10:
-		return "auto_purchase_quote"
-	case 11:
-		return "show_blanket_purchase_order"
-	case 12:
-		return "blanket_purch_order_priority"
-	case 13:
-		return "auto_blanket_purchase_order"
-	case 14:
-		return "show_purchase_order"
-	case 15:
-		return "purchase_order_priority"
-	case 16:
-		return "auto_purchase_order"
-	case 17:
-		return "show_purchase_invoice"
-	case 18:
-		return "purchase_invoice_priority"
-	case 19:
-		return "auto_purchase_invoice"
-	case 20:
-		return "show_purchase_credit_memo"
-	case 21:
-		return "purchase_credit_memo_priority"
-	case 22:
-		return "auto_purchase_credit_memo"
-	case 23:
-		return "show_requisition_line"
-	case 24:
-		return "requisition_line_priority"
-	case 25:
-		return "auto_requisition_line"
-	case 26:
-		return "show_sales_quote"
-	case 27:
-		return "sales_quote_priority"
-	case 28:
-		return "auto_sales_quote"
-	case 29:
-		return "show_blanket_sales_order"
-	case 30:
-		return "blanket_sales_order_priority"
-	case 31:
-		return "auto_blanket_sales_order"
-	case 32:
-		return "show_sales_order"
-	case 33:
-		return "sales_order_priority"
-	case 34:
-		return "auto_sales_order"
-	case 35:
-		return "show_sales_invoice"
-	case 36:
-		return "sales_invoice_priority"
-	case 37:
-		return "auto_sales_invoice"
-	case 38:
-		return "show_sales_credit_memo"
-	case 39:
-		return "sales_credit_memo_priority"
-	case 40:
-		return "auto_sales_credit_memo"
-	case 41:
-		return "show_item_jnl_line_purchases"
-	case 42:
-		return "item_jnl_line_purch_priority"
-	case 43:
-		return "auto_item_jnl_line_purchases"
-	case 44:
-		return "show_item_jnl_line_sales"
-	case 45:
-		return "item_jnl_line_sales_priority"
-	case 46:
-		return "auto_item_jnl_line_sales"
-	case 47:
-		return "show_item_jnl_line_pos"
-	case 48:
-		return "item_jnl_line_pos_priority"
-	case 49:
-		return "auto_item_jnl_line_pos"
-	case 50:
-		return "show_item_jnl_line_neg"
-	case 51:
-		return "item_jnl_line_neg_priority"
-	case 52:
-		return "auto_item_jnl_line_neg"
-	case 53:
-		return "show_item_jnl_line_transfer"
-	case 54:
-		return "item_jnl_line_trans_priority"
-	case 55:
-		return "auto_item_jnl_line_transfer"
-	case 56:
-		return "show_bom_journal_line"
-	case 57:
-		return "bom_journal_line_priority"
-	case 58:
-		return "auto_bom_journal_line"
-	case 59:
-		return "reserve_purchase_quote"
-	case 60:
-		return "reserve_blanket_purchase_order"
-	case 61:
-		return "reserve_purchase_order"
-	case 62:
-		return "reserve_purchase_invoice"
-	case 63:
-		return "reserve_purchase_credit_memo"
-	case 64:
-		return "reserve_requisition_line"
-	case 65:
-		return "reserve_sales_quote"
-	case 66:
-		return "reserve_blanket_sales_order"
-	case 67:
-		return "reserve_sales_order"
-	case 68:
-		return "reserve_sales_invoice"
-	case 69:
-		return "reserve_sales_credit_memo"
-	case 70:
-		return "reserve_item_jnl_line_purch"
-	case 71:
-		return "reserve_item_jnl_line_sales"
-	case 72:
-		return "reserve_item_jnl_line_pos"
-	case 73:
-		return "reserve_item_jnl_line_neg"
-	case 74:
-		return "reserve_item_jnl_line_trans"
-	case 75:
-		return "reserve_bom_journal_line"
-	}
-	return ""
+	return reservationSetupFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -1339,231 +1035,6 @@ type (
 	ReservationSetupOnBeforeRename interface {
 		OnBeforeRename(rec *ReservationSetup, handled *bool) error
 	}
-	ReservationSetupOnValidate_Primary_key interface {
-		OnValidate_Primary_key(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Track_changes interface {
-		OnValidate_Track_changes(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Valid_to_formula interface {
-		OnValidate_Valid_to_formula(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Auto_req_wksh_template interface {
-		OnValidate_Auto_req_wksh_template(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Auto_req_wksh_name interface {
-		OnValidate_Auto_req_wksh_name(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Show_item_ledger_entry interface {
-		OnValidate_Show_item_ledger_entry(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Item_ledger_entry_priority interface {
-		OnValidate_Item_ledger_entry_priority(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Show_purchase_quote interface {
-		OnValidate_Show_purchase_quote(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Purchase_quote_priority interface {
-		OnValidate_Purchase_quote_priority(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Auto_purchase_quote interface {
-		OnValidate_Auto_purchase_quote(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Show_blanket_purchase_order interface {
-		OnValidate_Show_blanket_purchase_order(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Blanket_purch_order_priority interface {
-		OnValidate_Blanket_purch_order_priority(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Auto_blanket_purchase_order interface {
-		OnValidate_Auto_blanket_purchase_order(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Show_purchase_order interface {
-		OnValidate_Show_purchase_order(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Purchase_order_priority interface {
-		OnValidate_Purchase_order_priority(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Auto_purchase_order interface {
-		OnValidate_Auto_purchase_order(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Show_purchase_invoice interface {
-		OnValidate_Show_purchase_invoice(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Purchase_invoice_priority interface {
-		OnValidate_Purchase_invoice_priority(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Auto_purchase_invoice interface {
-		OnValidate_Auto_purchase_invoice(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Show_purchase_credit_memo interface {
-		OnValidate_Show_purchase_credit_memo(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Purchase_credit_memo_priority interface {
-		OnValidate_Purchase_credit_memo_priority(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Auto_purchase_credit_memo interface {
-		OnValidate_Auto_purchase_credit_memo(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Show_requisition_line interface {
-		OnValidate_Show_requisition_line(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Requisition_line_priority interface {
-		OnValidate_Requisition_line_priority(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Auto_requisition_line interface {
-		OnValidate_Auto_requisition_line(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Show_sales_quote interface {
-		OnValidate_Show_sales_quote(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Sales_quote_priority interface {
-		OnValidate_Sales_quote_priority(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Auto_sales_quote interface {
-		OnValidate_Auto_sales_quote(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Show_blanket_sales_order interface {
-		OnValidate_Show_blanket_sales_order(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Blanket_sales_order_priority interface {
-		OnValidate_Blanket_sales_order_priority(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Auto_blanket_sales_order interface {
-		OnValidate_Auto_blanket_sales_order(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Show_sales_order interface {
-		OnValidate_Show_sales_order(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Sales_order_priority interface {
-		OnValidate_Sales_order_priority(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Auto_sales_order interface {
-		OnValidate_Auto_sales_order(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Show_sales_invoice interface {
-		OnValidate_Show_sales_invoice(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Sales_invoice_priority interface {
-		OnValidate_Sales_invoice_priority(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Auto_sales_invoice interface {
-		OnValidate_Auto_sales_invoice(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Show_sales_credit_memo interface {
-		OnValidate_Show_sales_credit_memo(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Sales_credit_memo_priority interface {
-		OnValidate_Sales_credit_memo_priority(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Auto_sales_credit_memo interface {
-		OnValidate_Auto_sales_credit_memo(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Show_item_jnl_line_purchases interface {
-		OnValidate_Show_item_jnl_line_purchases(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Item_jnl_line_purch_priority interface {
-		OnValidate_Item_jnl_line_purch_priority(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Auto_item_jnl_line_purchases interface {
-		OnValidate_Auto_item_jnl_line_purchases(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Show_item_jnl_line_sales interface {
-		OnValidate_Show_item_jnl_line_sales(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Item_jnl_line_sales_priority interface {
-		OnValidate_Item_jnl_line_sales_priority(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Auto_item_jnl_line_sales interface {
-		OnValidate_Auto_item_jnl_line_sales(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Show_item_jnl_line_pos interface {
-		OnValidate_Show_item_jnl_line_pos(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Item_jnl_line_pos_priority interface {
-		OnValidate_Item_jnl_line_pos_priority(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Auto_item_jnl_line_pos interface {
-		OnValidate_Auto_item_jnl_line_pos(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Show_item_jnl_line_neg interface {
-		OnValidate_Show_item_jnl_line_neg(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Item_jnl_line_neg_priority interface {
-		OnValidate_Item_jnl_line_neg_priority(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Auto_item_jnl_line_neg interface {
-		OnValidate_Auto_item_jnl_line_neg(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Show_item_jnl_line_transfer interface {
-		OnValidate_Show_item_jnl_line_transfer(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Item_jnl_line_trans_priority interface {
-		OnValidate_Item_jnl_line_trans_priority(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Auto_item_jnl_line_transfer interface {
-		OnValidate_Auto_item_jnl_line_transfer(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Show_bom_journal_line interface {
-		OnValidate_Show_bom_journal_line(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Bom_journal_line_priority interface {
-		OnValidate_Bom_journal_line_priority(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Auto_bom_journal_line interface {
-		OnValidate_Auto_bom_journal_line(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Reserve_purchase_quote interface {
-		OnValidate_Reserve_purchase_quote(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Reserve_blanket_purchase_order interface {
-		OnValidate_Reserve_blanket_purchase_order(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Reserve_purchase_order interface {
-		OnValidate_Reserve_purchase_order(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Reserve_purchase_invoice interface {
-		OnValidate_Reserve_purchase_invoice(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Reserve_purchase_credit_memo interface {
-		OnValidate_Reserve_purchase_credit_memo(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Reserve_requisition_line interface {
-		OnValidate_Reserve_requisition_line(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Reserve_sales_quote interface {
-		OnValidate_Reserve_sales_quote(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Reserve_blanket_sales_order interface {
-		OnValidate_Reserve_blanket_sales_order(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Reserve_sales_order interface {
-		OnValidate_Reserve_sales_order(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Reserve_sales_invoice interface {
-		OnValidate_Reserve_sales_invoice(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Reserve_sales_credit_memo interface {
-		OnValidate_Reserve_sales_credit_memo(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Reserve_item_jnl_line_purch interface {
-		OnValidate_Reserve_item_jnl_line_purch(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Reserve_item_jnl_line_sales interface {
-		OnValidate_Reserve_item_jnl_line_sales(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Reserve_item_jnl_line_pos interface {
-		OnValidate_Reserve_item_jnl_line_pos(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Reserve_item_jnl_line_neg interface {
-		OnValidate_Reserve_item_jnl_line_neg(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Reserve_item_jnl_line_trans interface {
-		OnValidate_Reserve_item_jnl_line_trans(rec *ReservationSetup) error
-	}
-	ReservationSetupOnValidate_Reserve_bom_journal_line interface {
-		OnValidate_Reserve_bom_journal_line(rec *ReservationSetup) error
-	}
 )
 
 // reservationSetupLogic is the registered business logic of Reservation_Setup, in
@@ -1606,158 +1077,9 @@ func reservationSetupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ReservationSetupOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(ReservationSetupOnBeforeRename)
-	case "OnValidate_Primary_key":
-		_, ok = logic.(ReservationSetupOnValidate_Primary_key)
-	case "OnValidate_Track_changes":
-		_, ok = logic.(ReservationSetupOnValidate_Track_changes)
-	case "OnValidate_Valid_to_formula":
-		_, ok = logic.(ReservationSetupOnValidate_Valid_to_formula)
-	case "OnValidate_Auto_req_wksh_template":
-		_, ok = logic.(ReservationSetupOnValidate_Auto_req_wksh_template)
-	case "OnValidate_Auto_req_wksh_name":
-		_, ok = logic.(ReservationSetupOnValidate_Auto_req_wksh_name)
-	case "OnValidate_Show_item_ledger_entry":
-		_, ok = logic.(ReservationSetupOnValidate_Show_item_ledger_entry)
-	case "OnValidate_Item_ledger_entry_priority":
-		_, ok = logic.(ReservationSetupOnValidate_Item_ledger_entry_priority)
-	case "OnValidate_Show_purchase_quote":
-		_, ok = logic.(ReservationSetupOnValidate_Show_purchase_quote)
-	case "OnValidate_Purchase_quote_priority":
-		_, ok = logic.(ReservationSetupOnValidate_Purchase_quote_priority)
-	case "OnValidate_Auto_purchase_quote":
-		_, ok = logic.(ReservationSetupOnValidate_Auto_purchase_quote)
-	case "OnValidate_Show_blanket_purchase_order":
-		_, ok = logic.(ReservationSetupOnValidate_Show_blanket_purchase_order)
-	case "OnValidate_Blanket_purch_order_priority":
-		_, ok = logic.(ReservationSetupOnValidate_Blanket_purch_order_priority)
-	case "OnValidate_Auto_blanket_purchase_order":
-		_, ok = logic.(ReservationSetupOnValidate_Auto_blanket_purchase_order)
-	case "OnValidate_Show_purchase_order":
-		_, ok = logic.(ReservationSetupOnValidate_Show_purchase_order)
-	case "OnValidate_Purchase_order_priority":
-		_, ok = logic.(ReservationSetupOnValidate_Purchase_order_priority)
-	case "OnValidate_Auto_purchase_order":
-		_, ok = logic.(ReservationSetupOnValidate_Auto_purchase_order)
-	case "OnValidate_Show_purchase_invoice":
-		_, ok = logic.(ReservationSetupOnValidate_Show_purchase_invoice)
-	case "OnValidate_Purchase_invoice_priority":
-		_, ok = logic.(ReservationSetupOnValidate_Purchase_invoice_priority)
-	case "OnValidate_Auto_purchase_invoice":
-		_, ok = logic.(ReservationSetupOnValidate_Auto_purchase_invoice)
-	case "OnValidate_Show_purchase_credit_memo":
-		_, ok = logic.(ReservationSetupOnValidate_Show_purchase_credit_memo)
-	case "OnValidate_Purchase_credit_memo_priority":
-		_, ok = logic.(ReservationSetupOnValidate_Purchase_credit_memo_priority)
-	case "OnValidate_Auto_purchase_credit_memo":
-		_, ok = logic.(ReservationSetupOnValidate_Auto_purchase_credit_memo)
-	case "OnValidate_Show_requisition_line":
-		_, ok = logic.(ReservationSetupOnValidate_Show_requisition_line)
-	case "OnValidate_Requisition_line_priority":
-		_, ok = logic.(ReservationSetupOnValidate_Requisition_line_priority)
-	case "OnValidate_Auto_requisition_line":
-		_, ok = logic.(ReservationSetupOnValidate_Auto_requisition_line)
-	case "OnValidate_Show_sales_quote":
-		_, ok = logic.(ReservationSetupOnValidate_Show_sales_quote)
-	case "OnValidate_Sales_quote_priority":
-		_, ok = logic.(ReservationSetupOnValidate_Sales_quote_priority)
-	case "OnValidate_Auto_sales_quote":
-		_, ok = logic.(ReservationSetupOnValidate_Auto_sales_quote)
-	case "OnValidate_Show_blanket_sales_order":
-		_, ok = logic.(ReservationSetupOnValidate_Show_blanket_sales_order)
-	case "OnValidate_Blanket_sales_order_priority":
-		_, ok = logic.(ReservationSetupOnValidate_Blanket_sales_order_priority)
-	case "OnValidate_Auto_blanket_sales_order":
-		_, ok = logic.(ReservationSetupOnValidate_Auto_blanket_sales_order)
-	case "OnValidate_Show_sales_order":
-		_, ok = logic.(ReservationSetupOnValidate_Show_sales_order)
-	case "OnValidate_Sales_order_priority":
-		_, ok = logic.(ReservationSetupOnValidate_Sales_order_priority)
-	case "OnValidate_Auto_sales_order":
-		_, ok = logic.(ReservationSetupOnValidate_Auto_sales_order)
-	case "OnValidate_Show_sales_invoice":
-		_, ok = logic.(ReservationSetupOnValidate_Show_sales_invoice)
-	case "OnValidate_Sales_invoice_priority":
-		_, ok = logic.(ReservationSetupOnValidate_Sales_invoice_priority)
-	case "OnValidate_Auto_sales_invoice":
-		_, ok = logic.(ReservationSetupOnValidate_Auto_sales_invoice)
-	case "OnValidate_Show_sales_credit_memo":
-		_, ok = logic.(ReservationSetupOnValidate_Show_sales_credit_memo)
-	case "OnValidate_Sales_credit_memo_priority":
-		_, ok = logic.(ReservationSetupOnValidate_Sales_credit_memo_priority)
-	case "OnValidate_Auto_sales_credit_memo":
-		_, ok = logic.(ReservationSetupOnValidate_Auto_sales_credit_memo)
-	case "OnValidate_Show_item_jnl_line_purchases":
-		_, ok = logic.(ReservationSetupOnValidate_Show_item_jnl_line_purchases)
-	case "OnValidate_Item_jnl_line_purch_priority":
-		_, ok = logic.(ReservationSetupOnValidate_Item_jnl_line_purch_priority)
-	case "OnValidate_Auto_item_jnl_line_purchases":
-		_, ok = logic.(ReservationSetupOnValidate_Auto_item_jnl_line_purchases)
-	case "OnValidate_Show_item_jnl_line_sales":
-		_, ok = logic.(ReservationSetupOnValidate_Show_item_jnl_line_sales)
-	case "OnValidate_Item_jnl_line_sales_priority":
-		_, ok = logic.(ReservationSetupOnValidate_Item_jnl_line_sales_priority)
-	case "OnValidate_Auto_item_jnl_line_sales":
-		_, ok = logic.(ReservationSetupOnValidate_Auto_item_jnl_line_sales)
-	case "OnValidate_Show_item_jnl_line_pos":
-		_, ok = logic.(ReservationSetupOnValidate_Show_item_jnl_line_pos)
-	case "OnValidate_Item_jnl_line_pos_priority":
-		_, ok = logic.(ReservationSetupOnValidate_Item_jnl_line_pos_priority)
-	case "OnValidate_Auto_item_jnl_line_pos":
-		_, ok = logic.(ReservationSetupOnValidate_Auto_item_jnl_line_pos)
-	case "OnValidate_Show_item_jnl_line_neg":
-		_, ok = logic.(ReservationSetupOnValidate_Show_item_jnl_line_neg)
-	case "OnValidate_Item_jnl_line_neg_priority":
-		_, ok = logic.(ReservationSetupOnValidate_Item_jnl_line_neg_priority)
-	case "OnValidate_Auto_item_jnl_line_neg":
-		_, ok = logic.(ReservationSetupOnValidate_Auto_item_jnl_line_neg)
-	case "OnValidate_Show_item_jnl_line_transfer":
-		_, ok = logic.(ReservationSetupOnValidate_Show_item_jnl_line_transfer)
-	case "OnValidate_Item_jnl_line_trans_priority":
-		_, ok = logic.(ReservationSetupOnValidate_Item_jnl_line_trans_priority)
-	case "OnValidate_Auto_item_jnl_line_transfer":
-		_, ok = logic.(ReservationSetupOnValidate_Auto_item_jnl_line_transfer)
-	case "OnValidate_Show_bom_journal_line":
-		_, ok = logic.(ReservationSetupOnValidate_Show_bom_journal_line)
-	case "OnValidate_Bom_journal_line_priority":
-		_, ok = logic.(ReservationSetupOnValidate_Bom_journal_line_priority)
-	case "OnValidate_Auto_bom_journal_line":
-		_, ok = logic.(ReservationSetupOnValidate_Auto_bom_journal_line)
-	case "OnValidate_Reserve_purchase_quote":
-		_, ok = logic.(ReservationSetupOnValidate_Reserve_purchase_quote)
-	case "OnValidate_Reserve_blanket_purchase_order":
-		_, ok = logic.(ReservationSetupOnValidate_Reserve_blanket_purchase_order)
-	case "OnValidate_Reserve_purchase_order":
-		_, ok = logic.(ReservationSetupOnValidate_Reserve_purchase_order)
-	case "OnValidate_Reserve_purchase_invoice":
-		_, ok = logic.(ReservationSetupOnValidate_Reserve_purchase_invoice)
-	case "OnValidate_Reserve_purchase_credit_memo":
-		_, ok = logic.(ReservationSetupOnValidate_Reserve_purchase_credit_memo)
-	case "OnValidate_Reserve_requisition_line":
-		_, ok = logic.(ReservationSetupOnValidate_Reserve_requisition_line)
-	case "OnValidate_Reserve_sales_quote":
-		_, ok = logic.(ReservationSetupOnValidate_Reserve_sales_quote)
-	case "OnValidate_Reserve_blanket_sales_order":
-		_, ok = logic.(ReservationSetupOnValidate_Reserve_blanket_sales_order)
-	case "OnValidate_Reserve_sales_order":
-		_, ok = logic.(ReservationSetupOnValidate_Reserve_sales_order)
-	case "OnValidate_Reserve_sales_invoice":
-		_, ok = logic.(ReservationSetupOnValidate_Reserve_sales_invoice)
-	case "OnValidate_Reserve_sales_credit_memo":
-		_, ok = logic.(ReservationSetupOnValidate_Reserve_sales_credit_memo)
-	case "OnValidate_Reserve_item_jnl_line_purch":
-		_, ok = logic.(ReservationSetupOnValidate_Reserve_item_jnl_line_purch)
-	case "OnValidate_Reserve_item_jnl_line_sales":
-		_, ok = logic.(ReservationSetupOnValidate_Reserve_item_jnl_line_sales)
-	case "OnValidate_Reserve_item_jnl_line_pos":
-		_, ok = logic.(ReservationSetupOnValidate_Reserve_item_jnl_line_pos)
-	case "OnValidate_Reserve_item_jnl_line_neg":
-		_, ok = logic.(ReservationSetupOnValidate_Reserve_item_jnl_line_neg)
-	case "OnValidate_Reserve_item_jnl_line_trans":
-		_, ok = logic.(ReservationSetupOnValidate_Reserve_item_jnl_line_trans)
-	case "OnValidate_Reserve_bom_journal_line":
-		_, ok = logic.(ReservationSetupOnValidate_Reserve_bom_journal_line)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return reservationSetupFields.IsOnValidateTrigger(name, logic, (*ReservationSetup)(nil))
 	}
 	return true, ok
 }
@@ -2269,82 +1591,7 @@ func (t *ReservationSetup) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *ReservationSetup) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["primary_key"] = t.Primary_key
-	t.oldValues["track_changes"] = t.Track_changes
-	t.oldValues["valid_to_formula"] = t.Valid_to_formula
-	t.oldValues["auto_req_wksh_template"] = t.Auto_req_wksh_template
-	t.oldValues["auto_req_wksh_name"] = t.Auto_req_wksh_name
-	t.oldValues["show_item_ledger_entry"] = t.Show_item_ledger_entry
-	t.oldValues["item_ledger_entry_priority"] = t.Item_ledger_entry_priority
-	t.oldValues["show_purchase_quote"] = t.Show_purchase_quote
-	t.oldValues["purchase_quote_priority"] = t.Purchase_quote_priority
-	t.oldValues["auto_purchase_quote"] = t.Auto_purchase_quote
-	t.oldValues["show_blanket_purchase_order"] = t.Show_blanket_purchase_order
-	t.oldValues["blanket_purch_order_priority"] = t.Blanket_purch_order_priority
-	t.oldValues["auto_blanket_purchase_order"] = t.Auto_blanket_purchase_order
-	t.oldValues["show_purchase_order"] = t.Show_purchase_order
-	t.oldValues["purchase_order_priority"] = t.Purchase_order_priority
-	t.oldValues["auto_purchase_order"] = t.Auto_purchase_order
-	t.oldValues["show_purchase_invoice"] = t.Show_purchase_invoice
-	t.oldValues["purchase_invoice_priority"] = t.Purchase_invoice_priority
-	t.oldValues["auto_purchase_invoice"] = t.Auto_purchase_invoice
-	t.oldValues["show_purchase_credit_memo"] = t.Show_purchase_credit_memo
-	t.oldValues["purchase_credit_memo_priority"] = t.Purchase_credit_memo_priority
-	t.oldValues["auto_purchase_credit_memo"] = t.Auto_purchase_credit_memo
-	t.oldValues["show_requisition_line"] = t.Show_requisition_line
-	t.oldValues["requisition_line_priority"] = t.Requisition_line_priority
-	t.oldValues["auto_requisition_line"] = t.Auto_requisition_line
-	t.oldValues["show_sales_quote"] = t.Show_sales_quote
-	t.oldValues["sales_quote_priority"] = t.Sales_quote_priority
-	t.oldValues["auto_sales_quote"] = t.Auto_sales_quote
-	t.oldValues["show_blanket_sales_order"] = t.Show_blanket_sales_order
-	t.oldValues["blanket_sales_order_priority"] = t.Blanket_sales_order_priority
-	t.oldValues["auto_blanket_sales_order"] = t.Auto_blanket_sales_order
-	t.oldValues["show_sales_order"] = t.Show_sales_order
-	t.oldValues["sales_order_priority"] = t.Sales_order_priority
-	t.oldValues["auto_sales_order"] = t.Auto_sales_order
-	t.oldValues["show_sales_invoice"] = t.Show_sales_invoice
-	t.oldValues["sales_invoice_priority"] = t.Sales_invoice_priority
-	t.oldValues["auto_sales_invoice"] = t.Auto_sales_invoice
-	t.oldValues["show_sales_credit_memo"] = t.Show_sales_credit_memo
-	t.oldValues["sales_credit_memo_priority"] = t.Sales_credit_memo_priority
-	t.oldValues["auto_sales_credit_memo"] = t.Auto_sales_credit_memo
-	t.oldValues["show_item_jnl_line_purchases"] = t.Show_item_jnl_line_purchases
-	t.oldValues["item_jnl_line_purch_priority"] = t.Item_jnl_line_purch_priority
-	t.oldValues["auto_item_jnl_line_purchases"] = t.Auto_item_jnl_line_purchases
-	t.oldValues["show_item_jnl_line_sales"] = t.Show_item_jnl_line_sales
-	t.oldValues["item_jnl_line_sales_priority"] = t.Item_jnl_line_sales_priority
-	t.oldValues["auto_item_jnl_line_sales"] = t.Auto_item_jnl_line_sales
-	t.oldValues["show_item_jnl_line_pos"] = t.Show_item_jnl_line_pos
-	t.oldValues["item_jnl_line_pos_priority"] = t.Item_jnl_line_pos_priority
-	t.oldValues["auto_item_jnl_line_pos"] = t.Auto_item_jnl_line_pos
-	t.oldValues["show_item_jnl_line_neg"] = t.Show_item_jnl_line_neg
-	t.oldValues["item_jnl_line_neg_priority"] = t.Item_jnl_line_neg_priority
-	t.oldValues["auto_item_jnl_line_neg"] = t.Auto_item_jnl_line_neg
-	t.oldValues["show_item_jnl_line_transfer"] = t.Show_item_jnl_line_transfer
-	t.oldValues["item_jnl_line_trans_priority"] = t.Item_jnl_line_trans_priority
-	t.oldValues["auto_item_jnl_line_transfer"] = t.Auto_item_jnl_line_transfer
-	t.oldValues["show_bom_journal_line"] = t.Show_bom_journal_line
-	t.oldValues["bom_journal_line_priority"] = t.Bom_journal_line_priority
-	t.oldValues["auto_bom_journal_line"] = t.Auto_bom_journal_line
-	t.oldValues["reserve_purchase_quote"] = t.Reserve_purchase_quote
-	t.oldValues["reserve_blanket_purchase_order"] = t.Reserve_blanket_purchase_order
-	t.oldValues["reserve_purchase_order"] = t.Reserve_purchase_order
-	t.oldValues["reserve_purchase_invoice"] = t.Reserve_purchase_invoice
-	t.oldValues["reserve_purchase_credit_memo"] = t.Reserve_purchase_credit_memo
-	t.oldValues["reserve_requisition_line"] = t.Reserve_requisition_line
-	t.oldValues["reserve_sales_quote"] = t.Reserve_sales_quote
-	t.oldValues["reserve_blanket_sales_order"] = t.Reserve_blanket_sales_order
-	t.oldValues["reserve_sales_order"] = t.Reserve_sales_order
-	t.oldValues["reserve_sales_invoice"] = t.Reserve_sales_invoice
-	t.oldValues["reserve_sales_credit_memo"] = t.Reserve_sales_credit_memo
-	t.oldValues["reserve_item_jnl_line_purch"] = t.Reserve_item_jnl_line_purch
-	t.oldValues["reserve_item_jnl_line_sales"] = t.Reserve_item_jnl_line_sales
-	t.oldValues["reserve_item_jnl_line_pos"] = t.Reserve_item_jnl_line_pos
-	t.oldValues["reserve_item_jnl_line_neg"] = t.Reserve_item_jnl_line_neg
-	t.oldValues["reserve_item_jnl_line_trans"] = t.Reserve_item_jnl_line_trans
-	t.oldValues["reserve_bom_journal_line"] = t.Reserve_bom_journal_line
+	t.oldValues = reservationSetupFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -2359,231 +1606,7 @@ func (t *ReservationSetup) OldValue(fieldName string) interface{} {
 func (t *ReservationSetup) XRec() *ReservationSetup {
 	x := &ReservationSetup{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["primary_key"].(types.Code); ok {
-		x.Primary_key = v
-	}
-	if v, ok := t.oldValues["track_changes"].(bool); ok {
-		x.Track_changes = v
-	}
-	if v, ok := t.oldValues["valid_to_formula"].(types.Code); ok {
-		x.Valid_to_formula = v
-	}
-	if v, ok := t.oldValues["auto_req_wksh_template"].(types.Code); ok {
-		x.Auto_req_wksh_template = v
-	}
-	if v, ok := t.oldValues["auto_req_wksh_name"].(types.Code); ok {
-		x.Auto_req_wksh_name = v
-	}
-	if v, ok := t.oldValues["show_item_ledger_entry"].(ReservationSetupShow_item_ledger_entry); ok {
-		x.Show_item_ledger_entry = v
-	}
-	if v, ok := t.oldValues["item_ledger_entry_priority"].(int); ok {
-		x.Item_ledger_entry_priority = v
-	}
-	if v, ok := t.oldValues["show_purchase_quote"].(ReservationSetupShow_purchase_quote); ok {
-		x.Show_purchase_quote = v
-	}
-	if v, ok := t.oldValues["purchase_quote_priority"].(int); ok {
-		x.Purchase_quote_priority = v
-	}
-	if v, ok := t.oldValues["auto_purchase_quote"].(bool); ok {
-		x.Auto_purchase_quote = v
-	}
-	if v, ok := t.oldValues["show_blanket_purchase_order"].(ReservationSetupShow_blanket_purchase_order); ok {
-		x.Show_blanket_purchase_order = v
-	}
-	if v, ok := t.oldValues["blanket_purch_order_priority"].(int); ok {
-		x.Blanket_purch_order_priority = v
-	}
-	if v, ok := t.oldValues["auto_blanket_purchase_order"].(bool); ok {
-		x.Auto_blanket_purchase_order = v
-	}
-	if v, ok := t.oldValues["show_purchase_order"].(ReservationSetupShow_purchase_order); ok {
-		x.Show_purchase_order = v
-	}
-	if v, ok := t.oldValues["purchase_order_priority"].(int); ok {
-		x.Purchase_order_priority = v
-	}
-	if v, ok := t.oldValues["auto_purchase_order"].(bool); ok {
-		x.Auto_purchase_order = v
-	}
-	if v, ok := t.oldValues["show_purchase_invoice"].(ReservationSetupShow_purchase_invoice); ok {
-		x.Show_purchase_invoice = v
-	}
-	if v, ok := t.oldValues["purchase_invoice_priority"].(int); ok {
-		x.Purchase_invoice_priority = v
-	}
-	if v, ok := t.oldValues["auto_purchase_invoice"].(bool); ok {
-		x.Auto_purchase_invoice = v
-	}
-	if v, ok := t.oldValues["show_purchase_credit_memo"].(ReservationSetupShow_purchase_credit_memo); ok {
-		x.Show_purchase_credit_memo = v
-	}
-	if v, ok := t.oldValues["purchase_credit_memo_priority"].(int); ok {
-		x.Purchase_credit_memo_priority = v
-	}
-	if v, ok := t.oldValues["auto_purchase_credit_memo"].(bool); ok {
-		x.Auto_purchase_credit_memo = v
-	}
-	if v, ok := t.oldValues["show_requisition_line"].(ReservationSetupShow_requisition_line); ok {
-		x.Show_requisition_line = v
-	}
-	if v, ok := t.oldValues["requisition_line_priority"].(int); ok {
-		x.Requisition_line_priority = v
-	}
-	if v, ok := t.oldValues["auto_requisition_line"].(bool); ok {
-		x.Auto_requisition_line = v
-	}
-	if v, ok := t.oldValues["show_sales_quote"].(ReservationSetupShow_sales_quote); ok {
-		x.Show_sales_quote = v
-	}
-	if v, ok := t.oldValues["sales_quote_priority"].(int); ok {
-		x.Sales_quote_priority = v
-	}
-	if v, ok := t.oldValues["auto_sales_quote"].(bool); ok {
-		x.Auto_sales_quote = v
-	}
-	if v, ok := t.oldValues["show_blanket_sales_order"].(ReservationSetupShow_blanket_sales_order); ok {
-		x.Show_blanket_sales_order = v
-	}
-	if v, ok := t.oldValues["blanket_sales_order_priority"].(int); ok {
-		x.Blanket_sales_order_priority = v
-	}
-	if v, ok := t.oldValues["auto_blanket_sales_order"].(bool); ok {
-		x.Auto_blanket_sales_order = v
-	}
-	if v, ok := t.oldValues["show_sales_order"].(ReservationSetupShow_sales_order); ok {
-		x.Show_sales_order = v
-	}
-	if v, ok := t.oldValues["sales_order_priority"].(int); ok {
-		x.Sales_order_priority = v
-	}
-	if v, ok := t.oldValues["auto_sales_order"].(bool); ok {
-		x.Auto_sales_order = v
-	}
-	if v, ok := t.oldValues["show_sales_invoice"].(ReservationSetupShow_sales_invoice); ok {
-		x.Show_sales_invoice = v
-	}
-	if v, ok := t.oldValues["sales_invoice_priority"].(int); ok {
-		x.Sales_invoice_priority = v
-	}
-	if v, ok := t.oldValues["auto_sales_invoice"].(bool); ok {
-		x.Auto_sales_invoice = v
-	}
-	if v, ok := t.oldValues["show_sales_credit_memo"].(ReservationSetupShow_sales_credit_memo); ok {
-		x.Show_sales_credit_memo = v
-	}
-	if v, ok := t.oldValues["sales_credit_memo_priority"].(int); ok {
-		x.Sales_credit_memo_priority = v
-	}
-	if v, ok := t.oldValues["auto_sales_credit_memo"].(bool); ok {
-		x.Auto_sales_credit_memo = v
-	}
-	if v, ok := t.oldValues["show_item_jnl_line_purchases"].(ReservationSetupShow_item_jnl_line_purchases); ok {
-		x.Show_item_jnl_line_purchases = v
-	}
-	if v, ok := t.oldValues["item_jnl_line_purch_priority"].(int); ok {
-		x.Item_jnl_line_purch_priority = v
-	}
-	if v, ok := t.oldValues["auto_item_jnl_line_purchases"].(bool); ok {
-		x.Auto_item_jnl_line_purchases = v
-	}
-	if v, ok := t.oldValues["show_item_jnl_line_sales"].(ReservationSetupShow_item_jnl_line_sales); ok {
-		x.Show_item_jnl_line_sales = v
-	}
-	if v, ok := t.oldValues["item_jnl_line_sales_priority"].(int); ok {
-		x.Item_jnl_line_sales_priority = v
-	}
-	if v, ok := t.oldValues["auto_item_jnl_line_sales"].(bool); ok {
-		x.Auto_item_jnl_line_sales = v
-	}
-	if v, ok := t.oldValues["show_item_jnl_line_pos"].(ReservationSetupShow_item_jnl_line_pos); ok {
-		x.Show_item_jnl_line_pos = v
-	}
-	if v, ok := t.oldValues["item_jnl_line_pos_priority"].(int); ok {
-		x.Item_jnl_line_pos_priority = v
-	}
-	if v, ok := t.oldValues["auto_item_jnl_line_pos"].(bool); ok {
-		x.Auto_item_jnl_line_pos = v
-	}
-	if v, ok := t.oldValues["show_item_jnl_line_neg"].(ReservationSetupShow_item_jnl_line_neg); ok {
-		x.Show_item_jnl_line_neg = v
-	}
-	if v, ok := t.oldValues["item_jnl_line_neg_priority"].(int); ok {
-		x.Item_jnl_line_neg_priority = v
-	}
-	if v, ok := t.oldValues["auto_item_jnl_line_neg"].(bool); ok {
-		x.Auto_item_jnl_line_neg = v
-	}
-	if v, ok := t.oldValues["show_item_jnl_line_transfer"].(ReservationSetupShow_item_jnl_line_transfer); ok {
-		x.Show_item_jnl_line_transfer = v
-	}
-	if v, ok := t.oldValues["item_jnl_line_trans_priority"].(int); ok {
-		x.Item_jnl_line_trans_priority = v
-	}
-	if v, ok := t.oldValues["auto_item_jnl_line_transfer"].(bool); ok {
-		x.Auto_item_jnl_line_transfer = v
-	}
-	if v, ok := t.oldValues["show_bom_journal_line"].(ReservationSetupShow_bom_journal_line); ok {
-		x.Show_bom_journal_line = v
-	}
-	if v, ok := t.oldValues["bom_journal_line_priority"].(int); ok {
-		x.Bom_journal_line_priority = v
-	}
-	if v, ok := t.oldValues["auto_bom_journal_line"].(bool); ok {
-		x.Auto_bom_journal_line = v
-	}
-	if v, ok := t.oldValues["reserve_purchase_quote"].(bool); ok {
-		x.Reserve_purchase_quote = v
-	}
-	if v, ok := t.oldValues["reserve_blanket_purchase_order"].(bool); ok {
-		x.Reserve_blanket_purchase_order = v
-	}
-	if v, ok := t.oldValues["reserve_purchase_order"].(bool); ok {
-		x.Reserve_purchase_order = v
-	}
-	if v, ok := t.oldValues["reserve_purchase_invoice"].(bool); ok {
-		x.Reserve_purchase_invoice = v
-	}
-	if v, ok := t.oldValues["reserve_purchase_credit_memo"].(bool); ok {
-		x.Reserve_purchase_credit_memo = v
-	}
-	if v, ok := t.oldValues["reserve_requisition_line"].(bool); ok {
-		x.Reserve_requisition_line = v
-	}
-	if v, ok := t.oldValues["reserve_sales_quote"].(bool); ok {
-		x.Reserve_sales_quote = v
-	}
-	if v, ok := t.oldValues["reserve_blanket_sales_order"].(bool); ok {
-		x.Reserve_blanket_sales_order = v
-	}
-	if v, ok := t.oldValues["reserve_sales_order"].(bool); ok {
-		x.Reserve_sales_order = v
-	}
-	if v, ok := t.oldValues["reserve_sales_invoice"].(bool); ok {
-		x.Reserve_sales_invoice = v
-	}
-	if v, ok := t.oldValues["reserve_sales_credit_memo"].(bool); ok {
-		x.Reserve_sales_credit_memo = v
-	}
-	if v, ok := t.oldValues["reserve_item_jnl_line_purch"].(bool); ok {
-		x.Reserve_item_jnl_line_purch = v
-	}
-	if v, ok := t.oldValues["reserve_item_jnl_line_sales"].(bool); ok {
-		x.Reserve_item_jnl_line_sales = v
-	}
-	if v, ok := t.oldValues["reserve_item_jnl_line_pos"].(bool); ok {
-		x.Reserve_item_jnl_line_pos = v
-	}
-	if v, ok := t.oldValues["reserve_item_jnl_line_neg"].(bool); ok {
-		x.Reserve_item_jnl_line_neg = v
-	}
-	if v, ok := t.oldValues["reserve_item_jnl_line_trans"].(bool); ok {
-		x.Reserve_item_jnl_line_trans = v
-	}
-	if v, ok := t.oldValues["reserve_bom_journal_line"].(bool); ok {
-		x.Reserve_bom_journal_line = v
-	}
+	reservationSetupFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -3641,374 +2664,7 @@ func (t *ReservationSetup) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *ReservationSetup) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "primary_key":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Primary_key.Equal(old)
-		}
-	case "track_changes":
-		if old, ok := oldValue.(bool); ok {
-			return t.Track_changes != old
-		}
-		return true // Type mismatch, assume changed
-	case "valid_to_formula":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Valid_to_formula.Equal(old)
-		}
-	case "auto_req_wksh_template":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Auto_req_wksh_template.Equal(old)
-		}
-	case "auto_req_wksh_name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Auto_req_wksh_name.Equal(old)
-		}
-	case "show_item_ledger_entry":
-		if old, ok := oldValue.(ReservationSetupShow_item_ledger_entry); ok {
-			return t.Show_item_ledger_entry != old
-		}
-	case "item_ledger_entry_priority":
-		if old, ok := oldValue.(int); ok {
-			return t.Item_ledger_entry_priority != old
-		}
-		return true // Type mismatch, assume changed
-	case "show_purchase_quote":
-		if old, ok := oldValue.(ReservationSetupShow_purchase_quote); ok {
-			return t.Show_purchase_quote != old
-		}
-	case "purchase_quote_priority":
-		if old, ok := oldValue.(int); ok {
-			return t.Purchase_quote_priority != old
-		}
-		return true // Type mismatch, assume changed
-	case "auto_purchase_quote":
-		if old, ok := oldValue.(bool); ok {
-			return t.Auto_purchase_quote != old
-		}
-		return true // Type mismatch, assume changed
-	case "show_blanket_purchase_order":
-		if old, ok := oldValue.(ReservationSetupShow_blanket_purchase_order); ok {
-			return t.Show_blanket_purchase_order != old
-		}
-	case "blanket_purch_order_priority":
-		if old, ok := oldValue.(int); ok {
-			return t.Blanket_purch_order_priority != old
-		}
-		return true // Type mismatch, assume changed
-	case "auto_blanket_purchase_order":
-		if old, ok := oldValue.(bool); ok {
-			return t.Auto_blanket_purchase_order != old
-		}
-		return true // Type mismatch, assume changed
-	case "show_purchase_order":
-		if old, ok := oldValue.(ReservationSetupShow_purchase_order); ok {
-			return t.Show_purchase_order != old
-		}
-	case "purchase_order_priority":
-		if old, ok := oldValue.(int); ok {
-			return t.Purchase_order_priority != old
-		}
-		return true // Type mismatch, assume changed
-	case "auto_purchase_order":
-		if old, ok := oldValue.(bool); ok {
-			return t.Auto_purchase_order != old
-		}
-		return true // Type mismatch, assume changed
-	case "show_purchase_invoice":
-		if old, ok := oldValue.(ReservationSetupShow_purchase_invoice); ok {
-			return t.Show_purchase_invoice != old
-		}
-	case "purchase_invoice_priority":
-		if old, ok := oldValue.(int); ok {
-			return t.Purchase_invoice_priority != old
-		}
-		return true // Type mismatch, assume changed
-	case "auto_purchase_invoice":
-		if old, ok := oldValue.(bool); ok {
-			return t.Auto_purchase_invoice != old
-		}
-		return true // Type mismatch, assume changed
-	case "show_purchase_credit_memo":
-		if old, ok := oldValue.(ReservationSetupShow_purchase_credit_memo); ok {
-			return t.Show_purchase_credit_memo != old
-		}
-	case "purchase_credit_memo_priority":
-		if old, ok := oldValue.(int); ok {
-			return t.Purchase_credit_memo_priority != old
-		}
-		return true // Type mismatch, assume changed
-	case "auto_purchase_credit_memo":
-		if old, ok := oldValue.(bool); ok {
-			return t.Auto_purchase_credit_memo != old
-		}
-		return true // Type mismatch, assume changed
-	case "show_requisition_line":
-		if old, ok := oldValue.(ReservationSetupShow_requisition_line); ok {
-			return t.Show_requisition_line != old
-		}
-	case "requisition_line_priority":
-		if old, ok := oldValue.(int); ok {
-			return t.Requisition_line_priority != old
-		}
-		return true // Type mismatch, assume changed
-	case "auto_requisition_line":
-		if old, ok := oldValue.(bool); ok {
-			return t.Auto_requisition_line != old
-		}
-		return true // Type mismatch, assume changed
-	case "show_sales_quote":
-		if old, ok := oldValue.(ReservationSetupShow_sales_quote); ok {
-			return t.Show_sales_quote != old
-		}
-	case "sales_quote_priority":
-		if old, ok := oldValue.(int); ok {
-			return t.Sales_quote_priority != old
-		}
-		return true // Type mismatch, assume changed
-	case "auto_sales_quote":
-		if old, ok := oldValue.(bool); ok {
-			return t.Auto_sales_quote != old
-		}
-		return true // Type mismatch, assume changed
-	case "show_blanket_sales_order":
-		if old, ok := oldValue.(ReservationSetupShow_blanket_sales_order); ok {
-			return t.Show_blanket_sales_order != old
-		}
-	case "blanket_sales_order_priority":
-		if old, ok := oldValue.(int); ok {
-			return t.Blanket_sales_order_priority != old
-		}
-		return true // Type mismatch, assume changed
-	case "auto_blanket_sales_order":
-		if old, ok := oldValue.(bool); ok {
-			return t.Auto_blanket_sales_order != old
-		}
-		return true // Type mismatch, assume changed
-	case "show_sales_order":
-		if old, ok := oldValue.(ReservationSetupShow_sales_order); ok {
-			return t.Show_sales_order != old
-		}
-	case "sales_order_priority":
-		if old, ok := oldValue.(int); ok {
-			return t.Sales_order_priority != old
-		}
-		return true // Type mismatch, assume changed
-	case "auto_sales_order":
-		if old, ok := oldValue.(bool); ok {
-			return t.Auto_sales_order != old
-		}
-		return true // Type mismatch, assume changed
-	case "show_sales_invoice":
-		if old, ok := oldValue.(ReservationSetupShow_sales_invoice); ok {
-			return t.Show_sales_invoice != old
-		}
-	case "sales_invoice_priority":
-		if old, ok := oldValue.(int); ok {
-			return t.Sales_invoice_priority != old
-		}
-		return true // Type mismatch, assume changed
-	case "auto_sales_invoice":
-		if old, ok := oldValue.(bool); ok {
-			return t.Auto_sales_invoice != old
-		}
-		return true // Type mismatch, assume changed
-	case "show_sales_credit_memo":
-		if old, ok := oldValue.(ReservationSetupShow_sales_credit_memo); ok {
-			return t.Show_sales_credit_memo != old
-		}
-	case "sales_credit_memo_priority":
-		if old, ok := oldValue.(int); ok {
-			return t.Sales_credit_memo_priority != old
-		}
-		return true // Type mismatch, assume changed
-	case "auto_sales_credit_memo":
-		if old, ok := oldValue.(bool); ok {
-			return t.Auto_sales_credit_memo != old
-		}
-		return true // Type mismatch, assume changed
-	case "show_item_jnl_line_purchases":
-		if old, ok := oldValue.(ReservationSetupShow_item_jnl_line_purchases); ok {
-			return t.Show_item_jnl_line_purchases != old
-		}
-	case "item_jnl_line_purch_priority":
-		if old, ok := oldValue.(int); ok {
-			return t.Item_jnl_line_purch_priority != old
-		}
-		return true // Type mismatch, assume changed
-	case "auto_item_jnl_line_purchases":
-		if old, ok := oldValue.(bool); ok {
-			return t.Auto_item_jnl_line_purchases != old
-		}
-		return true // Type mismatch, assume changed
-	case "show_item_jnl_line_sales":
-		if old, ok := oldValue.(ReservationSetupShow_item_jnl_line_sales); ok {
-			return t.Show_item_jnl_line_sales != old
-		}
-	case "item_jnl_line_sales_priority":
-		if old, ok := oldValue.(int); ok {
-			return t.Item_jnl_line_sales_priority != old
-		}
-		return true // Type mismatch, assume changed
-	case "auto_item_jnl_line_sales":
-		if old, ok := oldValue.(bool); ok {
-			return t.Auto_item_jnl_line_sales != old
-		}
-		return true // Type mismatch, assume changed
-	case "show_item_jnl_line_pos":
-		if old, ok := oldValue.(ReservationSetupShow_item_jnl_line_pos); ok {
-			return t.Show_item_jnl_line_pos != old
-		}
-	case "item_jnl_line_pos_priority":
-		if old, ok := oldValue.(int); ok {
-			return t.Item_jnl_line_pos_priority != old
-		}
-		return true // Type mismatch, assume changed
-	case "auto_item_jnl_line_pos":
-		if old, ok := oldValue.(bool); ok {
-			return t.Auto_item_jnl_line_pos != old
-		}
-		return true // Type mismatch, assume changed
-	case "show_item_jnl_line_neg":
-		if old, ok := oldValue.(ReservationSetupShow_item_jnl_line_neg); ok {
-			return t.Show_item_jnl_line_neg != old
-		}
-	case "item_jnl_line_neg_priority":
-		if old, ok := oldValue.(int); ok {
-			return t.Item_jnl_line_neg_priority != old
-		}
-		return true // Type mismatch, assume changed
-	case "auto_item_jnl_line_neg":
-		if old, ok := oldValue.(bool); ok {
-			return t.Auto_item_jnl_line_neg != old
-		}
-		return true // Type mismatch, assume changed
-	case "show_item_jnl_line_transfer":
-		if old, ok := oldValue.(ReservationSetupShow_item_jnl_line_transfer); ok {
-			return t.Show_item_jnl_line_transfer != old
-		}
-	case "item_jnl_line_trans_priority":
-		if old, ok := oldValue.(int); ok {
-			return t.Item_jnl_line_trans_priority != old
-		}
-		return true // Type mismatch, assume changed
-	case "auto_item_jnl_line_transfer":
-		if old, ok := oldValue.(bool); ok {
-			return t.Auto_item_jnl_line_transfer != old
-		}
-		return true // Type mismatch, assume changed
-	case "show_bom_journal_line":
-		if old, ok := oldValue.(ReservationSetupShow_bom_journal_line); ok {
-			return t.Show_bom_journal_line != old
-		}
-	case "bom_journal_line_priority":
-		if old, ok := oldValue.(int); ok {
-			return t.Bom_journal_line_priority != old
-		}
-		return true // Type mismatch, assume changed
-	case "auto_bom_journal_line":
-		if old, ok := oldValue.(bool); ok {
-			return t.Auto_bom_journal_line != old
-		}
-		return true // Type mismatch, assume changed
-	case "reserve_purchase_quote":
-		if old, ok := oldValue.(bool); ok {
-			return t.Reserve_purchase_quote != old
-		}
-		return true // Type mismatch, assume changed
-	case "reserve_blanket_purchase_order":
-		if old, ok := oldValue.(bool); ok {
-			return t.Reserve_blanket_purchase_order != old
-		}
-		return true // Type mismatch, assume changed
-	case "reserve_purchase_order":
-		if old, ok := oldValue.(bool); ok {
-			return t.Reserve_purchase_order != old
-		}
-		return true // Type mismatch, assume changed
-	case "reserve_purchase_invoice":
-		if old, ok := oldValue.(bool); ok {
-			return t.Reserve_purchase_invoice != old
-		}
-		return true // Type mismatch, assume changed
-	case "reserve_purchase_credit_memo":
-		if old, ok := oldValue.(bool); ok {
-			return t.Reserve_purchase_credit_memo != old
-		}
-		return true // Type mismatch, assume changed
-	case "reserve_requisition_line":
-		if old, ok := oldValue.(bool); ok {
-			return t.Reserve_requisition_line != old
-		}
-		return true // Type mismatch, assume changed
-	case "reserve_sales_quote":
-		if old, ok := oldValue.(bool); ok {
-			return t.Reserve_sales_quote != old
-		}
-		return true // Type mismatch, assume changed
-	case "reserve_blanket_sales_order":
-		if old, ok := oldValue.(bool); ok {
-			return t.Reserve_blanket_sales_order != old
-		}
-		return true // Type mismatch, assume changed
-	case "reserve_sales_order":
-		if old, ok := oldValue.(bool); ok {
-			return t.Reserve_sales_order != old
-		}
-		return true // Type mismatch, assume changed
-	case "reserve_sales_invoice":
-		if old, ok := oldValue.(bool); ok {
-			return t.Reserve_sales_invoice != old
-		}
-		return true // Type mismatch, assume changed
-	case "reserve_sales_credit_memo":
-		if old, ok := oldValue.(bool); ok {
-			return t.Reserve_sales_credit_memo != old
-		}
-		return true // Type mismatch, assume changed
-	case "reserve_item_jnl_line_purch":
-		if old, ok := oldValue.(bool); ok {
-			return t.Reserve_item_jnl_line_purch != old
-		}
-		return true // Type mismatch, assume changed
-	case "reserve_item_jnl_line_sales":
-		if old, ok := oldValue.(bool); ok {
-			return t.Reserve_item_jnl_line_sales != old
-		}
-		return true // Type mismatch, assume changed
-	case "reserve_item_jnl_line_pos":
-		if old, ok := oldValue.(bool); ok {
-			return t.Reserve_item_jnl_line_pos != old
-		}
-		return true // Type mismatch, assume changed
-	case "reserve_item_jnl_line_neg":
-		if old, ok := oldValue.(bool); ok {
-			return t.Reserve_item_jnl_line_neg != old
-		}
-		return true // Type mismatch, assume changed
-	case "reserve_item_jnl_line_trans":
-		if old, ok := oldValue.(bool); ok {
-			return t.Reserve_item_jnl_line_trans != old
-		}
-		return true // Type mismatch, assume changed
-	case "reserve_bom_journal_line":
-		if old, ok := oldValue.(bool); ok {
-			return t.Reserve_bom_journal_line != old
-		}
-		return true // Type mismatch, assume changed
-	}
-
-	return false
+	return reservationSetupFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -4209,159 +2865,7 @@ func (t *ReservationSetup) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *ReservationSetup) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("primary_key"):
-		return "primary_key", true
-	case strings.ToLower("track_changes"):
-		return "track_changes", true
-	case strings.ToLower("valid_to_formula"):
-		return "valid_to_formula", true
-	case strings.ToLower("auto_req_wksh_template"):
-		return "auto_req_wksh_template", true
-	case strings.ToLower("auto_req_wksh_name"):
-		return "auto_req_wksh_name", true
-	case strings.ToLower("show_item_ledger_entry"):
-		return "show_item_ledger_entry", true
-	case strings.ToLower("item_ledger_entry_priority"):
-		return "item_ledger_entry_priority", true
-	case strings.ToLower("show_purchase_quote"):
-		return "show_purchase_quote", true
-	case strings.ToLower("purchase_quote_priority"):
-		return "purchase_quote_priority", true
-	case strings.ToLower("auto_purchase_quote"):
-		return "auto_purchase_quote", true
-	case strings.ToLower("show_blanket_purchase_order"):
-		return "show_blanket_purchase_order", true
-	case strings.ToLower("blanket_purch_order_priority"):
-		return "blanket_purch_order_priority", true
-	case strings.ToLower("auto_blanket_purchase_order"):
-		return "auto_blanket_purchase_order", true
-	case strings.ToLower("show_purchase_order"):
-		return "show_purchase_order", true
-	case strings.ToLower("purchase_order_priority"):
-		return "purchase_order_priority", true
-	case strings.ToLower("auto_purchase_order"):
-		return "auto_purchase_order", true
-	case strings.ToLower("show_purchase_invoice"):
-		return "show_purchase_invoice", true
-	case strings.ToLower("purchase_invoice_priority"):
-		return "purchase_invoice_priority", true
-	case strings.ToLower("auto_purchase_invoice"):
-		return "auto_purchase_invoice", true
-	case strings.ToLower("show_purchase_credit_memo"):
-		return "show_purchase_credit_memo", true
-	case strings.ToLower("purchase_credit_memo_priority"):
-		return "purchase_credit_memo_priority", true
-	case strings.ToLower("auto_purchase_credit_memo"):
-		return "auto_purchase_credit_memo", true
-	case strings.ToLower("show_requisition_line"):
-		return "show_requisition_line", true
-	case strings.ToLower("requisition_line_priority"):
-		return "requisition_line_priority", true
-	case strings.ToLower("auto_requisition_line"):
-		return "auto_requisition_line", true
-	case strings.ToLower("show_sales_quote"):
-		return "show_sales_quote", true
-	case strings.ToLower("sales_quote_priority"):
-		return "sales_quote_priority", true
-	case strings.ToLower("auto_sales_quote"):
-		return "auto_sales_quote", true
-	case strings.ToLower("show_blanket_sales_order"):
-		return "show_blanket_sales_order", true
-	case strings.ToLower("blanket_sales_order_priority"):
-		return "blanket_sales_order_priority", true
-	case strings.ToLower("auto_blanket_sales_order"):
-		return "auto_blanket_sales_order", true
-	case strings.ToLower("show_sales_order"):
-		return "show_sales_order", true
-	case strings.ToLower("sales_order_priority"):
-		return "sales_order_priority", true
-	case strings.ToLower("auto_sales_order"):
-		return "auto_sales_order", true
-	case strings.ToLower("show_sales_invoice"):
-		return "show_sales_invoice", true
-	case strings.ToLower("sales_invoice_priority"):
-		return "sales_invoice_priority", true
-	case strings.ToLower("auto_sales_invoice"):
-		return "auto_sales_invoice", true
-	case strings.ToLower("show_sales_credit_memo"):
-		return "show_sales_credit_memo", true
-	case strings.ToLower("sales_credit_memo_priority"):
-		return "sales_credit_memo_priority", true
-	case strings.ToLower("auto_sales_credit_memo"):
-		return "auto_sales_credit_memo", true
-	case strings.ToLower("show_item_jnl_line_purchases"):
-		return "show_item_jnl_line_purchases", true
-	case strings.ToLower("item_jnl_line_purch_priority"):
-		return "item_jnl_line_purch_priority", true
-	case strings.ToLower("auto_item_jnl_line_purchases"):
-		return "auto_item_jnl_line_purchases", true
-	case strings.ToLower("show_item_jnl_line_sales"):
-		return "show_item_jnl_line_sales", true
-	case strings.ToLower("item_jnl_line_sales_priority"):
-		return "item_jnl_line_sales_priority", true
-	case strings.ToLower("auto_item_jnl_line_sales"):
-		return "auto_item_jnl_line_sales", true
-	case strings.ToLower("show_item_jnl_line_pos"):
-		return "show_item_jnl_line_pos", true
-	case strings.ToLower("item_jnl_line_pos_priority"):
-		return "item_jnl_line_pos_priority", true
-	case strings.ToLower("auto_item_jnl_line_pos"):
-		return "auto_item_jnl_line_pos", true
-	case strings.ToLower("show_item_jnl_line_neg"):
-		return "show_item_jnl_line_neg", true
-	case strings.ToLower("item_jnl_line_neg_priority"):
-		return "item_jnl_line_neg_priority", true
-	case strings.ToLower("auto_item_jnl_line_neg"):
-		return "auto_item_jnl_line_neg", true
-	case strings.ToLower("show_item_jnl_line_transfer"):
-		return "show_item_jnl_line_transfer", true
-	case strings.ToLower("item_jnl_line_trans_priority"):
-		return "item_jnl_line_trans_priority", true
-	case strings.ToLower("auto_item_jnl_line_transfer"):
-		return "auto_item_jnl_line_transfer", true
-	case strings.ToLower("show_bom_journal_line"):
-		return "show_bom_journal_line", true
-	case strings.ToLower("bom_journal_line_priority"):
-		return "bom_journal_line_priority", true
-	case strings.ToLower("auto_bom_journal_line"):
-		return "auto_bom_journal_line", true
-	case strings.ToLower("reserve_purchase_quote"):
-		return "reserve_purchase_quote", true
-	case strings.ToLower("reserve_blanket_purchase_order"):
-		return "reserve_blanket_purchase_order", true
-	case strings.ToLower("reserve_purchase_order"):
-		return "reserve_purchase_order", true
-	case strings.ToLower("reserve_purchase_invoice"):
-		return "reserve_purchase_invoice", true
-	case strings.ToLower("reserve_purchase_credit_memo"):
-		return "reserve_purchase_credit_memo", true
-	case strings.ToLower("reserve_requisition_line"):
-		return "reserve_requisition_line", true
-	case strings.ToLower("reserve_sales_quote"):
-		return "reserve_sales_quote", true
-	case strings.ToLower("reserve_blanket_sales_order"):
-		return "reserve_blanket_sales_order", true
-	case strings.ToLower("reserve_sales_order"):
-		return "reserve_sales_order", true
-	case strings.ToLower("reserve_sales_invoice"):
-		return "reserve_sales_invoice", true
-	case strings.ToLower("reserve_sales_credit_memo"):
-		return "reserve_sales_credit_memo", true
-	case strings.ToLower("reserve_item_jnl_line_purch"):
-		return "reserve_item_jnl_line_purch", true
-	case strings.ToLower("reserve_item_jnl_line_sales"):
-		return "reserve_item_jnl_line_sales", true
-	case strings.ToLower("reserve_item_jnl_line_pos"):
-		return "reserve_item_jnl_line_pos", true
-	case strings.ToLower("reserve_item_jnl_line_neg"):
-		return "reserve_item_jnl_line_neg", true
-	case strings.ToLower("reserve_item_jnl_line_trans"):
-		return "reserve_item_jnl_line_trans", true
-	case strings.ToLower("reserve_bom_journal_line"):
-		return "reserve_bom_journal_line", true
-	}
-	return "", false
+	return reservationSetupFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -6045,2128 +4549,20 @@ func (t *ReservationSetup) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *ReservationSetup) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "primary_key":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Primary_key = v
-		} else if v, ok := value.(string); ok {
-			t.Primary_key = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field primary_key")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Primary_key); ok {
-				if err := trg.OnValidate_Primary_key(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "track_changes":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Track_changes = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Track_changes = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field track_changes")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Track_changes); ok {
-				if err := trg.OnValidate_Track_changes(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "valid_to_formula":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Valid_to_formula = v
-		} else if v, ok := value.(string); ok {
-			t.Valid_to_formula = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field valid_to_formula")
-		}
-		if err := tables.CheckDateFormula(ReservationSetupTableName, "valid_to_formula", string(t.Valid_to_formula)); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Valid_to_formula); ok {
-				if err := trg.OnValidate_Valid_to_formula(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "auto_req_wksh_template":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Auto_req_wksh_template = v
-		} else if v, ok := value.(string); ok {
-			t.Auto_req_wksh_template = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field auto_req_wksh_template")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "auto_req_wksh_template"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Auto_req_wksh_template); ok {
-				if err := trg.OnValidate_Auto_req_wksh_template(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "auto_req_wksh_name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Auto_req_wksh_name = v
-		} else if v, ok := value.(string); ok {
-			t.Auto_req_wksh_name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field auto_req_wksh_name")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "auto_req_wksh_name"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Auto_req_wksh_name); ok {
-				if err := trg.OnValidate_Auto_req_wksh_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "show_item_ledger_entry":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ReservationSetupShow_item_ledger_entry); ok {
-			t.Show_item_ledger_entry = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_item_ledger_entry (valid range: 0-%d)", v, 3-1)
-			}
-			t.Show_item_ledger_entry = ReservationSetupShow_item_ledger_entry(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_item_ledger_entry (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Show_item_ledger_entry = ReservationSetupShow_item_ledger_entry(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Show_item_ledger_entry = 0
-			} else {
-				options := []string{"Never", "Optional", "Always"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Show_item_ledger_entry = ReservationSetupShow_item_ledger_entry(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field show_item_ledger_entry (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field show_item_ledger_entry (expected ReservationSetupShow_item_ledger_entry, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Show_item_ledger_entry); ok {
-				if err := trg.OnValidate_Show_item_ledger_entry(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "item_ledger_entry_priority":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Item_ledger_entry_priority = v
-		case float64:
-			t.Item_ledger_entry_priority = int(v)
-		case string:
-			if v == "" {
-				t.Item_ledger_entry_priority = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Item_ledger_entry_priority = i
-			} else {
-				return fmt.Errorf("invalid integer value for field item_ledger_entry_priority: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field item_ledger_entry_priority")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Item_ledger_entry_priority); ok {
-				if err := trg.OnValidate_Item_ledger_entry_priority(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "show_purchase_quote":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ReservationSetupShow_purchase_quote); ok {
-			t.Show_purchase_quote = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_purchase_quote (valid range: 0-%d)", v, 3-1)
-			}
-			t.Show_purchase_quote = ReservationSetupShow_purchase_quote(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_purchase_quote (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Show_purchase_quote = ReservationSetupShow_purchase_quote(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Show_purchase_quote = 0
-			} else {
-				options := []string{"Never", "Optional", "Always"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Show_purchase_quote = ReservationSetupShow_purchase_quote(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field show_purchase_quote (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field show_purchase_quote (expected ReservationSetupShow_purchase_quote, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Show_purchase_quote); ok {
-				if err := trg.OnValidate_Show_purchase_quote(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "purchase_quote_priority":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Purchase_quote_priority = v
-		case float64:
-			t.Purchase_quote_priority = int(v)
-		case string:
-			if v == "" {
-				t.Purchase_quote_priority = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Purchase_quote_priority = i
-			} else {
-				return fmt.Errorf("invalid integer value for field purchase_quote_priority: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field purchase_quote_priority")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Purchase_quote_priority); ok {
-				if err := trg.OnValidate_Purchase_quote_priority(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "auto_purchase_quote":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Auto_purchase_quote = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Auto_purchase_quote = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field auto_purchase_quote")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Auto_purchase_quote); ok {
-				if err := trg.OnValidate_Auto_purchase_quote(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "show_blanket_purchase_order":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ReservationSetupShow_blanket_purchase_order); ok {
-			t.Show_blanket_purchase_order = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_blanket_purchase_order (valid range: 0-%d)", v, 3-1)
-			}
-			t.Show_blanket_purchase_order = ReservationSetupShow_blanket_purchase_order(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_blanket_purchase_order (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Show_blanket_purchase_order = ReservationSetupShow_blanket_purchase_order(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Show_blanket_purchase_order = 0
-			} else {
-				options := []string{"Never", "Optional", "Always"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Show_blanket_purchase_order = ReservationSetupShow_blanket_purchase_order(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field show_blanket_purchase_order (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field show_blanket_purchase_order (expected ReservationSetupShow_blanket_purchase_order, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Show_blanket_purchase_order); ok {
-				if err := trg.OnValidate_Show_blanket_purchase_order(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "blanket_purch_order_priority":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Blanket_purch_order_priority = v
-		case float64:
-			t.Blanket_purch_order_priority = int(v)
-		case string:
-			if v == "" {
-				t.Blanket_purch_order_priority = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Blanket_purch_order_priority = i
-			} else {
-				return fmt.Errorf("invalid integer value for field blanket_purch_order_priority: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field blanket_purch_order_priority")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Blanket_purch_order_priority); ok {
-				if err := trg.OnValidate_Blanket_purch_order_priority(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "auto_blanket_purchase_order":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Auto_blanket_purchase_order = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Auto_blanket_purchase_order = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field auto_blanket_purchase_order")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Auto_blanket_purchase_order); ok {
-				if err := trg.OnValidate_Auto_blanket_purchase_order(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "show_purchase_order":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ReservationSetupShow_purchase_order); ok {
-			t.Show_purchase_order = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_purchase_order (valid range: 0-%d)", v, 3-1)
-			}
-			t.Show_purchase_order = ReservationSetupShow_purchase_order(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_purchase_order (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Show_purchase_order = ReservationSetupShow_purchase_order(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Show_purchase_order = 0
-			} else {
-				options := []string{"Never", "Optional", "Always"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Show_purchase_order = ReservationSetupShow_purchase_order(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field show_purchase_order (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field show_purchase_order (expected ReservationSetupShow_purchase_order, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Show_purchase_order); ok {
-				if err := trg.OnValidate_Show_purchase_order(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "purchase_order_priority":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Purchase_order_priority = v
-		case float64:
-			t.Purchase_order_priority = int(v)
-		case string:
-			if v == "" {
-				t.Purchase_order_priority = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Purchase_order_priority = i
-			} else {
-				return fmt.Errorf("invalid integer value for field purchase_order_priority: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field purchase_order_priority")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Purchase_order_priority); ok {
-				if err := trg.OnValidate_Purchase_order_priority(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "auto_purchase_order":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Auto_purchase_order = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Auto_purchase_order = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field auto_purchase_order")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Auto_purchase_order); ok {
-				if err := trg.OnValidate_Auto_purchase_order(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "show_purchase_invoice":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ReservationSetupShow_purchase_invoice); ok {
-			t.Show_purchase_invoice = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_purchase_invoice (valid range: 0-%d)", v, 3-1)
-			}
-			t.Show_purchase_invoice = ReservationSetupShow_purchase_invoice(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_purchase_invoice (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Show_purchase_invoice = ReservationSetupShow_purchase_invoice(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Show_purchase_invoice = 0
-			} else {
-				options := []string{"Never", "Optional", "Always"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Show_purchase_invoice = ReservationSetupShow_purchase_invoice(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field show_purchase_invoice (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field show_purchase_invoice (expected ReservationSetupShow_purchase_invoice, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Show_purchase_invoice); ok {
-				if err := trg.OnValidate_Show_purchase_invoice(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "purchase_invoice_priority":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Purchase_invoice_priority = v
-		case float64:
-			t.Purchase_invoice_priority = int(v)
-		case string:
-			if v == "" {
-				t.Purchase_invoice_priority = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Purchase_invoice_priority = i
-			} else {
-				return fmt.Errorf("invalid integer value for field purchase_invoice_priority: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field purchase_invoice_priority")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Purchase_invoice_priority); ok {
-				if err := trg.OnValidate_Purchase_invoice_priority(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "auto_purchase_invoice":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Auto_purchase_invoice = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Auto_purchase_invoice = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field auto_purchase_invoice")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Auto_purchase_invoice); ok {
-				if err := trg.OnValidate_Auto_purchase_invoice(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "show_purchase_credit_memo":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ReservationSetupShow_purchase_credit_memo); ok {
-			t.Show_purchase_credit_memo = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_purchase_credit_memo (valid range: 0-%d)", v, 3-1)
-			}
-			t.Show_purchase_credit_memo = ReservationSetupShow_purchase_credit_memo(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_purchase_credit_memo (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Show_purchase_credit_memo = ReservationSetupShow_purchase_credit_memo(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Show_purchase_credit_memo = 0
-			} else {
-				options := []string{"Never", "Optional", "Always"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Show_purchase_credit_memo = ReservationSetupShow_purchase_credit_memo(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field show_purchase_credit_memo (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field show_purchase_credit_memo (expected ReservationSetupShow_purchase_credit_memo, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Show_purchase_credit_memo); ok {
-				if err := trg.OnValidate_Show_purchase_credit_memo(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "purchase_credit_memo_priority":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Purchase_credit_memo_priority = v
-		case float64:
-			t.Purchase_credit_memo_priority = int(v)
-		case string:
-			if v == "" {
-				t.Purchase_credit_memo_priority = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Purchase_credit_memo_priority = i
-			} else {
-				return fmt.Errorf("invalid integer value for field purchase_credit_memo_priority: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field purchase_credit_memo_priority")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Purchase_credit_memo_priority); ok {
-				if err := trg.OnValidate_Purchase_credit_memo_priority(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "auto_purchase_credit_memo":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Auto_purchase_credit_memo = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Auto_purchase_credit_memo = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field auto_purchase_credit_memo")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Auto_purchase_credit_memo); ok {
-				if err := trg.OnValidate_Auto_purchase_credit_memo(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "show_requisition_line":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ReservationSetupShow_requisition_line); ok {
-			t.Show_requisition_line = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_requisition_line (valid range: 0-%d)", v, 3-1)
-			}
-			t.Show_requisition_line = ReservationSetupShow_requisition_line(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_requisition_line (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Show_requisition_line = ReservationSetupShow_requisition_line(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Show_requisition_line = 0
-			} else {
-				options := []string{"Never", "Optional", "Always"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Show_requisition_line = ReservationSetupShow_requisition_line(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field show_requisition_line (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field show_requisition_line (expected ReservationSetupShow_requisition_line, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Show_requisition_line); ok {
-				if err := trg.OnValidate_Show_requisition_line(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "requisition_line_priority":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Requisition_line_priority = v
-		case float64:
-			t.Requisition_line_priority = int(v)
-		case string:
-			if v == "" {
-				t.Requisition_line_priority = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Requisition_line_priority = i
-			} else {
-				return fmt.Errorf("invalid integer value for field requisition_line_priority: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field requisition_line_priority")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Requisition_line_priority); ok {
-				if err := trg.OnValidate_Requisition_line_priority(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "auto_requisition_line":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Auto_requisition_line = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Auto_requisition_line = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field auto_requisition_line")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Auto_requisition_line); ok {
-				if err := trg.OnValidate_Auto_requisition_line(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "show_sales_quote":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ReservationSetupShow_sales_quote); ok {
-			t.Show_sales_quote = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_sales_quote (valid range: 0-%d)", v, 3-1)
-			}
-			t.Show_sales_quote = ReservationSetupShow_sales_quote(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_sales_quote (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Show_sales_quote = ReservationSetupShow_sales_quote(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Show_sales_quote = 0
-			} else {
-				options := []string{"Never", "Optional", "Always"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Show_sales_quote = ReservationSetupShow_sales_quote(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field show_sales_quote (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field show_sales_quote (expected ReservationSetupShow_sales_quote, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Show_sales_quote); ok {
-				if err := trg.OnValidate_Show_sales_quote(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sales_quote_priority":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Sales_quote_priority = v
-		case float64:
-			t.Sales_quote_priority = int(v)
-		case string:
-			if v == "" {
-				t.Sales_quote_priority = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Sales_quote_priority = i
-			} else {
-				return fmt.Errorf("invalid integer value for field sales_quote_priority: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field sales_quote_priority")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Sales_quote_priority); ok {
-				if err := trg.OnValidate_Sales_quote_priority(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "auto_sales_quote":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Auto_sales_quote = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Auto_sales_quote = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field auto_sales_quote")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Auto_sales_quote); ok {
-				if err := trg.OnValidate_Auto_sales_quote(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "show_blanket_sales_order":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ReservationSetupShow_blanket_sales_order); ok {
-			t.Show_blanket_sales_order = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_blanket_sales_order (valid range: 0-%d)", v, 3-1)
-			}
-			t.Show_blanket_sales_order = ReservationSetupShow_blanket_sales_order(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_blanket_sales_order (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Show_blanket_sales_order = ReservationSetupShow_blanket_sales_order(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Show_blanket_sales_order = 0
-			} else {
-				options := []string{"Never", "Optional", "Always"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Show_blanket_sales_order = ReservationSetupShow_blanket_sales_order(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field show_blanket_sales_order (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field show_blanket_sales_order (expected ReservationSetupShow_blanket_sales_order, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Show_blanket_sales_order); ok {
-				if err := trg.OnValidate_Show_blanket_sales_order(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "blanket_sales_order_priority":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Blanket_sales_order_priority = v
-		case float64:
-			t.Blanket_sales_order_priority = int(v)
-		case string:
-			if v == "" {
-				t.Blanket_sales_order_priority = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Blanket_sales_order_priority = i
-			} else {
-				return fmt.Errorf("invalid integer value for field blanket_sales_order_priority: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field blanket_sales_order_priority")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Blanket_sales_order_priority); ok {
-				if err := trg.OnValidate_Blanket_sales_order_priority(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "auto_blanket_sales_order":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Auto_blanket_sales_order = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Auto_blanket_sales_order = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field auto_blanket_sales_order")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Auto_blanket_sales_order); ok {
-				if err := trg.OnValidate_Auto_blanket_sales_order(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "show_sales_order":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ReservationSetupShow_sales_order); ok {
-			t.Show_sales_order = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_sales_order (valid range: 0-%d)", v, 3-1)
-			}
-			t.Show_sales_order = ReservationSetupShow_sales_order(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_sales_order (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Show_sales_order = ReservationSetupShow_sales_order(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Show_sales_order = 0
-			} else {
-				options := []string{"Never", "Optional", "Always"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Show_sales_order = ReservationSetupShow_sales_order(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field show_sales_order (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field show_sales_order (expected ReservationSetupShow_sales_order, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Show_sales_order); ok {
-				if err := trg.OnValidate_Show_sales_order(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sales_order_priority":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Sales_order_priority = v
-		case float64:
-			t.Sales_order_priority = int(v)
-		case string:
-			if v == "" {
-				t.Sales_order_priority = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Sales_order_priority = i
-			} else {
-				return fmt.Errorf("invalid integer value for field sales_order_priority: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field sales_order_priority")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Sales_order_priority); ok {
-				if err := trg.OnValidate_Sales_order_priority(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "auto_sales_order":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Auto_sales_order = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Auto_sales_order = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field auto_sales_order")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Auto_sales_order); ok {
-				if err := trg.OnValidate_Auto_sales_order(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "show_sales_invoice":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ReservationSetupShow_sales_invoice); ok {
-			t.Show_sales_invoice = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_sales_invoice (valid range: 0-%d)", v, 3-1)
-			}
-			t.Show_sales_invoice = ReservationSetupShow_sales_invoice(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_sales_invoice (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Show_sales_invoice = ReservationSetupShow_sales_invoice(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Show_sales_invoice = 0
-			} else {
-				options := []string{"Never", "Optional", "Always"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Show_sales_invoice = ReservationSetupShow_sales_invoice(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field show_sales_invoice (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field show_sales_invoice (expected ReservationSetupShow_sales_invoice, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Show_sales_invoice); ok {
-				if err := trg.OnValidate_Show_sales_invoice(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sales_invoice_priority":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Sales_invoice_priority = v
-		case float64:
-			t.Sales_invoice_priority = int(v)
-		case string:
-			if v == "" {
-				t.Sales_invoice_priority = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Sales_invoice_priority = i
-			} else {
-				return fmt.Errorf("invalid integer value for field sales_invoice_priority: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field sales_invoice_priority")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Sales_invoice_priority); ok {
-				if err := trg.OnValidate_Sales_invoice_priority(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "auto_sales_invoice":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Auto_sales_invoice = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Auto_sales_invoice = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field auto_sales_invoice")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Auto_sales_invoice); ok {
-				if err := trg.OnValidate_Auto_sales_invoice(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "show_sales_credit_memo":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ReservationSetupShow_sales_credit_memo); ok {
-			t.Show_sales_credit_memo = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_sales_credit_memo (valid range: 0-%d)", v, 3-1)
-			}
-			t.Show_sales_credit_memo = ReservationSetupShow_sales_credit_memo(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_sales_credit_memo (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Show_sales_credit_memo = ReservationSetupShow_sales_credit_memo(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Show_sales_credit_memo = 0
-			} else {
-				options := []string{"Never", "Optional", "Always"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Show_sales_credit_memo = ReservationSetupShow_sales_credit_memo(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field show_sales_credit_memo (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field show_sales_credit_memo (expected ReservationSetupShow_sales_credit_memo, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Show_sales_credit_memo); ok {
-				if err := trg.OnValidate_Show_sales_credit_memo(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sales_credit_memo_priority":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Sales_credit_memo_priority = v
-		case float64:
-			t.Sales_credit_memo_priority = int(v)
-		case string:
-			if v == "" {
-				t.Sales_credit_memo_priority = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Sales_credit_memo_priority = i
-			} else {
-				return fmt.Errorf("invalid integer value for field sales_credit_memo_priority: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field sales_credit_memo_priority")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Sales_credit_memo_priority); ok {
-				if err := trg.OnValidate_Sales_credit_memo_priority(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "auto_sales_credit_memo":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Auto_sales_credit_memo = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Auto_sales_credit_memo = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field auto_sales_credit_memo")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Auto_sales_credit_memo); ok {
-				if err := trg.OnValidate_Auto_sales_credit_memo(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "show_item_jnl_line_purchases":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ReservationSetupShow_item_jnl_line_purchases); ok {
-			t.Show_item_jnl_line_purchases = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_item_jnl_line_purchases (valid range: 0-%d)", v, 3-1)
-			}
-			t.Show_item_jnl_line_purchases = ReservationSetupShow_item_jnl_line_purchases(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_item_jnl_line_purchases (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Show_item_jnl_line_purchases = ReservationSetupShow_item_jnl_line_purchases(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Show_item_jnl_line_purchases = 0
-			} else {
-				options := []string{"Never", "Optional", "Always"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Show_item_jnl_line_purchases = ReservationSetupShow_item_jnl_line_purchases(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field show_item_jnl_line_purchases (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field show_item_jnl_line_purchases (expected ReservationSetupShow_item_jnl_line_purchases, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Show_item_jnl_line_purchases); ok {
-				if err := trg.OnValidate_Show_item_jnl_line_purchases(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "item_jnl_line_purch_priority":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Item_jnl_line_purch_priority = v
-		case float64:
-			t.Item_jnl_line_purch_priority = int(v)
-		case string:
-			if v == "" {
-				t.Item_jnl_line_purch_priority = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Item_jnl_line_purch_priority = i
-			} else {
-				return fmt.Errorf("invalid integer value for field item_jnl_line_purch_priority: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field item_jnl_line_purch_priority")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Item_jnl_line_purch_priority); ok {
-				if err := trg.OnValidate_Item_jnl_line_purch_priority(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "auto_item_jnl_line_purchases":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Auto_item_jnl_line_purchases = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Auto_item_jnl_line_purchases = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field auto_item_jnl_line_purchases")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Auto_item_jnl_line_purchases); ok {
-				if err := trg.OnValidate_Auto_item_jnl_line_purchases(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "show_item_jnl_line_sales":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ReservationSetupShow_item_jnl_line_sales); ok {
-			t.Show_item_jnl_line_sales = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_item_jnl_line_sales (valid range: 0-%d)", v, 3-1)
-			}
-			t.Show_item_jnl_line_sales = ReservationSetupShow_item_jnl_line_sales(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_item_jnl_line_sales (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Show_item_jnl_line_sales = ReservationSetupShow_item_jnl_line_sales(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Show_item_jnl_line_sales = 0
-			} else {
-				options := []string{"Never", "Optional", "Always"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Show_item_jnl_line_sales = ReservationSetupShow_item_jnl_line_sales(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field show_item_jnl_line_sales (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field show_item_jnl_line_sales (expected ReservationSetupShow_item_jnl_line_sales, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Show_item_jnl_line_sales); ok {
-				if err := trg.OnValidate_Show_item_jnl_line_sales(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "item_jnl_line_sales_priority":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Item_jnl_line_sales_priority = v
-		case float64:
-			t.Item_jnl_line_sales_priority = int(v)
-		case string:
-			if v == "" {
-				t.Item_jnl_line_sales_priority = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Item_jnl_line_sales_priority = i
-			} else {
-				return fmt.Errorf("invalid integer value for field item_jnl_line_sales_priority: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field item_jnl_line_sales_priority")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Item_jnl_line_sales_priority); ok {
-				if err := trg.OnValidate_Item_jnl_line_sales_priority(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "auto_item_jnl_line_sales":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Auto_item_jnl_line_sales = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Auto_item_jnl_line_sales = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field auto_item_jnl_line_sales")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Auto_item_jnl_line_sales); ok {
-				if err := trg.OnValidate_Auto_item_jnl_line_sales(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "show_item_jnl_line_pos":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ReservationSetupShow_item_jnl_line_pos); ok {
-			t.Show_item_jnl_line_pos = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_item_jnl_line_pos (valid range: 0-%d)", v, 3-1)
-			}
-			t.Show_item_jnl_line_pos = ReservationSetupShow_item_jnl_line_pos(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_item_jnl_line_pos (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Show_item_jnl_line_pos = ReservationSetupShow_item_jnl_line_pos(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Show_item_jnl_line_pos = 0
-			} else {
-				options := []string{"Never", "Optional", "Always"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Show_item_jnl_line_pos = ReservationSetupShow_item_jnl_line_pos(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field show_item_jnl_line_pos (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field show_item_jnl_line_pos (expected ReservationSetupShow_item_jnl_line_pos, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Show_item_jnl_line_pos); ok {
-				if err := trg.OnValidate_Show_item_jnl_line_pos(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "item_jnl_line_pos_priority":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Item_jnl_line_pos_priority = v
-		case float64:
-			t.Item_jnl_line_pos_priority = int(v)
-		case string:
-			if v == "" {
-				t.Item_jnl_line_pos_priority = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Item_jnl_line_pos_priority = i
-			} else {
-				return fmt.Errorf("invalid integer value for field item_jnl_line_pos_priority: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field item_jnl_line_pos_priority")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Item_jnl_line_pos_priority); ok {
-				if err := trg.OnValidate_Item_jnl_line_pos_priority(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "auto_item_jnl_line_pos":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Auto_item_jnl_line_pos = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Auto_item_jnl_line_pos = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field auto_item_jnl_line_pos")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Auto_item_jnl_line_pos); ok {
-				if err := trg.OnValidate_Auto_item_jnl_line_pos(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "show_item_jnl_line_neg":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ReservationSetupShow_item_jnl_line_neg); ok {
-			t.Show_item_jnl_line_neg = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_item_jnl_line_neg (valid range: 0-%d)", v, 3-1)
-			}
-			t.Show_item_jnl_line_neg = ReservationSetupShow_item_jnl_line_neg(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_item_jnl_line_neg (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Show_item_jnl_line_neg = ReservationSetupShow_item_jnl_line_neg(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Show_item_jnl_line_neg = 0
-			} else {
-				options := []string{"Never", "Optional", "Always"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Show_item_jnl_line_neg = ReservationSetupShow_item_jnl_line_neg(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field show_item_jnl_line_neg (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field show_item_jnl_line_neg (expected ReservationSetupShow_item_jnl_line_neg, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Show_item_jnl_line_neg); ok {
-				if err := trg.OnValidate_Show_item_jnl_line_neg(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "item_jnl_line_neg_priority":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Item_jnl_line_neg_priority = v
-		case float64:
-			t.Item_jnl_line_neg_priority = int(v)
-		case string:
-			if v == "" {
-				t.Item_jnl_line_neg_priority = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Item_jnl_line_neg_priority = i
-			} else {
-				return fmt.Errorf("invalid integer value for field item_jnl_line_neg_priority: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field item_jnl_line_neg_priority")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Item_jnl_line_neg_priority); ok {
-				if err := trg.OnValidate_Item_jnl_line_neg_priority(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "auto_item_jnl_line_neg":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Auto_item_jnl_line_neg = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Auto_item_jnl_line_neg = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field auto_item_jnl_line_neg")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Auto_item_jnl_line_neg); ok {
-				if err := trg.OnValidate_Auto_item_jnl_line_neg(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "show_item_jnl_line_transfer":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ReservationSetupShow_item_jnl_line_transfer); ok {
-			t.Show_item_jnl_line_transfer = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_item_jnl_line_transfer (valid range: 0-%d)", v, 3-1)
-			}
-			t.Show_item_jnl_line_transfer = ReservationSetupShow_item_jnl_line_transfer(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_item_jnl_line_transfer (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Show_item_jnl_line_transfer = ReservationSetupShow_item_jnl_line_transfer(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Show_item_jnl_line_transfer = 0
-			} else {
-				options := []string{"Never", "Optional", "Always"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Show_item_jnl_line_transfer = ReservationSetupShow_item_jnl_line_transfer(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field show_item_jnl_line_transfer (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field show_item_jnl_line_transfer (expected ReservationSetupShow_item_jnl_line_transfer, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Show_item_jnl_line_transfer); ok {
-				if err := trg.OnValidate_Show_item_jnl_line_transfer(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "item_jnl_line_trans_priority":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Item_jnl_line_trans_priority = v
-		case float64:
-			t.Item_jnl_line_trans_priority = int(v)
-		case string:
-			if v == "" {
-				t.Item_jnl_line_trans_priority = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Item_jnl_line_trans_priority = i
-			} else {
-				return fmt.Errorf("invalid integer value for field item_jnl_line_trans_priority: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field item_jnl_line_trans_priority")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Item_jnl_line_trans_priority); ok {
-				if err := trg.OnValidate_Item_jnl_line_trans_priority(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "auto_item_jnl_line_transfer":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Auto_item_jnl_line_transfer = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Auto_item_jnl_line_transfer = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field auto_item_jnl_line_transfer")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Auto_item_jnl_line_transfer); ok {
-				if err := trg.OnValidate_Auto_item_jnl_line_transfer(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "show_bom_journal_line":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ReservationSetupShow_bom_journal_line); ok {
-			t.Show_bom_journal_line = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_bom_journal_line (valid range: 0-%d)", v, 3-1)
-			}
-			t.Show_bom_journal_line = ReservationSetupShow_bom_journal_line(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field show_bom_journal_line (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Show_bom_journal_line = ReservationSetupShow_bom_journal_line(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Show_bom_journal_line = 0
-			} else {
-				options := []string{"Never", "Optional", "Always"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Show_bom_journal_line = ReservationSetupShow_bom_journal_line(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field show_bom_journal_line (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field show_bom_journal_line (expected ReservationSetupShow_bom_journal_line, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Show_bom_journal_line); ok {
-				if err := trg.OnValidate_Show_bom_journal_line(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bom_journal_line_priority":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Bom_journal_line_priority = v
-		case float64:
-			t.Bom_journal_line_priority = int(v)
-		case string:
-			if v == "" {
-				t.Bom_journal_line_priority = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Bom_journal_line_priority = i
-			} else {
-				return fmt.Errorf("invalid integer value for field bom_journal_line_priority: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field bom_journal_line_priority")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Bom_journal_line_priority); ok {
-				if err := trg.OnValidate_Bom_journal_line_priority(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "auto_bom_journal_line":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Auto_bom_journal_line = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Auto_bom_journal_line = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field auto_bom_journal_line")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Auto_bom_journal_line); ok {
-				if err := trg.OnValidate_Auto_bom_journal_line(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reserve_purchase_quote":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Reserve_purchase_quote = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Reserve_purchase_quote = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field reserve_purchase_quote")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Reserve_purchase_quote); ok {
-				if err := trg.OnValidate_Reserve_purchase_quote(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reserve_blanket_purchase_order":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Reserve_blanket_purchase_order = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Reserve_blanket_purchase_order = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field reserve_blanket_purchase_order")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Reserve_blanket_purchase_order); ok {
-				if err := trg.OnValidate_Reserve_blanket_purchase_order(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reserve_purchase_order":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Reserve_purchase_order = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Reserve_purchase_order = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field reserve_purchase_order")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Reserve_purchase_order); ok {
-				if err := trg.OnValidate_Reserve_purchase_order(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reserve_purchase_invoice":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Reserve_purchase_invoice = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Reserve_purchase_invoice = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field reserve_purchase_invoice")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Reserve_purchase_invoice); ok {
-				if err := trg.OnValidate_Reserve_purchase_invoice(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reserve_purchase_credit_memo":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Reserve_purchase_credit_memo = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Reserve_purchase_credit_memo = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field reserve_purchase_credit_memo")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Reserve_purchase_credit_memo); ok {
-				if err := trg.OnValidate_Reserve_purchase_credit_memo(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reserve_requisition_line":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Reserve_requisition_line = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Reserve_requisition_line = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field reserve_requisition_line")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Reserve_requisition_line); ok {
-				if err := trg.OnValidate_Reserve_requisition_line(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reserve_sales_quote":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Reserve_sales_quote = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Reserve_sales_quote = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field reserve_sales_quote")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Reserve_sales_quote); ok {
-				if err := trg.OnValidate_Reserve_sales_quote(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reserve_blanket_sales_order":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Reserve_blanket_sales_order = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Reserve_blanket_sales_order = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field reserve_blanket_sales_order")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Reserve_blanket_sales_order); ok {
-				if err := trg.OnValidate_Reserve_blanket_sales_order(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reserve_sales_order":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Reserve_sales_order = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Reserve_sales_order = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field reserve_sales_order")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Reserve_sales_order); ok {
-				if err := trg.OnValidate_Reserve_sales_order(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reserve_sales_invoice":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Reserve_sales_invoice = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Reserve_sales_invoice = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field reserve_sales_invoice")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Reserve_sales_invoice); ok {
-				if err := trg.OnValidate_Reserve_sales_invoice(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reserve_sales_credit_memo":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Reserve_sales_credit_memo = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Reserve_sales_credit_memo = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field reserve_sales_credit_memo")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Reserve_sales_credit_memo); ok {
-				if err := trg.OnValidate_Reserve_sales_credit_memo(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reserve_item_jnl_line_purch":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Reserve_item_jnl_line_purch = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Reserve_item_jnl_line_purch = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field reserve_item_jnl_line_purch")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Reserve_item_jnl_line_purch); ok {
-				if err := trg.OnValidate_Reserve_item_jnl_line_purch(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reserve_item_jnl_line_sales":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Reserve_item_jnl_line_sales = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Reserve_item_jnl_line_sales = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field reserve_item_jnl_line_sales")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Reserve_item_jnl_line_sales); ok {
-				if err := trg.OnValidate_Reserve_item_jnl_line_sales(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reserve_item_jnl_line_pos":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Reserve_item_jnl_line_pos = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Reserve_item_jnl_line_pos = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field reserve_item_jnl_line_pos")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Reserve_item_jnl_line_pos); ok {
-				if err := trg.OnValidate_Reserve_item_jnl_line_pos(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reserve_item_jnl_line_neg":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Reserve_item_jnl_line_neg = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Reserve_item_jnl_line_neg = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field reserve_item_jnl_line_neg")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Reserve_item_jnl_line_neg); ok {
-				if err := trg.OnValidate_Reserve_item_jnl_line_neg(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reserve_item_jnl_line_trans":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Reserve_item_jnl_line_trans = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Reserve_item_jnl_line_trans = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field reserve_item_jnl_line_trans")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Reserve_item_jnl_line_trans); ok {
-				if err := trg.OnValidate_Reserve_item_jnl_line_trans(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reserve_bom_journal_line":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Reserve_bom_journal_line = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Reserve_bom_journal_line = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field reserve_bom_journal_line")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReservationSetupOnValidate_Reserve_bom_journal_line); ok {
-				if err := trg.OnValidate_Reserve_bom_journal_line(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := reservationSetupFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &reservationSetupFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -8175,565 +4571,18 @@ func (t *ReservationSetup) ValidateField(fieldName string, value interface{}) er
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *ReservationSetup) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Primary_key, true
-	case 2:
-		return t.Track_changes, true
-	case 3:
-		return t.Valid_to_formula, true
-	case 4:
-		return t.Auto_req_wksh_template, true
-	case 5:
-		return t.Auto_req_wksh_name, true
-	case 6:
-		return t.Show_item_ledger_entry, true
-	case 7:
-		return t.Item_ledger_entry_priority, true
-	case 8:
-		return t.Show_purchase_quote, true
-	case 9:
-		return t.Purchase_quote_priority, true
-	case 10:
-		return t.Auto_purchase_quote, true
-	case 11:
-		return t.Show_blanket_purchase_order, true
-	case 12:
-		return t.Blanket_purch_order_priority, true
-	case 13:
-		return t.Auto_blanket_purchase_order, true
-	case 14:
-		return t.Show_purchase_order, true
-	case 15:
-		return t.Purchase_order_priority, true
-	case 16:
-		return t.Auto_purchase_order, true
-	case 17:
-		return t.Show_purchase_invoice, true
-	case 18:
-		return t.Purchase_invoice_priority, true
-	case 19:
-		return t.Auto_purchase_invoice, true
-	case 20:
-		return t.Show_purchase_credit_memo, true
-	case 21:
-		return t.Purchase_credit_memo_priority, true
-	case 22:
-		return t.Auto_purchase_credit_memo, true
-	case 23:
-		return t.Show_requisition_line, true
-	case 24:
-		return t.Requisition_line_priority, true
-	case 25:
-		return t.Auto_requisition_line, true
-	case 26:
-		return t.Show_sales_quote, true
-	case 27:
-		return t.Sales_quote_priority, true
-	case 28:
-		return t.Auto_sales_quote, true
-	case 29:
-		return t.Show_blanket_sales_order, true
-	case 30:
-		return t.Blanket_sales_order_priority, true
-	case 31:
-		return t.Auto_blanket_sales_order, true
-	case 32:
-		return t.Show_sales_order, true
-	case 33:
-		return t.Sales_order_priority, true
-	case 34:
-		return t.Auto_sales_order, true
-	case 35:
-		return t.Show_sales_invoice, true
-	case 36:
-		return t.Sales_invoice_priority, true
-	case 37:
-		return t.Auto_sales_invoice, true
-	case 38:
-		return t.Show_sales_credit_memo, true
-	case 39:
-		return t.Sales_credit_memo_priority, true
-	case 40:
-		return t.Auto_sales_credit_memo, true
-	case 41:
-		return t.Show_item_jnl_line_purchases, true
-	case 42:
-		return t.Item_jnl_line_purch_priority, true
-	case 43:
-		return t.Auto_item_jnl_line_purchases, true
-	case 44:
-		return t.Show_item_jnl_line_sales, true
-	case 45:
-		return t.Item_jnl_line_sales_priority, true
-	case 46:
-		return t.Auto_item_jnl_line_sales, true
-	case 47:
-		return t.Show_item_jnl_line_pos, true
-	case 48:
-		return t.Item_jnl_line_pos_priority, true
-	case 49:
-		return t.Auto_item_jnl_line_pos, true
-	case 50:
-		return t.Show_item_jnl_line_neg, true
-	case 51:
-		return t.Item_jnl_line_neg_priority, true
-	case 52:
-		return t.Auto_item_jnl_line_neg, true
-	case 53:
-		return t.Show_item_jnl_line_transfer, true
-	case 54:
-		return t.Item_jnl_line_trans_priority, true
-	case 55:
-		return t.Auto_item_jnl_line_transfer, true
-	case 56:
-		return t.Show_bom_journal_line, true
-	case 57:
-		return t.Bom_journal_line_priority, true
-	case 58:
-		return t.Auto_bom_journal_line, true
-	case 59:
-		return t.Reserve_purchase_quote, true
-	case 60:
-		return t.Reserve_blanket_purchase_order, true
-	case 61:
-		return t.Reserve_purchase_order, true
-	case 62:
-		return t.Reserve_purchase_invoice, true
-	case 63:
-		return t.Reserve_purchase_credit_memo, true
-	case 64:
-		return t.Reserve_requisition_line, true
-	case 65:
-		return t.Reserve_sales_quote, true
-	case 66:
-		return t.Reserve_blanket_sales_order, true
-	case 67:
-		return t.Reserve_sales_order, true
-	case 68:
-		return t.Reserve_sales_invoice, true
-	case 69:
-		return t.Reserve_sales_credit_memo, true
-	case 70:
-		return t.Reserve_item_jnl_line_purch, true
-	case 71:
-		return t.Reserve_item_jnl_line_sales, true
-	case 72:
-		return t.Reserve_item_jnl_line_pos, true
-	case 73:
-		return t.Reserve_item_jnl_line_neg, true
-	case 74:
-		return t.Reserve_item_jnl_line_trans, true
-	case 75:
-		return t.Reserve_bom_journal_line, true
-	}
-	return nil, false
+	return reservationSetupFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *ReservationSetup) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return reservationSetupFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *ReservationSetup) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Primary_key = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Primary_key = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(bool); ok {
-			t.Track_changes = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Code); ok {
-			t.Valid_to_formula = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Valid_to_formula = types.NewCode(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Code); ok {
-			t.Auto_req_wksh_template = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Auto_req_wksh_template = types.NewCode(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Code); ok {
-			t.Auto_req_wksh_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Auto_req_wksh_name = types.NewCode(v)
-			return true
-		}
-	case 6:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Show_item_ledger_entry = ReservationSetupShow_item_ledger_entry(i)
-			return true
-		}
-	case 7:
-		if v, ok := value.(int); ok {
-			t.Item_ledger_entry_priority = v
-			return true
-		}
-	case 8:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Show_purchase_quote = ReservationSetupShow_purchase_quote(i)
-			return true
-		}
-	case 9:
-		if v, ok := value.(int); ok {
-			t.Purchase_quote_priority = v
-			return true
-		}
-	case 10:
-		if v, ok := value.(bool); ok {
-			t.Auto_purchase_quote = v
-			return true
-		}
-	case 11:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Show_blanket_purchase_order = ReservationSetupShow_blanket_purchase_order(i)
-			return true
-		}
-	case 12:
-		if v, ok := value.(int); ok {
-			t.Blanket_purch_order_priority = v
-			return true
-		}
-	case 13:
-		if v, ok := value.(bool); ok {
-			t.Auto_blanket_purchase_order = v
-			return true
-		}
-	case 14:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Show_purchase_order = ReservationSetupShow_purchase_order(i)
-			return true
-		}
-	case 15:
-		if v, ok := value.(int); ok {
-			t.Purchase_order_priority = v
-			return true
-		}
-	case 16:
-		if v, ok := value.(bool); ok {
-			t.Auto_purchase_order = v
-			return true
-		}
-	case 17:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Show_purchase_invoice = ReservationSetupShow_purchase_invoice(i)
-			return true
-		}
-	case 18:
-		if v, ok := value.(int); ok {
-			t.Purchase_invoice_priority = v
-			return true
-		}
-	case 19:
-		if v, ok := value.(bool); ok {
-			t.Auto_purchase_invoice = v
-			return true
-		}
-	case 20:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Show_purchase_credit_memo = ReservationSetupShow_purchase_credit_memo(i)
-			return true
-		}
-	case 21:
-		if v, ok := value.(int); ok {
-			t.Purchase_credit_memo_priority = v
-			return true
-		}
-	case 22:
-		if v, ok := value.(bool); ok {
-			t.Auto_purchase_credit_memo = v
-			return true
-		}
-	case 23:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Show_requisition_line = ReservationSetupShow_requisition_line(i)
-			return true
-		}
-	case 24:
-		if v, ok := value.(int); ok {
-			t.Requisition_line_priority = v
-			return true
-		}
-	case 25:
-		if v, ok := value.(bool); ok {
-			t.Auto_requisition_line = v
-			return true
-		}
-	case 26:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Show_sales_quote = ReservationSetupShow_sales_quote(i)
-			return true
-		}
-	case 27:
-		if v, ok := value.(int); ok {
-			t.Sales_quote_priority = v
-			return true
-		}
-	case 28:
-		if v, ok := value.(bool); ok {
-			t.Auto_sales_quote = v
-			return true
-		}
-	case 29:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Show_blanket_sales_order = ReservationSetupShow_blanket_sales_order(i)
-			return true
-		}
-	case 30:
-		if v, ok := value.(int); ok {
-			t.Blanket_sales_order_priority = v
-			return true
-		}
-	case 31:
-		if v, ok := value.(bool); ok {
-			t.Auto_blanket_sales_order = v
-			return true
-		}
-	case 32:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Show_sales_order = ReservationSetupShow_sales_order(i)
-			return true
-		}
-	case 33:
-		if v, ok := value.(int); ok {
-			t.Sales_order_priority = v
-			return true
-		}
-	case 34:
-		if v, ok := value.(bool); ok {
-			t.Auto_sales_order = v
-			return true
-		}
-	case 35:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Show_sales_invoice = ReservationSetupShow_sales_invoice(i)
-			return true
-		}
-	case 36:
-		if v, ok := value.(int); ok {
-			t.Sales_invoice_priority = v
-			return true
-		}
-	case 37:
-		if v, ok := value.(bool); ok {
-			t.Auto_sales_invoice = v
-			return true
-		}
-	case 38:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Show_sales_credit_memo = ReservationSetupShow_sales_credit_memo(i)
-			return true
-		}
-	case 39:
-		if v, ok := value.(int); ok {
-			t.Sales_credit_memo_priority = v
-			return true
-		}
-	case 40:
-		if v, ok := value.(bool); ok {
-			t.Auto_sales_credit_memo = v
-			return true
-		}
-	case 41:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Show_item_jnl_line_purchases = ReservationSetupShow_item_jnl_line_purchases(i)
-			return true
-		}
-	case 42:
-		if v, ok := value.(int); ok {
-			t.Item_jnl_line_purch_priority = v
-			return true
-		}
-	case 43:
-		if v, ok := value.(bool); ok {
-			t.Auto_item_jnl_line_purchases = v
-			return true
-		}
-	case 44:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Show_item_jnl_line_sales = ReservationSetupShow_item_jnl_line_sales(i)
-			return true
-		}
-	case 45:
-		if v, ok := value.(int); ok {
-			t.Item_jnl_line_sales_priority = v
-			return true
-		}
-	case 46:
-		if v, ok := value.(bool); ok {
-			t.Auto_item_jnl_line_sales = v
-			return true
-		}
-	case 47:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Show_item_jnl_line_pos = ReservationSetupShow_item_jnl_line_pos(i)
-			return true
-		}
-	case 48:
-		if v, ok := value.(int); ok {
-			t.Item_jnl_line_pos_priority = v
-			return true
-		}
-	case 49:
-		if v, ok := value.(bool); ok {
-			t.Auto_item_jnl_line_pos = v
-			return true
-		}
-	case 50:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Show_item_jnl_line_neg = ReservationSetupShow_item_jnl_line_neg(i)
-			return true
-		}
-	case 51:
-		if v, ok := value.(int); ok {
-			t.Item_jnl_line_neg_priority = v
-			return true
-		}
-	case 52:
-		if v, ok := value.(bool); ok {
-			t.Auto_item_jnl_line_neg = v
-			return true
-		}
-	case 53:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Show_item_jnl_line_transfer = ReservationSetupShow_item_jnl_line_transfer(i)
-			return true
-		}
-	case 54:
-		if v, ok := value.(int); ok {
-			t.Item_jnl_line_trans_priority = v
-			return true
-		}
-	case 55:
-		if v, ok := value.(bool); ok {
-			t.Auto_item_jnl_line_transfer = v
-			return true
-		}
-	case 56:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Show_bom_journal_line = ReservationSetupShow_bom_journal_line(i)
-			return true
-		}
-	case 57:
-		if v, ok := value.(int); ok {
-			t.Bom_journal_line_priority = v
-			return true
-		}
-	case 58:
-		if v, ok := value.(bool); ok {
-			t.Auto_bom_journal_line = v
-			return true
-		}
-	case 59:
-		if v, ok := value.(bool); ok {
-			t.Reserve_purchase_quote = v
-			return true
-		}
-	case 60:
-		if v, ok := value.(bool); ok {
-			t.Reserve_blanket_purchase_order = v
-			return true
-		}
-	case 61:
-		if v, ok := value.(bool); ok {
-			t.Reserve_purchase_order = v
-			return true
-		}
-	case 62:
-		if v, ok := value.(bool); ok {
-			t.Reserve_purchase_invoice = v
-			return true
-		}
-	case 63:
-		if v, ok := value.(bool); ok {
-			t.Reserve_purchase_credit_memo = v
-			return true
-		}
-	case 64:
-		if v, ok := value.(bool); ok {
-			t.Reserve_requisition_line = v
-			return true
-		}
-	case 65:
-		if v, ok := value.(bool); ok {
-			t.Reserve_sales_quote = v
-			return true
-		}
-	case 66:
-		if v, ok := value.(bool); ok {
-			t.Reserve_blanket_sales_order = v
-			return true
-		}
-	case 67:
-		if v, ok := value.(bool); ok {
-			t.Reserve_sales_order = v
-			return true
-		}
-	case 68:
-		if v, ok := value.(bool); ok {
-			t.Reserve_sales_invoice = v
-			return true
-		}
-	case 69:
-		if v, ok := value.(bool); ok {
-			t.Reserve_sales_credit_memo = v
-			return true
-		}
-	case 70:
-		if v, ok := value.(bool); ok {
-			t.Reserve_item_jnl_line_purch = v
-			return true
-		}
-	case 71:
-		if v, ok := value.(bool); ok {
-			t.Reserve_item_jnl_line_sales = v
-			return true
-		}
-	case 72:
-		if v, ok := value.(bool); ok {
-			t.Reserve_item_jnl_line_pos = v
-			return true
-		}
-	case 73:
-		if v, ok := value.(bool); ok {
-			t.Reserve_item_jnl_line_neg = v
-			return true
-		}
-	case 74:
-		if v, ok := value.(bool); ok {
-			t.Reserve_item_jnl_line_trans = v
-			return true
-		}
-	case 75:
-		if v, ok := value.(bool); ok {
-			t.Reserve_bom_journal_line = v
-			return true
-		}
-	}
-	return false
+	return reservationSetupFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -9339,159 +5188,7 @@ func (t *ReservationSetup) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *ReservationSetup) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "primary_key":
-		return t.Primary_key, true
-	case "track_changes":
-		return t.Track_changes, true
-	case "valid_to_formula":
-		return t.Valid_to_formula, true
-	case "auto_req_wksh_template":
-		return t.Auto_req_wksh_template, true
-	case "auto_req_wksh_name":
-		return t.Auto_req_wksh_name, true
-	case "show_item_ledger_entry":
-		return int(t.Show_item_ledger_entry), true
-	case "item_ledger_entry_priority":
-		return t.Item_ledger_entry_priority, true
-	case "show_purchase_quote":
-		return int(t.Show_purchase_quote), true
-	case "purchase_quote_priority":
-		return t.Purchase_quote_priority, true
-	case "auto_purchase_quote":
-		return t.Auto_purchase_quote, true
-	case "show_blanket_purchase_order":
-		return int(t.Show_blanket_purchase_order), true
-	case "blanket_purch_order_priority":
-		return t.Blanket_purch_order_priority, true
-	case "auto_blanket_purchase_order":
-		return t.Auto_blanket_purchase_order, true
-	case "show_purchase_order":
-		return int(t.Show_purchase_order), true
-	case "purchase_order_priority":
-		return t.Purchase_order_priority, true
-	case "auto_purchase_order":
-		return t.Auto_purchase_order, true
-	case "show_purchase_invoice":
-		return int(t.Show_purchase_invoice), true
-	case "purchase_invoice_priority":
-		return t.Purchase_invoice_priority, true
-	case "auto_purchase_invoice":
-		return t.Auto_purchase_invoice, true
-	case "show_purchase_credit_memo":
-		return int(t.Show_purchase_credit_memo), true
-	case "purchase_credit_memo_priority":
-		return t.Purchase_credit_memo_priority, true
-	case "auto_purchase_credit_memo":
-		return t.Auto_purchase_credit_memo, true
-	case "show_requisition_line":
-		return int(t.Show_requisition_line), true
-	case "requisition_line_priority":
-		return t.Requisition_line_priority, true
-	case "auto_requisition_line":
-		return t.Auto_requisition_line, true
-	case "show_sales_quote":
-		return int(t.Show_sales_quote), true
-	case "sales_quote_priority":
-		return t.Sales_quote_priority, true
-	case "auto_sales_quote":
-		return t.Auto_sales_quote, true
-	case "show_blanket_sales_order":
-		return int(t.Show_blanket_sales_order), true
-	case "blanket_sales_order_priority":
-		return t.Blanket_sales_order_priority, true
-	case "auto_blanket_sales_order":
-		return t.Auto_blanket_sales_order, true
-	case "show_sales_order":
-		return int(t.Show_sales_order), true
-	case "sales_order_priority":
-		return t.Sales_order_priority, true
-	case "auto_sales_order":
-		return t.Auto_sales_order, true
-	case "show_sales_invoice":
-		return int(t.Show_sales_invoice), true
-	case "sales_invoice_priority":
-		return t.Sales_invoice_priority, true
-	case "auto_sales_invoice":
-		return t.Auto_sales_invoice, true
-	case "show_sales_credit_memo":
-		return int(t.Show_sales_credit_memo), true
-	case "sales_credit_memo_priority":
-		return t.Sales_credit_memo_priority, true
-	case "auto_sales_credit_memo":
-		return t.Auto_sales_credit_memo, true
-	case "show_item_jnl_line_purchases":
-		return int(t.Show_item_jnl_line_purchases), true
-	case "item_jnl_line_purch_priority":
-		return t.Item_jnl_line_purch_priority, true
-	case "auto_item_jnl_line_purchases":
-		return t.Auto_item_jnl_line_purchases, true
-	case "show_item_jnl_line_sales":
-		return int(t.Show_item_jnl_line_sales), true
-	case "item_jnl_line_sales_priority":
-		return t.Item_jnl_line_sales_priority, true
-	case "auto_item_jnl_line_sales":
-		return t.Auto_item_jnl_line_sales, true
-	case "show_item_jnl_line_pos":
-		return int(t.Show_item_jnl_line_pos), true
-	case "item_jnl_line_pos_priority":
-		return t.Item_jnl_line_pos_priority, true
-	case "auto_item_jnl_line_pos":
-		return t.Auto_item_jnl_line_pos, true
-	case "show_item_jnl_line_neg":
-		return int(t.Show_item_jnl_line_neg), true
-	case "item_jnl_line_neg_priority":
-		return t.Item_jnl_line_neg_priority, true
-	case "auto_item_jnl_line_neg":
-		return t.Auto_item_jnl_line_neg, true
-	case "show_item_jnl_line_transfer":
-		return int(t.Show_item_jnl_line_transfer), true
-	case "item_jnl_line_trans_priority":
-		return t.Item_jnl_line_trans_priority, true
-	case "auto_item_jnl_line_transfer":
-		return t.Auto_item_jnl_line_transfer, true
-	case "show_bom_journal_line":
-		return int(t.Show_bom_journal_line), true
-	case "bom_journal_line_priority":
-		return t.Bom_journal_line_priority, true
-	case "auto_bom_journal_line":
-		return t.Auto_bom_journal_line, true
-	case "reserve_purchase_quote":
-		return t.Reserve_purchase_quote, true
-	case "reserve_blanket_purchase_order":
-		return t.Reserve_blanket_purchase_order, true
-	case "reserve_purchase_order":
-		return t.Reserve_purchase_order, true
-	case "reserve_purchase_invoice":
-		return t.Reserve_purchase_invoice, true
-	case "reserve_purchase_credit_memo":
-		return t.Reserve_purchase_credit_memo, true
-	case "reserve_requisition_line":
-		return t.Reserve_requisition_line, true
-	case "reserve_sales_quote":
-		return t.Reserve_sales_quote, true
-	case "reserve_blanket_sales_order":
-		return t.Reserve_blanket_sales_order, true
-	case "reserve_sales_order":
-		return t.Reserve_sales_order, true
-	case "reserve_sales_invoice":
-		return t.Reserve_sales_invoice, true
-	case "reserve_sales_credit_memo":
-		return t.Reserve_sales_credit_memo, true
-	case "reserve_item_jnl_line_purch":
-		return t.Reserve_item_jnl_line_purch, true
-	case "reserve_item_jnl_line_sales":
-		return t.Reserve_item_jnl_line_sales, true
-	case "reserve_item_jnl_line_pos":
-		return t.Reserve_item_jnl_line_pos, true
-	case "reserve_item_jnl_line_neg":
-		return t.Reserve_item_jnl_line_neg, true
-	case "reserve_item_jnl_line_trans":
-		return t.Reserve_item_jnl_line_trans, true
-	case "reserve_bom_journal_line":
-		return t.Reserve_bom_journal_line, true
-	}
-	return nil, false
+	return reservationSetupFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -9651,822 +5348,12 @@ func (t *ReservationSetup) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *ReservationSetup) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"primary_key":                    t.Primary_key.String(),
-		"track_changes":                  t.Track_changes,
-		"valid_to_formula":               t.Valid_to_formula.String(),
-		"auto_req_wksh_template":         t.Auto_req_wksh_template.String(),
-		"auto_req_wksh_name":             t.Auto_req_wksh_name.String(),
-		"show_item_ledger_entry":         int(t.Show_item_ledger_entry),
-		"item_ledger_entry_priority":     t.Item_ledger_entry_priority,
-		"show_purchase_quote":            int(t.Show_purchase_quote),
-		"purchase_quote_priority":        t.Purchase_quote_priority,
-		"auto_purchase_quote":            t.Auto_purchase_quote,
-		"show_blanket_purchase_order":    int(t.Show_blanket_purchase_order),
-		"blanket_purch_order_priority":   t.Blanket_purch_order_priority,
-		"auto_blanket_purchase_order":    t.Auto_blanket_purchase_order,
-		"show_purchase_order":            int(t.Show_purchase_order),
-		"purchase_order_priority":        t.Purchase_order_priority,
-		"auto_purchase_order":            t.Auto_purchase_order,
-		"show_purchase_invoice":          int(t.Show_purchase_invoice),
-		"purchase_invoice_priority":      t.Purchase_invoice_priority,
-		"auto_purchase_invoice":          t.Auto_purchase_invoice,
-		"show_purchase_credit_memo":      int(t.Show_purchase_credit_memo),
-		"purchase_credit_memo_priority":  t.Purchase_credit_memo_priority,
-		"auto_purchase_credit_memo":      t.Auto_purchase_credit_memo,
-		"show_requisition_line":          int(t.Show_requisition_line),
-		"requisition_line_priority":      t.Requisition_line_priority,
-		"auto_requisition_line":          t.Auto_requisition_line,
-		"show_sales_quote":               int(t.Show_sales_quote),
-		"sales_quote_priority":           t.Sales_quote_priority,
-		"auto_sales_quote":               t.Auto_sales_quote,
-		"show_blanket_sales_order":       int(t.Show_blanket_sales_order),
-		"blanket_sales_order_priority":   t.Blanket_sales_order_priority,
-		"auto_blanket_sales_order":       t.Auto_blanket_sales_order,
-		"show_sales_order":               int(t.Show_sales_order),
-		"sales_order_priority":           t.Sales_order_priority,
-		"auto_sales_order":               t.Auto_sales_order,
-		"show_sales_invoice":             int(t.Show_sales_invoice),
-		"sales_invoice_priority":         t.Sales_invoice_priority,
-		"auto_sales_invoice":             t.Auto_sales_invoice,
-		"show_sales_credit_memo":         int(t.Show_sales_credit_memo),
-		"sales_credit_memo_priority":     t.Sales_credit_memo_priority,
-		"auto_sales_credit_memo":         t.Auto_sales_credit_memo,
-		"show_item_jnl_line_purchases":   int(t.Show_item_jnl_line_purchases),
-		"item_jnl_line_purch_priority":   t.Item_jnl_line_purch_priority,
-		"auto_item_jnl_line_purchases":   t.Auto_item_jnl_line_purchases,
-		"show_item_jnl_line_sales":       int(t.Show_item_jnl_line_sales),
-		"item_jnl_line_sales_priority":   t.Item_jnl_line_sales_priority,
-		"auto_item_jnl_line_sales":       t.Auto_item_jnl_line_sales,
-		"show_item_jnl_line_pos":         int(t.Show_item_jnl_line_pos),
-		"item_jnl_line_pos_priority":     t.Item_jnl_line_pos_priority,
-		"auto_item_jnl_line_pos":         t.Auto_item_jnl_line_pos,
-		"show_item_jnl_line_neg":         int(t.Show_item_jnl_line_neg),
-		"item_jnl_line_neg_priority":     t.Item_jnl_line_neg_priority,
-		"auto_item_jnl_line_neg":         t.Auto_item_jnl_line_neg,
-		"show_item_jnl_line_transfer":    int(t.Show_item_jnl_line_transfer),
-		"item_jnl_line_trans_priority":   t.Item_jnl_line_trans_priority,
-		"auto_item_jnl_line_transfer":    t.Auto_item_jnl_line_transfer,
-		"show_bom_journal_line":          int(t.Show_bom_journal_line),
-		"bom_journal_line_priority":      t.Bom_journal_line_priority,
-		"auto_bom_journal_line":          t.Auto_bom_journal_line,
-		"reserve_purchase_quote":         t.Reserve_purchase_quote,
-		"reserve_blanket_purchase_order": t.Reserve_blanket_purchase_order,
-		"reserve_purchase_order":         t.Reserve_purchase_order,
-		"reserve_purchase_invoice":       t.Reserve_purchase_invoice,
-		"reserve_purchase_credit_memo":   t.Reserve_purchase_credit_memo,
-		"reserve_requisition_line":       t.Reserve_requisition_line,
-		"reserve_sales_quote":            t.Reserve_sales_quote,
-		"reserve_blanket_sales_order":    t.Reserve_blanket_sales_order,
-		"reserve_sales_order":            t.Reserve_sales_order,
-		"reserve_sales_invoice":          t.Reserve_sales_invoice,
-		"reserve_sales_credit_memo":      t.Reserve_sales_credit_memo,
-		"reserve_item_jnl_line_purch":    t.Reserve_item_jnl_line_purch,
-		"reserve_item_jnl_line_sales":    t.Reserve_item_jnl_line_sales,
-		"reserve_item_jnl_line_pos":      t.Reserve_item_jnl_line_pos,
-		"reserve_item_jnl_line_neg":      t.Reserve_item_jnl_line_neg,
-		"reserve_item_jnl_line_trans":    t.Reserve_item_jnl_line_trans,
-		"reserve_bom_journal_line":       t.Reserve_bom_journal_line,
-	}
+	return reservationSetupFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *ReservationSetup) FromMap(data map[string]interface{}) {
-	if v, ok := data["primary_key"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Primary_key = types.NewCode(s)
-		}
-	}
-	if v, ok := data["track_changes"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Track_changes = b
-		}
-	}
-	if v, ok := data["valid_to_formula"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Valid_to_formula = types.NewCode(s)
-		}
-	}
-	if v, ok := data["auto_req_wksh_template"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Auto_req_wksh_template = types.NewCode(s)
-		}
-	}
-	if v, ok := data["auto_req_wksh_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Auto_req_wksh_name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["show_item_ledger_entry"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Show_item_ledger_entry = ReservationSetupShow_item_ledger_entry(int(val))
-		case int:
-			t.Show_item_ledger_entry = ReservationSetupShow_item_ledger_entry(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Never", "Optional", "Always"}
-			for i, opt := range options {
-				if opt == val {
-					t.Show_item_ledger_entry = ReservationSetupShow_item_ledger_entry(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["item_ledger_entry_priority"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Item_ledger_entry_priority = int(val)
-		case int:
-			t.Item_ledger_entry_priority = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Item_ledger_entry_priority = n
-			}
-		}
-	}
-	if v, ok := data["show_purchase_quote"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Show_purchase_quote = ReservationSetupShow_purchase_quote(int(val))
-		case int:
-			t.Show_purchase_quote = ReservationSetupShow_purchase_quote(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Never", "Optional", "Always"}
-			for i, opt := range options {
-				if opt == val {
-					t.Show_purchase_quote = ReservationSetupShow_purchase_quote(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["purchase_quote_priority"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Purchase_quote_priority = int(val)
-		case int:
-			t.Purchase_quote_priority = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Purchase_quote_priority = n
-			}
-		}
-	}
-	if v, ok := data["auto_purchase_quote"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Auto_purchase_quote = b
-		}
-	}
-	if v, ok := data["show_blanket_purchase_order"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Show_blanket_purchase_order = ReservationSetupShow_blanket_purchase_order(int(val))
-		case int:
-			t.Show_blanket_purchase_order = ReservationSetupShow_blanket_purchase_order(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Never", "Optional", "Always"}
-			for i, opt := range options {
-				if opt == val {
-					t.Show_blanket_purchase_order = ReservationSetupShow_blanket_purchase_order(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["blanket_purch_order_priority"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Blanket_purch_order_priority = int(val)
-		case int:
-			t.Blanket_purch_order_priority = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Blanket_purch_order_priority = n
-			}
-		}
-	}
-	if v, ok := data["auto_blanket_purchase_order"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Auto_blanket_purchase_order = b
-		}
-	}
-	if v, ok := data["show_purchase_order"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Show_purchase_order = ReservationSetupShow_purchase_order(int(val))
-		case int:
-			t.Show_purchase_order = ReservationSetupShow_purchase_order(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Never", "Optional", "Always"}
-			for i, opt := range options {
-				if opt == val {
-					t.Show_purchase_order = ReservationSetupShow_purchase_order(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["purchase_order_priority"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Purchase_order_priority = int(val)
-		case int:
-			t.Purchase_order_priority = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Purchase_order_priority = n
-			}
-		}
-	}
-	if v, ok := data["auto_purchase_order"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Auto_purchase_order = b
-		}
-	}
-	if v, ok := data["show_purchase_invoice"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Show_purchase_invoice = ReservationSetupShow_purchase_invoice(int(val))
-		case int:
-			t.Show_purchase_invoice = ReservationSetupShow_purchase_invoice(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Never", "Optional", "Always"}
-			for i, opt := range options {
-				if opt == val {
-					t.Show_purchase_invoice = ReservationSetupShow_purchase_invoice(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["purchase_invoice_priority"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Purchase_invoice_priority = int(val)
-		case int:
-			t.Purchase_invoice_priority = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Purchase_invoice_priority = n
-			}
-		}
-	}
-	if v, ok := data["auto_purchase_invoice"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Auto_purchase_invoice = b
-		}
-	}
-	if v, ok := data["show_purchase_credit_memo"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Show_purchase_credit_memo = ReservationSetupShow_purchase_credit_memo(int(val))
-		case int:
-			t.Show_purchase_credit_memo = ReservationSetupShow_purchase_credit_memo(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Never", "Optional", "Always"}
-			for i, opt := range options {
-				if opt == val {
-					t.Show_purchase_credit_memo = ReservationSetupShow_purchase_credit_memo(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["purchase_credit_memo_priority"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Purchase_credit_memo_priority = int(val)
-		case int:
-			t.Purchase_credit_memo_priority = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Purchase_credit_memo_priority = n
-			}
-		}
-	}
-	if v, ok := data["auto_purchase_credit_memo"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Auto_purchase_credit_memo = b
-		}
-	}
-	if v, ok := data["show_requisition_line"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Show_requisition_line = ReservationSetupShow_requisition_line(int(val))
-		case int:
-			t.Show_requisition_line = ReservationSetupShow_requisition_line(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Never", "Optional", "Always"}
-			for i, opt := range options {
-				if opt == val {
-					t.Show_requisition_line = ReservationSetupShow_requisition_line(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["requisition_line_priority"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Requisition_line_priority = int(val)
-		case int:
-			t.Requisition_line_priority = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Requisition_line_priority = n
-			}
-		}
-	}
-	if v, ok := data["auto_requisition_line"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Auto_requisition_line = b
-		}
-	}
-	if v, ok := data["show_sales_quote"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Show_sales_quote = ReservationSetupShow_sales_quote(int(val))
-		case int:
-			t.Show_sales_quote = ReservationSetupShow_sales_quote(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Never", "Optional", "Always"}
-			for i, opt := range options {
-				if opt == val {
-					t.Show_sales_quote = ReservationSetupShow_sales_quote(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["sales_quote_priority"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Sales_quote_priority = int(val)
-		case int:
-			t.Sales_quote_priority = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Sales_quote_priority = n
-			}
-		}
-	}
-	if v, ok := data["auto_sales_quote"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Auto_sales_quote = b
-		}
-	}
-	if v, ok := data["show_blanket_sales_order"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Show_blanket_sales_order = ReservationSetupShow_blanket_sales_order(int(val))
-		case int:
-			t.Show_blanket_sales_order = ReservationSetupShow_blanket_sales_order(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Never", "Optional", "Always"}
-			for i, opt := range options {
-				if opt == val {
-					t.Show_blanket_sales_order = ReservationSetupShow_blanket_sales_order(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["blanket_sales_order_priority"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Blanket_sales_order_priority = int(val)
-		case int:
-			t.Blanket_sales_order_priority = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Blanket_sales_order_priority = n
-			}
-		}
-	}
-	if v, ok := data["auto_blanket_sales_order"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Auto_blanket_sales_order = b
-		}
-	}
-	if v, ok := data["show_sales_order"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Show_sales_order = ReservationSetupShow_sales_order(int(val))
-		case int:
-			t.Show_sales_order = ReservationSetupShow_sales_order(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Never", "Optional", "Always"}
-			for i, opt := range options {
-				if opt == val {
-					t.Show_sales_order = ReservationSetupShow_sales_order(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["sales_order_priority"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Sales_order_priority = int(val)
-		case int:
-			t.Sales_order_priority = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Sales_order_priority = n
-			}
-		}
-	}
-	if v, ok := data["auto_sales_order"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Auto_sales_order = b
-		}
-	}
-	if v, ok := data["show_sales_invoice"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Show_sales_invoice = ReservationSetupShow_sales_invoice(int(val))
-		case int:
-			t.Show_sales_invoice = ReservationSetupShow_sales_invoice(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Never", "Optional", "Always"}
-			for i, opt := range options {
-				if opt == val {
-					t.Show_sales_invoice = ReservationSetupShow_sales_invoice(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["sales_invoice_priority"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Sales_invoice_priority = int(val)
-		case int:
-			t.Sales_invoice_priority = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Sales_invoice_priority = n
-			}
-		}
-	}
-	if v, ok := data["auto_sales_invoice"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Auto_sales_invoice = b
-		}
-	}
-	if v, ok := data["show_sales_credit_memo"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Show_sales_credit_memo = ReservationSetupShow_sales_credit_memo(int(val))
-		case int:
-			t.Show_sales_credit_memo = ReservationSetupShow_sales_credit_memo(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Never", "Optional", "Always"}
-			for i, opt := range options {
-				if opt == val {
-					t.Show_sales_credit_memo = ReservationSetupShow_sales_credit_memo(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["sales_credit_memo_priority"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Sales_credit_memo_priority = int(val)
-		case int:
-			t.Sales_credit_memo_priority = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Sales_credit_memo_priority = n
-			}
-		}
-	}
-	if v, ok := data["auto_sales_credit_memo"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Auto_sales_credit_memo = b
-		}
-	}
-	if v, ok := data["show_item_jnl_line_purchases"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Show_item_jnl_line_purchases = ReservationSetupShow_item_jnl_line_purchases(int(val))
-		case int:
-			t.Show_item_jnl_line_purchases = ReservationSetupShow_item_jnl_line_purchases(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Never", "Optional", "Always"}
-			for i, opt := range options {
-				if opt == val {
-					t.Show_item_jnl_line_purchases = ReservationSetupShow_item_jnl_line_purchases(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["item_jnl_line_purch_priority"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Item_jnl_line_purch_priority = int(val)
-		case int:
-			t.Item_jnl_line_purch_priority = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Item_jnl_line_purch_priority = n
-			}
-		}
-	}
-	if v, ok := data["auto_item_jnl_line_purchases"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Auto_item_jnl_line_purchases = b
-		}
-	}
-	if v, ok := data["show_item_jnl_line_sales"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Show_item_jnl_line_sales = ReservationSetupShow_item_jnl_line_sales(int(val))
-		case int:
-			t.Show_item_jnl_line_sales = ReservationSetupShow_item_jnl_line_sales(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Never", "Optional", "Always"}
-			for i, opt := range options {
-				if opt == val {
-					t.Show_item_jnl_line_sales = ReservationSetupShow_item_jnl_line_sales(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["item_jnl_line_sales_priority"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Item_jnl_line_sales_priority = int(val)
-		case int:
-			t.Item_jnl_line_sales_priority = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Item_jnl_line_sales_priority = n
-			}
-		}
-	}
-	if v, ok := data["auto_item_jnl_line_sales"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Auto_item_jnl_line_sales = b
-		}
-	}
-	if v, ok := data["show_item_jnl_line_pos"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Show_item_jnl_line_pos = ReservationSetupShow_item_jnl_line_pos(int(val))
-		case int:
-			t.Show_item_jnl_line_pos = ReservationSetupShow_item_jnl_line_pos(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Never", "Optional", "Always"}
-			for i, opt := range options {
-				if opt == val {
-					t.Show_item_jnl_line_pos = ReservationSetupShow_item_jnl_line_pos(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["item_jnl_line_pos_priority"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Item_jnl_line_pos_priority = int(val)
-		case int:
-			t.Item_jnl_line_pos_priority = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Item_jnl_line_pos_priority = n
-			}
-		}
-	}
-	if v, ok := data["auto_item_jnl_line_pos"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Auto_item_jnl_line_pos = b
-		}
-	}
-	if v, ok := data["show_item_jnl_line_neg"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Show_item_jnl_line_neg = ReservationSetupShow_item_jnl_line_neg(int(val))
-		case int:
-			t.Show_item_jnl_line_neg = ReservationSetupShow_item_jnl_line_neg(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Never", "Optional", "Always"}
-			for i, opt := range options {
-				if opt == val {
-					t.Show_item_jnl_line_neg = ReservationSetupShow_item_jnl_line_neg(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["item_jnl_line_neg_priority"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Item_jnl_line_neg_priority = int(val)
-		case int:
-			t.Item_jnl_line_neg_priority = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Item_jnl_line_neg_priority = n
-			}
-		}
-	}
-	if v, ok := data["auto_item_jnl_line_neg"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Auto_item_jnl_line_neg = b
-		}
-	}
-	if v, ok := data["show_item_jnl_line_transfer"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Show_item_jnl_line_transfer = ReservationSetupShow_item_jnl_line_transfer(int(val))
-		case int:
-			t.Show_item_jnl_line_transfer = ReservationSetupShow_item_jnl_line_transfer(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Never", "Optional", "Always"}
-			for i, opt := range options {
-				if opt == val {
-					t.Show_item_jnl_line_transfer = ReservationSetupShow_item_jnl_line_transfer(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["item_jnl_line_trans_priority"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Item_jnl_line_trans_priority = int(val)
-		case int:
-			t.Item_jnl_line_trans_priority = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Item_jnl_line_trans_priority = n
-			}
-		}
-	}
-	if v, ok := data["auto_item_jnl_line_transfer"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Auto_item_jnl_line_transfer = b
-		}
-	}
-	if v, ok := data["show_bom_journal_line"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Show_bom_journal_line = ReservationSetupShow_bom_journal_line(int(val))
-		case int:
-			t.Show_bom_journal_line = ReservationSetupShow_bom_journal_line(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Never", "Optional", "Always"}
-			for i, opt := range options {
-				if opt == val {
-					t.Show_bom_journal_line = ReservationSetupShow_bom_journal_line(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["bom_journal_line_priority"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Bom_journal_line_priority = int(val)
-		case int:
-			t.Bom_journal_line_priority = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Bom_journal_line_priority = n
-			}
-		}
-	}
-	if v, ok := data["auto_bom_journal_line"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Auto_bom_journal_line = b
-		}
-	}
-	if v, ok := data["reserve_purchase_quote"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Reserve_purchase_quote = b
-		}
-	}
-	if v, ok := data["reserve_blanket_purchase_order"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Reserve_blanket_purchase_order = b
-		}
-	}
-	if v, ok := data["reserve_purchase_order"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Reserve_purchase_order = b
-		}
-	}
-	if v, ok := data["reserve_purchase_invoice"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Reserve_purchase_invoice = b
-		}
-	}
-	if v, ok := data["reserve_purchase_credit_memo"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Reserve_purchase_credit_memo = b
-		}
-	}
-	if v, ok := data["reserve_requisition_line"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Reserve_requisition_line = b
-		}
-	}
-	if v, ok := data["reserve_sales_quote"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Reserve_sales_quote = b
-		}
-	}
-	if v, ok := data["reserve_blanket_sales_order"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Reserve_blanket_sales_order = b
-		}
-	}
-	if v, ok := data["reserve_sales_order"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Reserve_sales_order = b
-		}
-	}
-	if v, ok := data["reserve_sales_invoice"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Reserve_sales_invoice = b
-		}
-	}
-	if v, ok := data["reserve_sales_credit_memo"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Reserve_sales_credit_memo = b
-		}
-	}
-	if v, ok := data["reserve_item_jnl_line_purch"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Reserve_item_jnl_line_purch = b
-		}
-	}
-	if v, ok := data["reserve_item_jnl_line_sales"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Reserve_item_jnl_line_sales = b
-		}
-	}
-	if v, ok := data["reserve_item_jnl_line_pos"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Reserve_item_jnl_line_pos = b
-		}
-	}
-	if v, ok := data["reserve_item_jnl_line_neg"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Reserve_item_jnl_line_neg = b
-		}
-	}
-	if v, ok := data["reserve_item_jnl_line_trans"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Reserve_item_jnl_line_trans = b
-		}
-	}
-	if v, ok := data["reserve_bom_journal_line"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Reserve_bom_journal_line = b
-		}
-	}
+	reservationSetupFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -10487,758 +5374,1243 @@ func (t *ReservationSetup) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *ReservationSetup) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "primary_key",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "track_changes",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "valid_to_formula",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "auto_req_wksh_template",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "auto_req_wksh_name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "show_item_ledger_entry",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "item_ledger_entry_priority",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "show_purchase_quote",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "purchase_quote_priority",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "auto_purchase_quote",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "show_blanket_purchase_order",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "blanket_purch_order_priority",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         13,
-			Name:       "auto_blanket_purchase_order",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         14,
-			Name:       "show_purchase_order",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         15,
-			Name:       "purchase_order_priority",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         16,
-			Name:       "auto_purchase_order",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         17,
-			Name:       "show_purchase_invoice",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         18,
-			Name:       "purchase_invoice_priority",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         19,
-			Name:       "auto_purchase_invoice",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         20,
-			Name:       "show_purchase_credit_memo",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         21,
-			Name:       "purchase_credit_memo_priority",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         22,
-			Name:       "auto_purchase_credit_memo",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         23,
-			Name:       "show_requisition_line",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         24,
-			Name:       "requisition_line_priority",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         25,
-			Name:       "auto_requisition_line",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         26,
-			Name:       "show_sales_quote",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         27,
-			Name:       "sales_quote_priority",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         28,
-			Name:       "auto_sales_quote",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         29,
-			Name:       "show_blanket_sales_order",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         30,
-			Name:       "blanket_sales_order_priority",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         31,
-			Name:       "auto_blanket_sales_order",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         32,
-			Name:       "show_sales_order",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         33,
-			Name:       "sales_order_priority",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         34,
-			Name:       "auto_sales_order",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         35,
-			Name:       "show_sales_invoice",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         36,
-			Name:       "sales_invoice_priority",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         37,
-			Name:       "auto_sales_invoice",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         38,
-			Name:       "show_sales_credit_memo",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         39,
-			Name:       "sales_credit_memo_priority",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         40,
-			Name:       "auto_sales_credit_memo",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         41,
-			Name:       "show_item_jnl_line_purchases",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         42,
-			Name:       "item_jnl_line_purch_priority",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         43,
-			Name:       "auto_item_jnl_line_purchases",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         44,
-			Name:       "show_item_jnl_line_sales",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         45,
-			Name:       "item_jnl_line_sales_priority",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         46,
-			Name:       "auto_item_jnl_line_sales",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         47,
-			Name:       "show_item_jnl_line_pos",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         48,
-			Name:       "item_jnl_line_pos_priority",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         49,
-			Name:       "auto_item_jnl_line_pos",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         50,
-			Name:       "show_item_jnl_line_neg",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         51,
-			Name:       "item_jnl_line_neg_priority",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         52,
-			Name:       "auto_item_jnl_line_neg",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         53,
-			Name:       "show_item_jnl_line_transfer",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         54,
-			Name:       "item_jnl_line_trans_priority",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         55,
-			Name:       "auto_item_jnl_line_transfer",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         56,
-			Name:       "show_bom_journal_line",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         57,
-			Name:       "bom_journal_line_priority",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         58,
-			Name:       "auto_bom_journal_line",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         59,
-			Name:       "reserve_purchase_quote",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         60,
-			Name:       "reserve_blanket_purchase_order",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         61,
-			Name:       "reserve_purchase_order",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         62,
-			Name:       "reserve_purchase_invoice",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         63,
-			Name:       "reserve_purchase_credit_memo",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         64,
-			Name:       "reserve_requisition_line",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         65,
-			Name:       "reserve_sales_quote",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         66,
-			Name:       "reserve_blanket_sales_order",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         67,
-			Name:       "reserve_sales_order",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         68,
-			Name:       "reserve_sales_invoice",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         69,
-			Name:       "reserve_sales_credit_memo",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         70,
-			Name:       "reserve_item_jnl_line_purch",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         71,
-			Name:       "reserve_item_jnl_line_sales",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         72,
-			Name:       "reserve_item_jnl_line_pos",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         73,
-			Name:       "reserve_item_jnl_line_neg",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         74,
-			Name:       "reserve_item_jnl_line_trans",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         75,
-			Name:       "reserve_bom_journal_line",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return reservationSetupFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in reservationSetupFields.Fields
+func (t *ReservationSetup) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Primary_key
+	case 1:
+		return &t.Track_changes
+	case 2:
+		return &t.Valid_to_formula
+	case 3:
+		return &t.Auto_req_wksh_template
+	case 4:
+		return &t.Auto_req_wksh_name
+	case 5:
+		return &t.Show_item_ledger_entry
+	case 6:
+		return &t.Item_ledger_entry_priority
+	case 7:
+		return &t.Show_purchase_quote
+	case 8:
+		return &t.Purchase_quote_priority
+	case 9:
+		return &t.Auto_purchase_quote
+	case 10:
+		return &t.Show_blanket_purchase_order
+	case 11:
+		return &t.Blanket_purch_order_priority
+	case 12:
+		return &t.Auto_blanket_purchase_order
+	case 13:
+		return &t.Show_purchase_order
+	case 14:
+		return &t.Purchase_order_priority
+	case 15:
+		return &t.Auto_purchase_order
+	case 16:
+		return &t.Show_purchase_invoice
+	case 17:
+		return &t.Purchase_invoice_priority
+	case 18:
+		return &t.Auto_purchase_invoice
+	case 19:
+		return &t.Show_purchase_credit_memo
+	case 20:
+		return &t.Purchase_credit_memo_priority
+	case 21:
+		return &t.Auto_purchase_credit_memo
+	case 22:
+		return &t.Show_requisition_line
+	case 23:
+		return &t.Requisition_line_priority
+	case 24:
+		return &t.Auto_requisition_line
+	case 25:
+		return &t.Show_sales_quote
+	case 26:
+		return &t.Sales_quote_priority
+	case 27:
+		return &t.Auto_sales_quote
+	case 28:
+		return &t.Show_blanket_sales_order
+	case 29:
+		return &t.Blanket_sales_order_priority
+	case 30:
+		return &t.Auto_blanket_sales_order
+	case 31:
+		return &t.Show_sales_order
+	case 32:
+		return &t.Sales_order_priority
+	case 33:
+		return &t.Auto_sales_order
+	case 34:
+		return &t.Show_sales_invoice
+	case 35:
+		return &t.Sales_invoice_priority
+	case 36:
+		return &t.Auto_sales_invoice
+	case 37:
+		return &t.Show_sales_credit_memo
+	case 38:
+		return &t.Sales_credit_memo_priority
+	case 39:
+		return &t.Auto_sales_credit_memo
+	case 40:
+		return &t.Show_item_jnl_line_purchases
+	case 41:
+		return &t.Item_jnl_line_purch_priority
+	case 42:
+		return &t.Auto_item_jnl_line_purchases
+	case 43:
+		return &t.Show_item_jnl_line_sales
+	case 44:
+		return &t.Item_jnl_line_sales_priority
+	case 45:
+		return &t.Auto_item_jnl_line_sales
+	case 46:
+		return &t.Show_item_jnl_line_pos
+	case 47:
+		return &t.Item_jnl_line_pos_priority
+	case 48:
+		return &t.Auto_item_jnl_line_pos
+	case 49:
+		return &t.Show_item_jnl_line_neg
+	case 50:
+		return &t.Item_jnl_line_neg_priority
+	case 51:
+		return &t.Auto_item_jnl_line_neg
+	case 52:
+		return &t.Show_item_jnl_line_transfer
+	case 53:
+		return &t.Item_jnl_line_trans_priority
+	case 54:
+		return &t.Auto_item_jnl_line_transfer
+	case 55:
+		return &t.Show_bom_journal_line
+	case 56:
+		return &t.Bom_journal_line_priority
+	case 57:
+		return &t.Auto_bom_journal_line
+	case 58:
+		return &t.Reserve_purchase_quote
+	case 59:
+		return &t.Reserve_blanket_purchase_order
+	case 60:
+		return &t.Reserve_purchase_order
+	case 61:
+		return &t.Reserve_purchase_invoice
+	case 62:
+		return &t.Reserve_purchase_credit_memo
+	case 63:
+		return &t.Reserve_requisition_line
+	case 64:
+		return &t.Reserve_sales_quote
+	case 65:
+		return &t.Reserve_blanket_sales_order
+	case 66:
+		return &t.Reserve_sales_order
+	case 67:
+		return &t.Reserve_sales_invoice
+	case 68:
+		return &t.Reserve_sales_credit_memo
+	case 69:
+		return &t.Reserve_item_jnl_line_purch
+	case 70:
+		return &t.Reserve_item_jnl_line_sales
+	case 71:
+		return &t.Reserve_item_jnl_line_pos
+	case 72:
+		return &t.Reserve_item_jnl_line_neg
+	case 73:
+		return &t.Reserve_item_jnl_line_trans
+	case 74:
+		return &t.Reserve_bom_journal_line
 	}
+	return nil
+}
+
+// reservationSetupFields describes the fields of Reservation_Setup for the record functions
+// written once in foundation/tables
+var reservationSetupFields = &tables.TableFields{
+	Table: ReservationSetupTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "primary_key",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Primary_key",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "track_changes",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Track_changes",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "valid_to_formula",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:        tables.KindCode,
+			Trigger:     "OnValidate_Valid_to_formula",
+			DateFormula: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "auto_req_wksh_template",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Auto_req_wksh_template",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "auto_req_wksh_name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Auto_req_wksh_name",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "show_item_ledger_entry",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Show_item_ledger_entry",
+			Options: []string{"Never", "Optional", "Always"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "item_ledger_entry_priority",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Item_ledger_entry_priority",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "show_purchase_quote",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Show_purchase_quote",
+			Options: []string{"Never", "Optional", "Always"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "purchase_quote_priority",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Purchase_quote_priority",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "auto_purchase_quote",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Auto_purchase_quote",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "show_blanket_purchase_order",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Show_blanket_purchase_order",
+			Options: []string{"Never", "Optional", "Always"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "blanket_purch_order_priority",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Blanket_purch_order_priority",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "auto_blanket_purchase_order",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Auto_blanket_purchase_order",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "show_purchase_order",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Show_purchase_order",
+			Options: []string{"Never", "Optional", "Always"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         15,
+				Name:       "purchase_order_priority",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Purchase_order_priority",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         16,
+				Name:       "auto_purchase_order",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Auto_purchase_order",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         17,
+				Name:       "show_purchase_invoice",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Show_purchase_invoice",
+			Options: []string{"Never", "Optional", "Always"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         18,
+				Name:       "purchase_invoice_priority",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Purchase_invoice_priority",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         19,
+				Name:       "auto_purchase_invoice",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Auto_purchase_invoice",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         20,
+				Name:       "show_purchase_credit_memo",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Show_purchase_credit_memo",
+			Options: []string{"Never", "Optional", "Always"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         21,
+				Name:       "purchase_credit_memo_priority",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Purchase_credit_memo_priority",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         22,
+				Name:       "auto_purchase_credit_memo",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Auto_purchase_credit_memo",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         23,
+				Name:       "show_requisition_line",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Show_requisition_line",
+			Options: []string{"Never", "Optional", "Always"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         24,
+				Name:       "requisition_line_priority",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Requisition_line_priority",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         25,
+				Name:       "auto_requisition_line",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Auto_requisition_line",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         26,
+				Name:       "show_sales_quote",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Show_sales_quote",
+			Options: []string{"Never", "Optional", "Always"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         27,
+				Name:       "sales_quote_priority",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Sales_quote_priority",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         28,
+				Name:       "auto_sales_quote",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Auto_sales_quote",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         29,
+				Name:       "show_blanket_sales_order",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Show_blanket_sales_order",
+			Options: []string{"Never", "Optional", "Always"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         30,
+				Name:       "blanket_sales_order_priority",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Blanket_sales_order_priority",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         31,
+				Name:       "auto_blanket_sales_order",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Auto_blanket_sales_order",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         32,
+				Name:       "show_sales_order",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Show_sales_order",
+			Options: []string{"Never", "Optional", "Always"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         33,
+				Name:       "sales_order_priority",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Sales_order_priority",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         34,
+				Name:       "auto_sales_order",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Auto_sales_order",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         35,
+				Name:       "show_sales_invoice",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Show_sales_invoice",
+			Options: []string{"Never", "Optional", "Always"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         36,
+				Name:       "sales_invoice_priority",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Sales_invoice_priority",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         37,
+				Name:       "auto_sales_invoice",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Auto_sales_invoice",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         38,
+				Name:       "show_sales_credit_memo",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Show_sales_credit_memo",
+			Options: []string{"Never", "Optional", "Always"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         39,
+				Name:       "sales_credit_memo_priority",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Sales_credit_memo_priority",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         40,
+				Name:       "auto_sales_credit_memo",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Auto_sales_credit_memo",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         41,
+				Name:       "show_item_jnl_line_purchases",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Show_item_jnl_line_purchases",
+			Options: []string{"Never", "Optional", "Always"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         42,
+				Name:       "item_jnl_line_purch_priority",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Item_jnl_line_purch_priority",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         43,
+				Name:       "auto_item_jnl_line_purchases",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Auto_item_jnl_line_purchases",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         44,
+				Name:       "show_item_jnl_line_sales",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Show_item_jnl_line_sales",
+			Options: []string{"Never", "Optional", "Always"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         45,
+				Name:       "item_jnl_line_sales_priority",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Item_jnl_line_sales_priority",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         46,
+				Name:       "auto_item_jnl_line_sales",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Auto_item_jnl_line_sales",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         47,
+				Name:       "show_item_jnl_line_pos",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Show_item_jnl_line_pos",
+			Options: []string{"Never", "Optional", "Always"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         48,
+				Name:       "item_jnl_line_pos_priority",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Item_jnl_line_pos_priority",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         49,
+				Name:       "auto_item_jnl_line_pos",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Auto_item_jnl_line_pos",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         50,
+				Name:       "show_item_jnl_line_neg",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Show_item_jnl_line_neg",
+			Options: []string{"Never", "Optional", "Always"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         51,
+				Name:       "item_jnl_line_neg_priority",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Item_jnl_line_neg_priority",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         52,
+				Name:       "auto_item_jnl_line_neg",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Auto_item_jnl_line_neg",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         53,
+				Name:       "show_item_jnl_line_transfer",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Show_item_jnl_line_transfer",
+			Options: []string{"Never", "Optional", "Always"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         54,
+				Name:       "item_jnl_line_trans_priority",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Item_jnl_line_trans_priority",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         55,
+				Name:       "auto_item_jnl_line_transfer",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Auto_item_jnl_line_transfer",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         56,
+				Name:       "show_bom_journal_line",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Show_bom_journal_line",
+			Options: []string{"Never", "Optional", "Always"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         57,
+				Name:       "bom_journal_line_priority",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Bom_journal_line_priority",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         58,
+				Name:       "auto_bom_journal_line",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Auto_bom_journal_line",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         59,
+				Name:       "reserve_purchase_quote",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Reserve_purchase_quote",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         60,
+				Name:       "reserve_blanket_purchase_order",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Reserve_blanket_purchase_order",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         61,
+				Name:       "reserve_purchase_order",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Reserve_purchase_order",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         62,
+				Name:       "reserve_purchase_invoice",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Reserve_purchase_invoice",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         63,
+				Name:       "reserve_purchase_credit_memo",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Reserve_purchase_credit_memo",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         64,
+				Name:       "reserve_requisition_line",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Reserve_requisition_line",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         65,
+				Name:       "reserve_sales_quote",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Reserve_sales_quote",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         66,
+				Name:       "reserve_blanket_sales_order",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Reserve_blanket_sales_order",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         67,
+				Name:       "reserve_sales_order",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Reserve_sales_order",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         68,
+				Name:       "reserve_sales_invoice",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Reserve_sales_invoice",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         69,
+				Name:       "reserve_sales_credit_memo",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Reserve_sales_credit_memo",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         70,
+				Name:       "reserve_item_jnl_line_purch",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Reserve_item_jnl_line_purch",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         71,
+				Name:       "reserve_item_jnl_line_sales",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Reserve_item_jnl_line_sales",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         72,
+				Name:       "reserve_item_jnl_line_pos",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Reserve_item_jnl_line_pos",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         73,
+				Name:       "reserve_item_jnl_line_neg",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Reserve_item_jnl_line_neg",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         74,
+				Name:       "reserve_item_jnl_line_trans",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Reserve_item_jnl_line_trans",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         75,
+				Name:       "reserve_bom_journal_line",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Reserve_bom_journal_line",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

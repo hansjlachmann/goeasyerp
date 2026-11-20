@@ -121,32 +121,12 @@ var GLAccountNetChange_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *GLAccountNetChange) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "no":
-		return 1
-	case "name":
-		return 2
-	case "net_change_in_jnl":
-		return 3
-	case "balance_after_posting":
-		return 4
-	}
-	return 0
+	return gLAccountNetChangeFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *GLAccountNetChange) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "no"
-	case 2:
-		return "name"
-	case 3:
-		return "net_change_in_jnl"
-	case 4:
-		return "balance_after_posting"
-	}
-	return ""
+	return gLAccountNetChangeFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -258,18 +238,6 @@ type (
 	GLAccountNetChangeOnBeforeRename interface {
 		OnBeforeRename(rec *GLAccountNetChange, handled *bool) error
 	}
-	GLAccountNetChangeOnValidate_No interface {
-		OnValidate_No(rec *GLAccountNetChange) error
-	}
-	GLAccountNetChangeOnValidate_Name interface {
-		OnValidate_Name(rec *GLAccountNetChange) error
-	}
-	GLAccountNetChangeOnValidate_Net_change_in_jnl interface {
-		OnValidate_Net_change_in_jnl(rec *GLAccountNetChange) error
-	}
-	GLAccountNetChangeOnValidate_Balance_after_posting interface {
-		OnValidate_Balance_after_posting(rec *GLAccountNetChange) error
-	}
 )
 
 // gLAccountNetChangeLogic is the registered business logic of G_L_Account_Net_Change, in
@@ -312,16 +280,9 @@ func gLAccountNetChangeTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(GLAccountNetChangeOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(GLAccountNetChangeOnBeforeRename)
-	case "OnValidate_No":
-		_, ok = logic.(GLAccountNetChangeOnValidate_No)
-	case "OnValidate_Name":
-		_, ok = logic.(GLAccountNetChangeOnValidate_Name)
-	case "OnValidate_Net_change_in_jnl":
-		_, ok = logic.(GLAccountNetChangeOnValidate_Net_change_in_jnl)
-	case "OnValidate_Balance_after_posting":
-		_, ok = logic.(GLAccountNetChangeOnValidate_Balance_after_posting)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return gLAccountNetChangeFields.IsOnValidateTrigger(name, logic, (*GLAccountNetChange)(nil))
 	}
 	return true, ok
 }
@@ -610,11 +571,7 @@ func (t *GLAccountNetChange) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *GLAccountNetChange) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["no"] = t.No
-	t.oldValues["name"] = t.Name
-	t.oldValues["net_change_in_jnl"] = t.Net_change_in_jnl
-	t.oldValues["balance_after_posting"] = t.Balance_after_posting
+	t.oldValues = gLAccountNetChangeFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -629,18 +586,7 @@ func (t *GLAccountNetChange) OldValue(fieldName string) interface{} {
 func (t *GLAccountNetChange) XRec() *GLAccountNetChange {
 	x := &GLAccountNetChange{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["no"].(types.Code); ok {
-		x.No = v
-	}
-	if v, ok := t.oldValues["name"].(types.Text); ok {
-		x.Name = v
-	}
-	if v, ok := t.oldValues["net_change_in_jnl"].(types.Decimal); ok {
-		x.Net_change_in_jnl = v
-	}
-	if v, ok := t.oldValues["balance_after_posting"].(types.Decimal); ok {
-		x.Balance_after_posting = v
-	}
+	gLAccountNetChangeFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -917,37 +863,7 @@ func (t *GLAccountNetChange) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *GLAccountNetChange) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No.Equal(old)
-		}
-	case "name":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Name.Equal(old)
-		}
-	case "net_change_in_jnl":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Net_change_in_jnl.Equal(old)
-		}
-	case "balance_after_posting":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Balance_after_posting.Equal(old)
-		}
-	}
-
-	return false
+	return gLAccountNetChangeFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1148,17 +1064,7 @@ func (t *GLAccountNetChange) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *GLAccountNetChange) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("no"):
-		return "no", true
-	case strings.ToLower("name"):
-		return "name", true
-	case strings.ToLower("net_change_in_jnl"):
-		return "net_change_in_jnl", true
-	case strings.ToLower("balance_after_posting"):
-		return "balance_after_posting", true
-	}
-	return "", false
+	return gLAccountNetChangeFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -1997,104 +1903,20 @@ func (t *GLAccountNetChange) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *GLAccountNetChange) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-		} else if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountNetChangeOnValidate_No); ok {
-				if err := trg.OnValidate_No(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "name":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-		} else if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountNetChangeOnValidate_Name); ok {
-				if err := trg.OnValidate_Name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "net_change_in_jnl":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Net_change_in_jnl = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Net_change_in_jnl, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field net_change_in_jnl: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Net_change_in_jnl = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Net_change_in_jnl = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Net_change_in_jnl = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field net_change_in_jnl (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountNetChangeOnValidate_Net_change_in_jnl); ok {
-				if err := trg.OnValidate_Net_change_in_jnl(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "balance_after_posting":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Balance_after_posting = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Balance_after_posting, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field balance_after_posting: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Balance_after_posting = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Balance_after_posting = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Balance_after_posting = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field balance_after_posting (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountNetChangeOnValidate_Balance_after_posting); ok {
-				if err := trg.OnValidate_Balance_after_posting(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := gLAccountNetChangeFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &gLAccountNetChangeFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2103,60 +1925,18 @@ func (t *GLAccountNetChange) ValidateField(fieldName string, value interface{}) 
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *GLAccountNetChange) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.No, true
-	case 2:
-		return t.Name, true
-	case 3:
-		return t.Net_change_in_jnl, true
-	case 4:
-		return t.Balance_after_posting, true
-	}
-	return nil, false
+	return gLAccountNetChangeFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *GLAccountNetChange) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return gLAccountNetChangeFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *GLAccountNetChange) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Decimal); ok {
-			t.Net_change_in_jnl = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Decimal); ok {
-			t.Balance_after_posting = v
-			return true
-		}
-	}
-	return false
+	return gLAccountNetChangeFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2634,17 +2414,7 @@ func (t *GLAccountNetChange) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *GLAccountNetChange) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "no":
-		return t.No, true
-	case "name":
-		return t.Name, true
-	case "net_change_in_jnl":
-		return t.Net_change_in_jnl, true
-	case "balance_after_posting":
-		return t.Balance_after_posting, true
-	}
-	return nil, false
+	return gLAccountNetChangeFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2733,50 +2503,12 @@ func (t *GLAccountNetChange) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *GLAccountNetChange) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"no":                    t.No.String(),
-		"name":                  t.Name.String(),
-		"net_change_in_jnl":     t.Net_change_in_jnl.String(),
-		"balance_after_posting": t.Balance_after_posting.String(),
-	}
+	return gLAccountNetChangeFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *GLAccountNetChange) FromMap(data map[string]interface{}) {
-	if v, ok := data["no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No = types.NewCode(s)
-		}
-	}
-	if v, ok := data["name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Name = types.NewText(s)
-		}
-	}
-	if v, ok := data["net_change_in_jnl"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Net_change_in_jnl, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Net_change_in_jnl = types.NewDecimal(val)
-		case int:
-			t.Net_change_in_jnl = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Net_change_in_jnl = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["balance_after_posting"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Balance_after_posting, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Balance_after_posting = types.NewDecimal(val)
-		case int:
-			t.Balance_after_posting = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Balance_after_posting = types.NewDecimalFromInt(val)
-		}
-	}
+	gLAccountNetChangeFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2797,50 +2529,88 @@ func (t *GLAccountNetChange) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *GLAccountNetChange) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "name",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            3,
-			Name:          "net_change_in_jnl",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            4,
-			Name:          "balance_after_posting",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
+	return gLAccountNetChangeFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in gLAccountNetChangeFields.Fields
+func (t *GLAccountNetChange) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.No
+	case 1:
+		return &t.Name
+	case 2:
+		return &t.Net_change_in_jnl
+	case 3:
+		return &t.Balance_after_posting
 	}
+	return nil
+}
+
+// gLAccountNetChangeFields describes the fields of G_L_Account_Net_Change for the record functions
+// written once in foundation/tables
+var gLAccountNetChangeFields = &tables.TableFields{
+	Table: GLAccountNetChangeTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_No",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "name",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            3,
+				Name:          "net_change_in_jnl",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Net_change_in_jnl",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            4,
+				Name:          "balance_after_posting",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Balance_after_posting",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

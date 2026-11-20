@@ -25,7 +25,7 @@ package tables
 
 import (
 	"database/sql"
-	"encoding/base64"
+
 	"fmt"
 	"slices"
 	"strconv"
@@ -139,48 +139,12 @@ var ThemeAsset_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *ThemeAsset) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "theme_code":
-		return 1
-	case "name":
-		return 2
-	case "content_type":
-		return 3
-	case "size":
-		return 4
-	case "width":
-		return 5
-	case "height":
-		return 6
-	case "sha256":
-		return 7
-	case "data":
-		return 8
-	}
-	return 0
+	return themeAssetFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *ThemeAsset) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "theme_code"
-	case 2:
-		return "name"
-	case 3:
-		return "content_type"
-	case 4:
-		return "size"
-	case 5:
-		return "width"
-	case 6:
-		return "height"
-	case 7:
-		return "sha256"
-	case 8:
-		return "data"
-	}
-	return ""
+	return themeAssetFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -284,14 +248,6 @@ type (
 	ThemeAssetOnBeforeRename interface {
 		OnBeforeRename(rec *ThemeAsset, handled *bool) error
 	}
-	ThemeAssetOnValidate_Theme_code   interface{ OnValidate_Theme_code(rec *ThemeAsset) error }
-	ThemeAssetOnValidate_Name         interface{ OnValidate_Name(rec *ThemeAsset) error }
-	ThemeAssetOnValidate_Content_type interface{ OnValidate_Content_type(rec *ThemeAsset) error }
-	ThemeAssetOnValidate_Size         interface{ OnValidate_Size(rec *ThemeAsset) error }
-	ThemeAssetOnValidate_Width        interface{ OnValidate_Width(rec *ThemeAsset) error }
-	ThemeAssetOnValidate_Height       interface{ OnValidate_Height(rec *ThemeAsset) error }
-	ThemeAssetOnValidate_Sha256       interface{ OnValidate_Sha256(rec *ThemeAsset) error }
-	ThemeAssetOnValidate_Data         interface{ OnValidate_Data(rec *ThemeAsset) error }
 )
 
 // themeAssetLogic is the registered business logic of Theme_Asset, in
@@ -334,24 +290,9 @@ func themeAssetTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ThemeAssetOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(ThemeAssetOnBeforeRename)
-	case "OnValidate_Theme_code":
-		_, ok = logic.(ThemeAssetOnValidate_Theme_code)
-	case "OnValidate_Name":
-		_, ok = logic.(ThemeAssetOnValidate_Name)
-	case "OnValidate_Content_type":
-		_, ok = logic.(ThemeAssetOnValidate_Content_type)
-	case "OnValidate_Size":
-		_, ok = logic.(ThemeAssetOnValidate_Size)
-	case "OnValidate_Width":
-		_, ok = logic.(ThemeAssetOnValidate_Width)
-	case "OnValidate_Height":
-		_, ok = logic.(ThemeAssetOnValidate_Height)
-	case "OnValidate_Sha256":
-		_, ok = logic.(ThemeAssetOnValidate_Sha256)
-	case "OnValidate_Data":
-		_, ok = logic.(ThemeAssetOnValidate_Data)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return themeAssetFields.IsOnValidateTrigger(name, logic, (*ThemeAsset)(nil))
 	}
 	return true, ok
 }
@@ -656,15 +597,7 @@ func (t *ThemeAsset) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *ThemeAsset) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["theme_code"] = t.Theme_code
-	t.oldValues["name"] = t.Name
-	t.oldValues["content_type"] = t.Content_type
-	t.oldValues["size"] = t.Size
-	t.oldValues["width"] = t.Width
-	t.oldValues["height"] = t.Height
-	t.oldValues["sha256"] = t.Sha256
-	t.oldValues["data"] = t.Data
+	t.oldValues = themeAssetFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -679,30 +612,7 @@ func (t *ThemeAsset) OldValue(fieldName string) interface{} {
 func (t *ThemeAsset) XRec() *ThemeAsset {
 	x := &ThemeAsset{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["theme_code"].(types.Code); ok {
-		x.Theme_code = v
-	}
-	if v, ok := t.oldValues["name"].(types.Code); ok {
-		x.Name = v
-	}
-	if v, ok := t.oldValues["content_type"].(types.Text); ok {
-		x.Content_type = v
-	}
-	if v, ok := t.oldValues["size"].(int); ok {
-		x.Size = v
-	}
-	if v, ok := t.oldValues["width"].(int); ok {
-		x.Width = v
-	}
-	if v, ok := t.oldValues["height"].(int); ok {
-		x.Height = v
-	}
-	if v, ok := t.oldValues["sha256"].(types.Text); ok {
-		x.Sha256 = v
-	}
-	if v, ok := t.oldValues["data"].([]byte); ok {
-		x.Data = v
-	}
+	themeAssetFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1034,55 +944,7 @@ func (t *ThemeAsset) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *ThemeAsset) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "theme_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Theme_code.Equal(old)
-		}
-	case "name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Name.Equal(old)
-		}
-	case "content_type":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Content_type.Equal(old)
-		}
-	case "size":
-		if old, ok := oldValue.(int); ok {
-			return t.Size != old
-		}
-		return true // Type mismatch, assume changed
-	case "width":
-		if old, ok := oldValue.(int); ok {
-			return t.Width != old
-		}
-		return true // Type mismatch, assume changed
-	case "height":
-		if old, ok := oldValue.(int); ok {
-			return t.Height != old
-		}
-		return true // Type mismatch, assume changed
-	case "sha256":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Sha256.Equal(old)
-		}
-	case "data":
-		// Skip comparison for BLOB fields (too large, use always modified)
-		return true
-	}
-
-	return false
+	return themeAssetFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1284,25 +1146,7 @@ func (t *ThemeAsset) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *ThemeAsset) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("theme_code"):
-		return "theme_code", true
-	case strings.ToLower("name"):
-		return "name", true
-	case strings.ToLower("content_type"):
-		return "content_type", true
-	case strings.ToLower("size"):
-		return "size", true
-	case strings.ToLower("width"):
-		return "width", true
-	case strings.ToLower("height"):
-		return "height", true
-	case strings.ToLower("sha256"):
-		return "sha256", true
-	case strings.ToLower("data"):
-		return "data", true
-	}
-	return "", false
+	return themeAssetFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2157,199 +2001,20 @@ func (t *ThemeAsset) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *ThemeAsset) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "theme_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Theme_code = v
-		} else if v, ok := value.(string); ok {
-			t.Theme_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field theme_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "theme_code"); err != nil {
+	i, err := themeAssetFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
+	}
+	f := &themeAssetFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
 			return err
 		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ThemeAssetOnValidate_Theme_code); ok {
-				if err := trg.OnValidate_Theme_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Name = v
-		} else if v, ok := value.(string); ok {
-			t.Name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ThemeAssetOnValidate_Name); ok {
-				if err := trg.OnValidate_Name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "content_type":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Content_type = v
-		} else if v, ok := value.(string); ok {
-			t.Content_type = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field content_type")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ThemeAssetOnValidate_Content_type); ok {
-				if err := trg.OnValidate_Content_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "size":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Size = v
-		case float64:
-			t.Size = int(v)
-		case string:
-			if v == "" {
-				t.Size = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Size = i
-			} else {
-				return fmt.Errorf("invalid integer value for field size: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field size")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ThemeAssetOnValidate_Size); ok {
-				if err := trg.OnValidate_Size(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "width":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Width = v
-		case float64:
-			t.Width = int(v)
-		case string:
-			if v == "" {
-				t.Width = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Width = i
-			} else {
-				return fmt.Errorf("invalid integer value for field width: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field width")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ThemeAssetOnValidate_Width); ok {
-				if err := trg.OnValidate_Width(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "height":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Height = v
-		case float64:
-			t.Height = int(v)
-		case string:
-			if v == "" {
-				t.Height = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Height = i
-			} else {
-				return fmt.Errorf("invalid integer value for field height: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field height")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ThemeAssetOnValidate_Height); ok {
-				if err := trg.OnValidate_Height(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sha256":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Sha256 = v
-		} else if v, ok := value.(string); ok {
-			t.Sha256 = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field sha256")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ThemeAssetOnValidate_Sha256); ok {
-				if err := trg.OnValidate_Sha256(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "data":
-		// Set field value
-		// Accept nil, []byte, or base64-encoded string
-		if value == nil {
-			t.Data = nil
-		} else if v, ok := value.([]byte); ok {
-			t.Data = v
-		} else if s, ok := value.(string); ok {
-			if s == "" {
-				t.Data = nil
-			} else {
-				// Try base64 decode
-				decoded, err := base64.StdEncoding.DecodeString(s)
-				if err != nil {
-					return fmt.Errorf("invalid base64 value for field data: %w", err)
-				}
-				t.Data = decoded
-			}
-		} else {
-			return fmt.Errorf("invalid type for field data (expected []byte, string, or nil)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ThemeAssetOnValidate_Data); ok {
-				if err := trg.OnValidate_Data(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2358,96 +2023,18 @@ func (t *ThemeAsset) ValidateField(fieldName string, value interface{}) error {
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *ThemeAsset) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Theme_code, true
-	case 2:
-		return t.Name, true
-	case 3:
-		return t.Content_type, true
-	case 4:
-		return t.Size, true
-	case 5:
-		return t.Width, true
-	case 6:
-		return t.Height, true
-	case 7:
-		return t.Sha256, true
-	case 8:
-		return t.Data, true
-	}
-	return nil, false
+	return themeAssetFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *ThemeAsset) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return themeAssetFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *ThemeAsset) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Theme_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Theme_code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Name = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Text); ok {
-			t.Content_type = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Content_type = types.NewText(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(int); ok {
-			t.Size = v
-			return true
-		}
-	case 5:
-		if v, ok := value.(int); ok {
-			t.Width = v
-			return true
-		}
-	case 6:
-		if v, ok := value.(int); ok {
-			t.Height = v
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Text); ok {
-			t.Sha256 = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Sha256 = types.NewText(v)
-			return true
-		}
-	case 8:
-		if v, ok := value.([]byte); ok {
-			t.Data = v
-			return true
-		}
-	}
-	return false
+	return themeAssetFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2934,25 +2521,7 @@ func (t *ThemeAsset) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *ThemeAsset) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "theme_code":
-		return t.Theme_code, true
-	case "name":
-		return t.Name, true
-	case "content_type":
-		return t.Content_type, true
-	case "size":
-		return t.Size, true
-	case "width":
-		return t.Width, true
-	case "height":
-		return t.Height, true
-	case "sha256":
-		return t.Sha256, true
-	case "data":
-		return t.Data, true
-	}
-	return nil, false
+	return themeAssetFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3048,81 +2617,12 @@ func (t *ThemeAsset) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *ThemeAsset) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"theme_code":   t.Theme_code.String(),
-		"name":         t.Name.String(),
-		"content_type": t.Content_type.String(),
-		"size":         t.Size,
-		"width":        t.Width,
-		"height":       t.Height,
-		"sha256":       t.Sha256.String(),
-		"data":         t.Data,
-	}
+	return themeAssetFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *ThemeAsset) FromMap(data map[string]interface{}) {
-	if v, ok := data["theme_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Theme_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["content_type"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Content_type = types.NewText(s)
-		}
-	}
-	if v, ok := data["size"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Size = int(val)
-		case int:
-			t.Size = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Size = n
-			}
-		}
-	}
-	if v, ok := data["width"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Width = int(val)
-		case int:
-			t.Width = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Width = n
-			}
-		}
-	}
-	if v, ok := data["height"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Height = int(val)
-		case int:
-			t.Height = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Height = n
-			}
-		}
-	}
-	if v, ok := data["sha256"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Sha256 = types.NewText(s)
-		}
-	}
-	if v, ok := data["data"]; ok && v != nil {
-	}
+	themeAssetFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3143,89 +2643,152 @@ func (t *ThemeAsset) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *ThemeAsset) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "theme_code",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "name",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "content_type",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "size",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "width",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "height",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "sha256",
-			Type:       tables.FieldTypeText,
-			Length:     64,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "data",
-			Type:       tables.FieldTypeBlob,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			Sensitive:  true,
-		},
+	return themeAssetFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in themeAssetFields.Fields
+func (t *ThemeAsset) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Theme_code
+	case 1:
+		return &t.Name
+	case 2:
+		return &t.Content_type
+	case 3:
+		return &t.Size
+	case 4:
+		return &t.Width
+	case 5:
+		return &t.Height
+	case 6:
+		return &t.Sha256
+	case 7:
+		return &t.Data
 	}
+	return nil
+}
+
+// themeAssetFields describes the fields of Theme_Asset for the record functions
+// written once in foundation/tables
+var themeAssetFields = &tables.TableFields{
+	Table: ThemeAssetTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "theme_code",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Theme_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "name",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "content_type",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Content_type",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "size",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Size",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "width",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Width",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "height",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Height",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "sha256",
+				Type:       tables.FieldTypeText,
+				Length:     64,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Sha256",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "data",
+				Type:       tables.FieldTypeBlob,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				Sensitive:  true,
+			},
+			Kind:    tables.KindBlob,
+			Trigger: "OnValidate_Data",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

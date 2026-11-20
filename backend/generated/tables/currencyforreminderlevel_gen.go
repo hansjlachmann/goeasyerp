@@ -122,32 +122,12 @@ var CurrencyForReminderLevel_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *CurrencyForReminderLevel) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "reminder_terms_code":
-		return 1
-	case "no":
-		return 2
-	case "currency_code":
-		return 3
-	case "additional_fee":
-		return 4
-	}
-	return 0
+	return currencyForReminderLevelFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *CurrencyForReminderLevel) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "reminder_terms_code"
-	case 2:
-		return "no"
-	case 3:
-		return "currency_code"
-	case 4:
-		return "additional_fee"
-	}
-	return ""
+	return currencyForReminderLevelFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -259,18 +239,6 @@ type (
 	CurrencyForReminderLevelOnBeforeRename interface {
 		OnBeforeRename(rec *CurrencyForReminderLevel, handled *bool) error
 	}
-	CurrencyForReminderLevelOnValidate_Reminder_terms_code interface {
-		OnValidate_Reminder_terms_code(rec *CurrencyForReminderLevel) error
-	}
-	CurrencyForReminderLevelOnValidate_No interface {
-		OnValidate_No(rec *CurrencyForReminderLevel) error
-	}
-	CurrencyForReminderLevelOnValidate_Currency_code interface {
-		OnValidate_Currency_code(rec *CurrencyForReminderLevel) error
-	}
-	CurrencyForReminderLevelOnValidate_Additional_fee interface {
-		OnValidate_Additional_fee(rec *CurrencyForReminderLevel) error
-	}
 )
 
 // currencyForReminderLevelLogic is the registered business logic of Currency_for_Reminder_Level, in
@@ -313,16 +281,9 @@ func currencyForReminderLevelTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(CurrencyForReminderLevelOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(CurrencyForReminderLevelOnBeforeRename)
-	case "OnValidate_Reminder_terms_code":
-		_, ok = logic.(CurrencyForReminderLevelOnValidate_Reminder_terms_code)
-	case "OnValidate_No":
-		_, ok = logic.(CurrencyForReminderLevelOnValidate_No)
-	case "OnValidate_Currency_code":
-		_, ok = logic.(CurrencyForReminderLevelOnValidate_Currency_code)
-	case "OnValidate_Additional_fee":
-		_, ok = logic.(CurrencyForReminderLevelOnValidate_Additional_fee)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return currencyForReminderLevelFields.IsOnValidateTrigger(name, logic, (*CurrencyForReminderLevel)(nil))
 	}
 	return true, ok
 }
@@ -622,11 +583,7 @@ func (t *CurrencyForReminderLevel) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *CurrencyForReminderLevel) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["reminder_terms_code"] = t.Reminder_terms_code
-	t.oldValues["no"] = t.No
-	t.oldValues["currency_code"] = t.Currency_code
-	t.oldValues["additional_fee"] = t.Additional_fee
+	t.oldValues = currencyForReminderLevelFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -641,18 +598,7 @@ func (t *CurrencyForReminderLevel) OldValue(fieldName string) interface{} {
 func (t *CurrencyForReminderLevel) XRec() *CurrencyForReminderLevel {
 	x := &CurrencyForReminderLevel{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["reminder_terms_code"].(types.Code); ok {
-		x.Reminder_terms_code = v
-	}
-	if v, ok := t.oldValues["no"].(int); ok {
-		x.No = v
-	}
-	if v, ok := t.oldValues["currency_code"].(types.Code); ok {
-		x.Currency_code = v
-	}
-	if v, ok := t.oldValues["additional_fee"].(types.Decimal); ok {
-		x.Additional_fee = v
-	}
+	currencyForReminderLevelFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -961,38 +907,7 @@ func (t *CurrencyForReminderLevel) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *CurrencyForReminderLevel) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "reminder_terms_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Reminder_terms_code.Equal(old)
-		}
-	case "no":
-		if old, ok := oldValue.(int); ok {
-			return t.No != old
-		}
-		return true // Type mismatch, assume changed
-	case "currency_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Currency_code.Equal(old)
-		}
-	case "additional_fee":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Additional_fee.Equal(old)
-		}
-	}
-
-	return false
+	return currencyForReminderLevelFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1195,17 +1110,7 @@ func (t *CurrencyForReminderLevel) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *CurrencyForReminderLevel) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("reminder_terms_code"):
-		return "reminder_terms_code", true
-	case strings.ToLower("no"):
-		return "no", true
-	case strings.ToLower("currency_code"):
-		return "currency_code", true
-	case strings.ToLower("additional_fee"):
-		return "additional_fee", true
-	}
-	return "", false
+	return currencyForReminderLevelFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2034,111 +1939,20 @@ func (t *CurrencyForReminderLevel) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *CurrencyForReminderLevel) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "reminder_terms_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Reminder_terms_code = v
-		} else if v, ok := value.(string); ok {
-			t.Reminder_terms_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field reminder_terms_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "reminder_terms_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyForReminderLevelOnValidate_Reminder_terms_code); ok {
-				if err := trg.OnValidate_Reminder_terms_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.No = v
-		case float64:
-			t.No = int(v)
-		case string:
-			if v == "" {
-				t.No = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.No = i
-			} else {
-				return fmt.Errorf("invalid integer value for field no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyForReminderLevelOnValidate_No); ok {
-				if err := trg.OnValidate_No(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "currency_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Currency_code = v
-		} else if v, ok := value.(string); ok {
-			t.Currency_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field currency_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "currency_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyForReminderLevelOnValidate_Currency_code); ok {
-				if err := trg.OnValidate_Currency_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "additional_fee":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Additional_fee = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Additional_fee, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field additional_fee: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Additional_fee = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Additional_fee = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Additional_fee = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field additional_fee (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyForReminderLevelOnValidate_Additional_fee); ok {
-				if err := trg.OnValidate_Additional_fee(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := currencyForReminderLevelFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &currencyForReminderLevelFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2147,60 +1961,18 @@ func (t *CurrencyForReminderLevel) ValidateField(fieldName string, value interfa
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *CurrencyForReminderLevel) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Reminder_terms_code, true
-	case 2:
-		return t.No, true
-	case 3:
-		return t.Currency_code, true
-	case 4:
-		return t.Additional_fee, true
-	}
-	return nil, false
+	return currencyForReminderLevelFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *CurrencyForReminderLevel) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return currencyForReminderLevelFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *CurrencyForReminderLevel) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Reminder_terms_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Reminder_terms_code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(int); ok {
-			t.No = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Code); ok {
-			t.Currency_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Currency_code = types.NewCode(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Decimal); ok {
-			t.Additional_fee = v
-			return true
-		}
-	}
-	return false
+	return currencyForReminderLevelFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2680,17 +2452,7 @@ func (t *CurrencyForReminderLevel) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *CurrencyForReminderLevel) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "reminder_terms_code":
-		return t.Reminder_terms_code, true
-	case "no":
-		return t.No, true
-	case "currency_code":
-		return t.Currency_code, true
-	case "additional_fee":
-		return t.Additional_fee, true
-	}
-	return nil, false
+	return currencyForReminderLevelFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2785,51 +2547,12 @@ func (t *CurrencyForReminderLevel) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *CurrencyForReminderLevel) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"reminder_terms_code": t.Reminder_terms_code.String(),
-		"no":                  t.No,
-		"currency_code":       t.Currency_code.String(),
-		"additional_fee":      t.Additional_fee.String(),
-	}
+	return currencyForReminderLevelFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *CurrencyForReminderLevel) FromMap(data map[string]interface{}) {
-	if v, ok := data["reminder_terms_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Reminder_terms_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.No = int(val)
-		case int:
-			t.No = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.No = n
-			}
-		}
-	}
-	if v, ok := data["currency_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Currency_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["additional_fee"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Additional_fee, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Additional_fee = types.NewDecimal(val)
-		case int:
-			t.Additional_fee = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Additional_fee = types.NewDecimalFromInt(val)
-		}
-	}
+	currencyForReminderLevelFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2850,51 +2573,91 @@ func (t *CurrencyForReminderLevel) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *CurrencyForReminderLevel) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "reminder_terms_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         2,
-			Name:       "no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         3,
-			Name:       "currency_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:            4,
-			Name:          "additional_fee",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
+	return currencyForReminderLevelFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in currencyForReminderLevelFields.Fields
+func (t *CurrencyForReminderLevel) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Reminder_terms_code
+	case 1:
+		return &t.No
+	case 2:
+		return &t.Currency_code
+	case 3:
+		return &t.Additional_fee
 	}
+	return nil
+}
+
+// currencyForReminderLevelFields describes the fields of Currency_for_Reminder_Level for the record functions
+// written once in foundation/tables
+var currencyForReminderLevelFields = &tables.TableFields{
+	Table: CurrencyForReminderLevelTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "reminder_terms_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Reminder_terms_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_No",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "currency_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Currency_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            4,
+				Name:          "additional_fee",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Additional_fee",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

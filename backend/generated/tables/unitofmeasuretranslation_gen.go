@@ -117,28 +117,12 @@ var UnitOfMeasureTranslation_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *UnitOfMeasureTranslation) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "code":
-		return 1
-	case "language_code":
-		return 2
-	case "description":
-		return 3
-	}
-	return 0
+	return unitOfMeasureTranslationFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *UnitOfMeasureTranslation) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "code"
-	case 2:
-		return "language_code"
-	case 3:
-		return "description"
-	}
-	return ""
+	return unitOfMeasureTranslationFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -250,15 +234,6 @@ type (
 	UnitOfMeasureTranslationOnBeforeRename interface {
 		OnBeforeRename(rec *UnitOfMeasureTranslation, handled *bool) error
 	}
-	UnitOfMeasureTranslationOnValidate_Code interface {
-		OnValidate_Code(rec *UnitOfMeasureTranslation) error
-	}
-	UnitOfMeasureTranslationOnValidate_Language_code interface {
-		OnValidate_Language_code(rec *UnitOfMeasureTranslation) error
-	}
-	UnitOfMeasureTranslationOnValidate_Description interface {
-		OnValidate_Description(rec *UnitOfMeasureTranslation) error
-	}
 )
 
 // unitOfMeasureTranslationLogic is the registered business logic of Unit_of_Measure_Translation, in
@@ -301,14 +276,9 @@ func unitOfMeasureTranslationTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(UnitOfMeasureTranslationOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(UnitOfMeasureTranslationOnBeforeRename)
-	case "OnValidate_Code":
-		_, ok = logic.(UnitOfMeasureTranslationOnValidate_Code)
-	case "OnValidate_Language_code":
-		_, ok = logic.(UnitOfMeasureTranslationOnValidate_Language_code)
-	case "OnValidate_Description":
-		_, ok = logic.(UnitOfMeasureTranslationOnValidate_Description)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return unitOfMeasureTranslationFields.IsOnValidateTrigger(name, logic, (*UnitOfMeasureTranslation)(nil))
 	}
 	return true, ok
 }
@@ -609,10 +579,7 @@ func (t *UnitOfMeasureTranslation) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *UnitOfMeasureTranslation) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["code"] = t.Code
-	t.oldValues["language_code"] = t.Language_code
-	t.oldValues["description"] = t.Description
+	t.oldValues = unitOfMeasureTranslationFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -627,15 +594,7 @@ func (t *UnitOfMeasureTranslation) OldValue(fieldName string) interface{} {
 func (t *UnitOfMeasureTranslation) XRec() *UnitOfMeasureTranslation {
 	x := &UnitOfMeasureTranslation{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["code"].(types.Code); ok {
-		x.Code = v
-	}
-	if v, ok := t.oldValues["language_code"].(types.Code); ok {
-		x.Language_code = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
+	unitOfMeasureTranslationFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -912,33 +871,7 @@ func (t *UnitOfMeasureTranslation) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *UnitOfMeasureTranslation) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Code.Equal(old)
-		}
-	case "language_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Language_code.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	}
-
-	return false
+	return unitOfMeasureTranslationFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1140,15 +1073,7 @@ func (t *UnitOfMeasureTranslation) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *UnitOfMeasureTranslation) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("code"):
-		return "code", true
-	case strings.ToLower("language_code"):
-		return "language_code", true
-	case strings.ToLower("description"):
-		return "description", true
-	}
-	return "", false
+	return unitOfMeasureTranslationFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -1970,74 +1895,20 @@ func (t *UnitOfMeasureTranslation) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *UnitOfMeasureTranslation) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-		} else if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UnitOfMeasureTranslationOnValidate_Code); ok {
-				if err := trg.OnValidate_Code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "language_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Language_code = v
-		} else if v, ok := value.(string); ok {
-			t.Language_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field language_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "language_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UnitOfMeasureTranslationOnValidate_Language_code); ok {
-				if err := trg.OnValidate_Language_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UnitOfMeasureTranslationOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := unitOfMeasureTranslationFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &unitOfMeasureTranslationFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2046,57 +1917,18 @@ func (t *UnitOfMeasureTranslation) ValidateField(fieldName string, value interfa
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *UnitOfMeasureTranslation) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Code, true
-	case 2:
-		return t.Language_code, true
-	case 3:
-		return t.Description, true
-	}
-	return nil, false
+	return unitOfMeasureTranslationFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *UnitOfMeasureTranslation) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return unitOfMeasureTranslationFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *UnitOfMeasureTranslation) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Language_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Language_code = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	}
-	return false
+	return unitOfMeasureTranslationFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2546,15 +2378,7 @@ func (t *UnitOfMeasureTranslation) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *UnitOfMeasureTranslation) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "code":
-		return t.Code, true
-	case "language_code":
-		return t.Language_code, true
-	case "description":
-		return t.Description, true
-	}
-	return nil, false
+	return unitOfMeasureTranslationFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2645,30 +2469,12 @@ func (t *UnitOfMeasureTranslation) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *UnitOfMeasureTranslation) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"code":          t.Code.String(),
-		"language_code": t.Language_code.String(),
-		"description":   t.Description.String(),
-	}
+	return unitOfMeasureTranslationFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *UnitOfMeasureTranslation) FromMap(data map[string]interface{}) {
-	if v, ok := data["code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["language_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Language_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
+	unitOfMeasureTranslationFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2689,38 +2495,72 @@ func (t *UnitOfMeasureTranslation) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *UnitOfMeasureTranslation) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "language_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     10,
-			Required:   true,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return unitOfMeasureTranslationFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in unitOfMeasureTranslationFields.Fields
+func (t *UnitOfMeasureTranslation) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Code
+	case 1:
+		return &t.Language_code
+	case 2:
+		return &t.Description
 	}
+	return nil
+}
+
+// unitOfMeasureTranslationFields describes the fields of Unit_of_Measure_Translation for the record functions
+// written once in foundation/tables
+var unitOfMeasureTranslationFields = &tables.TableFields{
+	Table: UnitOfMeasureTranslationTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "language_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Language_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     10,
+				Required:   true,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

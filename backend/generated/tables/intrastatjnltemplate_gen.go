@@ -122,32 +122,12 @@ var IntrastatJnlTemplate_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *IntrastatJnlTemplate) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "name":
-		return 1
-	case "description":
-		return 2
-	case "checklist_report_id":
-		return 5
-	case "page_id":
-		return 6
-	}
-	return 0
+	return intrastatJnlTemplateFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *IntrastatJnlTemplate) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "name"
-	case 2:
-		return "description"
-	case 5:
-		return "checklist_report_id"
-	case 6:
-		return "page_id"
-	}
-	return ""
+	return intrastatJnlTemplateFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -259,18 +239,6 @@ type (
 	IntrastatJnlTemplateOnBeforeRename interface {
 		OnBeforeRename(rec *IntrastatJnlTemplate, handled *bool) error
 	}
-	IntrastatJnlTemplateOnValidate_Name interface {
-		OnValidate_Name(rec *IntrastatJnlTemplate) error
-	}
-	IntrastatJnlTemplateOnValidate_Description interface {
-		OnValidate_Description(rec *IntrastatJnlTemplate) error
-	}
-	IntrastatJnlTemplateOnValidate_Checklist_report_id interface {
-		OnValidate_Checklist_report_id(rec *IntrastatJnlTemplate) error
-	}
-	IntrastatJnlTemplateOnValidate_Page_id interface {
-		OnValidate_Page_id(rec *IntrastatJnlTemplate) error
-	}
 )
 
 // intrastatJnlTemplateLogic is the registered business logic of Intrastat_Jnl_Template, in
@@ -313,16 +281,9 @@ func intrastatJnlTemplateTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(IntrastatJnlTemplateOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(IntrastatJnlTemplateOnBeforeRename)
-	case "OnValidate_Name":
-		_, ok = logic.(IntrastatJnlTemplateOnValidate_Name)
-	case "OnValidate_Description":
-		_, ok = logic.(IntrastatJnlTemplateOnValidate_Description)
-	case "OnValidate_Checklist_report_id":
-		_, ok = logic.(IntrastatJnlTemplateOnValidate_Checklist_report_id)
-	case "OnValidate_Page_id":
-		_, ok = logic.(IntrastatJnlTemplateOnValidate_Page_id)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return intrastatJnlTemplateFields.IsOnValidateTrigger(name, logic, (*IntrastatJnlTemplate)(nil))
 	}
 	return true, ok
 }
@@ -614,11 +575,7 @@ func (t *IntrastatJnlTemplate) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *IntrastatJnlTemplate) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["name"] = t.Name
-	t.oldValues["description"] = t.Description
-	t.oldValues["checklist_report_id"] = t.Checklist_report_id
-	t.oldValues["page_id"] = t.Page_id
+	t.oldValues = intrastatJnlTemplateFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -633,18 +590,7 @@ func (t *IntrastatJnlTemplate) OldValue(fieldName string) interface{} {
 func (t *IntrastatJnlTemplate) XRec() *IntrastatJnlTemplate {
 	x := &IntrastatJnlTemplate{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["name"].(types.Code); ok {
-		x.Name = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["checklist_report_id"].(int); ok {
-		x.Checklist_report_id = v
-	}
-	if v, ok := t.oldValues["page_id"].(int); ok {
-		x.Page_id = v
-	}
+	intrastatJnlTemplateFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -943,39 +889,7 @@ func (t *IntrastatJnlTemplate) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *IntrastatJnlTemplate) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Name.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "checklist_report_id":
-		if old, ok := oldValue.(int); ok {
-			return t.Checklist_report_id != old
-		}
-		return true // Type mismatch, assume changed
-	case "page_id":
-		if old, ok := oldValue.(int); ok {
-			return t.Page_id != old
-		}
-		return true // Type mismatch, assume changed
-	}
-
-	return false
+	return intrastatJnlTemplateFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1216,17 +1130,7 @@ func (t *IntrastatJnlTemplate) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *IntrastatJnlTemplate) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("name"):
-		return "name", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("checklist_report_id"):
-		return "checklist_report_id", true
-	case strings.ToLower("page_id"):
-		return "page_id", true
-	}
-	return "", false
+	return intrastatJnlTemplateFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2045,106 +1949,20 @@ func (t *IntrastatJnlTemplate) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *IntrastatJnlTemplate) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Name = v
-		} else if v, ok := value.(string); ok {
-			t.Name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlTemplateOnValidate_Name); ok {
-				if err := trg.OnValidate_Name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlTemplateOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "checklist_report_id":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Checklist_report_id = v
-		case float64:
-			t.Checklist_report_id = int(v)
-		case string:
-			if v == "" {
-				t.Checklist_report_id = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Checklist_report_id = i
-			} else {
-				return fmt.Errorf("invalid integer value for field checklist_report_id: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field checklist_report_id")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlTemplateOnValidate_Checklist_report_id); ok {
-				if err := trg.OnValidate_Checklist_report_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "page_id":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Page_id = v
-		case float64:
-			t.Page_id = int(v)
-		case string:
-			if v == "" {
-				t.Page_id = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Page_id = i
-			} else {
-				return fmt.Errorf("invalid integer value for field page_id: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field page_id")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "page_id"); err != nil {
+	i, err := intrastatJnlTemplateFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
+	}
+	f := &intrastatJnlTemplateFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
 			return err
 		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlTemplateOnValidate_Page_id); ok {
-				if err := trg.OnValidate_Page_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2153,60 +1971,18 @@ func (t *IntrastatJnlTemplate) ValidateField(fieldName string, value interface{}
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *IntrastatJnlTemplate) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Name, true
-	case 2:
-		return t.Description, true
-	case 5:
-		return t.Checklist_report_id, true
-	case 6:
-		return t.Page_id, true
-	}
-	return nil, false
+	return intrastatJnlTemplateFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *IntrastatJnlTemplate) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return intrastatJnlTemplateFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *IntrastatJnlTemplate) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Name = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(int); ok {
-			t.Checklist_report_id = v
-			return true
-		}
-	case 6:
-		if v, ok := value.(int); ok {
-			t.Page_id = v
-			return true
-		}
-	}
-	return false
+	return intrastatJnlTemplateFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2684,17 +2460,7 @@ func (t *IntrastatJnlTemplate) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *IntrastatJnlTemplate) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "name":
-		return t.Name, true
-	case "description":
-		return t.Description, true
-	case "checklist_report_id":
-		return t.Checklist_report_id, true
-	case "page_id":
-		return t.Page_id, true
-	}
-	return nil, false
+	return intrastatJnlTemplateFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2783,52 +2549,12 @@ func (t *IntrastatJnlTemplate) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *IntrastatJnlTemplate) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"name":                t.Name.String(),
-		"description":         t.Description.String(),
-		"checklist_report_id": t.Checklist_report_id,
-		"page_id":             t.Page_id,
-	}
+	return intrastatJnlTemplateFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *IntrastatJnlTemplate) FromMap(data map[string]interface{}) {
-	if v, ok := data["name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["checklist_report_id"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Checklist_report_id = int(val)
-		case int:
-			t.Checklist_report_id = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Checklist_report_id = n
-			}
-		}
-	}
-	if v, ok := data["page_id"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Page_id = int(val)
-		case int:
-			t.Page_id = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Page_id = n
-			}
-		}
-	}
+	intrastatJnlTemplateFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2849,48 +2575,87 @@ func (t *IntrastatJnlTemplate) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *IntrastatJnlTemplate) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     80,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "checklist_report_id",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "page_id",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return intrastatJnlTemplateFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in intrastatJnlTemplateFields.Fields
+func (t *IntrastatJnlTemplate) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Name
+	case 1:
+		return &t.Description
+	case 2:
+		return &t.Checklist_report_id
+	case 3:
+		return &t.Page_id
 	}
+	return nil
+}
+
+// intrastatJnlTemplateFields describes the fields of Intrastat_Jnl_Template for the record functions
+// written once in foundation/tables
+var intrastatJnlTemplateFields = &tables.TableFields{
+	Table: IntrastatJnlTemplateTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     80,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "checklist_report_id",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Checklist_report_id",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "page_id",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindInt,
+			Trigger:  "OnValidate_Page_id",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

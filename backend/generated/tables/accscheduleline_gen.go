@@ -297,76 +297,12 @@ var AccScheduleLine_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *AccScheduleLine) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "schedule_name":
-		return 1
-	case "line_no":
-		return 2
-	case "row_no":
-		return 3
-	case "description":
-		return 4
-	case "totaling":
-		return 5
-	case "totaling_type":
-		return 6
-	case "new_page":
-		return 7
-	case "show":
-		return 16
-	case "calculate":
-		return 900
-	case "sign_control":
-		return 901
-	case "date_filter":
-		return 11
-	case "dimension_1_filter":
-		return 12
-	case "dimension_2_filter":
-		return 13
-	case "budget_filter":
-		return 14
-	case "use_add_rpt_curr":
-		return 902
-	}
-	return 0
+	return accScheduleLineFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *AccScheduleLine) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "schedule_name"
-	case 2:
-		return "line_no"
-	case 3:
-		return "row_no"
-	case 4:
-		return "description"
-	case 5:
-		return "totaling"
-	case 6:
-		return "totaling_type"
-	case 7:
-		return "new_page"
-	case 16:
-		return "show"
-	case 900:
-		return "calculate"
-	case 901:
-		return "sign_control"
-	case 11:
-		return "date_filter"
-	case 12:
-		return "dimension_1_filter"
-	case 13:
-		return "dimension_2_filter"
-	case 14:
-		return "budget_filter"
-	case 902:
-		return "use_add_rpt_curr"
-	}
-	return ""
+	return accScheduleLineFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -478,36 +414,6 @@ type (
 	AccScheduleLineOnBeforeRename interface {
 		OnBeforeRename(rec *AccScheduleLine, handled *bool) error
 	}
-	AccScheduleLineOnValidate_Schedule_name interface {
-		OnValidate_Schedule_name(rec *AccScheduleLine) error
-	}
-	AccScheduleLineOnValidate_Line_no interface {
-		OnValidate_Line_no(rec *AccScheduleLine) error
-	}
-	AccScheduleLineOnValidate_Row_no interface {
-		OnValidate_Row_no(rec *AccScheduleLine) error
-	}
-	AccScheduleLineOnValidate_Description interface {
-		OnValidate_Description(rec *AccScheduleLine) error
-	}
-	AccScheduleLineOnValidate_Totaling interface {
-		OnValidate_Totaling(rec *AccScheduleLine) error
-	}
-	AccScheduleLineOnValidate_Totaling_type interface {
-		OnValidate_Totaling_type(rec *AccScheduleLine) error
-	}
-	AccScheduleLineOnValidate_New_page interface {
-		OnValidate_New_page(rec *AccScheduleLine) error
-	}
-	AccScheduleLineOnValidate_Show interface {
-		OnValidate_Show(rec *AccScheduleLine) error
-	}
-	AccScheduleLineOnValidate_Calculate interface {
-		OnValidate_Calculate(rec *AccScheduleLine) error
-	}
-	AccScheduleLineOnValidate_Sign_control interface {
-		OnValidate_Sign_control(rec *AccScheduleLine) error
-	}
 )
 
 // accScheduleLineLogic is the registered business logic of Acc_Schedule_Line, in
@@ -550,28 +456,9 @@ func accScheduleLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(AccScheduleLineOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(AccScheduleLineOnBeforeRename)
-	case "OnValidate_Schedule_name":
-		_, ok = logic.(AccScheduleLineOnValidate_Schedule_name)
-	case "OnValidate_Line_no":
-		_, ok = logic.(AccScheduleLineOnValidate_Line_no)
-	case "OnValidate_Row_no":
-		_, ok = logic.(AccScheduleLineOnValidate_Row_no)
-	case "OnValidate_Description":
-		_, ok = logic.(AccScheduleLineOnValidate_Description)
-	case "OnValidate_Totaling":
-		_, ok = logic.(AccScheduleLineOnValidate_Totaling)
-	case "OnValidate_Totaling_type":
-		_, ok = logic.(AccScheduleLineOnValidate_Totaling_type)
-	case "OnValidate_New_page":
-		_, ok = logic.(AccScheduleLineOnValidate_New_page)
-	case "OnValidate_Show":
-		_, ok = logic.(AccScheduleLineOnValidate_Show)
-	case "OnValidate_Calculate":
-		_, ok = logic.(AccScheduleLineOnValidate_Calculate)
-	case "OnValidate_Sign_control":
-		_, ok = logic.(AccScheduleLineOnValidate_Sign_control)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return accScheduleLineFields.IsOnValidateTrigger(name, logic, (*AccScheduleLine)(nil))
 	}
 	return true, ok
 }
@@ -892,17 +779,7 @@ func (t *AccScheduleLine) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *AccScheduleLine) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["schedule_name"] = t.Schedule_name
-	t.oldValues["line_no"] = t.Line_no
-	t.oldValues["row_no"] = t.Row_no
-	t.oldValues["description"] = t.Description
-	t.oldValues["totaling"] = t.Totaling
-	t.oldValues["totaling_type"] = t.Totaling_type
-	t.oldValues["new_page"] = t.New_page
-	t.oldValues["show"] = t.Show
-	t.oldValues["calculate"] = t.Calculate
-	t.oldValues["sign_control"] = t.Sign_control
+	t.oldValues = accScheduleLineFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -917,36 +794,7 @@ func (t *AccScheduleLine) OldValue(fieldName string) interface{} {
 func (t *AccScheduleLine) XRec() *AccScheduleLine {
 	x := &AccScheduleLine{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["schedule_name"].(types.Code); ok {
-		x.Schedule_name = v
-	}
-	if v, ok := t.oldValues["line_no"].(int); ok {
-		x.Line_no = v
-	}
-	if v, ok := t.oldValues["row_no"].(types.Code); ok {
-		x.Row_no = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["totaling"].(types.Text); ok {
-		x.Totaling = v
-	}
-	if v, ok := t.oldValues["totaling_type"].(AccScheduleLineTotaling_type); ok {
-		x.Totaling_type = v
-	}
-	if v, ok := t.oldValues["new_page"].(bool); ok {
-		x.New_page = v
-	}
-	if v, ok := t.oldValues["show"].(AccScheduleLineShow); ok {
-		x.Show = v
-	}
-	if v, ok := t.oldValues["calculate"].(AccScheduleLineCalculate); ok {
-		x.Calculate = v
-	}
-	if v, ok := t.oldValues["sign_control"].(AccScheduleLineSign_control); ok {
-		x.Sign_control = v
-	}
+	accScheduleLineFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1305,63 +1153,7 @@ func (t *AccScheduleLine) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *AccScheduleLine) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "schedule_name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Schedule_name.Equal(old)
-		}
-	case "line_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Line_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "row_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Row_no.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "totaling":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Totaling.Equal(old)
-		}
-	case "totaling_type":
-		if old, ok := oldValue.(AccScheduleLineTotaling_type); ok {
-			return t.Totaling_type != old
-		}
-	case "new_page":
-		if old, ok := oldValue.(bool); ok {
-			return t.New_page != old
-		}
-		return true // Type mismatch, assume changed
-	case "show":
-		if old, ok := oldValue.(AccScheduleLineShow); ok {
-			return t.Show != old
-		}
-	case "calculate":
-		if old, ok := oldValue.(AccScheduleLineCalculate); ok {
-			return t.Calculate != old
-		}
-	case "sign_control":
-		if old, ok := oldValue.(AccScheduleLineSign_control); ok {
-			return t.Sign_control != old
-		}
-	}
-
-	return false
+	return accScheduleLineFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1563,29 +1355,7 @@ func (t *AccScheduleLine) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *AccScheduleLine) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("schedule_name"):
-		return "schedule_name", true
-	case strings.ToLower("line_no"):
-		return "line_no", true
-	case strings.ToLower("row_no"):
-		return "row_no", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("totaling"):
-		return "totaling", true
-	case strings.ToLower("totaling_type"):
-		return "totaling_type", true
-	case strings.ToLower("new_page"):
-		return "new_page", true
-	case strings.ToLower("show"):
-		return "show", true
-	case strings.ToLower("calculate"):
-		return "calculate", true
-	case strings.ToLower("sign_control"):
-		return "sign_control", true
-	}
-	return "", false
+	return accScheduleLineFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2492,334 +2262,20 @@ func (t *AccScheduleLine) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *AccScheduleLine) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "schedule_name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Schedule_name = v
-		} else if v, ok := value.(string); ok {
-			t.Schedule_name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field schedule_name")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "schedule_name"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccScheduleLineOnValidate_Schedule_name); ok {
-				if err := trg.OnValidate_Schedule_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "line_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Line_no = v
-		case float64:
-			t.Line_no = int(v)
-		case string:
-			if v == "" {
-				t.Line_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Line_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field line_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field line_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccScheduleLineOnValidate_Line_no); ok {
-				if err := trg.OnValidate_Line_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "row_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Row_no = v
-		} else if v, ok := value.(string); ok {
-			t.Row_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field row_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccScheduleLineOnValidate_Row_no); ok {
-				if err := trg.OnValidate_Row_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccScheduleLineOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "totaling":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Totaling = v
-		} else if v, ok := value.(string); ok {
-			t.Totaling = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field totaling")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "totaling"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccScheduleLineOnValidate_Totaling); ok {
-				if err := trg.OnValidate_Totaling(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "totaling_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(AccScheduleLineTotaling_type); ok {
-			t.Totaling_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 6 {
-				return fmt.Errorf("invalid option value %d for field totaling_type (valid range: 0-%d)", v, 6-1)
-			}
-			t.Totaling_type = AccScheduleLineTotaling_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 6 {
-				return fmt.Errorf("invalid option value %d for field totaling_type (valid range: 0-%d)", intVal, 6-1)
-			}
-			t.Totaling_type = AccScheduleLineTotaling_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Totaling_type = 0
-			} else {
-				options := []string{"Posting Accounts", "Total Accounts", "Formula", "Underline", "Double Underline", "Set Base for Percent"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Totaling_type = AccScheduleLineTotaling_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field totaling_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field totaling_type (expected AccScheduleLineTotaling_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccScheduleLineOnValidate_Totaling_type); ok {
-				if err := trg.OnValidate_Totaling_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "new_page":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.New_page = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.New_page = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field new_page")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccScheduleLineOnValidate_New_page); ok {
-				if err := trg.OnValidate_New_page(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "show":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(AccScheduleLineShow); ok {
-			t.Show = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field show (valid range: 0-%d)", v, 4-1)
-			}
-			t.Show = AccScheduleLineShow(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field show (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Show = AccScheduleLineShow(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Show = 0
-			} else {
-				options := []string{"Yes", "No", "If Any Column Not Zero", "Bold"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Show = AccScheduleLineShow(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field show (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field show (expected AccScheduleLineShow, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccScheduleLineOnValidate_Show); ok {
-				if err := trg.OnValidate_Show(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "calculate":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(AccScheduleLineCalculate); ok {
-			t.Calculate = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 5 {
-				return fmt.Errorf("invalid option value %d for field calculate (valid range: 0-%d)", v, 5-1)
-			}
-			t.Calculate = AccScheduleLineCalculate(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 5 {
-				return fmt.Errorf("invalid option value %d for field calculate (valid range: 0-%d)", intVal, 5-1)
-			}
-			t.Calculate = AccScheduleLineCalculate(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Calculate = 0
-			} else {
-				options := []string{"Net Change", "Beginning Balance", "Ending Balance", "Debits Only", "Credits Only"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Calculate = AccScheduleLineCalculate(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field calculate (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field calculate (expected AccScheduleLineCalculate, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccScheduleLineOnValidate_Calculate); ok {
-				if err := trg.OnValidate_Calculate(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sign_control":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(AccScheduleLineSign_control); ok {
-			t.Sign_control = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 2 {
-				return fmt.Errorf("invalid option value %d for field sign_control (valid range: 0-%d)", v, 2-1)
-			}
-			t.Sign_control = AccScheduleLineSign_control(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 2 {
-				return fmt.Errorf("invalid option value %d for field sign_control (valid range: 0-%d)", intVal, 2-1)
-			}
-			t.Sign_control = AccScheduleLineSign_control(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Sign_control = 0
-			} else {
-				options := []string{"Normal", "Reverse"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Sign_control = AccScheduleLineSign_control(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field sign_control (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field sign_control (expected AccScheduleLineSign_control, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccScheduleLineOnValidate_Sign_control); ok {
-				if err := trg.OnValidate_Sign_control(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := accScheduleLineFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &accScheduleLineFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2828,110 +2284,18 @@ func (t *AccScheduleLine) ValidateField(fieldName string, value interface{}) err
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *AccScheduleLine) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Schedule_name, true
-	case 2:
-		return t.Line_no, true
-	case 3:
-		return t.Row_no, true
-	case 4:
-		return t.Description, true
-	case 5:
-		return t.Totaling, true
-	case 6:
-		return t.Totaling_type, true
-	case 7:
-		return t.New_page, true
-	case 16:
-		return t.Show, true
-	case 900:
-		return t.Calculate, true
-	case 901:
-		return t.Sign_control, true
-	}
-	return nil, false
+	return accScheduleLineFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *AccScheduleLine) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return accScheduleLineFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *AccScheduleLine) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Schedule_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Schedule_name = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(int); ok {
-			t.Line_no = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Code); ok {
-			t.Row_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Row_no = types.NewCode(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Text); ok {
-			t.Totaling = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Totaling = types.NewText(v)
-			return true
-		}
-	case 6:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 6 {
-			t.Totaling_type = AccScheduleLineTotaling_type(i)
-			return true
-		}
-	case 7:
-		if v, ok := value.(bool); ok {
-			t.New_page = v
-			return true
-		}
-	case 16:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Show = AccScheduleLineShow(i)
-			return true
-		}
-	case 900:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 5 {
-			t.Calculate = AccScheduleLineCalculate(i)
-			return true
-		}
-	case 901:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 2 {
-			t.Sign_control = AccScheduleLineSign_control(i)
-			return true
-		}
-	}
-	return false
+	return accScheduleLineFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3402,29 +2766,7 @@ func (t *AccScheduleLine) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *AccScheduleLine) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "schedule_name":
-		return t.Schedule_name, true
-	case "line_no":
-		return t.Line_no, true
-	case "row_no":
-		return t.Row_no, true
-	case "description":
-		return t.Description, true
-	case "totaling":
-		return t.Totaling, true
-	case "totaling_type":
-		return int(t.Totaling_type), true
-	case "new_page":
-		return t.New_page, true
-	case "show":
-		return int(t.Show), true
-	case "calculate":
-		return int(t.Calculate), true
-	case "sign_control":
-		return int(t.Sign_control), true
-	}
-	return nil, false
+	return accScheduleLineFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3522,128 +2864,12 @@ func (t *AccScheduleLine) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *AccScheduleLine) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"schedule_name": t.Schedule_name.String(),
-		"line_no":       t.Line_no,
-		"row_no":        t.Row_no.String(),
-		"description":   t.Description.String(),
-		"totaling":      t.Totaling.String(),
-		"totaling_type": int(t.Totaling_type),
-		"new_page":      t.New_page,
-		"show":          int(t.Show),
-		"calculate":     int(t.Calculate),
-		"sign_control":  int(t.Sign_control),
-	}
+	return accScheduleLineFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *AccScheduleLine) FromMap(data map[string]interface{}) {
-	if v, ok := data["schedule_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Schedule_name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["line_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Line_no = int(val)
-		case int:
-			t.Line_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Line_no = n
-			}
-		}
-	}
-	if v, ok := data["row_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Row_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["totaling"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Totaling = types.NewText(s)
-		}
-	}
-	if v, ok := data["totaling_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Totaling_type = AccScheduleLineTotaling_type(int(val))
-		case int:
-			t.Totaling_type = AccScheduleLineTotaling_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Posting Accounts", "Total Accounts", "Formula", "Underline", "Double Underline", "Set Base for Percent"}
-			for i, opt := range options {
-				if opt == val {
-					t.Totaling_type = AccScheduleLineTotaling_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["new_page"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.New_page = b
-		}
-	}
-	if v, ok := data["show"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Show = AccScheduleLineShow(int(val))
-		case int:
-			t.Show = AccScheduleLineShow(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Yes", "No", "If Any Column Not Zero", "Bold"}
-			for i, opt := range options {
-				if opt == val {
-					t.Show = AccScheduleLineShow(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["calculate"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Calculate = AccScheduleLineCalculate(int(val))
-		case int:
-			t.Calculate = AccScheduleLineCalculate(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Net Change", "Beginning Balance", "Ending Balance", "Debits Only", "Credits Only"}
-			for i, opt := range options {
-				if opt == val {
-					t.Calculate = AccScheduleLineCalculate(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["sign_control"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Sign_control = AccScheduleLineSign_control(int(val))
-		case int:
-			t.Sign_control = AccScheduleLineSign_control(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Normal", "Reverse"}
-			for i, opt := range options {
-				if opt == val {
-					t.Sign_control = AccScheduleLineSign_control(i)
-					break
-				}
-			}
-		}
-	}
+	accScheduleLineFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3664,108 +2890,195 @@ func (t *AccScheduleLine) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *AccScheduleLine) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "schedule_name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "line_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "row_no",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     80,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "totaling",
-			Type:       tables.FieldTypeText,
-			Length:     80,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "totaling_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "new_page",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         16,
-			Name:       "show",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         900,
-			Name:       "calculate",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         901,
-			Name:       "sign_control",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return accScheduleLineFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in accScheduleLineFields.Fields
+func (t *AccScheduleLine) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Schedule_name
+	case 1:
+		return &t.Line_no
+	case 2:
+		return &t.Row_no
+	case 3:
+		return &t.Description
+	case 4:
+		return &t.Totaling
+	case 5:
+		return &t.Totaling_type
+	case 6:
+		return &t.New_page
+	case 7:
+		return &t.Show
+	case 8:
+		return &t.Calculate
+	case 9:
+		return &t.Sign_control
 	}
+	return nil
+}
+
+// accScheduleLineFields describes the fields of Acc_Schedule_Line for the record functions
+// written once in foundation/tables
+var accScheduleLineFields = &tables.TableFields{
+	Table: AccScheduleLineTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "schedule_name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Schedule_name",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "line_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Line_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "row_no",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Row_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     80,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "totaling",
+				Type:       tables.FieldTypeText,
+				Length:     80,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindText,
+			Trigger:  "OnValidate_Totaling",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "totaling_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Totaling_type",
+			Options: []string{"Posting Accounts", "Total Accounts", "Formula", "Underline", "Double Underline", "Set Base for Percent"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "new_page",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_New_page",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         16,
+				Name:       "show",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Show",
+			Options: []string{"Yes", "No", "If Any Column Not Zero", "Bold"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         900,
+				Name:       "calculate",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Calculate",
+			Options: []string{"Net Change", "Beginning Balance", "Ending Balance", "Debits Only", "Credits Only"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         901,
+				Name:       "sign_control",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Sign_control",
+			Options: []string{"Normal", "Reverse"},
+		},
+	},
+	FlowFilters: []tables.FieldInfo{
+		{No: 11, Name: "date_filter"},
+		{No: 12, Name: "dimension_1_filter"},
+		{No: 13, Name: "dimension_2_filter"},
+		{No: 14, Name: "budget_filter"},
+		{No: 902, Name: "use_add_rpt_curr"},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

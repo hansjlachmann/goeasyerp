@@ -43,7 +43,6 @@ import (
 	"fmt"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -303,176 +302,12 @@ var Currency_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *Currency) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "code":
-		return 1
-	case "last_date_modified":
-		return 2
-	case "last_date_adjusted":
-		return 3
-	case "unrealized_gains_acc":
-		return 6
-	case "realized_gains_acc":
-		return 7
-	case "unrealized_losses_acc":
-		return 8
-	case "realized_losses_acc":
-		return 9
-	case "invoice_rounding_precision":
-		return 10
-	case "invoice_rounding_type":
-		return 12
-	case "amount_rounding_precision":
-		return 13
-	case "unit_amount_rounding_precision":
-		return 14
-	case "description":
-		return 15
-	case "amount_decimal_places":
-		return 17
-	case "unit_amount_decimal_places":
-		return 18
-	case "cust_ledg_entries_in_filter":
-		return 24
-	case "customer_balance":
-		return 25
-	case "customer_outstanding_orders":
-		return 26
-	case "customer_shipped_not_invoiced":
-		return 27
-	case "customer_balance_due":
-		return 28
-	case "vendor_ledg_entries_in_filter":
-		return 29
-	case "vendor_balance":
-		return 30
-	case "vendor_outstanding_orders":
-		return 31
-	case "vendor_amt_rcd_not_invoiced":
-		return 32
-	case "vendor_balance_due":
-		return 33
-	case "customer_balance_lcy":
-		return 34
-	case "vendor_balance_lcy":
-		return 35
-	case "appln_rounding_precision":
-		return 44
-	case "emu_currency":
-		return 45
-	case "currency_factor":
-		return 46
-	case "realized_gl_gains_account":
-		return 40
-	case "realized_gl_losses_account":
-		return 41
-	case "residual_gains_account":
-		return 47
-	case "residual_losses_account":
-		return 48
-	case "conv_lcy_rndg_debit_acc":
-		return 50
-	case "conv_lcy_rndg_credit_acc":
-		return 51
-	case "customer_filter":
-		return 19
-	case "vendor_filter":
-		return 20
-	case "dimension_1_filter":
-		return 21
-	case "dimension_2_filter":
-		return 22
-	case "date_filter":
-		return 23
-	}
-	return 0
+	return currencyFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *Currency) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "code"
-	case 2:
-		return "last_date_modified"
-	case 3:
-		return "last_date_adjusted"
-	case 6:
-		return "unrealized_gains_acc"
-	case 7:
-		return "realized_gains_acc"
-	case 8:
-		return "unrealized_losses_acc"
-	case 9:
-		return "realized_losses_acc"
-	case 10:
-		return "invoice_rounding_precision"
-	case 12:
-		return "invoice_rounding_type"
-	case 13:
-		return "amount_rounding_precision"
-	case 14:
-		return "unit_amount_rounding_precision"
-	case 15:
-		return "description"
-	case 17:
-		return "amount_decimal_places"
-	case 18:
-		return "unit_amount_decimal_places"
-	case 24:
-		return "cust_ledg_entries_in_filter"
-	case 25:
-		return "customer_balance"
-	case 26:
-		return "customer_outstanding_orders"
-	case 27:
-		return "customer_shipped_not_invoiced"
-	case 28:
-		return "customer_balance_due"
-	case 29:
-		return "vendor_ledg_entries_in_filter"
-	case 30:
-		return "vendor_balance"
-	case 31:
-		return "vendor_outstanding_orders"
-	case 32:
-		return "vendor_amt_rcd_not_invoiced"
-	case 33:
-		return "vendor_balance_due"
-	case 34:
-		return "customer_balance_lcy"
-	case 35:
-		return "vendor_balance_lcy"
-	case 44:
-		return "appln_rounding_precision"
-	case 45:
-		return "emu_currency"
-	case 46:
-		return "currency_factor"
-	case 40:
-		return "realized_gl_gains_account"
-	case 41:
-		return "realized_gl_losses_account"
-	case 47:
-		return "residual_gains_account"
-	case 48:
-		return "residual_losses_account"
-	case 50:
-		return "conv_lcy_rndg_debit_acc"
-	case 51:
-		return "conv_lcy_rndg_credit_acc"
-	case 19:
-		return "customer_filter"
-	case 20:
-		return "vendor_filter"
-	case 21:
-		return "dimension_1_filter"
-	case 22:
-		return "dimension_2_filter"
-	case 23:
-		return "date_filter"
-	}
-	return ""
+	return currencyFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -576,29 +411,6 @@ type (
 	CurrencyOnBeforeRename interface {
 		OnBeforeRename(rec *Currency, handled *bool) error
 	}
-	CurrencyOnValidate_Code                           interface{ OnValidate_Code(rec *Currency) error }
-	CurrencyOnValidate_Last_date_modified             interface{ OnValidate_Last_date_modified(rec *Currency) error }
-	CurrencyOnValidate_Last_date_adjusted             interface{ OnValidate_Last_date_adjusted(rec *Currency) error }
-	CurrencyOnValidate_Unrealized_gains_acc           interface{ OnValidate_Unrealized_gains_acc(rec *Currency) error }
-	CurrencyOnValidate_Realized_gains_acc             interface{ OnValidate_Realized_gains_acc(rec *Currency) error }
-	CurrencyOnValidate_Unrealized_losses_acc          interface{ OnValidate_Unrealized_losses_acc(rec *Currency) error }
-	CurrencyOnValidate_Realized_losses_acc            interface{ OnValidate_Realized_losses_acc(rec *Currency) error }
-	CurrencyOnValidate_Invoice_rounding_precision     interface{ OnValidate_Invoice_rounding_precision(rec *Currency) error }
-	CurrencyOnValidate_Invoice_rounding_type          interface{ OnValidate_Invoice_rounding_type(rec *Currency) error }
-	CurrencyOnValidate_Amount_rounding_precision      interface{ OnValidate_Amount_rounding_precision(rec *Currency) error }
-	CurrencyOnValidate_Unit_amount_rounding_precision interface{ OnValidate_Unit_amount_rounding_precision(rec *Currency) error }
-	CurrencyOnValidate_Description                    interface{ OnValidate_Description(rec *Currency) error }
-	CurrencyOnValidate_Amount_decimal_places          interface{ OnValidate_Amount_decimal_places(rec *Currency) error }
-	CurrencyOnValidate_Unit_amount_decimal_places     interface{ OnValidate_Unit_amount_decimal_places(rec *Currency) error }
-	CurrencyOnValidate_Appln_rounding_precision       interface{ OnValidate_Appln_rounding_precision(rec *Currency) error }
-	CurrencyOnValidate_Emu_currency                   interface{ OnValidate_Emu_currency(rec *Currency) error }
-	CurrencyOnValidate_Currency_factor                interface{ OnValidate_Currency_factor(rec *Currency) error }
-	CurrencyOnValidate_Realized_gl_gains_account      interface{ OnValidate_Realized_gl_gains_account(rec *Currency) error }
-	CurrencyOnValidate_Realized_gl_losses_account     interface{ OnValidate_Realized_gl_losses_account(rec *Currency) error }
-	CurrencyOnValidate_Residual_gains_account         interface{ OnValidate_Residual_gains_account(rec *Currency) error }
-	CurrencyOnValidate_Residual_losses_account        interface{ OnValidate_Residual_losses_account(rec *Currency) error }
-	CurrencyOnValidate_Conv_lcy_rndg_debit_acc        interface{ OnValidate_Conv_lcy_rndg_debit_acc(rec *Currency) error }
-	CurrencyOnValidate_Conv_lcy_rndg_credit_acc       interface{ OnValidate_Conv_lcy_rndg_credit_acc(rec *Currency) error }
 )
 
 // currencyLogic is the registered business logic of Currency, in
@@ -641,54 +453,9 @@ func currencyTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(CurrencyOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(CurrencyOnBeforeRename)
-	case "OnValidate_Code":
-		_, ok = logic.(CurrencyOnValidate_Code)
-	case "OnValidate_Last_date_modified":
-		_, ok = logic.(CurrencyOnValidate_Last_date_modified)
-	case "OnValidate_Last_date_adjusted":
-		_, ok = logic.(CurrencyOnValidate_Last_date_adjusted)
-	case "OnValidate_Unrealized_gains_acc":
-		_, ok = logic.(CurrencyOnValidate_Unrealized_gains_acc)
-	case "OnValidate_Realized_gains_acc":
-		_, ok = logic.(CurrencyOnValidate_Realized_gains_acc)
-	case "OnValidate_Unrealized_losses_acc":
-		_, ok = logic.(CurrencyOnValidate_Unrealized_losses_acc)
-	case "OnValidate_Realized_losses_acc":
-		_, ok = logic.(CurrencyOnValidate_Realized_losses_acc)
-	case "OnValidate_Invoice_rounding_precision":
-		_, ok = logic.(CurrencyOnValidate_Invoice_rounding_precision)
-	case "OnValidate_Invoice_rounding_type":
-		_, ok = logic.(CurrencyOnValidate_Invoice_rounding_type)
-	case "OnValidate_Amount_rounding_precision":
-		_, ok = logic.(CurrencyOnValidate_Amount_rounding_precision)
-	case "OnValidate_Unit_amount_rounding_precision":
-		_, ok = logic.(CurrencyOnValidate_Unit_amount_rounding_precision)
-	case "OnValidate_Description":
-		_, ok = logic.(CurrencyOnValidate_Description)
-	case "OnValidate_Amount_decimal_places":
-		_, ok = logic.(CurrencyOnValidate_Amount_decimal_places)
-	case "OnValidate_Unit_amount_decimal_places":
-		_, ok = logic.(CurrencyOnValidate_Unit_amount_decimal_places)
-	case "OnValidate_Appln_rounding_precision":
-		_, ok = logic.(CurrencyOnValidate_Appln_rounding_precision)
-	case "OnValidate_Emu_currency":
-		_, ok = logic.(CurrencyOnValidate_Emu_currency)
-	case "OnValidate_Currency_factor":
-		_, ok = logic.(CurrencyOnValidate_Currency_factor)
-	case "OnValidate_Realized_gl_gains_account":
-		_, ok = logic.(CurrencyOnValidate_Realized_gl_gains_account)
-	case "OnValidate_Realized_gl_losses_account":
-		_, ok = logic.(CurrencyOnValidate_Realized_gl_losses_account)
-	case "OnValidate_Residual_gains_account":
-		_, ok = logic.(CurrencyOnValidate_Residual_gains_account)
-	case "OnValidate_Residual_losses_account":
-		_, ok = logic.(CurrencyOnValidate_Residual_losses_account)
-	case "OnValidate_Conv_lcy_rndg_debit_acc":
-		_, ok = logic.(CurrencyOnValidate_Conv_lcy_rndg_debit_acc)
-	case "OnValidate_Conv_lcy_rndg_credit_acc":
-		_, ok = logic.(CurrencyOnValidate_Conv_lcy_rndg_credit_acc)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return currencyFields.IsOnValidateTrigger(name, logic, (*Currency)(nil))
 	}
 	return true, ok
 }
@@ -1110,30 +877,7 @@ func (t *Currency) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *Currency) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["code"] = t.Code
-	t.oldValues["last_date_modified"] = t.Last_date_modified
-	t.oldValues["last_date_adjusted"] = t.Last_date_adjusted
-	t.oldValues["unrealized_gains_acc"] = t.Unrealized_gains_acc
-	t.oldValues["realized_gains_acc"] = t.Realized_gains_acc
-	t.oldValues["unrealized_losses_acc"] = t.Unrealized_losses_acc
-	t.oldValues["realized_losses_acc"] = t.Realized_losses_acc
-	t.oldValues["invoice_rounding_precision"] = t.Invoice_rounding_precision
-	t.oldValues["invoice_rounding_type"] = t.Invoice_rounding_type
-	t.oldValues["amount_rounding_precision"] = t.Amount_rounding_precision
-	t.oldValues["unit_amount_rounding_precision"] = t.Unit_amount_rounding_precision
-	t.oldValues["description"] = t.Description
-	t.oldValues["amount_decimal_places"] = t.Amount_decimal_places
-	t.oldValues["unit_amount_decimal_places"] = t.Unit_amount_decimal_places
-	t.oldValues["appln_rounding_precision"] = t.Appln_rounding_precision
-	t.oldValues["emu_currency"] = t.Emu_currency
-	t.oldValues["currency_factor"] = t.Currency_factor
-	t.oldValues["realized_gl_gains_account"] = t.Realized_gl_gains_account
-	t.oldValues["realized_gl_losses_account"] = t.Realized_gl_losses_account
-	t.oldValues["residual_gains_account"] = t.Residual_gains_account
-	t.oldValues["residual_losses_account"] = t.Residual_losses_account
-	t.oldValues["conv_lcy_rndg_debit_acc"] = t.Conv_lcy_rndg_debit_acc
-	t.oldValues["conv_lcy_rndg_credit_acc"] = t.Conv_lcy_rndg_credit_acc
+	t.oldValues = currencyFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1148,75 +892,7 @@ func (t *Currency) OldValue(fieldName string) interface{} {
 func (t *Currency) XRec() *Currency {
 	x := &Currency{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["code"].(types.Code); ok {
-		x.Code = v
-	}
-	if v, ok := t.oldValues["last_date_modified"].(types.Date); ok {
-		x.Last_date_modified = v
-	}
-	if v, ok := t.oldValues["last_date_adjusted"].(types.Date); ok {
-		x.Last_date_adjusted = v
-	}
-	if v, ok := t.oldValues["unrealized_gains_acc"].(types.Code); ok {
-		x.Unrealized_gains_acc = v
-	}
-	if v, ok := t.oldValues["realized_gains_acc"].(types.Code); ok {
-		x.Realized_gains_acc = v
-	}
-	if v, ok := t.oldValues["unrealized_losses_acc"].(types.Code); ok {
-		x.Unrealized_losses_acc = v
-	}
-	if v, ok := t.oldValues["realized_losses_acc"].(types.Code); ok {
-		x.Realized_losses_acc = v
-	}
-	if v, ok := t.oldValues["invoice_rounding_precision"].(types.Decimal); ok {
-		x.Invoice_rounding_precision = v
-	}
-	if v, ok := t.oldValues["invoice_rounding_type"].(CurrencyInvoice_rounding_type); ok {
-		x.Invoice_rounding_type = v
-	}
-	if v, ok := t.oldValues["amount_rounding_precision"].(types.Decimal); ok {
-		x.Amount_rounding_precision = v
-	}
-	if v, ok := t.oldValues["unit_amount_rounding_precision"].(types.Decimal); ok {
-		x.Unit_amount_rounding_precision = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["amount_decimal_places"].(types.Text); ok {
-		x.Amount_decimal_places = v
-	}
-	if v, ok := t.oldValues["unit_amount_decimal_places"].(types.Text); ok {
-		x.Unit_amount_decimal_places = v
-	}
-	if v, ok := t.oldValues["appln_rounding_precision"].(types.Decimal); ok {
-		x.Appln_rounding_precision = v
-	}
-	if v, ok := t.oldValues["emu_currency"].(bool); ok {
-		x.Emu_currency = v
-	}
-	if v, ok := t.oldValues["currency_factor"].(types.Decimal); ok {
-		x.Currency_factor = v
-	}
-	if v, ok := t.oldValues["realized_gl_gains_account"].(types.Code); ok {
-		x.Realized_gl_gains_account = v
-	}
-	if v, ok := t.oldValues["realized_gl_losses_account"].(types.Code); ok {
-		x.Realized_gl_losses_account = v
-	}
-	if v, ok := t.oldValues["residual_gains_account"].(types.Code); ok {
-		x.Residual_gains_account = v
-	}
-	if v, ok := t.oldValues["residual_losses_account"].(types.Code); ok {
-		x.Residual_losses_account = v
-	}
-	if v, ok := t.oldValues["conv_lcy_rndg_debit_acc"].(types.Code); ok {
-		x.Conv_lcy_rndg_debit_acc = v
-	}
-	if v, ok := t.oldValues["conv_lcy_rndg_credit_acc"].(types.Code); ok {
-		x.Conv_lcy_rndg_credit_acc = v
-	}
+	currencyFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1724,114 +1400,7 @@ func (t *Currency) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *Currency) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Code.Equal(old)
-		}
-	case "last_date_modified":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Last_date_modified.Equal(old)
-		}
-	case "last_date_adjusted":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Last_date_adjusted.Equal(old)
-		}
-	case "unrealized_gains_acc":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Unrealized_gains_acc.Equal(old)
-		}
-	case "realized_gains_acc":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Realized_gains_acc.Equal(old)
-		}
-	case "unrealized_losses_acc":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Unrealized_losses_acc.Equal(old)
-		}
-	case "realized_losses_acc":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Realized_losses_acc.Equal(old)
-		}
-	case "invoice_rounding_precision":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Invoice_rounding_precision.Equal(old)
-		}
-	case "invoice_rounding_type":
-		if old, ok := oldValue.(CurrencyInvoice_rounding_type); ok {
-			return t.Invoice_rounding_type != old
-		}
-	case "amount_rounding_precision":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Amount_rounding_precision.Equal(old)
-		}
-	case "unit_amount_rounding_precision":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Unit_amount_rounding_precision.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "amount_decimal_places":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Amount_decimal_places.Equal(old)
-		}
-	case "unit_amount_decimal_places":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Unit_amount_decimal_places.Equal(old)
-		}
-	case "appln_rounding_precision":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Appln_rounding_precision.Equal(old)
-		}
-	case "emu_currency":
-		if old, ok := oldValue.(bool); ok {
-			return t.Emu_currency != old
-		}
-		return true // Type mismatch, assume changed
-	case "currency_factor":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Currency_factor.Equal(old)
-		}
-	case "realized_gl_gains_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Realized_gl_gains_account.Equal(old)
-		}
-	case "realized_gl_losses_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Realized_gl_losses_account.Equal(old)
-		}
-	case "residual_gains_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Residual_gains_account.Equal(old)
-		}
-	case "residual_losses_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Residual_losses_account.Equal(old)
-		}
-	case "conv_lcy_rndg_debit_acc":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Conv_lcy_rndg_debit_acc.Equal(old)
-		}
-	case "conv_lcy_rndg_credit_acc":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Conv_lcy_rndg_credit_acc.Equal(old)
-		}
-	}
-
-	return false
+	return currencyFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -4635,55 +4204,7 @@ func (t *Currency) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *Currency) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("code"):
-		return "code", true
-	case strings.ToLower("last_date_modified"):
-		return "last_date_modified", true
-	case strings.ToLower("last_date_adjusted"):
-		return "last_date_adjusted", true
-	case strings.ToLower("unrealized_gains_acc"):
-		return "unrealized_gains_acc", true
-	case strings.ToLower("realized_gains_acc"):
-		return "realized_gains_acc", true
-	case strings.ToLower("unrealized_losses_acc"):
-		return "unrealized_losses_acc", true
-	case strings.ToLower("realized_losses_acc"):
-		return "realized_losses_acc", true
-	case strings.ToLower("invoice_rounding_precision"):
-		return "invoice_rounding_precision", true
-	case strings.ToLower("invoice_rounding_type"):
-		return "invoice_rounding_type", true
-	case strings.ToLower("amount_rounding_precision"):
-		return "amount_rounding_precision", true
-	case strings.ToLower("unit_amount_rounding_precision"):
-		return "unit_amount_rounding_precision", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("amount_decimal_places"):
-		return "amount_decimal_places", true
-	case strings.ToLower("unit_amount_decimal_places"):
-		return "unit_amount_decimal_places", true
-	case strings.ToLower("appln_rounding_precision"):
-		return "appln_rounding_precision", true
-	case strings.ToLower("emu_currency"):
-		return "emu_currency", true
-	case strings.ToLower("currency_factor"):
-		return "currency_factor", true
-	case strings.ToLower("realized_gl_gains_account"):
-		return "realized_gl_gains_account", true
-	case strings.ToLower("realized_gl_losses_account"):
-		return "realized_gl_losses_account", true
-	case strings.ToLower("residual_gains_account"):
-		return "residual_gains_account", true
-	case strings.ToLower("residual_losses_account"):
-		return "residual_losses_account", true
-	case strings.ToLower("conv_lcy_rndg_debit_acc"):
-		return "conv_lcy_rndg_debit_acc", true
-	case strings.ToLower("conv_lcy_rndg_credit_acc"):
-		return "conv_lcy_rndg_credit_acc", true
-	}
-	return "", false
+	return currencyFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -5811,560 +5332,20 @@ func (t *Currency) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *Currency) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-		} else if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyOnValidate_Code); ok {
-				if err := trg.OnValidate_Code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "last_date_modified":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Last_date_modified = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Last_date_modified, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field last_date_modified: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Last_date_modified = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field last_date_modified (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyOnValidate_Last_date_modified); ok {
-				if err := trg.OnValidate_Last_date_modified(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "last_date_adjusted":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Last_date_adjusted = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Last_date_adjusted, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field last_date_adjusted: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Last_date_adjusted = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field last_date_adjusted (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyOnValidate_Last_date_adjusted); ok {
-				if err := trg.OnValidate_Last_date_adjusted(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unrealized_gains_acc":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Unrealized_gains_acc = v
-		} else if v, ok := value.(string); ok {
-			t.Unrealized_gains_acc = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field unrealized_gains_acc")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "unrealized_gains_acc"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyOnValidate_Unrealized_gains_acc); ok {
-				if err := trg.OnValidate_Unrealized_gains_acc(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "realized_gains_acc":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Realized_gains_acc = v
-		} else if v, ok := value.(string); ok {
-			t.Realized_gains_acc = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field realized_gains_acc")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "realized_gains_acc"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyOnValidate_Realized_gains_acc); ok {
-				if err := trg.OnValidate_Realized_gains_acc(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unrealized_losses_acc":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Unrealized_losses_acc = v
-		} else if v, ok := value.(string); ok {
-			t.Unrealized_losses_acc = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field unrealized_losses_acc")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "unrealized_losses_acc"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyOnValidate_Unrealized_losses_acc); ok {
-				if err := trg.OnValidate_Unrealized_losses_acc(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "realized_losses_acc":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Realized_losses_acc = v
-		} else if v, ok := value.(string); ok {
-			t.Realized_losses_acc = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field realized_losses_acc")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "realized_losses_acc"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyOnValidate_Realized_losses_acc); ok {
-				if err := trg.OnValidate_Realized_losses_acc(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "invoice_rounding_precision":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Invoice_rounding_precision = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Invoice_rounding_precision, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field invoice_rounding_precision: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Invoice_rounding_precision = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Invoice_rounding_precision = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Invoice_rounding_precision = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field invoice_rounding_precision (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyOnValidate_Invoice_rounding_precision); ok {
-				if err := trg.OnValidate_Invoice_rounding_precision(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "invoice_rounding_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(CurrencyInvoice_rounding_type); ok {
-			t.Invoice_rounding_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field invoice_rounding_type (valid range: 0-%d)", v, 3-1)
-			}
-			t.Invoice_rounding_type = CurrencyInvoice_rounding_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field invoice_rounding_type (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Invoice_rounding_type = CurrencyInvoice_rounding_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Invoice_rounding_type = 0
-			} else {
-				options := []string{"Nearest", "Up", "Down"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Invoice_rounding_type = CurrencyInvoice_rounding_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field invoice_rounding_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field invoice_rounding_type (expected CurrencyInvoice_rounding_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyOnValidate_Invoice_rounding_type); ok {
-				if err := trg.OnValidate_Invoice_rounding_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "amount_rounding_precision":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount_rounding_precision = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Amount_rounding_precision, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field amount_rounding_precision: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Amount_rounding_precision = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Amount_rounding_precision = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Amount_rounding_precision = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field amount_rounding_precision (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyOnValidate_Amount_rounding_precision); ok {
-				if err := trg.OnValidate_Amount_rounding_precision(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unit_amount_rounding_precision":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Unit_amount_rounding_precision = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Unit_amount_rounding_precision, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field unit_amount_rounding_precision: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Unit_amount_rounding_precision = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Unit_amount_rounding_precision = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Unit_amount_rounding_precision = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field unit_amount_rounding_precision (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyOnValidate_Unit_amount_rounding_precision); ok {
-				if err := trg.OnValidate_Unit_amount_rounding_precision(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "amount_decimal_places":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Amount_decimal_places = v
-		} else if v, ok := value.(string); ok {
-			t.Amount_decimal_places = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field amount_decimal_places")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyOnValidate_Amount_decimal_places); ok {
-				if err := trg.OnValidate_Amount_decimal_places(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unit_amount_decimal_places":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Unit_amount_decimal_places = v
-		} else if v, ok := value.(string); ok {
-			t.Unit_amount_decimal_places = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field unit_amount_decimal_places")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyOnValidate_Unit_amount_decimal_places); ok {
-				if err := trg.OnValidate_Unit_amount_decimal_places(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "appln_rounding_precision":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Appln_rounding_precision = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Appln_rounding_precision, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field appln_rounding_precision: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Appln_rounding_precision = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Appln_rounding_precision = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Appln_rounding_precision = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field appln_rounding_precision (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyOnValidate_Appln_rounding_precision); ok {
-				if err := trg.OnValidate_Appln_rounding_precision(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "emu_currency":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Emu_currency = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Emu_currency = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field emu_currency")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyOnValidate_Emu_currency); ok {
-				if err := trg.OnValidate_Emu_currency(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "currency_factor":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Currency_factor = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Currency_factor, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field currency_factor: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Currency_factor = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Currency_factor = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Currency_factor = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field currency_factor (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyOnValidate_Currency_factor); ok {
-				if err := trg.OnValidate_Currency_factor(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "realized_gl_gains_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Realized_gl_gains_account = v
-		} else if v, ok := value.(string); ok {
-			t.Realized_gl_gains_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field realized_gl_gains_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "realized_gl_gains_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyOnValidate_Realized_gl_gains_account); ok {
-				if err := trg.OnValidate_Realized_gl_gains_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "realized_gl_losses_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Realized_gl_losses_account = v
-		} else if v, ok := value.(string); ok {
-			t.Realized_gl_losses_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field realized_gl_losses_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "realized_gl_losses_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyOnValidate_Realized_gl_losses_account); ok {
-				if err := trg.OnValidate_Realized_gl_losses_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "residual_gains_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Residual_gains_account = v
-		} else if v, ok := value.(string); ok {
-			t.Residual_gains_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field residual_gains_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "residual_gains_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyOnValidate_Residual_gains_account); ok {
-				if err := trg.OnValidate_Residual_gains_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "residual_losses_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Residual_losses_account = v
-		} else if v, ok := value.(string); ok {
-			t.Residual_losses_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field residual_losses_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "residual_losses_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyOnValidate_Residual_losses_account); ok {
-				if err := trg.OnValidate_Residual_losses_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "conv_lcy_rndg_debit_acc":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Conv_lcy_rndg_debit_acc = v
-		} else if v, ok := value.(string); ok {
-			t.Conv_lcy_rndg_debit_acc = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field conv_lcy_rndg_debit_acc")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "conv_lcy_rndg_debit_acc"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyOnValidate_Conv_lcy_rndg_debit_acc); ok {
-				if err := trg.OnValidate_Conv_lcy_rndg_debit_acc(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "conv_lcy_rndg_credit_acc":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Conv_lcy_rndg_credit_acc = v
-		} else if v, ok := value.(string); ok {
-			t.Conv_lcy_rndg_credit_acc = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field conv_lcy_rndg_credit_acc")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "conv_lcy_rndg_credit_acc"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyOnValidate_Conv_lcy_rndg_credit_acc); ok {
-				if err := trg.OnValidate_Conv_lcy_rndg_credit_acc(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := currencyFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &currencyFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -6373,265 +5354,18 @@ func (t *Currency) ValidateField(fieldName string, value interface{}) error {
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *Currency) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Code, true
-	case 2:
-		return t.Last_date_modified, true
-	case 3:
-		return t.Last_date_adjusted, true
-	case 6:
-		return t.Unrealized_gains_acc, true
-	case 7:
-		return t.Realized_gains_acc, true
-	case 8:
-		return t.Unrealized_losses_acc, true
-	case 9:
-		return t.Realized_losses_acc, true
-	case 10:
-		return t.Invoice_rounding_precision, true
-	case 12:
-		return t.Invoice_rounding_type, true
-	case 13:
-		return t.Amount_rounding_precision, true
-	case 14:
-		return t.Unit_amount_rounding_precision, true
-	case 15:
-		return t.Description, true
-	case 17:
-		return t.Amount_decimal_places, true
-	case 18:
-		return t.Unit_amount_decimal_places, true
-	case 44:
-		return t.Appln_rounding_precision, true
-	case 45:
-		return t.Emu_currency, true
-	case 46:
-		return t.Currency_factor, true
-	case 40:
-		return t.Realized_gl_gains_account, true
-	case 41:
-		return t.Realized_gl_losses_account, true
-	case 47:
-		return t.Residual_gains_account, true
-	case 48:
-		return t.Residual_losses_account, true
-	case 50:
-		return t.Conv_lcy_rndg_debit_acc, true
-	case 51:
-		return t.Conv_lcy_rndg_credit_acc, true
-	}
-	return nil, false
+	return currencyFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *Currency) flowFieldValue(no int) (any, bool) {
-	switch no {
-	case 24:
-		return t.Cust_ledg_entries_in_filter, true
-	case 25:
-		return t.Customer_balance, true
-	case 26:
-		return t.Customer_outstanding_orders, true
-	case 27:
-		return t.Customer_shipped_not_invoiced, true
-	case 28:
-		return t.Customer_balance_due, true
-	case 29:
-		return t.Vendor_ledg_entries_in_filter, true
-	case 30:
-		return t.Vendor_balance, true
-	case 31:
-		return t.Vendor_outstanding_orders, true
-	case 32:
-		return t.Vendor_amt_rcd_not_invoiced, true
-	case 33:
-		return t.Vendor_balance_due, true
-	case 34:
-		return t.Customer_balance_lcy, true
-	case 35:
-		return t.Vendor_balance_lcy, true
-	}
-	return nil, false
+	return currencyFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *Currency) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Date); ok {
-			t.Last_date_modified = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Date); ok {
-			t.Last_date_adjusted = v
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Code); ok {
-			t.Unrealized_gains_acc = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Unrealized_gains_acc = types.NewCode(v)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Code); ok {
-			t.Realized_gains_acc = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Realized_gains_acc = types.NewCode(v)
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Code); ok {
-			t.Unrealized_losses_acc = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Unrealized_losses_acc = types.NewCode(v)
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.Code); ok {
-			t.Realized_losses_acc = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Realized_losses_acc = types.NewCode(v)
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Decimal); ok {
-			t.Invoice_rounding_precision = v
-			return true
-		}
-	case 12:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Invoice_rounding_type = CurrencyInvoice_rounding_type(i)
-			return true
-		}
-	case 13:
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount_rounding_precision = v
-			return true
-		}
-	case 14:
-		if v, ok := value.(types.Decimal); ok {
-			t.Unit_amount_rounding_precision = v
-			return true
-		}
-	case 15:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 17:
-		if v, ok := value.(types.Text); ok {
-			t.Amount_decimal_places = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Amount_decimal_places = types.NewText(v)
-			return true
-		}
-	case 18:
-		if v, ok := value.(types.Text); ok {
-			t.Unit_amount_decimal_places = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Unit_amount_decimal_places = types.NewText(v)
-			return true
-		}
-	case 44:
-		if v, ok := value.(types.Decimal); ok {
-			t.Appln_rounding_precision = v
-			return true
-		}
-	case 45:
-		if v, ok := value.(bool); ok {
-			t.Emu_currency = v
-			return true
-		}
-	case 46:
-		if v, ok := value.(types.Decimal); ok {
-			t.Currency_factor = v
-			return true
-		}
-	case 40:
-		if v, ok := value.(types.Code); ok {
-			t.Realized_gl_gains_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Realized_gl_gains_account = types.NewCode(v)
-			return true
-		}
-	case 41:
-		if v, ok := value.(types.Code); ok {
-			t.Realized_gl_losses_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Realized_gl_losses_account = types.NewCode(v)
-			return true
-		}
-	case 47:
-		if v, ok := value.(types.Code); ok {
-			t.Residual_gains_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Residual_gains_account = types.NewCode(v)
-			return true
-		}
-	case 48:
-		if v, ok := value.(types.Code); ok {
-			t.Residual_losses_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Residual_losses_account = types.NewCode(v)
-			return true
-		}
-	case 50:
-		if v, ok := value.(types.Code); ok {
-			t.Conv_lcy_rndg_debit_acc = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Conv_lcy_rndg_debit_acc = types.NewCode(v)
-			return true
-		}
-	case 51:
-		if v, ok := value.(types.Code); ok {
-			t.Conv_lcy_rndg_credit_acc = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Conv_lcy_rndg_credit_acc = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return currencyFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -7136,55 +5870,7 @@ func (t *Currency) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *Currency) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "code":
-		return t.Code, true
-	case "last_date_modified":
-		return t.Last_date_modified, true
-	case "last_date_adjusted":
-		return t.Last_date_adjusted, true
-	case "unrealized_gains_acc":
-		return t.Unrealized_gains_acc, true
-	case "realized_gains_acc":
-		return t.Realized_gains_acc, true
-	case "unrealized_losses_acc":
-		return t.Unrealized_losses_acc, true
-	case "realized_losses_acc":
-		return t.Realized_losses_acc, true
-	case "invoice_rounding_precision":
-		return t.Invoice_rounding_precision, true
-	case "invoice_rounding_type":
-		return int(t.Invoice_rounding_type), true
-	case "amount_rounding_precision":
-		return t.Amount_rounding_precision, true
-	case "unit_amount_rounding_precision":
-		return t.Unit_amount_rounding_precision, true
-	case "description":
-		return t.Description, true
-	case "amount_decimal_places":
-		return t.Amount_decimal_places, true
-	case "unit_amount_decimal_places":
-		return t.Unit_amount_decimal_places, true
-	case "appln_rounding_precision":
-		return t.Appln_rounding_precision, true
-	case "emu_currency":
-		return t.Emu_currency, true
-	case "currency_factor":
-		return t.Currency_factor, true
-	case "realized_gl_gains_account":
-		return t.Realized_gl_gains_account, true
-	case "realized_gl_losses_account":
-		return t.Realized_gl_losses_account, true
-	case "residual_gains_account":
-		return t.Residual_gains_account, true
-	case "residual_losses_account":
-		return t.Residual_losses_account, true
-	case "conv_lcy_rndg_debit_acc":
-		return t.Conv_lcy_rndg_debit_acc, true
-	case "conv_lcy_rndg_credit_acc":
-		return t.Conv_lcy_rndg_credit_acc, true
-	}
-	return nil, false
+	return currencyFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -7292,221 +5978,12 @@ func (t *Currency) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *Currency) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"code":                           t.Code.String(),
-		"last_date_modified":             t.Last_date_modified.String(),
-		"last_date_adjusted":             t.Last_date_adjusted.String(),
-		"unrealized_gains_acc":           t.Unrealized_gains_acc.String(),
-		"realized_gains_acc":             t.Realized_gains_acc.String(),
-		"unrealized_losses_acc":          t.Unrealized_losses_acc.String(),
-		"realized_losses_acc":            t.Realized_losses_acc.String(),
-		"invoice_rounding_precision":     t.Invoice_rounding_precision.String(),
-		"invoice_rounding_type":          int(t.Invoice_rounding_type),
-		"amount_rounding_precision":      t.Amount_rounding_precision.String(),
-		"unit_amount_rounding_precision": t.Unit_amount_rounding_precision.String(),
-		"description":                    t.Description.String(),
-		"amount_decimal_places":          t.Amount_decimal_places.String(),
-		"unit_amount_decimal_places":     t.Unit_amount_decimal_places.String(),
-		// FlowField: cust_ledg_entries_in_filter
-		"cust_ledg_entries_in_filter": t.Cust_ledg_entries_in_filter,
-		// FlowField: customer_balance
-		"customer_balance": t.Customer_balance.String(),
-		// FlowField: customer_outstanding_orders
-		"customer_outstanding_orders": t.Customer_outstanding_orders.String(),
-		// FlowField: customer_shipped_not_invoiced
-		"customer_shipped_not_invoiced": t.Customer_shipped_not_invoiced.String(),
-		// FlowField: customer_balance_due
-		"customer_balance_due": t.Customer_balance_due.String(),
-		// FlowField: vendor_ledg_entries_in_filter
-		"vendor_ledg_entries_in_filter": t.Vendor_ledg_entries_in_filter,
-		// FlowField: vendor_balance
-		"vendor_balance": t.Vendor_balance.String(),
-		// FlowField: vendor_outstanding_orders
-		"vendor_outstanding_orders": t.Vendor_outstanding_orders.String(),
-		// FlowField: vendor_amt_rcd_not_invoiced
-		"vendor_amt_rcd_not_invoiced": t.Vendor_amt_rcd_not_invoiced.String(),
-		// FlowField: vendor_balance_due
-		"vendor_balance_due": t.Vendor_balance_due.String(),
-		// FlowField: customer_balance_lcy
-		"customer_balance_lcy": t.Customer_balance_lcy.String(),
-		// FlowField: vendor_balance_lcy
-		"vendor_balance_lcy":         t.Vendor_balance_lcy.String(),
-		"appln_rounding_precision":   t.Appln_rounding_precision.String(),
-		"emu_currency":               t.Emu_currency,
-		"currency_factor":            t.Currency_factor.String(),
-		"realized_gl_gains_account":  t.Realized_gl_gains_account.String(),
-		"realized_gl_losses_account": t.Realized_gl_losses_account.String(),
-		"residual_gains_account":     t.Residual_gains_account.String(),
-		"residual_losses_account":    t.Residual_losses_account.String(),
-		"conv_lcy_rndg_debit_acc":    t.Conv_lcy_rndg_debit_acc.String(),
-		"conv_lcy_rndg_credit_acc":   t.Conv_lcy_rndg_credit_acc.String(),
-	}
+	return currencyFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *Currency) FromMap(data map[string]interface{}) {
-	if v, ok := data["code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["last_date_modified"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Last_date_modified, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["last_date_adjusted"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Last_date_adjusted, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["unrealized_gains_acc"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Unrealized_gains_acc = types.NewCode(s)
-		}
-	}
-	if v, ok := data["realized_gains_acc"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Realized_gains_acc = types.NewCode(s)
-		}
-	}
-	if v, ok := data["unrealized_losses_acc"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Unrealized_losses_acc = types.NewCode(s)
-		}
-	}
-	if v, ok := data["realized_losses_acc"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Realized_losses_acc = types.NewCode(s)
-		}
-	}
-	if v, ok := data["invoice_rounding_precision"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Invoice_rounding_precision, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Invoice_rounding_precision = types.NewDecimal(val)
-		case int:
-			t.Invoice_rounding_precision = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Invoice_rounding_precision = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["invoice_rounding_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Invoice_rounding_type = CurrencyInvoice_rounding_type(int(val))
-		case int:
-			t.Invoice_rounding_type = CurrencyInvoice_rounding_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Nearest", "Up", "Down"}
-			for i, opt := range options {
-				if opt == val {
-					t.Invoice_rounding_type = CurrencyInvoice_rounding_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["amount_rounding_precision"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Amount_rounding_precision, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Amount_rounding_precision = types.NewDecimal(val)
-		case int:
-			t.Amount_rounding_precision = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Amount_rounding_precision = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["unit_amount_rounding_precision"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Unit_amount_rounding_precision, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Unit_amount_rounding_precision = types.NewDecimal(val)
-		case int:
-			t.Unit_amount_rounding_precision = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Unit_amount_rounding_precision = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["amount_decimal_places"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Amount_decimal_places = types.NewText(s)
-		}
-	}
-	if v, ok := data["unit_amount_decimal_places"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Unit_amount_decimal_places = types.NewText(s)
-		}
-	}
-	if v, ok := data["appln_rounding_precision"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Appln_rounding_precision, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Appln_rounding_precision = types.NewDecimal(val)
-		case int:
-			t.Appln_rounding_precision = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Appln_rounding_precision = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["emu_currency"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Emu_currency = b
-		}
-	}
-	if v, ok := data["currency_factor"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Currency_factor, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Currency_factor = types.NewDecimal(val)
-		case int:
-			t.Currency_factor = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Currency_factor = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["realized_gl_gains_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Realized_gl_gains_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["realized_gl_losses_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Realized_gl_losses_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["residual_gains_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Residual_gains_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["residual_losses_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Residual_losses_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["conv_lcy_rndg_debit_acc"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Conv_lcy_rndg_debit_acc = types.NewCode(s)
-		}
-	}
-	if v, ok := data["conv_lcy_rndg_credit_acc"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Conv_lcy_rndg_credit_acc = types.NewCode(s)
-		}
-	}
+	currencyFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -7527,373 +6004,615 @@ func (t *Currency) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *Currency) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "last_date_modified",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         3,
-			Name:       "last_date_adjusted",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         6,
-			Name:       "unrealized_gains_acc",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "realized_gains_acc",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "unrealized_losses_acc",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "realized_losses_acc",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "invoice_rounding_precision",
-			Type:       tables.FieldTypeDecimal,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "invoice_rounding_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            13,
-			Name:          "amount_rounding_precision",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:5",
-		},
-		{
-			No:            14,
-			Name:          "unit_amount_rounding_precision",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:5",
-		},
-		{
-			No:         15,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         17,
-			Name:       "amount_decimal_places",
-			Type:       tables.FieldTypeText,
-			Length:     5,
-			Required:   true,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         18,
-			Name:       "unit_amount_decimal_places",
-			Type:       tables.FieldTypeText,
-			Length:     5,
-			Required:   true,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         24,
-			Name:       "cust_ledg_entries_in_filter",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  true,
-		},
-		{
-			No:            25,
-			Name:          "customer_balance",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            26,
-			Name:          "customer_outstanding_orders",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            27,
-			Name:          "customer_shipped_not_invoiced",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            28,
-			Name:          "customer_balance_due",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         29,
-			Name:       "vendor_ledg_entries_in_filter",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  true,
-		},
-		{
-			No:            30,
-			Name:          "vendor_balance",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            31,
-			Name:          "vendor_outstanding_orders",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            32,
-			Name:          "vendor_amt_rcd_not_invoiced",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            33,
-			Name:          "vendor_balance_due",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            34,
-			Name:          "customer_balance_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            35,
-			Name:          "vendor_balance_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         44,
-			Name:       "appln_rounding_precision",
-			Type:       tables.FieldTypeDecimal,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         45,
-			Name:       "emu_currency",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         46,
-			Name:       "currency_factor",
-			Type:       tables.FieldTypeDecimal,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         40,
-			Name:       "realized_gl_gains_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         41,
-			Name:       "realized_gl_losses_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         47,
-			Name:       "residual_gains_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         48,
-			Name:       "residual_losses_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         50,
-			Name:       "conv_lcy_rndg_debit_acc",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         51,
-			Name:       "conv_lcy_rndg_credit_acc",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return currencyFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in currencyFields.Fields
+func (t *Currency) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Code
+	case 1:
+		return &t.Last_date_modified
+	case 2:
+		return &t.Last_date_adjusted
+	case 3:
+		return &t.Unrealized_gains_acc
+	case 4:
+		return &t.Realized_gains_acc
+	case 5:
+		return &t.Unrealized_losses_acc
+	case 6:
+		return &t.Realized_losses_acc
+	case 7:
+		return &t.Invoice_rounding_precision
+	case 8:
+		return &t.Invoice_rounding_type
+	case 9:
+		return &t.Amount_rounding_precision
+	case 10:
+		return &t.Unit_amount_rounding_precision
+	case 11:
+		return &t.Description
+	case 12:
+		return &t.Amount_decimal_places
+	case 13:
+		return &t.Unit_amount_decimal_places
+	case 14:
+		return &t.Cust_ledg_entries_in_filter
+	case 15:
+		return &t.Customer_balance
+	case 16:
+		return &t.Customer_outstanding_orders
+	case 17:
+		return &t.Customer_shipped_not_invoiced
+	case 18:
+		return &t.Customer_balance_due
+	case 19:
+		return &t.Vendor_ledg_entries_in_filter
+	case 20:
+		return &t.Vendor_balance
+	case 21:
+		return &t.Vendor_outstanding_orders
+	case 22:
+		return &t.Vendor_amt_rcd_not_invoiced
+	case 23:
+		return &t.Vendor_balance_due
+	case 24:
+		return &t.Customer_balance_lcy
+	case 25:
+		return &t.Vendor_balance_lcy
+	case 26:
+		return &t.Appln_rounding_precision
+	case 27:
+		return &t.Emu_currency
+	case 28:
+		return &t.Currency_factor
+	case 29:
+		return &t.Realized_gl_gains_account
+	case 30:
+		return &t.Realized_gl_losses_account
+	case 31:
+		return &t.Residual_gains_account
+	case 32:
+		return &t.Residual_losses_account
+	case 33:
+		return &t.Conv_lcy_rndg_debit_acc
+	case 34:
+		return &t.Conv_lcy_rndg_credit_acc
 	}
+	return nil
+}
+
+// currencyFields describes the fields of Currency for the record functions
+// written once in foundation/tables
+var currencyFields = &tables.TableFields{
+	Table: CurrencyTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "last_date_modified",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Last_date_modified",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "last_date_adjusted",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Last_date_adjusted",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "unrealized_gains_acc",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Unrealized_gains_acc",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "realized_gains_acc",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Realized_gains_acc",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "unrealized_losses_acc",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Unrealized_losses_acc",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "realized_losses_acc",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Realized_losses_acc",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "invoice_rounding_precision",
+				Type:       tables.FieldTypeDecimal,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Invoice_rounding_precision",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "invoice_rounding_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Invoice_rounding_type",
+			Options: []string{"Nearest", "Up", "Down"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            13,
+				Name:          "amount_rounding_precision",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Amount_rounding_precision",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            14,
+				Name:          "unit_amount_rounding_precision",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Unit_amount_rounding_precision",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         15,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         17,
+				Name:       "amount_decimal_places",
+				Type:       tables.FieldTypeText,
+				Length:     5,
+				Required:   true,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Amount_decimal_places",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         18,
+				Name:       "unit_amount_decimal_places",
+				Type:       tables.FieldTypeText,
+				Length:     5,
+				Required:   true,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Unit_amount_decimal_places",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         24,
+				Name:       "cust_ledg_entries_in_filter",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  true,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Cust_ledg_entries_in_filter",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            25,
+				Name:          "customer_balance",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Customer_balance",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            26,
+				Name:          "customer_outstanding_orders",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Customer_outstanding_orders",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            27,
+				Name:          "customer_shipped_not_invoiced",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Customer_shipped_not_invoiced",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            28,
+				Name:          "customer_balance_due",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Customer_balance_due",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         29,
+				Name:       "vendor_ledg_entries_in_filter",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  true,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Vendor_ledg_entries_in_filter",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            30,
+				Name:          "vendor_balance",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Vendor_balance",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            31,
+				Name:          "vendor_outstanding_orders",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Vendor_outstanding_orders",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            32,
+				Name:          "vendor_amt_rcd_not_invoiced",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Vendor_amt_rcd_not_invoiced",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            33,
+				Name:          "vendor_balance_due",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Vendor_balance_due",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            34,
+				Name:          "customer_balance_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Customer_balance_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            35,
+				Name:          "vendor_balance_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Vendor_balance_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         44,
+				Name:       "appln_rounding_precision",
+				Type:       tables.FieldTypeDecimal,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Appln_rounding_precision",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         45,
+				Name:       "emu_currency",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Emu_currency",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         46,
+				Name:       "currency_factor",
+				Type:       tables.FieldTypeDecimal,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Currency_factor",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         40,
+				Name:       "realized_gl_gains_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Realized_gl_gains_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         41,
+				Name:       "realized_gl_losses_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Realized_gl_losses_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         47,
+				Name:       "residual_gains_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Residual_gains_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         48,
+				Name:       "residual_losses_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Residual_losses_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         50,
+				Name:       "conv_lcy_rndg_debit_acc",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Conv_lcy_rndg_debit_acc",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         51,
+				Name:       "conv_lcy_rndg_credit_acc",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Conv_lcy_rndg_credit_acc",
+			Relation: true,
+		},
+	},
+	FlowFilters: []tables.FieldInfo{
+		{No: 19, Name: "customer_filter"},
+		{No: 20, Name: "vendor_filter"},
+		{No: 21, Name: "dimension_1_filter"},
+		{No: 22, Name: "dimension_2_filter"},
+		{No: 23, Name: "date_filter"},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

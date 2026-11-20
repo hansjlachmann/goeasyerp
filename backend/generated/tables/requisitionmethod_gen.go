@@ -199,40 +199,12 @@ var RequisitionMethod_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *RequisitionMethod) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "code":
-		return 1
-	case "name":
-		return 2
-	case "manufacturing_policy":
-		return 10
-	case "calc_below_reorder_point":
-		return 11
-	case "reordering_policy":
-		return 12
-	case "calc_with_inventory":
-		return 13
-	}
-	return 0
+	return requisitionMethodFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *RequisitionMethod) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "code"
-	case 2:
-		return "name"
-	case 10:
-		return "manufacturing_policy"
-	case 11:
-		return "calc_below_reorder_point"
-	case 12:
-		return "reordering_policy"
-	case 13:
-		return "calc_with_inventory"
-	}
-	return ""
+	return requisitionMethodFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -344,24 +316,6 @@ type (
 	RequisitionMethodOnBeforeRename interface {
 		OnBeforeRename(rec *RequisitionMethod, handled *bool) error
 	}
-	RequisitionMethodOnValidate_Code interface {
-		OnValidate_Code(rec *RequisitionMethod) error
-	}
-	RequisitionMethodOnValidate_Name interface {
-		OnValidate_Name(rec *RequisitionMethod) error
-	}
-	RequisitionMethodOnValidate_Manufacturing_policy interface {
-		OnValidate_Manufacturing_policy(rec *RequisitionMethod) error
-	}
-	RequisitionMethodOnValidate_Calc_below_reorder_point interface {
-		OnValidate_Calc_below_reorder_point(rec *RequisitionMethod) error
-	}
-	RequisitionMethodOnValidate_Reordering_policy interface {
-		OnValidate_Reordering_policy(rec *RequisitionMethod) error
-	}
-	RequisitionMethodOnValidate_Calc_with_inventory interface {
-		OnValidate_Calc_with_inventory(rec *RequisitionMethod) error
-	}
 )
 
 // requisitionMethodLogic is the registered business logic of Requisition_Method, in
@@ -404,20 +358,9 @@ func requisitionMethodTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(RequisitionMethodOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(RequisitionMethodOnBeforeRename)
-	case "OnValidate_Code":
-		_, ok = logic.(RequisitionMethodOnValidate_Code)
-	case "OnValidate_Name":
-		_, ok = logic.(RequisitionMethodOnValidate_Name)
-	case "OnValidate_Manufacturing_policy":
-		_, ok = logic.(RequisitionMethodOnValidate_Manufacturing_policy)
-	case "OnValidate_Calc_below_reorder_point":
-		_, ok = logic.(RequisitionMethodOnValidate_Calc_below_reorder_point)
-	case "OnValidate_Reordering_policy":
-		_, ok = logic.(RequisitionMethodOnValidate_Reordering_policy)
-	case "OnValidate_Calc_with_inventory":
-		_, ok = logic.(RequisitionMethodOnValidate_Calc_with_inventory)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return requisitionMethodFields.IsOnValidateTrigger(name, logic, (*RequisitionMethod)(nil))
 	}
 	return true, ok
 }
@@ -719,13 +662,7 @@ func (t *RequisitionMethod) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *RequisitionMethod) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["code"] = t.Code
-	t.oldValues["name"] = t.Name
-	t.oldValues["manufacturing_policy"] = t.Manufacturing_policy
-	t.oldValues["calc_below_reorder_point"] = t.Calc_below_reorder_point
-	t.oldValues["reordering_policy"] = t.Reordering_policy
-	t.oldValues["calc_with_inventory"] = t.Calc_with_inventory
+	t.oldValues = requisitionMethodFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -740,24 +677,7 @@ func (t *RequisitionMethod) OldValue(fieldName string) interface{} {
 func (t *RequisitionMethod) XRec() *RequisitionMethod {
 	x := &RequisitionMethod{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["code"].(types.Code); ok {
-		x.Code = v
-	}
-	if v, ok := t.oldValues["name"].(types.Text); ok {
-		x.Name = v
-	}
-	if v, ok := t.oldValues["manufacturing_policy"].(RequisitionMethodManufacturing_policy); ok {
-		x.Manufacturing_policy = v
-	}
-	if v, ok := t.oldValues["calc_below_reorder_point"].(bool); ok {
-		x.Calc_below_reorder_point = v
-	}
-	if v, ok := t.oldValues["reordering_policy"].(RequisitionMethodReordering_policy); ok {
-		x.Reordering_policy = v
-	}
-	if v, ok := t.oldValues["calc_with_inventory"].(bool); ok {
-		x.Calc_with_inventory = v
-	}
+	requisitionMethodFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1078,47 +998,7 @@ func (t *RequisitionMethod) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *RequisitionMethod) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Code.Equal(old)
-		}
-	case "name":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Name.Equal(old)
-		}
-	case "manufacturing_policy":
-		if old, ok := oldValue.(RequisitionMethodManufacturing_policy); ok {
-			return t.Manufacturing_policy != old
-		}
-	case "calc_below_reorder_point":
-		if old, ok := oldValue.(bool); ok {
-			return t.Calc_below_reorder_point != old
-		}
-		return true // Type mismatch, assume changed
-	case "reordering_policy":
-		if old, ok := oldValue.(RequisitionMethodReordering_policy); ok {
-			return t.Reordering_policy != old
-		}
-	case "calc_with_inventory":
-		if old, ok := oldValue.(bool); ok {
-			return t.Calc_with_inventory != old
-		}
-		return true // Type mismatch, assume changed
-	}
-
-	return false
+	return requisitionMethodFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1376,21 +1256,7 @@ func (t *RequisitionMethod) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *RequisitionMethod) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("code"):
-		return "code", true
-	case strings.ToLower("name"):
-		return "name", true
-	case strings.ToLower("manufacturing_policy"):
-		return "manufacturing_policy", true
-	case strings.ToLower("calc_below_reorder_point"):
-		return "calc_below_reorder_point", true
-	case strings.ToLower("reordering_policy"):
-		return "reordering_policy", true
-	case strings.ToLower("calc_with_inventory"):
-		return "calc_with_inventory", true
-	}
-	return "", false
+	return requisitionMethodFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2255,184 +2121,20 @@ func (t *RequisitionMethod) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *RequisitionMethod) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-		} else if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionMethodOnValidate_Code); ok {
-				if err := trg.OnValidate_Code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "name":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-		} else if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionMethodOnValidate_Name); ok {
-				if err := trg.OnValidate_Name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "manufacturing_policy":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(RequisitionMethodManufacturing_policy); ok {
-			t.Manufacturing_policy = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field manufacturing_policy (valid range: 0-%d)", v, 3-1)
-			}
-			t.Manufacturing_policy = RequisitionMethodManufacturing_policy(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field manufacturing_policy (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Manufacturing_policy = RequisitionMethodManufacturing_policy(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Manufacturing_policy = 0
-			} else {
-				options := []string{"Make-to-Stock", "Make-to-Order", "Assemble-to-Order"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Manufacturing_policy = RequisitionMethodManufacturing_policy(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field manufacturing_policy (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field manufacturing_policy (expected RequisitionMethodManufacturing_policy, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionMethodOnValidate_Manufacturing_policy); ok {
-				if err := trg.OnValidate_Manufacturing_policy(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "calc_below_reorder_point":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Calc_below_reorder_point = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Calc_below_reorder_point = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field calc_below_reorder_point")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionMethodOnValidate_Calc_below_reorder_point); ok {
-				if err := trg.OnValidate_Calc_below_reorder_point(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reordering_policy":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(RequisitionMethodReordering_policy); ok {
-			t.Reordering_policy = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 6 {
-				return fmt.Errorf("invalid option value %d for field reordering_policy (valid range: 0-%d)", v, 6-1)
-			}
-			t.Reordering_policy = RequisitionMethodReordering_policy(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 6 {
-				return fmt.Errorf("invalid option value %d for field reordering_policy (valid range: 0-%d)", intVal, 6-1)
-			}
-			t.Reordering_policy = RequisitionMethodReordering_policy(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Reordering_policy = 0
-			} else {
-				options := []string{" ", "Fixed Reorder Qty.", "Maximum Qty.", "Order", "Lot-for-Lot", "Discrete Lot Size"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Reordering_policy = RequisitionMethodReordering_policy(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field reordering_policy (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field reordering_policy (expected RequisitionMethodReordering_policy, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionMethodOnValidate_Reordering_policy); ok {
-				if err := trg.OnValidate_Reordering_policy(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "calc_with_inventory":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Calc_with_inventory = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Calc_with_inventory = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field calc_with_inventory")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RequisitionMethodOnValidate_Calc_with_inventory); ok {
-				if err := trg.OnValidate_Calc_with_inventory(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := requisitionMethodFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &requisitionMethodFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2441,74 +2143,18 @@ func (t *RequisitionMethod) ValidateField(fieldName string, value interface{}) e
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *RequisitionMethod) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Code, true
-	case 2:
-		return t.Name, true
-	case 10:
-		return t.Manufacturing_policy, true
-	case 11:
-		return t.Calc_below_reorder_point, true
-	case 12:
-		return t.Reordering_policy, true
-	case 13:
-		return t.Calc_with_inventory, true
-	}
-	return nil, false
+	return requisitionMethodFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *RequisitionMethod) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return requisitionMethodFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *RequisitionMethod) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-			return true
-		}
-	case 10:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Manufacturing_policy = RequisitionMethodManufacturing_policy(i)
-			return true
-		}
-	case 11:
-		if v, ok := value.(bool); ok {
-			t.Calc_below_reorder_point = v
-			return true
-		}
-	case 12:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 6 {
-			t.Reordering_policy = RequisitionMethodReordering_policy(i)
-			return true
-		}
-	case 13:
-		if v, ok := value.(bool); ok {
-			t.Calc_with_inventory = v
-			return true
-		}
-	}
-	return false
+	return requisitionMethodFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2957,21 +2603,7 @@ func (t *RequisitionMethod) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *RequisitionMethod) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "code":
-		return t.Code, true
-	case "name":
-		return t.Name, true
-	case "manufacturing_policy":
-		return int(t.Manufacturing_policy), true
-	case "calc_below_reorder_point":
-		return t.Calc_below_reorder_point, true
-	case "reordering_policy":
-		return int(t.Reordering_policy), true
-	case "calc_with_inventory":
-		return t.Calc_with_inventory, true
-	}
-	return nil, false
+	return requisitionMethodFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3062,72 +2694,12 @@ func (t *RequisitionMethod) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *RequisitionMethod) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"code":                     t.Code.String(),
-		"name":                     t.Name.String(),
-		"manufacturing_policy":     int(t.Manufacturing_policy),
-		"calc_below_reorder_point": t.Calc_below_reorder_point,
-		"reordering_policy":        int(t.Reordering_policy),
-		"calc_with_inventory":      t.Calc_with_inventory,
-	}
+	return requisitionMethodFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *RequisitionMethod) FromMap(data map[string]interface{}) {
-	if v, ok := data["code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Name = types.NewText(s)
-		}
-	}
-	if v, ok := data["manufacturing_policy"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Manufacturing_policy = RequisitionMethodManufacturing_policy(int(val))
-		case int:
-			t.Manufacturing_policy = RequisitionMethodManufacturing_policy(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Make-to-Stock", "Make-to-Order", "Assemble-to-Order"}
-			for i, opt := range options {
-				if opt == val {
-					t.Manufacturing_policy = RequisitionMethodManufacturing_policy(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["calc_below_reorder_point"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Calc_below_reorder_point = b
-		}
-	}
-	if v, ok := data["reordering_policy"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Reordering_policy = RequisitionMethodReordering_policy(int(val))
-		case int:
-			t.Reordering_policy = RequisitionMethodReordering_policy(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Fixed Reorder Qty.", "Maximum Qty.", "Order", "Lot-for-Lot", "Discrete Lot Size"}
-			for i, opt := range options {
-				if opt == val {
-					t.Reordering_policy = RequisitionMethodReordering_policy(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["calc_with_inventory"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Calc_with_inventory = b
-		}
-	}
+	requisitionMethodFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3148,68 +2720,120 @@ func (t *RequisitionMethod) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *RequisitionMethod) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "name",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "manufacturing_policy",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "calc_below_reorder_point",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "reordering_policy",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         13,
-			Name:       "calc_with_inventory",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return requisitionMethodFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in requisitionMethodFields.Fields
+func (t *RequisitionMethod) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Code
+	case 1:
+		return &t.Name
+	case 2:
+		return &t.Manufacturing_policy
+	case 3:
+		return &t.Calc_below_reorder_point
+	case 4:
+		return &t.Reordering_policy
+	case 5:
+		return &t.Calc_with_inventory
 	}
+	return nil
+}
+
+// requisitionMethodFields describes the fields of Requisition_Method for the record functions
+// written once in foundation/tables
+var requisitionMethodFields = &tables.TableFields{
+	Table: RequisitionMethodTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "name",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "manufacturing_policy",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Manufacturing_policy",
+			Options: []string{"Make-to-Stock", "Make-to-Order", "Assemble-to-Order"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "calc_below_reorder_point",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Calc_below_reorder_point",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "reordering_policy",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Reordering_policy",
+			Options: []string{" ", "Fixed Reorder Qty.", "Maximum Qty.", "Order", "Lot-for-Lot", "Discrete Lot Size"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "calc_with_inventory",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Calc_with_inventory",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

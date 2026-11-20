@@ -125,36 +125,12 @@ var ItemTranslation_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *ItemTranslation) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "item_no":
-		return 1
-	case "variant_code":
-		return 5400
-	case "language_code":
-		return 2
-	case "description":
-		return 3
-	case "description_2":
-		return 4
-	}
-	return 0
+	return itemTranslationFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *ItemTranslation) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "item_no"
-	case 5400:
-		return "variant_code"
-	case 2:
-		return "language_code"
-	case 3:
-		return "description"
-	case 4:
-		return "description_2"
-	}
-	return ""
+	return itemTranslationFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -266,21 +242,6 @@ type (
 	ItemTranslationOnBeforeRename interface {
 		OnBeforeRename(rec *ItemTranslation, handled *bool) error
 	}
-	ItemTranslationOnValidate_Item_no interface {
-		OnValidate_Item_no(rec *ItemTranslation) error
-	}
-	ItemTranslationOnValidate_Variant_code interface {
-		OnValidate_Variant_code(rec *ItemTranslation) error
-	}
-	ItemTranslationOnValidate_Language_code interface {
-		OnValidate_Language_code(rec *ItemTranslation) error
-	}
-	ItemTranslationOnValidate_Description interface {
-		OnValidate_Description(rec *ItemTranslation) error
-	}
-	ItemTranslationOnValidate_Description_2 interface {
-		OnValidate_Description_2(rec *ItemTranslation) error
-	}
 )
 
 // itemTranslationLogic is the registered business logic of Item_Translation, in
@@ -323,18 +284,9 @@ func itemTranslationTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ItemTranslationOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(ItemTranslationOnBeforeRename)
-	case "OnValidate_Item_no":
-		_, ok = logic.(ItemTranslationOnValidate_Item_no)
-	case "OnValidate_Variant_code":
-		_, ok = logic.(ItemTranslationOnValidate_Variant_code)
-	case "OnValidate_Language_code":
-		_, ok = logic.(ItemTranslationOnValidate_Language_code)
-	case "OnValidate_Description":
-		_, ok = logic.(ItemTranslationOnValidate_Description)
-	case "OnValidate_Description_2":
-		_, ok = logic.(ItemTranslationOnValidate_Description_2)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return itemTranslationFields.IsOnValidateTrigger(name, logic, (*ItemTranslation)(nil))
 	}
 	return true, ok
 }
@@ -642,12 +594,7 @@ func (t *ItemTranslation) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *ItemTranslation) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["item_no"] = t.Item_no
-	t.oldValues["variant_code"] = t.Variant_code
-	t.oldValues["language_code"] = t.Language_code
-	t.oldValues["description"] = t.Description
-	t.oldValues["description_2"] = t.Description_2
+	t.oldValues = itemTranslationFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -662,21 +609,7 @@ func (t *ItemTranslation) OldValue(fieldName string) interface{} {
 func (t *ItemTranslation) XRec() *ItemTranslation {
 	x := &ItemTranslation{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["item_no"].(types.Code); ok {
-		x.Item_no = v
-	}
-	if v, ok := t.oldValues["variant_code"].(types.Code); ok {
-		x.Variant_code = v
-	}
-	if v, ok := t.oldValues["language_code"].(types.Code); ok {
-		x.Language_code = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["description_2"].(types.Text); ok {
-		x.Description_2 = v
-	}
+	itemTranslationFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -991,41 +924,7 @@ func (t *ItemTranslation) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *ItemTranslation) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "item_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Item_no.Equal(old)
-		}
-	case "variant_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Variant_code.Equal(old)
-		}
-	case "language_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Language_code.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "description_2":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description_2.Equal(old)
-		}
-	}
-
-	return false
+	return itemTranslationFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1228,19 +1127,7 @@ func (t *ItemTranslation) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *ItemTranslation) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("item_no"):
-		return "item_no", true
-	case strings.ToLower("variant_code"):
-		return "variant_code", true
-	case strings.ToLower("language_code"):
-		return "language_code", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("description_2"):
-		return "description_2", true
-	}
-	return "", false
+	return itemTranslationFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2088,114 +1975,20 @@ func (t *ItemTranslation) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *ItemTranslation) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "item_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Item_no = v
-		} else if v, ok := value.(string); ok {
-			t.Item_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field item_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "item_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemTranslationOnValidate_Item_no); ok {
-				if err := trg.OnValidate_Item_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "variant_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Variant_code = v
-		} else if v, ok := value.(string); ok {
-			t.Variant_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field variant_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "variant_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemTranslationOnValidate_Variant_code); ok {
-				if err := trg.OnValidate_Variant_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "language_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Language_code = v
-		} else if v, ok := value.(string); ok {
-			t.Language_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field language_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "language_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemTranslationOnValidate_Language_code); ok {
-				if err := trg.OnValidate_Language_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemTranslationOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description_2":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description_2 = v
-		} else if v, ok := value.(string); ok {
-			t.Description_2 = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description_2")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemTranslationOnValidate_Description_2); ok {
-				if err := trg.OnValidate_Description_2(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := itemTranslationFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &itemTranslationFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2204,79 +1997,18 @@ func (t *ItemTranslation) ValidateField(fieldName string, value interface{}) err
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *ItemTranslation) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Item_no, true
-	case 5400:
-		return t.Variant_code, true
-	case 2:
-		return t.Language_code, true
-	case 3:
-		return t.Description, true
-	case 4:
-		return t.Description_2, true
-	}
-	return nil, false
+	return itemTranslationFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *ItemTranslation) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return itemTranslationFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *ItemTranslation) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Item_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Item_no = types.NewCode(v)
-			return true
-		}
-	case 5400:
-		if v, ok := value.(types.Code); ok {
-			t.Variant_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Variant_code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Language_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Language_code = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Text); ok {
-			t.Description_2 = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description_2 = types.NewText(v)
-			return true
-		}
-	}
-	return false
+	return itemTranslationFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2727,19 +2459,7 @@ func (t *ItemTranslation) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *ItemTranslation) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "item_no":
-		return t.Item_no, true
-	case "variant_code":
-		return t.Variant_code, true
-	case "language_code":
-		return t.Language_code, true
-	case "description":
-		return t.Description, true
-	case "description_2":
-		return t.Description_2, true
-	}
-	return nil, false
+	return itemTranslationFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2835,42 +2555,12 @@ func (t *ItemTranslation) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *ItemTranslation) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"item_no":       t.Item_no.String(),
-		"variant_code":  t.Variant_code.String(),
-		"language_code": t.Language_code.String(),
-		"description":   t.Description.String(),
-		"description_2": t.Description_2.String(),
-	}
+	return itemTranslationFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *ItemTranslation) FromMap(data map[string]interface{}) {
-	if v, ok := data["item_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Item_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["variant_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Variant_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["language_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Language_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["description_2"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description_2 = types.NewText(s)
-		}
-	}
+	itemTranslationFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2891,58 +2581,105 @@ func (t *ItemTranslation) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *ItemTranslation) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "item_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         5400,
-			Name:       "variant_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "language_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "description_2",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return itemTranslationFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in itemTranslationFields.Fields
+func (t *ItemTranslation) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Item_no
+	case 1:
+		return &t.Variant_code
+	case 2:
+		return &t.Language_code
+	case 3:
+		return &t.Description
+	case 4:
+		return &t.Description_2
 	}
+	return nil
+}
+
+// itemTranslationFields describes the fields of Item_Translation for the record functions
+// written once in foundation/tables
+var itemTranslationFields = &tables.TableFields{
+	Table: ItemTranslationTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "item_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Item_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5400,
+				Name:       "variant_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Variant_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "language_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Language_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "description_2",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description_2",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

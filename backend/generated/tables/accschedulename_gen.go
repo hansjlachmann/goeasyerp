@@ -117,28 +117,12 @@ var AccScheduleName_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *AccScheduleName) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "name":
-		return 1
-	case "description":
-		return 2
-	case "default_column_layout":
-		return 3
-	}
-	return 0
+	return accScheduleNameFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *AccScheduleName) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "name"
-	case 2:
-		return "description"
-	case 3:
-		return "default_column_layout"
-	}
-	return ""
+	return accScheduleNameFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -250,15 +234,6 @@ type (
 	AccScheduleNameOnBeforeRename interface {
 		OnBeforeRename(rec *AccScheduleName, handled *bool) error
 	}
-	AccScheduleNameOnValidate_Name interface {
-		OnValidate_Name(rec *AccScheduleName) error
-	}
-	AccScheduleNameOnValidate_Description interface {
-		OnValidate_Description(rec *AccScheduleName) error
-	}
-	AccScheduleNameOnValidate_Default_column_layout interface {
-		OnValidate_Default_column_layout(rec *AccScheduleName) error
-	}
 )
 
 // accScheduleNameLogic is the registered business logic of Acc_Schedule_Name, in
@@ -301,14 +276,9 @@ func accScheduleNameTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(AccScheduleNameOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(AccScheduleNameOnBeforeRename)
-	case "OnValidate_Name":
-		_, ok = logic.(AccScheduleNameOnValidate_Name)
-	case "OnValidate_Description":
-		_, ok = logic.(AccScheduleNameOnValidate_Description)
-	case "OnValidate_Default_column_layout":
-		_, ok = logic.(AccScheduleNameOnValidate_Default_column_layout)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return accScheduleNameFields.IsOnValidateTrigger(name, logic, (*AccScheduleName)(nil))
 	}
 	return true, ok
 }
@@ -601,10 +571,7 @@ func (t *AccScheduleName) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *AccScheduleName) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["name"] = t.Name
-	t.oldValues["description"] = t.Description
-	t.oldValues["default_column_layout"] = t.Default_column_layout
+	t.oldValues = accScheduleNameFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -619,15 +586,7 @@ func (t *AccScheduleName) OldValue(fieldName string) interface{} {
 func (t *AccScheduleName) XRec() *AccScheduleName {
 	x := &AccScheduleName{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["name"].(types.Code); ok {
-		x.Name = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["default_column_layout"].(types.Code); ok {
-		x.Default_column_layout = v
-	}
+	accScheduleNameFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -915,33 +874,7 @@ func (t *AccScheduleName) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *AccScheduleName) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Name.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "default_column_layout":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Default_column_layout.Equal(old)
-		}
-	}
-
-	return false
+	return accScheduleNameFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1182,15 +1115,7 @@ func (t *AccScheduleName) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *AccScheduleName) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("name"):
-		return "name", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("default_column_layout"):
-		return "default_column_layout", true
-	}
-	return "", false
+	return accScheduleNameFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2012,70 +1937,20 @@ func (t *AccScheduleName) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *AccScheduleName) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Name = v
-		} else if v, ok := value.(string); ok {
-			t.Name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccScheduleNameOnValidate_Name); ok {
-				if err := trg.OnValidate_Name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccScheduleNameOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "default_column_layout":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Default_column_layout = v
-		} else if v, ok := value.(string); ok {
-			t.Default_column_layout = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field default_column_layout")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "default_column_layout"); err != nil {
+	i, err := accScheduleNameFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
+	}
+	f := &accScheduleNameFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
 			return err
 		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccScheduleNameOnValidate_Default_column_layout); ok {
-				if err := trg.OnValidate_Default_column_layout(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2084,57 +1959,18 @@ func (t *AccScheduleName) ValidateField(fieldName string, value interface{}) err
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *AccScheduleName) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Name, true
-	case 2:
-		return t.Description, true
-	case 3:
-		return t.Default_column_layout, true
-	}
-	return nil, false
+	return accScheduleNameFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *AccScheduleName) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return accScheduleNameFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *AccScheduleName) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Name = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Code); ok {
-			t.Default_column_layout = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Default_column_layout = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return accScheduleNameFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2583,15 +2419,7 @@ func (t *AccScheduleName) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *AccScheduleName) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "name":
-		return t.Name, true
-	case "description":
-		return t.Description, true
-	case "default_column_layout":
-		return t.Default_column_layout, true
-	}
-	return nil, false
+	return accScheduleNameFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2679,30 +2507,12 @@ func (t *AccScheduleName) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *AccScheduleName) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"name":                  t.Name.String(),
-		"description":           t.Description.String(),
-		"default_column_layout": t.Default_column_layout.String(),
-	}
+	return accScheduleNameFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *AccScheduleName) FromMap(data map[string]interface{}) {
-	if v, ok := data["name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["default_column_layout"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Default_column_layout = types.NewCode(s)
-		}
-	}
+	accScheduleNameFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2723,38 +2533,71 @@ func (t *AccScheduleName) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *AccScheduleName) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     80,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "default_column_layout",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return accScheduleNameFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in accScheduleNameFields.Fields
+func (t *AccScheduleName) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Name
+	case 1:
+		return &t.Description
+	case 2:
+		return &t.Default_column_layout
 	}
+	return nil
+}
+
+// accScheduleNameFields describes the fields of Acc_Schedule_Name for the record functions
+// written once in foundation/tables
+var accScheduleNameFields = &tables.TableFields{
+	Table: AccScheduleNameTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     80,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "default_column_layout",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Default_column_layout",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

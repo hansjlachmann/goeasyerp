@@ -91,7 +91,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -681,296 +680,12 @@ var FALedgerEntry_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *FALedgerEntry) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "entry_no":
-		return 1
-	case "g_l_entry_no":
-		return 2
-	case "fa_no":
-		return 3
-	case "fa_posting_date":
-		return 4
-	case "posting_date":
-		return 5
-	case "document_type":
-		return 6
-	case "document_date":
-		return 7
-	case "document_no":
-		return 8
-	case "external_document_no":
-		return 9
-	case "description":
-		return 10
-	case "depreciation_book_code":
-		return 11
-	case "fa_posting_category":
-		return 12
-	case "fa_posting_type":
-		return 13
-	case "amount":
-		return 14
-	case "debit_amount":
-		return 15
-	case "credit_amount":
-		return 16
-	case "reclassification_entry":
-		return 17
-	case "part_of_book_value":
-		return 18
-	case "part_of_depreciable_basis":
-		return 19
-	case "disposal_calculation_method":
-		return 20
-	case "disposal_entry_no":
-		return 21
-	case "no_of_depreciation_days":
-		return 22
-	case "quantity":
-		return 23
-	case "fa_no_budgeted_fa_no":
-		return 24
-	case "fa_subclass_code":
-		return 25
-	case "fa_location_code":
-		return 26
-	case "fa_posting_group":
-		return 27
-	case "dimension_1_code":
-		return 28
-	case "dimension_2_code":
-		return 29
-	case "location_code":
-		return 30
-	case "user_id":
-		return 32
-	case "depreciation_method":
-		return 33
-	case "depreciation_starting_date":
-		return 34
-	case "straight_line_percent":
-		return 35
-	case "no_of_depreciation_years":
-		return 36
-	case "fixed_depr_amount":
-		return 37
-	case "declining_balance_percent":
-		return 38
-	case "depreciation_table_code":
-		return 39
-	case "journal_batch_name":
-		return 40
-	case "source_code":
-		return 41
-	case "reason_code":
-		return 42
-	case "transaction_no":
-		return 43
-	case "bal_account_type":
-		return 44
-	case "bal_account_no":
-		return 45
-	case "tax_amount":
-		return 46
-	case "gen_posting_type":
-		return 47
-	case "gen_bus_posting_group":
-		return 48
-	case "gen_prod_posting_group":
-		return 49
-	case "fa_class_code":
-		return 50
-	case "fa_exchange_rate":
-		return 51
-	case "amount_lcy":
-		return 52
-	case "result_on_disposal":
-		return 53
-	case "correction":
-		return 54
-	case "index_entry":
-		return 55
-	case "canceled_from_fa_no":
-		return 56
-	case "depreciation_ending_date":
-		return 57
-	case "use_fa_ledger_check":
-		return 58
-	case "automatic_entry":
-		return 59
-	case "depr_starting_date_custom_1":
-		return 60
-	case "depr_ending_date_custom_1":
-		return 61
-	case "accum_depr_percent_custom_1":
-		return 62
-	case "depr_percent_this_year_custom_1":
-		return 63
-	case "property_class_custom_1":
-		return 64
-	case "no_series":
-		return 65
-	case "tax_area_code":
-		return 66
-	case "tax_liable":
-		return 67
-	case "tax_group_code":
-		return 68
-	case "use_tax":
-		return 69
-	case "tax_bus_posting_group":
-		return 70
-	case "tax_prod_posting_group":
-		return 71
-	}
-	return 0
+	return fALedgerEntryFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *FALedgerEntry) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "entry_no"
-	case 2:
-		return "g_l_entry_no"
-	case 3:
-		return "fa_no"
-	case 4:
-		return "fa_posting_date"
-	case 5:
-		return "posting_date"
-	case 6:
-		return "document_type"
-	case 7:
-		return "document_date"
-	case 8:
-		return "document_no"
-	case 9:
-		return "external_document_no"
-	case 10:
-		return "description"
-	case 11:
-		return "depreciation_book_code"
-	case 12:
-		return "fa_posting_category"
-	case 13:
-		return "fa_posting_type"
-	case 14:
-		return "amount"
-	case 15:
-		return "debit_amount"
-	case 16:
-		return "credit_amount"
-	case 17:
-		return "reclassification_entry"
-	case 18:
-		return "part_of_book_value"
-	case 19:
-		return "part_of_depreciable_basis"
-	case 20:
-		return "disposal_calculation_method"
-	case 21:
-		return "disposal_entry_no"
-	case 22:
-		return "no_of_depreciation_days"
-	case 23:
-		return "quantity"
-	case 24:
-		return "fa_no_budgeted_fa_no"
-	case 25:
-		return "fa_subclass_code"
-	case 26:
-		return "fa_location_code"
-	case 27:
-		return "fa_posting_group"
-	case 28:
-		return "dimension_1_code"
-	case 29:
-		return "dimension_2_code"
-	case 30:
-		return "location_code"
-	case 32:
-		return "user_id"
-	case 33:
-		return "depreciation_method"
-	case 34:
-		return "depreciation_starting_date"
-	case 35:
-		return "straight_line_percent"
-	case 36:
-		return "no_of_depreciation_years"
-	case 37:
-		return "fixed_depr_amount"
-	case 38:
-		return "declining_balance_percent"
-	case 39:
-		return "depreciation_table_code"
-	case 40:
-		return "journal_batch_name"
-	case 41:
-		return "source_code"
-	case 42:
-		return "reason_code"
-	case 43:
-		return "transaction_no"
-	case 44:
-		return "bal_account_type"
-	case 45:
-		return "bal_account_no"
-	case 46:
-		return "tax_amount"
-	case 47:
-		return "gen_posting_type"
-	case 48:
-		return "gen_bus_posting_group"
-	case 49:
-		return "gen_prod_posting_group"
-	case 50:
-		return "fa_class_code"
-	case 51:
-		return "fa_exchange_rate"
-	case 52:
-		return "amount_lcy"
-	case 53:
-		return "result_on_disposal"
-	case 54:
-		return "correction"
-	case 55:
-		return "index_entry"
-	case 56:
-		return "canceled_from_fa_no"
-	case 57:
-		return "depreciation_ending_date"
-	case 58:
-		return "use_fa_ledger_check"
-	case 59:
-		return "automatic_entry"
-	case 60:
-		return "depr_starting_date_custom_1"
-	case 61:
-		return "depr_ending_date_custom_1"
-	case 62:
-		return "accum_depr_percent_custom_1"
-	case 63:
-		return "depr_percent_this_year_custom_1"
-	case 64:
-		return "property_class_custom_1"
-	case 65:
-		return "no_series"
-	case 66:
-		return "tax_area_code"
-	case 67:
-		return "tax_liable"
-	case 68:
-		return "tax_group_code"
-	case 69:
-		return "use_tax"
-	case 70:
-		return "tax_bus_posting_group"
-	case 71:
-		return "tax_prod_posting_group"
-	}
-	return ""
+	return fALedgerEntryFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -1082,216 +797,6 @@ type (
 	FALedgerEntryOnBeforeRename interface {
 		OnBeforeRename(rec *FALedgerEntry, handled *bool) error
 	}
-	FALedgerEntryOnValidate_Entry_no interface {
-		OnValidate_Entry_no(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_G_l_entry_no interface {
-		OnValidate_G_l_entry_no(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Fa_no interface {
-		OnValidate_Fa_no(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Fa_posting_date interface {
-		OnValidate_Fa_posting_date(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Posting_date interface {
-		OnValidate_Posting_date(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Document_type interface {
-		OnValidate_Document_type(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Document_date interface {
-		OnValidate_Document_date(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Document_no interface {
-		OnValidate_Document_no(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_External_document_no interface {
-		OnValidate_External_document_no(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Description interface {
-		OnValidate_Description(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Depreciation_book_code interface {
-		OnValidate_Depreciation_book_code(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Fa_posting_category interface {
-		OnValidate_Fa_posting_category(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Fa_posting_type interface {
-		OnValidate_Fa_posting_type(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Amount interface {
-		OnValidate_Amount(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Debit_amount interface {
-		OnValidate_Debit_amount(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Credit_amount interface {
-		OnValidate_Credit_amount(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Reclassification_entry interface {
-		OnValidate_Reclassification_entry(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Part_of_book_value interface {
-		OnValidate_Part_of_book_value(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Part_of_depreciable_basis interface {
-		OnValidate_Part_of_depreciable_basis(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Disposal_calculation_method interface {
-		OnValidate_Disposal_calculation_method(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Disposal_entry_no interface {
-		OnValidate_Disposal_entry_no(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_No_of_depreciation_days interface {
-		OnValidate_No_of_depreciation_days(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Quantity interface {
-		OnValidate_Quantity(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Fa_no_budgeted_fa_no interface {
-		OnValidate_Fa_no_budgeted_fa_no(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Fa_subclass_code interface {
-		OnValidate_Fa_subclass_code(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Fa_location_code interface {
-		OnValidate_Fa_location_code(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Fa_posting_group interface {
-		OnValidate_Fa_posting_group(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Dimension_1_code interface {
-		OnValidate_Dimension_1_code(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Dimension_2_code interface {
-		OnValidate_Dimension_2_code(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Location_code interface {
-		OnValidate_Location_code(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_User_id interface {
-		OnValidate_User_id(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Depreciation_method interface {
-		OnValidate_Depreciation_method(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Depreciation_starting_date interface {
-		OnValidate_Depreciation_starting_date(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Straight_line_percent interface {
-		OnValidate_Straight_line_percent(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_No_of_depreciation_years interface {
-		OnValidate_No_of_depreciation_years(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Fixed_depr_amount interface {
-		OnValidate_Fixed_depr_amount(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Declining_balance_percent interface {
-		OnValidate_Declining_balance_percent(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Depreciation_table_code interface {
-		OnValidate_Depreciation_table_code(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Journal_batch_name interface {
-		OnValidate_Journal_batch_name(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Source_code interface {
-		OnValidate_Source_code(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Reason_code interface {
-		OnValidate_Reason_code(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Transaction_no interface {
-		OnValidate_Transaction_no(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Bal_account_type interface {
-		OnValidate_Bal_account_type(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Bal_account_no interface {
-		OnValidate_Bal_account_no(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Tax_amount interface {
-		OnValidate_Tax_amount(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Gen_posting_type interface {
-		OnValidate_Gen_posting_type(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Gen_bus_posting_group interface {
-		OnValidate_Gen_bus_posting_group(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Gen_prod_posting_group interface {
-		OnValidate_Gen_prod_posting_group(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Fa_class_code interface {
-		OnValidate_Fa_class_code(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Fa_exchange_rate interface {
-		OnValidate_Fa_exchange_rate(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Amount_lcy interface {
-		OnValidate_Amount_lcy(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Result_on_disposal interface {
-		OnValidate_Result_on_disposal(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Correction interface {
-		OnValidate_Correction(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Index_entry interface {
-		OnValidate_Index_entry(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Canceled_from_fa_no interface {
-		OnValidate_Canceled_from_fa_no(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Depreciation_ending_date interface {
-		OnValidate_Depreciation_ending_date(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Use_fa_ledger_check interface {
-		OnValidate_Use_fa_ledger_check(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Automatic_entry interface {
-		OnValidate_Automatic_entry(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Depr_starting_date_custom_1 interface {
-		OnValidate_Depr_starting_date_custom_1(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Depr_ending_date_custom_1 interface {
-		OnValidate_Depr_ending_date_custom_1(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Accum_depr_percent_custom_1 interface {
-		OnValidate_Accum_depr_percent_custom_1(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Depr_percent_this_year_custom_1 interface {
-		OnValidate_Depr_percent_this_year_custom_1(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Property_class_custom_1 interface {
-		OnValidate_Property_class_custom_1(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_No_series interface {
-		OnValidate_No_series(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Tax_area_code interface {
-		OnValidate_Tax_area_code(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Tax_liable interface {
-		OnValidate_Tax_liable(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Tax_group_code interface {
-		OnValidate_Tax_group_code(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Use_tax interface {
-		OnValidate_Use_tax(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Tax_bus_posting_group interface {
-		OnValidate_Tax_bus_posting_group(rec *FALedgerEntry) error
-	}
-	FALedgerEntryOnValidate_Tax_prod_posting_group interface {
-		OnValidate_Tax_prod_posting_group(rec *FALedgerEntry) error
-	}
 )
 
 // fALedgerEntryLogic is the registered business logic of FA_Ledger_Entry, in
@@ -1334,148 +839,9 @@ func fALedgerEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(FALedgerEntryOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(FALedgerEntryOnBeforeRename)
-	case "OnValidate_Entry_no":
-		_, ok = logic.(FALedgerEntryOnValidate_Entry_no)
-	case "OnValidate_G_l_entry_no":
-		_, ok = logic.(FALedgerEntryOnValidate_G_l_entry_no)
-	case "OnValidate_Fa_no":
-		_, ok = logic.(FALedgerEntryOnValidate_Fa_no)
-	case "OnValidate_Fa_posting_date":
-		_, ok = logic.(FALedgerEntryOnValidate_Fa_posting_date)
-	case "OnValidate_Posting_date":
-		_, ok = logic.(FALedgerEntryOnValidate_Posting_date)
-	case "OnValidate_Document_type":
-		_, ok = logic.(FALedgerEntryOnValidate_Document_type)
-	case "OnValidate_Document_date":
-		_, ok = logic.(FALedgerEntryOnValidate_Document_date)
-	case "OnValidate_Document_no":
-		_, ok = logic.(FALedgerEntryOnValidate_Document_no)
-	case "OnValidate_External_document_no":
-		_, ok = logic.(FALedgerEntryOnValidate_External_document_no)
-	case "OnValidate_Description":
-		_, ok = logic.(FALedgerEntryOnValidate_Description)
-	case "OnValidate_Depreciation_book_code":
-		_, ok = logic.(FALedgerEntryOnValidate_Depreciation_book_code)
-	case "OnValidate_Fa_posting_category":
-		_, ok = logic.(FALedgerEntryOnValidate_Fa_posting_category)
-	case "OnValidate_Fa_posting_type":
-		_, ok = logic.(FALedgerEntryOnValidate_Fa_posting_type)
-	case "OnValidate_Amount":
-		_, ok = logic.(FALedgerEntryOnValidate_Amount)
-	case "OnValidate_Debit_amount":
-		_, ok = logic.(FALedgerEntryOnValidate_Debit_amount)
-	case "OnValidate_Credit_amount":
-		_, ok = logic.(FALedgerEntryOnValidate_Credit_amount)
-	case "OnValidate_Reclassification_entry":
-		_, ok = logic.(FALedgerEntryOnValidate_Reclassification_entry)
-	case "OnValidate_Part_of_book_value":
-		_, ok = logic.(FALedgerEntryOnValidate_Part_of_book_value)
-	case "OnValidate_Part_of_depreciable_basis":
-		_, ok = logic.(FALedgerEntryOnValidate_Part_of_depreciable_basis)
-	case "OnValidate_Disposal_calculation_method":
-		_, ok = logic.(FALedgerEntryOnValidate_Disposal_calculation_method)
-	case "OnValidate_Disposal_entry_no":
-		_, ok = logic.(FALedgerEntryOnValidate_Disposal_entry_no)
-	case "OnValidate_No_of_depreciation_days":
-		_, ok = logic.(FALedgerEntryOnValidate_No_of_depreciation_days)
-	case "OnValidate_Quantity":
-		_, ok = logic.(FALedgerEntryOnValidate_Quantity)
-	case "OnValidate_Fa_no_budgeted_fa_no":
-		_, ok = logic.(FALedgerEntryOnValidate_Fa_no_budgeted_fa_no)
-	case "OnValidate_Fa_subclass_code":
-		_, ok = logic.(FALedgerEntryOnValidate_Fa_subclass_code)
-	case "OnValidate_Fa_location_code":
-		_, ok = logic.(FALedgerEntryOnValidate_Fa_location_code)
-	case "OnValidate_Fa_posting_group":
-		_, ok = logic.(FALedgerEntryOnValidate_Fa_posting_group)
-	case "OnValidate_Dimension_1_code":
-		_, ok = logic.(FALedgerEntryOnValidate_Dimension_1_code)
-	case "OnValidate_Dimension_2_code":
-		_, ok = logic.(FALedgerEntryOnValidate_Dimension_2_code)
-	case "OnValidate_Location_code":
-		_, ok = logic.(FALedgerEntryOnValidate_Location_code)
-	case "OnValidate_User_id":
-		_, ok = logic.(FALedgerEntryOnValidate_User_id)
-	case "OnValidate_Depreciation_method":
-		_, ok = logic.(FALedgerEntryOnValidate_Depreciation_method)
-	case "OnValidate_Depreciation_starting_date":
-		_, ok = logic.(FALedgerEntryOnValidate_Depreciation_starting_date)
-	case "OnValidate_Straight_line_percent":
-		_, ok = logic.(FALedgerEntryOnValidate_Straight_line_percent)
-	case "OnValidate_No_of_depreciation_years":
-		_, ok = logic.(FALedgerEntryOnValidate_No_of_depreciation_years)
-	case "OnValidate_Fixed_depr_amount":
-		_, ok = logic.(FALedgerEntryOnValidate_Fixed_depr_amount)
-	case "OnValidate_Declining_balance_percent":
-		_, ok = logic.(FALedgerEntryOnValidate_Declining_balance_percent)
-	case "OnValidate_Depreciation_table_code":
-		_, ok = logic.(FALedgerEntryOnValidate_Depreciation_table_code)
-	case "OnValidate_Journal_batch_name":
-		_, ok = logic.(FALedgerEntryOnValidate_Journal_batch_name)
-	case "OnValidate_Source_code":
-		_, ok = logic.(FALedgerEntryOnValidate_Source_code)
-	case "OnValidate_Reason_code":
-		_, ok = logic.(FALedgerEntryOnValidate_Reason_code)
-	case "OnValidate_Transaction_no":
-		_, ok = logic.(FALedgerEntryOnValidate_Transaction_no)
-	case "OnValidate_Bal_account_type":
-		_, ok = logic.(FALedgerEntryOnValidate_Bal_account_type)
-	case "OnValidate_Bal_account_no":
-		_, ok = logic.(FALedgerEntryOnValidate_Bal_account_no)
-	case "OnValidate_Tax_amount":
-		_, ok = logic.(FALedgerEntryOnValidate_Tax_amount)
-	case "OnValidate_Gen_posting_type":
-		_, ok = logic.(FALedgerEntryOnValidate_Gen_posting_type)
-	case "OnValidate_Gen_bus_posting_group":
-		_, ok = logic.(FALedgerEntryOnValidate_Gen_bus_posting_group)
-	case "OnValidate_Gen_prod_posting_group":
-		_, ok = logic.(FALedgerEntryOnValidate_Gen_prod_posting_group)
-	case "OnValidate_Fa_class_code":
-		_, ok = logic.(FALedgerEntryOnValidate_Fa_class_code)
-	case "OnValidate_Fa_exchange_rate":
-		_, ok = logic.(FALedgerEntryOnValidate_Fa_exchange_rate)
-	case "OnValidate_Amount_lcy":
-		_, ok = logic.(FALedgerEntryOnValidate_Amount_lcy)
-	case "OnValidate_Result_on_disposal":
-		_, ok = logic.(FALedgerEntryOnValidate_Result_on_disposal)
-	case "OnValidate_Correction":
-		_, ok = logic.(FALedgerEntryOnValidate_Correction)
-	case "OnValidate_Index_entry":
-		_, ok = logic.(FALedgerEntryOnValidate_Index_entry)
-	case "OnValidate_Canceled_from_fa_no":
-		_, ok = logic.(FALedgerEntryOnValidate_Canceled_from_fa_no)
-	case "OnValidate_Depreciation_ending_date":
-		_, ok = logic.(FALedgerEntryOnValidate_Depreciation_ending_date)
-	case "OnValidate_Use_fa_ledger_check":
-		_, ok = logic.(FALedgerEntryOnValidate_Use_fa_ledger_check)
-	case "OnValidate_Automatic_entry":
-		_, ok = logic.(FALedgerEntryOnValidate_Automatic_entry)
-	case "OnValidate_Depr_starting_date_custom_1":
-		_, ok = logic.(FALedgerEntryOnValidate_Depr_starting_date_custom_1)
-	case "OnValidate_Depr_ending_date_custom_1":
-		_, ok = logic.(FALedgerEntryOnValidate_Depr_ending_date_custom_1)
-	case "OnValidate_Accum_depr_percent_custom_1":
-		_, ok = logic.(FALedgerEntryOnValidate_Accum_depr_percent_custom_1)
-	case "OnValidate_Depr_percent_this_year_custom_1":
-		_, ok = logic.(FALedgerEntryOnValidate_Depr_percent_this_year_custom_1)
-	case "OnValidate_Property_class_custom_1":
-		_, ok = logic.(FALedgerEntryOnValidate_Property_class_custom_1)
-	case "OnValidate_No_series":
-		_, ok = logic.(FALedgerEntryOnValidate_No_series)
-	case "OnValidate_Tax_area_code":
-		_, ok = logic.(FALedgerEntryOnValidate_Tax_area_code)
-	case "OnValidate_Tax_liable":
-		_, ok = logic.(FALedgerEntryOnValidate_Tax_liable)
-	case "OnValidate_Tax_group_code":
-		_, ok = logic.(FALedgerEntryOnValidate_Tax_group_code)
-	case "OnValidate_Use_tax":
-		_, ok = logic.(FALedgerEntryOnValidate_Use_tax)
-	case "OnValidate_Tax_bus_posting_group":
-		_, ok = logic.(FALedgerEntryOnValidate_Tax_bus_posting_group)
-	case "OnValidate_Tax_prod_posting_group":
-		_, ok = logic.(FALedgerEntryOnValidate_Tax_prod_posting_group)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return fALedgerEntryFields.IsOnValidateTrigger(name, logic, (*FALedgerEntry)(nil))
 	}
 	return true, ok
 }
@@ -2057,77 +1423,7 @@ func (t *FALedgerEntry) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *FALedgerEntry) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["entry_no"] = t.Entry_no
-	t.oldValues["g_l_entry_no"] = t.G_l_entry_no
-	t.oldValues["fa_no"] = t.Fa_no
-	t.oldValues["fa_posting_date"] = t.Fa_posting_date
-	t.oldValues["posting_date"] = t.Posting_date
-	t.oldValues["document_type"] = t.Document_type
-	t.oldValues["document_date"] = t.Document_date
-	t.oldValues["document_no"] = t.Document_no
-	t.oldValues["external_document_no"] = t.External_document_no
-	t.oldValues["description"] = t.Description
-	t.oldValues["depreciation_book_code"] = t.Depreciation_book_code
-	t.oldValues["fa_posting_category"] = t.Fa_posting_category
-	t.oldValues["fa_posting_type"] = t.Fa_posting_type
-	t.oldValues["amount"] = t.Amount
-	t.oldValues["debit_amount"] = t.Debit_amount
-	t.oldValues["credit_amount"] = t.Credit_amount
-	t.oldValues["reclassification_entry"] = t.Reclassification_entry
-	t.oldValues["part_of_book_value"] = t.Part_of_book_value
-	t.oldValues["part_of_depreciable_basis"] = t.Part_of_depreciable_basis
-	t.oldValues["disposal_calculation_method"] = t.Disposal_calculation_method
-	t.oldValues["disposal_entry_no"] = t.Disposal_entry_no
-	t.oldValues["no_of_depreciation_days"] = t.No_of_depreciation_days
-	t.oldValues["quantity"] = t.Quantity
-	t.oldValues["fa_no_budgeted_fa_no"] = t.Fa_no_budgeted_fa_no
-	t.oldValues["fa_subclass_code"] = t.Fa_subclass_code
-	t.oldValues["fa_location_code"] = t.Fa_location_code
-	t.oldValues["fa_posting_group"] = t.Fa_posting_group
-	t.oldValues["dimension_1_code"] = t.Dimension_1_code
-	t.oldValues["dimension_2_code"] = t.Dimension_2_code
-	t.oldValues["location_code"] = t.Location_code
-	t.oldValues["user_id"] = t.User_id
-	t.oldValues["depreciation_method"] = t.Depreciation_method
-	t.oldValues["depreciation_starting_date"] = t.Depreciation_starting_date
-	t.oldValues["straight_line_percent"] = t.Straight_line_percent
-	t.oldValues["no_of_depreciation_years"] = t.No_of_depreciation_years
-	t.oldValues["fixed_depr_amount"] = t.Fixed_depr_amount
-	t.oldValues["declining_balance_percent"] = t.Declining_balance_percent
-	t.oldValues["depreciation_table_code"] = t.Depreciation_table_code
-	t.oldValues["journal_batch_name"] = t.Journal_batch_name
-	t.oldValues["source_code"] = t.Source_code
-	t.oldValues["reason_code"] = t.Reason_code
-	t.oldValues["transaction_no"] = t.Transaction_no
-	t.oldValues["bal_account_type"] = t.Bal_account_type
-	t.oldValues["bal_account_no"] = t.Bal_account_no
-	t.oldValues["tax_amount"] = t.Tax_amount
-	t.oldValues["gen_posting_type"] = t.Gen_posting_type
-	t.oldValues["gen_bus_posting_group"] = t.Gen_bus_posting_group
-	t.oldValues["gen_prod_posting_group"] = t.Gen_prod_posting_group
-	t.oldValues["fa_class_code"] = t.Fa_class_code
-	t.oldValues["fa_exchange_rate"] = t.Fa_exchange_rate
-	t.oldValues["amount_lcy"] = t.Amount_lcy
-	t.oldValues["result_on_disposal"] = t.Result_on_disposal
-	t.oldValues["correction"] = t.Correction
-	t.oldValues["index_entry"] = t.Index_entry
-	t.oldValues["canceled_from_fa_no"] = t.Canceled_from_fa_no
-	t.oldValues["depreciation_ending_date"] = t.Depreciation_ending_date
-	t.oldValues["use_fa_ledger_check"] = t.Use_fa_ledger_check
-	t.oldValues["automatic_entry"] = t.Automatic_entry
-	t.oldValues["depr_starting_date_custom_1"] = t.Depr_starting_date_custom_1
-	t.oldValues["depr_ending_date_custom_1"] = t.Depr_ending_date_custom_1
-	t.oldValues["accum_depr_percent_custom_1"] = t.Accum_depr_percent_custom_1
-	t.oldValues["depr_percent_this_year_custom_1"] = t.Depr_percent_this_year_custom_1
-	t.oldValues["property_class_custom_1"] = t.Property_class_custom_1
-	t.oldValues["no_series"] = t.No_series
-	t.oldValues["tax_area_code"] = t.Tax_area_code
-	t.oldValues["tax_liable"] = t.Tax_liable
-	t.oldValues["tax_group_code"] = t.Tax_group_code
-	t.oldValues["use_tax"] = t.Use_tax
-	t.oldValues["tax_bus_posting_group"] = t.Tax_bus_posting_group
-	t.oldValues["tax_prod_posting_group"] = t.Tax_prod_posting_group
+	t.oldValues = fALedgerEntryFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -2142,216 +1438,7 @@ func (t *FALedgerEntry) OldValue(fieldName string) interface{} {
 func (t *FALedgerEntry) XRec() *FALedgerEntry {
 	x := &FALedgerEntry{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["entry_no"].(int); ok {
-		x.Entry_no = v
-	}
-	if v, ok := t.oldValues["g_l_entry_no"].(int); ok {
-		x.G_l_entry_no = v
-	}
-	if v, ok := t.oldValues["fa_no"].(types.Code); ok {
-		x.Fa_no = v
-	}
-	if v, ok := t.oldValues["fa_posting_date"].(types.Date); ok {
-		x.Fa_posting_date = v
-	}
-	if v, ok := t.oldValues["posting_date"].(types.Date); ok {
-		x.Posting_date = v
-	}
-	if v, ok := t.oldValues["document_type"].(FALedgerEntryDocument_type); ok {
-		x.Document_type = v
-	}
-	if v, ok := t.oldValues["document_date"].(types.Date); ok {
-		x.Document_date = v
-	}
-	if v, ok := t.oldValues["document_no"].(types.Code); ok {
-		x.Document_no = v
-	}
-	if v, ok := t.oldValues["external_document_no"].(types.Code); ok {
-		x.External_document_no = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["depreciation_book_code"].(types.Code); ok {
-		x.Depreciation_book_code = v
-	}
-	if v, ok := t.oldValues["fa_posting_category"].(FALedgerEntryFa_posting_category); ok {
-		x.Fa_posting_category = v
-	}
-	if v, ok := t.oldValues["fa_posting_type"].(FALedgerEntryFa_posting_type); ok {
-		x.Fa_posting_type = v
-	}
-	if v, ok := t.oldValues["amount"].(types.Decimal); ok {
-		x.Amount = v
-	}
-	if v, ok := t.oldValues["debit_amount"].(types.Decimal); ok {
-		x.Debit_amount = v
-	}
-	if v, ok := t.oldValues["credit_amount"].(types.Decimal); ok {
-		x.Credit_amount = v
-	}
-	if v, ok := t.oldValues["reclassification_entry"].(bool); ok {
-		x.Reclassification_entry = v
-	}
-	if v, ok := t.oldValues["part_of_book_value"].(bool); ok {
-		x.Part_of_book_value = v
-	}
-	if v, ok := t.oldValues["part_of_depreciable_basis"].(bool); ok {
-		x.Part_of_depreciable_basis = v
-	}
-	if v, ok := t.oldValues["disposal_calculation_method"].(FALedgerEntryDisposal_calculation_method); ok {
-		x.Disposal_calculation_method = v
-	}
-	if v, ok := t.oldValues["disposal_entry_no"].(int); ok {
-		x.Disposal_entry_no = v
-	}
-	if v, ok := t.oldValues["no_of_depreciation_days"].(int); ok {
-		x.No_of_depreciation_days = v
-	}
-	if v, ok := t.oldValues["quantity"].(types.Decimal); ok {
-		x.Quantity = v
-	}
-	if v, ok := t.oldValues["fa_no_budgeted_fa_no"].(types.Code); ok {
-		x.Fa_no_budgeted_fa_no = v
-	}
-	if v, ok := t.oldValues["fa_subclass_code"].(types.Code); ok {
-		x.Fa_subclass_code = v
-	}
-	if v, ok := t.oldValues["fa_location_code"].(types.Code); ok {
-		x.Fa_location_code = v
-	}
-	if v, ok := t.oldValues["fa_posting_group"].(types.Code); ok {
-		x.Fa_posting_group = v
-	}
-	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
-		x.Dimension_1_code = v
-	}
-	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
-		x.Dimension_2_code = v
-	}
-	if v, ok := t.oldValues["location_code"].(types.Code); ok {
-		x.Location_code = v
-	}
-	if v, ok := t.oldValues["user_id"].(types.Code); ok {
-		x.User_id = v
-	}
-	if v, ok := t.oldValues["depreciation_method"].(FALedgerEntryDepreciation_method); ok {
-		x.Depreciation_method = v
-	}
-	if v, ok := t.oldValues["depreciation_starting_date"].(types.Date); ok {
-		x.Depreciation_starting_date = v
-	}
-	if v, ok := t.oldValues["straight_line_percent"].(types.Decimal); ok {
-		x.Straight_line_percent = v
-	}
-	if v, ok := t.oldValues["no_of_depreciation_years"].(types.Decimal); ok {
-		x.No_of_depreciation_years = v
-	}
-	if v, ok := t.oldValues["fixed_depr_amount"].(types.Decimal); ok {
-		x.Fixed_depr_amount = v
-	}
-	if v, ok := t.oldValues["declining_balance_percent"].(types.Decimal); ok {
-		x.Declining_balance_percent = v
-	}
-	if v, ok := t.oldValues["depreciation_table_code"].(types.Code); ok {
-		x.Depreciation_table_code = v
-	}
-	if v, ok := t.oldValues["journal_batch_name"].(types.Code); ok {
-		x.Journal_batch_name = v
-	}
-	if v, ok := t.oldValues["source_code"].(types.Code); ok {
-		x.Source_code = v
-	}
-	if v, ok := t.oldValues["reason_code"].(types.Code); ok {
-		x.Reason_code = v
-	}
-	if v, ok := t.oldValues["transaction_no"].(int); ok {
-		x.Transaction_no = v
-	}
-	if v, ok := t.oldValues["bal_account_type"].(FALedgerEntryBal_account_type); ok {
-		x.Bal_account_type = v
-	}
-	if v, ok := t.oldValues["bal_account_no"].(types.Code); ok {
-		x.Bal_account_no = v
-	}
-	if v, ok := t.oldValues["tax_amount"].(types.Decimal); ok {
-		x.Tax_amount = v
-	}
-	if v, ok := t.oldValues["gen_posting_type"].(FALedgerEntryGen_posting_type); ok {
-		x.Gen_posting_type = v
-	}
-	if v, ok := t.oldValues["gen_bus_posting_group"].(types.Code); ok {
-		x.Gen_bus_posting_group = v
-	}
-	if v, ok := t.oldValues["gen_prod_posting_group"].(types.Code); ok {
-		x.Gen_prod_posting_group = v
-	}
-	if v, ok := t.oldValues["fa_class_code"].(types.Code); ok {
-		x.Fa_class_code = v
-	}
-	if v, ok := t.oldValues["fa_exchange_rate"].(types.Decimal); ok {
-		x.Fa_exchange_rate = v
-	}
-	if v, ok := t.oldValues["amount_lcy"].(types.Decimal); ok {
-		x.Amount_lcy = v
-	}
-	if v, ok := t.oldValues["result_on_disposal"].(FALedgerEntryResult_on_disposal); ok {
-		x.Result_on_disposal = v
-	}
-	if v, ok := t.oldValues["correction"].(bool); ok {
-		x.Correction = v
-	}
-	if v, ok := t.oldValues["index_entry"].(bool); ok {
-		x.Index_entry = v
-	}
-	if v, ok := t.oldValues["canceled_from_fa_no"].(types.Code); ok {
-		x.Canceled_from_fa_no = v
-	}
-	if v, ok := t.oldValues["depreciation_ending_date"].(types.Date); ok {
-		x.Depreciation_ending_date = v
-	}
-	if v, ok := t.oldValues["use_fa_ledger_check"].(bool); ok {
-		x.Use_fa_ledger_check = v
-	}
-	if v, ok := t.oldValues["automatic_entry"].(bool); ok {
-		x.Automatic_entry = v
-	}
-	if v, ok := t.oldValues["depr_starting_date_custom_1"].(types.Date); ok {
-		x.Depr_starting_date_custom_1 = v
-	}
-	if v, ok := t.oldValues["depr_ending_date_custom_1"].(types.Date); ok {
-		x.Depr_ending_date_custom_1 = v
-	}
-	if v, ok := t.oldValues["accum_depr_percent_custom_1"].(types.Decimal); ok {
-		x.Accum_depr_percent_custom_1 = v
-	}
-	if v, ok := t.oldValues["depr_percent_this_year_custom_1"].(types.Decimal); ok {
-		x.Depr_percent_this_year_custom_1 = v
-	}
-	if v, ok := t.oldValues["property_class_custom_1"].(FALedgerEntryProperty_class_custom_1); ok {
-		x.Property_class_custom_1 = v
-	}
-	if v, ok := t.oldValues["no_series"].(types.Code); ok {
-		x.No_series = v
-	}
-	if v, ok := t.oldValues["tax_area_code"].(types.Code); ok {
-		x.Tax_area_code = v
-	}
-	if v, ok := t.oldValues["tax_liable"].(bool); ok {
-		x.Tax_liable = v
-	}
-	if v, ok := t.oldValues["tax_group_code"].(types.Code); ok {
-		x.Tax_group_code = v
-	}
-	if v, ok := t.oldValues["use_tax"].(bool); ok {
-		x.Use_tax = v
-	}
-	if v, ok := t.oldValues["tax_bus_posting_group"].(types.Code); ok {
-		x.Tax_bus_posting_group = v
-	}
-	if v, ok := t.oldValues["tax_prod_posting_group"].(types.Code); ok {
-		x.Tax_prod_posting_group = v
-	}
+	fALedgerEntryFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -3386,315 +2473,7 @@ func (t *FALedgerEntry) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *FALedgerEntry) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "g_l_entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.G_l_entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "fa_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Fa_no.Equal(old)
-		}
-	case "fa_posting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Fa_posting_date.Equal(old)
-		}
-	case "posting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Posting_date.Equal(old)
-		}
-	case "document_type":
-		if old, ok := oldValue.(FALedgerEntryDocument_type); ok {
-			return t.Document_type != old
-		}
-	case "document_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Document_date.Equal(old)
-		}
-	case "document_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Document_no.Equal(old)
-		}
-	case "external_document_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.External_document_no.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "depreciation_book_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Depreciation_book_code.Equal(old)
-		}
-	case "fa_posting_category":
-		if old, ok := oldValue.(FALedgerEntryFa_posting_category); ok {
-			return t.Fa_posting_category != old
-		}
-	case "fa_posting_type":
-		if old, ok := oldValue.(FALedgerEntryFa_posting_type); ok {
-			return t.Fa_posting_type != old
-		}
-	case "amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Amount.Equal(old)
-		}
-	case "debit_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Debit_amount.Equal(old)
-		}
-	case "credit_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Credit_amount.Equal(old)
-		}
-	case "reclassification_entry":
-		if old, ok := oldValue.(bool); ok {
-			return t.Reclassification_entry != old
-		}
-		return true // Type mismatch, assume changed
-	case "part_of_book_value":
-		if old, ok := oldValue.(bool); ok {
-			return t.Part_of_book_value != old
-		}
-		return true // Type mismatch, assume changed
-	case "part_of_depreciable_basis":
-		if old, ok := oldValue.(bool); ok {
-			return t.Part_of_depreciable_basis != old
-		}
-		return true // Type mismatch, assume changed
-	case "disposal_calculation_method":
-		if old, ok := oldValue.(FALedgerEntryDisposal_calculation_method); ok {
-			return t.Disposal_calculation_method != old
-		}
-	case "disposal_entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Disposal_entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "no_of_depreciation_days":
-		if old, ok := oldValue.(int); ok {
-			return t.No_of_depreciation_days != old
-		}
-		return true // Type mismatch, assume changed
-	case "quantity":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Quantity.Equal(old)
-		}
-	case "fa_no_budgeted_fa_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Fa_no_budgeted_fa_no.Equal(old)
-		}
-	case "fa_subclass_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Fa_subclass_code.Equal(old)
-		}
-	case "fa_location_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Fa_location_code.Equal(old)
-		}
-	case "fa_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Fa_posting_group.Equal(old)
-		}
-	case "dimension_1_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_1_code.Equal(old)
-		}
-	case "dimension_2_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_2_code.Equal(old)
-		}
-	case "location_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Location_code.Equal(old)
-		}
-	case "user_id":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.User_id.Equal(old)
-		}
-	case "depreciation_method":
-		if old, ok := oldValue.(FALedgerEntryDepreciation_method); ok {
-			return t.Depreciation_method != old
-		}
-	case "depreciation_starting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Depreciation_starting_date.Equal(old)
-		}
-	case "straight_line_percent":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Straight_line_percent.Equal(old)
-		}
-	case "no_of_depreciation_years":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.No_of_depreciation_years.Equal(old)
-		}
-	case "fixed_depr_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Fixed_depr_amount.Equal(old)
-		}
-	case "declining_balance_percent":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Declining_balance_percent.Equal(old)
-		}
-	case "depreciation_table_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Depreciation_table_code.Equal(old)
-		}
-	case "journal_batch_name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Journal_batch_name.Equal(old)
-		}
-	case "source_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Source_code.Equal(old)
-		}
-	case "reason_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Reason_code.Equal(old)
-		}
-	case "transaction_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Transaction_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "bal_account_type":
-		if old, ok := oldValue.(FALedgerEntryBal_account_type); ok {
-			return t.Bal_account_type != old
-		}
-	case "bal_account_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Bal_account_no.Equal(old)
-		}
-	case "tax_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Tax_amount.Equal(old)
-		}
-	case "gen_posting_type":
-		if old, ok := oldValue.(FALedgerEntryGen_posting_type); ok {
-			return t.Gen_posting_type != old
-		}
-	case "gen_bus_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Gen_bus_posting_group.Equal(old)
-		}
-	case "gen_prod_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Gen_prod_posting_group.Equal(old)
-		}
-	case "fa_class_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Fa_class_code.Equal(old)
-		}
-	case "fa_exchange_rate":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Fa_exchange_rate.Equal(old)
-		}
-	case "amount_lcy":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Amount_lcy.Equal(old)
-		}
-	case "result_on_disposal":
-		if old, ok := oldValue.(FALedgerEntryResult_on_disposal); ok {
-			return t.Result_on_disposal != old
-		}
-	case "correction":
-		if old, ok := oldValue.(bool); ok {
-			return t.Correction != old
-		}
-		return true // Type mismatch, assume changed
-	case "index_entry":
-		if old, ok := oldValue.(bool); ok {
-			return t.Index_entry != old
-		}
-		return true // Type mismatch, assume changed
-	case "canceled_from_fa_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Canceled_from_fa_no.Equal(old)
-		}
-	case "depreciation_ending_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Depreciation_ending_date.Equal(old)
-		}
-	case "use_fa_ledger_check":
-		if old, ok := oldValue.(bool); ok {
-			return t.Use_fa_ledger_check != old
-		}
-		return true // Type mismatch, assume changed
-	case "automatic_entry":
-		if old, ok := oldValue.(bool); ok {
-			return t.Automatic_entry != old
-		}
-		return true // Type mismatch, assume changed
-	case "depr_starting_date_custom_1":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Depr_starting_date_custom_1.Equal(old)
-		}
-	case "depr_ending_date_custom_1":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Depr_ending_date_custom_1.Equal(old)
-		}
-	case "accum_depr_percent_custom_1":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Accum_depr_percent_custom_1.Equal(old)
-		}
-	case "depr_percent_this_year_custom_1":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Depr_percent_this_year_custom_1.Equal(old)
-		}
-	case "property_class_custom_1":
-		if old, ok := oldValue.(FALedgerEntryProperty_class_custom_1); ok {
-			return t.Property_class_custom_1 != old
-		}
-	case "no_series":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No_series.Equal(old)
-		}
-	case "tax_area_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_area_code.Equal(old)
-		}
-	case "tax_liable":
-		if old, ok := oldValue.(bool); ok {
-			return t.Tax_liable != old
-		}
-		return true // Type mismatch, assume changed
-	case "tax_group_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_group_code.Equal(old)
-		}
-	case "use_tax":
-		if old, ok := oldValue.(bool); ok {
-			return t.Use_tax != old
-		}
-		return true // Type mismatch, assume changed
-	case "tax_bus_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_bus_posting_group.Equal(old)
-		}
-	case "tax_prod_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_prod_posting_group.Equal(old)
-		}
-	}
-
-	return false
+	return fALedgerEntryFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -3935,149 +2714,7 @@ func (t *FALedgerEntry) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *FALedgerEntry) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("entry_no"):
-		return "entry_no", true
-	case strings.ToLower("g_l_entry_no"):
-		return "g_l_entry_no", true
-	case strings.ToLower("fa_no"):
-		return "fa_no", true
-	case strings.ToLower("fa_posting_date"):
-		return "fa_posting_date", true
-	case strings.ToLower("posting_date"):
-		return "posting_date", true
-	case strings.ToLower("document_type"):
-		return "document_type", true
-	case strings.ToLower("document_date"):
-		return "document_date", true
-	case strings.ToLower("document_no"):
-		return "document_no", true
-	case strings.ToLower("external_document_no"):
-		return "external_document_no", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("depreciation_book_code"):
-		return "depreciation_book_code", true
-	case strings.ToLower("fa_posting_category"):
-		return "fa_posting_category", true
-	case strings.ToLower("fa_posting_type"):
-		return "fa_posting_type", true
-	case strings.ToLower("amount"):
-		return "amount", true
-	case strings.ToLower("debit_amount"):
-		return "debit_amount", true
-	case strings.ToLower("credit_amount"):
-		return "credit_amount", true
-	case strings.ToLower("reclassification_entry"):
-		return "reclassification_entry", true
-	case strings.ToLower("part_of_book_value"):
-		return "part_of_book_value", true
-	case strings.ToLower("part_of_depreciable_basis"):
-		return "part_of_depreciable_basis", true
-	case strings.ToLower("disposal_calculation_method"):
-		return "disposal_calculation_method", true
-	case strings.ToLower("disposal_entry_no"):
-		return "disposal_entry_no", true
-	case strings.ToLower("no_of_depreciation_days"):
-		return "no_of_depreciation_days", true
-	case strings.ToLower("quantity"):
-		return "quantity", true
-	case strings.ToLower("fa_no_budgeted_fa_no"):
-		return "fa_no_budgeted_fa_no", true
-	case strings.ToLower("fa_subclass_code"):
-		return "fa_subclass_code", true
-	case strings.ToLower("fa_location_code"):
-		return "fa_location_code", true
-	case strings.ToLower("fa_posting_group"):
-		return "fa_posting_group", true
-	case strings.ToLower("dimension_1_code"):
-		return "dimension_1_code", true
-	case strings.ToLower("dimension_2_code"):
-		return "dimension_2_code", true
-	case strings.ToLower("location_code"):
-		return "location_code", true
-	case strings.ToLower("user_id"):
-		return "user_id", true
-	case strings.ToLower("depreciation_method"):
-		return "depreciation_method", true
-	case strings.ToLower("depreciation_starting_date"):
-		return "depreciation_starting_date", true
-	case strings.ToLower("straight_line_percent"):
-		return "straight_line_percent", true
-	case strings.ToLower("no_of_depreciation_years"):
-		return "no_of_depreciation_years", true
-	case strings.ToLower("fixed_depr_amount"):
-		return "fixed_depr_amount", true
-	case strings.ToLower("declining_balance_percent"):
-		return "declining_balance_percent", true
-	case strings.ToLower("depreciation_table_code"):
-		return "depreciation_table_code", true
-	case strings.ToLower("journal_batch_name"):
-		return "journal_batch_name", true
-	case strings.ToLower("source_code"):
-		return "source_code", true
-	case strings.ToLower("reason_code"):
-		return "reason_code", true
-	case strings.ToLower("transaction_no"):
-		return "transaction_no", true
-	case strings.ToLower("bal_account_type"):
-		return "bal_account_type", true
-	case strings.ToLower("bal_account_no"):
-		return "bal_account_no", true
-	case strings.ToLower("tax_amount"):
-		return "tax_amount", true
-	case strings.ToLower("gen_posting_type"):
-		return "gen_posting_type", true
-	case strings.ToLower("gen_bus_posting_group"):
-		return "gen_bus_posting_group", true
-	case strings.ToLower("gen_prod_posting_group"):
-		return "gen_prod_posting_group", true
-	case strings.ToLower("fa_class_code"):
-		return "fa_class_code", true
-	case strings.ToLower("fa_exchange_rate"):
-		return "fa_exchange_rate", true
-	case strings.ToLower("amount_lcy"):
-		return "amount_lcy", true
-	case strings.ToLower("result_on_disposal"):
-		return "result_on_disposal", true
-	case strings.ToLower("correction"):
-		return "correction", true
-	case strings.ToLower("index_entry"):
-		return "index_entry", true
-	case strings.ToLower("canceled_from_fa_no"):
-		return "canceled_from_fa_no", true
-	case strings.ToLower("depreciation_ending_date"):
-		return "depreciation_ending_date", true
-	case strings.ToLower("use_fa_ledger_check"):
-		return "use_fa_ledger_check", true
-	case strings.ToLower("automatic_entry"):
-		return "automatic_entry", true
-	case strings.ToLower("depr_starting_date_custom_1"):
-		return "depr_starting_date_custom_1", true
-	case strings.ToLower("depr_ending_date_custom_1"):
-		return "depr_ending_date_custom_1", true
-	case strings.ToLower("accum_depr_percent_custom_1"):
-		return "accum_depr_percent_custom_1", true
-	case strings.ToLower("depr_percent_this_year_custom_1"):
-		return "depr_percent_this_year_custom_1", true
-	case strings.ToLower("property_class_custom_1"):
-		return "property_class_custom_1", true
-	case strings.ToLower("no_series"):
-		return "no_series", true
-	case strings.ToLower("tax_area_code"):
-		return "tax_area_code", true
-	case strings.ToLower("tax_liable"):
-		return "tax_liable", true
-	case strings.ToLower("tax_group_code"):
-		return "tax_group_code", true
-	case strings.ToLower("use_tax"):
-		return "use_tax", true
-	case strings.ToLower("tax_bus_posting_group"):
-		return "tax_bus_posting_group", true
-	case strings.ToLower("tax_prod_posting_group"):
-		return "tax_prod_posting_group", true
-	}
-	return "", false
+	return fALedgerEntryFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -5788,1865 +4425,20 @@ func (t *FALedgerEntry) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *FALedgerEntry) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Entry_no = v
-		case float64:
-			t.Entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field entry_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Entry_no); ok {
-				if err := trg.OnValidate_Entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "g_l_entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.G_l_entry_no = v
-		case float64:
-			t.G_l_entry_no = int(v)
-		case string:
-			if v == "" {
-				t.G_l_entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.G_l_entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field g_l_entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field g_l_entry_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_G_l_entry_no); ok {
-				if err := trg.OnValidate_G_l_entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Fa_no = v
-		} else if v, ok := value.(string); ok {
-			t.Fa_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fa_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Fa_no); ok {
-				if err := trg.OnValidate_Fa_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_posting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Fa_posting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Fa_posting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field fa_posting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Fa_posting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_posting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Fa_posting_date); ok {
-				if err := trg.OnValidate_Fa_posting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "posting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Posting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Posting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field posting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Posting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field posting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Posting_date); ok {
-				if err := trg.OnValidate_Posting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(FALedgerEntryDocument_type); ok {
-			t.Document_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 6 {
-				return fmt.Errorf("invalid option value %d for field document_type (valid range: 0-%d)", v, 6-1)
-			}
-			t.Document_type = FALedgerEntryDocument_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 6 {
-				return fmt.Errorf("invalid option value %d for field document_type (valid range: 0-%d)", intVal, 6-1)
-			}
-			t.Document_type = FALedgerEntryDocument_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Document_type = 0
-			} else {
-				options := []string{" ", "Payment", "Invoice", "Credit Memo", "Finance Charge Memo", "Reminder"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Document_type = FALedgerEntryDocument_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field document_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field document_type (expected FALedgerEntryDocument_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Document_type); ok {
-				if err := trg.OnValidate_Document_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Document_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Document_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field document_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Document_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field document_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Document_date); ok {
-				if err := trg.OnValidate_Document_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Document_no = v
-		} else if v, ok := value.(string); ok {
-			t.Document_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field document_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Document_no); ok {
-				if err := trg.OnValidate_Document_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "external_document_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.External_document_no = v
-		} else if v, ok := value.(string); ok {
-			t.External_document_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field external_document_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_External_document_no); ok {
-				if err := trg.OnValidate_External_document_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "depreciation_book_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Depreciation_book_code = v
-		} else if v, ok := value.(string); ok {
-			t.Depreciation_book_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field depreciation_book_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "depreciation_book_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Depreciation_book_code); ok {
-				if err := trg.OnValidate_Depreciation_book_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_posting_category":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(FALedgerEntryFa_posting_category); ok {
-			t.Fa_posting_category = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field fa_posting_category (valid range: 0-%d)", v, 3-1)
-			}
-			t.Fa_posting_category = FALedgerEntryFa_posting_category(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field fa_posting_category (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Fa_posting_category = FALedgerEntryFa_posting_category(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Fa_posting_category = 0
-			} else {
-				options := []string{" ", "Disposal", "Bal. Disposal"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Fa_posting_category = FALedgerEntryFa_posting_category(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field fa_posting_category (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field fa_posting_category (expected FALedgerEntryFa_posting_category, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Fa_posting_category); ok {
-				if err := trg.OnValidate_Fa_posting_category(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_posting_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(FALedgerEntryFa_posting_type); ok {
-			t.Fa_posting_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 10 {
-				return fmt.Errorf("invalid option value %d for field fa_posting_type (valid range: 0-%d)", v, 10-1)
-			}
-			t.Fa_posting_type = FALedgerEntryFa_posting_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 10 {
-				return fmt.Errorf("invalid option value %d for field fa_posting_type (valid range: 0-%d)", intVal, 10-1)
-			}
-			t.Fa_posting_type = FALedgerEntryFa_posting_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Fa_posting_type = 0
-			} else {
-				options := []string{"Acquisition Cost", "Depreciation", "Write-Down", "Appreciation", "Custom 1", "Custom 2", "Proceeds on Disposal", "Salvage Value", "Gain/Loss", "Book Value on Disposal"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Fa_posting_type = FALedgerEntryFa_posting_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field fa_posting_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field fa_posting_type (expected FALedgerEntryFa_posting_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Fa_posting_type); ok {
-				if err := trg.OnValidate_Fa_posting_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Amount); ok {
-				if err := trg.OnValidate_Amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "debit_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Debit_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Debit_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field debit_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Debit_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Debit_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Debit_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field debit_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Debit_amount); ok {
-				if err := trg.OnValidate_Debit_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "credit_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Credit_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Credit_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field credit_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Credit_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Credit_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Credit_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field credit_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Credit_amount); ok {
-				if err := trg.OnValidate_Credit_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reclassification_entry":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Reclassification_entry = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Reclassification_entry = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field reclassification_entry")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Reclassification_entry); ok {
-				if err := trg.OnValidate_Reclassification_entry(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "part_of_book_value":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Part_of_book_value = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Part_of_book_value = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field part_of_book_value")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Part_of_book_value); ok {
-				if err := trg.OnValidate_Part_of_book_value(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "part_of_depreciable_basis":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Part_of_depreciable_basis = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Part_of_depreciable_basis = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field part_of_depreciable_basis")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Part_of_depreciable_basis); ok {
-				if err := trg.OnValidate_Part_of_depreciable_basis(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "disposal_calculation_method":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(FALedgerEntryDisposal_calculation_method); ok {
-			t.Disposal_calculation_method = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field disposal_calculation_method (valid range: 0-%d)", v, 3-1)
-			}
-			t.Disposal_calculation_method = FALedgerEntryDisposal_calculation_method(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field disposal_calculation_method (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Disposal_calculation_method = FALedgerEntryDisposal_calculation_method(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Disposal_calculation_method = 0
-			} else {
-				options := []string{" ", "Net", "Gross"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Disposal_calculation_method = FALedgerEntryDisposal_calculation_method(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field disposal_calculation_method (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field disposal_calculation_method (expected FALedgerEntryDisposal_calculation_method, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Disposal_calculation_method); ok {
-				if err := trg.OnValidate_Disposal_calculation_method(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "disposal_entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Disposal_entry_no = v
-		case float64:
-			t.Disposal_entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Disposal_entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Disposal_entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field disposal_entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field disposal_entry_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Disposal_entry_no); ok {
-				if err := trg.OnValidate_Disposal_entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no_of_depreciation_days":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.No_of_depreciation_days = v
-		case float64:
-			t.No_of_depreciation_days = int(v)
-		case string:
-			if v == "" {
-				t.No_of_depreciation_days = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.No_of_depreciation_days = i
-			} else {
-				return fmt.Errorf("invalid integer value for field no_of_depreciation_days: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field no_of_depreciation_days")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_No_of_depreciation_days); ok {
-				if err := trg.OnValidate_No_of_depreciation_days(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "quantity":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Quantity, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field quantity: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Quantity = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Quantity = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Quantity = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field quantity (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Quantity); ok {
-				if err := trg.OnValidate_Quantity(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_no_budgeted_fa_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Fa_no_budgeted_fa_no = v
-		} else if v, ok := value.(string); ok {
-			t.Fa_no_budgeted_fa_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_no_budgeted_fa_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fa_no_budgeted_fa_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Fa_no_budgeted_fa_no); ok {
-				if err := trg.OnValidate_Fa_no_budgeted_fa_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_subclass_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Fa_subclass_code = v
-		} else if v, ok := value.(string); ok {
-			t.Fa_subclass_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_subclass_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fa_subclass_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Fa_subclass_code); ok {
-				if err := trg.OnValidate_Fa_subclass_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_location_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Fa_location_code = v
-		} else if v, ok := value.(string); ok {
-			t.Fa_location_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_location_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fa_location_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Fa_location_code); ok {
-				if err := trg.OnValidate_Fa_location_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Fa_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Fa_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fa_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Fa_posting_group); ok {
-				if err := trg.OnValidate_Fa_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_1_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_1_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Dimension_1_code); ok {
-				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_2_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_2_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Dimension_2_code); ok {
-				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "location_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Location_code = v
-		} else if v, ok := value.(string); ok {
-			t.Location_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field location_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "location_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Location_code); ok {
-				if err := trg.OnValidate_Location_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "user_id":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-		} else if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field user_id")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "user_id"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_User_id); ok {
-				if err := trg.OnValidate_User_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "depreciation_method":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(FALedgerEntryDepreciation_method); ok {
-			t.Depreciation_method = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 7 {
-				return fmt.Errorf("invalid option value %d for field depreciation_method (valid range: 0-%d)", v, 7-1)
-			}
-			t.Depreciation_method = FALedgerEntryDepreciation_method(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 7 {
-				return fmt.Errorf("invalid option value %d for field depreciation_method (valid range: 0-%d)", intVal, 7-1)
-			}
-			t.Depreciation_method = FALedgerEntryDepreciation_method(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Depreciation_method = 0
-			} else {
-				options := []string{"Straight-Line", "Declining-Balance 1", "Declining-Balance 2", "DB1/SL", "DB2/SL", "User-Defined", "Manual"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Depreciation_method = FALedgerEntryDepreciation_method(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field depreciation_method (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field depreciation_method (expected FALedgerEntryDepreciation_method, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Depreciation_method); ok {
-				if err := trg.OnValidate_Depreciation_method(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "depreciation_starting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Depreciation_starting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Depreciation_starting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field depreciation_starting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Depreciation_starting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field depreciation_starting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Depreciation_starting_date); ok {
-				if err := trg.OnValidate_Depreciation_starting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "straight_line_percent":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Straight_line_percent = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Straight_line_percent, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field straight_line_percent: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Straight_line_percent = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Straight_line_percent = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Straight_line_percent = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field straight_line_percent (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Straight_line_percent); ok {
-				if err := trg.OnValidate_Straight_line_percent(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no_of_depreciation_years":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.No_of_depreciation_years = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.No_of_depreciation_years, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field no_of_depreciation_years: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.No_of_depreciation_years = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.No_of_depreciation_years = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.No_of_depreciation_years = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field no_of_depreciation_years (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_No_of_depreciation_years); ok {
-				if err := trg.OnValidate_No_of_depreciation_years(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fixed_depr_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Fixed_depr_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Fixed_depr_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field fixed_depr_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Fixed_depr_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Fixed_depr_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Fixed_depr_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field fixed_depr_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Fixed_depr_amount); ok {
-				if err := trg.OnValidate_Fixed_depr_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "declining_balance_percent":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Declining_balance_percent = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Declining_balance_percent, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field declining_balance_percent: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Declining_balance_percent = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Declining_balance_percent = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Declining_balance_percent = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field declining_balance_percent (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Declining_balance_percent); ok {
-				if err := trg.OnValidate_Declining_balance_percent(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "depreciation_table_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Depreciation_table_code = v
-		} else if v, ok := value.(string); ok {
-			t.Depreciation_table_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field depreciation_table_code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Depreciation_table_code); ok {
-				if err := trg.OnValidate_Depreciation_table_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "journal_batch_name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Journal_batch_name = v
-		} else if v, ok := value.(string); ok {
-			t.Journal_batch_name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field journal_batch_name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Journal_batch_name); ok {
-				if err := trg.OnValidate_Journal_batch_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "source_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Source_code = v
-		} else if v, ok := value.(string); ok {
-			t.Source_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field source_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "source_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Source_code); ok {
-				if err := trg.OnValidate_Source_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reason_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Reason_code = v
-		} else if v, ok := value.(string); ok {
-			t.Reason_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field reason_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "reason_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Reason_code); ok {
-				if err := trg.OnValidate_Reason_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "transaction_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Transaction_no = v
-		case float64:
-			t.Transaction_no = int(v)
-		case string:
-			if v == "" {
-				t.Transaction_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Transaction_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field transaction_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field transaction_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Transaction_no); ok {
-				if err := trg.OnValidate_Transaction_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bal_account_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(FALedgerEntryBal_account_type); ok {
-			t.Bal_account_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 5 {
-				return fmt.Errorf("invalid option value %d for field bal_account_type (valid range: 0-%d)", v, 5-1)
-			}
-			t.Bal_account_type = FALedgerEntryBal_account_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 5 {
-				return fmt.Errorf("invalid option value %d for field bal_account_type (valid range: 0-%d)", intVal, 5-1)
-			}
-			t.Bal_account_type = FALedgerEntryBal_account_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Bal_account_type = 0
-			} else {
-				options := []string{"G/L Account", "Customer", "Vendor", "Bank Account", "Fixed Asset"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Bal_account_type = FALedgerEntryBal_account_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field bal_account_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field bal_account_type (expected FALedgerEntryBal_account_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Bal_account_type); ok {
-				if err := trg.OnValidate_Bal_account_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bal_account_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Bal_account_no = v
-		} else if v, ok := value.(string); ok {
-			t.Bal_account_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field bal_account_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "bal_account_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Bal_account_no); ok {
-				if err := trg.OnValidate_Bal_account_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Tax_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Tax_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field tax_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Tax_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Tax_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Tax_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Tax_amount); ok {
-				if err := trg.OnValidate_Tax_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "gen_posting_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(FALedgerEntryGen_posting_type); ok {
-			t.Gen_posting_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field gen_posting_type (valid range: 0-%d)", v, 4-1)
-			}
-			t.Gen_posting_type = FALedgerEntryGen_posting_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field gen_posting_type (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Gen_posting_type = FALedgerEntryGen_posting_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Gen_posting_type = 0
-			} else {
-				options := []string{" ", "Purchase", "Sale", "Settlement"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Gen_posting_type = FALedgerEntryGen_posting_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field gen_posting_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field gen_posting_type (expected FALedgerEntryGen_posting_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Gen_posting_type); ok {
-				if err := trg.OnValidate_Gen_posting_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "gen_bus_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Gen_bus_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Gen_bus_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field gen_bus_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "gen_bus_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Gen_bus_posting_group); ok {
-				if err := trg.OnValidate_Gen_bus_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "gen_prod_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Gen_prod_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Gen_prod_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field gen_prod_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "gen_prod_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Gen_prod_posting_group); ok {
-				if err := trg.OnValidate_Gen_prod_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_class_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Fa_class_code = v
-		} else if v, ok := value.(string); ok {
-			t.Fa_class_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_class_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fa_class_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Fa_class_code); ok {
-				if err := trg.OnValidate_Fa_class_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_exchange_rate":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Fa_exchange_rate = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Fa_exchange_rate, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field fa_exchange_rate: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Fa_exchange_rate = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Fa_exchange_rate = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Fa_exchange_rate = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_exchange_rate (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Fa_exchange_rate); ok {
-				if err := trg.OnValidate_Fa_exchange_rate(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "amount_lcy":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount_lcy = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Amount_lcy, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field amount_lcy: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Amount_lcy = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Amount_lcy = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Amount_lcy = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field amount_lcy (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Amount_lcy); ok {
-				if err := trg.OnValidate_Amount_lcy(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "result_on_disposal":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(FALedgerEntryResult_on_disposal); ok {
-			t.Result_on_disposal = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field result_on_disposal (valid range: 0-%d)", v, 3-1)
-			}
-			t.Result_on_disposal = FALedgerEntryResult_on_disposal(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field result_on_disposal (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Result_on_disposal = FALedgerEntryResult_on_disposal(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Result_on_disposal = 0
-			} else {
-				options := []string{" ", "Gain", "Loss"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Result_on_disposal = FALedgerEntryResult_on_disposal(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field result_on_disposal (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field result_on_disposal (expected FALedgerEntryResult_on_disposal, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Result_on_disposal); ok {
-				if err := trg.OnValidate_Result_on_disposal(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "correction":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Correction = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Correction = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field correction")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Correction); ok {
-				if err := trg.OnValidate_Correction(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "index_entry":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Index_entry = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Index_entry = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field index_entry")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Index_entry); ok {
-				if err := trg.OnValidate_Index_entry(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "canceled_from_fa_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Canceled_from_fa_no = v
-		} else if v, ok := value.(string); ok {
-			t.Canceled_from_fa_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field canceled_from_fa_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "canceled_from_fa_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Canceled_from_fa_no); ok {
-				if err := trg.OnValidate_Canceled_from_fa_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "depreciation_ending_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Depreciation_ending_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Depreciation_ending_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field depreciation_ending_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Depreciation_ending_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field depreciation_ending_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Depreciation_ending_date); ok {
-				if err := trg.OnValidate_Depreciation_ending_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "use_fa_ledger_check":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Use_fa_ledger_check = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Use_fa_ledger_check = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field use_fa_ledger_check")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Use_fa_ledger_check); ok {
-				if err := trg.OnValidate_Use_fa_ledger_check(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "automatic_entry":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Automatic_entry = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Automatic_entry = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field automatic_entry")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Automatic_entry); ok {
-				if err := trg.OnValidate_Automatic_entry(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "depr_starting_date_custom_1":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Depr_starting_date_custom_1 = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Depr_starting_date_custom_1, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field depr_starting_date_custom_1: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Depr_starting_date_custom_1 = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field depr_starting_date_custom_1 (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Depr_starting_date_custom_1); ok {
-				if err := trg.OnValidate_Depr_starting_date_custom_1(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "depr_ending_date_custom_1":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Depr_ending_date_custom_1 = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Depr_ending_date_custom_1, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field depr_ending_date_custom_1: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Depr_ending_date_custom_1 = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field depr_ending_date_custom_1 (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Depr_ending_date_custom_1); ok {
-				if err := trg.OnValidate_Depr_ending_date_custom_1(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "accum_depr_percent_custom_1":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Accum_depr_percent_custom_1 = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Accum_depr_percent_custom_1, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field accum_depr_percent_custom_1: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Accum_depr_percent_custom_1 = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Accum_depr_percent_custom_1 = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Accum_depr_percent_custom_1 = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field accum_depr_percent_custom_1 (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Accum_depr_percent_custom_1); ok {
-				if err := trg.OnValidate_Accum_depr_percent_custom_1(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "depr_percent_this_year_custom_1":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Depr_percent_this_year_custom_1 = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Depr_percent_this_year_custom_1, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field depr_percent_this_year_custom_1: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Depr_percent_this_year_custom_1 = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Depr_percent_this_year_custom_1 = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Depr_percent_this_year_custom_1 = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field depr_percent_this_year_custom_1 (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Depr_percent_this_year_custom_1); ok {
-				if err := trg.OnValidate_Depr_percent_this_year_custom_1(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "property_class_custom_1":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(FALedgerEntryProperty_class_custom_1); ok {
-			t.Property_class_custom_1 = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field property_class_custom_1 (valid range: 0-%d)", v, 3-1)
-			}
-			t.Property_class_custom_1 = FALedgerEntryProperty_class_custom_1(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field property_class_custom_1 (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Property_class_custom_1 = FALedgerEntryProperty_class_custom_1(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Property_class_custom_1 = 0
-			} else {
-				options := []string{" ", "Personal Property", "Real Property"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Property_class_custom_1 = FALedgerEntryProperty_class_custom_1(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field property_class_custom_1 (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field property_class_custom_1 (expected FALedgerEntryProperty_class_custom_1, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Property_class_custom_1); ok {
-				if err := trg.OnValidate_Property_class_custom_1(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no_series":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No_series = v
-		} else if v, ok := value.(string); ok {
-			t.No_series = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no_series")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "no_series"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_No_series); ok {
-				if err := trg.OnValidate_No_series(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_area_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_area_code = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_area_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_area_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_area_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Tax_area_code); ok {
-				if err := trg.OnValidate_Tax_area_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_liable":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Tax_liable = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Tax_liable = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field tax_liable")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Tax_liable); ok {
-				if err := trg.OnValidate_Tax_liable(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_group_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_group_code = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_group_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_group_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_group_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Tax_group_code); ok {
-				if err := trg.OnValidate_Tax_group_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "use_tax":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Use_tax = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Use_tax = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field use_tax")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Use_tax); ok {
-				if err := trg.OnValidate_Use_tax(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_bus_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_bus_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_bus_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_bus_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_bus_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Tax_bus_posting_group); ok {
-				if err := trg.OnValidate_Tax_bus_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_prod_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_prod_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_prod_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_prod_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_prod_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FALedgerEntryOnValidate_Tax_prod_posting_group); ok {
-				if err := trg.OnValidate_Tax_prod_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := fALedgerEntryFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &fALedgerEntryFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -7655,622 +4447,18 @@ func (t *FALedgerEntry) ValidateField(fieldName string, value interface{}) error
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *FALedgerEntry) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Entry_no, true
-	case 2:
-		return t.G_l_entry_no, true
-	case 3:
-		return t.Fa_no, true
-	case 4:
-		return t.Fa_posting_date, true
-	case 5:
-		return t.Posting_date, true
-	case 6:
-		return t.Document_type, true
-	case 7:
-		return t.Document_date, true
-	case 8:
-		return t.Document_no, true
-	case 9:
-		return t.External_document_no, true
-	case 10:
-		return t.Description, true
-	case 11:
-		return t.Depreciation_book_code, true
-	case 12:
-		return t.Fa_posting_category, true
-	case 13:
-		return t.Fa_posting_type, true
-	case 14:
-		return t.Amount, true
-	case 15:
-		return t.Debit_amount, true
-	case 16:
-		return t.Credit_amount, true
-	case 17:
-		return t.Reclassification_entry, true
-	case 18:
-		return t.Part_of_book_value, true
-	case 19:
-		return t.Part_of_depreciable_basis, true
-	case 20:
-		return t.Disposal_calculation_method, true
-	case 21:
-		return t.Disposal_entry_no, true
-	case 22:
-		return t.No_of_depreciation_days, true
-	case 23:
-		return t.Quantity, true
-	case 24:
-		return t.Fa_no_budgeted_fa_no, true
-	case 25:
-		return t.Fa_subclass_code, true
-	case 26:
-		return t.Fa_location_code, true
-	case 27:
-		return t.Fa_posting_group, true
-	case 28:
-		return t.Dimension_1_code, true
-	case 29:
-		return t.Dimension_2_code, true
-	case 30:
-		return t.Location_code, true
-	case 32:
-		return t.User_id, true
-	case 33:
-		return t.Depreciation_method, true
-	case 34:
-		return t.Depreciation_starting_date, true
-	case 35:
-		return t.Straight_line_percent, true
-	case 36:
-		return t.No_of_depreciation_years, true
-	case 37:
-		return t.Fixed_depr_amount, true
-	case 38:
-		return t.Declining_balance_percent, true
-	case 39:
-		return t.Depreciation_table_code, true
-	case 40:
-		return t.Journal_batch_name, true
-	case 41:
-		return t.Source_code, true
-	case 42:
-		return t.Reason_code, true
-	case 43:
-		return t.Transaction_no, true
-	case 44:
-		return t.Bal_account_type, true
-	case 45:
-		return t.Bal_account_no, true
-	case 46:
-		return t.Tax_amount, true
-	case 47:
-		return t.Gen_posting_type, true
-	case 48:
-		return t.Gen_bus_posting_group, true
-	case 49:
-		return t.Gen_prod_posting_group, true
-	case 50:
-		return t.Fa_class_code, true
-	case 51:
-		return t.Fa_exchange_rate, true
-	case 52:
-		return t.Amount_lcy, true
-	case 53:
-		return t.Result_on_disposal, true
-	case 54:
-		return t.Correction, true
-	case 55:
-		return t.Index_entry, true
-	case 56:
-		return t.Canceled_from_fa_no, true
-	case 57:
-		return t.Depreciation_ending_date, true
-	case 58:
-		return t.Use_fa_ledger_check, true
-	case 59:
-		return t.Automatic_entry, true
-	case 60:
-		return t.Depr_starting_date_custom_1, true
-	case 61:
-		return t.Depr_ending_date_custom_1, true
-	case 62:
-		return t.Accum_depr_percent_custom_1, true
-	case 63:
-		return t.Depr_percent_this_year_custom_1, true
-	case 64:
-		return t.Property_class_custom_1, true
-	case 65:
-		return t.No_series, true
-	case 66:
-		return t.Tax_area_code, true
-	case 67:
-		return t.Tax_liable, true
-	case 68:
-		return t.Tax_group_code, true
-	case 69:
-		return t.Use_tax, true
-	case 70:
-		return t.Tax_bus_posting_group, true
-	case 71:
-		return t.Tax_prod_posting_group, true
-	}
-	return nil, false
+	return fALedgerEntryFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *FALedgerEntry) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return fALedgerEntryFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *FALedgerEntry) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(int); ok {
-			t.Entry_no = v
-			return true
-		}
-	case 2:
-		if v, ok := value.(int); ok {
-			t.G_l_entry_no = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Code); ok {
-			t.Fa_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Fa_no = types.NewCode(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Date); ok {
-			t.Fa_posting_date = v
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Date); ok {
-			t.Posting_date = v
-			return true
-		}
-	case 6:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 6 {
-			t.Document_type = FALedgerEntryDocument_type(i)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Date); ok {
-			t.Document_date = v
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Code); ok {
-			t.Document_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Document_no = types.NewCode(v)
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.Code); ok {
-			t.External_document_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.External_document_no = types.NewCode(v)
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 11:
-		if v, ok := value.(types.Code); ok {
-			t.Depreciation_book_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Depreciation_book_code = types.NewCode(v)
-			return true
-		}
-	case 12:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Fa_posting_category = FALedgerEntryFa_posting_category(i)
-			return true
-		}
-	case 13:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 10 {
-			t.Fa_posting_type = FALedgerEntryFa_posting_type(i)
-			return true
-		}
-	case 14:
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount = v
-			return true
-		}
-	case 15:
-		if v, ok := value.(types.Decimal); ok {
-			t.Debit_amount = v
-			return true
-		}
-	case 16:
-		if v, ok := value.(types.Decimal); ok {
-			t.Credit_amount = v
-			return true
-		}
-	case 17:
-		if v, ok := value.(bool); ok {
-			t.Reclassification_entry = v
-			return true
-		}
-	case 18:
-		if v, ok := value.(bool); ok {
-			t.Part_of_book_value = v
-			return true
-		}
-	case 19:
-		if v, ok := value.(bool); ok {
-			t.Part_of_depreciable_basis = v
-			return true
-		}
-	case 20:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Disposal_calculation_method = FALedgerEntryDisposal_calculation_method(i)
-			return true
-		}
-	case 21:
-		if v, ok := value.(int); ok {
-			t.Disposal_entry_no = v
-			return true
-		}
-	case 22:
-		if v, ok := value.(int); ok {
-			t.No_of_depreciation_days = v
-			return true
-		}
-	case 23:
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity = v
-			return true
-		}
-	case 24:
-		if v, ok := value.(types.Code); ok {
-			t.Fa_no_budgeted_fa_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Fa_no_budgeted_fa_no = types.NewCode(v)
-			return true
-		}
-	case 25:
-		if v, ok := value.(types.Code); ok {
-			t.Fa_subclass_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Fa_subclass_code = types.NewCode(v)
-			return true
-		}
-	case 26:
-		if v, ok := value.(types.Code); ok {
-			t.Fa_location_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Fa_location_code = types.NewCode(v)
-			return true
-		}
-	case 27:
-		if v, ok := value.(types.Code); ok {
-			t.Fa_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Fa_posting_group = types.NewCode(v)
-			return true
-		}
-	case 28:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-			return true
-		}
-	case 29:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-			return true
-		}
-	case 30:
-		if v, ok := value.(types.Code); ok {
-			t.Location_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Location_code = types.NewCode(v)
-			return true
-		}
-	case 32:
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-			return true
-		}
-	case 33:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 7 {
-			t.Depreciation_method = FALedgerEntryDepreciation_method(i)
-			return true
-		}
-	case 34:
-		if v, ok := value.(types.Date); ok {
-			t.Depreciation_starting_date = v
-			return true
-		}
-	case 35:
-		if v, ok := value.(types.Decimal); ok {
-			t.Straight_line_percent = v
-			return true
-		}
-	case 36:
-		if v, ok := value.(types.Decimal); ok {
-			t.No_of_depreciation_years = v
-			return true
-		}
-	case 37:
-		if v, ok := value.(types.Decimal); ok {
-			t.Fixed_depr_amount = v
-			return true
-		}
-	case 38:
-		if v, ok := value.(types.Decimal); ok {
-			t.Declining_balance_percent = v
-			return true
-		}
-	case 39:
-		if v, ok := value.(types.Code); ok {
-			t.Depreciation_table_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Depreciation_table_code = types.NewCode(v)
-			return true
-		}
-	case 40:
-		if v, ok := value.(types.Code); ok {
-			t.Journal_batch_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Journal_batch_name = types.NewCode(v)
-			return true
-		}
-	case 41:
-		if v, ok := value.(types.Code); ok {
-			t.Source_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Source_code = types.NewCode(v)
-			return true
-		}
-	case 42:
-		if v, ok := value.(types.Code); ok {
-			t.Reason_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Reason_code = types.NewCode(v)
-			return true
-		}
-	case 43:
-		if v, ok := value.(int); ok {
-			t.Transaction_no = v
-			return true
-		}
-	case 44:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 5 {
-			t.Bal_account_type = FALedgerEntryBal_account_type(i)
-			return true
-		}
-	case 45:
-		if v, ok := value.(types.Code); ok {
-			t.Bal_account_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Bal_account_no = types.NewCode(v)
-			return true
-		}
-	case 46:
-		if v, ok := value.(types.Decimal); ok {
-			t.Tax_amount = v
-			return true
-		}
-	case 47:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Gen_posting_type = FALedgerEntryGen_posting_type(i)
-			return true
-		}
-	case 48:
-		if v, ok := value.(types.Code); ok {
-			t.Gen_bus_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Gen_bus_posting_group = types.NewCode(v)
-			return true
-		}
-	case 49:
-		if v, ok := value.(types.Code); ok {
-			t.Gen_prod_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Gen_prod_posting_group = types.NewCode(v)
-			return true
-		}
-	case 50:
-		if v, ok := value.(types.Code); ok {
-			t.Fa_class_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Fa_class_code = types.NewCode(v)
-			return true
-		}
-	case 51:
-		if v, ok := value.(types.Decimal); ok {
-			t.Fa_exchange_rate = v
-			return true
-		}
-	case 52:
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount_lcy = v
-			return true
-		}
-	case 53:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Result_on_disposal = FALedgerEntryResult_on_disposal(i)
-			return true
-		}
-	case 54:
-		if v, ok := value.(bool); ok {
-			t.Correction = v
-			return true
-		}
-	case 55:
-		if v, ok := value.(bool); ok {
-			t.Index_entry = v
-			return true
-		}
-	case 56:
-		if v, ok := value.(types.Code); ok {
-			t.Canceled_from_fa_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Canceled_from_fa_no = types.NewCode(v)
-			return true
-		}
-	case 57:
-		if v, ok := value.(types.Date); ok {
-			t.Depreciation_ending_date = v
-			return true
-		}
-	case 58:
-		if v, ok := value.(bool); ok {
-			t.Use_fa_ledger_check = v
-			return true
-		}
-	case 59:
-		if v, ok := value.(bool); ok {
-			t.Automatic_entry = v
-			return true
-		}
-	case 60:
-		if v, ok := value.(types.Date); ok {
-			t.Depr_starting_date_custom_1 = v
-			return true
-		}
-	case 61:
-		if v, ok := value.(types.Date); ok {
-			t.Depr_ending_date_custom_1 = v
-			return true
-		}
-	case 62:
-		if v, ok := value.(types.Decimal); ok {
-			t.Accum_depr_percent_custom_1 = v
-			return true
-		}
-	case 63:
-		if v, ok := value.(types.Decimal); ok {
-			t.Depr_percent_this_year_custom_1 = v
-			return true
-		}
-	case 64:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Property_class_custom_1 = FALedgerEntryProperty_class_custom_1(i)
-			return true
-		}
-	case 65:
-		if v, ok := value.(types.Code); ok {
-			t.No_series = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No_series = types.NewCode(v)
-			return true
-		}
-	case 66:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_area_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_area_code = types.NewCode(v)
-			return true
-		}
-	case 67:
-		if v, ok := value.(bool); ok {
-			t.Tax_liable = v
-			return true
-		}
-	case 68:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_group_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_group_code = types.NewCode(v)
-			return true
-		}
-	case 69:
-		if v, ok := value.(bool); ok {
-			t.Use_tax = v
-			return true
-		}
-	case 70:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_bus_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_bus_posting_group = types.NewCode(v)
-			return true
-		}
-	case 71:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_prod_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_prod_posting_group = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return fALedgerEntryFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -8876,149 +5064,7 @@ func (t *FALedgerEntry) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *FALedgerEntry) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "entry_no":
-		return t.Entry_no, true
-	case "g_l_entry_no":
-		return t.G_l_entry_no, true
-	case "fa_no":
-		return t.Fa_no, true
-	case "fa_posting_date":
-		return t.Fa_posting_date, true
-	case "posting_date":
-		return t.Posting_date, true
-	case "document_type":
-		return int(t.Document_type), true
-	case "document_date":
-		return t.Document_date, true
-	case "document_no":
-		return t.Document_no, true
-	case "external_document_no":
-		return t.External_document_no, true
-	case "description":
-		return t.Description, true
-	case "depreciation_book_code":
-		return t.Depreciation_book_code, true
-	case "fa_posting_category":
-		return int(t.Fa_posting_category), true
-	case "fa_posting_type":
-		return int(t.Fa_posting_type), true
-	case "amount":
-		return t.Amount, true
-	case "debit_amount":
-		return t.Debit_amount, true
-	case "credit_amount":
-		return t.Credit_amount, true
-	case "reclassification_entry":
-		return t.Reclassification_entry, true
-	case "part_of_book_value":
-		return t.Part_of_book_value, true
-	case "part_of_depreciable_basis":
-		return t.Part_of_depreciable_basis, true
-	case "disposal_calculation_method":
-		return int(t.Disposal_calculation_method), true
-	case "disposal_entry_no":
-		return t.Disposal_entry_no, true
-	case "no_of_depreciation_days":
-		return t.No_of_depreciation_days, true
-	case "quantity":
-		return t.Quantity, true
-	case "fa_no_budgeted_fa_no":
-		return t.Fa_no_budgeted_fa_no, true
-	case "fa_subclass_code":
-		return t.Fa_subclass_code, true
-	case "fa_location_code":
-		return t.Fa_location_code, true
-	case "fa_posting_group":
-		return t.Fa_posting_group, true
-	case "dimension_1_code":
-		return t.Dimension_1_code, true
-	case "dimension_2_code":
-		return t.Dimension_2_code, true
-	case "location_code":
-		return t.Location_code, true
-	case "user_id":
-		return t.User_id, true
-	case "depreciation_method":
-		return int(t.Depreciation_method), true
-	case "depreciation_starting_date":
-		return t.Depreciation_starting_date, true
-	case "straight_line_percent":
-		return t.Straight_line_percent, true
-	case "no_of_depreciation_years":
-		return t.No_of_depreciation_years, true
-	case "fixed_depr_amount":
-		return t.Fixed_depr_amount, true
-	case "declining_balance_percent":
-		return t.Declining_balance_percent, true
-	case "depreciation_table_code":
-		return t.Depreciation_table_code, true
-	case "journal_batch_name":
-		return t.Journal_batch_name, true
-	case "source_code":
-		return t.Source_code, true
-	case "reason_code":
-		return t.Reason_code, true
-	case "transaction_no":
-		return t.Transaction_no, true
-	case "bal_account_type":
-		return int(t.Bal_account_type), true
-	case "bal_account_no":
-		return t.Bal_account_no, true
-	case "tax_amount":
-		return t.Tax_amount, true
-	case "gen_posting_type":
-		return int(t.Gen_posting_type), true
-	case "gen_bus_posting_group":
-		return t.Gen_bus_posting_group, true
-	case "gen_prod_posting_group":
-		return t.Gen_prod_posting_group, true
-	case "fa_class_code":
-		return t.Fa_class_code, true
-	case "fa_exchange_rate":
-		return t.Fa_exchange_rate, true
-	case "amount_lcy":
-		return t.Amount_lcy, true
-	case "result_on_disposal":
-		return int(t.Result_on_disposal), true
-	case "correction":
-		return t.Correction, true
-	case "index_entry":
-		return t.Index_entry, true
-	case "canceled_from_fa_no":
-		return t.Canceled_from_fa_no, true
-	case "depreciation_ending_date":
-		return t.Depreciation_ending_date, true
-	case "use_fa_ledger_check":
-		return t.Use_fa_ledger_check, true
-	case "automatic_entry":
-		return t.Automatic_entry, true
-	case "depr_starting_date_custom_1":
-		return t.Depr_starting_date_custom_1, true
-	case "depr_ending_date_custom_1":
-		return t.Depr_ending_date_custom_1, true
-	case "accum_depr_percent_custom_1":
-		return t.Accum_depr_percent_custom_1, true
-	case "depr_percent_this_year_custom_1":
-		return t.Depr_percent_this_year_custom_1, true
-	case "property_class_custom_1":
-		return int(t.Property_class_custom_1), true
-	case "no_series":
-		return t.No_series, true
-	case "tax_area_code":
-		return t.Tax_area_code, true
-	case "tax_liable":
-		return t.Tax_liable, true
-	case "tax_group_code":
-		return t.Tax_group_code, true
-	case "use_tax":
-		return t.Use_tax, true
-	case "tax_bus_posting_group":
-		return t.Tax_bus_posting_group, true
-	case "tax_prod_posting_group":
-		return t.Tax_prod_posting_group, true
-	}
-	return nil, false
+	return fALedgerEntryFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -9173,671 +5219,12 @@ func (t *FALedgerEntry) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *FALedgerEntry) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"entry_no":                        t.Entry_no,
-		"g_l_entry_no":                    t.G_l_entry_no,
-		"fa_no":                           t.Fa_no.String(),
-		"fa_posting_date":                 t.Fa_posting_date.String(),
-		"posting_date":                    t.Posting_date.String(),
-		"document_type":                   int(t.Document_type),
-		"document_date":                   t.Document_date.String(),
-		"document_no":                     t.Document_no.String(),
-		"external_document_no":            t.External_document_no.String(),
-		"description":                     t.Description.String(),
-		"depreciation_book_code":          t.Depreciation_book_code.String(),
-		"fa_posting_category":             int(t.Fa_posting_category),
-		"fa_posting_type":                 int(t.Fa_posting_type),
-		"amount":                          t.Amount.String(),
-		"debit_amount":                    t.Debit_amount.String(),
-		"credit_amount":                   t.Credit_amount.String(),
-		"reclassification_entry":          t.Reclassification_entry,
-		"part_of_book_value":              t.Part_of_book_value,
-		"part_of_depreciable_basis":       t.Part_of_depreciable_basis,
-		"disposal_calculation_method":     int(t.Disposal_calculation_method),
-		"disposal_entry_no":               t.Disposal_entry_no,
-		"no_of_depreciation_days":         t.No_of_depreciation_days,
-		"quantity":                        t.Quantity.String(),
-		"fa_no_budgeted_fa_no":            t.Fa_no_budgeted_fa_no.String(),
-		"fa_subclass_code":                t.Fa_subclass_code.String(),
-		"fa_location_code":                t.Fa_location_code.String(),
-		"fa_posting_group":                t.Fa_posting_group.String(),
-		"dimension_1_code":                t.Dimension_1_code.String(),
-		"dimension_2_code":                t.Dimension_2_code.String(),
-		"location_code":                   t.Location_code.String(),
-		"user_id":                         t.User_id.String(),
-		"depreciation_method":             int(t.Depreciation_method),
-		"depreciation_starting_date":      t.Depreciation_starting_date.String(),
-		"straight_line_percent":           t.Straight_line_percent.String(),
-		"no_of_depreciation_years":        t.No_of_depreciation_years.String(),
-		"fixed_depr_amount":               t.Fixed_depr_amount.String(),
-		"declining_balance_percent":       t.Declining_balance_percent.String(),
-		"depreciation_table_code":         t.Depreciation_table_code.String(),
-		"journal_batch_name":              t.Journal_batch_name.String(),
-		"source_code":                     t.Source_code.String(),
-		"reason_code":                     t.Reason_code.String(),
-		"transaction_no":                  t.Transaction_no,
-		"bal_account_type":                int(t.Bal_account_type),
-		"bal_account_no":                  t.Bal_account_no.String(),
-		"tax_amount":                      t.Tax_amount.String(),
-		"gen_posting_type":                int(t.Gen_posting_type),
-		"gen_bus_posting_group":           t.Gen_bus_posting_group.String(),
-		"gen_prod_posting_group":          t.Gen_prod_posting_group.String(),
-		"fa_class_code":                   t.Fa_class_code.String(),
-		"fa_exchange_rate":                t.Fa_exchange_rate.String(),
-		"amount_lcy":                      t.Amount_lcy.String(),
-		"result_on_disposal":              int(t.Result_on_disposal),
-		"correction":                      t.Correction,
-		"index_entry":                     t.Index_entry,
-		"canceled_from_fa_no":             t.Canceled_from_fa_no.String(),
-		"depreciation_ending_date":        t.Depreciation_ending_date.String(),
-		"use_fa_ledger_check":             t.Use_fa_ledger_check,
-		"automatic_entry":                 t.Automatic_entry,
-		"depr_starting_date_custom_1":     t.Depr_starting_date_custom_1.String(),
-		"depr_ending_date_custom_1":       t.Depr_ending_date_custom_1.String(),
-		"accum_depr_percent_custom_1":     t.Accum_depr_percent_custom_1.String(),
-		"depr_percent_this_year_custom_1": t.Depr_percent_this_year_custom_1.String(),
-		"property_class_custom_1":         int(t.Property_class_custom_1),
-		"no_series":                       t.No_series.String(),
-		"tax_area_code":                   t.Tax_area_code.String(),
-		"tax_liable":                      t.Tax_liable,
-		"tax_group_code":                  t.Tax_group_code.String(),
-		"use_tax":                         t.Use_tax,
-		"tax_bus_posting_group":           t.Tax_bus_posting_group.String(),
-		"tax_prod_posting_group":          t.Tax_prod_posting_group.String(),
-	}
+	return fALedgerEntryFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *FALedgerEntry) FromMap(data map[string]interface{}) {
-	if v, ok := data["entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Entry_no = int(val)
-		case int:
-			t.Entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Entry_no = n
-			}
-		}
-	}
-	if v, ok := data["g_l_entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.G_l_entry_no = int(val)
-		case int:
-			t.G_l_entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.G_l_entry_no = n
-			}
-		}
-	}
-	if v, ok := data["fa_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fa_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["fa_posting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fa_posting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["posting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Posting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["document_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Document_type = FALedgerEntryDocument_type(int(val))
-		case int:
-			t.Document_type = FALedgerEntryDocument_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Payment", "Invoice", "Credit Memo", "Finance Charge Memo", "Reminder"}
-			for i, opt := range options {
-				if opt == val {
-					t.Document_type = FALedgerEntryDocument_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["document_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Document_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["document_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Document_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["external_document_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.External_document_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["depreciation_book_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Depreciation_book_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["fa_posting_category"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Fa_posting_category = FALedgerEntryFa_posting_category(int(val))
-		case int:
-			t.Fa_posting_category = FALedgerEntryFa_posting_category(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Disposal", "Bal. Disposal"}
-			for i, opt := range options {
-				if opt == val {
-					t.Fa_posting_category = FALedgerEntryFa_posting_category(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["fa_posting_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Fa_posting_type = FALedgerEntryFa_posting_type(int(val))
-		case int:
-			t.Fa_posting_type = FALedgerEntryFa_posting_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Acquisition Cost", "Depreciation", "Write-Down", "Appreciation", "Custom 1", "Custom 2", "Proceeds on Disposal", "Salvage Value", "Gain/Loss", "Book Value on Disposal"}
-			for i, opt := range options {
-				if opt == val {
-					t.Fa_posting_type = FALedgerEntryFa_posting_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Amount = types.NewDecimal(val)
-		case int:
-			t.Amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["debit_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Debit_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Debit_amount = types.NewDecimal(val)
-		case int:
-			t.Debit_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Debit_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["credit_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Credit_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Credit_amount = types.NewDecimal(val)
-		case int:
-			t.Credit_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Credit_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["reclassification_entry"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Reclassification_entry = b
-		}
-	}
-	if v, ok := data["part_of_book_value"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Part_of_book_value = b
-		}
-	}
-	if v, ok := data["part_of_depreciable_basis"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Part_of_depreciable_basis = b
-		}
-	}
-	if v, ok := data["disposal_calculation_method"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Disposal_calculation_method = FALedgerEntryDisposal_calculation_method(int(val))
-		case int:
-			t.Disposal_calculation_method = FALedgerEntryDisposal_calculation_method(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Net", "Gross"}
-			for i, opt := range options {
-				if opt == val {
-					t.Disposal_calculation_method = FALedgerEntryDisposal_calculation_method(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["disposal_entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Disposal_entry_no = int(val)
-		case int:
-			t.Disposal_entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Disposal_entry_no = n
-			}
-		}
-	}
-	if v, ok := data["no_of_depreciation_days"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.No_of_depreciation_days = int(val)
-		case int:
-			t.No_of_depreciation_days = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.No_of_depreciation_days = n
-			}
-		}
-	}
-	if v, ok := data["quantity"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Quantity, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Quantity = types.NewDecimal(val)
-		case int:
-			t.Quantity = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Quantity = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["fa_no_budgeted_fa_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fa_no_budgeted_fa_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["fa_subclass_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fa_subclass_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["fa_location_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fa_location_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["fa_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fa_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["dimension_1_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_1_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["dimension_2_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_2_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["location_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Location_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["user_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.User_id = types.NewCode(s)
-		}
-	}
-	if v, ok := data["depreciation_method"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Depreciation_method = FALedgerEntryDepreciation_method(int(val))
-		case int:
-			t.Depreciation_method = FALedgerEntryDepreciation_method(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Straight-Line", "Declining-Balance 1", "Declining-Balance 2", "DB1/SL", "DB2/SL", "User-Defined", "Manual"}
-			for i, opt := range options {
-				if opt == val {
-					t.Depreciation_method = FALedgerEntryDepreciation_method(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["depreciation_starting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Depreciation_starting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["straight_line_percent"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Straight_line_percent, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Straight_line_percent = types.NewDecimal(val)
-		case int:
-			t.Straight_line_percent = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Straight_line_percent = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["no_of_depreciation_years"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.No_of_depreciation_years, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.No_of_depreciation_years = types.NewDecimal(val)
-		case int:
-			t.No_of_depreciation_years = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.No_of_depreciation_years = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["fixed_depr_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Fixed_depr_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Fixed_depr_amount = types.NewDecimal(val)
-		case int:
-			t.Fixed_depr_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Fixed_depr_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["declining_balance_percent"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Declining_balance_percent, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Declining_balance_percent = types.NewDecimal(val)
-		case int:
-			t.Declining_balance_percent = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Declining_balance_percent = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["depreciation_table_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Depreciation_table_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["journal_batch_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Journal_batch_name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["source_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Source_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["reason_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Reason_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["transaction_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Transaction_no = int(val)
-		case int:
-			t.Transaction_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Transaction_no = n
-			}
-		}
-	}
-	if v, ok := data["bal_account_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Bal_account_type = FALedgerEntryBal_account_type(int(val))
-		case int:
-			t.Bal_account_type = FALedgerEntryBal_account_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"G/L Account", "Customer", "Vendor", "Bank Account", "Fixed Asset"}
-			for i, opt := range options {
-				if opt == val {
-					t.Bal_account_type = FALedgerEntryBal_account_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["bal_account_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Bal_account_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Tax_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Tax_amount = types.NewDecimal(val)
-		case int:
-			t.Tax_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Tax_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["gen_posting_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Gen_posting_type = FALedgerEntryGen_posting_type(int(val))
-		case int:
-			t.Gen_posting_type = FALedgerEntryGen_posting_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Purchase", "Sale", "Settlement"}
-			for i, opt := range options {
-				if opt == val {
-					t.Gen_posting_type = FALedgerEntryGen_posting_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["gen_bus_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Gen_bus_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["gen_prod_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Gen_prod_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["fa_class_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fa_class_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["fa_exchange_rate"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Fa_exchange_rate, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Fa_exchange_rate = types.NewDecimal(val)
-		case int:
-			t.Fa_exchange_rate = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Fa_exchange_rate = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["amount_lcy"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Amount_lcy, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Amount_lcy = types.NewDecimal(val)
-		case int:
-			t.Amount_lcy = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Amount_lcy = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["result_on_disposal"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Result_on_disposal = FALedgerEntryResult_on_disposal(int(val))
-		case int:
-			t.Result_on_disposal = FALedgerEntryResult_on_disposal(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Gain", "Loss"}
-			for i, opt := range options {
-				if opt == val {
-					t.Result_on_disposal = FALedgerEntryResult_on_disposal(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["correction"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Correction = b
-		}
-	}
-	if v, ok := data["index_entry"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Index_entry = b
-		}
-	}
-	if v, ok := data["canceled_from_fa_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Canceled_from_fa_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["depreciation_ending_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Depreciation_ending_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["use_fa_ledger_check"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Use_fa_ledger_check = b
-		}
-	}
-	if v, ok := data["automatic_entry"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Automatic_entry = b
-		}
-	}
-	if v, ok := data["depr_starting_date_custom_1"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Depr_starting_date_custom_1, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["depr_ending_date_custom_1"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Depr_ending_date_custom_1, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["accum_depr_percent_custom_1"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Accum_depr_percent_custom_1, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Accum_depr_percent_custom_1 = types.NewDecimal(val)
-		case int:
-			t.Accum_depr_percent_custom_1 = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Accum_depr_percent_custom_1 = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["depr_percent_this_year_custom_1"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Depr_percent_this_year_custom_1, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Depr_percent_this_year_custom_1 = types.NewDecimal(val)
-		case int:
-			t.Depr_percent_this_year_custom_1 = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Depr_percent_this_year_custom_1 = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["property_class_custom_1"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Property_class_custom_1 = FALedgerEntryProperty_class_custom_1(int(val))
-		case int:
-			t.Property_class_custom_1 = FALedgerEntryProperty_class_custom_1(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Personal Property", "Real Property"}
-			for i, opt := range options {
-				if opt == val {
-					t.Property_class_custom_1 = FALedgerEntryProperty_class_custom_1(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["no_series"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No_series = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_area_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_area_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_liable"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Tax_liable = b
-		}
-	}
-	if v, ok := data["tax_group_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_group_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["use_tax"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Use_tax = b
-		}
-	}
-	if v, ok := data["tax_bus_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_bus_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_prod_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_prod_posting_group = types.NewCode(s)
-		}
-	}
+	fALedgerEntryFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -9858,721 +5245,1186 @@ func (t *FALedgerEntry) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *FALedgerEntry) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "g_l_entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "fa_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "fa_posting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "posting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "document_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "document_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "document_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "external_document_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     100,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "depreciation_book_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "fa_posting_category",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         13,
-			Name:       "fa_posting_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            14,
-			Name:          "amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            15,
-			Name:          "debit_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            16,
-			Name:          "credit_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         17,
-			Name:       "reclassification_entry",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         18,
-			Name:       "part_of_book_value",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         19,
-			Name:       "part_of_depreciable_basis",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         20,
-			Name:       "disposal_calculation_method",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         21,
-			Name:       "disposal_entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         22,
-			Name:       "no_of_depreciation_days",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            23,
-			Name:          "quantity",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         24,
-			Name:       "fa_no_budgeted_fa_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         25,
-			Name:       "fa_subclass_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         26,
-			Name:       "fa_location_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         27,
-			Name:       "fa_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         28,
-			Name:       "dimension_1_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         29,
-			Name:       "dimension_2_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         30,
-			Name:       "location_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         32,
-			Name:       "user_id",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         33,
-			Name:       "depreciation_method",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         34,
-			Name:       "depreciation_starting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            35,
-			Name:          "straight_line_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:8",
-		},
-		{
-			No:            36,
-			Name:          "no_of_depreciation_years",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:8",
-		},
-		{
-			No:            37,
-			Name:          "fixed_depr_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            38,
-			Name:          "declining_balance_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:8",
-		},
-		{
-			No:         39,
-			Name:       "depreciation_table_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         40,
-			Name:       "journal_batch_name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         41,
-			Name:       "source_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         42,
-			Name:       "reason_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         43,
-			Name:       "transaction_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         44,
-			Name:       "bal_account_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         45,
-			Name:       "bal_account_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            46,
-			Name:          "tax_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         47,
-			Name:       "gen_posting_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         48,
-			Name:       "gen_bus_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         49,
-			Name:       "gen_prod_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         50,
-			Name:       "fa_class_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            51,
-			Name:          "fa_exchange_rate",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "4:4",
-		},
-		{
-			No:            52,
-			Name:          "amount_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         53,
-			Name:       "result_on_disposal",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         54,
-			Name:       "correction",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         55,
-			Name:       "index_entry",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         56,
-			Name:       "canceled_from_fa_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         57,
-			Name:       "depreciation_ending_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         58,
-			Name:       "use_fa_ledger_check",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         59,
-			Name:       "automatic_entry",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         60,
-			Name:       "depr_starting_date_custom_1",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         61,
-			Name:       "depr_ending_date_custom_1",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            62,
-			Name:          "accum_depr_percent_custom_1",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:8",
-		},
-		{
-			No:            63,
-			Name:          "depr_percent_this_year_custom_1",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:8",
-		},
-		{
-			No:         64,
-			Name:       "property_class_custom_1",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         65,
-			Name:       "no_series",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         66,
-			Name:       "tax_area_code",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         67,
-			Name:       "tax_liable",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         68,
-			Name:       "tax_group_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         69,
-			Name:       "use_tax",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         70,
-			Name:       "tax_bus_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         71,
-			Name:       "tax_prod_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return fALedgerEntryFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in fALedgerEntryFields.Fields
+func (t *FALedgerEntry) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Entry_no
+	case 1:
+		return &t.G_l_entry_no
+	case 2:
+		return &t.Fa_no
+	case 3:
+		return &t.Fa_posting_date
+	case 4:
+		return &t.Posting_date
+	case 5:
+		return &t.Document_type
+	case 6:
+		return &t.Document_date
+	case 7:
+		return &t.Document_no
+	case 8:
+		return &t.External_document_no
+	case 9:
+		return &t.Description
+	case 10:
+		return &t.Depreciation_book_code
+	case 11:
+		return &t.Fa_posting_category
+	case 12:
+		return &t.Fa_posting_type
+	case 13:
+		return &t.Amount
+	case 14:
+		return &t.Debit_amount
+	case 15:
+		return &t.Credit_amount
+	case 16:
+		return &t.Reclassification_entry
+	case 17:
+		return &t.Part_of_book_value
+	case 18:
+		return &t.Part_of_depreciable_basis
+	case 19:
+		return &t.Disposal_calculation_method
+	case 20:
+		return &t.Disposal_entry_no
+	case 21:
+		return &t.No_of_depreciation_days
+	case 22:
+		return &t.Quantity
+	case 23:
+		return &t.Fa_no_budgeted_fa_no
+	case 24:
+		return &t.Fa_subclass_code
+	case 25:
+		return &t.Fa_location_code
+	case 26:
+		return &t.Fa_posting_group
+	case 27:
+		return &t.Dimension_1_code
+	case 28:
+		return &t.Dimension_2_code
+	case 29:
+		return &t.Location_code
+	case 30:
+		return &t.User_id
+	case 31:
+		return &t.Depreciation_method
+	case 32:
+		return &t.Depreciation_starting_date
+	case 33:
+		return &t.Straight_line_percent
+	case 34:
+		return &t.No_of_depreciation_years
+	case 35:
+		return &t.Fixed_depr_amount
+	case 36:
+		return &t.Declining_balance_percent
+	case 37:
+		return &t.Depreciation_table_code
+	case 38:
+		return &t.Journal_batch_name
+	case 39:
+		return &t.Source_code
+	case 40:
+		return &t.Reason_code
+	case 41:
+		return &t.Transaction_no
+	case 42:
+		return &t.Bal_account_type
+	case 43:
+		return &t.Bal_account_no
+	case 44:
+		return &t.Tax_amount
+	case 45:
+		return &t.Gen_posting_type
+	case 46:
+		return &t.Gen_bus_posting_group
+	case 47:
+		return &t.Gen_prod_posting_group
+	case 48:
+		return &t.Fa_class_code
+	case 49:
+		return &t.Fa_exchange_rate
+	case 50:
+		return &t.Amount_lcy
+	case 51:
+		return &t.Result_on_disposal
+	case 52:
+		return &t.Correction
+	case 53:
+		return &t.Index_entry
+	case 54:
+		return &t.Canceled_from_fa_no
+	case 55:
+		return &t.Depreciation_ending_date
+	case 56:
+		return &t.Use_fa_ledger_check
+	case 57:
+		return &t.Automatic_entry
+	case 58:
+		return &t.Depr_starting_date_custom_1
+	case 59:
+		return &t.Depr_ending_date_custom_1
+	case 60:
+		return &t.Accum_depr_percent_custom_1
+	case 61:
+		return &t.Depr_percent_this_year_custom_1
+	case 62:
+		return &t.Property_class_custom_1
+	case 63:
+		return &t.No_series
+	case 64:
+		return &t.Tax_area_code
+	case 65:
+		return &t.Tax_liable
+	case 66:
+		return &t.Tax_group_code
+	case 67:
+		return &t.Use_tax
+	case 68:
+		return &t.Tax_bus_posting_group
+	case 69:
+		return &t.Tax_prod_posting_group
 	}
+	return nil
+}
+
+// fALedgerEntryFields describes the fields of FA_Ledger_Entry for the record functions
+// written once in foundation/tables
+var fALedgerEntryFields = &tables.TableFields{
+	Table: FALedgerEntryTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Entry_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "g_l_entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_G_l_entry_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "fa_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Fa_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "fa_posting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Fa_posting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "posting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Posting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "document_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Document_type",
+			Options: []string{" ", "Payment", "Invoice", "Credit Memo", "Finance Charge Memo", "Reminder"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "document_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Document_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "document_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Document_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "external_document_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_External_document_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     100,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "depreciation_book_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Depreciation_book_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "fa_posting_category",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Fa_posting_category",
+			Options: []string{" ", "Disposal", "Bal. Disposal"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "fa_posting_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Fa_posting_type",
+			Options: []string{"Acquisition Cost", "Depreciation", "Write-Down", "Appreciation", "Custom 1", "Custom 2", "Proceeds on Disposal", "Salvage Value", "Gain/Loss", "Book Value on Disposal"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            14,
+				Name:          "amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            15,
+				Name:          "debit_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Debit_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            16,
+				Name:          "credit_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Credit_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         17,
+				Name:       "reclassification_entry",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Reclassification_entry",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         18,
+				Name:       "part_of_book_value",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Part_of_book_value",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         19,
+				Name:       "part_of_depreciable_basis",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Part_of_depreciable_basis",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         20,
+				Name:       "disposal_calculation_method",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Disposal_calculation_method",
+			Options: []string{" ", "Net", "Gross"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         21,
+				Name:       "disposal_entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Disposal_entry_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         22,
+				Name:       "no_of_depreciation_days",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_No_of_depreciation_days",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            23,
+				Name:          "quantity",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Quantity",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         24,
+				Name:       "fa_no_budgeted_fa_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Fa_no_budgeted_fa_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         25,
+				Name:       "fa_subclass_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Fa_subclass_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         26,
+				Name:       "fa_location_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Fa_location_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         27,
+				Name:       "fa_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Fa_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         28,
+				Name:       "dimension_1_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_1_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         29,
+				Name:       "dimension_2_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_2_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         30,
+				Name:       "location_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Location_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         32,
+				Name:       "user_id",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_User_id",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         33,
+				Name:       "depreciation_method",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Depreciation_method",
+			Options: []string{"Straight-Line", "Declining-Balance 1", "Declining-Balance 2", "DB1/SL", "DB2/SL", "User-Defined", "Manual"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         34,
+				Name:       "depreciation_starting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Depreciation_starting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            35,
+				Name:          "straight_line_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:8",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Straight_line_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            36,
+				Name:          "no_of_depreciation_years",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:8",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_No_of_depreciation_years",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            37,
+				Name:          "fixed_depr_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Fixed_depr_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            38,
+				Name:          "declining_balance_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:8",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Declining_balance_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         39,
+				Name:       "depreciation_table_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Depreciation_table_code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         40,
+				Name:       "journal_batch_name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Journal_batch_name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         41,
+				Name:       "source_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Source_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         42,
+				Name:       "reason_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Reason_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         43,
+				Name:       "transaction_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Transaction_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         44,
+				Name:       "bal_account_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Bal_account_type",
+			Options: []string{"G/L Account", "Customer", "Vendor", "Bank Account", "Fixed Asset"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         45,
+				Name:       "bal_account_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Bal_account_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            46,
+				Name:          "tax_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Tax_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         47,
+				Name:       "gen_posting_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Gen_posting_type",
+			Options: []string{" ", "Purchase", "Sale", "Settlement"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         48,
+				Name:       "gen_bus_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Gen_bus_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         49,
+				Name:       "gen_prod_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Gen_prod_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         50,
+				Name:       "fa_class_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Fa_class_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            51,
+				Name:          "fa_exchange_rate",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "4:4",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Fa_exchange_rate",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            52,
+				Name:          "amount_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Amount_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         53,
+				Name:       "result_on_disposal",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Result_on_disposal",
+			Options: []string{" ", "Gain", "Loss"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         54,
+				Name:       "correction",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Correction",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         55,
+				Name:       "index_entry",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Index_entry",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         56,
+				Name:       "canceled_from_fa_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Canceled_from_fa_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         57,
+				Name:       "depreciation_ending_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Depreciation_ending_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         58,
+				Name:       "use_fa_ledger_check",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Use_fa_ledger_check",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         59,
+				Name:       "automatic_entry",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Automatic_entry",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         60,
+				Name:       "depr_starting_date_custom_1",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Depr_starting_date_custom_1",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         61,
+				Name:       "depr_ending_date_custom_1",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Depr_ending_date_custom_1",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            62,
+				Name:          "accum_depr_percent_custom_1",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:8",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Accum_depr_percent_custom_1",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            63,
+				Name:          "depr_percent_this_year_custom_1",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:8",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Depr_percent_this_year_custom_1",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         64,
+				Name:       "property_class_custom_1",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Property_class_custom_1",
+			Options: []string{" ", "Personal Property", "Real Property"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         65,
+				Name:       "no_series",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_No_series",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         66,
+				Name:       "tax_area_code",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_area_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         67,
+				Name:       "tax_liable",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Tax_liable",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         68,
+				Name:       "tax_group_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_group_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         69,
+				Name:       "use_tax",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Use_tax",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         70,
+				Name:       "tax_bus_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_bus_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         71,
+				Name:       "tax_prod_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_prod_posting_group",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

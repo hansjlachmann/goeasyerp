@@ -117,28 +117,12 @@ var UserMember_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *UserMember) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "user_id":
-		return 1
-	case "role_id":
-		return 2
-	case "company":
-		return 3
-	}
-	return 0
+	return userMemberFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *UserMember) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "user_id"
-	case 2:
-		return "role_id"
-	case 3:
-		return "company"
-	}
-	return ""
+	return userMemberFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -242,9 +226,6 @@ type (
 	UserMemberOnBeforeRename interface {
 		OnBeforeRename(rec *UserMember, handled *bool) error
 	}
-	UserMemberOnValidate_User_id interface{ OnValidate_User_id(rec *UserMember) error }
-	UserMemberOnValidate_Role_id interface{ OnValidate_Role_id(rec *UserMember) error }
-	UserMemberOnValidate_Company interface{ OnValidate_Company(rec *UserMember) error }
 )
 
 // userMemberLogic is the registered business logic of User_Member, in
@@ -287,14 +268,9 @@ func userMemberTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(UserMemberOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(UserMemberOnBeforeRename)
-	case "OnValidate_User_id":
-		_, ok = logic.(UserMemberOnValidate_User_id)
-	case "OnValidate_Role_id":
-		_, ok = logic.(UserMemberOnValidate_Role_id)
-	case "OnValidate_Company":
-		_, ok = logic.(UserMemberOnValidate_Company)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return userMemberFields.IsOnValidateTrigger(name, logic, (*UserMember)(nil))
 	}
 	return true, ok
 }
@@ -592,10 +568,7 @@ func (t *UserMember) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *UserMember) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["user_id"] = t.User_id
-	t.oldValues["role_id"] = t.Role_id
-	t.oldValues["company"] = t.Company
+	t.oldValues = userMemberFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -610,15 +583,7 @@ func (t *UserMember) OldValue(fieldName string) interface{} {
 func (t *UserMember) XRec() *UserMember {
 	x := &UserMember{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["user_id"].(types.Code); ok {
-		x.User_id = v
-	}
-	if v, ok := t.oldValues["role_id"].(types.Code); ok {
-		x.Role_id = v
-	}
-	if v, ok := t.oldValues["company"].(types.Text); ok {
-		x.Company = v
-	}
+	userMemberFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -911,33 +876,7 @@ func (t *UserMember) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *UserMember) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "user_id":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.User_id.Equal(old)
-		}
-	case "role_id":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Role_id.Equal(old)
-		}
-	case "company":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Company.Equal(old)
-		}
-	}
-
-	return false
+	return userMemberFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1140,15 +1079,7 @@ func (t *UserMember) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *UserMember) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("user_id"):
-		return "user_id", true
-	case strings.ToLower("role_id"):
-		return "role_id", true
-	case strings.ToLower("company"):
-		return "company", true
-	}
-	return "", false
+	return userMemberFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -1970,78 +1901,20 @@ func (t *UserMember) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *UserMember) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "user_id":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-		} else if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field user_id")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "user_id"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserMemberOnValidate_User_id); ok {
-				if err := trg.OnValidate_User_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "role_id":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Role_id = v
-		} else if v, ok := value.(string); ok {
-			t.Role_id = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field role_id")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "role_id"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserMemberOnValidate_Role_id); ok {
-				if err := trg.OnValidate_Role_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "company":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Company = v
-		} else if v, ok := value.(string); ok {
-			t.Company = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field company")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "company"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserMemberOnValidate_Company); ok {
-				if err := trg.OnValidate_Company(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := userMemberFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &userMemberFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2050,57 +1923,18 @@ func (t *UserMember) ValidateField(fieldName string, value interface{}) error {
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *UserMember) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.User_id, true
-	case 2:
-		return t.Role_id, true
-	case 3:
-		return t.Company, true
-	}
-	return nil, false
+	return userMemberFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *UserMember) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return userMemberFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *UserMember) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Role_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Role_id = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Text); ok {
-			t.Company = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Company = types.NewText(v)
-			return true
-		}
-	}
-	return false
+	return userMemberFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2551,15 +2385,7 @@ func (t *UserMember) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *UserMember) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "user_id":
-		return t.User_id, true
-	case "role_id":
-		return t.Role_id, true
-	case "company":
-		return t.Company, true
-	}
-	return nil, false
+	return userMemberFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2653,30 +2479,12 @@ func (t *UserMember) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *UserMember) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"user_id": t.User_id.String(),
-		"role_id": t.Role_id.String(),
-		"company": t.Company.String(),
-	}
+	return userMemberFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *UserMember) FromMap(data map[string]interface{}) {
-	if v, ok := data["user_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.User_id = types.NewCode(s)
-		}
-	}
-	if v, ok := data["role_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Role_id = types.NewCode(s)
-		}
-	}
-	if v, ok := data["company"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Company = types.NewText(s)
-		}
-	}
+	userMemberFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2697,38 +2505,73 @@ func (t *UserMember) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *UserMember) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "user_id",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "role_id",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "company",
-			Type:       tables.FieldTypeText,
-			Length:     100,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
+	return userMemberFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in userMemberFields.Fields
+func (t *UserMember) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.User_id
+	case 1:
+		return &t.Role_id
+	case 2:
+		return &t.Company
 	}
+	return nil
+}
+
+// userMemberFields describes the fields of User_Member for the record functions
+// written once in foundation/tables
+var userMemberFields = &tables.TableFields{
+	Table: UserMemberTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "user_id",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_User_id",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "role_id",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Role_id",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "company",
+				Type:       tables.FieldTypeText,
+				Length:     100,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindText,
+			Trigger:  "OnValidate_Company",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

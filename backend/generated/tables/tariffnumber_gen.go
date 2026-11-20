@@ -117,28 +117,12 @@ var TariffNumber_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *TariffNumber) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "no":
-		return 1
-	case "description":
-		return 2
-	case "supplementary_units":
-		return 3
-	}
-	return 0
+	return tariffNumberFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *TariffNumber) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "no"
-	case 2:
-		return "description"
-	case 3:
-		return "supplementary_units"
-	}
-	return ""
+	return tariffNumberFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -242,9 +226,6 @@ type (
 	TariffNumberOnBeforeRename interface {
 		OnBeforeRename(rec *TariffNumber, handled *bool) error
 	}
-	TariffNumberOnValidate_No                  interface{ OnValidate_No(rec *TariffNumber) error }
-	TariffNumberOnValidate_Description         interface{ OnValidate_Description(rec *TariffNumber) error }
-	TariffNumberOnValidate_Supplementary_units interface{ OnValidate_Supplementary_units(rec *TariffNumber) error }
 )
 
 // tariffNumberLogic is the registered business logic of Tariff_Number, in
@@ -287,14 +268,9 @@ func tariffNumberTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(TariffNumberOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(TariffNumberOnBeforeRename)
-	case "OnValidate_No":
-		_, ok = logic.(TariffNumberOnValidate_No)
-	case "OnValidate_Description":
-		_, ok = logic.(TariffNumberOnValidate_Description)
-	case "OnValidate_Supplementary_units":
-		_, ok = logic.(TariffNumberOnValidate_Supplementary_units)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return tariffNumberFields.IsOnValidateTrigger(name, logic, (*TariffNumber)(nil))
 	}
 	return true, ok
 }
@@ -584,10 +560,7 @@ func (t *TariffNumber) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *TariffNumber) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["no"] = t.No
-	t.oldValues["description"] = t.Description
-	t.oldValues["supplementary_units"] = t.Supplementary_units
+	t.oldValues = tariffNumberFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -602,15 +575,7 @@ func (t *TariffNumber) OldValue(fieldName string) interface{} {
 func (t *TariffNumber) XRec() *TariffNumber {
 	x := &TariffNumber{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["no"].(types.Code); ok {
-		x.No = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["supplementary_units"].(bool); ok {
-		x.Supplementary_units = v
-	}
+	tariffNumberFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -898,34 +863,7 @@ func (t *TariffNumber) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *TariffNumber) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "supplementary_units":
-		if old, ok := oldValue.(bool); ok {
-			return t.Supplementary_units != old
-		}
-		return true // Type mismatch, assume changed
-	}
-
-	return false
+	return tariffNumberFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1184,15 +1122,7 @@ func (t *TariffNumber) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *TariffNumber) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("no"):
-		return "no", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("supplementary_units"):
-		return "supplementary_units", true
-	}
-	return "", false
+	return tariffNumberFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2016,67 +1946,20 @@ func (t *TariffNumber) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *TariffNumber) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-		} else if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TariffNumberOnValidate_No); ok {
-				if err := trg.OnValidate_No(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TariffNumberOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "supplementary_units":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Supplementary_units = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Supplementary_units = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field supplementary_units")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TariffNumberOnValidate_Supplementary_units); ok {
-				if err := trg.OnValidate_Supplementary_units(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := tariffNumberFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &tariffNumberFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2085,53 +1968,18 @@ func (t *TariffNumber) ValidateField(fieldName string, value interface{}) error 
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *TariffNumber) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.No, true
-	case 2:
-		return t.Description, true
-	case 3:
-		return t.Supplementary_units, true
-	}
-	return nil, false
+	return tariffNumberFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *TariffNumber) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return tariffNumberFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *TariffNumber) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(bool); ok {
-			t.Supplementary_units = v
-			return true
-		}
-	}
-	return false
+	return tariffNumberFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2580,15 +2428,7 @@ func (t *TariffNumber) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *TariffNumber) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "no":
-		return t.No, true
-	case "description":
-		return t.Description, true
-	case "supplementary_units":
-		return t.Supplementary_units, true
-	}
-	return nil, false
+	return tariffNumberFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2676,30 +2516,12 @@ func (t *TariffNumber) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *TariffNumber) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"no":                  t.No.String(),
-		"description":         t.Description.String(),
-		"supplementary_units": t.Supplementary_units,
-	}
+	return tariffNumberFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *TariffNumber) FromMap(data map[string]interface{}) {
-	if v, ok := data["no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["supplementary_units"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Supplementary_units = b
-		}
-	}
+	tariffNumberFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2720,38 +2542,70 @@ func (t *TariffNumber) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *TariffNumber) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "no",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "supplementary_units",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return tariffNumberFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in tariffNumberFields.Fields
+func (t *TariffNumber) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.No
+	case 1:
+		return &t.Description
+	case 2:
+		return &t.Supplementary_units
 	}
+	return nil
+}
+
+// tariffNumberFields describes the fields of Tariff_Number for the record functions
+// written once in foundation/tables
+var tariffNumberFields = &tables.TableFields{
+	Table: TariffNumberTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "no",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_No",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "supplementary_units",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Supplementary_units",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

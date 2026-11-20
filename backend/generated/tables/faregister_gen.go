@@ -32,7 +32,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -185,60 +184,12 @@ var FARegister_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *FARegister) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "no":
-		return 1
-	case "from_entry_no":
-		return 2
-	case "to_entry_no":
-		return 3
-	case "creation_date":
-		return 4
-	case "source_code":
-		return 5
-	case "user_id":
-		return 6
-	case "journal_batch_name":
-		return 7
-	case "journal_type":
-		return 8
-	case "g_l_register_no":
-		return 9
-	case "from_maintenance_entry_no":
-		return 10
-	case "to_maintenance_entry_no":
-		return 11
-	}
-	return 0
+	return fARegisterFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *FARegister) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "no"
-	case 2:
-		return "from_entry_no"
-	case 3:
-		return "to_entry_no"
-	case 4:
-		return "creation_date"
-	case 5:
-		return "source_code"
-	case 6:
-		return "user_id"
-	case 7:
-		return "journal_batch_name"
-	case 8:
-		return "journal_type"
-	case 9:
-		return "g_l_register_no"
-	case 10:
-		return "from_maintenance_entry_no"
-	case 11:
-		return "to_maintenance_entry_no"
-	}
-	return ""
+	return fARegisterFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -342,17 +293,6 @@ type (
 	FARegisterOnBeforeRename interface {
 		OnBeforeRename(rec *FARegister, handled *bool) error
 	}
-	FARegisterOnValidate_No                        interface{ OnValidate_No(rec *FARegister) error }
-	FARegisterOnValidate_From_entry_no             interface{ OnValidate_From_entry_no(rec *FARegister) error }
-	FARegisterOnValidate_To_entry_no               interface{ OnValidate_To_entry_no(rec *FARegister) error }
-	FARegisterOnValidate_Creation_date             interface{ OnValidate_Creation_date(rec *FARegister) error }
-	FARegisterOnValidate_Source_code               interface{ OnValidate_Source_code(rec *FARegister) error }
-	FARegisterOnValidate_User_id                   interface{ OnValidate_User_id(rec *FARegister) error }
-	FARegisterOnValidate_Journal_batch_name        interface{ OnValidate_Journal_batch_name(rec *FARegister) error }
-	FARegisterOnValidate_Journal_type              interface{ OnValidate_Journal_type(rec *FARegister) error }
-	FARegisterOnValidate_G_l_register_no           interface{ OnValidate_G_l_register_no(rec *FARegister) error }
-	FARegisterOnValidate_From_maintenance_entry_no interface{ OnValidate_From_maintenance_entry_no(rec *FARegister) error }
-	FARegisterOnValidate_To_maintenance_entry_no   interface{ OnValidate_To_maintenance_entry_no(rec *FARegister) error }
 )
 
 // fARegisterLogic is the registered business logic of FA_Register, in
@@ -395,30 +335,9 @@ func fARegisterTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(FARegisterOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(FARegisterOnBeforeRename)
-	case "OnValidate_No":
-		_, ok = logic.(FARegisterOnValidate_No)
-	case "OnValidate_From_entry_no":
-		_, ok = logic.(FARegisterOnValidate_From_entry_no)
-	case "OnValidate_To_entry_no":
-		_, ok = logic.(FARegisterOnValidate_To_entry_no)
-	case "OnValidate_Creation_date":
-		_, ok = logic.(FARegisterOnValidate_Creation_date)
-	case "OnValidate_Source_code":
-		_, ok = logic.(FARegisterOnValidate_Source_code)
-	case "OnValidate_User_id":
-		_, ok = logic.(FARegisterOnValidate_User_id)
-	case "OnValidate_Journal_batch_name":
-		_, ok = logic.(FARegisterOnValidate_Journal_batch_name)
-	case "OnValidate_Journal_type":
-		_, ok = logic.(FARegisterOnValidate_Journal_type)
-	case "OnValidate_G_l_register_no":
-		_, ok = logic.(FARegisterOnValidate_G_l_register_no)
-	case "OnValidate_From_maintenance_entry_no":
-		_, ok = logic.(FARegisterOnValidate_From_maintenance_entry_no)
-	case "OnValidate_To_maintenance_entry_no":
-		_, ok = logic.(FARegisterOnValidate_To_maintenance_entry_no)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return fARegisterFields.IsOnValidateTrigger(name, logic, (*FARegister)(nil))
 	}
 	return true, ok
 }
@@ -742,18 +661,7 @@ func (t *FARegister) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *FARegister) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["no"] = t.No
-	t.oldValues["from_entry_no"] = t.From_entry_no
-	t.oldValues["to_entry_no"] = t.To_entry_no
-	t.oldValues["creation_date"] = t.Creation_date
-	t.oldValues["source_code"] = t.Source_code
-	t.oldValues["user_id"] = t.User_id
-	t.oldValues["journal_batch_name"] = t.Journal_batch_name
-	t.oldValues["journal_type"] = t.Journal_type
-	t.oldValues["g_l_register_no"] = t.G_l_register_no
-	t.oldValues["from_maintenance_entry_no"] = t.From_maintenance_entry_no
-	t.oldValues["to_maintenance_entry_no"] = t.To_maintenance_entry_no
+	t.oldValues = fARegisterFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -768,39 +676,7 @@ func (t *FARegister) OldValue(fieldName string) interface{} {
 func (t *FARegister) XRec() *FARegister {
 	x := &FARegister{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["no"].(int); ok {
-		x.No = v
-	}
-	if v, ok := t.oldValues["from_entry_no"].(int); ok {
-		x.From_entry_no = v
-	}
-	if v, ok := t.oldValues["to_entry_no"].(int); ok {
-		x.To_entry_no = v
-	}
-	if v, ok := t.oldValues["creation_date"].(types.Date); ok {
-		x.Creation_date = v
-	}
-	if v, ok := t.oldValues["source_code"].(types.Code); ok {
-		x.Source_code = v
-	}
-	if v, ok := t.oldValues["user_id"].(types.Code); ok {
-		x.User_id = v
-	}
-	if v, ok := t.oldValues["journal_batch_name"].(types.Code); ok {
-		x.Journal_batch_name = v
-	}
-	if v, ok := t.oldValues["journal_type"].(FARegisterJournal_type); ok {
-		x.Journal_type = v
-	}
-	if v, ok := t.oldValues["g_l_register_no"].(int); ok {
-		x.G_l_register_no = v
-	}
-	if v, ok := t.oldValues["from_maintenance_entry_no"].(int); ok {
-		x.From_maintenance_entry_no = v
-	}
-	if v, ok := t.oldValues["to_maintenance_entry_no"].(int); ok {
-		x.To_maintenance_entry_no = v
-	}
+	fARegisterFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1186,71 +1062,7 @@ func (t *FARegister) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *FARegister) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "no":
-		if old, ok := oldValue.(int); ok {
-			return t.No != old
-		}
-		return true // Type mismatch, assume changed
-	case "from_entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.From_entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "to_entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.To_entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "creation_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Creation_date.Equal(old)
-		}
-	case "source_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Source_code.Equal(old)
-		}
-	case "user_id":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.User_id.Equal(old)
-		}
-	case "journal_batch_name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Journal_batch_name.Equal(old)
-		}
-	case "journal_type":
-		if old, ok := oldValue.(FARegisterJournal_type); ok {
-			return t.Journal_type != old
-		}
-	case "g_l_register_no":
-		if old, ok := oldValue.(int); ok {
-			return t.G_l_register_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "from_maintenance_entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.From_maintenance_entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "to_maintenance_entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.To_maintenance_entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	}
-
-	return false
+	return fARegisterFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1491,31 +1303,7 @@ func (t *FARegister) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *FARegister) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("no"):
-		return "no", true
-	case strings.ToLower("from_entry_no"):
-		return "from_entry_no", true
-	case strings.ToLower("to_entry_no"):
-		return "to_entry_no", true
-	case strings.ToLower("creation_date"):
-		return "creation_date", true
-	case strings.ToLower("source_code"):
-		return "source_code", true
-	case strings.ToLower("user_id"):
-		return "user_id", true
-	case strings.ToLower("journal_batch_name"):
-		return "journal_batch_name", true
-	case strings.ToLower("journal_type"):
-		return "journal_type", true
-	case strings.ToLower("g_l_register_no"):
-		return "g_l_register_no", true
-	case strings.ToLower("from_maintenance_entry_no"):
-		return "from_maintenance_entry_no", true
-	case strings.ToLower("to_maintenance_entry_no"):
-		return "to_maintenance_entry_no", true
-	}
-	return "", false
+	return fARegisterFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2395,329 +2183,20 @@ func (t *FARegister) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *FARegister) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.No = v
-		case float64:
-			t.No = int(v)
-		case string:
-			if v == "" {
-				t.No = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.No = i
-			} else {
-				return fmt.Errorf("invalid integer value for field no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FARegisterOnValidate_No); ok {
-				if err := trg.OnValidate_No(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "from_entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.From_entry_no = v
-		case float64:
-			t.From_entry_no = int(v)
-		case string:
-			if v == "" {
-				t.From_entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.From_entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field from_entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field from_entry_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "from_entry_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FARegisterOnValidate_From_entry_no); ok {
-				if err := trg.OnValidate_From_entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "to_entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.To_entry_no = v
-		case float64:
-			t.To_entry_no = int(v)
-		case string:
-			if v == "" {
-				t.To_entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.To_entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field to_entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field to_entry_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "to_entry_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FARegisterOnValidate_To_entry_no); ok {
-				if err := trg.OnValidate_To_entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "creation_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Creation_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Creation_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field creation_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Creation_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field creation_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FARegisterOnValidate_Creation_date); ok {
-				if err := trg.OnValidate_Creation_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "source_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Source_code = v
-		} else if v, ok := value.(string); ok {
-			t.Source_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field source_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "source_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FARegisterOnValidate_Source_code); ok {
-				if err := trg.OnValidate_Source_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "user_id":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-		} else if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field user_id")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "user_id"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FARegisterOnValidate_User_id); ok {
-				if err := trg.OnValidate_User_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "journal_batch_name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Journal_batch_name = v
-		} else if v, ok := value.(string); ok {
-			t.Journal_batch_name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field journal_batch_name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FARegisterOnValidate_Journal_batch_name); ok {
-				if err := trg.OnValidate_Journal_batch_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "journal_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(FARegisterJournal_type); ok {
-			t.Journal_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 2 {
-				return fmt.Errorf("invalid option value %d for field journal_type (valid range: 0-%d)", v, 2-1)
-			}
-			t.Journal_type = FARegisterJournal_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 2 {
-				return fmt.Errorf("invalid option value %d for field journal_type (valid range: 0-%d)", intVal, 2-1)
-			}
-			t.Journal_type = FARegisterJournal_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Journal_type = 0
-			} else {
-				options := []string{"G/L", "Fixed Asset"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Journal_type = FARegisterJournal_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field journal_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field journal_type (expected FARegisterJournal_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FARegisterOnValidate_Journal_type); ok {
-				if err := trg.OnValidate_Journal_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "g_l_register_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.G_l_register_no = v
-		case float64:
-			t.G_l_register_no = int(v)
-		case string:
-			if v == "" {
-				t.G_l_register_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.G_l_register_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field g_l_register_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field g_l_register_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "g_l_register_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FARegisterOnValidate_G_l_register_no); ok {
-				if err := trg.OnValidate_G_l_register_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "from_maintenance_entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.From_maintenance_entry_no = v
-		case float64:
-			t.From_maintenance_entry_no = int(v)
-		case string:
-			if v == "" {
-				t.From_maintenance_entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.From_maintenance_entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field from_maintenance_entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field from_maintenance_entry_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "from_maintenance_entry_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FARegisterOnValidate_From_maintenance_entry_no); ok {
-				if err := trg.OnValidate_From_maintenance_entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "to_maintenance_entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.To_maintenance_entry_no = v
-		case float64:
-			t.To_maintenance_entry_no = int(v)
-		case string:
-			if v == "" {
-				t.To_maintenance_entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.To_maintenance_entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field to_maintenance_entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field to_maintenance_entry_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "to_maintenance_entry_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FARegisterOnValidate_To_maintenance_entry_no); ok {
-				if err := trg.OnValidate_To_maintenance_entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := fARegisterFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &fARegisterFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2726,113 +2205,18 @@ func (t *FARegister) ValidateField(fieldName string, value interface{}) error {
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *FARegister) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.No, true
-	case 2:
-		return t.From_entry_no, true
-	case 3:
-		return t.To_entry_no, true
-	case 4:
-		return t.Creation_date, true
-	case 5:
-		return t.Source_code, true
-	case 6:
-		return t.User_id, true
-	case 7:
-		return t.Journal_batch_name, true
-	case 8:
-		return t.Journal_type, true
-	case 9:
-		return t.G_l_register_no, true
-	case 10:
-		return t.From_maintenance_entry_no, true
-	case 11:
-		return t.To_maintenance_entry_no, true
-	}
-	return nil, false
+	return fARegisterFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *FARegister) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return fARegisterFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *FARegister) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(int); ok {
-			t.No = v
-			return true
-		}
-	case 2:
-		if v, ok := value.(int); ok {
-			t.From_entry_no = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(int); ok {
-			t.To_entry_no = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Date); ok {
-			t.Creation_date = v
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Code); ok {
-			t.Source_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Source_code = types.NewCode(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Code); ok {
-			t.Journal_batch_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Journal_batch_name = types.NewCode(v)
-			return true
-		}
-	case 8:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 2 {
-			t.Journal_type = FARegisterJournal_type(i)
-			return true
-		}
-	case 9:
-		if v, ok := value.(int); ok {
-			t.G_l_register_no = v
-			return true
-		}
-	case 10:
-		if v, ok := value.(int); ok {
-			t.From_maintenance_entry_no = v
-			return true
-		}
-	case 11:
-		if v, ok := value.(int); ok {
-			t.To_maintenance_entry_no = v
-			return true
-		}
-	}
-	return false
+	return fARegisterFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3342,31 +2726,7 @@ func (t *FARegister) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *FARegister) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "no":
-		return t.No, true
-	case "from_entry_no":
-		return t.From_entry_no, true
-	case "to_entry_no":
-		return t.To_entry_no, true
-	case "creation_date":
-		return t.Creation_date, true
-	case "source_code":
-		return t.Source_code, true
-	case "user_id":
-		return t.User_id, true
-	case "journal_batch_name":
-		return t.Journal_batch_name, true
-	case "journal_type":
-		return int(t.Journal_type), true
-	case "g_l_register_no":
-		return t.G_l_register_no, true
-	case "from_maintenance_entry_no":
-		return t.From_maintenance_entry_no, true
-	case "to_maintenance_entry_no":
-		return t.To_maintenance_entry_no, true
-	}
-	return nil, false
+	return fARegisterFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3462,138 +2822,12 @@ func (t *FARegister) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *FARegister) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"no":                        t.No,
-		"from_entry_no":             t.From_entry_no,
-		"to_entry_no":               t.To_entry_no,
-		"creation_date":             t.Creation_date.String(),
-		"source_code":               t.Source_code.String(),
-		"user_id":                   t.User_id.String(),
-		"journal_batch_name":        t.Journal_batch_name.String(),
-		"journal_type":              int(t.Journal_type),
-		"g_l_register_no":           t.G_l_register_no,
-		"from_maintenance_entry_no": t.From_maintenance_entry_no,
-		"to_maintenance_entry_no":   t.To_maintenance_entry_no,
-	}
+	return fARegisterFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *FARegister) FromMap(data map[string]interface{}) {
-	if v, ok := data["no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.No = int(val)
-		case int:
-			t.No = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.No = n
-			}
-		}
-	}
-	if v, ok := data["from_entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.From_entry_no = int(val)
-		case int:
-			t.From_entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.From_entry_no = n
-			}
-		}
-	}
-	if v, ok := data["to_entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.To_entry_no = int(val)
-		case int:
-			t.To_entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.To_entry_no = n
-			}
-		}
-	}
-	if v, ok := data["creation_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Creation_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["source_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Source_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["user_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.User_id = types.NewCode(s)
-		}
-	}
-	if v, ok := data["journal_batch_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Journal_batch_name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["journal_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Journal_type = FARegisterJournal_type(int(val))
-		case int:
-			t.Journal_type = FARegisterJournal_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"G/L", "Fixed Asset"}
-			for i, opt := range options {
-				if opt == val {
-					t.Journal_type = FARegisterJournal_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["g_l_register_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.G_l_register_no = int(val)
-		case int:
-			t.G_l_register_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.G_l_register_no = n
-			}
-		}
-	}
-	if v, ok := data["from_maintenance_entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.From_maintenance_entry_no = int(val)
-		case int:
-			t.From_maintenance_entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.From_maintenance_entry_no = n
-			}
-		}
-	}
-	if v, ok := data["to_maintenance_entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.To_maintenance_entry_no = int(val)
-		case int:
-			t.To_maintenance_entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.To_maintenance_entry_no = n
-			}
-		}
-	}
+	fARegisterFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3614,118 +2848,206 @@ func (t *FARegister) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *FARegister) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "from_entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "to_entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "creation_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "source_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "user_id",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "journal_batch_name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "journal_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "g_l_register_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "from_maintenance_entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "to_maintenance_entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return fARegisterFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in fARegisterFields.Fields
+func (t *FARegister) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.No
+	case 1:
+		return &t.From_entry_no
+	case 2:
+		return &t.To_entry_no
+	case 3:
+		return &t.Creation_date
+	case 4:
+		return &t.Source_code
+	case 5:
+		return &t.User_id
+	case 6:
+		return &t.Journal_batch_name
+	case 7:
+		return &t.Journal_type
+	case 8:
+		return &t.G_l_register_no
+	case 9:
+		return &t.From_maintenance_entry_no
+	case 10:
+		return &t.To_maintenance_entry_no
 	}
+	return nil
+}
+
+// fARegisterFields describes the fields of FA_Register for the record functions
+// written once in foundation/tables
+var fARegisterFields = &tables.TableFields{
+	Table: FARegisterTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_No",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "from_entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindInt,
+			Trigger:  "OnValidate_From_entry_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "to_entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindInt,
+			Trigger:  "OnValidate_To_entry_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "creation_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Creation_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "source_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Source_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "user_id",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_User_id",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "journal_batch_name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Journal_batch_name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "journal_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Journal_type",
+			Options: []string{"G/L", "Fixed Asset"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "g_l_register_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindInt,
+			Trigger:  "OnValidate_G_l_register_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "from_maintenance_entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindInt,
+			Trigger:  "OnValidate_From_maintenance_entry_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "to_maintenance_entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindInt,
+			Trigger:  "OnValidate_To_maintenance_entry_no",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

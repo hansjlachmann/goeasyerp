@@ -137,48 +137,12 @@ var CustomerPostingGroup_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *CustomerPostingGroup) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "code":
-		return 1
-	case "receivables_account":
-		return 2
-	case "service_charge_acc":
-		return 7
-	case "payment_disc_acc":
-		return 8
-	case "invoice_rounding_account":
-		return 9
-	case "additional_fee_account":
-		return 10
-	case "interest_account":
-		return 11
-	case "curr_appln_rounding_account":
-		return 12
-	}
-	return 0
+	return customerPostingGroupFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *CustomerPostingGroup) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "code"
-	case 2:
-		return "receivables_account"
-	case 7:
-		return "service_charge_acc"
-	case 8:
-		return "payment_disc_acc"
-	case 9:
-		return "invoice_rounding_account"
-	case 10:
-		return "additional_fee_account"
-	case 11:
-		return "interest_account"
-	case 12:
-		return "curr_appln_rounding_account"
-	}
-	return ""
+	return customerPostingGroupFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -290,30 +254,6 @@ type (
 	CustomerPostingGroupOnBeforeRename interface {
 		OnBeforeRename(rec *CustomerPostingGroup, handled *bool) error
 	}
-	CustomerPostingGroupOnValidate_Code interface {
-		OnValidate_Code(rec *CustomerPostingGroup) error
-	}
-	CustomerPostingGroupOnValidate_Receivables_account interface {
-		OnValidate_Receivables_account(rec *CustomerPostingGroup) error
-	}
-	CustomerPostingGroupOnValidate_Service_charge_acc interface {
-		OnValidate_Service_charge_acc(rec *CustomerPostingGroup) error
-	}
-	CustomerPostingGroupOnValidate_Payment_disc_acc interface {
-		OnValidate_Payment_disc_acc(rec *CustomerPostingGroup) error
-	}
-	CustomerPostingGroupOnValidate_Invoice_rounding_account interface {
-		OnValidate_Invoice_rounding_account(rec *CustomerPostingGroup) error
-	}
-	CustomerPostingGroupOnValidate_Additional_fee_account interface {
-		OnValidate_Additional_fee_account(rec *CustomerPostingGroup) error
-	}
-	CustomerPostingGroupOnValidate_Interest_account interface {
-		OnValidate_Interest_account(rec *CustomerPostingGroup) error
-	}
-	CustomerPostingGroupOnValidate_Curr_appln_rounding_account interface {
-		OnValidate_Curr_appln_rounding_account(rec *CustomerPostingGroup) error
-	}
 )
 
 // customerPostingGroupLogic is the registered business logic of Customer_Posting_Group, in
@@ -356,24 +296,9 @@ func customerPostingGroupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(CustomerPostingGroupOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(CustomerPostingGroupOnBeforeRename)
-	case "OnValidate_Code":
-		_, ok = logic.(CustomerPostingGroupOnValidate_Code)
-	case "OnValidate_Receivables_account":
-		_, ok = logic.(CustomerPostingGroupOnValidate_Receivables_account)
-	case "OnValidate_Service_charge_acc":
-		_, ok = logic.(CustomerPostingGroupOnValidate_Service_charge_acc)
-	case "OnValidate_Payment_disc_acc":
-		_, ok = logic.(CustomerPostingGroupOnValidate_Payment_disc_acc)
-	case "OnValidate_Invoice_rounding_account":
-		_, ok = logic.(CustomerPostingGroupOnValidate_Invoice_rounding_account)
-	case "OnValidate_Additional_fee_account":
-		_, ok = logic.(CustomerPostingGroupOnValidate_Additional_fee_account)
-	case "OnValidate_Interest_account":
-		_, ok = logic.(CustomerPostingGroupOnValidate_Interest_account)
-	case "OnValidate_Curr_appln_rounding_account":
-		_, ok = logic.(CustomerPostingGroupOnValidate_Curr_appln_rounding_account)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return customerPostingGroupFields.IsOnValidateTrigger(name, logic, (*CustomerPostingGroup)(nil))
 	}
 	return true, ok
 }
@@ -691,15 +616,7 @@ func (t *CustomerPostingGroup) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *CustomerPostingGroup) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["code"] = t.Code
-	t.oldValues["receivables_account"] = t.Receivables_account
-	t.oldValues["service_charge_acc"] = t.Service_charge_acc
-	t.oldValues["payment_disc_acc"] = t.Payment_disc_acc
-	t.oldValues["invoice_rounding_account"] = t.Invoice_rounding_account
-	t.oldValues["additional_fee_account"] = t.Additional_fee_account
-	t.oldValues["interest_account"] = t.Interest_account
-	t.oldValues["curr_appln_rounding_account"] = t.Curr_appln_rounding_account
+	t.oldValues = customerPostingGroupFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -714,30 +631,7 @@ func (t *CustomerPostingGroup) OldValue(fieldName string) interface{} {
 func (t *CustomerPostingGroup) XRec() *CustomerPostingGroup {
 	x := &CustomerPostingGroup{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["code"].(types.Code); ok {
-		x.Code = v
-	}
-	if v, ok := t.oldValues["receivables_account"].(types.Code); ok {
-		x.Receivables_account = v
-	}
-	if v, ok := t.oldValues["service_charge_acc"].(types.Code); ok {
-		x.Service_charge_acc = v
-	}
-	if v, ok := t.oldValues["payment_disc_acc"].(types.Code); ok {
-		x.Payment_disc_acc = v
-	}
-	if v, ok := t.oldValues["invoice_rounding_account"].(types.Code); ok {
-		x.Invoice_rounding_account = v
-	}
-	if v, ok := t.oldValues["additional_fee_account"].(types.Code); ok {
-		x.Additional_fee_account = v
-	}
-	if v, ok := t.oldValues["interest_account"].(types.Code); ok {
-		x.Interest_account = v
-	}
-	if v, ok := t.oldValues["curr_appln_rounding_account"].(types.Code); ok {
-		x.Curr_appln_rounding_account = v
-	}
+	customerPostingGroupFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1080,53 +974,7 @@ func (t *CustomerPostingGroup) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *CustomerPostingGroup) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Code.Equal(old)
-		}
-	case "receivables_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Receivables_account.Equal(old)
-		}
-	case "service_charge_acc":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Service_charge_acc.Equal(old)
-		}
-	case "payment_disc_acc":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Payment_disc_acc.Equal(old)
-		}
-	case "invoice_rounding_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Invoice_rounding_account.Equal(old)
-		}
-	case "additional_fee_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Additional_fee_account.Equal(old)
-		}
-	case "interest_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Interest_account.Equal(old)
-		}
-	case "curr_appln_rounding_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Curr_appln_rounding_account.Equal(old)
-		}
-	}
-
-	return false
+	return customerPostingGroupFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1396,25 +1244,7 @@ func (t *CustomerPostingGroup) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *CustomerPostingGroup) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("code"):
-		return "code", true
-	case strings.ToLower("receivables_account"):
-		return "receivables_account", true
-	case strings.ToLower("service_charge_acc"):
-		return "service_charge_acc", true
-	case strings.ToLower("payment_disc_acc"):
-		return "payment_disc_acc", true
-	case strings.ToLower("invoice_rounding_account"):
-		return "invoice_rounding_account", true
-	case strings.ToLower("additional_fee_account"):
-		return "additional_fee_account", true
-	case strings.ToLower("interest_account"):
-		return "interest_account", true
-	case strings.ToLower("curr_appln_rounding_account"):
-		return "curr_appln_rounding_account", true
-	}
-	return "", false
+	return customerPostingGroupFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2301,184 +2131,20 @@ func (t *CustomerPostingGroup) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *CustomerPostingGroup) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-		} else if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CustomerPostingGroupOnValidate_Code); ok {
-				if err := trg.OnValidate_Code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "receivables_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Receivables_account = v
-		} else if v, ok := value.(string); ok {
-			t.Receivables_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field receivables_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "receivables_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CustomerPostingGroupOnValidate_Receivables_account); ok {
-				if err := trg.OnValidate_Receivables_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "service_charge_acc":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Service_charge_acc = v
-		} else if v, ok := value.(string); ok {
-			t.Service_charge_acc = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field service_charge_acc")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "service_charge_acc"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CustomerPostingGroupOnValidate_Service_charge_acc); ok {
-				if err := trg.OnValidate_Service_charge_acc(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "payment_disc_acc":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Payment_disc_acc = v
-		} else if v, ok := value.(string); ok {
-			t.Payment_disc_acc = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field payment_disc_acc")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "payment_disc_acc"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CustomerPostingGroupOnValidate_Payment_disc_acc); ok {
-				if err := trg.OnValidate_Payment_disc_acc(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "invoice_rounding_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Invoice_rounding_account = v
-		} else if v, ok := value.(string); ok {
-			t.Invoice_rounding_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field invoice_rounding_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "invoice_rounding_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CustomerPostingGroupOnValidate_Invoice_rounding_account); ok {
-				if err := trg.OnValidate_Invoice_rounding_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "additional_fee_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Additional_fee_account = v
-		} else if v, ok := value.(string); ok {
-			t.Additional_fee_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field additional_fee_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "additional_fee_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CustomerPostingGroupOnValidate_Additional_fee_account); ok {
-				if err := trg.OnValidate_Additional_fee_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "interest_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Interest_account = v
-		} else if v, ok := value.(string); ok {
-			t.Interest_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field interest_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "interest_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CustomerPostingGroupOnValidate_Interest_account); ok {
-				if err := trg.OnValidate_Interest_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "curr_appln_rounding_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Curr_appln_rounding_account = v
-		} else if v, ok := value.(string); ok {
-			t.Curr_appln_rounding_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field curr_appln_rounding_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "curr_appln_rounding_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CustomerPostingGroupOnValidate_Curr_appln_rounding_account); ok {
-				if err := trg.OnValidate_Curr_appln_rounding_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := customerPostingGroupFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &customerPostingGroupFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2487,112 +2153,18 @@ func (t *CustomerPostingGroup) ValidateField(fieldName string, value interface{}
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *CustomerPostingGroup) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Code, true
-	case 2:
-		return t.Receivables_account, true
-	case 7:
-		return t.Service_charge_acc, true
-	case 8:
-		return t.Payment_disc_acc, true
-	case 9:
-		return t.Invoice_rounding_account, true
-	case 10:
-		return t.Additional_fee_account, true
-	case 11:
-		return t.Interest_account, true
-	case 12:
-		return t.Curr_appln_rounding_account, true
-	}
-	return nil, false
+	return customerPostingGroupFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *CustomerPostingGroup) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return customerPostingGroupFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *CustomerPostingGroup) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Receivables_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Receivables_account = types.NewCode(v)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Code); ok {
-			t.Service_charge_acc = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Service_charge_acc = types.NewCode(v)
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Code); ok {
-			t.Payment_disc_acc = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Payment_disc_acc = types.NewCode(v)
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.Code); ok {
-			t.Invoice_rounding_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Invoice_rounding_account = types.NewCode(v)
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Code); ok {
-			t.Additional_fee_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Additional_fee_account = types.NewCode(v)
-			return true
-		}
-	case 11:
-		if v, ok := value.(types.Code); ok {
-			t.Interest_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Interest_account = types.NewCode(v)
-			return true
-		}
-	case 12:
-		if v, ok := value.(types.Code); ok {
-			t.Curr_appln_rounding_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Curr_appln_rounding_account = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return customerPostingGroupFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3041,25 +2613,7 @@ func (t *CustomerPostingGroup) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *CustomerPostingGroup) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "code":
-		return t.Code, true
-	case "receivables_account":
-		return t.Receivables_account, true
-	case "service_charge_acc":
-		return t.Service_charge_acc, true
-	case "payment_disc_acc":
-		return t.Payment_disc_acc, true
-	case "invoice_rounding_account":
-		return t.Invoice_rounding_account, true
-	case "additional_fee_account":
-		return t.Additional_fee_account, true
-	case "interest_account":
-		return t.Interest_account, true
-	case "curr_appln_rounding_account":
-		return t.Curr_appln_rounding_account, true
-	}
-	return nil, false
+	return customerPostingGroupFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3152,60 +2706,12 @@ func (t *CustomerPostingGroup) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *CustomerPostingGroup) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"code":                        t.Code.String(),
-		"receivables_account":         t.Receivables_account.String(),
-		"service_charge_acc":          t.Service_charge_acc.String(),
-		"payment_disc_acc":            t.Payment_disc_acc.String(),
-		"invoice_rounding_account":    t.Invoice_rounding_account.String(),
-		"additional_fee_account":      t.Additional_fee_account.String(),
-		"interest_account":            t.Interest_account.String(),
-		"curr_appln_rounding_account": t.Curr_appln_rounding_account.String(),
-	}
+	return customerPostingGroupFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *CustomerPostingGroup) FromMap(data map[string]interface{}) {
-	if v, ok := data["code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["receivables_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Receivables_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["service_charge_acc"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Service_charge_acc = types.NewCode(s)
-		}
-	}
-	if v, ok := data["payment_disc_acc"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Payment_disc_acc = types.NewCode(s)
-		}
-	}
-	if v, ok := data["invoice_rounding_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Invoice_rounding_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["additional_fee_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Additional_fee_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["interest_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Interest_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["curr_appln_rounding_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Curr_appln_rounding_account = types.NewCode(s)
-		}
-	}
+	customerPostingGroupFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3226,88 +2732,157 @@ func (t *CustomerPostingGroup) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *CustomerPostingGroup) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "receivables_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "service_charge_acc",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "payment_disc_acc",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "invoice_rounding_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "additional_fee_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "interest_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "curr_appln_rounding_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return customerPostingGroupFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in customerPostingGroupFields.Fields
+func (t *CustomerPostingGroup) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Code
+	case 1:
+		return &t.Receivables_account
+	case 2:
+		return &t.Service_charge_acc
+	case 3:
+		return &t.Payment_disc_acc
+	case 4:
+		return &t.Invoice_rounding_account
+	case 5:
+		return &t.Additional_fee_account
+	case 6:
+		return &t.Interest_account
+	case 7:
+		return &t.Curr_appln_rounding_account
 	}
+	return nil
+}
+
+// customerPostingGroupFields describes the fields of Customer_Posting_Group for the record functions
+// written once in foundation/tables
+var customerPostingGroupFields = &tables.TableFields{
+	Table: CustomerPostingGroupTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "receivables_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Receivables_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "service_charge_acc",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Service_charge_acc",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "payment_disc_acc",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Payment_disc_acc",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "invoice_rounding_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Invoice_rounding_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "additional_fee_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Additional_fee_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "interest_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Interest_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "curr_appln_rounding_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Curr_appln_rounding_account",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

@@ -174,48 +174,12 @@ var CurrencyExchangeRate_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *CurrencyExchangeRate) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "currency_code":
-		return 1
-	case "starting_date":
-		return 2
-	case "exchange_rate_amount":
-		return 3
-	case "adjustment_exch_rate_amount":
-		return 4
-	case "relational_currency_code":
-		return 5
-	case "relational_exch_rate_amount":
-		return 6
-	case "fix_exchange_rate_amount":
-		return 7
-	case "relational_adjmt_exch_rate_amt":
-		return 8
-	}
-	return 0
+	return currencyExchangeRateFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *CurrencyExchangeRate) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "currency_code"
-	case 2:
-		return "starting_date"
-	case 3:
-		return "exchange_rate_amount"
-	case 4:
-		return "adjustment_exch_rate_amount"
-	case 5:
-		return "relational_currency_code"
-	case 6:
-		return "relational_exch_rate_amount"
-	case 7:
-		return "fix_exchange_rate_amount"
-	case 8:
-		return "relational_adjmt_exch_rate_amt"
-	}
-	return ""
+	return currencyExchangeRateFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -327,30 +291,6 @@ type (
 	CurrencyExchangeRateOnBeforeRename interface {
 		OnBeforeRename(rec *CurrencyExchangeRate, handled *bool) error
 	}
-	CurrencyExchangeRateOnValidate_Currency_code interface {
-		OnValidate_Currency_code(rec *CurrencyExchangeRate) error
-	}
-	CurrencyExchangeRateOnValidate_Starting_date interface {
-		OnValidate_Starting_date(rec *CurrencyExchangeRate) error
-	}
-	CurrencyExchangeRateOnValidate_Exchange_rate_amount interface {
-		OnValidate_Exchange_rate_amount(rec *CurrencyExchangeRate) error
-	}
-	CurrencyExchangeRateOnValidate_Adjustment_exch_rate_amount interface {
-		OnValidate_Adjustment_exch_rate_amount(rec *CurrencyExchangeRate) error
-	}
-	CurrencyExchangeRateOnValidate_Relational_currency_code interface {
-		OnValidate_Relational_currency_code(rec *CurrencyExchangeRate) error
-	}
-	CurrencyExchangeRateOnValidate_Relational_exch_rate_amount interface {
-		OnValidate_Relational_exch_rate_amount(rec *CurrencyExchangeRate) error
-	}
-	CurrencyExchangeRateOnValidate_Fix_exchange_rate_amount interface {
-		OnValidate_Fix_exchange_rate_amount(rec *CurrencyExchangeRate) error
-	}
-	CurrencyExchangeRateOnValidate_Relational_adjmt_exch_rate_amt interface {
-		OnValidate_Relational_adjmt_exch_rate_amt(rec *CurrencyExchangeRate) error
-	}
 )
 
 // currencyExchangeRateLogic is the registered business logic of Currency_Exchange_Rate, in
@@ -393,24 +333,9 @@ func currencyExchangeRateTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(CurrencyExchangeRateOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(CurrencyExchangeRateOnBeforeRename)
-	case "OnValidate_Currency_code":
-		_, ok = logic.(CurrencyExchangeRateOnValidate_Currency_code)
-	case "OnValidate_Starting_date":
-		_, ok = logic.(CurrencyExchangeRateOnValidate_Starting_date)
-	case "OnValidate_Exchange_rate_amount":
-		_, ok = logic.(CurrencyExchangeRateOnValidate_Exchange_rate_amount)
-	case "OnValidate_Adjustment_exch_rate_amount":
-		_, ok = logic.(CurrencyExchangeRateOnValidate_Adjustment_exch_rate_amount)
-	case "OnValidate_Relational_currency_code":
-		_, ok = logic.(CurrencyExchangeRateOnValidate_Relational_currency_code)
-	case "OnValidate_Relational_exch_rate_amount":
-		_, ok = logic.(CurrencyExchangeRateOnValidate_Relational_exch_rate_amount)
-	case "OnValidate_Fix_exchange_rate_amount":
-		_, ok = logic.(CurrencyExchangeRateOnValidate_Fix_exchange_rate_amount)
-	case "OnValidate_Relational_adjmt_exch_rate_amt":
-		_, ok = logic.(CurrencyExchangeRateOnValidate_Relational_adjmt_exch_rate_amt)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return currencyExchangeRateFields.IsOnValidateTrigger(name, logic, (*CurrencyExchangeRate)(nil))
 	}
 	return true, ok
 }
@@ -730,15 +655,7 @@ func (t *CurrencyExchangeRate) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *CurrencyExchangeRate) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["currency_code"] = t.Currency_code
-	t.oldValues["starting_date"] = t.Starting_date
-	t.oldValues["exchange_rate_amount"] = t.Exchange_rate_amount
-	t.oldValues["adjustment_exch_rate_amount"] = t.Adjustment_exch_rate_amount
-	t.oldValues["relational_currency_code"] = t.Relational_currency_code
-	t.oldValues["relational_exch_rate_amount"] = t.Relational_exch_rate_amount
-	t.oldValues["fix_exchange_rate_amount"] = t.Fix_exchange_rate_amount
-	t.oldValues["relational_adjmt_exch_rate_amt"] = t.Relational_adjmt_exch_rate_amt
+	t.oldValues = currencyExchangeRateFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -753,30 +670,7 @@ func (t *CurrencyExchangeRate) OldValue(fieldName string) interface{} {
 func (t *CurrencyExchangeRate) XRec() *CurrencyExchangeRate {
 	x := &CurrencyExchangeRate{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["currency_code"].(types.Code); ok {
-		x.Currency_code = v
-	}
-	if v, ok := t.oldValues["starting_date"].(types.Date); ok {
-		x.Starting_date = v
-	}
-	if v, ok := t.oldValues["exchange_rate_amount"].(types.Decimal); ok {
-		x.Exchange_rate_amount = v
-	}
-	if v, ok := t.oldValues["adjustment_exch_rate_amount"].(types.Decimal); ok {
-		x.Adjustment_exch_rate_amount = v
-	}
-	if v, ok := t.oldValues["relational_currency_code"].(types.Code); ok {
-		x.Relational_currency_code = v
-	}
-	if v, ok := t.oldValues["relational_exch_rate_amount"].(types.Decimal); ok {
-		x.Relational_exch_rate_amount = v
-	}
-	if v, ok := t.oldValues["fix_exchange_rate_amount"].(CurrencyExchangeRateFix_exchange_rate_amount); ok {
-		x.Fix_exchange_rate_amount = v
-	}
-	if v, ok := t.oldValues["relational_adjmt_exch_rate_amt"].(types.Decimal); ok {
-		x.Relational_adjmt_exch_rate_amt = v
-	}
+	currencyExchangeRateFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1110,53 +1004,7 @@ func (t *CurrencyExchangeRate) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *CurrencyExchangeRate) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "currency_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Currency_code.Equal(old)
-		}
-	case "starting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Starting_date.Equal(old)
-		}
-	case "exchange_rate_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Exchange_rate_amount.Equal(old)
-		}
-	case "adjustment_exch_rate_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Adjustment_exch_rate_amount.Equal(old)
-		}
-	case "relational_currency_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Relational_currency_code.Equal(old)
-		}
-	case "relational_exch_rate_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Relational_exch_rate_amount.Equal(old)
-		}
-	case "fix_exchange_rate_amount":
-		if old, ok := oldValue.(CurrencyExchangeRateFix_exchange_rate_amount); ok {
-			return t.Fix_exchange_rate_amount != old
-		}
-	case "relational_adjmt_exch_rate_amt":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Relational_adjmt_exch_rate_amt.Equal(old)
-		}
-	}
-
-	return false
+	return currencyExchangeRateFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1358,25 +1206,7 @@ func (t *CurrencyExchangeRate) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *CurrencyExchangeRate) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("currency_code"):
-		return "currency_code", true
-	case strings.ToLower("starting_date"):
-		return "starting_date", true
-	case strings.ToLower("exchange_rate_amount"):
-		return "exchange_rate_amount", true
-	case strings.ToLower("adjustment_exch_rate_amount"):
-		return "adjustment_exch_rate_amount", true
-	case strings.ToLower("relational_currency_code"):
-		return "relational_currency_code", true
-	case strings.ToLower("relational_exch_rate_amount"):
-		return "relational_exch_rate_amount", true
-	case strings.ToLower("fix_exchange_rate_amount"):
-		return "fix_exchange_rate_amount", true
-	case strings.ToLower("relational_adjmt_exch_rate_amt"):
-		return "relational_adjmt_exch_rate_amt", true
-	}
-	return "", false
+	return currencyExchangeRateFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2275,241 +2105,20 @@ func (t *CurrencyExchangeRate) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *CurrencyExchangeRate) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "currency_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Currency_code = v
-		} else if v, ok := value.(string); ok {
-			t.Currency_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field currency_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "currency_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyExchangeRateOnValidate_Currency_code); ok {
-				if err := trg.OnValidate_Currency_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "starting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Starting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Starting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field starting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Starting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field starting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyExchangeRateOnValidate_Starting_date); ok {
-				if err := trg.OnValidate_Starting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "exchange_rate_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Exchange_rate_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Exchange_rate_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field exchange_rate_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Exchange_rate_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Exchange_rate_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Exchange_rate_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field exchange_rate_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyExchangeRateOnValidate_Exchange_rate_amount); ok {
-				if err := trg.OnValidate_Exchange_rate_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "adjustment_exch_rate_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Adjustment_exch_rate_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Adjustment_exch_rate_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field adjustment_exch_rate_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Adjustment_exch_rate_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Adjustment_exch_rate_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Adjustment_exch_rate_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field adjustment_exch_rate_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyExchangeRateOnValidate_Adjustment_exch_rate_amount); ok {
-				if err := trg.OnValidate_Adjustment_exch_rate_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "relational_currency_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Relational_currency_code = v
-		} else if v, ok := value.(string); ok {
-			t.Relational_currency_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field relational_currency_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "relational_currency_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyExchangeRateOnValidate_Relational_currency_code); ok {
-				if err := trg.OnValidate_Relational_currency_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "relational_exch_rate_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Relational_exch_rate_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Relational_exch_rate_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field relational_exch_rate_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Relational_exch_rate_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Relational_exch_rate_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Relational_exch_rate_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field relational_exch_rate_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyExchangeRateOnValidate_Relational_exch_rate_amount); ok {
-				if err := trg.OnValidate_Relational_exch_rate_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fix_exchange_rate_amount":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(CurrencyExchangeRateFix_exchange_rate_amount); ok {
-			t.Fix_exchange_rate_amount = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field fix_exchange_rate_amount (valid range: 0-%d)", v, 3-1)
-			}
-			t.Fix_exchange_rate_amount = CurrencyExchangeRateFix_exchange_rate_amount(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field fix_exchange_rate_amount (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Fix_exchange_rate_amount = CurrencyExchangeRateFix_exchange_rate_amount(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Fix_exchange_rate_amount = 0
-			} else {
-				options := []string{"Currency", "Relational Currency", "Both"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Fix_exchange_rate_amount = CurrencyExchangeRateFix_exchange_rate_amount(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field fix_exchange_rate_amount (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field fix_exchange_rate_amount (expected CurrencyExchangeRateFix_exchange_rate_amount, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyExchangeRateOnValidate_Fix_exchange_rate_amount); ok {
-				if err := trg.OnValidate_Fix_exchange_rate_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "relational_adjmt_exch_rate_amt":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Relational_adjmt_exch_rate_amt = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Relational_adjmt_exch_rate_amt, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field relational_adjmt_exch_rate_amt: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Relational_adjmt_exch_rate_amt = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Relational_adjmt_exch_rate_amt = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Relational_adjmt_exch_rate_amt = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field relational_adjmt_exch_rate_amt (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyExchangeRateOnValidate_Relational_adjmt_exch_rate_amt); ok {
-				if err := trg.OnValidate_Relational_adjmt_exch_rate_amt(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := currencyExchangeRateFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &currencyExchangeRateFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2518,88 +2127,18 @@ func (t *CurrencyExchangeRate) ValidateField(fieldName string, value interface{}
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *CurrencyExchangeRate) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Currency_code, true
-	case 2:
-		return t.Starting_date, true
-	case 3:
-		return t.Exchange_rate_amount, true
-	case 4:
-		return t.Adjustment_exch_rate_amount, true
-	case 5:
-		return t.Relational_currency_code, true
-	case 6:
-		return t.Relational_exch_rate_amount, true
-	case 7:
-		return t.Fix_exchange_rate_amount, true
-	case 8:
-		return t.Relational_adjmt_exch_rate_amt, true
-	}
-	return nil, false
+	return currencyExchangeRateFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *CurrencyExchangeRate) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return currencyExchangeRateFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *CurrencyExchangeRate) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Currency_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Currency_code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Date); ok {
-			t.Starting_date = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Decimal); ok {
-			t.Exchange_rate_amount = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Decimal); ok {
-			t.Adjustment_exch_rate_amount = v
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Code); ok {
-			t.Relational_currency_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Relational_currency_code = types.NewCode(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Decimal); ok {
-			t.Relational_exch_rate_amount = v
-			return true
-		}
-	case 7:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Fix_exchange_rate_amount = CurrencyExchangeRateFix_exchange_rate_amount(i)
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Decimal); ok {
-			t.Relational_adjmt_exch_rate_amt = v
-			return true
-		}
-	}
-	return false
+	return currencyExchangeRateFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3094,25 +2633,7 @@ func (t *CurrencyExchangeRate) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *CurrencyExchangeRate) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "currency_code":
-		return t.Currency_code, true
-	case "starting_date":
-		return t.Starting_date, true
-	case "exchange_rate_amount":
-		return t.Exchange_rate_amount, true
-	case "adjustment_exch_rate_amount":
-		return t.Adjustment_exch_rate_amount, true
-	case "relational_currency_code":
-		return t.Relational_currency_code, true
-	case "relational_exch_rate_amount":
-		return t.Relational_exch_rate_amount, true
-	case "fix_exchange_rate_amount":
-		return int(t.Fix_exchange_rate_amount), true
-	case "relational_adjmt_exch_rate_amt":
-		return t.Relational_adjmt_exch_rate_amt, true
-	}
-	return nil, false
+	return currencyExchangeRateFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3208,100 +2729,12 @@ func (t *CurrencyExchangeRate) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *CurrencyExchangeRate) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"currency_code":                  t.Currency_code.String(),
-		"starting_date":                  t.Starting_date.String(),
-		"exchange_rate_amount":           t.Exchange_rate_amount.String(),
-		"adjustment_exch_rate_amount":    t.Adjustment_exch_rate_amount.String(),
-		"relational_currency_code":       t.Relational_currency_code.String(),
-		"relational_exch_rate_amount":    t.Relational_exch_rate_amount.String(),
-		"fix_exchange_rate_amount":       int(t.Fix_exchange_rate_amount),
-		"relational_adjmt_exch_rate_amt": t.Relational_adjmt_exch_rate_amt.String(),
-	}
+	return currencyExchangeRateFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *CurrencyExchangeRate) FromMap(data map[string]interface{}) {
-	if v, ok := data["currency_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Currency_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["starting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Starting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["exchange_rate_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Exchange_rate_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Exchange_rate_amount = types.NewDecimal(val)
-		case int:
-			t.Exchange_rate_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Exchange_rate_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["adjustment_exch_rate_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Adjustment_exch_rate_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Adjustment_exch_rate_amount = types.NewDecimal(val)
-		case int:
-			t.Adjustment_exch_rate_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Adjustment_exch_rate_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["relational_currency_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Relational_currency_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["relational_exch_rate_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Relational_exch_rate_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Relational_exch_rate_amount = types.NewDecimal(val)
-		case int:
-			t.Relational_exch_rate_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Relational_exch_rate_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["fix_exchange_rate_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Fix_exchange_rate_amount = CurrencyExchangeRateFix_exchange_rate_amount(int(val))
-		case int:
-			t.Fix_exchange_rate_amount = CurrencyExchangeRateFix_exchange_rate_amount(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Currency", "Relational Currency", "Both"}
-			for i, opt := range options {
-				if opt == val {
-					t.Fix_exchange_rate_amount = CurrencyExchangeRateFix_exchange_rate_amount(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["relational_adjmt_exch_rate_amt"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Relational_adjmt_exch_rate_amt, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Relational_adjmt_exch_rate_amt = types.NewDecimal(val)
-		case int:
-			t.Relational_adjmt_exch_rate_amt = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Relational_adjmt_exch_rate_amt = types.NewDecimalFromInt(val)
-		}
-	}
+	currencyExchangeRateFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3322,93 +2755,158 @@ func (t *CurrencyExchangeRate) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *CurrencyExchangeRate) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "currency_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         2,
-			Name:       "starting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:            3,
-			Name:          "exchange_rate_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "1:6",
-		},
-		{
-			No:            4,
-			Name:          "adjustment_exch_rate_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "1:6",
-		},
-		{
-			No:         5,
-			Name:       "relational_currency_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            6,
-			Name:          "relational_exch_rate_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "1:6",
-		},
-		{
-			No:         7,
-			Name:       "fix_exchange_rate_amount",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            8,
-			Name:          "relational_adjmt_exch_rate_amt",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "1:6",
-		},
+	return currencyExchangeRateFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in currencyExchangeRateFields.Fields
+func (t *CurrencyExchangeRate) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Currency_code
+	case 1:
+		return &t.Starting_date
+	case 2:
+		return &t.Exchange_rate_amount
+	case 3:
+		return &t.Adjustment_exch_rate_amount
+	case 4:
+		return &t.Relational_currency_code
+	case 5:
+		return &t.Relational_exch_rate_amount
+	case 6:
+		return &t.Fix_exchange_rate_amount
+	case 7:
+		return &t.Relational_adjmt_exch_rate_amt
 	}
+	return nil
+}
+
+// currencyExchangeRateFields describes the fields of Currency_Exchange_Rate for the record functions
+// written once in foundation/tables
+var currencyExchangeRateFields = &tables.TableFields{
+	Table: CurrencyExchangeRateTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "currency_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Currency_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "starting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Starting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            3,
+				Name:          "exchange_rate_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "1:6",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Exchange_rate_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            4,
+				Name:          "adjustment_exch_rate_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "1:6",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Adjustment_exch_rate_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "relational_currency_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Relational_currency_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            6,
+				Name:          "relational_exch_rate_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "1:6",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Relational_exch_rate_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "fix_exchange_rate_amount",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Fix_exchange_rate_amount",
+			Options: []string{"Currency", "Relational Currency", "Both"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            8,
+				Name:          "relational_adjmt_exch_rate_amt",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "1:6",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Relational_adjmt_exch_rate_amt",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

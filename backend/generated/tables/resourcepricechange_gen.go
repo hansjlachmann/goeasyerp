@@ -170,44 +170,12 @@ var ResourcePriceChange_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *ResourcePriceChange) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "project_no":
-		return 1
-	case "type":
-		return 2
-	case "code":
-		return 3
-	case "work_type_code":
-		return 4
-	case "currency_code":
-		return 5
-	case "current_unit_price":
-		return 6
-	case "new_unit_price":
-		return 7
-	}
-	return 0
+	return resourcePriceChangeFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *ResourcePriceChange) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "project_no"
-	case 2:
-		return "type"
-	case 3:
-		return "code"
-	case 4:
-		return "work_type_code"
-	case 5:
-		return "currency_code"
-	case 6:
-		return "current_unit_price"
-	case 7:
-		return "new_unit_price"
-	}
-	return ""
+	return resourcePriceChangeFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -319,27 +287,6 @@ type (
 	ResourcePriceChangeOnBeforeRename interface {
 		OnBeforeRename(rec *ResourcePriceChange, handled *bool) error
 	}
-	ResourcePriceChangeOnValidate_Project_no interface {
-		OnValidate_Project_no(rec *ResourcePriceChange) error
-	}
-	ResourcePriceChangeOnValidate_Type interface {
-		OnValidate_Type(rec *ResourcePriceChange) error
-	}
-	ResourcePriceChangeOnValidate_Code interface {
-		OnValidate_Code(rec *ResourcePriceChange) error
-	}
-	ResourcePriceChangeOnValidate_Work_type_code interface {
-		OnValidate_Work_type_code(rec *ResourcePriceChange) error
-	}
-	ResourcePriceChangeOnValidate_Currency_code interface {
-		OnValidate_Currency_code(rec *ResourcePriceChange) error
-	}
-	ResourcePriceChangeOnValidate_Current_unit_price interface {
-		OnValidate_Current_unit_price(rec *ResourcePriceChange) error
-	}
-	ResourcePriceChangeOnValidate_New_unit_price interface {
-		OnValidate_New_unit_price(rec *ResourcePriceChange) error
-	}
 )
 
 // resourcePriceChangeLogic is the registered business logic of Resource_Price_Change, in
@@ -382,22 +329,9 @@ func resourcePriceChangeTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ResourcePriceChangeOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(ResourcePriceChangeOnBeforeRename)
-	case "OnValidate_Project_no":
-		_, ok = logic.(ResourcePriceChangeOnValidate_Project_no)
-	case "OnValidate_Type":
-		_, ok = logic.(ResourcePriceChangeOnValidate_Type)
-	case "OnValidate_Code":
-		_, ok = logic.(ResourcePriceChangeOnValidate_Code)
-	case "OnValidate_Work_type_code":
-		_, ok = logic.(ResourcePriceChangeOnValidate_Work_type_code)
-	case "OnValidate_Currency_code":
-		_, ok = logic.(ResourcePriceChangeOnValidate_Currency_code)
-	case "OnValidate_Current_unit_price":
-		_, ok = logic.(ResourcePriceChangeOnValidate_Current_unit_price)
-	case "OnValidate_New_unit_price":
-		_, ok = logic.(ResourcePriceChangeOnValidate_New_unit_price)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return resourcePriceChangeFields.IsOnValidateTrigger(name, logic, (*ResourcePriceChange)(nil))
 	}
 	return true, ok
 }
@@ -706,14 +640,7 @@ func (t *ResourcePriceChange) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *ResourcePriceChange) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["project_no"] = t.Project_no
-	t.oldValues["type"] = t.Type
-	t.oldValues["code"] = t.Code
-	t.oldValues["work_type_code"] = t.Work_type_code
-	t.oldValues["currency_code"] = t.Currency_code
-	t.oldValues["current_unit_price"] = t.Current_unit_price
-	t.oldValues["new_unit_price"] = t.New_unit_price
+	t.oldValues = resourcePriceChangeFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -728,27 +655,7 @@ func (t *ResourcePriceChange) OldValue(fieldName string) interface{} {
 func (t *ResourcePriceChange) XRec() *ResourcePriceChange {
 	x := &ResourcePriceChange{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["project_no"].(types.Code); ok {
-		x.Project_no = v
-	}
-	if v, ok := t.oldValues["type"].(ResourcePriceChangeType); ok {
-		x.Type = v
-	}
-	if v, ok := t.oldValues["code"].(types.Code); ok {
-		x.Code = v
-	}
-	if v, ok := t.oldValues["work_type_code"].(types.Code); ok {
-		x.Work_type_code = v
-	}
-	if v, ok := t.oldValues["currency_code"].(types.Code); ok {
-		x.Currency_code = v
-	}
-	if v, ok := t.oldValues["current_unit_price"].(types.Decimal); ok {
-		x.Current_unit_price = v
-	}
-	if v, ok := t.oldValues["new_unit_price"].(types.Decimal); ok {
-		x.New_unit_price = v
-	}
+	resourcePriceChangeFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1123,49 +1030,7 @@ func (t *ResourcePriceChange) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *ResourcePriceChange) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "project_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_no.Equal(old)
-		}
-	case "type":
-		if old, ok := oldValue.(ResourcePriceChangeType); ok {
-			return t.Type != old
-		}
-	case "code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Code.Equal(old)
-		}
-	case "work_type_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Work_type_code.Equal(old)
-		}
-	case "currency_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Currency_code.Equal(old)
-		}
-	case "current_unit_price":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Current_unit_price.Equal(old)
-		}
-	case "new_unit_price":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.New_unit_price.Equal(old)
-		}
-	}
-
-	return false
+	return resourcePriceChangeFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1370,23 +1235,7 @@ func (t *ResourcePriceChange) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *ResourcePriceChange) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("project_no"):
-		return "project_no", true
-	case strings.ToLower("type"):
-		return "type", true
-	case strings.ToLower("code"):
-		return "code", true
-	case strings.ToLower("work_type_code"):
-		return "work_type_code", true
-	case strings.ToLower("currency_code"):
-		return "currency_code", true
-	case strings.ToLower("current_unit_price"):
-		return "current_unit_price", true
-	case strings.ToLower("new_unit_price"):
-		return "new_unit_price", true
-	}
-	return "", false
+	return resourcePriceChangeFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2264,205 +2113,20 @@ func (t *ResourcePriceChange) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *ResourcePriceChange) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "project_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Project_no = v
-		} else if v, ok := value.(string); ok {
-			t.Project_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field project_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ResourcePriceChangeOnValidate_Project_no); ok {
-				if err := trg.OnValidate_Project_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ResourcePriceChangeType); ok {
-			t.Type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", v, 3-1)
-			}
-			t.Type = ResourcePriceChangeType(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Type = ResourcePriceChangeType(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Type = 0
-			} else {
-				options := []string{"Resource", "Group(Resource)", "All"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Type = ResourcePriceChangeType(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field type (expected ResourcePriceChangeType, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ResourcePriceChangeOnValidate_Type); ok {
-				if err := trg.OnValidate_Type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-		} else if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ResourcePriceChangeOnValidate_Code); ok {
-				if err := trg.OnValidate_Code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "work_type_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Work_type_code = v
-		} else if v, ok := value.(string); ok {
-			t.Work_type_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field work_type_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "work_type_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ResourcePriceChangeOnValidate_Work_type_code); ok {
-				if err := trg.OnValidate_Work_type_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "currency_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Currency_code = v
-		} else if v, ok := value.(string); ok {
-			t.Currency_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field currency_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "currency_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ResourcePriceChangeOnValidate_Currency_code); ok {
-				if err := trg.OnValidate_Currency_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "current_unit_price":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Current_unit_price = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Current_unit_price, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field current_unit_price: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Current_unit_price = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Current_unit_price = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Current_unit_price = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field current_unit_price (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ResourcePriceChangeOnValidate_Current_unit_price); ok {
-				if err := trg.OnValidate_Current_unit_price(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "new_unit_price":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.New_unit_price = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.New_unit_price, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field new_unit_price: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.New_unit_price = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.New_unit_price = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.New_unit_price = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field new_unit_price (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ResourcePriceChangeOnValidate_New_unit_price); ok {
-				if err := trg.OnValidate_New_unit_price(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := resourcePriceChangeFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &resourcePriceChangeFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2471,89 +2135,18 @@ func (t *ResourcePriceChange) ValidateField(fieldName string, value interface{})
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *ResourcePriceChange) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Project_no, true
-	case 2:
-		return t.Type, true
-	case 3:
-		return t.Code, true
-	case 4:
-		return t.Work_type_code, true
-	case 5:
-		return t.Currency_code, true
-	case 6:
-		return t.Current_unit_price, true
-	case 7:
-		return t.New_unit_price, true
-	}
-	return nil, false
+	return resourcePriceChangeFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *ResourcePriceChange) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return resourcePriceChangeFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *ResourcePriceChange) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Project_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Project_no = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Type = ResourcePriceChangeType(i)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Code); ok {
-			t.Work_type_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Work_type_code = types.NewCode(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Code); ok {
-			t.Currency_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Currency_code = types.NewCode(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Decimal); ok {
-			t.Current_unit_price = v
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Decimal); ok {
-			t.New_unit_price = v
-			return true
-		}
-	}
-	return false
+	return resourcePriceChangeFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3035,23 +2628,7 @@ func (t *ResourcePriceChange) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *ResourcePriceChange) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "project_no":
-		return t.Project_no, true
-	case "type":
-		return int(t.Type), true
-	case "code":
-		return t.Code, true
-	case "work_type_code":
-		return t.Work_type_code, true
-	case "currency_code":
-		return t.Currency_code, true
-	case "current_unit_price":
-		return t.Current_unit_price, true
-	case "new_unit_price":
-		return t.New_unit_price, true
-	}
-	return nil, false
+	return resourcePriceChangeFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3155,80 +2732,12 @@ func (t *ResourcePriceChange) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *ResourcePriceChange) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"project_no":         t.Project_no.String(),
-		"type":               int(t.Type),
-		"code":               t.Code.String(),
-		"work_type_code":     t.Work_type_code.String(),
-		"currency_code":      t.Currency_code.String(),
-		"current_unit_price": t.Current_unit_price.String(),
-		"new_unit_price":     t.New_unit_price.String(),
-	}
+	return resourcePriceChangeFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *ResourcePriceChange) FromMap(data map[string]interface{}) {
-	if v, ok := data["project_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Project_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Type = ResourcePriceChangeType(int(val))
-		case int:
-			t.Type = ResourcePriceChangeType(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Resource", "Group(Resource)", "All"}
-			for i, opt := range options {
-				if opt == val {
-					t.Type = ResourcePriceChangeType(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["work_type_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Work_type_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["currency_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Currency_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["current_unit_price"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Current_unit_price, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Current_unit_price = types.NewDecimal(val)
-		case int:
-			t.Current_unit_price = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Current_unit_price = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["new_unit_price"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.New_unit_price, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.New_unit_price = types.NewDecimal(val)
-		case int:
-			t.New_unit_price = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.New_unit_price = types.NewDecimalFromInt(val)
-		}
-	}
+	resourcePriceChangeFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3249,80 +2758,141 @@ func (t *ResourcePriceChange) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *ResourcePriceChange) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "project_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "code",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "work_type_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "currency_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:            6,
-			Name:          "current_unit_price",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:5",
-		},
-		{
-			No:            7,
-			Name:          "new_unit_price",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:5",
-		},
+	return resourcePriceChangeFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in resourcePriceChangeFields.Fields
+func (t *ResourcePriceChange) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Project_no
+	case 1:
+		return &t.Type
+	case 2:
+		return &t.Code
+	case 3:
+		return &t.Work_type_code
+	case 4:
+		return &t.Currency_code
+	case 5:
+		return &t.Current_unit_price
+	case 6:
+		return &t.New_unit_price
 	}
+	return nil
+}
+
+// resourcePriceChangeFields describes the fields of Resource_Price_Change for the record functions
+// written once in foundation/tables
+var resourcePriceChangeFields = &tables.TableFields{
+	Table: ResourcePriceChangeTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "project_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Project_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Type",
+			Options: []string{"Resource", "Group(Resource)", "All"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "code",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "work_type_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Work_type_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "currency_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Currency_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            6,
+				Name:          "current_unit_price",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Current_unit_price",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            7,
+				Name:          "new_unit_price",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_New_unit_price",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

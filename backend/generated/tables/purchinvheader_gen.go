@@ -92,7 +92,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -446,312 +445,12 @@ var PurchInvHeader_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *PurchInvHeader) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "buy_from_vendor_no":
-		return 2
-	case "no":
-		return 3
-	case "pay_to_vendor_no":
-		return 4
-	case "pay_to_name":
-		return 5
-	case "pay_to_name_2":
-		return 6
-	case "pay_to_address":
-		return 7
-	case "pay_to_address_2":
-		return 8
-	case "pay_to_city":
-		return 9
-	case "pay_to_contact":
-		return 10
-	case "your_reference":
-		return 11
-	case "ship_to_name":
-		return 13
-	case "ship_to_name_2":
-		return 14
-	case "ship_to_address":
-		return 15
-	case "ship_to_address_2":
-		return 16
-	case "ship_to_city":
-		return 17
-	case "ship_to_contact":
-		return 18
-	case "order_date":
-		return 19
-	case "posting_date":
-		return 20
-	case "expected_receipt_date":
-		return 21
-	case "posting_description":
-		return 22
-	case "payment_terms_code":
-		return 23
-	case "due_date":
-		return 24
-	case "payment_discount_percent":
-		return 25
-	case "pmt_discount_date":
-		return 26
-	case "shipment_method_code":
-		return 27
-	case "location_code":
-		return 28
-	case "dimension_1_code":
-		return 29
-	case "dimension_2_code":
-		return 30
-	case "vendor_posting_group":
-		return 31
-	case "currency_code":
-		return 32
-	case "currency_factor":
-		return 33
-	case "invoice_disc_code":
-		return 37
-	case "language_code":
-		return 41
-	case "purchaser_code":
-		return 43
-	case "order_no":
-		return 44
-	case "comment":
-		return 46
-	case "no_printed":
-		return 47
-	case "amount":
-		return 60
-	case "amount_including_tax":
-		return 61
-	case "applies_to_doc_type":
-		return 52
-	case "applies_to_doc_no":
-		return 53
-	case "vendor_order_no":
-		return 66
-	case "vendor_shipment_no":
-		return 67
-	case "vendor_invoice_no":
-		return 68
-	case "vendor_cr_memo_no":
-		return 69
-	case "vat_registration_no":
-		return 70
-	case "reason_code":
-		return 73
-	case "gen_bus_posting_group":
-		return 74
-	case "buy_from_vendor_name":
-		return 79
-	case "buy_from_vendor_name_2":
-		return 80
-	case "buy_from_address":
-		return 81
-	case "buy_from_address_2":
-		return 82
-	case "buy_from_city":
-		return 83
-	case "buy_from_contact":
-		return 84
-	case "pay_to_post_code":
-		return 85
-	case "pay_to_state":
-		return 86
-	case "pay_to_country_code":
-		return 87
-	case "buy_from_post_code":
-		return 88
-	case "buy_from_state":
-		return 89
-	case "buy_from_country_code":
-		return 90
-	case "ship_to_post_code":
-		return 91
-	case "ship_to_state":
-		return 92
-	case "ship_to_country_code":
-		return 93
-	case "order_address_code":
-		return 95
-	case "document_date":
-		return 99
-	case "payment_method_code":
-		return 104
-	case "no_series":
-		return 107
-	case "pre_assigned_no":
-		return 111
-	case "user_id":
-		return 112
-	case "source_code":
-		return 113
-	case "tax_area_code":
-		return 114
-	case "tax_liable":
-		return 115
-	case "tax_bus_posting_group":
-		return 116
-	case "project_no":
-		return 56
-	}
-	return 0
+	return purchInvHeaderFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *PurchInvHeader) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 2:
-		return "buy_from_vendor_no"
-	case 3:
-		return "no"
-	case 4:
-		return "pay_to_vendor_no"
-	case 5:
-		return "pay_to_name"
-	case 6:
-		return "pay_to_name_2"
-	case 7:
-		return "pay_to_address"
-	case 8:
-		return "pay_to_address_2"
-	case 9:
-		return "pay_to_city"
-	case 10:
-		return "pay_to_contact"
-	case 11:
-		return "your_reference"
-	case 13:
-		return "ship_to_name"
-	case 14:
-		return "ship_to_name_2"
-	case 15:
-		return "ship_to_address"
-	case 16:
-		return "ship_to_address_2"
-	case 17:
-		return "ship_to_city"
-	case 18:
-		return "ship_to_contact"
-	case 19:
-		return "order_date"
-	case 20:
-		return "posting_date"
-	case 21:
-		return "expected_receipt_date"
-	case 22:
-		return "posting_description"
-	case 23:
-		return "payment_terms_code"
-	case 24:
-		return "due_date"
-	case 25:
-		return "payment_discount_percent"
-	case 26:
-		return "pmt_discount_date"
-	case 27:
-		return "shipment_method_code"
-	case 28:
-		return "location_code"
-	case 29:
-		return "dimension_1_code"
-	case 30:
-		return "dimension_2_code"
-	case 31:
-		return "vendor_posting_group"
-	case 32:
-		return "currency_code"
-	case 33:
-		return "currency_factor"
-	case 37:
-		return "invoice_disc_code"
-	case 41:
-		return "language_code"
-	case 43:
-		return "purchaser_code"
-	case 44:
-		return "order_no"
-	case 46:
-		return "comment"
-	case 47:
-		return "no_printed"
-	case 60:
-		return "amount"
-	case 61:
-		return "amount_including_tax"
-	case 52:
-		return "applies_to_doc_type"
-	case 53:
-		return "applies_to_doc_no"
-	case 66:
-		return "vendor_order_no"
-	case 67:
-		return "vendor_shipment_no"
-	case 68:
-		return "vendor_invoice_no"
-	case 69:
-		return "vendor_cr_memo_no"
-	case 70:
-		return "vat_registration_no"
-	case 73:
-		return "reason_code"
-	case 74:
-		return "gen_bus_posting_group"
-	case 79:
-		return "buy_from_vendor_name"
-	case 80:
-		return "buy_from_vendor_name_2"
-	case 81:
-		return "buy_from_address"
-	case 82:
-		return "buy_from_address_2"
-	case 83:
-		return "buy_from_city"
-	case 84:
-		return "buy_from_contact"
-	case 85:
-		return "pay_to_post_code"
-	case 86:
-		return "pay_to_state"
-	case 87:
-		return "pay_to_country_code"
-	case 88:
-		return "buy_from_post_code"
-	case 89:
-		return "buy_from_state"
-	case 90:
-		return "buy_from_country_code"
-	case 91:
-		return "ship_to_post_code"
-	case 92:
-		return "ship_to_state"
-	case 93:
-		return "ship_to_country_code"
-	case 95:
-		return "order_address_code"
-	case 99:
-		return "document_date"
-	case 104:
-		return "payment_method_code"
-	case 107:
-		return "no_series"
-	case 111:
-		return "pre_assigned_no"
-	case 112:
-		return "user_id"
-	case 113:
-		return "source_code"
-	case 114:
-		return "tax_area_code"
-	case 115:
-		return "tax_liable"
-	case 116:
-		return "tax_bus_posting_group"
-	case 56:
-		return "project_no"
-	}
-	return ""
+	return purchInvHeaderFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -863,219 +562,6 @@ type (
 	PurchInvHeaderOnBeforeRename interface {
 		OnBeforeRename(rec *PurchInvHeader, handled *bool) error
 	}
-	PurchInvHeaderOnValidate_Buy_from_vendor_no interface {
-		OnValidate_Buy_from_vendor_no(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_No interface {
-		OnValidate_No(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Pay_to_vendor_no interface {
-		OnValidate_Pay_to_vendor_no(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Pay_to_name interface {
-		OnValidate_Pay_to_name(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Pay_to_name_2 interface {
-		OnValidate_Pay_to_name_2(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Pay_to_address interface {
-		OnValidate_Pay_to_address(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Pay_to_address_2 interface {
-		OnValidate_Pay_to_address_2(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Pay_to_city interface {
-		OnValidate_Pay_to_city(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Pay_to_contact interface {
-		OnValidate_Pay_to_contact(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Your_reference interface {
-		OnValidate_Your_reference(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Ship_to_name interface {
-		OnValidate_Ship_to_name(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Ship_to_name_2 interface {
-		OnValidate_Ship_to_name_2(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Ship_to_address interface {
-		OnValidate_Ship_to_address(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Ship_to_address_2 interface {
-		OnValidate_Ship_to_address_2(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Ship_to_city interface {
-		OnValidate_Ship_to_city(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Ship_to_contact interface {
-		OnValidate_Ship_to_contact(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Order_date interface {
-		OnValidate_Order_date(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Posting_date interface {
-		OnValidate_Posting_date(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Expected_receipt_date interface {
-		OnValidate_Expected_receipt_date(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Posting_description interface {
-		OnValidate_Posting_description(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Payment_terms_code interface {
-		OnValidate_Payment_terms_code(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Due_date interface {
-		OnValidate_Due_date(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Payment_discount_percent interface {
-		OnValidate_Payment_discount_percent(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Pmt_discount_date interface {
-		OnValidate_Pmt_discount_date(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Shipment_method_code interface {
-		OnValidate_Shipment_method_code(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Location_code interface {
-		OnValidate_Location_code(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Dimension_1_code interface {
-		OnValidate_Dimension_1_code(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Dimension_2_code interface {
-		OnValidate_Dimension_2_code(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Vendor_posting_group interface {
-		OnValidate_Vendor_posting_group(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Currency_code interface {
-		OnValidate_Currency_code(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Currency_factor interface {
-		OnValidate_Currency_factor(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Invoice_disc_code interface {
-		OnValidate_Invoice_disc_code(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Language_code interface {
-		OnValidate_Language_code(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Purchaser_code interface {
-		OnValidate_Purchaser_code(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Order_no interface {
-		OnValidate_Order_no(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_No_printed interface {
-		OnValidate_No_printed(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Applies_to_doc_type interface {
-		OnValidate_Applies_to_doc_type(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Applies_to_doc_no interface {
-		OnValidate_Applies_to_doc_no(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Vendor_order_no interface {
-		OnValidate_Vendor_order_no(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Vendor_shipment_no interface {
-		OnValidate_Vendor_shipment_no(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Vendor_invoice_no interface {
-		OnValidate_Vendor_invoice_no(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Vendor_cr_memo_no interface {
-		OnValidate_Vendor_cr_memo_no(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Vat_registration_no interface {
-		OnValidate_Vat_registration_no(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Reason_code interface {
-		OnValidate_Reason_code(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Gen_bus_posting_group interface {
-		OnValidate_Gen_bus_posting_group(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Buy_from_vendor_name interface {
-		OnValidate_Buy_from_vendor_name(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Buy_from_vendor_name_2 interface {
-		OnValidate_Buy_from_vendor_name_2(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Buy_from_address interface {
-		OnValidate_Buy_from_address(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Buy_from_address_2 interface {
-		OnValidate_Buy_from_address_2(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Buy_from_city interface {
-		OnValidate_Buy_from_city(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Buy_from_contact interface {
-		OnValidate_Buy_from_contact(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Pay_to_post_code interface {
-		OnValidate_Pay_to_post_code(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Pay_to_state interface {
-		OnValidate_Pay_to_state(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Pay_to_country_code interface {
-		OnValidate_Pay_to_country_code(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Buy_from_post_code interface {
-		OnValidate_Buy_from_post_code(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Buy_from_state interface {
-		OnValidate_Buy_from_state(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Buy_from_country_code interface {
-		OnValidate_Buy_from_country_code(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Ship_to_post_code interface {
-		OnValidate_Ship_to_post_code(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Ship_to_state interface {
-		OnValidate_Ship_to_state(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Ship_to_country_code interface {
-		OnValidate_Ship_to_country_code(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Order_address_code interface {
-		OnValidate_Order_address_code(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Document_date interface {
-		OnValidate_Document_date(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Payment_method_code interface {
-		OnValidate_Payment_method_code(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_No_series interface {
-		OnValidate_No_series(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Pre_assigned_no interface {
-		OnValidate_Pre_assigned_no(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_User_id interface {
-		OnValidate_User_id(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Source_code interface {
-		OnValidate_Source_code(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Tax_area_code interface {
-		OnValidate_Tax_area_code(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Tax_liable interface {
-		OnValidate_Tax_liable(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Tax_bus_posting_group interface {
-		OnValidate_Tax_bus_posting_group(rec *PurchInvHeader) error
-	}
-	PurchInvHeaderOnValidate_Project_no interface {
-		OnValidate_Project_no(rec *PurchInvHeader) error
-	}
 )
 
 // purchInvHeaderLogic is the registered business logic of Purch_Inv_Header, in
@@ -1118,150 +604,9 @@ func purchInvHeaderTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(PurchInvHeaderOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(PurchInvHeaderOnBeforeRename)
-	case "OnValidate_Buy_from_vendor_no":
-		_, ok = logic.(PurchInvHeaderOnValidate_Buy_from_vendor_no)
-	case "OnValidate_No":
-		_, ok = logic.(PurchInvHeaderOnValidate_No)
-	case "OnValidate_Pay_to_vendor_no":
-		_, ok = logic.(PurchInvHeaderOnValidate_Pay_to_vendor_no)
-	case "OnValidate_Pay_to_name":
-		_, ok = logic.(PurchInvHeaderOnValidate_Pay_to_name)
-	case "OnValidate_Pay_to_name_2":
-		_, ok = logic.(PurchInvHeaderOnValidate_Pay_to_name_2)
-	case "OnValidate_Pay_to_address":
-		_, ok = logic.(PurchInvHeaderOnValidate_Pay_to_address)
-	case "OnValidate_Pay_to_address_2":
-		_, ok = logic.(PurchInvHeaderOnValidate_Pay_to_address_2)
-	case "OnValidate_Pay_to_city":
-		_, ok = logic.(PurchInvHeaderOnValidate_Pay_to_city)
-	case "OnValidate_Pay_to_contact":
-		_, ok = logic.(PurchInvHeaderOnValidate_Pay_to_contact)
-	case "OnValidate_Your_reference":
-		_, ok = logic.(PurchInvHeaderOnValidate_Your_reference)
-	case "OnValidate_Ship_to_name":
-		_, ok = logic.(PurchInvHeaderOnValidate_Ship_to_name)
-	case "OnValidate_Ship_to_name_2":
-		_, ok = logic.(PurchInvHeaderOnValidate_Ship_to_name_2)
-	case "OnValidate_Ship_to_address":
-		_, ok = logic.(PurchInvHeaderOnValidate_Ship_to_address)
-	case "OnValidate_Ship_to_address_2":
-		_, ok = logic.(PurchInvHeaderOnValidate_Ship_to_address_2)
-	case "OnValidate_Ship_to_city":
-		_, ok = logic.(PurchInvHeaderOnValidate_Ship_to_city)
-	case "OnValidate_Ship_to_contact":
-		_, ok = logic.(PurchInvHeaderOnValidate_Ship_to_contact)
-	case "OnValidate_Order_date":
-		_, ok = logic.(PurchInvHeaderOnValidate_Order_date)
-	case "OnValidate_Posting_date":
-		_, ok = logic.(PurchInvHeaderOnValidate_Posting_date)
-	case "OnValidate_Expected_receipt_date":
-		_, ok = logic.(PurchInvHeaderOnValidate_Expected_receipt_date)
-	case "OnValidate_Posting_description":
-		_, ok = logic.(PurchInvHeaderOnValidate_Posting_description)
-	case "OnValidate_Payment_terms_code":
-		_, ok = logic.(PurchInvHeaderOnValidate_Payment_terms_code)
-	case "OnValidate_Due_date":
-		_, ok = logic.(PurchInvHeaderOnValidate_Due_date)
-	case "OnValidate_Payment_discount_percent":
-		_, ok = logic.(PurchInvHeaderOnValidate_Payment_discount_percent)
-	case "OnValidate_Pmt_discount_date":
-		_, ok = logic.(PurchInvHeaderOnValidate_Pmt_discount_date)
-	case "OnValidate_Shipment_method_code":
-		_, ok = logic.(PurchInvHeaderOnValidate_Shipment_method_code)
-	case "OnValidate_Location_code":
-		_, ok = logic.(PurchInvHeaderOnValidate_Location_code)
-	case "OnValidate_Dimension_1_code":
-		_, ok = logic.(PurchInvHeaderOnValidate_Dimension_1_code)
-	case "OnValidate_Dimension_2_code":
-		_, ok = logic.(PurchInvHeaderOnValidate_Dimension_2_code)
-	case "OnValidate_Vendor_posting_group":
-		_, ok = logic.(PurchInvHeaderOnValidate_Vendor_posting_group)
-	case "OnValidate_Currency_code":
-		_, ok = logic.(PurchInvHeaderOnValidate_Currency_code)
-	case "OnValidate_Currency_factor":
-		_, ok = logic.(PurchInvHeaderOnValidate_Currency_factor)
-	case "OnValidate_Invoice_disc_code":
-		_, ok = logic.(PurchInvHeaderOnValidate_Invoice_disc_code)
-	case "OnValidate_Language_code":
-		_, ok = logic.(PurchInvHeaderOnValidate_Language_code)
-	case "OnValidate_Purchaser_code":
-		_, ok = logic.(PurchInvHeaderOnValidate_Purchaser_code)
-	case "OnValidate_Order_no":
-		_, ok = logic.(PurchInvHeaderOnValidate_Order_no)
-	case "OnValidate_No_printed":
-		_, ok = logic.(PurchInvHeaderOnValidate_No_printed)
-	case "OnValidate_Applies_to_doc_type":
-		_, ok = logic.(PurchInvHeaderOnValidate_Applies_to_doc_type)
-	case "OnValidate_Applies_to_doc_no":
-		_, ok = logic.(PurchInvHeaderOnValidate_Applies_to_doc_no)
-	case "OnValidate_Vendor_order_no":
-		_, ok = logic.(PurchInvHeaderOnValidate_Vendor_order_no)
-	case "OnValidate_Vendor_shipment_no":
-		_, ok = logic.(PurchInvHeaderOnValidate_Vendor_shipment_no)
-	case "OnValidate_Vendor_invoice_no":
-		_, ok = logic.(PurchInvHeaderOnValidate_Vendor_invoice_no)
-	case "OnValidate_Vendor_cr_memo_no":
-		_, ok = logic.(PurchInvHeaderOnValidate_Vendor_cr_memo_no)
-	case "OnValidate_Vat_registration_no":
-		_, ok = logic.(PurchInvHeaderOnValidate_Vat_registration_no)
-	case "OnValidate_Reason_code":
-		_, ok = logic.(PurchInvHeaderOnValidate_Reason_code)
-	case "OnValidate_Gen_bus_posting_group":
-		_, ok = logic.(PurchInvHeaderOnValidate_Gen_bus_posting_group)
-	case "OnValidate_Buy_from_vendor_name":
-		_, ok = logic.(PurchInvHeaderOnValidate_Buy_from_vendor_name)
-	case "OnValidate_Buy_from_vendor_name_2":
-		_, ok = logic.(PurchInvHeaderOnValidate_Buy_from_vendor_name_2)
-	case "OnValidate_Buy_from_address":
-		_, ok = logic.(PurchInvHeaderOnValidate_Buy_from_address)
-	case "OnValidate_Buy_from_address_2":
-		_, ok = logic.(PurchInvHeaderOnValidate_Buy_from_address_2)
-	case "OnValidate_Buy_from_city":
-		_, ok = logic.(PurchInvHeaderOnValidate_Buy_from_city)
-	case "OnValidate_Buy_from_contact":
-		_, ok = logic.(PurchInvHeaderOnValidate_Buy_from_contact)
-	case "OnValidate_Pay_to_post_code":
-		_, ok = logic.(PurchInvHeaderOnValidate_Pay_to_post_code)
-	case "OnValidate_Pay_to_state":
-		_, ok = logic.(PurchInvHeaderOnValidate_Pay_to_state)
-	case "OnValidate_Pay_to_country_code":
-		_, ok = logic.(PurchInvHeaderOnValidate_Pay_to_country_code)
-	case "OnValidate_Buy_from_post_code":
-		_, ok = logic.(PurchInvHeaderOnValidate_Buy_from_post_code)
-	case "OnValidate_Buy_from_state":
-		_, ok = logic.(PurchInvHeaderOnValidate_Buy_from_state)
-	case "OnValidate_Buy_from_country_code":
-		_, ok = logic.(PurchInvHeaderOnValidate_Buy_from_country_code)
-	case "OnValidate_Ship_to_post_code":
-		_, ok = logic.(PurchInvHeaderOnValidate_Ship_to_post_code)
-	case "OnValidate_Ship_to_state":
-		_, ok = logic.(PurchInvHeaderOnValidate_Ship_to_state)
-	case "OnValidate_Ship_to_country_code":
-		_, ok = logic.(PurchInvHeaderOnValidate_Ship_to_country_code)
-	case "OnValidate_Order_address_code":
-		_, ok = logic.(PurchInvHeaderOnValidate_Order_address_code)
-	case "OnValidate_Document_date":
-		_, ok = logic.(PurchInvHeaderOnValidate_Document_date)
-	case "OnValidate_Payment_method_code":
-		_, ok = logic.(PurchInvHeaderOnValidate_Payment_method_code)
-	case "OnValidate_No_series":
-		_, ok = logic.(PurchInvHeaderOnValidate_No_series)
-	case "OnValidate_Pre_assigned_no":
-		_, ok = logic.(PurchInvHeaderOnValidate_Pre_assigned_no)
-	case "OnValidate_User_id":
-		_, ok = logic.(PurchInvHeaderOnValidate_User_id)
-	case "OnValidate_Source_code":
-		_, ok = logic.(PurchInvHeaderOnValidate_Source_code)
-	case "OnValidate_Tax_area_code":
-		_, ok = logic.(PurchInvHeaderOnValidate_Tax_area_code)
-	case "OnValidate_Tax_liable":
-		_, ok = logic.(PurchInvHeaderOnValidate_Tax_liable)
-	case "OnValidate_Tax_bus_posting_group":
-		_, ok = logic.(PurchInvHeaderOnValidate_Tax_bus_posting_group)
-	case "OnValidate_Project_no":
-		_, ok = logic.(PurchInvHeaderOnValidate_Project_no)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return purchInvHeaderFields.IsOnValidateTrigger(name, logic, (*PurchInvHeader)(nil))
 	}
 	return true, ok
 }
@@ -1885,78 +1230,7 @@ func (t *PurchInvHeader) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *PurchInvHeader) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["buy_from_vendor_no"] = t.Buy_from_vendor_no
-	t.oldValues["no"] = t.No
-	t.oldValues["pay_to_vendor_no"] = t.Pay_to_vendor_no
-	t.oldValues["pay_to_name"] = t.Pay_to_name
-	t.oldValues["pay_to_name_2"] = t.Pay_to_name_2
-	t.oldValues["pay_to_address"] = t.Pay_to_address
-	t.oldValues["pay_to_address_2"] = t.Pay_to_address_2
-	t.oldValues["pay_to_city"] = t.Pay_to_city
-	t.oldValues["pay_to_contact"] = t.Pay_to_contact
-	t.oldValues["your_reference"] = t.Your_reference
-	t.oldValues["ship_to_name"] = t.Ship_to_name
-	t.oldValues["ship_to_name_2"] = t.Ship_to_name_2
-	t.oldValues["ship_to_address"] = t.Ship_to_address
-	t.oldValues["ship_to_address_2"] = t.Ship_to_address_2
-	t.oldValues["ship_to_city"] = t.Ship_to_city
-	t.oldValues["ship_to_contact"] = t.Ship_to_contact
-	t.oldValues["order_date"] = t.Order_date
-	t.oldValues["posting_date"] = t.Posting_date
-	t.oldValues["expected_receipt_date"] = t.Expected_receipt_date
-	t.oldValues["posting_description"] = t.Posting_description
-	t.oldValues["payment_terms_code"] = t.Payment_terms_code
-	t.oldValues["due_date"] = t.Due_date
-	t.oldValues["payment_discount_percent"] = t.Payment_discount_percent
-	t.oldValues["pmt_discount_date"] = t.Pmt_discount_date
-	t.oldValues["shipment_method_code"] = t.Shipment_method_code
-	t.oldValues["location_code"] = t.Location_code
-	t.oldValues["dimension_1_code"] = t.Dimension_1_code
-	t.oldValues["dimension_2_code"] = t.Dimension_2_code
-	t.oldValues["vendor_posting_group"] = t.Vendor_posting_group
-	t.oldValues["currency_code"] = t.Currency_code
-	t.oldValues["currency_factor"] = t.Currency_factor
-	t.oldValues["invoice_disc_code"] = t.Invoice_disc_code
-	t.oldValues["language_code"] = t.Language_code
-	t.oldValues["purchaser_code"] = t.Purchaser_code
-	t.oldValues["order_no"] = t.Order_no
-	t.oldValues["no_printed"] = t.No_printed
-	t.oldValues["applies_to_doc_type"] = t.Applies_to_doc_type
-	t.oldValues["applies_to_doc_no"] = t.Applies_to_doc_no
-	t.oldValues["vendor_order_no"] = t.Vendor_order_no
-	t.oldValues["vendor_shipment_no"] = t.Vendor_shipment_no
-	t.oldValues["vendor_invoice_no"] = t.Vendor_invoice_no
-	t.oldValues["vendor_cr_memo_no"] = t.Vendor_cr_memo_no
-	t.oldValues["vat_registration_no"] = t.Vat_registration_no
-	t.oldValues["reason_code"] = t.Reason_code
-	t.oldValues["gen_bus_posting_group"] = t.Gen_bus_posting_group
-	t.oldValues["buy_from_vendor_name"] = t.Buy_from_vendor_name
-	t.oldValues["buy_from_vendor_name_2"] = t.Buy_from_vendor_name_2
-	t.oldValues["buy_from_address"] = t.Buy_from_address
-	t.oldValues["buy_from_address_2"] = t.Buy_from_address_2
-	t.oldValues["buy_from_city"] = t.Buy_from_city
-	t.oldValues["buy_from_contact"] = t.Buy_from_contact
-	t.oldValues["pay_to_post_code"] = t.Pay_to_post_code
-	t.oldValues["pay_to_state"] = t.Pay_to_state
-	t.oldValues["pay_to_country_code"] = t.Pay_to_country_code
-	t.oldValues["buy_from_post_code"] = t.Buy_from_post_code
-	t.oldValues["buy_from_state"] = t.Buy_from_state
-	t.oldValues["buy_from_country_code"] = t.Buy_from_country_code
-	t.oldValues["ship_to_post_code"] = t.Ship_to_post_code
-	t.oldValues["ship_to_state"] = t.Ship_to_state
-	t.oldValues["ship_to_country_code"] = t.Ship_to_country_code
-	t.oldValues["order_address_code"] = t.Order_address_code
-	t.oldValues["document_date"] = t.Document_date
-	t.oldValues["payment_method_code"] = t.Payment_method_code
-	t.oldValues["no_series"] = t.No_series
-	t.oldValues["pre_assigned_no"] = t.Pre_assigned_no
-	t.oldValues["user_id"] = t.User_id
-	t.oldValues["source_code"] = t.Source_code
-	t.oldValues["tax_area_code"] = t.Tax_area_code
-	t.oldValues["tax_liable"] = t.Tax_liable
-	t.oldValues["tax_bus_posting_group"] = t.Tax_bus_posting_group
-	t.oldValues["project_no"] = t.Project_no
+	t.oldValues = purchInvHeaderFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1971,219 +1245,7 @@ func (t *PurchInvHeader) OldValue(fieldName string) interface{} {
 func (t *PurchInvHeader) XRec() *PurchInvHeader {
 	x := &PurchInvHeader{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["buy_from_vendor_no"].(types.Code); ok {
-		x.Buy_from_vendor_no = v
-	}
-	if v, ok := t.oldValues["no"].(types.Code); ok {
-		x.No = v
-	}
-	if v, ok := t.oldValues["pay_to_vendor_no"].(types.Code); ok {
-		x.Pay_to_vendor_no = v
-	}
-	if v, ok := t.oldValues["pay_to_name"].(types.Text); ok {
-		x.Pay_to_name = v
-	}
-	if v, ok := t.oldValues["pay_to_name_2"].(types.Text); ok {
-		x.Pay_to_name_2 = v
-	}
-	if v, ok := t.oldValues["pay_to_address"].(types.Text); ok {
-		x.Pay_to_address = v
-	}
-	if v, ok := t.oldValues["pay_to_address_2"].(types.Text); ok {
-		x.Pay_to_address_2 = v
-	}
-	if v, ok := t.oldValues["pay_to_city"].(types.Text); ok {
-		x.Pay_to_city = v
-	}
-	if v, ok := t.oldValues["pay_to_contact"].(types.Text); ok {
-		x.Pay_to_contact = v
-	}
-	if v, ok := t.oldValues["your_reference"].(types.Text); ok {
-		x.Your_reference = v
-	}
-	if v, ok := t.oldValues["ship_to_name"].(types.Text); ok {
-		x.Ship_to_name = v
-	}
-	if v, ok := t.oldValues["ship_to_name_2"].(types.Text); ok {
-		x.Ship_to_name_2 = v
-	}
-	if v, ok := t.oldValues["ship_to_address"].(types.Text); ok {
-		x.Ship_to_address = v
-	}
-	if v, ok := t.oldValues["ship_to_address_2"].(types.Text); ok {
-		x.Ship_to_address_2 = v
-	}
-	if v, ok := t.oldValues["ship_to_city"].(types.Text); ok {
-		x.Ship_to_city = v
-	}
-	if v, ok := t.oldValues["ship_to_contact"].(types.Text); ok {
-		x.Ship_to_contact = v
-	}
-	if v, ok := t.oldValues["order_date"].(types.Date); ok {
-		x.Order_date = v
-	}
-	if v, ok := t.oldValues["posting_date"].(types.Date); ok {
-		x.Posting_date = v
-	}
-	if v, ok := t.oldValues["expected_receipt_date"].(types.Date); ok {
-		x.Expected_receipt_date = v
-	}
-	if v, ok := t.oldValues["posting_description"].(types.Text); ok {
-		x.Posting_description = v
-	}
-	if v, ok := t.oldValues["payment_terms_code"].(types.Code); ok {
-		x.Payment_terms_code = v
-	}
-	if v, ok := t.oldValues["due_date"].(types.Date); ok {
-		x.Due_date = v
-	}
-	if v, ok := t.oldValues["payment_discount_percent"].(types.Decimal); ok {
-		x.Payment_discount_percent = v
-	}
-	if v, ok := t.oldValues["pmt_discount_date"].(types.Date); ok {
-		x.Pmt_discount_date = v
-	}
-	if v, ok := t.oldValues["shipment_method_code"].(types.Code); ok {
-		x.Shipment_method_code = v
-	}
-	if v, ok := t.oldValues["location_code"].(types.Code); ok {
-		x.Location_code = v
-	}
-	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
-		x.Dimension_1_code = v
-	}
-	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
-		x.Dimension_2_code = v
-	}
-	if v, ok := t.oldValues["vendor_posting_group"].(types.Code); ok {
-		x.Vendor_posting_group = v
-	}
-	if v, ok := t.oldValues["currency_code"].(types.Code); ok {
-		x.Currency_code = v
-	}
-	if v, ok := t.oldValues["currency_factor"].(types.Decimal); ok {
-		x.Currency_factor = v
-	}
-	if v, ok := t.oldValues["invoice_disc_code"].(types.Code); ok {
-		x.Invoice_disc_code = v
-	}
-	if v, ok := t.oldValues["language_code"].(types.Code); ok {
-		x.Language_code = v
-	}
-	if v, ok := t.oldValues["purchaser_code"].(types.Code); ok {
-		x.Purchaser_code = v
-	}
-	if v, ok := t.oldValues["order_no"].(types.Code); ok {
-		x.Order_no = v
-	}
-	if v, ok := t.oldValues["no_printed"].(int); ok {
-		x.No_printed = v
-	}
-	if v, ok := t.oldValues["applies_to_doc_type"].(PurchInvHeaderApplies_to_doc_type); ok {
-		x.Applies_to_doc_type = v
-	}
-	if v, ok := t.oldValues["applies_to_doc_no"].(types.Code); ok {
-		x.Applies_to_doc_no = v
-	}
-	if v, ok := t.oldValues["vendor_order_no"].(types.Code); ok {
-		x.Vendor_order_no = v
-	}
-	if v, ok := t.oldValues["vendor_shipment_no"].(types.Code); ok {
-		x.Vendor_shipment_no = v
-	}
-	if v, ok := t.oldValues["vendor_invoice_no"].(types.Code); ok {
-		x.Vendor_invoice_no = v
-	}
-	if v, ok := t.oldValues["vendor_cr_memo_no"].(types.Code); ok {
-		x.Vendor_cr_memo_no = v
-	}
-	if v, ok := t.oldValues["vat_registration_no"].(types.Text); ok {
-		x.Vat_registration_no = v
-	}
-	if v, ok := t.oldValues["reason_code"].(types.Code); ok {
-		x.Reason_code = v
-	}
-	if v, ok := t.oldValues["gen_bus_posting_group"].(types.Code); ok {
-		x.Gen_bus_posting_group = v
-	}
-	if v, ok := t.oldValues["buy_from_vendor_name"].(types.Text); ok {
-		x.Buy_from_vendor_name = v
-	}
-	if v, ok := t.oldValues["buy_from_vendor_name_2"].(types.Text); ok {
-		x.Buy_from_vendor_name_2 = v
-	}
-	if v, ok := t.oldValues["buy_from_address"].(types.Text); ok {
-		x.Buy_from_address = v
-	}
-	if v, ok := t.oldValues["buy_from_address_2"].(types.Text); ok {
-		x.Buy_from_address_2 = v
-	}
-	if v, ok := t.oldValues["buy_from_city"].(types.Text); ok {
-		x.Buy_from_city = v
-	}
-	if v, ok := t.oldValues["buy_from_contact"].(types.Text); ok {
-		x.Buy_from_contact = v
-	}
-	if v, ok := t.oldValues["pay_to_post_code"].(types.Code); ok {
-		x.Pay_to_post_code = v
-	}
-	if v, ok := t.oldValues["pay_to_state"].(types.Text); ok {
-		x.Pay_to_state = v
-	}
-	if v, ok := t.oldValues["pay_to_country_code"].(types.Code); ok {
-		x.Pay_to_country_code = v
-	}
-	if v, ok := t.oldValues["buy_from_post_code"].(types.Code); ok {
-		x.Buy_from_post_code = v
-	}
-	if v, ok := t.oldValues["buy_from_state"].(types.Text); ok {
-		x.Buy_from_state = v
-	}
-	if v, ok := t.oldValues["buy_from_country_code"].(types.Code); ok {
-		x.Buy_from_country_code = v
-	}
-	if v, ok := t.oldValues["ship_to_post_code"].(types.Code); ok {
-		x.Ship_to_post_code = v
-	}
-	if v, ok := t.oldValues["ship_to_state"].(types.Text); ok {
-		x.Ship_to_state = v
-	}
-	if v, ok := t.oldValues["ship_to_country_code"].(types.Code); ok {
-		x.Ship_to_country_code = v
-	}
-	if v, ok := t.oldValues["order_address_code"].(types.Code); ok {
-		x.Order_address_code = v
-	}
-	if v, ok := t.oldValues["document_date"].(types.Date); ok {
-		x.Document_date = v
-	}
-	if v, ok := t.oldValues["payment_method_code"].(types.Code); ok {
-		x.Payment_method_code = v
-	}
-	if v, ok := t.oldValues["no_series"].(types.Code); ok {
-		x.No_series = v
-	}
-	if v, ok := t.oldValues["pre_assigned_no"].(types.Code); ok {
-		x.Pre_assigned_no = v
-	}
-	if v, ok := t.oldValues["user_id"].(types.Code); ok {
-		x.User_id = v
-	}
-	if v, ok := t.oldValues["source_code"].(types.Code); ok {
-		x.Source_code = v
-	}
-	if v, ok := t.oldValues["tax_area_code"].(types.Code); ok {
-		x.Tax_area_code = v
-	}
-	if v, ok := t.oldValues["tax_liable"].(bool); ok {
-		x.Tax_liable = v
-	}
-	if v, ok := t.oldValues["tax_bus_posting_group"].(types.Code); ok {
-		x.Tax_bus_posting_group = v
-	}
-	if v, ok := t.oldValues["project_no"].(types.Code); ok {
-		x.Project_no = v
-	}
+	purchInvHeaderFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -3197,307 +2259,7 @@ func (t *PurchInvHeader) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *PurchInvHeader) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "buy_from_vendor_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Buy_from_vendor_no.Equal(old)
-		}
-	case "no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No.Equal(old)
-		}
-	case "pay_to_vendor_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Pay_to_vendor_no.Equal(old)
-		}
-	case "pay_to_name":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Pay_to_name.Equal(old)
-		}
-	case "pay_to_name_2":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Pay_to_name_2.Equal(old)
-		}
-	case "pay_to_address":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Pay_to_address.Equal(old)
-		}
-	case "pay_to_address_2":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Pay_to_address_2.Equal(old)
-		}
-	case "pay_to_city":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Pay_to_city.Equal(old)
-		}
-	case "pay_to_contact":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Pay_to_contact.Equal(old)
-		}
-	case "your_reference":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Your_reference.Equal(old)
-		}
-	case "ship_to_name":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Ship_to_name.Equal(old)
-		}
-	case "ship_to_name_2":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Ship_to_name_2.Equal(old)
-		}
-	case "ship_to_address":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Ship_to_address.Equal(old)
-		}
-	case "ship_to_address_2":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Ship_to_address_2.Equal(old)
-		}
-	case "ship_to_city":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Ship_to_city.Equal(old)
-		}
-	case "ship_to_contact":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Ship_to_contact.Equal(old)
-		}
-	case "order_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Order_date.Equal(old)
-		}
-	case "posting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Posting_date.Equal(old)
-		}
-	case "expected_receipt_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Expected_receipt_date.Equal(old)
-		}
-	case "posting_description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Posting_description.Equal(old)
-		}
-	case "payment_terms_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Payment_terms_code.Equal(old)
-		}
-	case "due_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Due_date.Equal(old)
-		}
-	case "payment_discount_percent":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Payment_discount_percent.Equal(old)
-		}
-	case "pmt_discount_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Pmt_discount_date.Equal(old)
-		}
-	case "shipment_method_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Shipment_method_code.Equal(old)
-		}
-	case "location_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Location_code.Equal(old)
-		}
-	case "dimension_1_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_1_code.Equal(old)
-		}
-	case "dimension_2_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_2_code.Equal(old)
-		}
-	case "vendor_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Vendor_posting_group.Equal(old)
-		}
-	case "currency_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Currency_code.Equal(old)
-		}
-	case "currency_factor":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Currency_factor.Equal(old)
-		}
-	case "invoice_disc_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Invoice_disc_code.Equal(old)
-		}
-	case "language_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Language_code.Equal(old)
-		}
-	case "purchaser_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Purchaser_code.Equal(old)
-		}
-	case "order_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Order_no.Equal(old)
-		}
-	case "no_printed":
-		if old, ok := oldValue.(int); ok {
-			return t.No_printed != old
-		}
-		return true // Type mismatch, assume changed
-	case "applies_to_doc_type":
-		if old, ok := oldValue.(PurchInvHeaderApplies_to_doc_type); ok {
-			return t.Applies_to_doc_type != old
-		}
-	case "applies_to_doc_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Applies_to_doc_no.Equal(old)
-		}
-	case "vendor_order_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Vendor_order_no.Equal(old)
-		}
-	case "vendor_shipment_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Vendor_shipment_no.Equal(old)
-		}
-	case "vendor_invoice_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Vendor_invoice_no.Equal(old)
-		}
-	case "vendor_cr_memo_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Vendor_cr_memo_no.Equal(old)
-		}
-	case "vat_registration_no":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Vat_registration_no.Equal(old)
-		}
-	case "reason_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Reason_code.Equal(old)
-		}
-	case "gen_bus_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Gen_bus_posting_group.Equal(old)
-		}
-	case "buy_from_vendor_name":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Buy_from_vendor_name.Equal(old)
-		}
-	case "buy_from_vendor_name_2":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Buy_from_vendor_name_2.Equal(old)
-		}
-	case "buy_from_address":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Buy_from_address.Equal(old)
-		}
-	case "buy_from_address_2":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Buy_from_address_2.Equal(old)
-		}
-	case "buy_from_city":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Buy_from_city.Equal(old)
-		}
-	case "buy_from_contact":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Buy_from_contact.Equal(old)
-		}
-	case "pay_to_post_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Pay_to_post_code.Equal(old)
-		}
-	case "pay_to_state":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Pay_to_state.Equal(old)
-		}
-	case "pay_to_country_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Pay_to_country_code.Equal(old)
-		}
-	case "buy_from_post_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Buy_from_post_code.Equal(old)
-		}
-	case "buy_from_state":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Buy_from_state.Equal(old)
-		}
-	case "buy_from_country_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Buy_from_country_code.Equal(old)
-		}
-	case "ship_to_post_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Ship_to_post_code.Equal(old)
-		}
-	case "ship_to_state":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Ship_to_state.Equal(old)
-		}
-	case "ship_to_country_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Ship_to_country_code.Equal(old)
-		}
-	case "order_address_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Order_address_code.Equal(old)
-		}
-	case "document_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Document_date.Equal(old)
-		}
-	case "payment_method_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Payment_method_code.Equal(old)
-		}
-	case "no_series":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No_series.Equal(old)
-		}
-	case "pre_assigned_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Pre_assigned_no.Equal(old)
-		}
-	case "user_id":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.User_id.Equal(old)
-		}
-	case "source_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Source_code.Equal(old)
-		}
-	case "tax_area_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_area_code.Equal(old)
-		}
-	case "tax_liable":
-		if old, ok := oldValue.(bool); ok {
-			return t.Tax_liable != old
-		}
-		return true // Type mismatch, assume changed
-	case "tax_bus_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_bus_posting_group.Equal(old)
-		}
-	case "project_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_no.Equal(old)
-		}
-	}
-
-	return false
+	return purchInvHeaderFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -4131,151 +2893,7 @@ func (t *PurchInvHeader) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *PurchInvHeader) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("buy_from_vendor_no"):
-		return "buy_from_vendor_no", true
-	case strings.ToLower("no"):
-		return "no", true
-	case strings.ToLower("pay_to_vendor_no"):
-		return "pay_to_vendor_no", true
-	case strings.ToLower("pay_to_name"):
-		return "pay_to_name", true
-	case strings.ToLower("pay_to_name_2"):
-		return "pay_to_name_2", true
-	case strings.ToLower("pay_to_address"):
-		return "pay_to_address", true
-	case strings.ToLower("pay_to_address_2"):
-		return "pay_to_address_2", true
-	case strings.ToLower("pay_to_city"):
-		return "pay_to_city", true
-	case strings.ToLower("pay_to_contact"):
-		return "pay_to_contact", true
-	case strings.ToLower("your_reference"):
-		return "your_reference", true
-	case strings.ToLower("ship_to_name"):
-		return "ship_to_name", true
-	case strings.ToLower("ship_to_name_2"):
-		return "ship_to_name_2", true
-	case strings.ToLower("ship_to_address"):
-		return "ship_to_address", true
-	case strings.ToLower("ship_to_address_2"):
-		return "ship_to_address_2", true
-	case strings.ToLower("ship_to_city"):
-		return "ship_to_city", true
-	case strings.ToLower("ship_to_contact"):
-		return "ship_to_contact", true
-	case strings.ToLower("order_date"):
-		return "order_date", true
-	case strings.ToLower("posting_date"):
-		return "posting_date", true
-	case strings.ToLower("expected_receipt_date"):
-		return "expected_receipt_date", true
-	case strings.ToLower("posting_description"):
-		return "posting_description", true
-	case strings.ToLower("payment_terms_code"):
-		return "payment_terms_code", true
-	case strings.ToLower("due_date"):
-		return "due_date", true
-	case strings.ToLower("payment_discount_percent"):
-		return "payment_discount_percent", true
-	case strings.ToLower("pmt_discount_date"):
-		return "pmt_discount_date", true
-	case strings.ToLower("shipment_method_code"):
-		return "shipment_method_code", true
-	case strings.ToLower("location_code"):
-		return "location_code", true
-	case strings.ToLower("dimension_1_code"):
-		return "dimension_1_code", true
-	case strings.ToLower("dimension_2_code"):
-		return "dimension_2_code", true
-	case strings.ToLower("vendor_posting_group"):
-		return "vendor_posting_group", true
-	case strings.ToLower("currency_code"):
-		return "currency_code", true
-	case strings.ToLower("currency_factor"):
-		return "currency_factor", true
-	case strings.ToLower("invoice_disc_code"):
-		return "invoice_disc_code", true
-	case strings.ToLower("language_code"):
-		return "language_code", true
-	case strings.ToLower("purchaser_code"):
-		return "purchaser_code", true
-	case strings.ToLower("order_no"):
-		return "order_no", true
-	case strings.ToLower("no_printed"):
-		return "no_printed", true
-	case strings.ToLower("applies_to_doc_type"):
-		return "applies_to_doc_type", true
-	case strings.ToLower("applies_to_doc_no"):
-		return "applies_to_doc_no", true
-	case strings.ToLower("vendor_order_no"):
-		return "vendor_order_no", true
-	case strings.ToLower("vendor_shipment_no"):
-		return "vendor_shipment_no", true
-	case strings.ToLower("vendor_invoice_no"):
-		return "vendor_invoice_no", true
-	case strings.ToLower("vendor_cr_memo_no"):
-		return "vendor_cr_memo_no", true
-	case strings.ToLower("vat_registration_no"):
-		return "vat_registration_no", true
-	case strings.ToLower("reason_code"):
-		return "reason_code", true
-	case strings.ToLower("gen_bus_posting_group"):
-		return "gen_bus_posting_group", true
-	case strings.ToLower("buy_from_vendor_name"):
-		return "buy_from_vendor_name", true
-	case strings.ToLower("buy_from_vendor_name_2"):
-		return "buy_from_vendor_name_2", true
-	case strings.ToLower("buy_from_address"):
-		return "buy_from_address", true
-	case strings.ToLower("buy_from_address_2"):
-		return "buy_from_address_2", true
-	case strings.ToLower("buy_from_city"):
-		return "buy_from_city", true
-	case strings.ToLower("buy_from_contact"):
-		return "buy_from_contact", true
-	case strings.ToLower("pay_to_post_code"):
-		return "pay_to_post_code", true
-	case strings.ToLower("pay_to_state"):
-		return "pay_to_state", true
-	case strings.ToLower("pay_to_country_code"):
-		return "pay_to_country_code", true
-	case strings.ToLower("buy_from_post_code"):
-		return "buy_from_post_code", true
-	case strings.ToLower("buy_from_state"):
-		return "buy_from_state", true
-	case strings.ToLower("buy_from_country_code"):
-		return "buy_from_country_code", true
-	case strings.ToLower("ship_to_post_code"):
-		return "ship_to_post_code", true
-	case strings.ToLower("ship_to_state"):
-		return "ship_to_state", true
-	case strings.ToLower("ship_to_country_code"):
-		return "ship_to_country_code", true
-	case strings.ToLower("order_address_code"):
-		return "order_address_code", true
-	case strings.ToLower("document_date"):
-		return "document_date", true
-	case strings.ToLower("payment_method_code"):
-		return "payment_method_code", true
-	case strings.ToLower("no_series"):
-		return "no_series", true
-	case strings.ToLower("pre_assigned_no"):
-		return "pre_assigned_no", true
-	case strings.ToLower("user_id"):
-		return "user_id", true
-	case strings.ToLower("source_code"):
-		return "source_code", true
-	case strings.ToLower("tax_area_code"):
-		return "tax_area_code", true
-	case strings.ToLower("tax_liable"):
-		return "tax_liable", true
-	case strings.ToLower("tax_bus_posting_group"):
-		return "tax_bus_posting_group", true
-	case strings.ToLower("project_no"):
-		return "project_no", true
-	}
-	return "", false
+	return purchInvHeaderFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -6012,1499 +4630,20 @@ func (t *PurchInvHeader) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *PurchInvHeader) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "buy_from_vendor_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Buy_from_vendor_no = v
-		} else if v, ok := value.(string); ok {
-			t.Buy_from_vendor_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field buy_from_vendor_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "buy_from_vendor_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Buy_from_vendor_no); ok {
-				if err := trg.OnValidate_Buy_from_vendor_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-		} else if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_No); ok {
-				if err := trg.OnValidate_No(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "pay_to_vendor_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Pay_to_vendor_no = v
-		} else if v, ok := value.(string); ok {
-			t.Pay_to_vendor_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field pay_to_vendor_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "pay_to_vendor_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Pay_to_vendor_no); ok {
-				if err := trg.OnValidate_Pay_to_vendor_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "pay_to_name":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Pay_to_name = v
-		} else if v, ok := value.(string); ok {
-			t.Pay_to_name = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field pay_to_name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Pay_to_name); ok {
-				if err := trg.OnValidate_Pay_to_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "pay_to_name_2":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Pay_to_name_2 = v
-		} else if v, ok := value.(string); ok {
-			t.Pay_to_name_2 = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field pay_to_name_2")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Pay_to_name_2); ok {
-				if err := trg.OnValidate_Pay_to_name_2(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "pay_to_address":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Pay_to_address = v
-		} else if v, ok := value.(string); ok {
-			t.Pay_to_address = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field pay_to_address")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Pay_to_address); ok {
-				if err := trg.OnValidate_Pay_to_address(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "pay_to_address_2":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Pay_to_address_2 = v
-		} else if v, ok := value.(string); ok {
-			t.Pay_to_address_2 = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field pay_to_address_2")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Pay_to_address_2); ok {
-				if err := trg.OnValidate_Pay_to_address_2(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "pay_to_city":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Pay_to_city = v
-		} else if v, ok := value.(string); ok {
-			t.Pay_to_city = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field pay_to_city")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Pay_to_city); ok {
-				if err := trg.OnValidate_Pay_to_city(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "pay_to_contact":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Pay_to_contact = v
-		} else if v, ok := value.(string); ok {
-			t.Pay_to_contact = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field pay_to_contact")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Pay_to_contact); ok {
-				if err := trg.OnValidate_Pay_to_contact(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "your_reference":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Your_reference = v
-		} else if v, ok := value.(string); ok {
-			t.Your_reference = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field your_reference")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Your_reference); ok {
-				if err := trg.OnValidate_Your_reference(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "ship_to_name":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Ship_to_name = v
-		} else if v, ok := value.(string); ok {
-			t.Ship_to_name = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field ship_to_name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Ship_to_name); ok {
-				if err := trg.OnValidate_Ship_to_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "ship_to_name_2":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Ship_to_name_2 = v
-		} else if v, ok := value.(string); ok {
-			t.Ship_to_name_2 = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field ship_to_name_2")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Ship_to_name_2); ok {
-				if err := trg.OnValidate_Ship_to_name_2(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "ship_to_address":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Ship_to_address = v
-		} else if v, ok := value.(string); ok {
-			t.Ship_to_address = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field ship_to_address")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Ship_to_address); ok {
-				if err := trg.OnValidate_Ship_to_address(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "ship_to_address_2":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Ship_to_address_2 = v
-		} else if v, ok := value.(string); ok {
-			t.Ship_to_address_2 = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field ship_to_address_2")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Ship_to_address_2); ok {
-				if err := trg.OnValidate_Ship_to_address_2(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "ship_to_city":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Ship_to_city = v
-		} else if v, ok := value.(string); ok {
-			t.Ship_to_city = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field ship_to_city")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Ship_to_city); ok {
-				if err := trg.OnValidate_Ship_to_city(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "ship_to_contact":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Ship_to_contact = v
-		} else if v, ok := value.(string); ok {
-			t.Ship_to_contact = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field ship_to_contact")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Ship_to_contact); ok {
-				if err := trg.OnValidate_Ship_to_contact(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "order_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Order_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Order_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field order_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Order_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field order_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Order_date); ok {
-				if err := trg.OnValidate_Order_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "posting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Posting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Posting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field posting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Posting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field posting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Posting_date); ok {
-				if err := trg.OnValidate_Posting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "expected_receipt_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Expected_receipt_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Expected_receipt_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field expected_receipt_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Expected_receipt_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field expected_receipt_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Expected_receipt_date); ok {
-				if err := trg.OnValidate_Expected_receipt_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "posting_description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Posting_description = v
-		} else if v, ok := value.(string); ok {
-			t.Posting_description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field posting_description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Posting_description); ok {
-				if err := trg.OnValidate_Posting_description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "payment_terms_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Payment_terms_code = v
-		} else if v, ok := value.(string); ok {
-			t.Payment_terms_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field payment_terms_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "payment_terms_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Payment_terms_code); ok {
-				if err := trg.OnValidate_Payment_terms_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "due_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Due_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Due_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field due_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Due_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field due_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Due_date); ok {
-				if err := trg.OnValidate_Due_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "payment_discount_percent":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Payment_discount_percent = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Payment_discount_percent, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field payment_discount_percent: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Payment_discount_percent = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Payment_discount_percent = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Payment_discount_percent = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field payment_discount_percent (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Payment_discount_percent); ok {
-				if err := trg.OnValidate_Payment_discount_percent(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "pmt_discount_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Pmt_discount_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Pmt_discount_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field pmt_discount_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Pmt_discount_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field pmt_discount_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Pmt_discount_date); ok {
-				if err := trg.OnValidate_Pmt_discount_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "shipment_method_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Shipment_method_code = v
-		} else if v, ok := value.(string); ok {
-			t.Shipment_method_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field shipment_method_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "shipment_method_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Shipment_method_code); ok {
-				if err := trg.OnValidate_Shipment_method_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "location_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Location_code = v
-		} else if v, ok := value.(string); ok {
-			t.Location_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field location_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "location_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Location_code); ok {
-				if err := trg.OnValidate_Location_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_1_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_1_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Dimension_1_code); ok {
-				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_2_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_2_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Dimension_2_code); ok {
-				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "vendor_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Vendor_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Vendor_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field vendor_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "vendor_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Vendor_posting_group); ok {
-				if err := trg.OnValidate_Vendor_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "currency_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Currency_code = v
-		} else if v, ok := value.(string); ok {
-			t.Currency_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field currency_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "currency_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Currency_code); ok {
-				if err := trg.OnValidate_Currency_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "currency_factor":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Currency_factor = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Currency_factor, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field currency_factor: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Currency_factor = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Currency_factor = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Currency_factor = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field currency_factor (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Currency_factor); ok {
-				if err := trg.OnValidate_Currency_factor(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "invoice_disc_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Invoice_disc_code = v
-		} else if v, ok := value.(string); ok {
-			t.Invoice_disc_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field invoice_disc_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "invoice_disc_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Invoice_disc_code); ok {
-				if err := trg.OnValidate_Invoice_disc_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "language_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Language_code = v
-		} else if v, ok := value.(string); ok {
-			t.Language_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field language_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "language_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Language_code); ok {
-				if err := trg.OnValidate_Language_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "purchaser_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Purchaser_code = v
-		} else if v, ok := value.(string); ok {
-			t.Purchaser_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field purchaser_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "purchaser_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Purchaser_code); ok {
-				if err := trg.OnValidate_Purchaser_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "order_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Order_no = v
-		} else if v, ok := value.(string); ok {
-			t.Order_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field order_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Order_no); ok {
-				if err := trg.OnValidate_Order_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no_printed":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.No_printed = v
-		case float64:
-			t.No_printed = int(v)
-		case string:
-			if v == "" {
-				t.No_printed = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.No_printed = i
-			} else {
-				return fmt.Errorf("invalid integer value for field no_printed: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field no_printed")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_No_printed); ok {
-				if err := trg.OnValidate_No_printed(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "applies_to_doc_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(PurchInvHeaderApplies_to_doc_type); ok {
-			t.Applies_to_doc_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 6 {
-				return fmt.Errorf("invalid option value %d for field applies_to_doc_type (valid range: 0-%d)", v, 6-1)
-			}
-			t.Applies_to_doc_type = PurchInvHeaderApplies_to_doc_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 6 {
-				return fmt.Errorf("invalid option value %d for field applies_to_doc_type (valid range: 0-%d)", intVal, 6-1)
-			}
-			t.Applies_to_doc_type = PurchInvHeaderApplies_to_doc_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Applies_to_doc_type = 0
-			} else {
-				options := []string{" ", "Payment", "Invoice", "Credit Memo", "Finance Charge Memo", "Reminder"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Applies_to_doc_type = PurchInvHeaderApplies_to_doc_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field applies_to_doc_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field applies_to_doc_type (expected PurchInvHeaderApplies_to_doc_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Applies_to_doc_type); ok {
-				if err := trg.OnValidate_Applies_to_doc_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "applies_to_doc_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Applies_to_doc_no = v
-		} else if v, ok := value.(string); ok {
-			t.Applies_to_doc_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field applies_to_doc_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "applies_to_doc_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Applies_to_doc_no); ok {
-				if err := trg.OnValidate_Applies_to_doc_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "vendor_order_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Vendor_order_no = v
-		} else if v, ok := value.(string); ok {
-			t.Vendor_order_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field vendor_order_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Vendor_order_no); ok {
-				if err := trg.OnValidate_Vendor_order_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "vendor_shipment_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Vendor_shipment_no = v
-		} else if v, ok := value.(string); ok {
-			t.Vendor_shipment_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field vendor_shipment_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Vendor_shipment_no); ok {
-				if err := trg.OnValidate_Vendor_shipment_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "vendor_invoice_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Vendor_invoice_no = v
-		} else if v, ok := value.(string); ok {
-			t.Vendor_invoice_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field vendor_invoice_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Vendor_invoice_no); ok {
-				if err := trg.OnValidate_Vendor_invoice_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "vendor_cr_memo_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Vendor_cr_memo_no = v
-		} else if v, ok := value.(string); ok {
-			t.Vendor_cr_memo_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field vendor_cr_memo_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Vendor_cr_memo_no); ok {
-				if err := trg.OnValidate_Vendor_cr_memo_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "vat_registration_no":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Vat_registration_no = v
-		} else if v, ok := value.(string); ok {
-			t.Vat_registration_no = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field vat_registration_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Vat_registration_no); ok {
-				if err := trg.OnValidate_Vat_registration_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reason_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Reason_code = v
-		} else if v, ok := value.(string); ok {
-			t.Reason_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field reason_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "reason_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Reason_code); ok {
-				if err := trg.OnValidate_Reason_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "gen_bus_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Gen_bus_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Gen_bus_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field gen_bus_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "gen_bus_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Gen_bus_posting_group); ok {
-				if err := trg.OnValidate_Gen_bus_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "buy_from_vendor_name":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Buy_from_vendor_name = v
-		} else if v, ok := value.(string); ok {
-			t.Buy_from_vendor_name = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field buy_from_vendor_name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Buy_from_vendor_name); ok {
-				if err := trg.OnValidate_Buy_from_vendor_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "buy_from_vendor_name_2":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Buy_from_vendor_name_2 = v
-		} else if v, ok := value.(string); ok {
-			t.Buy_from_vendor_name_2 = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field buy_from_vendor_name_2")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Buy_from_vendor_name_2); ok {
-				if err := trg.OnValidate_Buy_from_vendor_name_2(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "buy_from_address":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Buy_from_address = v
-		} else if v, ok := value.(string); ok {
-			t.Buy_from_address = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field buy_from_address")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Buy_from_address); ok {
-				if err := trg.OnValidate_Buy_from_address(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "buy_from_address_2":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Buy_from_address_2 = v
-		} else if v, ok := value.(string); ok {
-			t.Buy_from_address_2 = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field buy_from_address_2")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Buy_from_address_2); ok {
-				if err := trg.OnValidate_Buy_from_address_2(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "buy_from_city":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Buy_from_city = v
-		} else if v, ok := value.(string); ok {
-			t.Buy_from_city = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field buy_from_city")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Buy_from_city); ok {
-				if err := trg.OnValidate_Buy_from_city(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "buy_from_contact":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Buy_from_contact = v
-		} else if v, ok := value.(string); ok {
-			t.Buy_from_contact = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field buy_from_contact")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Buy_from_contact); ok {
-				if err := trg.OnValidate_Buy_from_contact(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "pay_to_post_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Pay_to_post_code = v
-		} else if v, ok := value.(string); ok {
-			t.Pay_to_post_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field pay_to_post_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "pay_to_post_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Pay_to_post_code); ok {
-				if err := trg.OnValidate_Pay_to_post_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "pay_to_state":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Pay_to_state = v
-		} else if v, ok := value.(string); ok {
-			t.Pay_to_state = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field pay_to_state")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Pay_to_state); ok {
-				if err := trg.OnValidate_Pay_to_state(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "pay_to_country_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Pay_to_country_code = v
-		} else if v, ok := value.(string); ok {
-			t.Pay_to_country_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field pay_to_country_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "pay_to_country_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Pay_to_country_code); ok {
-				if err := trg.OnValidate_Pay_to_country_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "buy_from_post_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Buy_from_post_code = v
-		} else if v, ok := value.(string); ok {
-			t.Buy_from_post_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field buy_from_post_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "buy_from_post_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Buy_from_post_code); ok {
-				if err := trg.OnValidate_Buy_from_post_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "buy_from_state":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Buy_from_state = v
-		} else if v, ok := value.(string); ok {
-			t.Buy_from_state = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field buy_from_state")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Buy_from_state); ok {
-				if err := trg.OnValidate_Buy_from_state(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "buy_from_country_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Buy_from_country_code = v
-		} else if v, ok := value.(string); ok {
-			t.Buy_from_country_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field buy_from_country_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "buy_from_country_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Buy_from_country_code); ok {
-				if err := trg.OnValidate_Buy_from_country_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "ship_to_post_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Ship_to_post_code = v
-		} else if v, ok := value.(string); ok {
-			t.Ship_to_post_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field ship_to_post_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "ship_to_post_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Ship_to_post_code); ok {
-				if err := trg.OnValidate_Ship_to_post_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "ship_to_state":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Ship_to_state = v
-		} else if v, ok := value.(string); ok {
-			t.Ship_to_state = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field ship_to_state")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Ship_to_state); ok {
-				if err := trg.OnValidate_Ship_to_state(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "ship_to_country_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Ship_to_country_code = v
-		} else if v, ok := value.(string); ok {
-			t.Ship_to_country_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field ship_to_country_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "ship_to_country_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Ship_to_country_code); ok {
-				if err := trg.OnValidate_Ship_to_country_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "order_address_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Order_address_code = v
-		} else if v, ok := value.(string); ok {
-			t.Order_address_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field order_address_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "order_address_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Order_address_code); ok {
-				if err := trg.OnValidate_Order_address_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Document_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Document_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field document_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Document_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field document_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Document_date); ok {
-				if err := trg.OnValidate_Document_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "payment_method_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Payment_method_code = v
-		} else if v, ok := value.(string); ok {
-			t.Payment_method_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field payment_method_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "payment_method_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Payment_method_code); ok {
-				if err := trg.OnValidate_Payment_method_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no_series":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No_series = v
-		} else if v, ok := value.(string); ok {
-			t.No_series = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no_series")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "no_series"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_No_series); ok {
-				if err := trg.OnValidate_No_series(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "pre_assigned_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Pre_assigned_no = v
-		} else if v, ok := value.(string); ok {
-			t.Pre_assigned_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field pre_assigned_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Pre_assigned_no); ok {
-				if err := trg.OnValidate_Pre_assigned_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "user_id":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-		} else if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field user_id")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_User_id); ok {
-				if err := trg.OnValidate_User_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "source_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Source_code = v
-		} else if v, ok := value.(string); ok {
-			t.Source_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field source_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "source_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Source_code); ok {
-				if err := trg.OnValidate_Source_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_area_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_area_code = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_area_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_area_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_area_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Tax_area_code); ok {
-				if err := trg.OnValidate_Tax_area_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_liable":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Tax_liable = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Tax_liable = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field tax_liable")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Tax_liable); ok {
-				if err := trg.OnValidate_Tax_liable(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_bus_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_bus_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_bus_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_bus_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_bus_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Tax_bus_posting_group); ok {
-				if err := trg.OnValidate_Tax_bus_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "project_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Project_no = v
-		} else if v, ok := value.(string); ok {
-			t.Project_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field project_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchInvHeaderOnValidate_Project_no); ok {
-				if err := trg.OnValidate_Project_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := purchInvHeaderFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &purchInvHeaderFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -7513,767 +4652,18 @@ func (t *PurchInvHeader) ValidateField(fieldName string, value interface{}) erro
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *PurchInvHeader) FieldValue(no int) (any, bool) {
-	switch no {
-	case 2:
-		return t.Buy_from_vendor_no, true
-	case 3:
-		return t.No, true
-	case 4:
-		return t.Pay_to_vendor_no, true
-	case 5:
-		return t.Pay_to_name, true
-	case 6:
-		return t.Pay_to_name_2, true
-	case 7:
-		return t.Pay_to_address, true
-	case 8:
-		return t.Pay_to_address_2, true
-	case 9:
-		return t.Pay_to_city, true
-	case 10:
-		return t.Pay_to_contact, true
-	case 11:
-		return t.Your_reference, true
-	case 13:
-		return t.Ship_to_name, true
-	case 14:
-		return t.Ship_to_name_2, true
-	case 15:
-		return t.Ship_to_address, true
-	case 16:
-		return t.Ship_to_address_2, true
-	case 17:
-		return t.Ship_to_city, true
-	case 18:
-		return t.Ship_to_contact, true
-	case 19:
-		return t.Order_date, true
-	case 20:
-		return t.Posting_date, true
-	case 21:
-		return t.Expected_receipt_date, true
-	case 22:
-		return t.Posting_description, true
-	case 23:
-		return t.Payment_terms_code, true
-	case 24:
-		return t.Due_date, true
-	case 25:
-		return t.Payment_discount_percent, true
-	case 26:
-		return t.Pmt_discount_date, true
-	case 27:
-		return t.Shipment_method_code, true
-	case 28:
-		return t.Location_code, true
-	case 29:
-		return t.Dimension_1_code, true
-	case 30:
-		return t.Dimension_2_code, true
-	case 31:
-		return t.Vendor_posting_group, true
-	case 32:
-		return t.Currency_code, true
-	case 33:
-		return t.Currency_factor, true
-	case 37:
-		return t.Invoice_disc_code, true
-	case 41:
-		return t.Language_code, true
-	case 43:
-		return t.Purchaser_code, true
-	case 44:
-		return t.Order_no, true
-	case 47:
-		return t.No_printed, true
-	case 52:
-		return t.Applies_to_doc_type, true
-	case 53:
-		return t.Applies_to_doc_no, true
-	case 66:
-		return t.Vendor_order_no, true
-	case 67:
-		return t.Vendor_shipment_no, true
-	case 68:
-		return t.Vendor_invoice_no, true
-	case 69:
-		return t.Vendor_cr_memo_no, true
-	case 70:
-		return t.Vat_registration_no, true
-	case 73:
-		return t.Reason_code, true
-	case 74:
-		return t.Gen_bus_posting_group, true
-	case 79:
-		return t.Buy_from_vendor_name, true
-	case 80:
-		return t.Buy_from_vendor_name_2, true
-	case 81:
-		return t.Buy_from_address, true
-	case 82:
-		return t.Buy_from_address_2, true
-	case 83:
-		return t.Buy_from_city, true
-	case 84:
-		return t.Buy_from_contact, true
-	case 85:
-		return t.Pay_to_post_code, true
-	case 86:
-		return t.Pay_to_state, true
-	case 87:
-		return t.Pay_to_country_code, true
-	case 88:
-		return t.Buy_from_post_code, true
-	case 89:
-		return t.Buy_from_state, true
-	case 90:
-		return t.Buy_from_country_code, true
-	case 91:
-		return t.Ship_to_post_code, true
-	case 92:
-		return t.Ship_to_state, true
-	case 93:
-		return t.Ship_to_country_code, true
-	case 95:
-		return t.Order_address_code, true
-	case 99:
-		return t.Document_date, true
-	case 104:
-		return t.Payment_method_code, true
-	case 107:
-		return t.No_series, true
-	case 111:
-		return t.Pre_assigned_no, true
-	case 112:
-		return t.User_id, true
-	case 113:
-		return t.Source_code, true
-	case 114:
-		return t.Tax_area_code, true
-	case 115:
-		return t.Tax_liable, true
-	case 116:
-		return t.Tax_bus_posting_group, true
-	case 56:
-		return t.Project_no, true
-	}
-	return nil, false
+	return purchInvHeaderFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *PurchInvHeader) flowFieldValue(no int) (any, bool) {
-	switch no {
-	case 46:
-		return t.Comment, true
-	case 60:
-		return t.Amount, true
-	case 61:
-		return t.Amount_including_tax, true
-	}
-	return nil, false
+	return purchInvHeaderFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *PurchInvHeader) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Buy_from_vendor_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Buy_from_vendor_no = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Code); ok {
-			t.Pay_to_vendor_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Pay_to_vendor_no = types.NewCode(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Text); ok {
-			t.Pay_to_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Pay_to_name = types.NewText(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Text); ok {
-			t.Pay_to_name_2 = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Pay_to_name_2 = types.NewText(v)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Text); ok {
-			t.Pay_to_address = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Pay_to_address = types.NewText(v)
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Text); ok {
-			t.Pay_to_address_2 = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Pay_to_address_2 = types.NewText(v)
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.Text); ok {
-			t.Pay_to_city = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Pay_to_city = types.NewText(v)
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Text); ok {
-			t.Pay_to_contact = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Pay_to_contact = types.NewText(v)
-			return true
-		}
-	case 11:
-		if v, ok := value.(types.Text); ok {
-			t.Your_reference = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Your_reference = types.NewText(v)
-			return true
-		}
-	case 13:
-		if v, ok := value.(types.Text); ok {
-			t.Ship_to_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Ship_to_name = types.NewText(v)
-			return true
-		}
-	case 14:
-		if v, ok := value.(types.Text); ok {
-			t.Ship_to_name_2 = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Ship_to_name_2 = types.NewText(v)
-			return true
-		}
-	case 15:
-		if v, ok := value.(types.Text); ok {
-			t.Ship_to_address = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Ship_to_address = types.NewText(v)
-			return true
-		}
-	case 16:
-		if v, ok := value.(types.Text); ok {
-			t.Ship_to_address_2 = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Ship_to_address_2 = types.NewText(v)
-			return true
-		}
-	case 17:
-		if v, ok := value.(types.Text); ok {
-			t.Ship_to_city = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Ship_to_city = types.NewText(v)
-			return true
-		}
-	case 18:
-		if v, ok := value.(types.Text); ok {
-			t.Ship_to_contact = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Ship_to_contact = types.NewText(v)
-			return true
-		}
-	case 19:
-		if v, ok := value.(types.Date); ok {
-			t.Order_date = v
-			return true
-		}
-	case 20:
-		if v, ok := value.(types.Date); ok {
-			t.Posting_date = v
-			return true
-		}
-	case 21:
-		if v, ok := value.(types.Date); ok {
-			t.Expected_receipt_date = v
-			return true
-		}
-	case 22:
-		if v, ok := value.(types.Text); ok {
-			t.Posting_description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Posting_description = types.NewText(v)
-			return true
-		}
-	case 23:
-		if v, ok := value.(types.Code); ok {
-			t.Payment_terms_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Payment_terms_code = types.NewCode(v)
-			return true
-		}
-	case 24:
-		if v, ok := value.(types.Date); ok {
-			t.Due_date = v
-			return true
-		}
-	case 25:
-		if v, ok := value.(types.Decimal); ok {
-			t.Payment_discount_percent = v
-			return true
-		}
-	case 26:
-		if v, ok := value.(types.Date); ok {
-			t.Pmt_discount_date = v
-			return true
-		}
-	case 27:
-		if v, ok := value.(types.Code); ok {
-			t.Shipment_method_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Shipment_method_code = types.NewCode(v)
-			return true
-		}
-	case 28:
-		if v, ok := value.(types.Code); ok {
-			t.Location_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Location_code = types.NewCode(v)
-			return true
-		}
-	case 29:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-			return true
-		}
-	case 30:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-			return true
-		}
-	case 31:
-		if v, ok := value.(types.Code); ok {
-			t.Vendor_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Vendor_posting_group = types.NewCode(v)
-			return true
-		}
-	case 32:
-		if v, ok := value.(types.Code); ok {
-			t.Currency_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Currency_code = types.NewCode(v)
-			return true
-		}
-	case 33:
-		if v, ok := value.(types.Decimal); ok {
-			t.Currency_factor = v
-			return true
-		}
-	case 37:
-		if v, ok := value.(types.Code); ok {
-			t.Invoice_disc_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Invoice_disc_code = types.NewCode(v)
-			return true
-		}
-	case 41:
-		if v, ok := value.(types.Code); ok {
-			t.Language_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Language_code = types.NewCode(v)
-			return true
-		}
-	case 43:
-		if v, ok := value.(types.Code); ok {
-			t.Purchaser_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Purchaser_code = types.NewCode(v)
-			return true
-		}
-	case 44:
-		if v, ok := value.(types.Code); ok {
-			t.Order_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Order_no = types.NewCode(v)
-			return true
-		}
-	case 47:
-		if v, ok := value.(int); ok {
-			t.No_printed = v
-			return true
-		}
-	case 52:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 6 {
-			t.Applies_to_doc_type = PurchInvHeaderApplies_to_doc_type(i)
-			return true
-		}
-	case 53:
-		if v, ok := value.(types.Code); ok {
-			t.Applies_to_doc_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Applies_to_doc_no = types.NewCode(v)
-			return true
-		}
-	case 66:
-		if v, ok := value.(types.Code); ok {
-			t.Vendor_order_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Vendor_order_no = types.NewCode(v)
-			return true
-		}
-	case 67:
-		if v, ok := value.(types.Code); ok {
-			t.Vendor_shipment_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Vendor_shipment_no = types.NewCode(v)
-			return true
-		}
-	case 68:
-		if v, ok := value.(types.Code); ok {
-			t.Vendor_invoice_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Vendor_invoice_no = types.NewCode(v)
-			return true
-		}
-	case 69:
-		if v, ok := value.(types.Code); ok {
-			t.Vendor_cr_memo_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Vendor_cr_memo_no = types.NewCode(v)
-			return true
-		}
-	case 70:
-		if v, ok := value.(types.Text); ok {
-			t.Vat_registration_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Vat_registration_no = types.NewText(v)
-			return true
-		}
-	case 73:
-		if v, ok := value.(types.Code); ok {
-			t.Reason_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Reason_code = types.NewCode(v)
-			return true
-		}
-	case 74:
-		if v, ok := value.(types.Code); ok {
-			t.Gen_bus_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Gen_bus_posting_group = types.NewCode(v)
-			return true
-		}
-	case 79:
-		if v, ok := value.(types.Text); ok {
-			t.Buy_from_vendor_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Buy_from_vendor_name = types.NewText(v)
-			return true
-		}
-	case 80:
-		if v, ok := value.(types.Text); ok {
-			t.Buy_from_vendor_name_2 = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Buy_from_vendor_name_2 = types.NewText(v)
-			return true
-		}
-	case 81:
-		if v, ok := value.(types.Text); ok {
-			t.Buy_from_address = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Buy_from_address = types.NewText(v)
-			return true
-		}
-	case 82:
-		if v, ok := value.(types.Text); ok {
-			t.Buy_from_address_2 = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Buy_from_address_2 = types.NewText(v)
-			return true
-		}
-	case 83:
-		if v, ok := value.(types.Text); ok {
-			t.Buy_from_city = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Buy_from_city = types.NewText(v)
-			return true
-		}
-	case 84:
-		if v, ok := value.(types.Text); ok {
-			t.Buy_from_contact = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Buy_from_contact = types.NewText(v)
-			return true
-		}
-	case 85:
-		if v, ok := value.(types.Code); ok {
-			t.Pay_to_post_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Pay_to_post_code = types.NewCode(v)
-			return true
-		}
-	case 86:
-		if v, ok := value.(types.Text); ok {
-			t.Pay_to_state = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Pay_to_state = types.NewText(v)
-			return true
-		}
-	case 87:
-		if v, ok := value.(types.Code); ok {
-			t.Pay_to_country_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Pay_to_country_code = types.NewCode(v)
-			return true
-		}
-	case 88:
-		if v, ok := value.(types.Code); ok {
-			t.Buy_from_post_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Buy_from_post_code = types.NewCode(v)
-			return true
-		}
-	case 89:
-		if v, ok := value.(types.Text); ok {
-			t.Buy_from_state = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Buy_from_state = types.NewText(v)
-			return true
-		}
-	case 90:
-		if v, ok := value.(types.Code); ok {
-			t.Buy_from_country_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Buy_from_country_code = types.NewCode(v)
-			return true
-		}
-	case 91:
-		if v, ok := value.(types.Code); ok {
-			t.Ship_to_post_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Ship_to_post_code = types.NewCode(v)
-			return true
-		}
-	case 92:
-		if v, ok := value.(types.Text); ok {
-			t.Ship_to_state = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Ship_to_state = types.NewText(v)
-			return true
-		}
-	case 93:
-		if v, ok := value.(types.Code); ok {
-			t.Ship_to_country_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Ship_to_country_code = types.NewCode(v)
-			return true
-		}
-	case 95:
-		if v, ok := value.(types.Code); ok {
-			t.Order_address_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Order_address_code = types.NewCode(v)
-			return true
-		}
-	case 99:
-		if v, ok := value.(types.Date); ok {
-			t.Document_date = v
-			return true
-		}
-	case 104:
-		if v, ok := value.(types.Code); ok {
-			t.Payment_method_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Payment_method_code = types.NewCode(v)
-			return true
-		}
-	case 107:
-		if v, ok := value.(types.Code); ok {
-			t.No_series = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No_series = types.NewCode(v)
-			return true
-		}
-	case 111:
-		if v, ok := value.(types.Code); ok {
-			t.Pre_assigned_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Pre_assigned_no = types.NewCode(v)
-			return true
-		}
-	case 112:
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-			return true
-		}
-	case 113:
-		if v, ok := value.(types.Code); ok {
-			t.Source_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Source_code = types.NewCode(v)
-			return true
-		}
-	case 114:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_area_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_area_code = types.NewCode(v)
-			return true
-		}
-	case 115:
-		if v, ok := value.(bool); ok {
-			t.Tax_liable = v
-			return true
-		}
-	case 116:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_bus_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_bus_posting_group = types.NewCode(v)
-			return true
-		}
-	case 56:
-		if v, ok := value.(types.Code); ok {
-			t.Project_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Project_no = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return purchInvHeaderFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -8762,151 +5152,7 @@ func (t *PurchInvHeader) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *PurchInvHeader) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "buy_from_vendor_no":
-		return t.Buy_from_vendor_no, true
-	case "no":
-		return t.No, true
-	case "pay_to_vendor_no":
-		return t.Pay_to_vendor_no, true
-	case "pay_to_name":
-		return t.Pay_to_name, true
-	case "pay_to_name_2":
-		return t.Pay_to_name_2, true
-	case "pay_to_address":
-		return t.Pay_to_address, true
-	case "pay_to_address_2":
-		return t.Pay_to_address_2, true
-	case "pay_to_city":
-		return t.Pay_to_city, true
-	case "pay_to_contact":
-		return t.Pay_to_contact, true
-	case "your_reference":
-		return t.Your_reference, true
-	case "ship_to_name":
-		return t.Ship_to_name, true
-	case "ship_to_name_2":
-		return t.Ship_to_name_2, true
-	case "ship_to_address":
-		return t.Ship_to_address, true
-	case "ship_to_address_2":
-		return t.Ship_to_address_2, true
-	case "ship_to_city":
-		return t.Ship_to_city, true
-	case "ship_to_contact":
-		return t.Ship_to_contact, true
-	case "order_date":
-		return t.Order_date, true
-	case "posting_date":
-		return t.Posting_date, true
-	case "expected_receipt_date":
-		return t.Expected_receipt_date, true
-	case "posting_description":
-		return t.Posting_description, true
-	case "payment_terms_code":
-		return t.Payment_terms_code, true
-	case "due_date":
-		return t.Due_date, true
-	case "payment_discount_percent":
-		return t.Payment_discount_percent, true
-	case "pmt_discount_date":
-		return t.Pmt_discount_date, true
-	case "shipment_method_code":
-		return t.Shipment_method_code, true
-	case "location_code":
-		return t.Location_code, true
-	case "dimension_1_code":
-		return t.Dimension_1_code, true
-	case "dimension_2_code":
-		return t.Dimension_2_code, true
-	case "vendor_posting_group":
-		return t.Vendor_posting_group, true
-	case "currency_code":
-		return t.Currency_code, true
-	case "currency_factor":
-		return t.Currency_factor, true
-	case "invoice_disc_code":
-		return t.Invoice_disc_code, true
-	case "language_code":
-		return t.Language_code, true
-	case "purchaser_code":
-		return t.Purchaser_code, true
-	case "order_no":
-		return t.Order_no, true
-	case "no_printed":
-		return t.No_printed, true
-	case "applies_to_doc_type":
-		return int(t.Applies_to_doc_type), true
-	case "applies_to_doc_no":
-		return t.Applies_to_doc_no, true
-	case "vendor_order_no":
-		return t.Vendor_order_no, true
-	case "vendor_shipment_no":
-		return t.Vendor_shipment_no, true
-	case "vendor_invoice_no":
-		return t.Vendor_invoice_no, true
-	case "vendor_cr_memo_no":
-		return t.Vendor_cr_memo_no, true
-	case "vat_registration_no":
-		return t.Vat_registration_no, true
-	case "reason_code":
-		return t.Reason_code, true
-	case "gen_bus_posting_group":
-		return t.Gen_bus_posting_group, true
-	case "buy_from_vendor_name":
-		return t.Buy_from_vendor_name, true
-	case "buy_from_vendor_name_2":
-		return t.Buy_from_vendor_name_2, true
-	case "buy_from_address":
-		return t.Buy_from_address, true
-	case "buy_from_address_2":
-		return t.Buy_from_address_2, true
-	case "buy_from_city":
-		return t.Buy_from_city, true
-	case "buy_from_contact":
-		return t.Buy_from_contact, true
-	case "pay_to_post_code":
-		return t.Pay_to_post_code, true
-	case "pay_to_state":
-		return t.Pay_to_state, true
-	case "pay_to_country_code":
-		return t.Pay_to_country_code, true
-	case "buy_from_post_code":
-		return t.Buy_from_post_code, true
-	case "buy_from_state":
-		return t.Buy_from_state, true
-	case "buy_from_country_code":
-		return t.Buy_from_country_code, true
-	case "ship_to_post_code":
-		return t.Ship_to_post_code, true
-	case "ship_to_state":
-		return t.Ship_to_state, true
-	case "ship_to_country_code":
-		return t.Ship_to_country_code, true
-	case "order_address_code":
-		return t.Order_address_code, true
-	case "document_date":
-		return t.Document_date, true
-	case "payment_method_code":
-		return t.Payment_method_code, true
-	case "no_series":
-		return t.No_series, true
-	case "pre_assigned_no":
-		return t.Pre_assigned_no, true
-	case "user_id":
-		return t.User_id, true
-	case "source_code":
-		return t.Source_code, true
-	case "tax_area_code":
-		return t.Tax_area_code, true
-	case "tax_liable":
-		return t.Tax_liable, true
-	case "tax_bus_posting_group":
-		return t.Tax_bus_posting_group, true
-	case "project_no":
-		return t.Project_no, true
-	}
-	return nil, false
+	return purchInvHeaderFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -9062,478 +5308,12 @@ func (t *PurchInvHeader) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *PurchInvHeader) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"buy_from_vendor_no":       t.Buy_from_vendor_no.String(),
-		"no":                       t.No.String(),
-		"pay_to_vendor_no":         t.Pay_to_vendor_no.String(),
-		"pay_to_name":              t.Pay_to_name.String(),
-		"pay_to_name_2":            t.Pay_to_name_2.String(),
-		"pay_to_address":           t.Pay_to_address.String(),
-		"pay_to_address_2":         t.Pay_to_address_2.String(),
-		"pay_to_city":              t.Pay_to_city.String(),
-		"pay_to_contact":           t.Pay_to_contact.String(),
-		"your_reference":           t.Your_reference.String(),
-		"ship_to_name":             t.Ship_to_name.String(),
-		"ship_to_name_2":           t.Ship_to_name_2.String(),
-		"ship_to_address":          t.Ship_to_address.String(),
-		"ship_to_address_2":        t.Ship_to_address_2.String(),
-		"ship_to_city":             t.Ship_to_city.String(),
-		"ship_to_contact":          t.Ship_to_contact.String(),
-		"order_date":               t.Order_date.String(),
-		"posting_date":             t.Posting_date.String(),
-		"expected_receipt_date":    t.Expected_receipt_date.String(),
-		"posting_description":      t.Posting_description.String(),
-		"payment_terms_code":       t.Payment_terms_code.String(),
-		"due_date":                 t.Due_date.String(),
-		"payment_discount_percent": t.Payment_discount_percent.String(),
-		"pmt_discount_date":        t.Pmt_discount_date.String(),
-		"shipment_method_code":     t.Shipment_method_code.String(),
-		"location_code":            t.Location_code.String(),
-		"dimension_1_code":         t.Dimension_1_code.String(),
-		"dimension_2_code":         t.Dimension_2_code.String(),
-		"vendor_posting_group":     t.Vendor_posting_group.String(),
-		"currency_code":            t.Currency_code.String(),
-		"currency_factor":          t.Currency_factor.String(),
-		"invoice_disc_code":        t.Invoice_disc_code.String(),
-		"language_code":            t.Language_code.String(),
-		"purchaser_code":           t.Purchaser_code.String(),
-		"order_no":                 t.Order_no.String(),
-		// FlowField: comment
-		"comment":    t.Comment,
-		"no_printed": t.No_printed,
-		// FlowField: amount
-		"amount": t.Amount.String(),
-		// FlowField: amount_including_tax
-		"amount_including_tax":   t.Amount_including_tax.String(),
-		"applies_to_doc_type":    int(t.Applies_to_doc_type),
-		"applies_to_doc_no":      t.Applies_to_doc_no.String(),
-		"vendor_order_no":        t.Vendor_order_no.String(),
-		"vendor_shipment_no":     t.Vendor_shipment_no.String(),
-		"vendor_invoice_no":      t.Vendor_invoice_no.String(),
-		"vendor_cr_memo_no":      t.Vendor_cr_memo_no.String(),
-		"vat_registration_no":    t.Vat_registration_no.String(),
-		"reason_code":            t.Reason_code.String(),
-		"gen_bus_posting_group":  t.Gen_bus_posting_group.String(),
-		"buy_from_vendor_name":   t.Buy_from_vendor_name.String(),
-		"buy_from_vendor_name_2": t.Buy_from_vendor_name_2.String(),
-		"buy_from_address":       t.Buy_from_address.String(),
-		"buy_from_address_2":     t.Buy_from_address_2.String(),
-		"buy_from_city":          t.Buy_from_city.String(),
-		"buy_from_contact":       t.Buy_from_contact.String(),
-		"pay_to_post_code":       t.Pay_to_post_code.String(),
-		"pay_to_state":           t.Pay_to_state.String(),
-		"pay_to_country_code":    t.Pay_to_country_code.String(),
-		"buy_from_post_code":     t.Buy_from_post_code.String(),
-		"buy_from_state":         t.Buy_from_state.String(),
-		"buy_from_country_code":  t.Buy_from_country_code.String(),
-		"ship_to_post_code":      t.Ship_to_post_code.String(),
-		"ship_to_state":          t.Ship_to_state.String(),
-		"ship_to_country_code":   t.Ship_to_country_code.String(),
-		"order_address_code":     t.Order_address_code.String(),
-		"document_date":          t.Document_date.String(),
-		"payment_method_code":    t.Payment_method_code.String(),
-		"no_series":              t.No_series.String(),
-		"pre_assigned_no":        t.Pre_assigned_no.String(),
-		"user_id":                t.User_id.String(),
-		"source_code":            t.Source_code.String(),
-		"tax_area_code":          t.Tax_area_code.String(),
-		"tax_liable":             t.Tax_liable,
-		"tax_bus_posting_group":  t.Tax_bus_posting_group.String(),
-		"project_no":             t.Project_no.String(),
-	}
+	return purchInvHeaderFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *PurchInvHeader) FromMap(data map[string]interface{}) {
-	if v, ok := data["buy_from_vendor_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Buy_from_vendor_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No = types.NewCode(s)
-		}
-	}
-	if v, ok := data["pay_to_vendor_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Pay_to_vendor_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["pay_to_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Pay_to_name = types.NewText(s)
-		}
-	}
-	if v, ok := data["pay_to_name_2"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Pay_to_name_2 = types.NewText(s)
-		}
-	}
-	if v, ok := data["pay_to_address"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Pay_to_address = types.NewText(s)
-		}
-	}
-	if v, ok := data["pay_to_address_2"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Pay_to_address_2 = types.NewText(s)
-		}
-	}
-	if v, ok := data["pay_to_city"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Pay_to_city = types.NewText(s)
-		}
-	}
-	if v, ok := data["pay_to_contact"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Pay_to_contact = types.NewText(s)
-		}
-	}
-	if v, ok := data["your_reference"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Your_reference = types.NewText(s)
-		}
-	}
-	if v, ok := data["ship_to_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Ship_to_name = types.NewText(s)
-		}
-	}
-	if v, ok := data["ship_to_name_2"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Ship_to_name_2 = types.NewText(s)
-		}
-	}
-	if v, ok := data["ship_to_address"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Ship_to_address = types.NewText(s)
-		}
-	}
-	if v, ok := data["ship_to_address_2"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Ship_to_address_2 = types.NewText(s)
-		}
-	}
-	if v, ok := data["ship_to_city"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Ship_to_city = types.NewText(s)
-		}
-	}
-	if v, ok := data["ship_to_contact"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Ship_to_contact = types.NewText(s)
-		}
-	}
-	if v, ok := data["order_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Order_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["posting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Posting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["expected_receipt_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Expected_receipt_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["posting_description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Posting_description = types.NewText(s)
-		}
-	}
-	if v, ok := data["payment_terms_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Payment_terms_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["due_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Due_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["payment_discount_percent"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Payment_discount_percent, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Payment_discount_percent = types.NewDecimal(val)
-		case int:
-			t.Payment_discount_percent = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Payment_discount_percent = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["pmt_discount_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Pmt_discount_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["shipment_method_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Shipment_method_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["location_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Location_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["dimension_1_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_1_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["dimension_2_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_2_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["vendor_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Vendor_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["currency_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Currency_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["currency_factor"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Currency_factor, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Currency_factor = types.NewDecimal(val)
-		case int:
-			t.Currency_factor = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Currency_factor = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["invoice_disc_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Invoice_disc_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["language_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Language_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["purchaser_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Purchaser_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["order_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Order_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["no_printed"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.No_printed = int(val)
-		case int:
-			t.No_printed = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.No_printed = n
-			}
-		}
-	}
-	if v, ok := data["applies_to_doc_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Applies_to_doc_type = PurchInvHeaderApplies_to_doc_type(int(val))
-		case int:
-			t.Applies_to_doc_type = PurchInvHeaderApplies_to_doc_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Payment", "Invoice", "Credit Memo", "Finance Charge Memo", "Reminder"}
-			for i, opt := range options {
-				if opt == val {
-					t.Applies_to_doc_type = PurchInvHeaderApplies_to_doc_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["applies_to_doc_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Applies_to_doc_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["vendor_order_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Vendor_order_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["vendor_shipment_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Vendor_shipment_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["vendor_invoice_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Vendor_invoice_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["vendor_cr_memo_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Vendor_cr_memo_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["vat_registration_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Vat_registration_no = types.NewText(s)
-		}
-	}
-	if v, ok := data["reason_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Reason_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["gen_bus_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Gen_bus_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["buy_from_vendor_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Buy_from_vendor_name = types.NewText(s)
-		}
-	}
-	if v, ok := data["buy_from_vendor_name_2"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Buy_from_vendor_name_2 = types.NewText(s)
-		}
-	}
-	if v, ok := data["buy_from_address"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Buy_from_address = types.NewText(s)
-		}
-	}
-	if v, ok := data["buy_from_address_2"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Buy_from_address_2 = types.NewText(s)
-		}
-	}
-	if v, ok := data["buy_from_city"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Buy_from_city = types.NewText(s)
-		}
-	}
-	if v, ok := data["buy_from_contact"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Buy_from_contact = types.NewText(s)
-		}
-	}
-	if v, ok := data["pay_to_post_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Pay_to_post_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["pay_to_state"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Pay_to_state = types.NewText(s)
-		}
-	}
-	if v, ok := data["pay_to_country_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Pay_to_country_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["buy_from_post_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Buy_from_post_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["buy_from_state"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Buy_from_state = types.NewText(s)
-		}
-	}
-	if v, ok := data["buy_from_country_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Buy_from_country_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["ship_to_post_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Ship_to_post_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["ship_to_state"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Ship_to_state = types.NewText(s)
-		}
-	}
-	if v, ok := data["ship_to_country_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Ship_to_country_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["order_address_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Order_address_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["document_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Document_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["payment_method_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Payment_method_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["no_series"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No_series = types.NewCode(s)
-		}
-	}
-	if v, ok := data["pre_assigned_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Pre_assigned_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["user_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.User_id = types.NewCode(s)
-		}
-	}
-	if v, ok := data["source_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Source_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_area_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_area_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_liable"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Tax_liable = b
-		}
-	}
-	if v, ok := data["tax_bus_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_bus_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["project_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Project_no = types.NewCode(s)
-		}
-	}
+	purchInvHeaderFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -9554,756 +5334,1243 @@ func (t *PurchInvHeader) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *PurchInvHeader) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         2,
-			Name:       "buy_from_vendor_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "pay_to_vendor_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "pay_to_name",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "pay_to_name_2",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "pay_to_address",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "pay_to_address_2",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "pay_to_city",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "pay_to_contact",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "your_reference",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         13,
-			Name:       "ship_to_name",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         14,
-			Name:       "ship_to_name_2",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         15,
-			Name:       "ship_to_address",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         16,
-			Name:       "ship_to_address_2",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         17,
-			Name:       "ship_to_city",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         18,
-			Name:       "ship_to_contact",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         19,
-			Name:       "order_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         20,
-			Name:       "posting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         21,
-			Name:       "expected_receipt_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         22,
-			Name:       "posting_description",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         23,
-			Name:       "payment_terms_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         24,
-			Name:       "due_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            25,
-			Name:          "payment_discount_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         26,
-			Name:       "pmt_discount_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         27,
-			Name:       "shipment_method_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         28,
-			Name:       "location_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         29,
-			Name:       "dimension_1_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         30,
-			Name:       "dimension_2_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         31,
-			Name:       "vendor_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         32,
-			Name:       "currency_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            33,
-			Name:          "currency_factor",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "0:15",
-		},
-		{
-			No:         37,
-			Name:       "invoice_disc_code",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         41,
-			Name:       "language_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         43,
-			Name:       "purchaser_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         44,
-			Name:       "order_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         46,
-			Name:       "comment",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  true,
-		},
-		{
-			No:         47,
-			Name:       "no_printed",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:            60,
-			Name:          "amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            61,
-			Name:          "amount_including_tax",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         52,
-			Name:       "applies_to_doc_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         53,
-			Name:       "applies_to_doc_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         66,
-			Name:       "vendor_order_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         67,
-			Name:       "vendor_shipment_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         68,
-			Name:       "vendor_invoice_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         69,
-			Name:       "vendor_cr_memo_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         70,
-			Name:       "vat_registration_no",
-			Type:       tables.FieldTypeText,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         73,
-			Name:       "reason_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         74,
-			Name:       "gen_bus_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         79,
-			Name:       "buy_from_vendor_name",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         80,
-			Name:       "buy_from_vendor_name_2",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         81,
-			Name:       "buy_from_address",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         82,
-			Name:       "buy_from_address_2",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         83,
-			Name:       "buy_from_city",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         84,
-			Name:       "buy_from_contact",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         85,
-			Name:       "pay_to_post_code",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         86,
-			Name:       "pay_to_state",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         87,
-			Name:       "pay_to_country_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         88,
-			Name:       "buy_from_post_code",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         89,
-			Name:       "buy_from_state",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         90,
-			Name:       "buy_from_country_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         91,
-			Name:       "ship_to_post_code",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         92,
-			Name:       "ship_to_state",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         93,
-			Name:       "ship_to_country_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         95,
-			Name:       "order_address_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         99,
-			Name:       "document_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         104,
-			Name:       "payment_method_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         107,
-			Name:       "no_series",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         111,
-			Name:       "pre_assigned_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         112,
-			Name:       "user_id",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         113,
-			Name:       "source_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         114,
-			Name:       "tax_area_code",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         115,
-			Name:       "tax_liable",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         116,
-			Name:       "tax_bus_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         56,
-			Name:       "project_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return purchInvHeaderFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in purchInvHeaderFields.Fields
+func (t *PurchInvHeader) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Buy_from_vendor_no
+	case 1:
+		return &t.No
+	case 2:
+		return &t.Pay_to_vendor_no
+	case 3:
+		return &t.Pay_to_name
+	case 4:
+		return &t.Pay_to_name_2
+	case 5:
+		return &t.Pay_to_address
+	case 6:
+		return &t.Pay_to_address_2
+	case 7:
+		return &t.Pay_to_city
+	case 8:
+		return &t.Pay_to_contact
+	case 9:
+		return &t.Your_reference
+	case 10:
+		return &t.Ship_to_name
+	case 11:
+		return &t.Ship_to_name_2
+	case 12:
+		return &t.Ship_to_address
+	case 13:
+		return &t.Ship_to_address_2
+	case 14:
+		return &t.Ship_to_city
+	case 15:
+		return &t.Ship_to_contact
+	case 16:
+		return &t.Order_date
+	case 17:
+		return &t.Posting_date
+	case 18:
+		return &t.Expected_receipt_date
+	case 19:
+		return &t.Posting_description
+	case 20:
+		return &t.Payment_terms_code
+	case 21:
+		return &t.Due_date
+	case 22:
+		return &t.Payment_discount_percent
+	case 23:
+		return &t.Pmt_discount_date
+	case 24:
+		return &t.Shipment_method_code
+	case 25:
+		return &t.Location_code
+	case 26:
+		return &t.Dimension_1_code
+	case 27:
+		return &t.Dimension_2_code
+	case 28:
+		return &t.Vendor_posting_group
+	case 29:
+		return &t.Currency_code
+	case 30:
+		return &t.Currency_factor
+	case 31:
+		return &t.Invoice_disc_code
+	case 32:
+		return &t.Language_code
+	case 33:
+		return &t.Purchaser_code
+	case 34:
+		return &t.Order_no
+	case 35:
+		return &t.Comment
+	case 36:
+		return &t.No_printed
+	case 37:
+		return &t.Amount
+	case 38:
+		return &t.Amount_including_tax
+	case 39:
+		return &t.Applies_to_doc_type
+	case 40:
+		return &t.Applies_to_doc_no
+	case 41:
+		return &t.Vendor_order_no
+	case 42:
+		return &t.Vendor_shipment_no
+	case 43:
+		return &t.Vendor_invoice_no
+	case 44:
+		return &t.Vendor_cr_memo_no
+	case 45:
+		return &t.Vat_registration_no
+	case 46:
+		return &t.Reason_code
+	case 47:
+		return &t.Gen_bus_posting_group
+	case 48:
+		return &t.Buy_from_vendor_name
+	case 49:
+		return &t.Buy_from_vendor_name_2
+	case 50:
+		return &t.Buy_from_address
+	case 51:
+		return &t.Buy_from_address_2
+	case 52:
+		return &t.Buy_from_city
+	case 53:
+		return &t.Buy_from_contact
+	case 54:
+		return &t.Pay_to_post_code
+	case 55:
+		return &t.Pay_to_state
+	case 56:
+		return &t.Pay_to_country_code
+	case 57:
+		return &t.Buy_from_post_code
+	case 58:
+		return &t.Buy_from_state
+	case 59:
+		return &t.Buy_from_country_code
+	case 60:
+		return &t.Ship_to_post_code
+	case 61:
+		return &t.Ship_to_state
+	case 62:
+		return &t.Ship_to_country_code
+	case 63:
+		return &t.Order_address_code
+	case 64:
+		return &t.Document_date
+	case 65:
+		return &t.Payment_method_code
+	case 66:
+		return &t.No_series
+	case 67:
+		return &t.Pre_assigned_no
+	case 68:
+		return &t.User_id
+	case 69:
+		return &t.Source_code
+	case 70:
+		return &t.Tax_area_code
+	case 71:
+		return &t.Tax_liable
+	case 72:
+		return &t.Tax_bus_posting_group
+	case 73:
+		return &t.Project_no
 	}
+	return nil
+}
+
+// purchInvHeaderFields describes the fields of Purch_Inv_Header for the record functions
+// written once in foundation/tables
+var purchInvHeaderFields = &tables.TableFields{
+	Table: PurchInvHeaderTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "buy_from_vendor_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Buy_from_vendor_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_No",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "pay_to_vendor_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Pay_to_vendor_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "pay_to_name",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Pay_to_name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "pay_to_name_2",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Pay_to_name_2",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "pay_to_address",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Pay_to_address",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "pay_to_address_2",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Pay_to_address_2",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "pay_to_city",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Pay_to_city",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "pay_to_contact",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Pay_to_contact",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "your_reference",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Your_reference",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "ship_to_name",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Ship_to_name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "ship_to_name_2",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Ship_to_name_2",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         15,
+				Name:       "ship_to_address",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Ship_to_address",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         16,
+				Name:       "ship_to_address_2",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Ship_to_address_2",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         17,
+				Name:       "ship_to_city",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Ship_to_city",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         18,
+				Name:       "ship_to_contact",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Ship_to_contact",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         19,
+				Name:       "order_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Order_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         20,
+				Name:       "posting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Posting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         21,
+				Name:       "expected_receipt_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Expected_receipt_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         22,
+				Name:       "posting_description",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Posting_description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         23,
+				Name:       "payment_terms_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Payment_terms_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         24,
+				Name:       "due_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Due_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            25,
+				Name:          "payment_discount_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Payment_discount_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         26,
+				Name:       "pmt_discount_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Pmt_discount_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         27,
+				Name:       "shipment_method_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Shipment_method_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         28,
+				Name:       "location_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Location_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         29,
+				Name:       "dimension_1_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_1_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         30,
+				Name:       "dimension_2_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_2_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         31,
+				Name:       "vendor_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Vendor_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         32,
+				Name:       "currency_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Currency_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            33,
+				Name:          "currency_factor",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "0:15",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Currency_factor",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         37,
+				Name:       "invoice_disc_code",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Invoice_disc_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         41,
+				Name:       "language_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Language_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         43,
+				Name:       "purchaser_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Purchaser_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         44,
+				Name:       "order_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Order_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         46,
+				Name:       "comment",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  true,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Comment",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         47,
+				Name:       "no_printed",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_No_printed",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            60,
+				Name:          "amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            61,
+				Name:          "amount_including_tax",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Amount_including_tax",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         52,
+				Name:       "applies_to_doc_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Applies_to_doc_type",
+			Options: []string{" ", "Payment", "Invoice", "Credit Memo", "Finance Charge Memo", "Reminder"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         53,
+				Name:       "applies_to_doc_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Applies_to_doc_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         66,
+				Name:       "vendor_order_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Vendor_order_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         67,
+				Name:       "vendor_shipment_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Vendor_shipment_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         68,
+				Name:       "vendor_invoice_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Vendor_invoice_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         69,
+				Name:       "vendor_cr_memo_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Vendor_cr_memo_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         70,
+				Name:       "vat_registration_no",
+				Type:       tables.FieldTypeText,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Vat_registration_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         73,
+				Name:       "reason_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Reason_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         74,
+				Name:       "gen_bus_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Gen_bus_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         79,
+				Name:       "buy_from_vendor_name",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Buy_from_vendor_name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         80,
+				Name:       "buy_from_vendor_name_2",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Buy_from_vendor_name_2",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         81,
+				Name:       "buy_from_address",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Buy_from_address",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         82,
+				Name:       "buy_from_address_2",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Buy_from_address_2",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         83,
+				Name:       "buy_from_city",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Buy_from_city",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         84,
+				Name:       "buy_from_contact",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Buy_from_contact",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         85,
+				Name:       "pay_to_post_code",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Pay_to_post_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         86,
+				Name:       "pay_to_state",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Pay_to_state",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         87,
+				Name:       "pay_to_country_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Pay_to_country_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         88,
+				Name:       "buy_from_post_code",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Buy_from_post_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         89,
+				Name:       "buy_from_state",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Buy_from_state",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         90,
+				Name:       "buy_from_country_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Buy_from_country_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         91,
+				Name:       "ship_to_post_code",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Ship_to_post_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         92,
+				Name:       "ship_to_state",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Ship_to_state",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         93,
+				Name:       "ship_to_country_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Ship_to_country_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         95,
+				Name:       "order_address_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Order_address_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         99,
+				Name:       "document_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Document_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         104,
+				Name:       "payment_method_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Payment_method_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         107,
+				Name:       "no_series",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_No_series",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         111,
+				Name:       "pre_assigned_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Pre_assigned_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         112,
+				Name:       "user_id",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_User_id",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         113,
+				Name:       "source_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Source_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         114,
+				Name:       "tax_area_code",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_area_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         115,
+				Name:       "tax_liable",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Tax_liable",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         116,
+				Name:       "tax_bus_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_bus_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         56,
+				Name:       "project_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Project_no",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

@@ -121,32 +121,12 @@ var GenBusinessPostingGroup_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *GenBusinessPostingGroup) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "code":
-		return 1
-	case "description":
-		return 2
-	case "def_tax_bus_posting_group":
-		return 3
-	case "auto_insert_default":
-		return 4
-	}
-	return 0
+	return genBusinessPostingGroupFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *GenBusinessPostingGroup) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "code"
-	case 2:
-		return "description"
-	case 3:
-		return "def_tax_bus_posting_group"
-	case 4:
-		return "auto_insert_default"
-	}
-	return ""
+	return genBusinessPostingGroupFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -258,18 +238,6 @@ type (
 	GenBusinessPostingGroupOnBeforeRename interface {
 		OnBeforeRename(rec *GenBusinessPostingGroup, handled *bool) error
 	}
-	GenBusinessPostingGroupOnValidate_Code interface {
-		OnValidate_Code(rec *GenBusinessPostingGroup) error
-	}
-	GenBusinessPostingGroupOnValidate_Description interface {
-		OnValidate_Description(rec *GenBusinessPostingGroup) error
-	}
-	GenBusinessPostingGroupOnValidate_Def_tax_bus_posting_group interface {
-		OnValidate_Def_tax_bus_posting_group(rec *GenBusinessPostingGroup) error
-	}
-	GenBusinessPostingGroupOnValidate_Auto_insert_default interface {
-		OnValidate_Auto_insert_default(rec *GenBusinessPostingGroup) error
-	}
 )
 
 // genBusinessPostingGroupLogic is the registered business logic of Gen_Business_Posting_Group, in
@@ -312,16 +280,9 @@ func genBusinessPostingGroupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(GenBusinessPostingGroupOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(GenBusinessPostingGroupOnBeforeRename)
-	case "OnValidate_Code":
-		_, ok = logic.(GenBusinessPostingGroupOnValidate_Code)
-	case "OnValidate_Description":
-		_, ok = logic.(GenBusinessPostingGroupOnValidate_Description)
-	case "OnValidate_Def_tax_bus_posting_group":
-		_, ok = logic.(GenBusinessPostingGroupOnValidate_Def_tax_bus_posting_group)
-	case "OnValidate_Auto_insert_default":
-		_, ok = logic.(GenBusinessPostingGroupOnValidate_Auto_insert_default)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return genBusinessPostingGroupFields.IsOnValidateTrigger(name, logic, (*GenBusinessPostingGroup)(nil))
 	}
 	return true, ok
 }
@@ -617,11 +578,7 @@ func (t *GenBusinessPostingGroup) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *GenBusinessPostingGroup) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["code"] = t.Code
-	t.oldValues["description"] = t.Description
-	t.oldValues["def_tax_bus_posting_group"] = t.Def_tax_bus_posting_group
-	t.oldValues["auto_insert_default"] = t.Auto_insert_default
+	t.oldValues = genBusinessPostingGroupFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -636,18 +593,7 @@ func (t *GenBusinessPostingGroup) OldValue(fieldName string) interface{} {
 func (t *GenBusinessPostingGroup) XRec() *GenBusinessPostingGroup {
 	x := &GenBusinessPostingGroup{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["code"].(types.Code); ok {
-		x.Code = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["def_tax_bus_posting_group"].(types.Code); ok {
-		x.Def_tax_bus_posting_group = v
-	}
-	if v, ok := t.oldValues["auto_insert_default"].(bool); ok {
-		x.Auto_insert_default = v
-	}
+	genBusinessPostingGroupFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -946,38 +892,7 @@ func (t *GenBusinessPostingGroup) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *GenBusinessPostingGroup) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Code.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "def_tax_bus_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Def_tax_bus_posting_group.Equal(old)
-		}
-	case "auto_insert_default":
-		if old, ok := oldValue.(bool); ok {
-			return t.Auto_insert_default != old
-		}
-		return true // Type mismatch, assume changed
-	}
-
-	return false
+	return genBusinessPostingGroupFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1271,17 +1186,7 @@ func (t *GenBusinessPostingGroup) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *GenBusinessPostingGroup) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("code"):
-		return "code", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("def_tax_bus_posting_group"):
-		return "def_tax_bus_posting_group", true
-	case strings.ToLower("auto_insert_default"):
-		return "auto_insert_default", true
-	}
-	return "", false
+	return genBusinessPostingGroupFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2118,89 +2023,20 @@ func (t *GenBusinessPostingGroup) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *GenBusinessPostingGroup) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-		} else if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenBusinessPostingGroupOnValidate_Code); ok {
-				if err := trg.OnValidate_Code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenBusinessPostingGroupOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "def_tax_bus_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Def_tax_bus_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Def_tax_bus_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field def_tax_bus_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "def_tax_bus_posting_group"); err != nil {
+	i, err := genBusinessPostingGroupFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
+	}
+	f := &genBusinessPostingGroupFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
 			return err
 		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenBusinessPostingGroupOnValidate_Def_tax_bus_posting_group); ok {
-				if err := trg.OnValidate_Def_tax_bus_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "auto_insert_default":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Auto_insert_default = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Auto_insert_default = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field auto_insert_default")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenBusinessPostingGroupOnValidate_Auto_insert_default); ok {
-				if err := trg.OnValidate_Auto_insert_default(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2209,64 +2045,18 @@ func (t *GenBusinessPostingGroup) ValidateField(fieldName string, value interfac
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *GenBusinessPostingGroup) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Code, true
-	case 2:
-		return t.Description, true
-	case 3:
-		return t.Def_tax_bus_posting_group, true
-	case 4:
-		return t.Auto_insert_default, true
-	}
-	return nil, false
+	return genBusinessPostingGroupFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *GenBusinessPostingGroup) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return genBusinessPostingGroupFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *GenBusinessPostingGroup) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Code); ok {
-			t.Def_tax_bus_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Def_tax_bus_posting_group = types.NewCode(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(bool); ok {
-			t.Auto_insert_default = v
-			return true
-		}
-	}
-	return false
+	return genBusinessPostingGroupFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2715,17 +2505,7 @@ func (t *GenBusinessPostingGroup) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *GenBusinessPostingGroup) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "code":
-		return t.Code, true
-	case "description":
-		return t.Description, true
-	case "def_tax_bus_posting_group":
-		return t.Def_tax_bus_posting_group, true
-	case "auto_insert_default":
-		return t.Auto_insert_default, true
-	}
-	return nil, false
+	return genBusinessPostingGroupFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2814,36 +2594,12 @@ func (t *GenBusinessPostingGroup) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *GenBusinessPostingGroup) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"code":                      t.Code.String(),
-		"description":               t.Description.String(),
-		"def_tax_bus_posting_group": t.Def_tax_bus_posting_group.String(),
-		"auto_insert_default":       t.Auto_insert_default,
-	}
+	return genBusinessPostingGroupFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *GenBusinessPostingGroup) FromMap(data map[string]interface{}) {
-	if v, ok := data["code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["def_tax_bus_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Def_tax_bus_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["auto_insert_default"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Auto_insert_default = b
-		}
-	}
+	genBusinessPostingGroupFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2864,48 +2620,87 @@ func (t *GenBusinessPostingGroup) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *GenBusinessPostingGroup) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "def_tax_bus_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "auto_insert_default",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return genBusinessPostingGroupFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in genBusinessPostingGroupFields.Fields
+func (t *GenBusinessPostingGroup) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Code
+	case 1:
+		return &t.Description
+	case 2:
+		return &t.Def_tax_bus_posting_group
+	case 3:
+		return &t.Auto_insert_default
 	}
+	return nil
+}
+
+// genBusinessPostingGroupFields describes the fields of Gen_Business_Posting_Group for the record functions
+// written once in foundation/tables
+var genBusinessPostingGroupFields = &tables.TableFields{
+	Table: GenBusinessPostingGroupTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "def_tax_bus_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Def_tax_bus_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "auto_insert_default",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Auto_insert_default",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

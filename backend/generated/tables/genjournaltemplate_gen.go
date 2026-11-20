@@ -242,76 +242,12 @@ var GenJournalTemplate_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *GenJournalTemplate) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "name":
-		return 1
-	case "description":
-		return 2
-	case "test_report_id":
-		return 5
-	case "page_id":
-		return 6
-	case "posting_report_id":
-		return 7
-	case "force_posting_report":
-		return 8
-	case "type":
-		return 9
-	case "source_code":
-		return 10
-	case "reason_code":
-		return 11
-	case "recurring":
-		return 12
-	case "force_doc_balance":
-		return 18
-	case "bal_account_type":
-		return 19
-	case "bal_account_no":
-		return 20
-	case "no_series":
-		return 21
-	case "posting_no_series":
-		return 22
-	}
-	return 0
+	return genJournalTemplateFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *GenJournalTemplate) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "name"
-	case 2:
-		return "description"
-	case 5:
-		return "test_report_id"
-	case 6:
-		return "page_id"
-	case 7:
-		return "posting_report_id"
-	case 8:
-		return "force_posting_report"
-	case 9:
-		return "type"
-	case 10:
-		return "source_code"
-	case 11:
-		return "reason_code"
-	case 12:
-		return "recurring"
-	case 18:
-		return "force_doc_balance"
-	case 19:
-		return "bal_account_type"
-	case 20:
-		return "bal_account_no"
-	case 21:
-		return "no_series"
-	case 22:
-		return "posting_no_series"
-	}
-	return ""
+	return genJournalTemplateFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -423,51 +359,6 @@ type (
 	GenJournalTemplateOnBeforeRename interface {
 		OnBeforeRename(rec *GenJournalTemplate, handled *bool) error
 	}
-	GenJournalTemplateOnValidate_Name interface {
-		OnValidate_Name(rec *GenJournalTemplate) error
-	}
-	GenJournalTemplateOnValidate_Description interface {
-		OnValidate_Description(rec *GenJournalTemplate) error
-	}
-	GenJournalTemplateOnValidate_Test_report_id interface {
-		OnValidate_Test_report_id(rec *GenJournalTemplate) error
-	}
-	GenJournalTemplateOnValidate_Page_id interface {
-		OnValidate_Page_id(rec *GenJournalTemplate) error
-	}
-	GenJournalTemplateOnValidate_Posting_report_id interface {
-		OnValidate_Posting_report_id(rec *GenJournalTemplate) error
-	}
-	GenJournalTemplateOnValidate_Force_posting_report interface {
-		OnValidate_Force_posting_report(rec *GenJournalTemplate) error
-	}
-	GenJournalTemplateOnValidate_Type interface {
-		OnValidate_Type(rec *GenJournalTemplate) error
-	}
-	GenJournalTemplateOnValidate_Source_code interface {
-		OnValidate_Source_code(rec *GenJournalTemplate) error
-	}
-	GenJournalTemplateOnValidate_Reason_code interface {
-		OnValidate_Reason_code(rec *GenJournalTemplate) error
-	}
-	GenJournalTemplateOnValidate_Recurring interface {
-		OnValidate_Recurring(rec *GenJournalTemplate) error
-	}
-	GenJournalTemplateOnValidate_Force_doc_balance interface {
-		OnValidate_Force_doc_balance(rec *GenJournalTemplate) error
-	}
-	GenJournalTemplateOnValidate_Bal_account_type interface {
-		OnValidate_Bal_account_type(rec *GenJournalTemplate) error
-	}
-	GenJournalTemplateOnValidate_Bal_account_no interface {
-		OnValidate_Bal_account_no(rec *GenJournalTemplate) error
-	}
-	GenJournalTemplateOnValidate_No_series interface {
-		OnValidate_No_series(rec *GenJournalTemplate) error
-	}
-	GenJournalTemplateOnValidate_Posting_no_series interface {
-		OnValidate_Posting_no_series(rec *GenJournalTemplate) error
-	}
 )
 
 // genJournalTemplateLogic is the registered business logic of Gen_Journal_Template, in
@@ -510,38 +401,9 @@ func genJournalTemplateTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(GenJournalTemplateOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(GenJournalTemplateOnBeforeRename)
-	case "OnValidate_Name":
-		_, ok = logic.(GenJournalTemplateOnValidate_Name)
-	case "OnValidate_Description":
-		_, ok = logic.(GenJournalTemplateOnValidate_Description)
-	case "OnValidate_Test_report_id":
-		_, ok = logic.(GenJournalTemplateOnValidate_Test_report_id)
-	case "OnValidate_Page_id":
-		_, ok = logic.(GenJournalTemplateOnValidate_Page_id)
-	case "OnValidate_Posting_report_id":
-		_, ok = logic.(GenJournalTemplateOnValidate_Posting_report_id)
-	case "OnValidate_Force_posting_report":
-		_, ok = logic.(GenJournalTemplateOnValidate_Force_posting_report)
-	case "OnValidate_Type":
-		_, ok = logic.(GenJournalTemplateOnValidate_Type)
-	case "OnValidate_Source_code":
-		_, ok = logic.(GenJournalTemplateOnValidate_Source_code)
-	case "OnValidate_Reason_code":
-		_, ok = logic.(GenJournalTemplateOnValidate_Reason_code)
-	case "OnValidate_Recurring":
-		_, ok = logic.(GenJournalTemplateOnValidate_Recurring)
-	case "OnValidate_Force_doc_balance":
-		_, ok = logic.(GenJournalTemplateOnValidate_Force_doc_balance)
-	case "OnValidate_Bal_account_type":
-		_, ok = logic.(GenJournalTemplateOnValidate_Bal_account_type)
-	case "OnValidate_Bal_account_no":
-		_, ok = logic.(GenJournalTemplateOnValidate_Bal_account_no)
-	case "OnValidate_No_series":
-		_, ok = logic.(GenJournalTemplateOnValidate_No_series)
-	case "OnValidate_Posting_no_series":
-		_, ok = logic.(GenJournalTemplateOnValidate_Posting_no_series)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return genJournalTemplateFields.IsOnValidateTrigger(name, logic, (*GenJournalTemplate)(nil))
 	}
 	return true, ok
 }
@@ -877,22 +739,7 @@ func (t *GenJournalTemplate) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *GenJournalTemplate) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["name"] = t.Name
-	t.oldValues["description"] = t.Description
-	t.oldValues["test_report_id"] = t.Test_report_id
-	t.oldValues["page_id"] = t.Page_id
-	t.oldValues["posting_report_id"] = t.Posting_report_id
-	t.oldValues["force_posting_report"] = t.Force_posting_report
-	t.oldValues["type"] = t.Type
-	t.oldValues["source_code"] = t.Source_code
-	t.oldValues["reason_code"] = t.Reason_code
-	t.oldValues["recurring"] = t.Recurring
-	t.oldValues["force_doc_balance"] = t.Force_doc_balance
-	t.oldValues["bal_account_type"] = t.Bal_account_type
-	t.oldValues["bal_account_no"] = t.Bal_account_no
-	t.oldValues["no_series"] = t.No_series
-	t.oldValues["posting_no_series"] = t.Posting_no_series
+	t.oldValues = genJournalTemplateFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -907,51 +754,7 @@ func (t *GenJournalTemplate) OldValue(fieldName string) interface{} {
 func (t *GenJournalTemplate) XRec() *GenJournalTemplate {
 	x := &GenJournalTemplate{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["name"].(types.Code); ok {
-		x.Name = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["test_report_id"].(int); ok {
-		x.Test_report_id = v
-	}
-	if v, ok := t.oldValues["page_id"].(int); ok {
-		x.Page_id = v
-	}
-	if v, ok := t.oldValues["posting_report_id"].(int); ok {
-		x.Posting_report_id = v
-	}
-	if v, ok := t.oldValues["force_posting_report"].(bool); ok {
-		x.Force_posting_report = v
-	}
-	if v, ok := t.oldValues["type"].(GenJournalTemplateType); ok {
-		x.Type = v
-	}
-	if v, ok := t.oldValues["source_code"].(types.Code); ok {
-		x.Source_code = v
-	}
-	if v, ok := t.oldValues["reason_code"].(types.Code); ok {
-		x.Reason_code = v
-	}
-	if v, ok := t.oldValues["recurring"].(bool); ok {
-		x.Recurring = v
-	}
-	if v, ok := t.oldValues["force_doc_balance"].(bool); ok {
-		x.Force_doc_balance = v
-	}
-	if v, ok := t.oldValues["bal_account_type"].(GenJournalTemplateBal_account_type); ok {
-		x.Bal_account_type = v
-	}
-	if v, ok := t.oldValues["bal_account_no"].(types.Code); ok {
-		x.Bal_account_no = v
-	}
-	if v, ok := t.oldValues["no_series"].(types.Code); ok {
-		x.No_series = v
-	}
-	if v, ok := t.oldValues["posting_no_series"].(types.Code); ok {
-		x.Posting_no_series = v
-	}
+	genJournalTemplateFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1371,87 +1174,7 @@ func (t *GenJournalTemplate) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *GenJournalTemplate) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Name.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "test_report_id":
-		if old, ok := oldValue.(int); ok {
-			return t.Test_report_id != old
-		}
-		return true // Type mismatch, assume changed
-	case "page_id":
-		if old, ok := oldValue.(int); ok {
-			return t.Page_id != old
-		}
-		return true // Type mismatch, assume changed
-	case "posting_report_id":
-		if old, ok := oldValue.(int); ok {
-			return t.Posting_report_id != old
-		}
-		return true // Type mismatch, assume changed
-	case "force_posting_report":
-		if old, ok := oldValue.(bool); ok {
-			return t.Force_posting_report != old
-		}
-		return true // Type mismatch, assume changed
-	case "type":
-		if old, ok := oldValue.(GenJournalTemplateType); ok {
-			return t.Type != old
-		}
-	case "source_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Source_code.Equal(old)
-		}
-	case "reason_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Reason_code.Equal(old)
-		}
-	case "recurring":
-		if old, ok := oldValue.(bool); ok {
-			return t.Recurring != old
-		}
-		return true // Type mismatch, assume changed
-	case "force_doc_balance":
-		if old, ok := oldValue.(bool); ok {
-			return t.Force_doc_balance != old
-		}
-		return true // Type mismatch, assume changed
-	case "bal_account_type":
-		if old, ok := oldValue.(GenJournalTemplateBal_account_type); ok {
-			return t.Bal_account_type != old
-		}
-	case "bal_account_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Bal_account_no.Equal(old)
-		}
-	case "no_series":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No_series.Equal(old)
-		}
-	case "posting_no_series":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Posting_no_series.Equal(old)
-		}
-	}
-
-	return false
+	return genJournalTemplateFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1692,39 +1415,7 @@ func (t *GenJournalTemplate) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *GenJournalTemplate) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("name"):
-		return "name", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("test_report_id"):
-		return "test_report_id", true
-	case strings.ToLower("page_id"):
-		return "page_id", true
-	case strings.ToLower("posting_report_id"):
-		return "posting_report_id", true
-	case strings.ToLower("force_posting_report"):
-		return "force_posting_report", true
-	case strings.ToLower("type"):
-		return "type", true
-	case strings.ToLower("source_code"):
-		return "source_code", true
-	case strings.ToLower("reason_code"):
-		return "reason_code", true
-	case strings.ToLower("recurring"):
-		return "recurring", true
-	case strings.ToLower("force_doc_balance"):
-		return "force_doc_balance", true
-	case strings.ToLower("bal_account_type"):
-		return "bal_account_type", true
-	case strings.ToLower("bal_account_no"):
-		return "bal_account_no", true
-	case strings.ToLower("no_series"):
-		return "no_series", true
-	case strings.ToLower("posting_no_series"):
-		return "posting_no_series", true
-	}
-	return "", false
+	return genJournalTemplateFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2684,398 +2375,20 @@ func (t *GenJournalTemplate) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *GenJournalTemplate) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Name = v
-		} else if v, ok := value.(string); ok {
-			t.Name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalTemplateOnValidate_Name); ok {
-				if err := trg.OnValidate_Name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalTemplateOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "test_report_id":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Test_report_id = v
-		case float64:
-			t.Test_report_id = int(v)
-		case string:
-			if v == "" {
-				t.Test_report_id = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Test_report_id = i
-			} else {
-				return fmt.Errorf("invalid integer value for field test_report_id: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field test_report_id")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalTemplateOnValidate_Test_report_id); ok {
-				if err := trg.OnValidate_Test_report_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "page_id":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Page_id = v
-		case float64:
-			t.Page_id = int(v)
-		case string:
-			if v == "" {
-				t.Page_id = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Page_id = i
-			} else {
-				return fmt.Errorf("invalid integer value for field page_id: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field page_id")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "page_id"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalTemplateOnValidate_Page_id); ok {
-				if err := trg.OnValidate_Page_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "posting_report_id":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Posting_report_id = v
-		case float64:
-			t.Posting_report_id = int(v)
-		case string:
-			if v == "" {
-				t.Posting_report_id = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Posting_report_id = i
-			} else {
-				return fmt.Errorf("invalid integer value for field posting_report_id: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field posting_report_id")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalTemplateOnValidate_Posting_report_id); ok {
-				if err := trg.OnValidate_Posting_report_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "force_posting_report":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Force_posting_report = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Force_posting_report = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field force_posting_report")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalTemplateOnValidate_Force_posting_report); ok {
-				if err := trg.OnValidate_Force_posting_report(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(GenJournalTemplateType); ok {
-			t.Type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 7 {
-				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", v, 7-1)
-			}
-			t.Type = GenJournalTemplateType(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 7 {
-				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", intVal, 7-1)
-			}
-			t.Type = GenJournalTemplateType(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Type = 0
-			} else {
-				options := []string{"General", "Sales", "Purchases", "Cash Receipts", "Payments", "Assets", "Payroll Accrual"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Type = GenJournalTemplateType(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field type (expected GenJournalTemplateType, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalTemplateOnValidate_Type); ok {
-				if err := trg.OnValidate_Type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "source_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Source_code = v
-		} else if v, ok := value.(string); ok {
-			t.Source_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field source_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "source_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalTemplateOnValidate_Source_code); ok {
-				if err := trg.OnValidate_Source_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reason_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Reason_code = v
-		} else if v, ok := value.(string); ok {
-			t.Reason_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field reason_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "reason_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalTemplateOnValidate_Reason_code); ok {
-				if err := trg.OnValidate_Reason_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "recurring":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Recurring = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Recurring = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field recurring")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalTemplateOnValidate_Recurring); ok {
-				if err := trg.OnValidate_Recurring(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "force_doc_balance":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Force_doc_balance = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Force_doc_balance = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field force_doc_balance")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalTemplateOnValidate_Force_doc_balance); ok {
-				if err := trg.OnValidate_Force_doc_balance(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bal_account_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(GenJournalTemplateBal_account_type); ok {
-			t.Bal_account_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 5 {
-				return fmt.Errorf("invalid option value %d for field bal_account_type (valid range: 0-%d)", v, 5-1)
-			}
-			t.Bal_account_type = GenJournalTemplateBal_account_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 5 {
-				return fmt.Errorf("invalid option value %d for field bal_account_type (valid range: 0-%d)", intVal, 5-1)
-			}
-			t.Bal_account_type = GenJournalTemplateBal_account_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Bal_account_type = 0
-			} else {
-				options := []string{"G/L Account", "Customer", "Vendor", "Bank Account", "Fixed Asset"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Bal_account_type = GenJournalTemplateBal_account_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field bal_account_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field bal_account_type (expected GenJournalTemplateBal_account_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalTemplateOnValidate_Bal_account_type); ok {
-				if err := trg.OnValidate_Bal_account_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bal_account_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Bal_account_no = v
-		} else if v, ok := value.(string); ok {
-			t.Bal_account_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field bal_account_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "bal_account_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalTemplateOnValidate_Bal_account_no); ok {
-				if err := trg.OnValidate_Bal_account_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no_series":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No_series = v
-		} else if v, ok := value.(string); ok {
-			t.No_series = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no_series")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "no_series"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalTemplateOnValidate_No_series); ok {
-				if err := trg.OnValidate_No_series(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "posting_no_series":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Posting_no_series = v
-		} else if v, ok := value.(string); ok {
-			t.Posting_no_series = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field posting_no_series")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "posting_no_series"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJournalTemplateOnValidate_Posting_no_series); ok {
-				if err := trg.OnValidate_Posting_no_series(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := genJournalTemplateFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &genJournalTemplateFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -3084,157 +2397,18 @@ func (t *GenJournalTemplate) ValidateField(fieldName string, value interface{}) 
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *GenJournalTemplate) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Name, true
-	case 2:
-		return t.Description, true
-	case 5:
-		return t.Test_report_id, true
-	case 6:
-		return t.Page_id, true
-	case 7:
-		return t.Posting_report_id, true
-	case 8:
-		return t.Force_posting_report, true
-	case 9:
-		return t.Type, true
-	case 10:
-		return t.Source_code, true
-	case 11:
-		return t.Reason_code, true
-	case 12:
-		return t.Recurring, true
-	case 18:
-		return t.Force_doc_balance, true
-	case 19:
-		return t.Bal_account_type, true
-	case 20:
-		return t.Bal_account_no, true
-	case 21:
-		return t.No_series, true
-	case 22:
-		return t.Posting_no_series, true
-	}
-	return nil, false
+	return genJournalTemplateFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *GenJournalTemplate) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return genJournalTemplateFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *GenJournalTemplate) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Name = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(int); ok {
-			t.Test_report_id = v
-			return true
-		}
-	case 6:
-		if v, ok := value.(int); ok {
-			t.Page_id = v
-			return true
-		}
-	case 7:
-		if v, ok := value.(int); ok {
-			t.Posting_report_id = v
-			return true
-		}
-	case 8:
-		if v, ok := value.(bool); ok {
-			t.Force_posting_report = v
-			return true
-		}
-	case 9:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 7 {
-			t.Type = GenJournalTemplateType(i)
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Code); ok {
-			t.Source_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Source_code = types.NewCode(v)
-			return true
-		}
-	case 11:
-		if v, ok := value.(types.Code); ok {
-			t.Reason_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Reason_code = types.NewCode(v)
-			return true
-		}
-	case 12:
-		if v, ok := value.(bool); ok {
-			t.Recurring = v
-			return true
-		}
-	case 18:
-		if v, ok := value.(bool); ok {
-			t.Force_doc_balance = v
-			return true
-		}
-	case 19:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 5 {
-			t.Bal_account_type = GenJournalTemplateBal_account_type(i)
-			return true
-		}
-	case 20:
-		if v, ok := value.(types.Code); ok {
-			t.Bal_account_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Bal_account_no = types.NewCode(v)
-			return true
-		}
-	case 21:
-		if v, ok := value.(types.Code); ok {
-			t.No_series = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No_series = types.NewCode(v)
-			return true
-		}
-	case 22:
-		if v, ok := value.(types.Code); ok {
-			t.Posting_no_series = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Posting_no_series = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return genJournalTemplateFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3720,39 +2894,7 @@ func (t *GenJournalTemplate) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *GenJournalTemplate) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "name":
-		return t.Name, true
-	case "description":
-		return t.Description, true
-	case "test_report_id":
-		return t.Test_report_id, true
-	case "page_id":
-		return t.Page_id, true
-	case "posting_report_id":
-		return t.Posting_report_id, true
-	case "force_posting_report":
-		return t.Force_posting_report, true
-	case "type":
-		return int(t.Type), true
-	case "source_code":
-		return t.Source_code, true
-	case "reason_code":
-		return t.Reason_code, true
-	case "recurring":
-		return t.Recurring, true
-	case "force_doc_balance":
-		return t.Force_doc_balance, true
-	case "bal_account_type":
-		return int(t.Bal_account_type), true
-	case "bal_account_no":
-		return t.Bal_account_no, true
-	case "no_series":
-		return t.No_series, true
-	case "posting_no_series":
-		return t.Posting_no_series, true
-	}
-	return nil, false
+	return genJournalTemplateFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3852,150 +2994,12 @@ func (t *GenJournalTemplate) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *GenJournalTemplate) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"name":                 t.Name.String(),
-		"description":          t.Description.String(),
-		"test_report_id":       t.Test_report_id,
-		"page_id":              t.Page_id,
-		"posting_report_id":    t.Posting_report_id,
-		"force_posting_report": t.Force_posting_report,
-		"type":                 int(t.Type),
-		"source_code":          t.Source_code.String(),
-		"reason_code":          t.Reason_code.String(),
-		"recurring":            t.Recurring,
-		"force_doc_balance":    t.Force_doc_balance,
-		"bal_account_type":     int(t.Bal_account_type),
-		"bal_account_no":       t.Bal_account_no.String(),
-		"no_series":            t.No_series.String(),
-		"posting_no_series":    t.Posting_no_series.String(),
-	}
+	return genJournalTemplateFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *GenJournalTemplate) FromMap(data map[string]interface{}) {
-	if v, ok := data["name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["test_report_id"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Test_report_id = int(val)
-		case int:
-			t.Test_report_id = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Test_report_id = n
-			}
-		}
-	}
-	if v, ok := data["page_id"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Page_id = int(val)
-		case int:
-			t.Page_id = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Page_id = n
-			}
-		}
-	}
-	if v, ok := data["posting_report_id"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Posting_report_id = int(val)
-		case int:
-			t.Posting_report_id = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Posting_report_id = n
-			}
-		}
-	}
-	if v, ok := data["force_posting_report"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Force_posting_report = b
-		}
-	}
-	if v, ok := data["type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Type = GenJournalTemplateType(int(val))
-		case int:
-			t.Type = GenJournalTemplateType(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"General", "Sales", "Purchases", "Cash Receipts", "Payments", "Assets", "Payroll Accrual"}
-			for i, opt := range options {
-				if opt == val {
-					t.Type = GenJournalTemplateType(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["source_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Source_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["reason_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Reason_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["recurring"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Recurring = b
-		}
-	}
-	if v, ok := data["force_doc_balance"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Force_doc_balance = b
-		}
-	}
-	if v, ok := data["bal_account_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Bal_account_type = GenJournalTemplateBal_account_type(int(val))
-		case int:
-			t.Bal_account_type = GenJournalTemplateBal_account_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"G/L Account", "Customer", "Vendor", "Bank Account", "Fixed Asset"}
-			for i, opt := range options {
-				if opt == val {
-					t.Bal_account_type = GenJournalTemplateBal_account_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["bal_account_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Bal_account_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["no_series"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No_series = types.NewCode(s)
-		}
-	}
-	if v, ok := data["posting_no_series"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Posting_no_series = types.NewCode(s)
-		}
-	}
+	genJournalTemplateFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -4016,158 +3020,270 @@ func (t *GenJournalTemplate) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *GenJournalTemplate) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     80,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "test_report_id",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "page_id",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "posting_report_id",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "force_posting_report",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "source_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "reason_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "recurring",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         18,
-			Name:       "force_doc_balance",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         19,
-			Name:       "bal_account_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         20,
-			Name:       "bal_account_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         21,
-			Name:       "no_series",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         22,
-			Name:       "posting_no_series",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return genJournalTemplateFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in genJournalTemplateFields.Fields
+func (t *GenJournalTemplate) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Name
+	case 1:
+		return &t.Description
+	case 2:
+		return &t.Test_report_id
+	case 3:
+		return &t.Page_id
+	case 4:
+		return &t.Posting_report_id
+	case 5:
+		return &t.Force_posting_report
+	case 6:
+		return &t.Type
+	case 7:
+		return &t.Source_code
+	case 8:
+		return &t.Reason_code
+	case 9:
+		return &t.Recurring
+	case 10:
+		return &t.Force_doc_balance
+	case 11:
+		return &t.Bal_account_type
+	case 12:
+		return &t.Bal_account_no
+	case 13:
+		return &t.No_series
+	case 14:
+		return &t.Posting_no_series
 	}
+	return nil
+}
+
+// genJournalTemplateFields describes the fields of Gen_Journal_Template for the record functions
+// written once in foundation/tables
+var genJournalTemplateFields = &tables.TableFields{
+	Table: GenJournalTemplateTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     80,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "test_report_id",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Test_report_id",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "page_id",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindInt,
+			Trigger:  "OnValidate_Page_id",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "posting_report_id",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Posting_report_id",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "force_posting_report",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Force_posting_report",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Type",
+			Options: []string{"General", "Sales", "Purchases", "Cash Receipts", "Payments", "Assets", "Payroll Accrual"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "source_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Source_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "reason_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Reason_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "recurring",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Recurring",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         18,
+				Name:       "force_doc_balance",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Force_doc_balance",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         19,
+				Name:       "bal_account_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Bal_account_type",
+			Options: []string{"G/L Account", "Customer", "Vendor", "Bank Account", "Fixed Asset"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         20,
+				Name:       "bal_account_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Bal_account_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         21,
+				Name:       "no_series",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_No_series",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         22,
+				Name:       "posting_no_series",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Posting_no_series",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

@@ -36,7 +36,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -296,80 +295,12 @@ var JobQueue_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *JobQueue) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "no":
-		return 1
-	case "description":
-		return 2
-	case "description_2":
-		return 3
-	case "status":
-		return 4
-	case "object_type_to_run":
-		return 16
-	case "object_id_to_run":
-		return 5
-	case "parameter":
-		return 6
-	case "next_start":
-		return 7
-	case "minutes_between_run":
-		return 8
-	case "recurring_job":
-		return 9
-	case "recurrence":
-		return 10
-	case "notification_email":
-		return 11
-	case "notify_on":
-		return 12
-	case "notification_language":
-		return 13
-	case "number_of_entries":
-		return 14
-	case "user_id":
-		return 15
-	}
-	return 0
+	return jobQueueFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *JobQueue) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "no"
-	case 2:
-		return "description"
-	case 3:
-		return "description_2"
-	case 4:
-		return "status"
-	case 16:
-		return "object_type_to_run"
-	case 5:
-		return "object_id_to_run"
-	case 6:
-		return "parameter"
-	case 7:
-		return "next_start"
-	case 8:
-		return "minutes_between_run"
-	case 9:
-		return "recurring_job"
-	case 10:
-		return "recurrence"
-	case 11:
-		return "notification_email"
-	case 12:
-		return "notify_on"
-	case 13:
-		return "notification_language"
-	case 14:
-		return "number_of_entries"
-	case 15:
-		return "user_id"
-	}
-	return ""
+	return jobQueueFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -473,21 +404,6 @@ type (
 	JobQueueOnBeforeRename interface {
 		OnBeforeRename(rec *JobQueue, handled *bool) error
 	}
-	JobQueueOnValidate_No                    interface{ OnValidate_No(rec *JobQueue) error }
-	JobQueueOnValidate_Description           interface{ OnValidate_Description(rec *JobQueue) error }
-	JobQueueOnValidate_Description_2         interface{ OnValidate_Description_2(rec *JobQueue) error }
-	JobQueueOnValidate_Status                interface{ OnValidate_Status(rec *JobQueue) error }
-	JobQueueOnValidate_Object_type_to_run    interface{ OnValidate_Object_type_to_run(rec *JobQueue) error }
-	JobQueueOnValidate_Object_id_to_run      interface{ OnValidate_Object_id_to_run(rec *JobQueue) error }
-	JobQueueOnValidate_Parameter             interface{ OnValidate_Parameter(rec *JobQueue) error }
-	JobQueueOnValidate_Next_start            interface{ OnValidate_Next_start(rec *JobQueue) error }
-	JobQueueOnValidate_Minutes_between_run   interface{ OnValidate_Minutes_between_run(rec *JobQueue) error }
-	JobQueueOnValidate_Recurring_job         interface{ OnValidate_Recurring_job(rec *JobQueue) error }
-	JobQueueOnValidate_Recurrence            interface{ OnValidate_Recurrence(rec *JobQueue) error }
-	JobQueueOnValidate_Notification_email    interface{ OnValidate_Notification_email(rec *JobQueue) error }
-	JobQueueOnValidate_Notify_on             interface{ OnValidate_Notify_on(rec *JobQueue) error }
-	JobQueueOnValidate_Notification_language interface{ OnValidate_Notification_language(rec *JobQueue) error }
-	JobQueueOnValidate_User_id               interface{ OnValidate_User_id(rec *JobQueue) error }
 )
 
 // jobQueueLogic is the registered business logic of Job_Queue, in
@@ -530,38 +446,9 @@ func jobQueueTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(JobQueueOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(JobQueueOnBeforeRename)
-	case "OnValidate_No":
-		_, ok = logic.(JobQueueOnValidate_No)
-	case "OnValidate_Description":
-		_, ok = logic.(JobQueueOnValidate_Description)
-	case "OnValidate_Description_2":
-		_, ok = logic.(JobQueueOnValidate_Description_2)
-	case "OnValidate_Status":
-		_, ok = logic.(JobQueueOnValidate_Status)
-	case "OnValidate_Object_type_to_run":
-		_, ok = logic.(JobQueueOnValidate_Object_type_to_run)
-	case "OnValidate_Object_id_to_run":
-		_, ok = logic.(JobQueueOnValidate_Object_id_to_run)
-	case "OnValidate_Parameter":
-		_, ok = logic.(JobQueueOnValidate_Parameter)
-	case "OnValidate_Next_start":
-		_, ok = logic.(JobQueueOnValidate_Next_start)
-	case "OnValidate_Minutes_between_run":
-		_, ok = logic.(JobQueueOnValidate_Minutes_between_run)
-	case "OnValidate_Recurring_job":
-		_, ok = logic.(JobQueueOnValidate_Recurring_job)
-	case "OnValidate_Recurrence":
-		_, ok = logic.(JobQueueOnValidate_Recurrence)
-	case "OnValidate_Notification_email":
-		_, ok = logic.(JobQueueOnValidate_Notification_email)
-	case "OnValidate_Notify_on":
-		_, ok = logic.(JobQueueOnValidate_Notify_on)
-	case "OnValidate_Notification_language":
-		_, ok = logic.(JobQueueOnValidate_Notification_language)
-	case "OnValidate_User_id":
-		_, ok = logic.(JobQueueOnValidate_User_id)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return jobQueueFields.IsOnValidateTrigger(name, logic, (*JobQueue)(nil))
 	}
 	return true, ok
 }
@@ -893,22 +780,7 @@ func (t *JobQueue) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *JobQueue) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["no"] = t.No
-	t.oldValues["description"] = t.Description
-	t.oldValues["description_2"] = t.Description_2
-	t.oldValues["status"] = t.Status
-	t.oldValues["object_type_to_run"] = t.Object_type_to_run
-	t.oldValues["object_id_to_run"] = t.Object_id_to_run
-	t.oldValues["parameter"] = t.Parameter
-	t.oldValues["next_start"] = t.Next_start
-	t.oldValues["minutes_between_run"] = t.Minutes_between_run
-	t.oldValues["recurring_job"] = t.Recurring_job
-	t.oldValues["recurrence"] = t.Recurrence
-	t.oldValues["notification_email"] = t.Notification_email
-	t.oldValues["notify_on"] = t.Notify_on
-	t.oldValues["notification_language"] = t.Notification_language
-	t.oldValues["user_id"] = t.User_id
+	t.oldValues = jobQueueFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -923,51 +795,7 @@ func (t *JobQueue) OldValue(fieldName string) interface{} {
 func (t *JobQueue) XRec() *JobQueue {
 	x := &JobQueue{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["no"].(types.Code); ok {
-		x.No = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["description_2"].(types.Text); ok {
-		x.Description_2 = v
-	}
-	if v, ok := t.oldValues["status"].(JobQueueStatus); ok {
-		x.Status = v
-	}
-	if v, ok := t.oldValues["object_type_to_run"].(JobQueueObject_type_to_run); ok {
-		x.Object_type_to_run = v
-	}
-	if v, ok := t.oldValues["object_id_to_run"].(int); ok {
-		x.Object_id_to_run = v
-	}
-	if v, ok := t.oldValues["parameter"].(types.Text); ok {
-		x.Parameter = v
-	}
-	if v, ok := t.oldValues["next_start"].(types.DateTime); ok {
-		x.Next_start = v
-	}
-	if v, ok := t.oldValues["minutes_between_run"].(int); ok {
-		x.Minutes_between_run = v
-	}
-	if v, ok := t.oldValues["recurring_job"].(bool); ok {
-		x.Recurring_job = v
-	}
-	if v, ok := t.oldValues["recurrence"].(JobQueueRecurrence); ok {
-		x.Recurrence = v
-	}
-	if v, ok := t.oldValues["notification_email"].(types.Text); ok {
-		x.Notification_email = v
-	}
-	if v, ok := t.oldValues["notify_on"].(JobQueueNotify_on); ok {
-		x.Notify_on = v
-	}
-	if v, ok := t.oldValues["notification_language"].(types.Code); ok {
-		x.Notification_language = v
-	}
-	if v, ok := t.oldValues["user_id"].(types.Code); ok {
-		x.User_id = v
-	}
+	jobQueueFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1387,84 +1215,7 @@ func (t *JobQueue) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *JobQueue) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "description_2":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description_2.Equal(old)
-		}
-	case "status":
-		if old, ok := oldValue.(JobQueueStatus); ok {
-			return t.Status != old
-		}
-	case "object_type_to_run":
-		if old, ok := oldValue.(JobQueueObject_type_to_run); ok {
-			return t.Object_type_to_run != old
-		}
-	case "object_id_to_run":
-		if old, ok := oldValue.(int); ok {
-			return t.Object_id_to_run != old
-		}
-		return true // Type mismatch, assume changed
-	case "parameter":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Parameter.Equal(old)
-		}
-	case "next_start":
-		if old, ok := oldValue.(types.DateTime); ok {
-			return !t.Next_start.Equal(old)
-		}
-	case "minutes_between_run":
-		if old, ok := oldValue.(int); ok {
-			return t.Minutes_between_run != old
-		}
-		return true // Type mismatch, assume changed
-	case "recurring_job":
-		if old, ok := oldValue.(bool); ok {
-			return t.Recurring_job != old
-		}
-		return true // Type mismatch, assume changed
-	case "recurrence":
-		if old, ok := oldValue.(JobQueueRecurrence); ok {
-			return t.Recurrence != old
-		}
-	case "notification_email":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Notification_email.Equal(old)
-		}
-	case "notify_on":
-		if old, ok := oldValue.(JobQueueNotify_on); ok {
-			return t.Notify_on != old
-		}
-	case "notification_language":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Notification_language.Equal(old)
-		}
-	case "user_id":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.User_id.Equal(old)
-		}
-	}
-
-	return false
+	return jobQueueFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1902,39 +1653,7 @@ func (t *JobQueue) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *JobQueue) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("no"):
-		return "no", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("description_2"):
-		return "description_2", true
-	case strings.ToLower("status"):
-		return "status", true
-	case strings.ToLower("object_type_to_run"):
-		return "object_type_to_run", true
-	case strings.ToLower("object_id_to_run"):
-		return "object_id_to_run", true
-	case strings.ToLower("parameter"):
-		return "parameter", true
-	case strings.ToLower("next_start"):
-		return "next_start", true
-	case strings.ToLower("minutes_between_run"):
-		return "minutes_between_run", true
-	case strings.ToLower("recurring_job"):
-		return "recurring_job", true
-	case strings.ToLower("recurrence"):
-		return "recurrence", true
-	case strings.ToLower("notification_email"):
-		return "notification_email", true
-	case strings.ToLower("notify_on"):
-		return "notify_on", true
-	case strings.ToLower("notification_language"):
-		return "notification_language", true
-	case strings.ToLower("user_id"):
-		return "user_id", true
-	}
-	return "", false
+	return jobQueueFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2917,443 +2636,20 @@ func (t *JobQueue) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *JobQueue) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-		} else if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(JobQueueOnValidate_No); ok {
-				if err := trg.OnValidate_No(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(JobQueueOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description_2":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description_2 = v
-		} else if v, ok := value.(string); ok {
-			t.Description_2 = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description_2")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(JobQueueOnValidate_Description_2); ok {
-				if err := trg.OnValidate_Description_2(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "status":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(JobQueueStatus); ok {
-			t.Status = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field status (valid range: 0-%d)", v, 3-1)
-			}
-			t.Status = JobQueueStatus(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field status (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Status = JobQueueStatus(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Status = 0
-			} else {
-				options := []string{"On Hold", "Ready", "Error"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Status = JobQueueStatus(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field status (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field status (expected JobQueueStatus, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(JobQueueOnValidate_Status); ok {
-				if err := trg.OnValidate_Status(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "object_type_to_run":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(JobQueueObject_type_to_run); ok {
-			t.Object_type_to_run = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 2 {
-				return fmt.Errorf("invalid option value %d for field object_type_to_run (valid range: 0-%d)", v, 2-1)
-			}
-			t.Object_type_to_run = JobQueueObject_type_to_run(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 2 {
-				return fmt.Errorf("invalid option value %d for field object_type_to_run (valid range: 0-%d)", intVal, 2-1)
-			}
-			t.Object_type_to_run = JobQueueObject_type_to_run(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Object_type_to_run = 0
-			} else {
-				options := []string{"Codeunit", "Report"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Object_type_to_run = JobQueueObject_type_to_run(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field object_type_to_run (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field object_type_to_run (expected JobQueueObject_type_to_run, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(JobQueueOnValidate_Object_type_to_run); ok {
-				if err := trg.OnValidate_Object_type_to_run(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "object_id_to_run":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Object_id_to_run = v
-		case float64:
-			t.Object_id_to_run = int(v)
-		case string:
-			if v == "" {
-				t.Object_id_to_run = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Object_id_to_run = i
-			} else {
-				return fmt.Errorf("invalid integer value for field object_id_to_run: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field object_id_to_run")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "object_id_to_run"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(JobQueueOnValidate_Object_id_to_run); ok {
-				if err := trg.OnValidate_Object_id_to_run(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "parameter":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Parameter = v
-		} else if v, ok := value.(string); ok {
-			t.Parameter = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field parameter")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(JobQueueOnValidate_Parameter); ok {
-				if err := trg.OnValidate_Parameter(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "next_start":
-		// Set field value
-		if v, ok := value.(types.DateTime); ok {
-			t.Next_start = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Next_start, err = types.NewDateTimeFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid datetime value for field next_start: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Next_start = types.NewDateTimeFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field next_start (expected DateTime, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(JobQueueOnValidate_Next_start); ok {
-				if err := trg.OnValidate_Next_start(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "minutes_between_run":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Minutes_between_run = v
-		case float64:
-			t.Minutes_between_run = int(v)
-		case string:
-			if v == "" {
-				t.Minutes_between_run = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Minutes_between_run = i
-			} else {
-				return fmt.Errorf("invalid integer value for field minutes_between_run: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field minutes_between_run")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(JobQueueOnValidate_Minutes_between_run); ok {
-				if err := trg.OnValidate_Minutes_between_run(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "recurring_job":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Recurring_job = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Recurring_job = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field recurring_job")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(JobQueueOnValidate_Recurring_job); ok {
-				if err := trg.OnValidate_Recurring_job(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "recurrence":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(JobQueueRecurrence); ok {
-			t.Recurrence = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 6 {
-				return fmt.Errorf("invalid option value %d for field recurrence (valid range: 0-%d)", v, 6-1)
-			}
-			t.Recurrence = JobQueueRecurrence(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 6 {
-				return fmt.Errorf("invalid option value %d for field recurrence (valid range: 0-%d)", intVal, 6-1)
-			}
-			t.Recurrence = JobQueueRecurrence(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Recurrence = 0
-			} else {
-				options := []string{"Once", "Minutes", "Hourly", "Daily", "Weekly", "Monthly"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Recurrence = JobQueueRecurrence(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field recurrence (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field recurrence (expected JobQueueRecurrence, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(JobQueueOnValidate_Recurrence); ok {
-				if err := trg.OnValidate_Recurrence(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "notification_email":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Notification_email = v
-		} else if v, ok := value.(string); ok {
-			t.Notification_email = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field notification_email")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(JobQueueOnValidate_Notification_email); ok {
-				if err := trg.OnValidate_Notification_email(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "notify_on":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(JobQueueNotify_on); ok {
-			t.Notify_on = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field notify_on (valid range: 0-%d)", v, 3-1)
-			}
-			t.Notify_on = JobQueueNotify_on(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field notify_on (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Notify_on = JobQueueNotify_on(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Notify_on = 0
-			} else {
-				options := []string{"Never", "Always", "On Error"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Notify_on = JobQueueNotify_on(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field notify_on (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field notify_on (expected JobQueueNotify_on, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(JobQueueOnValidate_Notify_on); ok {
-				if err := trg.OnValidate_Notify_on(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "notification_language":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Notification_language = v
-		} else if v, ok := value.(string); ok {
-			t.Notification_language = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field notification_language")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "notification_language"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(JobQueueOnValidate_Notification_language); ok {
-				if err := trg.OnValidate_Notification_language(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "user_id":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-		} else if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field user_id")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "user_id"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(JobQueueOnValidate_User_id); ok {
-				if err := trg.OnValidate_User_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := jobQueueFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &jobQueueFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -3362,159 +2658,18 @@ func (t *JobQueue) ValidateField(fieldName string, value interface{}) error {
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *JobQueue) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.No, true
-	case 2:
-		return t.Description, true
-	case 3:
-		return t.Description_2, true
-	case 4:
-		return t.Status, true
-	case 16:
-		return t.Object_type_to_run, true
-	case 5:
-		return t.Object_id_to_run, true
-	case 6:
-		return t.Parameter, true
-	case 7:
-		return t.Next_start, true
-	case 8:
-		return t.Minutes_between_run, true
-	case 9:
-		return t.Recurring_job, true
-	case 10:
-		return t.Recurrence, true
-	case 11:
-		return t.Notification_email, true
-	case 12:
-		return t.Notify_on, true
-	case 13:
-		return t.Notification_language, true
-	case 15:
-		return t.User_id, true
-	}
-	return nil, false
+	return jobQueueFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *JobQueue) flowFieldValue(no int) (any, bool) {
-	switch no {
-	case 14:
-		return t.Number_of_entries, true
-	}
-	return nil, false
+	return jobQueueFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *JobQueue) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Text); ok {
-			t.Description_2 = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description_2 = types.NewText(v)
-			return true
-		}
-	case 4:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Status = JobQueueStatus(i)
-			return true
-		}
-	case 16:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 2 {
-			t.Object_type_to_run = JobQueueObject_type_to_run(i)
-			return true
-		}
-	case 5:
-		if v, ok := value.(int); ok {
-			t.Object_id_to_run = v
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Text); ok {
-			t.Parameter = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Parameter = types.NewText(v)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.DateTime); ok {
-			t.Next_start = v
-			return true
-		}
-	case 8:
-		if v, ok := value.(int); ok {
-			t.Minutes_between_run = v
-			return true
-		}
-	case 9:
-		if v, ok := value.(bool); ok {
-			t.Recurring_job = v
-			return true
-		}
-	case 10:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 6 {
-			t.Recurrence = JobQueueRecurrence(i)
-			return true
-		}
-	case 11:
-		if v, ok := value.(types.Text); ok {
-			t.Notification_email = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Notification_email = types.NewText(v)
-			return true
-		}
-	case 12:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Notify_on = JobQueueNotify_on(i)
-			return true
-		}
-	case 13:
-		if v, ok := value.(types.Code); ok {
-			t.Notification_language = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Notification_language = types.NewCode(v)
-			return true
-		}
-	case 15:
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return jobQueueFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3995,39 +3150,7 @@ func (t *JobQueue) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *JobQueue) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "no":
-		return t.No, true
-	case "description":
-		return t.Description, true
-	case "description_2":
-		return t.Description_2, true
-	case "status":
-		return int(t.Status), true
-	case "object_type_to_run":
-		return int(t.Object_type_to_run), true
-	case "object_id_to_run":
-		return t.Object_id_to_run, true
-	case "parameter":
-		return t.Parameter, true
-	case "next_start":
-		return t.Next_start, true
-	case "minutes_between_run":
-		return t.Minutes_between_run, true
-	case "recurring_job":
-		return t.Recurring_job, true
-	case "recurrence":
-		return int(t.Recurrence), true
-	case "notification_email":
-		return t.Notification_email, true
-	case "notify_on":
-		return int(t.Notify_on), true
-	case "notification_language":
-		return t.Notification_language, true
-	case "user_id":
-		return t.User_id, true
-	}
-	return nil, false
+	return jobQueueFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -4127,168 +3250,12 @@ func (t *JobQueue) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *JobQueue) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"no":                    t.No.String(),
-		"description":           t.Description.String(),
-		"description_2":         t.Description_2.String(),
-		"status":                int(t.Status),
-		"object_type_to_run":    int(t.Object_type_to_run),
-		"object_id_to_run":      t.Object_id_to_run,
-		"parameter":             t.Parameter.String(),
-		"next_start":            t.Next_start.String(),
-		"minutes_between_run":   t.Minutes_between_run,
-		"recurring_job":         t.Recurring_job,
-		"recurrence":            int(t.Recurrence),
-		"notification_email":    t.Notification_email.String(),
-		"notify_on":             int(t.Notify_on),
-		"notification_language": t.Notification_language.String(),
-		// FlowField: number_of_entries
-		"number_of_entries": t.Number_of_entries,
-		"user_id":           t.User_id.String(),
-	}
+	return jobQueueFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *JobQueue) FromMap(data map[string]interface{}) {
-	if v, ok := data["no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["description_2"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description_2 = types.NewText(s)
-		}
-	}
-	if v, ok := data["status"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Status = JobQueueStatus(int(val))
-		case int:
-			t.Status = JobQueueStatus(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"On Hold", "Ready", "Error"}
-			for i, opt := range options {
-				if opt == val {
-					t.Status = JobQueueStatus(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["object_type_to_run"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Object_type_to_run = JobQueueObject_type_to_run(int(val))
-		case int:
-			t.Object_type_to_run = JobQueueObject_type_to_run(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Codeunit", "Report"}
-			for i, opt := range options {
-				if opt == val {
-					t.Object_type_to_run = JobQueueObject_type_to_run(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["object_id_to_run"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Object_id_to_run = int(val)
-		case int:
-			t.Object_id_to_run = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Object_id_to_run = n
-			}
-		}
-	}
-	if v, ok := data["parameter"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Parameter = types.NewText(s)
-		}
-	}
-	if v, ok := data["next_start"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Next_start, _ = types.NewDateTimeFromString(s)
-		}
-	}
-	if v, ok := data["minutes_between_run"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Minutes_between_run = int(val)
-		case int:
-			t.Minutes_between_run = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Minutes_between_run = n
-			}
-		}
-	}
-	if v, ok := data["recurring_job"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Recurring_job = b
-		}
-	}
-	if v, ok := data["recurrence"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Recurrence = JobQueueRecurrence(int(val))
-		case int:
-			t.Recurrence = JobQueueRecurrence(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Once", "Minutes", "Hourly", "Daily", "Weekly", "Monthly"}
-			for i, opt := range options {
-				if opt == val {
-					t.Recurrence = JobQueueRecurrence(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["notification_email"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Notification_email = types.NewText(s)
-		}
-	}
-	if v, ok := data["notify_on"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Notify_on = JobQueueNotify_on(int(val))
-		case int:
-			t.Notify_on = JobQueueNotify_on(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Never", "Always", "On Error"}
-			for i, opt := range options {
-				if opt == val {
-					t.Notify_on = JobQueueNotify_on(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["notification_language"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Notification_language = types.NewCode(s)
-		}
-	}
-	if v, ok := data["user_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.User_id = types.NewCode(s)
-		}
-	}
+	jobQueueFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -4309,169 +3276,286 @@ func (t *JobQueue) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *JobQueue) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     100,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "description_2",
-			Type:       tables.FieldTypeText,
-			Length:     100,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "status",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         16,
-			Name:       "object_type_to_run",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "object_id_to_run",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "parameter",
-			Type:       tables.FieldTypeText,
-			Length:     2000,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "next_start",
-			Type:       tables.FieldTypeDateTime,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "minutes_between_run",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "recurring_job",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "recurrence",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "notification_email",
-			Type:       tables.FieldTypeText,
-			Length:     250,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "notify_on",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         13,
-			Name:       "notification_language",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         14,
-			Name:       "number_of_entries",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  true,
-		},
-		{
-			No:         15,
-			Name:       "user_id",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
+	return jobQueueFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in jobQueueFields.Fields
+func (t *JobQueue) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.No
+	case 1:
+		return &t.Description
+	case 2:
+		return &t.Description_2
+	case 3:
+		return &t.Status
+	case 4:
+		return &t.Object_type_to_run
+	case 5:
+		return &t.Object_id_to_run
+	case 6:
+		return &t.Parameter
+	case 7:
+		return &t.Next_start
+	case 8:
+		return &t.Minutes_between_run
+	case 9:
+		return &t.Recurring_job
+	case 10:
+		return &t.Recurrence
+	case 11:
+		return &t.Notification_email
+	case 12:
+		return &t.Notify_on
+	case 13:
+		return &t.Notification_language
+	case 14:
+		return &t.Number_of_entries
+	case 15:
+		return &t.User_id
 	}
+	return nil
+}
+
+// jobQueueFields describes the fields of Job_Queue for the record functions
+// written once in foundation/tables
+var jobQueueFields = &tables.TableFields{
+	Table: JobQueueTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_No",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     100,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "description_2",
+				Type:       tables.FieldTypeText,
+				Length:     100,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description_2",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "status",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Status",
+			Options: []string{"On Hold", "Ready", "Error"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         16,
+				Name:       "object_type_to_run",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Object_type_to_run",
+			Options: []string{"Codeunit", "Report"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "object_id_to_run",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindInt,
+			Trigger:  "OnValidate_Object_id_to_run",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "parameter",
+				Type:       tables.FieldTypeText,
+				Length:     2000,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Parameter",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "next_start",
+				Type:       tables.FieldTypeDateTime,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDateTime,
+			Trigger: "OnValidate_Next_start",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "minutes_between_run",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Minutes_between_run",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "recurring_job",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Recurring_job",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "recurrence",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Recurrence",
+			Options: []string{"Once", "Minutes", "Hourly", "Daily", "Weekly", "Monthly"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "notification_email",
+				Type:       tables.FieldTypeText,
+				Length:     250,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Notification_email",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "notify_on",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Notify_on",
+			Options: []string{"Never", "Always", "On Error"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "notification_language",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Notification_language",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "number_of_entries",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  true,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Number_of_entries",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         15,
+				Name:       "user_id",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_User_id",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

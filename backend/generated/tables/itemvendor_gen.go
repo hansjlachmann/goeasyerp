@@ -138,48 +138,12 @@ var ItemVendor_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *ItemVendor) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "item_no":
-		return 1
-	case "vendor_no":
-		return 2
-	case "unit_of_measure_code":
-		return 5400
-	case "starting_date":
-		return 4
-	case "currency_code":
-		return 3
-	case "direct_unit_cost":
-		return 5
-	case "lead_time_calculation":
-		return 6
-	case "vendor_item_no":
-		return 7
-	}
-	return 0
+	return itemVendorFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *ItemVendor) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "item_no"
-	case 2:
-		return "vendor_no"
-	case 5400:
-		return "unit_of_measure_code"
-	case 4:
-		return "starting_date"
-	case 3:
-		return "currency_code"
-	case 5:
-		return "direct_unit_cost"
-	case 6:
-		return "lead_time_calculation"
-	case 7:
-		return "vendor_item_no"
-	}
-	return ""
+	return itemVendorFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -283,14 +247,6 @@ type (
 	ItemVendorOnBeforeRename interface {
 		OnBeforeRename(rec *ItemVendor, handled *bool) error
 	}
-	ItemVendorOnValidate_Item_no               interface{ OnValidate_Item_no(rec *ItemVendor) error }
-	ItemVendorOnValidate_Vendor_no             interface{ OnValidate_Vendor_no(rec *ItemVendor) error }
-	ItemVendorOnValidate_Unit_of_measure_code  interface{ OnValidate_Unit_of_measure_code(rec *ItemVendor) error }
-	ItemVendorOnValidate_Starting_date         interface{ OnValidate_Starting_date(rec *ItemVendor) error }
-	ItemVendorOnValidate_Currency_code         interface{ OnValidate_Currency_code(rec *ItemVendor) error }
-	ItemVendorOnValidate_Direct_unit_cost      interface{ OnValidate_Direct_unit_cost(rec *ItemVendor) error }
-	ItemVendorOnValidate_Lead_time_calculation interface{ OnValidate_Lead_time_calculation(rec *ItemVendor) error }
-	ItemVendorOnValidate_Vendor_item_no        interface{ OnValidate_Vendor_item_no(rec *ItemVendor) error }
 )
 
 // itemVendorLogic is the registered business logic of Item_Vendor, in
@@ -333,24 +289,9 @@ func itemVendorTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ItemVendorOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(ItemVendorOnBeforeRename)
-	case "OnValidate_Item_no":
-		_, ok = logic.(ItemVendorOnValidate_Item_no)
-	case "OnValidate_Vendor_no":
-		_, ok = logic.(ItemVendorOnValidate_Vendor_no)
-	case "OnValidate_Unit_of_measure_code":
-		_, ok = logic.(ItemVendorOnValidate_Unit_of_measure_code)
-	case "OnValidate_Starting_date":
-		_, ok = logic.(ItemVendorOnValidate_Starting_date)
-	case "OnValidate_Currency_code":
-		_, ok = logic.(ItemVendorOnValidate_Currency_code)
-	case "OnValidate_Direct_unit_cost":
-		_, ok = logic.(ItemVendorOnValidate_Direct_unit_cost)
-	case "OnValidate_Lead_time_calculation":
-		_, ok = logic.(ItemVendorOnValidate_Lead_time_calculation)
-	case "OnValidate_Vendor_item_no":
-		_, ok = logic.(ItemVendorOnValidate_Vendor_item_no)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return itemVendorFields.IsOnValidateTrigger(name, logic, (*ItemVendor)(nil))
 	}
 	return true, ok
 }
@@ -679,15 +620,7 @@ func (t *ItemVendor) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *ItemVendor) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["item_no"] = t.Item_no
-	t.oldValues["vendor_no"] = t.Vendor_no
-	t.oldValues["unit_of_measure_code"] = t.Unit_of_measure_code
-	t.oldValues["starting_date"] = t.Starting_date
-	t.oldValues["currency_code"] = t.Currency_code
-	t.oldValues["direct_unit_cost"] = t.Direct_unit_cost
-	t.oldValues["lead_time_calculation"] = t.Lead_time_calculation
-	t.oldValues["vendor_item_no"] = t.Vendor_item_no
+	t.oldValues = itemVendorFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -702,30 +635,7 @@ func (t *ItemVendor) OldValue(fieldName string) interface{} {
 func (t *ItemVendor) XRec() *ItemVendor {
 	x := &ItemVendor{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["item_no"].(types.Code); ok {
-		x.Item_no = v
-	}
-	if v, ok := t.oldValues["vendor_no"].(types.Code); ok {
-		x.Vendor_no = v
-	}
-	if v, ok := t.oldValues["unit_of_measure_code"].(types.Code); ok {
-		x.Unit_of_measure_code = v
-	}
-	if v, ok := t.oldValues["starting_date"].(types.Date); ok {
-		x.Starting_date = v
-	}
-	if v, ok := t.oldValues["currency_code"].(types.Code); ok {
-		x.Currency_code = v
-	}
-	if v, ok := t.oldValues["direct_unit_cost"].(types.Decimal); ok {
-		x.Direct_unit_cost = v
-	}
-	if v, ok := t.oldValues["lead_time_calculation"].(types.Code); ok {
-		x.Lead_time_calculation = v
-	}
-	if v, ok := t.oldValues["vendor_item_no"].(types.Text); ok {
-		x.Vendor_item_no = v
-	}
+	itemVendorFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1091,53 +1001,7 @@ func (t *ItemVendor) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *ItemVendor) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "item_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Item_no.Equal(old)
-		}
-	case "vendor_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Vendor_no.Equal(old)
-		}
-	case "unit_of_measure_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Unit_of_measure_code.Equal(old)
-		}
-	case "starting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Starting_date.Equal(old)
-		}
-	case "currency_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Currency_code.Equal(old)
-		}
-	case "direct_unit_cost":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Direct_unit_cost.Equal(old)
-		}
-	case "lead_time_calculation":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Lead_time_calculation.Equal(old)
-		}
-	case "vendor_item_no":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Vendor_item_no.Equal(old)
-		}
-	}
-
-	return false
+	return itemVendorFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1341,25 +1205,7 @@ func (t *ItemVendor) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *ItemVendor) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("item_no"):
-		return "item_no", true
-	case strings.ToLower("vendor_no"):
-		return "vendor_no", true
-	case strings.ToLower("unit_of_measure_code"):
-		return "unit_of_measure_code", true
-	case strings.ToLower("starting_date"):
-		return "starting_date", true
-	case strings.ToLower("currency_code"):
-		return "currency_code", true
-	case strings.ToLower("direct_unit_cost"):
-		return "direct_unit_cost", true
-	case strings.ToLower("lead_time_calculation"):
-		return "lead_time_calculation", true
-	case strings.ToLower("vendor_item_no"):
-		return "vendor_item_no", true
-	}
-	return "", false
+	return itemVendorFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2252,191 +2098,20 @@ func (t *ItemVendor) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *ItemVendor) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "item_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Item_no = v
-		} else if v, ok := value.(string); ok {
-			t.Item_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field item_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "item_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemVendorOnValidate_Item_no); ok {
-				if err := trg.OnValidate_Item_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "vendor_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Vendor_no = v
-		} else if v, ok := value.(string); ok {
-			t.Vendor_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field vendor_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "vendor_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemVendorOnValidate_Vendor_no); ok {
-				if err := trg.OnValidate_Vendor_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unit_of_measure_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Unit_of_measure_code = v
-		} else if v, ok := value.(string); ok {
-			t.Unit_of_measure_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field unit_of_measure_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "unit_of_measure_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemVendorOnValidate_Unit_of_measure_code); ok {
-				if err := trg.OnValidate_Unit_of_measure_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "starting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Starting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Starting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field starting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Starting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field starting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemVendorOnValidate_Starting_date); ok {
-				if err := trg.OnValidate_Starting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "currency_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Currency_code = v
-		} else if v, ok := value.(string); ok {
-			t.Currency_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field currency_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "currency_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemVendorOnValidate_Currency_code); ok {
-				if err := trg.OnValidate_Currency_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "direct_unit_cost":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Direct_unit_cost = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Direct_unit_cost, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field direct_unit_cost: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Direct_unit_cost = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Direct_unit_cost = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Direct_unit_cost = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field direct_unit_cost (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemVendorOnValidate_Direct_unit_cost); ok {
-				if err := trg.OnValidate_Direct_unit_cost(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "lead_time_calculation":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Lead_time_calculation = v
-		} else if v, ok := value.(string); ok {
-			t.Lead_time_calculation = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field lead_time_calculation")
-		}
-		if err := tables.CheckDateFormula(ItemVendorTableName, "lead_time_calculation", string(t.Lead_time_calculation)); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemVendorOnValidate_Lead_time_calculation); ok {
-				if err := trg.OnValidate_Lead_time_calculation(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "vendor_item_no":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Vendor_item_no = v
-		} else if v, ok := value.(string); ok {
-			t.Vendor_item_no = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field vendor_item_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemVendorOnValidate_Vendor_item_no); ok {
-				if err := trg.OnValidate_Vendor_item_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := itemVendorFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &itemVendorFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2445,104 +2120,18 @@ func (t *ItemVendor) ValidateField(fieldName string, value interface{}) error {
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *ItemVendor) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Item_no, true
-	case 2:
-		return t.Vendor_no, true
-	case 5400:
-		return t.Unit_of_measure_code, true
-	case 4:
-		return t.Starting_date, true
-	case 3:
-		return t.Currency_code, true
-	case 5:
-		return t.Direct_unit_cost, true
-	case 6:
-		return t.Lead_time_calculation, true
-	case 7:
-		return t.Vendor_item_no, true
-	}
-	return nil, false
+	return itemVendorFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *ItemVendor) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return itemVendorFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *ItemVendor) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Item_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Item_no = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Vendor_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Vendor_no = types.NewCode(v)
-			return true
-		}
-	case 5400:
-		if v, ok := value.(types.Code); ok {
-			t.Unit_of_measure_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Unit_of_measure_code = types.NewCode(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Date); ok {
-			t.Starting_date = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Code); ok {
-			t.Currency_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Currency_code = types.NewCode(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Decimal); ok {
-			t.Direct_unit_cost = v
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Code); ok {
-			t.Lead_time_calculation = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Lead_time_calculation = types.NewCode(v)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Text); ok {
-			t.Vendor_item_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Vendor_item_no = types.NewText(v)
-			return true
-		}
-	}
-	return false
+	return itemVendorFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3015,25 +2604,7 @@ func (t *ItemVendor) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *ItemVendor) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "item_no":
-		return t.Item_no, true
-	case "vendor_no":
-		return t.Vendor_no, true
-	case "unit_of_measure_code":
-		return t.Unit_of_measure_code, true
-	case "starting_date":
-		return t.Starting_date, true
-	case "currency_code":
-		return t.Currency_code, true
-	case "direct_unit_cost":
-		return t.Direct_unit_cost, true
-	case "lead_time_calculation":
-		return t.Lead_time_calculation, true
-	case "vendor_item_no":
-		return t.Vendor_item_no, true
-	}
-	return nil, false
+	return itemVendorFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3135,67 +2706,12 @@ func (t *ItemVendor) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *ItemVendor) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"item_no":               t.Item_no.String(),
-		"vendor_no":             t.Vendor_no.String(),
-		"unit_of_measure_code":  t.Unit_of_measure_code.String(),
-		"starting_date":         t.Starting_date.String(),
-		"currency_code":         t.Currency_code.String(),
-		"direct_unit_cost":      t.Direct_unit_cost.String(),
-		"lead_time_calculation": t.Lead_time_calculation.String(),
-		"vendor_item_no":        t.Vendor_item_no.String(),
-	}
+	return itemVendorFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *ItemVendor) FromMap(data map[string]interface{}) {
-	if v, ok := data["item_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Item_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["vendor_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Vendor_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["unit_of_measure_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Unit_of_measure_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["starting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Starting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["currency_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Currency_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["direct_unit_cost"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Direct_unit_cost, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Direct_unit_cost = types.NewDecimal(val)
-		case int:
-			t.Direct_unit_cost = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Direct_unit_cost = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["lead_time_calculation"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Lead_time_calculation = types.NewCode(s)
-		}
-	}
-	if v, ok := data["vendor_item_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Vendor_item_no = types.NewText(s)
-		}
-	}
+	itemVendorFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3216,89 +2732,156 @@ func (t *ItemVendor) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *ItemVendor) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "item_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "vendor_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         5400,
-			Name:       "unit_of_measure_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "starting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "currency_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            5,
-			Name:          "direct_unit_cost",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:5",
-		},
-		{
-			No:         6,
-			Name:       "lead_time_calculation",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "vendor_item_no",
-			Type:       tables.FieldTypeText,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return itemVendorFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in itemVendorFields.Fields
+func (t *ItemVendor) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Item_no
+	case 1:
+		return &t.Vendor_no
+	case 2:
+		return &t.Unit_of_measure_code
+	case 3:
+		return &t.Starting_date
+	case 4:
+		return &t.Currency_code
+	case 5:
+		return &t.Direct_unit_cost
+	case 6:
+		return &t.Lead_time_calculation
+	case 7:
+		return &t.Vendor_item_no
 	}
+	return nil
+}
+
+// itemVendorFields describes the fields of Item_Vendor for the record functions
+// written once in foundation/tables
+var itemVendorFields = &tables.TableFields{
+	Table: ItemVendorTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "item_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Item_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "vendor_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Vendor_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5400,
+				Name:       "unit_of_measure_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Unit_of_measure_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "starting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Starting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "currency_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Currency_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            5,
+				Name:          "direct_unit_cost",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Direct_unit_cost",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "lead_time_calculation",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:        tables.KindCode,
+			Trigger:     "OnValidate_Lead_time_calculation",
+			DateFormula: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "vendor_item_no",
+				Type:       tables.FieldTypeText,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Vendor_item_no",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

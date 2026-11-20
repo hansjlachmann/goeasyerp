@@ -29,7 +29,6 @@ import (
 	"fmt"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -142,52 +141,12 @@ var FASetup_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *FASetup) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "primary_key":
-		return 1
-	case "allow_posting_to_main_assets":
-		return 3
-	case "default_depr_book":
-		return 4
-	case "allow_fa_posting_from":
-		return 5
-	case "allow_fa_posting_to":
-		return 6
-	case "insurance_depr_book":
-		return 7
-	case "automatic_insurance_posting":
-		return 8
-	case "fixed_asset_nos":
-		return 9
-	case "insurance_nos":
-		return 10
-	}
-	return 0
+	return fASetupFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *FASetup) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "primary_key"
-	case 3:
-		return "allow_posting_to_main_assets"
-	case 4:
-		return "default_depr_book"
-	case 5:
-		return "allow_fa_posting_from"
-	case 6:
-		return "allow_fa_posting_to"
-	case 7:
-		return "insurance_depr_book"
-	case 8:
-		return "automatic_insurance_posting"
-	case 9:
-		return "fixed_asset_nos"
-	case 10:
-		return "insurance_nos"
-	}
-	return ""
+	return fASetupFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -291,15 +250,6 @@ type (
 	FASetupOnBeforeRename interface {
 		OnBeforeRename(rec *FASetup, handled *bool) error
 	}
-	FASetupOnValidate_Primary_key                  interface{ OnValidate_Primary_key(rec *FASetup) error }
-	FASetupOnValidate_Allow_posting_to_main_assets interface{ OnValidate_Allow_posting_to_main_assets(rec *FASetup) error }
-	FASetupOnValidate_Default_depr_book            interface{ OnValidate_Default_depr_book(rec *FASetup) error }
-	FASetupOnValidate_Allow_fa_posting_from        interface{ OnValidate_Allow_fa_posting_from(rec *FASetup) error }
-	FASetupOnValidate_Allow_fa_posting_to          interface{ OnValidate_Allow_fa_posting_to(rec *FASetup) error }
-	FASetupOnValidate_Insurance_depr_book          interface{ OnValidate_Insurance_depr_book(rec *FASetup) error }
-	FASetupOnValidate_Automatic_insurance_posting  interface{ OnValidate_Automatic_insurance_posting(rec *FASetup) error }
-	FASetupOnValidate_Fixed_asset_nos              interface{ OnValidate_Fixed_asset_nos(rec *FASetup) error }
-	FASetupOnValidate_Insurance_nos                interface{ OnValidate_Insurance_nos(rec *FASetup) error }
 )
 
 // fASetupLogic is the registered business logic of FA_Setup, in
@@ -342,26 +292,9 @@ func fASetupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(FASetupOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(FASetupOnBeforeRename)
-	case "OnValidate_Primary_key":
-		_, ok = logic.(FASetupOnValidate_Primary_key)
-	case "OnValidate_Allow_posting_to_main_assets":
-		_, ok = logic.(FASetupOnValidate_Allow_posting_to_main_assets)
-	case "OnValidate_Default_depr_book":
-		_, ok = logic.(FASetupOnValidate_Default_depr_book)
-	case "OnValidate_Allow_fa_posting_from":
-		_, ok = logic.(FASetupOnValidate_Allow_fa_posting_from)
-	case "OnValidate_Allow_fa_posting_to":
-		_, ok = logic.(FASetupOnValidate_Allow_fa_posting_to)
-	case "OnValidate_Insurance_depr_book":
-		_, ok = logic.(FASetupOnValidate_Insurance_depr_book)
-	case "OnValidate_Automatic_insurance_posting":
-		_, ok = logic.(FASetupOnValidate_Automatic_insurance_posting)
-	case "OnValidate_Fixed_asset_nos":
-		_, ok = logic.(FASetupOnValidate_Fixed_asset_nos)
-	case "OnValidate_Insurance_nos":
-		_, ok = logic.(FASetupOnValidate_Insurance_nos)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return fASetupFields.IsOnValidateTrigger(name, logic, (*FASetup)(nil))
 	}
 	return true, ok
 }
@@ -682,16 +615,7 @@ func (t *FASetup) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *FASetup) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["primary_key"] = t.Primary_key
-	t.oldValues["allow_posting_to_main_assets"] = t.Allow_posting_to_main_assets
-	t.oldValues["default_depr_book"] = t.Default_depr_book
-	t.oldValues["allow_fa_posting_from"] = t.Allow_fa_posting_from
-	t.oldValues["allow_fa_posting_to"] = t.Allow_fa_posting_to
-	t.oldValues["insurance_depr_book"] = t.Insurance_depr_book
-	t.oldValues["automatic_insurance_posting"] = t.Automatic_insurance_posting
-	t.oldValues["fixed_asset_nos"] = t.Fixed_asset_nos
-	t.oldValues["insurance_nos"] = t.Insurance_nos
+	t.oldValues = fASetupFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -706,33 +630,7 @@ func (t *FASetup) OldValue(fieldName string) interface{} {
 func (t *FASetup) XRec() *FASetup {
 	x := &FASetup{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["primary_key"].(types.Code); ok {
-		x.Primary_key = v
-	}
-	if v, ok := t.oldValues["allow_posting_to_main_assets"].(bool); ok {
-		x.Allow_posting_to_main_assets = v
-	}
-	if v, ok := t.oldValues["default_depr_book"].(types.Code); ok {
-		x.Default_depr_book = v
-	}
-	if v, ok := t.oldValues["allow_fa_posting_from"].(types.Date); ok {
-		x.Allow_fa_posting_from = v
-	}
-	if v, ok := t.oldValues["allow_fa_posting_to"].(types.Date); ok {
-		x.Allow_fa_posting_to = v
-	}
-	if v, ok := t.oldValues["insurance_depr_book"].(types.Code); ok {
-		x.Insurance_depr_book = v
-	}
-	if v, ok := t.oldValues["automatic_insurance_posting"].(bool); ok {
-		x.Automatic_insurance_posting = v
-	}
-	if v, ok := t.oldValues["fixed_asset_nos"].(types.Code); ok {
-		x.Fixed_asset_nos = v
-	}
-	if v, ok := t.oldValues["insurance_nos"].(types.Code); ok {
-		x.Insurance_nos = v
-	}
+	fASetupFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1064,59 +962,7 @@ func (t *FASetup) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *FASetup) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "primary_key":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Primary_key.Equal(old)
-		}
-	case "allow_posting_to_main_assets":
-		if old, ok := oldValue.(bool); ok {
-			return t.Allow_posting_to_main_assets != old
-		}
-		return true // Type mismatch, assume changed
-	case "default_depr_book":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Default_depr_book.Equal(old)
-		}
-	case "allow_fa_posting_from":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Allow_fa_posting_from.Equal(old)
-		}
-	case "allow_fa_posting_to":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Allow_fa_posting_to.Equal(old)
-		}
-	case "insurance_depr_book":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Insurance_depr_book.Equal(old)
-		}
-	case "automatic_insurance_posting":
-		if old, ok := oldValue.(bool); ok {
-			return t.Automatic_insurance_posting != old
-		}
-		return true // Type mismatch, assume changed
-	case "fixed_asset_nos":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Fixed_asset_nos.Equal(old)
-		}
-	case "insurance_nos":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Insurance_nos.Equal(old)
-		}
-	}
-
-	return false
+	return fASetupFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1317,27 +1163,7 @@ func (t *FASetup) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *FASetup) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("primary_key"):
-		return "primary_key", true
-	case strings.ToLower("allow_posting_to_main_assets"):
-		return "allow_posting_to_main_assets", true
-	case strings.ToLower("default_depr_book"):
-		return "default_depr_book", true
-	case strings.ToLower("allow_fa_posting_from"):
-		return "allow_fa_posting_from", true
-	case strings.ToLower("allow_fa_posting_to"):
-		return "allow_fa_posting_to", true
-	case strings.ToLower("insurance_depr_book"):
-		return "insurance_depr_book", true
-	case strings.ToLower("automatic_insurance_posting"):
-		return "automatic_insurance_posting", true
-	case strings.ToLower("fixed_asset_nos"):
-		return "fixed_asset_nos", true
-	case strings.ToLower("insurance_nos"):
-		return "insurance_nos", true
-	}
-	return "", false
+	return fASetupFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2245,204 +2071,20 @@ func (t *FASetup) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *FASetup) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "primary_key":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Primary_key = v
-		} else if v, ok := value.(string); ok {
-			t.Primary_key = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field primary_key")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FASetupOnValidate_Primary_key); ok {
-				if err := trg.OnValidate_Primary_key(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "allow_posting_to_main_assets":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Allow_posting_to_main_assets = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Allow_posting_to_main_assets = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field allow_posting_to_main_assets")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FASetupOnValidate_Allow_posting_to_main_assets); ok {
-				if err := trg.OnValidate_Allow_posting_to_main_assets(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "default_depr_book":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Default_depr_book = v
-		} else if v, ok := value.(string); ok {
-			t.Default_depr_book = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field default_depr_book")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "default_depr_book"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FASetupOnValidate_Default_depr_book); ok {
-				if err := trg.OnValidate_Default_depr_book(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "allow_fa_posting_from":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Allow_fa_posting_from = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Allow_fa_posting_from, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field allow_fa_posting_from: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Allow_fa_posting_from = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field allow_fa_posting_from (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FASetupOnValidate_Allow_fa_posting_from); ok {
-				if err := trg.OnValidate_Allow_fa_posting_from(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "allow_fa_posting_to":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Allow_fa_posting_to = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Allow_fa_posting_to, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field allow_fa_posting_to: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Allow_fa_posting_to = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field allow_fa_posting_to (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FASetupOnValidate_Allow_fa_posting_to); ok {
-				if err := trg.OnValidate_Allow_fa_posting_to(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "insurance_depr_book":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Insurance_depr_book = v
-		} else if v, ok := value.(string); ok {
-			t.Insurance_depr_book = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field insurance_depr_book")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "insurance_depr_book"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FASetupOnValidate_Insurance_depr_book); ok {
-				if err := trg.OnValidate_Insurance_depr_book(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "automatic_insurance_posting":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Automatic_insurance_posting = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Automatic_insurance_posting = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field automatic_insurance_posting")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FASetupOnValidate_Automatic_insurance_posting); ok {
-				if err := trg.OnValidate_Automatic_insurance_posting(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fixed_asset_nos":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Fixed_asset_nos = v
-		} else if v, ok := value.(string); ok {
-			t.Fixed_asset_nos = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field fixed_asset_nos")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fixed_asset_nos"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FASetupOnValidate_Fixed_asset_nos); ok {
-				if err := trg.OnValidate_Fixed_asset_nos(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "insurance_nos":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Insurance_nos = v
-		} else if v, ok := value.(string); ok {
-			t.Insurance_nos = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field insurance_nos")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "insurance_nos"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FASetupOnValidate_Insurance_nos); ok {
-				if err := trg.OnValidate_Insurance_nos(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := fASetupFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &fASetupFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2451,107 +2093,18 @@ func (t *FASetup) ValidateField(fieldName string, value interface{}) error {
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *FASetup) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Primary_key, true
-	case 3:
-		return t.Allow_posting_to_main_assets, true
-	case 4:
-		return t.Default_depr_book, true
-	case 5:
-		return t.Allow_fa_posting_from, true
-	case 6:
-		return t.Allow_fa_posting_to, true
-	case 7:
-		return t.Insurance_depr_book, true
-	case 8:
-		return t.Automatic_insurance_posting, true
-	case 9:
-		return t.Fixed_asset_nos, true
-	case 10:
-		return t.Insurance_nos, true
-	}
-	return nil, false
+	return fASetupFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *FASetup) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return fASetupFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *FASetup) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Primary_key = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Primary_key = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(bool); ok {
-			t.Allow_posting_to_main_assets = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Code); ok {
-			t.Default_depr_book = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Default_depr_book = types.NewCode(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Date); ok {
-			t.Allow_fa_posting_from = v
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Date); ok {
-			t.Allow_fa_posting_to = v
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Code); ok {
-			t.Insurance_depr_book = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Insurance_depr_book = types.NewCode(v)
-			return true
-		}
-	case 8:
-		if v, ok := value.(bool); ok {
-			t.Automatic_insurance_posting = v
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.Code); ok {
-			t.Fixed_asset_nos = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Fixed_asset_nos = types.NewCode(v)
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Code); ok {
-			t.Insurance_nos = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Insurance_nos = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return fASetupFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3000,27 +2553,7 @@ func (t *FASetup) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *FASetup) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "primary_key":
-		return t.Primary_key, true
-	case "allow_posting_to_main_assets":
-		return t.Allow_posting_to_main_assets, true
-	case "default_depr_book":
-		return t.Default_depr_book, true
-	case "allow_fa_posting_from":
-		return t.Allow_fa_posting_from, true
-	case "allow_fa_posting_to":
-		return t.Allow_fa_posting_to, true
-	case "insurance_depr_book":
-		return t.Insurance_depr_book, true
-	case "automatic_insurance_posting":
-		return t.Automatic_insurance_posting, true
-	case "fixed_asset_nos":
-		return t.Fixed_asset_nos, true
-	case "insurance_nos":
-		return t.Insurance_nos, true
-	}
-	return nil, false
+	return fASetupFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3114,66 +2647,12 @@ func (t *FASetup) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *FASetup) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"primary_key":                  t.Primary_key.String(),
-		"allow_posting_to_main_assets": t.Allow_posting_to_main_assets,
-		"default_depr_book":            t.Default_depr_book.String(),
-		"allow_fa_posting_from":        t.Allow_fa_posting_from.String(),
-		"allow_fa_posting_to":          t.Allow_fa_posting_to.String(),
-		"insurance_depr_book":          t.Insurance_depr_book.String(),
-		"automatic_insurance_posting":  t.Automatic_insurance_posting,
-		"fixed_asset_nos":              t.Fixed_asset_nos.String(),
-		"insurance_nos":                t.Insurance_nos.String(),
-	}
+	return fASetupFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *FASetup) FromMap(data map[string]interface{}) {
-	if v, ok := data["primary_key"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Primary_key = types.NewCode(s)
-		}
-	}
-	if v, ok := data["allow_posting_to_main_assets"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Allow_posting_to_main_assets = b
-		}
-	}
-	if v, ok := data["default_depr_book"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Default_depr_book = types.NewCode(s)
-		}
-	}
-	if v, ok := data["allow_fa_posting_from"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Allow_fa_posting_from, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["allow_fa_posting_to"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Allow_fa_posting_to, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["insurance_depr_book"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Insurance_depr_book = types.NewCode(s)
-		}
-	}
-	if v, ok := data["automatic_insurance_posting"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Automatic_insurance_posting = b
-		}
-	}
-	if v, ok := data["fixed_asset_nos"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fixed_asset_nos = types.NewCode(s)
-		}
-	}
-	if v, ok := data["insurance_nos"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Insurance_nos = types.NewCode(s)
-		}
-	}
+	fASetupFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3194,98 +2673,170 @@ func (t *FASetup) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *FASetup) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "primary_key",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "allow_posting_to_main_assets",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "default_depr_book",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "allow_fa_posting_from",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "allow_fa_posting_to",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "insurance_depr_book",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "automatic_insurance_posting",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "fixed_asset_nos",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "insurance_nos",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return fASetupFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in fASetupFields.Fields
+func (t *FASetup) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Primary_key
+	case 1:
+		return &t.Allow_posting_to_main_assets
+	case 2:
+		return &t.Default_depr_book
+	case 3:
+		return &t.Allow_fa_posting_from
+	case 4:
+		return &t.Allow_fa_posting_to
+	case 5:
+		return &t.Insurance_depr_book
+	case 6:
+		return &t.Automatic_insurance_posting
+	case 7:
+		return &t.Fixed_asset_nos
+	case 8:
+		return &t.Insurance_nos
 	}
+	return nil
+}
+
+// fASetupFields describes the fields of FA_Setup for the record functions
+// written once in foundation/tables
+var fASetupFields = &tables.TableFields{
+	Table: FASetupTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "primary_key",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Primary_key",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "allow_posting_to_main_assets",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Allow_posting_to_main_assets",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "default_depr_book",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Default_depr_book",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "allow_fa_posting_from",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Allow_fa_posting_from",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "allow_fa_posting_to",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Allow_fa_posting_to",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "insurance_depr_book",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Insurance_depr_book",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "automatic_insurance_posting",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Automatic_insurance_posting",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "fixed_asset_nos",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Fixed_asset_nos",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "insurance_nos",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Insurance_nos",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

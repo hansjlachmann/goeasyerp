@@ -117,28 +117,12 @@ var CustItemDiscount_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *CustItemDiscount) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "customer_disc_group":
-		return 1
-	case "item_discount_group":
-		return 2
-	case "discount_percent":
-		return 3
-	}
-	return 0
+	return custItemDiscountFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *CustItemDiscount) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "customer_disc_group"
-	case 2:
-		return "item_discount_group"
-	case 3:
-		return "discount_percent"
-	}
-	return ""
+	return custItemDiscountFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -250,15 +234,6 @@ type (
 	CustItemDiscountOnBeforeRename interface {
 		OnBeforeRename(rec *CustItemDiscount, handled *bool) error
 	}
-	CustItemDiscountOnValidate_Customer_disc_group interface {
-		OnValidate_Customer_disc_group(rec *CustItemDiscount) error
-	}
-	CustItemDiscountOnValidate_Item_discount_group interface {
-		OnValidate_Item_discount_group(rec *CustItemDiscount) error
-	}
-	CustItemDiscountOnValidate_Discount_percent interface {
-		OnValidate_Discount_percent(rec *CustItemDiscount) error
-	}
 )
 
 // custItemDiscountLogic is the registered business logic of Cust_Item_Discount, in
@@ -301,14 +276,9 @@ func custItemDiscountTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(CustItemDiscountOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(CustItemDiscountOnBeforeRename)
-	case "OnValidate_Customer_disc_group":
-		_, ok = logic.(CustItemDiscountOnValidate_Customer_disc_group)
-	case "OnValidate_Item_discount_group":
-		_, ok = logic.(CustItemDiscountOnValidate_Item_discount_group)
-	case "OnValidate_Discount_percent":
-		_, ok = logic.(CustItemDiscountOnValidate_Discount_percent)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return custItemDiscountFields.IsOnValidateTrigger(name, logic, (*CustItemDiscount)(nil))
 	}
 	return true, ok
 }
@@ -612,10 +582,7 @@ func (t *CustItemDiscount) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *CustItemDiscount) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["customer_disc_group"] = t.Customer_disc_group
-	t.oldValues["item_discount_group"] = t.Item_discount_group
-	t.oldValues["discount_percent"] = t.Discount_percent
+	t.oldValues = custItemDiscountFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -630,15 +597,7 @@ func (t *CustItemDiscount) OldValue(fieldName string) interface{} {
 func (t *CustItemDiscount) XRec() *CustItemDiscount {
 	x := &CustItemDiscount{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["customer_disc_group"].(types.Code); ok {
-		x.Customer_disc_group = v
-	}
-	if v, ok := t.oldValues["item_discount_group"].(types.Code); ok {
-		x.Item_discount_group = v
-	}
-	if v, ok := t.oldValues["discount_percent"].(types.Decimal); ok {
-		x.Discount_percent = v
-	}
+	custItemDiscountFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -915,33 +874,7 @@ func (t *CustItemDiscount) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *CustItemDiscount) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "customer_disc_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Customer_disc_group.Equal(old)
-		}
-	case "item_discount_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Item_discount_group.Equal(old)
-		}
-	case "discount_percent":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Discount_percent.Equal(old)
-		}
-	}
-
-	return false
+	return custItemDiscountFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1143,15 +1076,7 @@ func (t *CustItemDiscount) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *CustItemDiscount) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("customer_disc_group"):
-		return "customer_disc_group", true
-	case strings.ToLower("item_discount_group"):
-		return "item_discount_group", true
-	case strings.ToLower("discount_percent"):
-		return "discount_percent", true
-	}
-	return "", false
+	return custItemDiscountFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -1975,84 +1900,20 @@ func (t *CustItemDiscount) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *CustItemDiscount) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "customer_disc_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Customer_disc_group = v
-		} else if v, ok := value.(string); ok {
-			t.Customer_disc_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field customer_disc_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "customer_disc_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CustItemDiscountOnValidate_Customer_disc_group); ok {
-				if err := trg.OnValidate_Customer_disc_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "item_discount_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Item_discount_group = v
-		} else if v, ok := value.(string); ok {
-			t.Item_discount_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field item_discount_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "item_discount_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CustItemDiscountOnValidate_Item_discount_group); ok {
-				if err := trg.OnValidate_Item_discount_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "discount_percent":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Discount_percent = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Discount_percent, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field discount_percent: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Discount_percent = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Discount_percent = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Discount_percent = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field discount_percent (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CustItemDiscountOnValidate_Discount_percent); ok {
-				if err := trg.OnValidate_Discount_percent(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := custItemDiscountFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &custItemDiscountFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2061,53 +1922,18 @@ func (t *CustItemDiscount) ValidateField(fieldName string, value interface{}) er
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *CustItemDiscount) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Customer_disc_group, true
-	case 2:
-		return t.Item_discount_group, true
-	case 3:
-		return t.Discount_percent, true
-	}
-	return nil, false
+	return custItemDiscountFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *CustItemDiscount) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return custItemDiscountFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *CustItemDiscount) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Customer_disc_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Customer_disc_group = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Item_discount_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Item_discount_group = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Decimal); ok {
-			t.Discount_percent = v
-			return true
-		}
-	}
-	return false
+	return custItemDiscountFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2578,15 +2404,7 @@ func (t *CustItemDiscount) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *CustItemDiscount) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "customer_disc_group":
-		return t.Customer_disc_group, true
-	case "item_discount_group":
-		return t.Item_discount_group, true
-	case "discount_percent":
-		return t.Discount_percent, true
-	}
-	return nil, false
+	return custItemDiscountFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2677,37 +2495,12 @@ func (t *CustItemDiscount) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *CustItemDiscount) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"customer_disc_group": t.Customer_disc_group.String(),
-		"item_discount_group": t.Item_discount_group.String(),
-		"discount_percent":    t.Discount_percent.String(),
-	}
+	return custItemDiscountFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *CustItemDiscount) FromMap(data map[string]interface{}) {
-	if v, ok := data["customer_disc_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Customer_disc_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["item_discount_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Item_discount_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["discount_percent"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Discount_percent, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Discount_percent = types.NewDecimal(val)
-		case int:
-			t.Discount_percent = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Discount_percent = types.NewDecimalFromInt(val)
-		}
-	}
+	custItemDiscountFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2728,39 +2521,73 @@ func (t *CustItemDiscount) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *CustItemDiscount) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "customer_disc_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "item_discount_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:            3,
-			Name:          "discount_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
+	return custItemDiscountFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in custItemDiscountFields.Fields
+func (t *CustItemDiscount) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Customer_disc_group
+	case 1:
+		return &t.Item_discount_group
+	case 2:
+		return &t.Discount_percent
 	}
+	return nil
+}
+
+// custItemDiscountFields describes the fields of Cust_Item_Discount for the record functions
+// written once in foundation/tables
+var custItemDiscountFields = &tables.TableFields{
+	Table: CustItemDiscountTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "customer_disc_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Customer_disc_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "item_discount_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Item_discount_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            3,
+				Name:          "discount_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Discount_percent",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

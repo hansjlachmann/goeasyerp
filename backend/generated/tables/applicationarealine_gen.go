@@ -118,28 +118,12 @@ var ApplicationAreaLine_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *ApplicationAreaLine) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "line_no":
-		return 1
-	case "id":
-		return 2
-	case "name":
-		return 3
-	}
-	return 0
+	return applicationAreaLineFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *ApplicationAreaLine) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "line_no"
-	case 2:
-		return "id"
-	case 3:
-		return "name"
-	}
-	return ""
+	return applicationAreaLineFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -251,15 +235,6 @@ type (
 	ApplicationAreaLineOnBeforeRename interface {
 		OnBeforeRename(rec *ApplicationAreaLine, handled *bool) error
 	}
-	ApplicationAreaLineOnValidate_Line_no interface {
-		OnValidate_Line_no(rec *ApplicationAreaLine) error
-	}
-	ApplicationAreaLineOnValidate_Id interface {
-		OnValidate_Id(rec *ApplicationAreaLine) error
-	}
-	ApplicationAreaLineOnValidate_Name interface {
-		OnValidate_Name(rec *ApplicationAreaLine) error
-	}
 )
 
 // applicationAreaLineLogic is the registered business logic of Application_Area_Line, in
@@ -302,14 +277,9 @@ func applicationAreaLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ApplicationAreaLineOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(ApplicationAreaLineOnBeforeRename)
-	case "OnValidate_Line_no":
-		_, ok = logic.(ApplicationAreaLineOnValidate_Line_no)
-	case "OnValidate_Id":
-		_, ok = logic.(ApplicationAreaLineOnValidate_Id)
-	case "OnValidate_Name":
-		_, ok = logic.(ApplicationAreaLineOnValidate_Name)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return applicationAreaLineFields.IsOnValidateTrigger(name, logic, (*ApplicationAreaLine)(nil))
 	}
 	return true, ok
 }
@@ -599,10 +569,7 @@ func (t *ApplicationAreaLine) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *ApplicationAreaLine) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["line_no"] = t.Line_no
-	t.oldValues["id"] = t.Id
-	t.oldValues["name"] = t.Name
+	t.oldValues = applicationAreaLineFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -617,15 +584,7 @@ func (t *ApplicationAreaLine) OldValue(fieldName string) interface{} {
 func (t *ApplicationAreaLine) XRec() *ApplicationAreaLine {
 	x := &ApplicationAreaLine{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["line_no"].(int); ok {
-		x.Line_no = v
-	}
-	if v, ok := t.oldValues["id"].(int); ok {
-		x.Id = v
-	}
-	if v, ok := t.oldValues["name"].(types.Text); ok {
-		x.Name = v
-	}
+	applicationAreaLineFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -901,35 +860,7 @@ func (t *ApplicationAreaLine) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *ApplicationAreaLine) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "line_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Line_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "id":
-		if old, ok := oldValue.(int); ok {
-			return t.Id != old
-		}
-		return true // Type mismatch, assume changed
-	case "name":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Name.Equal(old)
-		}
-	}
-
-	return false
+	return applicationAreaLineFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1130,15 +1061,7 @@ func (t *ApplicationAreaLine) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *ApplicationAreaLine) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("line_no"):
-		return "line_no", true
-	case strings.ToLower("id"):
-		return "id", true
-	case strings.ToLower("name"):
-		return "name", true
-	}
-	return "", false
+	return applicationAreaLineFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -1944,84 +1867,20 @@ func (t *ApplicationAreaLine) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *ApplicationAreaLine) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "line_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Line_no = v
-		case float64:
-			t.Line_no = int(v)
-		case string:
-			if v == "" {
-				t.Line_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Line_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field line_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field line_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ApplicationAreaLineOnValidate_Line_no); ok {
-				if err := trg.OnValidate_Line_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "id":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Id = v
-		case float64:
-			t.Id = int(v)
-		case string:
-			if v == "" {
-				t.Id = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Id = i
-			} else {
-				return fmt.Errorf("invalid integer value for field id: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field id")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ApplicationAreaLineOnValidate_Id); ok {
-				if err := trg.OnValidate_Id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "name":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-		} else if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ApplicationAreaLineOnValidate_Name); ok {
-				if err := trg.OnValidate_Name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := applicationAreaLineFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &applicationAreaLineFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2030,49 +1889,18 @@ func (t *ApplicationAreaLine) ValidateField(fieldName string, value interface{})
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *ApplicationAreaLine) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Line_no, true
-	case 2:
-		return t.Id, true
-	case 3:
-		return t.Name, true
-	}
-	return nil, false
+	return applicationAreaLineFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *ApplicationAreaLine) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return applicationAreaLineFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *ApplicationAreaLine) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(int); ok {
-			t.Line_no = v
-			return true
-		}
-	case 2:
-		if v, ok := value.(int); ok {
-			t.Id = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-			return true
-		}
-	}
-	return false
+	return applicationAreaLineFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2550,15 +2378,7 @@ func (t *ApplicationAreaLine) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *ApplicationAreaLine) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "line_no":
-		return t.Line_no, true
-	case "id":
-		return t.Id, true
-	case "name":
-		return t.Name, true
-	}
-	return nil, false
+	return applicationAreaLineFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2646,46 +2466,12 @@ func (t *ApplicationAreaLine) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *ApplicationAreaLine) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"line_no": t.Line_no,
-		"id":      t.Id,
-		"name":    t.Name.String(),
-	}
+	return applicationAreaLineFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *ApplicationAreaLine) FromMap(data map[string]interface{}) {
-	if v, ok := data["line_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Line_no = int(val)
-		case int:
-			t.Line_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Line_no = n
-			}
-		}
-	}
-	if v, ok := data["id"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Id = int(val)
-		case int:
-			t.Id = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Id = n
-			}
-		}
-	}
-	if v, ok := data["name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Name = types.NewText(s)
-		}
-	}
+	applicationAreaLineFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2706,41 +2492,73 @@ func (t *ApplicationAreaLine) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *ApplicationAreaLine) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "line_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         2,
-			Name:       "id",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         3,
-			Name:       "name",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
+	return applicationAreaLineFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in applicationAreaLineFields.Fields
+func (t *ApplicationAreaLine) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Line_no
+	case 1:
+		return &t.Id
+	case 2:
+		return &t.Name
 	}
+	return nil
+}
+
+// applicationAreaLineFields describes the fields of Application_Area_Line for the record functions
+// written once in foundation/tables
+var applicationAreaLineFields = &tables.TableFields{
+	Table: ApplicationAreaLineTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "line_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Line_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "id",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Id",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "name",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Name",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

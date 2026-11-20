@@ -32,7 +32,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -189,60 +188,12 @@ var ExchRateAdjmtReg_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *ExchRateAdjmtReg) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "no":
-		return 1
-	case "creation_date":
-		return 2
-	case "account_type":
-		return 3
-	case "posting_group":
-		return 4
-	case "currency_code":
-		return 5
-	case "currency_factor":
-		return 6
-	case "adjusted_base":
-		return 7
-	case "adjusted_base_lcy":
-		return 8
-	case "adjusted_amt_lcy":
-		return 9
-	case "adjusted_base_add_curr":
-		return 10
-	case "adjusted_amt_add_curr":
-		return 11
-	}
-	return 0
+	return exchRateAdjmtRegFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *ExchRateAdjmtReg) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "no"
-	case 2:
-		return "creation_date"
-	case 3:
-		return "account_type"
-	case 4:
-		return "posting_group"
-	case 5:
-		return "currency_code"
-	case 6:
-		return "currency_factor"
-	case 7:
-		return "adjusted_base"
-	case 8:
-		return "adjusted_base_lcy"
-	case 9:
-		return "adjusted_amt_lcy"
-	case 10:
-		return "adjusted_base_add_curr"
-	case 11:
-		return "adjusted_amt_add_curr"
-	}
-	return ""
+	return exchRateAdjmtRegFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -354,39 +305,6 @@ type (
 	ExchRateAdjmtRegOnBeforeRename interface {
 		OnBeforeRename(rec *ExchRateAdjmtReg, handled *bool) error
 	}
-	ExchRateAdjmtRegOnValidate_No interface {
-		OnValidate_No(rec *ExchRateAdjmtReg) error
-	}
-	ExchRateAdjmtRegOnValidate_Creation_date interface {
-		OnValidate_Creation_date(rec *ExchRateAdjmtReg) error
-	}
-	ExchRateAdjmtRegOnValidate_Account_type interface {
-		OnValidate_Account_type(rec *ExchRateAdjmtReg) error
-	}
-	ExchRateAdjmtRegOnValidate_Posting_group interface {
-		OnValidate_Posting_group(rec *ExchRateAdjmtReg) error
-	}
-	ExchRateAdjmtRegOnValidate_Currency_code interface {
-		OnValidate_Currency_code(rec *ExchRateAdjmtReg) error
-	}
-	ExchRateAdjmtRegOnValidate_Currency_factor interface {
-		OnValidate_Currency_factor(rec *ExchRateAdjmtReg) error
-	}
-	ExchRateAdjmtRegOnValidate_Adjusted_base interface {
-		OnValidate_Adjusted_base(rec *ExchRateAdjmtReg) error
-	}
-	ExchRateAdjmtRegOnValidate_Adjusted_base_lcy interface {
-		OnValidate_Adjusted_base_lcy(rec *ExchRateAdjmtReg) error
-	}
-	ExchRateAdjmtRegOnValidate_Adjusted_amt_lcy interface {
-		OnValidate_Adjusted_amt_lcy(rec *ExchRateAdjmtReg) error
-	}
-	ExchRateAdjmtRegOnValidate_Adjusted_base_add_curr interface {
-		OnValidate_Adjusted_base_add_curr(rec *ExchRateAdjmtReg) error
-	}
-	ExchRateAdjmtRegOnValidate_Adjusted_amt_add_curr interface {
-		OnValidate_Adjusted_amt_add_curr(rec *ExchRateAdjmtReg) error
-	}
 )
 
 // exchRateAdjmtRegLogic is the registered business logic of Exch_Rate_Adjmt_Reg, in
@@ -429,30 +347,9 @@ func exchRateAdjmtRegTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ExchRateAdjmtRegOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(ExchRateAdjmtRegOnBeforeRename)
-	case "OnValidate_No":
-		_, ok = logic.(ExchRateAdjmtRegOnValidate_No)
-	case "OnValidate_Creation_date":
-		_, ok = logic.(ExchRateAdjmtRegOnValidate_Creation_date)
-	case "OnValidate_Account_type":
-		_, ok = logic.(ExchRateAdjmtRegOnValidate_Account_type)
-	case "OnValidate_Posting_group":
-		_, ok = logic.(ExchRateAdjmtRegOnValidate_Posting_group)
-	case "OnValidate_Currency_code":
-		_, ok = logic.(ExchRateAdjmtRegOnValidate_Currency_code)
-	case "OnValidate_Currency_factor":
-		_, ok = logic.(ExchRateAdjmtRegOnValidate_Currency_factor)
-	case "OnValidate_Adjusted_base":
-		_, ok = logic.(ExchRateAdjmtRegOnValidate_Adjusted_base)
-	case "OnValidate_Adjusted_base_lcy":
-		_, ok = logic.(ExchRateAdjmtRegOnValidate_Adjusted_base_lcy)
-	case "OnValidate_Adjusted_amt_lcy":
-		_, ok = logic.(ExchRateAdjmtRegOnValidate_Adjusted_amt_lcy)
-	case "OnValidate_Adjusted_base_add_curr":
-		_, ok = logic.(ExchRateAdjmtRegOnValidate_Adjusted_base_add_curr)
-	case "OnValidate_Adjusted_amt_add_curr":
-		_, ok = logic.(ExchRateAdjmtRegOnValidate_Adjusted_amt_add_curr)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return exchRateAdjmtRegFields.IsOnValidateTrigger(name, logic, (*ExchRateAdjmtReg)(nil))
 	}
 	return true, ok
 }
@@ -761,18 +658,7 @@ func (t *ExchRateAdjmtReg) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *ExchRateAdjmtReg) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["no"] = t.No
-	t.oldValues["creation_date"] = t.Creation_date
-	t.oldValues["account_type"] = t.Account_type
-	t.oldValues["posting_group"] = t.Posting_group
-	t.oldValues["currency_code"] = t.Currency_code
-	t.oldValues["currency_factor"] = t.Currency_factor
-	t.oldValues["adjusted_base"] = t.Adjusted_base
-	t.oldValues["adjusted_base_lcy"] = t.Adjusted_base_lcy
-	t.oldValues["adjusted_amt_lcy"] = t.Adjusted_amt_lcy
-	t.oldValues["adjusted_base_add_curr"] = t.Adjusted_base_add_curr
-	t.oldValues["adjusted_amt_add_curr"] = t.Adjusted_amt_add_curr
+	t.oldValues = exchRateAdjmtRegFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -787,39 +673,7 @@ func (t *ExchRateAdjmtReg) OldValue(fieldName string) interface{} {
 func (t *ExchRateAdjmtReg) XRec() *ExchRateAdjmtReg {
 	x := &ExchRateAdjmtReg{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["no"].(int); ok {
-		x.No = v
-	}
-	if v, ok := t.oldValues["creation_date"].(types.Date); ok {
-		x.Creation_date = v
-	}
-	if v, ok := t.oldValues["account_type"].(ExchRateAdjmtRegAccount_type); ok {
-		x.Account_type = v
-	}
-	if v, ok := t.oldValues["posting_group"].(types.Code); ok {
-		x.Posting_group = v
-	}
-	if v, ok := t.oldValues["currency_code"].(types.Code); ok {
-		x.Currency_code = v
-	}
-	if v, ok := t.oldValues["currency_factor"].(types.Decimal); ok {
-		x.Currency_factor = v
-	}
-	if v, ok := t.oldValues["adjusted_base"].(types.Decimal); ok {
-		x.Adjusted_base = v
-	}
-	if v, ok := t.oldValues["adjusted_base_lcy"].(types.Decimal); ok {
-		x.Adjusted_base_lcy = v
-	}
-	if v, ok := t.oldValues["adjusted_amt_lcy"].(types.Decimal); ok {
-		x.Adjusted_amt_lcy = v
-	}
-	if v, ok := t.oldValues["adjusted_base_add_curr"].(types.Decimal); ok {
-		x.Adjusted_base_add_curr = v
-	}
-	if v, ok := t.oldValues["adjusted_amt_add_curr"].(types.Decimal); ok {
-		x.Adjusted_amt_add_curr = v
-	}
+	exchRateAdjmtRegFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1183,66 +1037,7 @@ func (t *ExchRateAdjmtReg) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *ExchRateAdjmtReg) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "no":
-		if old, ok := oldValue.(int); ok {
-			return t.No != old
-		}
-		return true // Type mismatch, assume changed
-	case "creation_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Creation_date.Equal(old)
-		}
-	case "account_type":
-		if old, ok := oldValue.(ExchRateAdjmtRegAccount_type); ok {
-			return t.Account_type != old
-		}
-	case "posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Posting_group.Equal(old)
-		}
-	case "currency_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Currency_code.Equal(old)
-		}
-	case "currency_factor":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Currency_factor.Equal(old)
-		}
-	case "adjusted_base":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Adjusted_base.Equal(old)
-		}
-	case "adjusted_base_lcy":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Adjusted_base_lcy.Equal(old)
-		}
-	case "adjusted_amt_lcy":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Adjusted_amt_lcy.Equal(old)
-		}
-	case "adjusted_base_add_curr":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Adjusted_base_add_curr.Equal(old)
-		}
-	case "adjusted_amt_add_curr":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Adjusted_amt_add_curr.Equal(old)
-		}
-	}
-
-	return false
+	return exchRateAdjmtRegFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1443,31 +1238,7 @@ func (t *ExchRateAdjmtReg) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *ExchRateAdjmtReg) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("no"):
-		return "no", true
-	case strings.ToLower("creation_date"):
-		return "creation_date", true
-	case strings.ToLower("account_type"):
-		return "account_type", true
-	case strings.ToLower("posting_group"):
-		return "posting_group", true
-	case strings.ToLower("currency_code"):
-		return "currency_code", true
-	case strings.ToLower("currency_factor"):
-		return "currency_factor", true
-	case strings.ToLower("adjusted_base"):
-		return "adjusted_base", true
-	case strings.ToLower("adjusted_base_lcy"):
-		return "adjusted_base_lcy", true
-	case strings.ToLower("adjusted_amt_lcy"):
-		return "adjusted_amt_lcy", true
-	case strings.ToLower("adjusted_base_add_curr"):
-		return "adjusted_base_add_curr", true
-	case strings.ToLower("adjusted_amt_add_curr"):
-		return "adjusted_amt_add_curr", true
-	}
-	return "", false
+	return exchRateAdjmtRegFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2399,324 +2170,20 @@ func (t *ExchRateAdjmtReg) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *ExchRateAdjmtReg) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.No = v
-		case float64:
-			t.No = int(v)
-		case string:
-			if v == "" {
-				t.No = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.No = i
-			} else {
-				return fmt.Errorf("invalid integer value for field no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExchRateAdjmtRegOnValidate_No); ok {
-				if err := trg.OnValidate_No(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "creation_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Creation_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Creation_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field creation_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Creation_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field creation_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExchRateAdjmtRegOnValidate_Creation_date); ok {
-				if err := trg.OnValidate_Creation_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "account_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ExchRateAdjmtRegAccount_type); ok {
-			t.Account_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field account_type (valid range: 0-%d)", v, 4-1)
-			}
-			t.Account_type = ExchRateAdjmtRegAccount_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field account_type (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Account_type = ExchRateAdjmtRegAccount_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Account_type = 0
-			} else {
-				options := []string{"G/L Account", "Customer", "Vendor", "Bank Account"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Account_type = ExchRateAdjmtRegAccount_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field account_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field account_type (expected ExchRateAdjmtRegAccount_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExchRateAdjmtRegOnValidate_Account_type); ok {
-				if err := trg.OnValidate_Account_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExchRateAdjmtRegOnValidate_Posting_group); ok {
-				if err := trg.OnValidate_Posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "currency_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Currency_code = v
-		} else if v, ok := value.(string); ok {
-			t.Currency_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field currency_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "currency_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExchRateAdjmtRegOnValidate_Currency_code); ok {
-				if err := trg.OnValidate_Currency_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "currency_factor":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Currency_factor = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Currency_factor, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field currency_factor: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Currency_factor = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Currency_factor = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Currency_factor = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field currency_factor (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExchRateAdjmtRegOnValidate_Currency_factor); ok {
-				if err := trg.OnValidate_Currency_factor(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "adjusted_base":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Adjusted_base = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Adjusted_base, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field adjusted_base: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Adjusted_base = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Adjusted_base = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Adjusted_base = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field adjusted_base (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExchRateAdjmtRegOnValidate_Adjusted_base); ok {
-				if err := trg.OnValidate_Adjusted_base(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "adjusted_base_lcy":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Adjusted_base_lcy = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Adjusted_base_lcy, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field adjusted_base_lcy: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Adjusted_base_lcy = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Adjusted_base_lcy = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Adjusted_base_lcy = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field adjusted_base_lcy (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExchRateAdjmtRegOnValidate_Adjusted_base_lcy); ok {
-				if err := trg.OnValidate_Adjusted_base_lcy(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "adjusted_amt_lcy":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Adjusted_amt_lcy = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Adjusted_amt_lcy, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field adjusted_amt_lcy: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Adjusted_amt_lcy = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Adjusted_amt_lcy = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Adjusted_amt_lcy = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field adjusted_amt_lcy (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExchRateAdjmtRegOnValidate_Adjusted_amt_lcy); ok {
-				if err := trg.OnValidate_Adjusted_amt_lcy(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "adjusted_base_add_curr":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Adjusted_base_add_curr = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Adjusted_base_add_curr, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field adjusted_base_add_curr: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Adjusted_base_add_curr = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Adjusted_base_add_curr = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Adjusted_base_add_curr = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field adjusted_base_add_curr (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExchRateAdjmtRegOnValidate_Adjusted_base_add_curr); ok {
-				if err := trg.OnValidate_Adjusted_base_add_curr(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "adjusted_amt_add_curr":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Adjusted_amt_add_curr = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Adjusted_amt_add_curr, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field adjusted_amt_add_curr: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Adjusted_amt_add_curr = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Adjusted_amt_add_curr = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Adjusted_amt_add_curr = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field adjusted_amt_add_curr (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExchRateAdjmtRegOnValidate_Adjusted_amt_add_curr); ok {
-				if err := trg.OnValidate_Adjusted_amt_add_curr(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := exchRateAdjmtRegFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &exchRateAdjmtRegFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2725,109 +2192,18 @@ func (t *ExchRateAdjmtReg) ValidateField(fieldName string, value interface{}) er
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *ExchRateAdjmtReg) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.No, true
-	case 2:
-		return t.Creation_date, true
-	case 3:
-		return t.Account_type, true
-	case 4:
-		return t.Posting_group, true
-	case 5:
-		return t.Currency_code, true
-	case 6:
-		return t.Currency_factor, true
-	case 7:
-		return t.Adjusted_base, true
-	case 8:
-		return t.Adjusted_base_lcy, true
-	case 9:
-		return t.Adjusted_amt_lcy, true
-	case 10:
-		return t.Adjusted_base_add_curr, true
-	case 11:
-		return t.Adjusted_amt_add_curr, true
-	}
-	return nil, false
+	return exchRateAdjmtRegFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *ExchRateAdjmtReg) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return exchRateAdjmtRegFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *ExchRateAdjmtReg) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(int); ok {
-			t.No = v
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Date); ok {
-			t.Creation_date = v
-			return true
-		}
-	case 3:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Account_type = ExchRateAdjmtRegAccount_type(i)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Code); ok {
-			t.Posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Posting_group = types.NewCode(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Code); ok {
-			t.Currency_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Currency_code = types.NewCode(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Decimal); ok {
-			t.Currency_factor = v
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Decimal); ok {
-			t.Adjusted_base = v
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Decimal); ok {
-			t.Adjusted_base_lcy = v
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.Decimal); ok {
-			t.Adjusted_amt_lcy = v
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Decimal); ok {
-			t.Adjusted_base_add_curr = v
-			return true
-		}
-	case 11:
-		if v, ok := value.(types.Decimal); ok {
-			t.Adjusted_amt_add_curr = v
-			return true
-		}
-	}
-	return false
+	return exchRateAdjmtRegFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3345,31 +2721,7 @@ func (t *ExchRateAdjmtReg) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *ExchRateAdjmtReg) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "no":
-		return t.No, true
-	case "creation_date":
-		return t.Creation_date, true
-	case "account_type":
-		return int(t.Account_type), true
-	case "posting_group":
-		return t.Posting_group, true
-	case "currency_code":
-		return t.Currency_code, true
-	case "currency_factor":
-		return t.Currency_factor, true
-	case "adjusted_base":
-		return t.Adjusted_base, true
-	case "adjusted_base_lcy":
-		return t.Adjusted_base_lcy, true
-	case "adjusted_amt_lcy":
-		return t.Adjusted_amt_lcy, true
-	case "adjusted_base_add_curr":
-		return t.Adjusted_base_add_curr, true
-	case "adjusted_amt_add_curr":
-		return t.Adjusted_amt_add_curr, true
-	}
-	return nil, false
+	return exchRateAdjmtRegFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3465,140 +2817,12 @@ func (t *ExchRateAdjmtReg) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *ExchRateAdjmtReg) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"no":                     t.No,
-		"creation_date":          t.Creation_date.String(),
-		"account_type":           int(t.Account_type),
-		"posting_group":          t.Posting_group.String(),
-		"currency_code":          t.Currency_code.String(),
-		"currency_factor":        t.Currency_factor.String(),
-		"adjusted_base":          t.Adjusted_base.String(),
-		"adjusted_base_lcy":      t.Adjusted_base_lcy.String(),
-		"adjusted_amt_lcy":       t.Adjusted_amt_lcy.String(),
-		"adjusted_base_add_curr": t.Adjusted_base_add_curr.String(),
-		"adjusted_amt_add_curr":  t.Adjusted_amt_add_curr.String(),
-	}
+	return exchRateAdjmtRegFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *ExchRateAdjmtReg) FromMap(data map[string]interface{}) {
-	if v, ok := data["no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.No = int(val)
-		case int:
-			t.No = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.No = n
-			}
-		}
-	}
-	if v, ok := data["creation_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Creation_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["account_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Account_type = ExchRateAdjmtRegAccount_type(int(val))
-		case int:
-			t.Account_type = ExchRateAdjmtRegAccount_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"G/L Account", "Customer", "Vendor", "Bank Account"}
-			for i, opt := range options {
-				if opt == val {
-					t.Account_type = ExchRateAdjmtRegAccount_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["currency_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Currency_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["currency_factor"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Currency_factor, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Currency_factor = types.NewDecimal(val)
-		case int:
-			t.Currency_factor = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Currency_factor = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["adjusted_base"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Adjusted_base, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Adjusted_base = types.NewDecimal(val)
-		case int:
-			t.Adjusted_base = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Adjusted_base = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["adjusted_base_lcy"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Adjusted_base_lcy, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Adjusted_base_lcy = types.NewDecimal(val)
-		case int:
-			t.Adjusted_base_lcy = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Adjusted_base_lcy = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["adjusted_amt_lcy"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Adjusted_amt_lcy, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Adjusted_amt_lcy = types.NewDecimal(val)
-		case int:
-			t.Adjusted_amt_lcy = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Adjusted_amt_lcy = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["adjusted_base_add_curr"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Adjusted_base_add_curr, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Adjusted_base_add_curr = types.NewDecimal(val)
-		case int:
-			t.Adjusted_base_add_curr = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Adjusted_base_add_curr = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["adjusted_amt_add_curr"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Adjusted_amt_add_curr, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Adjusted_amt_add_curr = types.NewDecimal(val)
-		case int:
-			t.Adjusted_amt_add_curr = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Adjusted_amt_add_curr = types.NewDecimalFromInt(val)
-		}
-	}
+	exchRateAdjmtRegFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3619,124 +2843,207 @@ func (t *ExchRateAdjmtReg) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *ExchRateAdjmtReg) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "creation_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "account_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "currency_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            6,
-			Name:          "currency_factor",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:15",
-		},
-		{
-			No:            7,
-			Name:          "adjusted_base",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            8,
-			Name:          "adjusted_base_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            9,
-			Name:          "adjusted_amt_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            10,
-			Name:          "adjusted_base_add_curr",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            11,
-			Name:          "adjusted_amt_add_curr",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
+	return exchRateAdjmtRegFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in exchRateAdjmtRegFields.Fields
+func (t *ExchRateAdjmtReg) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.No
+	case 1:
+		return &t.Creation_date
+	case 2:
+		return &t.Account_type
+	case 3:
+		return &t.Posting_group
+	case 4:
+		return &t.Currency_code
+	case 5:
+		return &t.Currency_factor
+	case 6:
+		return &t.Adjusted_base
+	case 7:
+		return &t.Adjusted_base_lcy
+	case 8:
+		return &t.Adjusted_amt_lcy
+	case 9:
+		return &t.Adjusted_base_add_curr
+	case 10:
+		return &t.Adjusted_amt_add_curr
 	}
+	return nil
+}
+
+// exchRateAdjmtRegFields describes the fields of Exch_Rate_Adjmt_Reg for the record functions
+// written once in foundation/tables
+var exchRateAdjmtRegFields = &tables.TableFields{
+	Table: ExchRateAdjmtRegTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_No",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "creation_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Creation_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "account_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Account_type",
+			Options: []string{"G/L Account", "Customer", "Vendor", "Bank Account"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "currency_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Currency_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            6,
+				Name:          "currency_factor",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:15",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Currency_factor",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            7,
+				Name:          "adjusted_base",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Adjusted_base",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            8,
+				Name:          "adjusted_base_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Adjusted_base_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            9,
+				Name:          "adjusted_amt_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Adjusted_amt_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            10,
+				Name:          "adjusted_base_add_curr",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Adjusted_base_add_curr",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            11,
+				Name:          "adjusted_amt_add_curr",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Adjusted_amt_add_curr",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

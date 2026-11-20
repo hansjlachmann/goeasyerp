@@ -117,28 +117,12 @@ var InventoryPostingGroup_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *InventoryPostingGroup) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "code":
-		return 1
-	case "description":
-		return 900
-	case "inventory_account":
-		return 6
-	}
-	return 0
+	return inventoryPostingGroupFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *InventoryPostingGroup) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "code"
-	case 900:
-		return "description"
-	case 6:
-		return "inventory_account"
-	}
-	return ""
+	return inventoryPostingGroupFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -250,15 +234,6 @@ type (
 	InventoryPostingGroupOnBeforeRename interface {
 		OnBeforeRename(rec *InventoryPostingGroup, handled *bool) error
 	}
-	InventoryPostingGroupOnValidate_Code interface {
-		OnValidate_Code(rec *InventoryPostingGroup) error
-	}
-	InventoryPostingGroupOnValidate_Description interface {
-		OnValidate_Description(rec *InventoryPostingGroup) error
-	}
-	InventoryPostingGroupOnValidate_Inventory_account interface {
-		OnValidate_Inventory_account(rec *InventoryPostingGroup) error
-	}
 )
 
 // inventoryPostingGroupLogic is the registered business logic of Inventory_Posting_Group, in
@@ -301,14 +276,9 @@ func inventoryPostingGroupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(InventoryPostingGroupOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(InventoryPostingGroupOnBeforeRename)
-	case "OnValidate_Code":
-		_, ok = logic.(InventoryPostingGroupOnValidate_Code)
-	case "OnValidate_Description":
-		_, ok = logic.(InventoryPostingGroupOnValidate_Description)
-	case "OnValidate_Inventory_account":
-		_, ok = logic.(InventoryPostingGroupOnValidate_Inventory_account)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return inventoryPostingGroupFields.IsOnValidateTrigger(name, logic, (*InventoryPostingGroup)(nil))
 	}
 	return true, ok
 }
@@ -601,10 +571,7 @@ func (t *InventoryPostingGroup) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *InventoryPostingGroup) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["code"] = t.Code
-	t.oldValues["description"] = t.Description
-	t.oldValues["inventory_account"] = t.Inventory_account
+	t.oldValues = inventoryPostingGroupFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -619,15 +586,7 @@ func (t *InventoryPostingGroup) OldValue(fieldName string) interface{} {
 func (t *InventoryPostingGroup) XRec() *InventoryPostingGroup {
 	x := &InventoryPostingGroup{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["code"].(types.Code); ok {
-		x.Code = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["inventory_account"].(types.Code); ok {
-		x.Inventory_account = v
-	}
+	inventoryPostingGroupFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -915,33 +874,7 @@ func (t *InventoryPostingGroup) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *InventoryPostingGroup) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Code.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "inventory_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Inventory_account.Equal(old)
-		}
-	}
-
-	return false
+	return inventoryPostingGroupFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1215,15 +1148,7 @@ func (t *InventoryPostingGroup) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *InventoryPostingGroup) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("code"):
-		return "code", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("inventory_account"):
-		return "inventory_account", true
-	}
-	return "", false
+	return inventoryPostingGroupFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2045,70 +1970,20 @@ func (t *InventoryPostingGroup) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *InventoryPostingGroup) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-		} else if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InventoryPostingGroupOnValidate_Code); ok {
-				if err := trg.OnValidate_Code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InventoryPostingGroupOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "inventory_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Inventory_account = v
-		} else if v, ok := value.(string); ok {
-			t.Inventory_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field inventory_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "inventory_account"); err != nil {
+	i, err := inventoryPostingGroupFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
+	}
+	f := &inventoryPostingGroupFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
 			return err
 		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InventoryPostingGroupOnValidate_Inventory_account); ok {
-				if err := trg.OnValidate_Inventory_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2117,57 +1992,18 @@ func (t *InventoryPostingGroup) ValidateField(fieldName string, value interface{
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *InventoryPostingGroup) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Code, true
-	case 900:
-		return t.Description, true
-	case 6:
-		return t.Inventory_account, true
-	}
-	return nil, false
+	return inventoryPostingGroupFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *InventoryPostingGroup) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return inventoryPostingGroupFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *InventoryPostingGroup) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-			return true
-		}
-	case 900:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Code); ok {
-			t.Inventory_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Inventory_account = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return inventoryPostingGroupFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2616,15 +2452,7 @@ func (t *InventoryPostingGroup) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *InventoryPostingGroup) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "code":
-		return t.Code, true
-	case "description":
-		return t.Description, true
-	case "inventory_account":
-		return t.Inventory_account, true
-	}
-	return nil, false
+	return inventoryPostingGroupFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2712,30 +2540,12 @@ func (t *InventoryPostingGroup) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *InventoryPostingGroup) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"code":              t.Code.String(),
-		"description":       t.Description.String(),
-		"inventory_account": t.Inventory_account.String(),
-	}
+	return inventoryPostingGroupFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *InventoryPostingGroup) FromMap(data map[string]interface{}) {
-	if v, ok := data["code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["inventory_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Inventory_account = types.NewCode(s)
-		}
-	}
+	inventoryPostingGroupFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2756,38 +2566,71 @@ func (t *InventoryPostingGroup) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *InventoryPostingGroup) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         900,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "inventory_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return inventoryPostingGroupFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in inventoryPostingGroupFields.Fields
+func (t *InventoryPostingGroup) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Code
+	case 1:
+		return &t.Description
+	case 2:
+		return &t.Inventory_account
 	}
+	return nil
+}
+
+// inventoryPostingGroupFields describes the fields of Inventory_Posting_Group for the record functions
+// written once in foundation/tables
+var inventoryPostingGroupFields = &tables.TableFields{
+	Table: InventoryPostingGroupTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         900,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "inventory_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Inventory_account",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

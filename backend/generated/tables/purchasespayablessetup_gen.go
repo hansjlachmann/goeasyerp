@@ -247,92 +247,12 @@ var PurchasesPayablesSetup_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *PurchasesPayablesSetup) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "primary_key":
-		return 1
-	case "discount_posting":
-		return 2
-	case "receipt_on_invoice":
-		return 6
-	case "invoice_rounding":
-		return 7
-	case "ext_doc_no_mandatory":
-		return 8
-	case "vendor_nos":
-		return 9
-	case "quote_nos":
-		return 10
-	case "order_nos":
-		return 11
-	case "invoice_nos":
-		return 12
-	case "posted_invoice_nos":
-		return 13
-	case "credit_memo_nos":
-		return 14
-	case "posted_credit_memo_nos":
-		return 15
-	case "posted_receipt_nos":
-		return 16
-	case "blanket_order_nos":
-		return 19
-	case "calc_inv_discount":
-		return 20
-	case "appln_between_currencies":
-		return 21
-	case "copy_comments_blanket_to_order":
-		return 22
-	case "copy_comments_order_to_invoice":
-		return 23
-	case "copy_comments_order_to_receipt":
-		return 24
-	}
-	return 0
+	return purchasesPayablesSetupFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *PurchasesPayablesSetup) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "primary_key"
-	case 2:
-		return "discount_posting"
-	case 6:
-		return "receipt_on_invoice"
-	case 7:
-		return "invoice_rounding"
-	case 8:
-		return "ext_doc_no_mandatory"
-	case 9:
-		return "vendor_nos"
-	case 10:
-		return "quote_nos"
-	case 11:
-		return "order_nos"
-	case 12:
-		return "invoice_nos"
-	case 13:
-		return "posted_invoice_nos"
-	case 14:
-		return "credit_memo_nos"
-	case 15:
-		return "posted_credit_memo_nos"
-	case 16:
-		return "posted_receipt_nos"
-	case 19:
-		return "blanket_order_nos"
-	case 20:
-		return "calc_inv_discount"
-	case 21:
-		return "appln_between_currencies"
-	case 22:
-		return "copy_comments_blanket_to_order"
-	case 23:
-		return "copy_comments_order_to_invoice"
-	case 24:
-		return "copy_comments_order_to_receipt"
-	}
-	return ""
+	return purchasesPayablesSetupFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -444,63 +364,6 @@ type (
 	PurchasesPayablesSetupOnBeforeRename interface {
 		OnBeforeRename(rec *PurchasesPayablesSetup, handled *bool) error
 	}
-	PurchasesPayablesSetupOnValidate_Primary_key interface {
-		OnValidate_Primary_key(rec *PurchasesPayablesSetup) error
-	}
-	PurchasesPayablesSetupOnValidate_Discount_posting interface {
-		OnValidate_Discount_posting(rec *PurchasesPayablesSetup) error
-	}
-	PurchasesPayablesSetupOnValidate_Receipt_on_invoice interface {
-		OnValidate_Receipt_on_invoice(rec *PurchasesPayablesSetup) error
-	}
-	PurchasesPayablesSetupOnValidate_Invoice_rounding interface {
-		OnValidate_Invoice_rounding(rec *PurchasesPayablesSetup) error
-	}
-	PurchasesPayablesSetupOnValidate_Ext_doc_no_mandatory interface {
-		OnValidate_Ext_doc_no_mandatory(rec *PurchasesPayablesSetup) error
-	}
-	PurchasesPayablesSetupOnValidate_Vendor_nos interface {
-		OnValidate_Vendor_nos(rec *PurchasesPayablesSetup) error
-	}
-	PurchasesPayablesSetupOnValidate_Quote_nos interface {
-		OnValidate_Quote_nos(rec *PurchasesPayablesSetup) error
-	}
-	PurchasesPayablesSetupOnValidate_Order_nos interface {
-		OnValidate_Order_nos(rec *PurchasesPayablesSetup) error
-	}
-	PurchasesPayablesSetupOnValidate_Invoice_nos interface {
-		OnValidate_Invoice_nos(rec *PurchasesPayablesSetup) error
-	}
-	PurchasesPayablesSetupOnValidate_Posted_invoice_nos interface {
-		OnValidate_Posted_invoice_nos(rec *PurchasesPayablesSetup) error
-	}
-	PurchasesPayablesSetupOnValidate_Credit_memo_nos interface {
-		OnValidate_Credit_memo_nos(rec *PurchasesPayablesSetup) error
-	}
-	PurchasesPayablesSetupOnValidate_Posted_credit_memo_nos interface {
-		OnValidate_Posted_credit_memo_nos(rec *PurchasesPayablesSetup) error
-	}
-	PurchasesPayablesSetupOnValidate_Posted_receipt_nos interface {
-		OnValidate_Posted_receipt_nos(rec *PurchasesPayablesSetup) error
-	}
-	PurchasesPayablesSetupOnValidate_Blanket_order_nos interface {
-		OnValidate_Blanket_order_nos(rec *PurchasesPayablesSetup) error
-	}
-	PurchasesPayablesSetupOnValidate_Calc_inv_discount interface {
-		OnValidate_Calc_inv_discount(rec *PurchasesPayablesSetup) error
-	}
-	PurchasesPayablesSetupOnValidate_Appln_between_currencies interface {
-		OnValidate_Appln_between_currencies(rec *PurchasesPayablesSetup) error
-	}
-	PurchasesPayablesSetupOnValidate_Copy_comments_blanket_to_order interface {
-		OnValidate_Copy_comments_blanket_to_order(rec *PurchasesPayablesSetup) error
-	}
-	PurchasesPayablesSetupOnValidate_Copy_comments_order_to_invoice interface {
-		OnValidate_Copy_comments_order_to_invoice(rec *PurchasesPayablesSetup) error
-	}
-	PurchasesPayablesSetupOnValidate_Copy_comments_order_to_receipt interface {
-		OnValidate_Copy_comments_order_to_receipt(rec *PurchasesPayablesSetup) error
-	}
 )
 
 // purchasesPayablesSetupLogic is the registered business logic of Purchases_Payables_Setup, in
@@ -543,46 +406,9 @@ func purchasesPayablesSetupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(PurchasesPayablesSetupOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(PurchasesPayablesSetupOnBeforeRename)
-	case "OnValidate_Primary_key":
-		_, ok = logic.(PurchasesPayablesSetupOnValidate_Primary_key)
-	case "OnValidate_Discount_posting":
-		_, ok = logic.(PurchasesPayablesSetupOnValidate_Discount_posting)
-	case "OnValidate_Receipt_on_invoice":
-		_, ok = logic.(PurchasesPayablesSetupOnValidate_Receipt_on_invoice)
-	case "OnValidate_Invoice_rounding":
-		_, ok = logic.(PurchasesPayablesSetupOnValidate_Invoice_rounding)
-	case "OnValidate_Ext_doc_no_mandatory":
-		_, ok = logic.(PurchasesPayablesSetupOnValidate_Ext_doc_no_mandatory)
-	case "OnValidate_Vendor_nos":
-		_, ok = logic.(PurchasesPayablesSetupOnValidate_Vendor_nos)
-	case "OnValidate_Quote_nos":
-		_, ok = logic.(PurchasesPayablesSetupOnValidate_Quote_nos)
-	case "OnValidate_Order_nos":
-		_, ok = logic.(PurchasesPayablesSetupOnValidate_Order_nos)
-	case "OnValidate_Invoice_nos":
-		_, ok = logic.(PurchasesPayablesSetupOnValidate_Invoice_nos)
-	case "OnValidate_Posted_invoice_nos":
-		_, ok = logic.(PurchasesPayablesSetupOnValidate_Posted_invoice_nos)
-	case "OnValidate_Credit_memo_nos":
-		_, ok = logic.(PurchasesPayablesSetupOnValidate_Credit_memo_nos)
-	case "OnValidate_Posted_credit_memo_nos":
-		_, ok = logic.(PurchasesPayablesSetupOnValidate_Posted_credit_memo_nos)
-	case "OnValidate_Posted_receipt_nos":
-		_, ok = logic.(PurchasesPayablesSetupOnValidate_Posted_receipt_nos)
-	case "OnValidate_Blanket_order_nos":
-		_, ok = logic.(PurchasesPayablesSetupOnValidate_Blanket_order_nos)
-	case "OnValidate_Calc_inv_discount":
-		_, ok = logic.(PurchasesPayablesSetupOnValidate_Calc_inv_discount)
-	case "OnValidate_Appln_between_currencies":
-		_, ok = logic.(PurchasesPayablesSetupOnValidate_Appln_between_currencies)
-	case "OnValidate_Copy_comments_blanket_to_order":
-		_, ok = logic.(PurchasesPayablesSetupOnValidate_Copy_comments_blanket_to_order)
-	case "OnValidate_Copy_comments_order_to_invoice":
-		_, ok = logic.(PurchasesPayablesSetupOnValidate_Copy_comments_order_to_invoice)
-	case "OnValidate_Copy_comments_order_to_receipt":
-		_, ok = logic.(PurchasesPayablesSetupOnValidate_Copy_comments_order_to_receipt)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return purchasesPayablesSetupFields.IsOnValidateTrigger(name, logic, (*PurchasesPayablesSetup)(nil))
 	}
 	return true, ok
 }
@@ -947,26 +773,7 @@ func (t *PurchasesPayablesSetup) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *PurchasesPayablesSetup) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["primary_key"] = t.Primary_key
-	t.oldValues["discount_posting"] = t.Discount_posting
-	t.oldValues["receipt_on_invoice"] = t.Receipt_on_invoice
-	t.oldValues["invoice_rounding"] = t.Invoice_rounding
-	t.oldValues["ext_doc_no_mandatory"] = t.Ext_doc_no_mandatory
-	t.oldValues["vendor_nos"] = t.Vendor_nos
-	t.oldValues["quote_nos"] = t.Quote_nos
-	t.oldValues["order_nos"] = t.Order_nos
-	t.oldValues["invoice_nos"] = t.Invoice_nos
-	t.oldValues["posted_invoice_nos"] = t.Posted_invoice_nos
-	t.oldValues["credit_memo_nos"] = t.Credit_memo_nos
-	t.oldValues["posted_credit_memo_nos"] = t.Posted_credit_memo_nos
-	t.oldValues["posted_receipt_nos"] = t.Posted_receipt_nos
-	t.oldValues["blanket_order_nos"] = t.Blanket_order_nos
-	t.oldValues["calc_inv_discount"] = t.Calc_inv_discount
-	t.oldValues["appln_between_currencies"] = t.Appln_between_currencies
-	t.oldValues["copy_comments_blanket_to_order"] = t.Copy_comments_blanket_to_order
-	t.oldValues["copy_comments_order_to_invoice"] = t.Copy_comments_order_to_invoice
-	t.oldValues["copy_comments_order_to_receipt"] = t.Copy_comments_order_to_receipt
+	t.oldValues = purchasesPayablesSetupFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -981,63 +788,7 @@ func (t *PurchasesPayablesSetup) OldValue(fieldName string) interface{} {
 func (t *PurchasesPayablesSetup) XRec() *PurchasesPayablesSetup {
 	x := &PurchasesPayablesSetup{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["primary_key"].(types.Code); ok {
-		x.Primary_key = v
-	}
-	if v, ok := t.oldValues["discount_posting"].(PurchasesPayablesSetupDiscount_posting); ok {
-		x.Discount_posting = v
-	}
-	if v, ok := t.oldValues["receipt_on_invoice"].(bool); ok {
-		x.Receipt_on_invoice = v
-	}
-	if v, ok := t.oldValues["invoice_rounding"].(bool); ok {
-		x.Invoice_rounding = v
-	}
-	if v, ok := t.oldValues["ext_doc_no_mandatory"].(bool); ok {
-		x.Ext_doc_no_mandatory = v
-	}
-	if v, ok := t.oldValues["vendor_nos"].(types.Code); ok {
-		x.Vendor_nos = v
-	}
-	if v, ok := t.oldValues["quote_nos"].(types.Code); ok {
-		x.Quote_nos = v
-	}
-	if v, ok := t.oldValues["order_nos"].(types.Code); ok {
-		x.Order_nos = v
-	}
-	if v, ok := t.oldValues["invoice_nos"].(types.Code); ok {
-		x.Invoice_nos = v
-	}
-	if v, ok := t.oldValues["posted_invoice_nos"].(types.Code); ok {
-		x.Posted_invoice_nos = v
-	}
-	if v, ok := t.oldValues["credit_memo_nos"].(types.Code); ok {
-		x.Credit_memo_nos = v
-	}
-	if v, ok := t.oldValues["posted_credit_memo_nos"].(types.Code); ok {
-		x.Posted_credit_memo_nos = v
-	}
-	if v, ok := t.oldValues["posted_receipt_nos"].(types.Code); ok {
-		x.Posted_receipt_nos = v
-	}
-	if v, ok := t.oldValues["blanket_order_nos"].(types.Code); ok {
-		x.Blanket_order_nos = v
-	}
-	if v, ok := t.oldValues["calc_inv_discount"].(bool); ok {
-		x.Calc_inv_discount = v
-	}
-	if v, ok := t.oldValues["appln_between_currencies"].(PurchasesPayablesSetupAppln_between_currencies); ok {
-		x.Appln_between_currencies = v
-	}
-	if v, ok := t.oldValues["copy_comments_blanket_to_order"].(bool); ok {
-		x.Copy_comments_blanket_to_order = v
-	}
-	if v, ok := t.oldValues["copy_comments_order_to_invoice"].(bool); ok {
-		x.Copy_comments_order_to_invoice = v
-	}
-	if v, ok := t.oldValues["copy_comments_order_to_receipt"].(bool); ok {
-		x.Copy_comments_order_to_receipt = v
-	}
+	purchasesPayablesSetupFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1479,104 +1230,7 @@ func (t *PurchasesPayablesSetup) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *PurchasesPayablesSetup) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "primary_key":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Primary_key.Equal(old)
-		}
-	case "discount_posting":
-		if old, ok := oldValue.(PurchasesPayablesSetupDiscount_posting); ok {
-			return t.Discount_posting != old
-		}
-	case "receipt_on_invoice":
-		if old, ok := oldValue.(bool); ok {
-			return t.Receipt_on_invoice != old
-		}
-		return true // Type mismatch, assume changed
-	case "invoice_rounding":
-		if old, ok := oldValue.(bool); ok {
-			return t.Invoice_rounding != old
-		}
-		return true // Type mismatch, assume changed
-	case "ext_doc_no_mandatory":
-		if old, ok := oldValue.(bool); ok {
-			return t.Ext_doc_no_mandatory != old
-		}
-		return true // Type mismatch, assume changed
-	case "vendor_nos":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Vendor_nos.Equal(old)
-		}
-	case "quote_nos":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Quote_nos.Equal(old)
-		}
-	case "order_nos":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Order_nos.Equal(old)
-		}
-	case "invoice_nos":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Invoice_nos.Equal(old)
-		}
-	case "posted_invoice_nos":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Posted_invoice_nos.Equal(old)
-		}
-	case "credit_memo_nos":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Credit_memo_nos.Equal(old)
-		}
-	case "posted_credit_memo_nos":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Posted_credit_memo_nos.Equal(old)
-		}
-	case "posted_receipt_nos":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Posted_receipt_nos.Equal(old)
-		}
-	case "blanket_order_nos":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Blanket_order_nos.Equal(old)
-		}
-	case "calc_inv_discount":
-		if old, ok := oldValue.(bool); ok {
-			return t.Calc_inv_discount != old
-		}
-		return true // Type mismatch, assume changed
-	case "appln_between_currencies":
-		if old, ok := oldValue.(PurchasesPayablesSetupAppln_between_currencies); ok {
-			return t.Appln_between_currencies != old
-		}
-	case "copy_comments_blanket_to_order":
-		if old, ok := oldValue.(bool); ok {
-			return t.Copy_comments_blanket_to_order != old
-		}
-		return true // Type mismatch, assume changed
-	case "copy_comments_order_to_invoice":
-		if old, ok := oldValue.(bool); ok {
-			return t.Copy_comments_order_to_invoice != old
-		}
-		return true // Type mismatch, assume changed
-	case "copy_comments_order_to_receipt":
-		if old, ok := oldValue.(bool); ok {
-			return t.Copy_comments_order_to_receipt != old
-		}
-		return true // Type mismatch, assume changed
-	}
-
-	return false
+	return purchasesPayablesSetupFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1777,47 +1431,7 @@ func (t *PurchasesPayablesSetup) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *PurchasesPayablesSetup) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("primary_key"):
-		return "primary_key", true
-	case strings.ToLower("discount_posting"):
-		return "discount_posting", true
-	case strings.ToLower("receipt_on_invoice"):
-		return "receipt_on_invoice", true
-	case strings.ToLower("invoice_rounding"):
-		return "invoice_rounding", true
-	case strings.ToLower("ext_doc_no_mandatory"):
-		return "ext_doc_no_mandatory", true
-	case strings.ToLower("vendor_nos"):
-		return "vendor_nos", true
-	case strings.ToLower("quote_nos"):
-		return "quote_nos", true
-	case strings.ToLower("order_nos"):
-		return "order_nos", true
-	case strings.ToLower("invoice_nos"):
-		return "invoice_nos", true
-	case strings.ToLower("posted_invoice_nos"):
-		return "posted_invoice_nos", true
-	case strings.ToLower("credit_memo_nos"):
-		return "credit_memo_nos", true
-	case strings.ToLower("posted_credit_memo_nos"):
-		return "posted_credit_memo_nos", true
-	case strings.ToLower("posted_receipt_nos"):
-		return "posted_receipt_nos", true
-	case strings.ToLower("blanket_order_nos"):
-		return "blanket_order_nos", true
-	case strings.ToLower("calc_inv_discount"):
-		return "calc_inv_discount", true
-	case strings.ToLower("appln_between_currencies"):
-		return "appln_between_currencies", true
-	case strings.ToLower("copy_comments_blanket_to_order"):
-		return "copy_comments_blanket_to_order", true
-	case strings.ToLower("copy_comments_order_to_invoice"):
-		return "copy_comments_order_to_invoice", true
-	case strings.ToLower("copy_comments_order_to_receipt"):
-		return "copy_comments_order_to_receipt", true
-	}
-	return "", false
+	return purchasesPayablesSetupFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2861,459 +2475,20 @@ func (t *PurchasesPayablesSetup) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *PurchasesPayablesSetup) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "primary_key":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Primary_key = v
-		} else if v, ok := value.(string); ok {
-			t.Primary_key = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field primary_key")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchasesPayablesSetupOnValidate_Primary_key); ok {
-				if err := trg.OnValidate_Primary_key(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "discount_posting":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(PurchasesPayablesSetupDiscount_posting); ok {
-			t.Discount_posting = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field discount_posting (valid range: 0-%d)", v, 4-1)
-			}
-			t.Discount_posting = PurchasesPayablesSetupDiscount_posting(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field discount_posting (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Discount_posting = PurchasesPayablesSetupDiscount_posting(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Discount_posting = 0
-			} else {
-				options := []string{"No Discounts", "Invoice Discounts", "Line Discounts", "All Discounts"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Discount_posting = PurchasesPayablesSetupDiscount_posting(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field discount_posting (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field discount_posting (expected PurchasesPayablesSetupDiscount_posting, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchasesPayablesSetupOnValidate_Discount_posting); ok {
-				if err := trg.OnValidate_Discount_posting(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "receipt_on_invoice":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Receipt_on_invoice = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Receipt_on_invoice = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field receipt_on_invoice")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchasesPayablesSetupOnValidate_Receipt_on_invoice); ok {
-				if err := trg.OnValidate_Receipt_on_invoice(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "invoice_rounding":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Invoice_rounding = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Invoice_rounding = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field invoice_rounding")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchasesPayablesSetupOnValidate_Invoice_rounding); ok {
-				if err := trg.OnValidate_Invoice_rounding(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "ext_doc_no_mandatory":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Ext_doc_no_mandatory = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Ext_doc_no_mandatory = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field ext_doc_no_mandatory")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchasesPayablesSetupOnValidate_Ext_doc_no_mandatory); ok {
-				if err := trg.OnValidate_Ext_doc_no_mandatory(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "vendor_nos":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Vendor_nos = v
-		} else if v, ok := value.(string); ok {
-			t.Vendor_nos = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field vendor_nos")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "vendor_nos"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchasesPayablesSetupOnValidate_Vendor_nos); ok {
-				if err := trg.OnValidate_Vendor_nos(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "quote_nos":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Quote_nos = v
-		} else if v, ok := value.(string); ok {
-			t.Quote_nos = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field quote_nos")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "quote_nos"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchasesPayablesSetupOnValidate_Quote_nos); ok {
-				if err := trg.OnValidate_Quote_nos(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "order_nos":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Order_nos = v
-		} else if v, ok := value.(string); ok {
-			t.Order_nos = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field order_nos")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "order_nos"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchasesPayablesSetupOnValidate_Order_nos); ok {
-				if err := trg.OnValidate_Order_nos(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "invoice_nos":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Invoice_nos = v
-		} else if v, ok := value.(string); ok {
-			t.Invoice_nos = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field invoice_nos")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "invoice_nos"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchasesPayablesSetupOnValidate_Invoice_nos); ok {
-				if err := trg.OnValidate_Invoice_nos(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "posted_invoice_nos":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Posted_invoice_nos = v
-		} else if v, ok := value.(string); ok {
-			t.Posted_invoice_nos = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field posted_invoice_nos")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "posted_invoice_nos"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchasesPayablesSetupOnValidate_Posted_invoice_nos); ok {
-				if err := trg.OnValidate_Posted_invoice_nos(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "credit_memo_nos":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Credit_memo_nos = v
-		} else if v, ok := value.(string); ok {
-			t.Credit_memo_nos = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field credit_memo_nos")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "credit_memo_nos"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchasesPayablesSetupOnValidate_Credit_memo_nos); ok {
-				if err := trg.OnValidate_Credit_memo_nos(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "posted_credit_memo_nos":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Posted_credit_memo_nos = v
-		} else if v, ok := value.(string); ok {
-			t.Posted_credit_memo_nos = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field posted_credit_memo_nos")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "posted_credit_memo_nos"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchasesPayablesSetupOnValidate_Posted_credit_memo_nos); ok {
-				if err := trg.OnValidate_Posted_credit_memo_nos(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "posted_receipt_nos":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Posted_receipt_nos = v
-		} else if v, ok := value.(string); ok {
-			t.Posted_receipt_nos = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field posted_receipt_nos")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "posted_receipt_nos"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchasesPayablesSetupOnValidate_Posted_receipt_nos); ok {
-				if err := trg.OnValidate_Posted_receipt_nos(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "blanket_order_nos":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Blanket_order_nos = v
-		} else if v, ok := value.(string); ok {
-			t.Blanket_order_nos = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field blanket_order_nos")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "blanket_order_nos"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchasesPayablesSetupOnValidate_Blanket_order_nos); ok {
-				if err := trg.OnValidate_Blanket_order_nos(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "calc_inv_discount":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Calc_inv_discount = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Calc_inv_discount = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field calc_inv_discount")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchasesPayablesSetupOnValidate_Calc_inv_discount); ok {
-				if err := trg.OnValidate_Calc_inv_discount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "appln_between_currencies":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(PurchasesPayablesSetupAppln_between_currencies); ok {
-			t.Appln_between_currencies = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field appln_between_currencies (valid range: 0-%d)", v, 3-1)
-			}
-			t.Appln_between_currencies = PurchasesPayablesSetupAppln_between_currencies(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field appln_between_currencies (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Appln_between_currencies = PurchasesPayablesSetupAppln_between_currencies(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Appln_between_currencies = 0
-			} else {
-				options := []string{"None", "EMU", "All"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Appln_between_currencies = PurchasesPayablesSetupAppln_between_currencies(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field appln_between_currencies (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field appln_between_currencies (expected PurchasesPayablesSetupAppln_between_currencies, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchasesPayablesSetupOnValidate_Appln_between_currencies); ok {
-				if err := trg.OnValidate_Appln_between_currencies(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "copy_comments_blanket_to_order":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Copy_comments_blanket_to_order = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Copy_comments_blanket_to_order = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field copy_comments_blanket_to_order")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchasesPayablesSetupOnValidate_Copy_comments_blanket_to_order); ok {
-				if err := trg.OnValidate_Copy_comments_blanket_to_order(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "copy_comments_order_to_invoice":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Copy_comments_order_to_invoice = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Copy_comments_order_to_invoice = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field copy_comments_order_to_invoice")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchasesPayablesSetupOnValidate_Copy_comments_order_to_invoice); ok {
-				if err := trg.OnValidate_Copy_comments_order_to_invoice(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "copy_comments_order_to_receipt":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Copy_comments_order_to_receipt = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Copy_comments_order_to_receipt = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field copy_comments_order_to_receipt")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchasesPayablesSetupOnValidate_Copy_comments_order_to_receipt); ok {
-				if err := trg.OnValidate_Copy_comments_order_to_receipt(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := purchasesPayablesSetupFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &purchasesPayablesSetupFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -3322,197 +2497,18 @@ func (t *PurchasesPayablesSetup) ValidateField(fieldName string, value interface
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *PurchasesPayablesSetup) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Primary_key, true
-	case 2:
-		return t.Discount_posting, true
-	case 6:
-		return t.Receipt_on_invoice, true
-	case 7:
-		return t.Invoice_rounding, true
-	case 8:
-		return t.Ext_doc_no_mandatory, true
-	case 9:
-		return t.Vendor_nos, true
-	case 10:
-		return t.Quote_nos, true
-	case 11:
-		return t.Order_nos, true
-	case 12:
-		return t.Invoice_nos, true
-	case 13:
-		return t.Posted_invoice_nos, true
-	case 14:
-		return t.Credit_memo_nos, true
-	case 15:
-		return t.Posted_credit_memo_nos, true
-	case 16:
-		return t.Posted_receipt_nos, true
-	case 19:
-		return t.Blanket_order_nos, true
-	case 20:
-		return t.Calc_inv_discount, true
-	case 21:
-		return t.Appln_between_currencies, true
-	case 22:
-		return t.Copy_comments_blanket_to_order, true
-	case 23:
-		return t.Copy_comments_order_to_invoice, true
-	case 24:
-		return t.Copy_comments_order_to_receipt, true
-	}
-	return nil, false
+	return purchasesPayablesSetupFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *PurchasesPayablesSetup) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return purchasesPayablesSetupFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *PurchasesPayablesSetup) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Primary_key = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Primary_key = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Discount_posting = PurchasesPayablesSetupDiscount_posting(i)
-			return true
-		}
-	case 6:
-		if v, ok := value.(bool); ok {
-			t.Receipt_on_invoice = v
-			return true
-		}
-	case 7:
-		if v, ok := value.(bool); ok {
-			t.Invoice_rounding = v
-			return true
-		}
-	case 8:
-		if v, ok := value.(bool); ok {
-			t.Ext_doc_no_mandatory = v
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.Code); ok {
-			t.Vendor_nos = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Vendor_nos = types.NewCode(v)
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Code); ok {
-			t.Quote_nos = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Quote_nos = types.NewCode(v)
-			return true
-		}
-	case 11:
-		if v, ok := value.(types.Code); ok {
-			t.Order_nos = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Order_nos = types.NewCode(v)
-			return true
-		}
-	case 12:
-		if v, ok := value.(types.Code); ok {
-			t.Invoice_nos = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Invoice_nos = types.NewCode(v)
-			return true
-		}
-	case 13:
-		if v, ok := value.(types.Code); ok {
-			t.Posted_invoice_nos = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Posted_invoice_nos = types.NewCode(v)
-			return true
-		}
-	case 14:
-		if v, ok := value.(types.Code); ok {
-			t.Credit_memo_nos = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Credit_memo_nos = types.NewCode(v)
-			return true
-		}
-	case 15:
-		if v, ok := value.(types.Code); ok {
-			t.Posted_credit_memo_nos = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Posted_credit_memo_nos = types.NewCode(v)
-			return true
-		}
-	case 16:
-		if v, ok := value.(types.Code); ok {
-			t.Posted_receipt_nos = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Posted_receipt_nos = types.NewCode(v)
-			return true
-		}
-	case 19:
-		if v, ok := value.(types.Code); ok {
-			t.Blanket_order_nos = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Blanket_order_nos = types.NewCode(v)
-			return true
-		}
-	case 20:
-		if v, ok := value.(bool); ok {
-			t.Calc_inv_discount = v
-			return true
-		}
-	case 21:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Appln_between_currencies = PurchasesPayablesSetupAppln_between_currencies(i)
-			return true
-		}
-	case 22:
-		if v, ok := value.(bool); ok {
-			t.Copy_comments_blanket_to_order = v
-			return true
-		}
-	case 23:
-		if v, ok := value.(bool); ok {
-			t.Copy_comments_order_to_invoice = v
-			return true
-		}
-	case 24:
-		if v, ok := value.(bool); ok {
-			t.Copy_comments_order_to_receipt = v
-			return true
-		}
-	}
-	return false
+	return purchasesPayablesSetupFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3961,47 +2957,7 @@ func (t *PurchasesPayablesSetup) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *PurchasesPayablesSetup) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "primary_key":
-		return t.Primary_key, true
-	case "discount_posting":
-		return int(t.Discount_posting), true
-	case "receipt_on_invoice":
-		return t.Receipt_on_invoice, true
-	case "invoice_rounding":
-		return t.Invoice_rounding, true
-	case "ext_doc_no_mandatory":
-		return t.Ext_doc_no_mandatory, true
-	case "vendor_nos":
-		return t.Vendor_nos, true
-	case "quote_nos":
-		return t.Quote_nos, true
-	case "order_nos":
-		return t.Order_nos, true
-	case "invoice_nos":
-		return t.Invoice_nos, true
-	case "posted_invoice_nos":
-		return t.Posted_invoice_nos, true
-	case "credit_memo_nos":
-		return t.Credit_memo_nos, true
-	case "posted_credit_memo_nos":
-		return t.Posted_credit_memo_nos, true
-	case "posted_receipt_nos":
-		return t.Posted_receipt_nos, true
-	case "blanket_order_nos":
-		return t.Blanket_order_nos, true
-	case "calc_inv_discount":
-		return t.Calc_inv_discount, true
-	case "appln_between_currencies":
-		return int(t.Appln_between_currencies), true
-	case "copy_comments_blanket_to_order":
-		return t.Copy_comments_blanket_to_order, true
-	case "copy_comments_order_to_invoice":
-		return t.Copy_comments_order_to_invoice, true
-	case "copy_comments_order_to_receipt":
-		return t.Copy_comments_order_to_receipt, true
-	}
-	return nil, false
+	return purchasesPayablesSetupFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -4105,150 +3061,12 @@ func (t *PurchasesPayablesSetup) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *PurchasesPayablesSetup) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"primary_key":                    t.Primary_key.String(),
-		"discount_posting":               int(t.Discount_posting),
-		"receipt_on_invoice":             t.Receipt_on_invoice,
-		"invoice_rounding":               t.Invoice_rounding,
-		"ext_doc_no_mandatory":           t.Ext_doc_no_mandatory,
-		"vendor_nos":                     t.Vendor_nos.String(),
-		"quote_nos":                      t.Quote_nos.String(),
-		"order_nos":                      t.Order_nos.String(),
-		"invoice_nos":                    t.Invoice_nos.String(),
-		"posted_invoice_nos":             t.Posted_invoice_nos.String(),
-		"credit_memo_nos":                t.Credit_memo_nos.String(),
-		"posted_credit_memo_nos":         t.Posted_credit_memo_nos.String(),
-		"posted_receipt_nos":             t.Posted_receipt_nos.String(),
-		"blanket_order_nos":              t.Blanket_order_nos.String(),
-		"calc_inv_discount":              t.Calc_inv_discount,
-		"appln_between_currencies":       int(t.Appln_between_currencies),
-		"copy_comments_blanket_to_order": t.Copy_comments_blanket_to_order,
-		"copy_comments_order_to_invoice": t.Copy_comments_order_to_invoice,
-		"copy_comments_order_to_receipt": t.Copy_comments_order_to_receipt,
-	}
+	return purchasesPayablesSetupFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *PurchasesPayablesSetup) FromMap(data map[string]interface{}) {
-	if v, ok := data["primary_key"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Primary_key = types.NewCode(s)
-		}
-	}
-	if v, ok := data["discount_posting"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Discount_posting = PurchasesPayablesSetupDiscount_posting(int(val))
-		case int:
-			t.Discount_posting = PurchasesPayablesSetupDiscount_posting(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"No Discounts", "Invoice Discounts", "Line Discounts", "All Discounts"}
-			for i, opt := range options {
-				if opt == val {
-					t.Discount_posting = PurchasesPayablesSetupDiscount_posting(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["receipt_on_invoice"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Receipt_on_invoice = b
-		}
-	}
-	if v, ok := data["invoice_rounding"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Invoice_rounding = b
-		}
-	}
-	if v, ok := data["ext_doc_no_mandatory"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Ext_doc_no_mandatory = b
-		}
-	}
-	if v, ok := data["vendor_nos"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Vendor_nos = types.NewCode(s)
-		}
-	}
-	if v, ok := data["quote_nos"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Quote_nos = types.NewCode(s)
-		}
-	}
-	if v, ok := data["order_nos"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Order_nos = types.NewCode(s)
-		}
-	}
-	if v, ok := data["invoice_nos"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Invoice_nos = types.NewCode(s)
-		}
-	}
-	if v, ok := data["posted_invoice_nos"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Posted_invoice_nos = types.NewCode(s)
-		}
-	}
-	if v, ok := data["credit_memo_nos"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Credit_memo_nos = types.NewCode(s)
-		}
-	}
-	if v, ok := data["posted_credit_memo_nos"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Posted_credit_memo_nos = types.NewCode(s)
-		}
-	}
-	if v, ok := data["posted_receipt_nos"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Posted_receipt_nos = types.NewCode(s)
-		}
-	}
-	if v, ok := data["blanket_order_nos"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Blanket_order_nos = types.NewCode(s)
-		}
-	}
-	if v, ok := data["calc_inv_discount"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Calc_inv_discount = b
-		}
-	}
-	if v, ok := data["appln_between_currencies"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Appln_between_currencies = PurchasesPayablesSetupAppln_between_currencies(int(val))
-		case int:
-			t.Appln_between_currencies = PurchasesPayablesSetupAppln_between_currencies(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"None", "EMU", "All"}
-			for i, opt := range options {
-				if opt == val {
-					t.Appln_between_currencies = PurchasesPayablesSetupAppln_between_currencies(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["copy_comments_blanket_to_order"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Copy_comments_blanket_to_order = b
-		}
-	}
-	if v, ok := data["copy_comments_order_to_invoice"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Copy_comments_order_to_invoice = b
-		}
-	}
-	if v, ok := data["copy_comments_order_to_receipt"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Copy_comments_order_to_receipt = b
-		}
-	}
+	purchasesPayablesSetupFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -4269,198 +3087,337 @@ func (t *PurchasesPayablesSetup) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *PurchasesPayablesSetup) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "primary_key",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "discount_posting",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "receipt_on_invoice",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "invoice_rounding",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "ext_doc_no_mandatory",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "vendor_nos",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "quote_nos",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "order_nos",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "invoice_nos",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         13,
-			Name:       "posted_invoice_nos",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         14,
-			Name:       "credit_memo_nos",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         15,
-			Name:       "posted_credit_memo_nos",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         16,
-			Name:       "posted_receipt_nos",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         19,
-			Name:       "blanket_order_nos",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         20,
-			Name:       "calc_inv_discount",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         21,
-			Name:       "appln_between_currencies",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         22,
-			Name:       "copy_comments_blanket_to_order",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         23,
-			Name:       "copy_comments_order_to_invoice",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         24,
-			Name:       "copy_comments_order_to_receipt",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return purchasesPayablesSetupFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in purchasesPayablesSetupFields.Fields
+func (t *PurchasesPayablesSetup) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Primary_key
+	case 1:
+		return &t.Discount_posting
+	case 2:
+		return &t.Receipt_on_invoice
+	case 3:
+		return &t.Invoice_rounding
+	case 4:
+		return &t.Ext_doc_no_mandatory
+	case 5:
+		return &t.Vendor_nos
+	case 6:
+		return &t.Quote_nos
+	case 7:
+		return &t.Order_nos
+	case 8:
+		return &t.Invoice_nos
+	case 9:
+		return &t.Posted_invoice_nos
+	case 10:
+		return &t.Credit_memo_nos
+	case 11:
+		return &t.Posted_credit_memo_nos
+	case 12:
+		return &t.Posted_receipt_nos
+	case 13:
+		return &t.Blanket_order_nos
+	case 14:
+		return &t.Calc_inv_discount
+	case 15:
+		return &t.Appln_between_currencies
+	case 16:
+		return &t.Copy_comments_blanket_to_order
+	case 17:
+		return &t.Copy_comments_order_to_invoice
+	case 18:
+		return &t.Copy_comments_order_to_receipt
 	}
+	return nil
+}
+
+// purchasesPayablesSetupFields describes the fields of Purchases_Payables_Setup for the record functions
+// written once in foundation/tables
+var purchasesPayablesSetupFields = &tables.TableFields{
+	Table: PurchasesPayablesSetupTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "primary_key",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Primary_key",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "discount_posting",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Discount_posting",
+			Options: []string{"No Discounts", "Invoice Discounts", "Line Discounts", "All Discounts"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "receipt_on_invoice",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Receipt_on_invoice",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "invoice_rounding",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Invoice_rounding",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "ext_doc_no_mandatory",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Ext_doc_no_mandatory",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "vendor_nos",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Vendor_nos",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "quote_nos",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Quote_nos",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "order_nos",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Order_nos",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "invoice_nos",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Invoice_nos",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "posted_invoice_nos",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Posted_invoice_nos",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "credit_memo_nos",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Credit_memo_nos",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         15,
+				Name:       "posted_credit_memo_nos",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Posted_credit_memo_nos",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         16,
+				Name:       "posted_receipt_nos",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Posted_receipt_nos",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         19,
+				Name:       "blanket_order_nos",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Blanket_order_nos",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         20,
+				Name:       "calc_inv_discount",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Calc_inv_discount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         21,
+				Name:       "appln_between_currencies",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Appln_between_currencies",
+			Options: []string{"None", "EMU", "All"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         22,
+				Name:       "copy_comments_blanket_to_order",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Copy_comments_blanket_to_order",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         23,
+				Name:       "copy_comments_order_to_invoice",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Copy_comments_order_to_invoice",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         24,
+				Name:       "copy_comments_order_to_receipt",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Copy_comments_order_to_receipt",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

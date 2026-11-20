@@ -27,7 +27,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -177,40 +176,12 @@ var PurchCommentLine_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *PurchCommentLine) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "document_type":
-		return 1
-	case "no":
-		return 2
-	case "line_no":
-		return 3
-	case "date":
-		return 4
-	case "code":
-		return 5
-	case "comment":
-		return 6
-	}
-	return 0
+	return purchCommentLineFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *PurchCommentLine) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "document_type"
-	case 2:
-		return "no"
-	case 3:
-		return "line_no"
-	case 4:
-		return "date"
-	case 5:
-		return "code"
-	case 6:
-		return "comment"
-	}
-	return ""
+	return purchCommentLineFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -322,24 +293,6 @@ type (
 	PurchCommentLineOnBeforeRename interface {
 		OnBeforeRename(rec *PurchCommentLine, handled *bool) error
 	}
-	PurchCommentLineOnValidate_Document_type interface {
-		OnValidate_Document_type(rec *PurchCommentLine) error
-	}
-	PurchCommentLineOnValidate_No interface {
-		OnValidate_No(rec *PurchCommentLine) error
-	}
-	PurchCommentLineOnValidate_Line_no interface {
-		OnValidate_Line_no(rec *PurchCommentLine) error
-	}
-	PurchCommentLineOnValidate_Date interface {
-		OnValidate_Date(rec *PurchCommentLine) error
-	}
-	PurchCommentLineOnValidate_Code interface {
-		OnValidate_Code(rec *PurchCommentLine) error
-	}
-	PurchCommentLineOnValidate_Comment interface {
-		OnValidate_Comment(rec *PurchCommentLine) error
-	}
 )
 
 // purchCommentLineLogic is the registered business logic of Purch_Comment_Line, in
@@ -382,20 +335,9 @@ func purchCommentLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(PurchCommentLineOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(PurchCommentLineOnBeforeRename)
-	case "OnValidate_Document_type":
-		_, ok = logic.(PurchCommentLineOnValidate_Document_type)
-	case "OnValidate_No":
-		_, ok = logic.(PurchCommentLineOnValidate_No)
-	case "OnValidate_Line_no":
-		_, ok = logic.(PurchCommentLineOnValidate_Line_no)
-	case "OnValidate_Date":
-		_, ok = logic.(PurchCommentLineOnValidate_Date)
-	case "OnValidate_Code":
-		_, ok = logic.(PurchCommentLineOnValidate_Code)
-	case "OnValidate_Comment":
-		_, ok = logic.(PurchCommentLineOnValidate_Comment)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return purchCommentLineFields.IsOnValidateTrigger(name, logic, (*PurchCommentLine)(nil))
 	}
 	return true, ok
 }
@@ -699,13 +641,7 @@ func (t *PurchCommentLine) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *PurchCommentLine) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["document_type"] = t.Document_type
-	t.oldValues["no"] = t.No
-	t.oldValues["line_no"] = t.Line_no
-	t.oldValues["date"] = t.Date
-	t.oldValues["code"] = t.Code
-	t.oldValues["comment"] = t.Comment
+	t.oldValues = purchCommentLineFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -720,24 +656,7 @@ func (t *PurchCommentLine) OldValue(fieldName string) interface{} {
 func (t *PurchCommentLine) XRec() *PurchCommentLine {
 	x := &PurchCommentLine{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["document_type"].(PurchCommentLineDocument_type); ok {
-		x.Document_type = v
-	}
-	if v, ok := t.oldValues["no"].(types.Code); ok {
-		x.No = v
-	}
-	if v, ok := t.oldValues["line_no"].(int); ok {
-		x.Line_no = v
-	}
-	if v, ok := t.oldValues["date"].(types.Date); ok {
-		x.Date = v
-	}
-	if v, ok := t.oldValues["code"].(types.Code); ok {
-		x.Code = v
-	}
-	if v, ok := t.oldValues["comment"].(types.Text); ok {
-		x.Comment = v
-	}
+	purchCommentLineFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1074,46 +993,7 @@ func (t *PurchCommentLine) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *PurchCommentLine) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "document_type":
-		if old, ok := oldValue.(PurchCommentLineDocument_type); ok {
-			return t.Document_type != old
-		}
-	case "no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No.Equal(old)
-		}
-	case "line_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Line_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Date.Equal(old)
-		}
-	case "code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Code.Equal(old)
-		}
-	case "comment":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Comment.Equal(old)
-		}
-	}
-
-	return false
+	return purchCommentLineFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1316,21 +1196,7 @@ func (t *PurchCommentLine) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *PurchCommentLine) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("document_type"):
-		return "document_type", true
-	case strings.ToLower("no"):
-		return "no", true
-	case strings.ToLower("line_no"):
-		return "line_no", true
-	case strings.ToLower("date"):
-		return "date", true
-	case strings.ToLower("code"):
-		return "code", true
-	case strings.ToLower("comment"):
-		return "comment", true
-	}
-	return "", false
+	return purchCommentLineFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2185,166 +2051,20 @@ func (t *PurchCommentLine) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *PurchCommentLine) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "document_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(PurchCommentLineDocument_type); ok {
-			t.Document_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 8 {
-				return fmt.Errorf("invalid option value %d for field document_type (valid range: 0-%d)", v, 8-1)
-			}
-			t.Document_type = PurchCommentLineDocument_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 8 {
-				return fmt.Errorf("invalid option value %d for field document_type (valid range: 0-%d)", intVal, 8-1)
-			}
-			t.Document_type = PurchCommentLineDocument_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Document_type = 0
-			} else {
-				options := []string{"Quote", "Order", "Invoice", "Credit Memo", "Blanket Order", "Receipt", "Posted Invoice", "Posted Credit Memo"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Document_type = PurchCommentLineDocument_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field document_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field document_type (expected PurchCommentLineDocument_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchCommentLineOnValidate_Document_type); ok {
-				if err := trg.OnValidate_Document_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-		} else if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchCommentLineOnValidate_No); ok {
-				if err := trg.OnValidate_No(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "line_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Line_no = v
-		case float64:
-			t.Line_no = int(v)
-		case string:
-			if v == "" {
-				t.Line_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Line_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field line_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field line_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchCommentLineOnValidate_Line_no); ok {
-				if err := trg.OnValidate_Line_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchCommentLineOnValidate_Date); ok {
-				if err := trg.OnValidate_Date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-		} else if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchCommentLineOnValidate_Code); ok {
-				if err := trg.OnValidate_Code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "comment":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Comment = v
-		} else if v, ok := value.(string); ok {
-			t.Comment = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field comment")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PurchCommentLineOnValidate_Comment); ok {
-				if err := trg.OnValidate_Comment(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := purchCommentLineFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &purchCommentLineFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2353,78 +2073,18 @@ func (t *PurchCommentLine) ValidateField(fieldName string, value interface{}) er
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *PurchCommentLine) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Document_type, true
-	case 2:
-		return t.No, true
-	case 3:
-		return t.Line_no, true
-	case 4:
-		return t.Date, true
-	case 5:
-		return t.Code, true
-	case 6:
-		return t.Comment, true
-	}
-	return nil, false
+	return purchCommentLineFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *PurchCommentLine) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return purchCommentLineFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *PurchCommentLine) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 8 {
-			t.Document_type = PurchCommentLineDocument_type(i)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(int); ok {
-			t.Line_no = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Date); ok {
-			t.Date = v
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Text); ok {
-			t.Comment = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Comment = types.NewText(v)
-			return true
-		}
-	}
-	return false
+	return purchCommentLineFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2896,21 +2556,7 @@ func (t *PurchCommentLine) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *PurchCommentLine) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "document_type":
-		return int(t.Document_type), true
-	case "no":
-		return t.No, true
-	case "line_no":
-		return t.Line_no, true
-	case "date":
-		return t.Date, true
-	case "code":
-		return t.Code, true
-	case "comment":
-		return t.Comment, true
-	}
-	return nil, false
+	return purchCommentLineFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3007,68 +2653,12 @@ func (t *PurchCommentLine) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *PurchCommentLine) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"document_type": int(t.Document_type),
-		"no":            t.No.String(),
-		"line_no":       t.Line_no,
-		"date":          t.Date.String(),
-		"code":          t.Code.String(),
-		"comment":       t.Comment.String(),
-	}
+	return purchCommentLineFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *PurchCommentLine) FromMap(data map[string]interface{}) {
-	if v, ok := data["document_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Document_type = PurchCommentLineDocument_type(int(val))
-		case int:
-			t.Document_type = PurchCommentLineDocument_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Quote", "Order", "Invoice", "Credit Memo", "Blanket Order", "Receipt", "Posted Invoice", "Posted Credit Memo"}
-			for i, opt := range options {
-				if opt == val {
-					t.Document_type = PurchCommentLineDocument_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No = types.NewCode(s)
-		}
-	}
-	if v, ok := data["line_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Line_no = int(val)
-		case int:
-			t.Line_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Line_no = n
-			}
-		}
-	}
-	if v, ok := data["date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["comment"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Comment = types.NewText(s)
-		}
-	}
+	purchCommentLineFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3089,68 +2679,119 @@ func (t *PurchCommentLine) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *PurchCommentLine) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "document_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "line_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "comment",
-			Type:       tables.FieldTypeText,
-			Length:     80,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return purchCommentLineFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in purchCommentLineFields.Fields
+func (t *PurchCommentLine) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Document_type
+	case 1:
+		return &t.No
+	case 2:
+		return &t.Line_no
+	case 3:
+		return &t.Date
+	case 4:
+		return &t.Code
+	case 5:
+		return &t.Comment
 	}
+	return nil
+}
+
+// purchCommentLineFields describes the fields of Purch_Comment_Line for the record functions
+// written once in foundation/tables
+var purchCommentLineFields = &tables.TableFields{
+	Table: PurchCommentLineTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "document_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Document_type",
+			Options: []string{"Quote", "Order", "Invoice", "Credit Memo", "Blanket Order", "Receipt", "Posted Invoice", "Posted Credit Memo"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_No",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "line_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Line_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "comment",
+				Type:       tables.FieldTypeText,
+				Length:     80,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Comment",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

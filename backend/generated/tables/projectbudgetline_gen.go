@@ -36,7 +36,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -238,108 +237,12 @@ var ProjectBudgetLine_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *ProjectBudgetLine) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "project_no":
-		return 1
-	case "phase_code":
-		return 2
-	case "task_code":
-		return 3
-	case "step_code":
-		return 4
-	case "type":
-		return 5
-	case "no":
-		return 6
-	case "variant_code":
-		return 5402
-	case "starting_date":
-		return 7
-	case "description":
-		return 8
-	case "quantity":
-		return 9
-	case "direct_unit_cost":
-		return 10
-	case "unit_cost":
-		return 11
-	case "total_cost":
-		return 12
-	case "unit_price":
-		return 13
-	case "total_price":
-		return 14
-	case "dimension_1_code":
-		return 17
-	case "dimension_2_code":
-		return 18
-	case "price_group_code":
-		return 21
-	case "qty_quoted_project":
-		return 23
-	case "qty_on_order_project":
-		return 24
-	case "res_gr_qty_quoted":
-		return 25
-	case "res_gr_qty_on_order":
-		return 26
-	case "date_filter":
-		return 22
-	}
-	return 0
+	return projectBudgetLineFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *ProjectBudgetLine) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "project_no"
-	case 2:
-		return "phase_code"
-	case 3:
-		return "task_code"
-	case 4:
-		return "step_code"
-	case 5:
-		return "type"
-	case 6:
-		return "no"
-	case 5402:
-		return "variant_code"
-	case 7:
-		return "starting_date"
-	case 8:
-		return "description"
-	case 9:
-		return "quantity"
-	case 10:
-		return "direct_unit_cost"
-	case 11:
-		return "unit_cost"
-	case 12:
-		return "total_cost"
-	case 13:
-		return "unit_price"
-	case 14:
-		return "total_price"
-	case 17:
-		return "dimension_1_code"
-	case 18:
-		return "dimension_2_code"
-	case 21:
-		return "price_group_code"
-	case 23:
-		return "qty_quoted_project"
-	case 24:
-		return "qty_on_order_project"
-	case 25:
-		return "res_gr_qty_quoted"
-	case 26:
-		return "res_gr_qty_on_order"
-	case 22:
-		return "date_filter"
-	}
-	return ""
+	return projectBudgetLineFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -451,51 +354,6 @@ type (
 	ProjectBudgetLineOnBeforeRename interface {
 		OnBeforeRename(rec *ProjectBudgetLine, handled *bool) error
 	}
-	ProjectBudgetLineOnValidate_Project_no interface {
-		OnValidate_Project_no(rec *ProjectBudgetLine) error
-	}
-	ProjectBudgetLineOnValidate_Phase_code interface {
-		OnValidate_Phase_code(rec *ProjectBudgetLine) error
-	}
-	ProjectBudgetLineOnValidate_Task_code interface {
-		OnValidate_Task_code(rec *ProjectBudgetLine) error
-	}
-	ProjectBudgetLineOnValidate_Step_code interface {
-		OnValidate_Step_code(rec *ProjectBudgetLine) error
-	}
-	ProjectBudgetLineOnValidate_Type interface {
-		OnValidate_Type(rec *ProjectBudgetLine) error
-	}
-	ProjectBudgetLineOnValidate_No interface {
-		OnValidate_No(rec *ProjectBudgetLine) error
-	}
-	ProjectBudgetLineOnValidate_Variant_code interface {
-		OnValidate_Variant_code(rec *ProjectBudgetLine) error
-	}
-	ProjectBudgetLineOnValidate_Starting_date interface {
-		OnValidate_Starting_date(rec *ProjectBudgetLine) error
-	}
-	ProjectBudgetLineOnValidate_Description interface {
-		OnValidate_Description(rec *ProjectBudgetLine) error
-	}
-	ProjectBudgetLineOnValidate_Direct_unit_cost interface {
-		OnValidate_Direct_unit_cost(rec *ProjectBudgetLine) error
-	}
-	ProjectBudgetLineOnValidate_Unit_cost interface {
-		OnValidate_Unit_cost(rec *ProjectBudgetLine) error
-	}
-	ProjectBudgetLineOnValidate_Unit_price interface {
-		OnValidate_Unit_price(rec *ProjectBudgetLine) error
-	}
-	ProjectBudgetLineOnValidate_Dimension_1_code interface {
-		OnValidate_Dimension_1_code(rec *ProjectBudgetLine) error
-	}
-	ProjectBudgetLineOnValidate_Dimension_2_code interface {
-		OnValidate_Dimension_2_code(rec *ProjectBudgetLine) error
-	}
-	ProjectBudgetLineOnValidate_Price_group_code interface {
-		OnValidate_Price_group_code(rec *ProjectBudgetLine) error
-	}
 )
 
 // projectBudgetLineLogic is the registered business logic of Project_Budget_Line, in
@@ -538,38 +396,9 @@ func projectBudgetLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ProjectBudgetLineOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(ProjectBudgetLineOnBeforeRename)
-	case "OnValidate_Project_no":
-		_, ok = logic.(ProjectBudgetLineOnValidate_Project_no)
-	case "OnValidate_Phase_code":
-		_, ok = logic.(ProjectBudgetLineOnValidate_Phase_code)
-	case "OnValidate_Task_code":
-		_, ok = logic.(ProjectBudgetLineOnValidate_Task_code)
-	case "OnValidate_Step_code":
-		_, ok = logic.(ProjectBudgetLineOnValidate_Step_code)
-	case "OnValidate_Type":
-		_, ok = logic.(ProjectBudgetLineOnValidate_Type)
-	case "OnValidate_No":
-		_, ok = logic.(ProjectBudgetLineOnValidate_No)
-	case "OnValidate_Variant_code":
-		_, ok = logic.(ProjectBudgetLineOnValidate_Variant_code)
-	case "OnValidate_Starting_date":
-		_, ok = logic.(ProjectBudgetLineOnValidate_Starting_date)
-	case "OnValidate_Description":
-		_, ok = logic.(ProjectBudgetLineOnValidate_Description)
-	case "OnValidate_Direct_unit_cost":
-		_, ok = logic.(ProjectBudgetLineOnValidate_Direct_unit_cost)
-	case "OnValidate_Unit_cost":
-		_, ok = logic.(ProjectBudgetLineOnValidate_Unit_cost)
-	case "OnValidate_Unit_price":
-		_, ok = logic.(ProjectBudgetLineOnValidate_Unit_price)
-	case "OnValidate_Dimension_1_code":
-		_, ok = logic.(ProjectBudgetLineOnValidate_Dimension_1_code)
-	case "OnValidate_Dimension_2_code":
-		_, ok = logic.(ProjectBudgetLineOnValidate_Dimension_2_code)
-	case "OnValidate_Price_group_code":
-		_, ok = logic.(ProjectBudgetLineOnValidate_Price_group_code)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return projectBudgetLineFields.IsOnValidateTrigger(name, logic, (*ProjectBudgetLine)(nil))
 	}
 	return true, ok
 }
@@ -932,22 +761,7 @@ func (t *ProjectBudgetLine) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *ProjectBudgetLine) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["project_no"] = t.Project_no
-	t.oldValues["phase_code"] = t.Phase_code
-	t.oldValues["task_code"] = t.Task_code
-	t.oldValues["step_code"] = t.Step_code
-	t.oldValues["type"] = t.Type
-	t.oldValues["no"] = t.No
-	t.oldValues["variant_code"] = t.Variant_code
-	t.oldValues["starting_date"] = t.Starting_date
-	t.oldValues["description"] = t.Description
-	t.oldValues["direct_unit_cost"] = t.Direct_unit_cost
-	t.oldValues["unit_cost"] = t.Unit_cost
-	t.oldValues["unit_price"] = t.Unit_price
-	t.oldValues["dimension_1_code"] = t.Dimension_1_code
-	t.oldValues["dimension_2_code"] = t.Dimension_2_code
-	t.oldValues["price_group_code"] = t.Price_group_code
+	t.oldValues = projectBudgetLineFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -962,51 +776,7 @@ func (t *ProjectBudgetLine) OldValue(fieldName string) interface{} {
 func (t *ProjectBudgetLine) XRec() *ProjectBudgetLine {
 	x := &ProjectBudgetLine{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["project_no"].(types.Code); ok {
-		x.Project_no = v
-	}
-	if v, ok := t.oldValues["phase_code"].(types.Code); ok {
-		x.Phase_code = v
-	}
-	if v, ok := t.oldValues["task_code"].(types.Code); ok {
-		x.Task_code = v
-	}
-	if v, ok := t.oldValues["step_code"].(types.Code); ok {
-		x.Step_code = v
-	}
-	if v, ok := t.oldValues["type"].(ProjectBudgetLineType); ok {
-		x.Type = v
-	}
-	if v, ok := t.oldValues["no"].(types.Code); ok {
-		x.No = v
-	}
-	if v, ok := t.oldValues["variant_code"].(types.Code); ok {
-		x.Variant_code = v
-	}
-	if v, ok := t.oldValues["starting_date"].(types.Date); ok {
-		x.Starting_date = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["direct_unit_cost"].(types.Decimal); ok {
-		x.Direct_unit_cost = v
-	}
-	if v, ok := t.oldValues["unit_cost"].(types.Decimal); ok {
-		x.Unit_cost = v
-	}
-	if v, ok := t.oldValues["unit_price"].(types.Decimal); ok {
-		x.Unit_price = v
-	}
-	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
-		x.Dimension_1_code = v
-	}
-	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
-		x.Dimension_2_code = v
-	}
-	if v, ok := t.oldValues["price_group_code"].(types.Code); ok {
-		x.Price_group_code = v
-	}
+	projectBudgetLineFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1501,81 +1271,7 @@ func (t *ProjectBudgetLine) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *ProjectBudgetLine) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "project_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_no.Equal(old)
-		}
-	case "phase_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Phase_code.Equal(old)
-		}
-	case "task_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Task_code.Equal(old)
-		}
-	case "step_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Step_code.Equal(old)
-		}
-	case "type":
-		if old, ok := oldValue.(ProjectBudgetLineType); ok {
-			return t.Type != old
-		}
-	case "no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No.Equal(old)
-		}
-	case "variant_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Variant_code.Equal(old)
-		}
-	case "starting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Starting_date.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "direct_unit_cost":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Direct_unit_cost.Equal(old)
-		}
-	case "unit_cost":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Unit_cost.Equal(old)
-		}
-	case "unit_price":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Unit_price.Equal(old)
-		}
-	case "dimension_1_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_1_code.Equal(old)
-		}
-	case "dimension_2_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_2_code.Equal(old)
-		}
-	case "price_group_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Price_group_code.Equal(old)
-		}
-	}
-
-	return false
+	return projectBudgetLineFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -2725,39 +2421,7 @@ func (t *ProjectBudgetLine) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *ProjectBudgetLine) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("project_no"):
-		return "project_no", true
-	case strings.ToLower("phase_code"):
-		return "phase_code", true
-	case strings.ToLower("task_code"):
-		return "task_code", true
-	case strings.ToLower("step_code"):
-		return "step_code", true
-	case strings.ToLower("type"):
-		return "type", true
-	case strings.ToLower("no"):
-		return "no", true
-	case strings.ToLower("variant_code"):
-		return "variant_code", true
-	case strings.ToLower("starting_date"):
-		return "starting_date", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("direct_unit_cost"):
-		return "direct_unit_cost", true
-	case strings.ToLower("unit_cost"):
-		return "unit_cost", true
-	case strings.ToLower("unit_price"):
-		return "unit_price", true
-	case strings.ToLower("dimension_1_code"):
-		return "dimension_1_code", true
-	case strings.ToLower("dimension_2_code"):
-		return "dimension_2_code", true
-	case strings.ToLower("price_group_code"):
-		return "price_group_code", true
-	}
-	return "", false
+	return projectBudgetLineFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -3768,385 +3432,20 @@ func (t *ProjectBudgetLine) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *ProjectBudgetLine) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "project_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Project_no = v
-		} else if v, ok := value.(string); ok {
-			t.Project_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field project_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectBudgetLineOnValidate_Project_no); ok {
-				if err := trg.OnValidate_Project_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "phase_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Phase_code = v
-		} else if v, ok := value.(string); ok {
-			t.Phase_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field phase_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "phase_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectBudgetLineOnValidate_Phase_code); ok {
-				if err := trg.OnValidate_Phase_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "task_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Task_code = v
-		} else if v, ok := value.(string); ok {
-			t.Task_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field task_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "task_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectBudgetLineOnValidate_Task_code); ok {
-				if err := trg.OnValidate_Task_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "step_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Step_code = v
-		} else if v, ok := value.(string); ok {
-			t.Step_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field step_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "step_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectBudgetLineOnValidate_Step_code); ok {
-				if err := trg.OnValidate_Step_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ProjectBudgetLineType); ok {
-			t.Type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", v, 4-1)
-			}
-			t.Type = ProjectBudgetLineType(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Type = ProjectBudgetLineType(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Type = 0
-			} else {
-				options := []string{"Resource", "Item", "Account (G/L)", "Group (Resource)"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Type = ProjectBudgetLineType(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field type (expected ProjectBudgetLineType, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectBudgetLineOnValidate_Type); ok {
-				if err := trg.OnValidate_Type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-		} else if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectBudgetLineOnValidate_No); ok {
-				if err := trg.OnValidate_No(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "variant_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Variant_code = v
-		} else if v, ok := value.(string); ok {
-			t.Variant_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field variant_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "variant_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectBudgetLineOnValidate_Variant_code); ok {
-				if err := trg.OnValidate_Variant_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "starting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Starting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Starting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field starting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Starting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field starting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectBudgetLineOnValidate_Starting_date); ok {
-				if err := trg.OnValidate_Starting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectBudgetLineOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "direct_unit_cost":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Direct_unit_cost = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Direct_unit_cost, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field direct_unit_cost: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Direct_unit_cost = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Direct_unit_cost = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Direct_unit_cost = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field direct_unit_cost (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectBudgetLineOnValidate_Direct_unit_cost); ok {
-				if err := trg.OnValidate_Direct_unit_cost(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unit_cost":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Unit_cost = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Unit_cost, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field unit_cost: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Unit_cost = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Unit_cost = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Unit_cost = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field unit_cost (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectBudgetLineOnValidate_Unit_cost); ok {
-				if err := trg.OnValidate_Unit_cost(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unit_price":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Unit_price = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Unit_price, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field unit_price: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Unit_price = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Unit_price = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Unit_price = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field unit_price (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectBudgetLineOnValidate_Unit_price); ok {
-				if err := trg.OnValidate_Unit_price(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_1_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_1_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectBudgetLineOnValidate_Dimension_1_code); ok {
-				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_2_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_2_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectBudgetLineOnValidate_Dimension_2_code); ok {
-				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "price_group_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Price_group_code = v
-		} else if v, ok := value.(string); ok {
-			t.Price_group_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field price_group_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "price_group_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectBudgetLineOnValidate_Price_group_code); ok {
-				if err := trg.OnValidate_Price_group_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := projectBudgetLineFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &projectBudgetLineFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -4155,183 +3454,18 @@ func (t *ProjectBudgetLine) ValidateField(fieldName string, value interface{}) e
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *ProjectBudgetLine) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Project_no, true
-	case 2:
-		return t.Phase_code, true
-	case 3:
-		return t.Task_code, true
-	case 4:
-		return t.Step_code, true
-	case 5:
-		return t.Type, true
-	case 6:
-		return t.No, true
-	case 5402:
-		return t.Variant_code, true
-	case 7:
-		return t.Starting_date, true
-	case 8:
-		return t.Description, true
-	case 10:
-		return t.Direct_unit_cost, true
-	case 11:
-		return t.Unit_cost, true
-	case 13:
-		return t.Unit_price, true
-	case 17:
-		return t.Dimension_1_code, true
-	case 18:
-		return t.Dimension_2_code, true
-	case 21:
-		return t.Price_group_code, true
-	}
-	return nil, false
+	return projectBudgetLineFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *ProjectBudgetLine) flowFieldValue(no int) (any, bool) {
-	switch no {
-	case 9:
-		return t.Quantity, true
-	case 12:
-		return t.Total_cost, true
-	case 14:
-		return t.Total_price, true
-	case 23:
-		return t.Qty_quoted_project, true
-	case 24:
-		return t.Qty_on_order_project, true
-	case 25:
-		return t.Res_gr_qty_quoted, true
-	case 26:
-		return t.Res_gr_qty_on_order, true
-	}
-	return nil, false
+	return projectBudgetLineFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *ProjectBudgetLine) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Project_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Project_no = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Phase_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Phase_code = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Code); ok {
-			t.Task_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Task_code = types.NewCode(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Code); ok {
-			t.Step_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Step_code = types.NewCode(v)
-			return true
-		}
-	case 5:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Type = ProjectBudgetLineType(i)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-			return true
-		}
-	case 5402:
-		if v, ok := value.(types.Code); ok {
-			t.Variant_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Variant_code = types.NewCode(v)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Date); ok {
-			t.Starting_date = v
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Decimal); ok {
-			t.Direct_unit_cost = v
-			return true
-		}
-	case 11:
-		if v, ok := value.(types.Decimal); ok {
-			t.Unit_cost = v
-			return true
-		}
-	case 13:
-		if v, ok := value.(types.Decimal); ok {
-			t.Unit_price = v
-			return true
-		}
-	case 17:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-			return true
-		}
-	case 18:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-			return true
-		}
-	case 21:
-		if v, ok := value.(types.Code); ok {
-			t.Price_group_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Price_group_code = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return projectBudgetLineFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -4826,39 +3960,7 @@ func (t *ProjectBudgetLine) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *ProjectBudgetLine) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "project_no":
-		return t.Project_no, true
-	case "phase_code":
-		return t.Phase_code, true
-	case "task_code":
-		return t.Task_code, true
-	case "step_code":
-		return t.Step_code, true
-	case "type":
-		return int(t.Type), true
-	case "no":
-		return t.No, true
-	case "variant_code":
-		return t.Variant_code, true
-	case "starting_date":
-		return t.Starting_date, true
-	case "description":
-		return t.Description, true
-	case "direct_unit_cost":
-		return t.Direct_unit_cost, true
-	case "unit_cost":
-		return t.Unit_cost, true
-	case "unit_price":
-		return t.Unit_price, true
-	case "dimension_1_code":
-		return t.Dimension_1_code, true
-	case "dimension_2_code":
-		return t.Dimension_2_code, true
-	case "price_group_code":
-		return t.Price_group_code, true
-	}
-	return nil, false
+	return projectBudgetLineFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -4976,149 +4078,12 @@ func (t *ProjectBudgetLine) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *ProjectBudgetLine) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"project_no":    t.Project_no.String(),
-		"phase_code":    t.Phase_code.String(),
-		"task_code":     t.Task_code.String(),
-		"step_code":     t.Step_code.String(),
-		"type":          int(t.Type),
-		"no":            t.No.String(),
-		"variant_code":  t.Variant_code.String(),
-		"starting_date": t.Starting_date.String(),
-		"description":   t.Description.String(),
-		// FlowField: quantity
-		"quantity":         t.Quantity.String(),
-		"direct_unit_cost": t.Direct_unit_cost.String(),
-		"unit_cost":        t.Unit_cost.String(),
-		// FlowField: total_cost
-		"total_cost": t.Total_cost.String(),
-		"unit_price": t.Unit_price.String(),
-		// FlowField: total_price
-		"total_price":      t.Total_price.String(),
-		"dimension_1_code": t.Dimension_1_code.String(),
-		"dimension_2_code": t.Dimension_2_code.String(),
-		"price_group_code": t.Price_group_code.String(),
-		// FlowField: qty_quoted_project
-		"qty_quoted_project": t.Qty_quoted_project.String(),
-		// FlowField: qty_on_order_project
-		"qty_on_order_project": t.Qty_on_order_project.String(),
-		// FlowField: res_gr_qty_quoted
-		"res_gr_qty_quoted": t.Res_gr_qty_quoted.String(),
-		// FlowField: res_gr_qty_on_order
-		"res_gr_qty_on_order": t.Res_gr_qty_on_order.String(),
-	}
+	return projectBudgetLineFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *ProjectBudgetLine) FromMap(data map[string]interface{}) {
-	if v, ok := data["project_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Project_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["phase_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Phase_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["task_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Task_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["step_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Step_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Type = ProjectBudgetLineType(int(val))
-		case int:
-			t.Type = ProjectBudgetLineType(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Resource", "Item", "Account (G/L)", "Group (Resource)"}
-			for i, opt := range options {
-				if opt == val {
-					t.Type = ProjectBudgetLineType(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No = types.NewCode(s)
-		}
-	}
-	if v, ok := data["variant_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Variant_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["starting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Starting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["direct_unit_cost"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Direct_unit_cost, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Direct_unit_cost = types.NewDecimal(val)
-		case int:
-			t.Direct_unit_cost = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Direct_unit_cost = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["unit_cost"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Unit_cost, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Unit_cost = types.NewDecimal(val)
-		case int:
-			t.Unit_cost = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Unit_cost = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["unit_price"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Unit_price, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Unit_price = types.NewDecimal(val)
-		case int:
-			t.Unit_price = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Unit_price = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["dimension_1_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_1_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["dimension_2_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_2_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["price_group_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Price_group_code = types.NewCode(s)
-		}
-	}
+	projectBudgetLineFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -5139,238 +4104,397 @@ func (t *ProjectBudgetLine) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *ProjectBudgetLine) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "project_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "phase_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "task_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "step_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         5402,
-			Name:       "variant_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "starting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            9,
-			Name:          "quantity",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            10,
-			Name:          "direct_unit_cost",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:5",
-		},
-		{
-			No:            11,
-			Name:          "unit_cost",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:5",
-		},
-		{
-			No:            12,
-			Name:          "total_cost",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            13,
-			Name:          "unit_price",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:5",
-		},
-		{
-			No:            14,
-			Name:          "total_price",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         17,
-			Name:       "dimension_1_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         18,
-			Name:       "dimension_2_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         21,
-			Name:       "price_group_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            23,
-			Name:          "qty_quoted_project",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            24,
-			Name:          "qty_on_order_project",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            25,
-			Name:          "res_gr_qty_quoted",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            26,
-			Name:          "res_gr_qty_on_order",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
+	return projectBudgetLineFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in projectBudgetLineFields.Fields
+func (t *ProjectBudgetLine) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Project_no
+	case 1:
+		return &t.Phase_code
+	case 2:
+		return &t.Task_code
+	case 3:
+		return &t.Step_code
+	case 4:
+		return &t.Type
+	case 5:
+		return &t.No
+	case 6:
+		return &t.Variant_code
+	case 7:
+		return &t.Starting_date
+	case 8:
+		return &t.Description
+	case 9:
+		return &t.Quantity
+	case 10:
+		return &t.Direct_unit_cost
+	case 11:
+		return &t.Unit_cost
+	case 12:
+		return &t.Total_cost
+	case 13:
+		return &t.Unit_price
+	case 14:
+		return &t.Total_price
+	case 15:
+		return &t.Dimension_1_code
+	case 16:
+		return &t.Dimension_2_code
+	case 17:
+		return &t.Price_group_code
+	case 18:
+		return &t.Qty_quoted_project
+	case 19:
+		return &t.Qty_on_order_project
+	case 20:
+		return &t.Res_gr_qty_quoted
+	case 21:
+		return &t.Res_gr_qty_on_order
 	}
+	return nil
+}
+
+// projectBudgetLineFields describes the fields of Project_Budget_Line for the record functions
+// written once in foundation/tables
+var projectBudgetLineFields = &tables.TableFields{
+	Table: ProjectBudgetLineTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "project_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Project_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "phase_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Phase_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "task_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Task_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "step_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Step_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Type",
+			Options: []string{"Resource", "Item", "Account (G/L)", "Group (Resource)"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_No",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5402,
+				Name:       "variant_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Variant_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "starting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Starting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            9,
+				Name:          "quantity",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Quantity",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            10,
+				Name:          "direct_unit_cost",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Direct_unit_cost",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            11,
+				Name:          "unit_cost",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Unit_cost",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            12,
+				Name:          "total_cost",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Total_cost",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            13,
+				Name:          "unit_price",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Unit_price",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            14,
+				Name:          "total_price",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Total_price",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         17,
+				Name:       "dimension_1_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_1_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         18,
+				Name:       "dimension_2_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_2_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         21,
+				Name:       "price_group_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Price_group_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            23,
+				Name:          "qty_quoted_project",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Qty_quoted_project",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            24,
+				Name:          "qty_on_order_project",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Qty_on_order_project",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            25,
+				Name:          "res_gr_qty_quoted",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Res_gr_qty_quoted",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            26,
+				Name:          "res_gr_qty_on_order",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Res_gr_qty_on_order",
+		},
+	},
+	FlowFilters: []tables.FieldInfo{
+		{No: 22, Name: "date_filter"},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

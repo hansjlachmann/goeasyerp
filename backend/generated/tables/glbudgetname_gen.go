@@ -113,24 +113,12 @@ var GLBudgetName_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *GLBudgetName) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "name":
-		return 1
-	case "description":
-		return 2
-	}
-	return 0
+	return gLBudgetNameFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *GLBudgetName) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "name"
-	case 2:
-		return "description"
-	}
-	return ""
+	return gLBudgetNameFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -234,8 +222,6 @@ type (
 	GLBudgetNameOnBeforeRename interface {
 		OnBeforeRename(rec *GLBudgetName, handled *bool) error
 	}
-	GLBudgetNameOnValidate_Name        interface{ OnValidate_Name(rec *GLBudgetName) error }
-	GLBudgetNameOnValidate_Description interface{ OnValidate_Description(rec *GLBudgetName) error }
 )
 
 // gLBudgetNameLogic is the registered business logic of G_L_Budget_Name, in
@@ -278,12 +264,9 @@ func gLBudgetNameTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(GLBudgetNameOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(GLBudgetNameOnBeforeRename)
-	case "OnValidate_Name":
-		_, ok = logic.(GLBudgetNameOnValidate_Name)
-	case "OnValidate_Description":
-		_, ok = logic.(GLBudgetNameOnValidate_Description)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return gLBudgetNameFields.IsOnValidateTrigger(name, logic, (*GLBudgetName)(nil))
 	}
 	return true, ok
 }
@@ -571,9 +554,7 @@ func (t *GLBudgetName) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *GLBudgetName) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["name"] = t.Name
-	t.oldValues["description"] = t.Description
+	t.oldValues = gLBudgetNameFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -588,12 +569,7 @@ func (t *GLBudgetName) OldValue(fieldName string) interface{} {
 func (t *GLBudgetName) XRec() *GLBudgetName {
 	x := &GLBudgetName{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["name"].(types.Code); ok {
-		x.Name = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
+	gLBudgetNameFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -870,29 +846,7 @@ func (t *GLBudgetName) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *GLBudgetName) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Name.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	}
-
-	return false
+	return gLBudgetNameFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1133,13 +1087,7 @@ func (t *GLBudgetName) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *GLBudgetName) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("name"):
-		return "name", true
-	case strings.ToLower("description"):
-		return "description", true
-	}
-	return "", false
+	return gLBudgetNameFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -1948,48 +1896,20 @@ func (t *GLBudgetName) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *GLBudgetName) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Name = v
-		} else if v, ok := value.(string); ok {
-			t.Name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLBudgetNameOnValidate_Name); ok {
-				if err := trg.OnValidate_Name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLBudgetNameOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := gLBudgetNameFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &gLBudgetNameFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -1998,46 +1918,18 @@ func (t *GLBudgetName) ValidateField(fieldName string, value interface{}) error 
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *GLBudgetName) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Name, true
-	case 2:
-		return t.Description, true
-	}
-	return nil, false
+	return gLBudgetNameFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *GLBudgetName) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return gLBudgetNameFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *GLBudgetName) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Name = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	}
-	return false
+	return gLBudgetNameFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2486,13 +2378,7 @@ func (t *GLBudgetName) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *GLBudgetName) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "name":
-		return t.Name, true
-	case "description":
-		return t.Description, true
-	}
-	return nil, false
+	return gLBudgetNameFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2579,24 +2465,12 @@ func (t *GLBudgetName) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *GLBudgetName) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"name":        t.Name.String(),
-		"description": t.Description.String(),
-	}
+	return gLBudgetNameFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *GLBudgetName) FromMap(data map[string]interface{}) {
-	if v, ok := data["name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
+	gLBudgetNameFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2617,28 +2491,54 @@ func (t *GLBudgetName) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *GLBudgetName) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     80,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return gLBudgetNameFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in gLBudgetNameFields.Fields
+func (t *GLBudgetName) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Name
+	case 1:
+		return &t.Description
 	}
+	return nil
+}
+
+// gLBudgetNameFields describes the fields of G_L_Budget_Name for the record functions
+// written once in foundation/tables
+var gLBudgetNameFields = &tables.TableFields{
+	Table: GLBudgetNameTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     80,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

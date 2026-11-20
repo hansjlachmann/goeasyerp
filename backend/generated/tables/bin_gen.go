@@ -117,28 +117,12 @@ var Bin_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *Bin) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "location_code":
-		return 1
-	case "code":
-		return 2
-	case "description":
-		return 3
-	}
-	return 0
+	return binFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *Bin) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "location_code"
-	case 2:
-		return "code"
-	case 3:
-		return "description"
-	}
-	return ""
+	return binFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -242,9 +226,6 @@ type (
 	BinOnBeforeRename interface {
 		OnBeforeRename(rec *Bin, handled *bool) error
 	}
-	BinOnValidate_Location_code interface{ OnValidate_Location_code(rec *Bin) error }
-	BinOnValidate_Code          interface{ OnValidate_Code(rec *Bin) error }
-	BinOnValidate_Description   interface{ OnValidate_Description(rec *Bin) error }
 )
 
 // binLogic is the registered business logic of Bin, in
@@ -287,14 +268,9 @@ func binTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(BinOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(BinOnBeforeRename)
-	case "OnValidate_Location_code":
-		_, ok = logic.(BinOnValidate_Location_code)
-	case "OnValidate_Code":
-		_, ok = logic.(BinOnValidate_Code)
-	case "OnValidate_Description":
-		_, ok = logic.(BinOnValidate_Description)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return binFields.IsOnValidateTrigger(name, logic, (*Bin)(nil))
 	}
 	return true, ok
 }
@@ -592,10 +568,7 @@ func (t *Bin) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *Bin) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["location_code"] = t.Location_code
-	t.oldValues["code"] = t.Code
-	t.oldValues["description"] = t.Description
+	t.oldValues = binFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -610,15 +583,7 @@ func (t *Bin) OldValue(fieldName string) interface{} {
 func (t *Bin) XRec() *Bin {
 	x := &Bin{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["location_code"].(types.Code); ok {
-		x.Location_code = v
-	}
-	if v, ok := t.oldValues["code"].(types.Code); ok {
-		x.Code = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
+	binFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -895,33 +860,7 @@ func (t *Bin) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *Bin) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "location_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Location_code.Equal(old)
-		}
-	case "code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Code.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	}
-
-	return false
+	return binFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1123,15 +1062,7 @@ func (t *Bin) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *Bin) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("location_code"):
-		return "location_code", true
-	case strings.ToLower("code"):
-		return "code", true
-	case strings.ToLower("description"):
-		return "description", true
-	}
-	return "", false
+	return binFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -1953,70 +1884,20 @@ func (t *Bin) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *Bin) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "location_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Location_code = v
-		} else if v, ok := value.(string); ok {
-			t.Location_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field location_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "location_code"); err != nil {
+	i, err := binFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
+	}
+	f := &binFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
 			return err
 		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(BinOnValidate_Location_code); ok {
-				if err := trg.OnValidate_Location_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-		} else if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(BinOnValidate_Code); ok {
-				if err := trg.OnValidate_Code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(BinOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2025,57 +1906,18 @@ func (t *Bin) ValidateField(fieldName string, value interface{}) error {
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *Bin) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Location_code, true
-	case 2:
-		return t.Code, true
-	case 3:
-		return t.Description, true
-	}
-	return nil, false
+	return binFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *Bin) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return binFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *Bin) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Location_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Location_code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	}
-	return false
+	return binFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2525,15 +2367,7 @@ func (t *Bin) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *Bin) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "location_code":
-		return t.Location_code, true
-	case "code":
-		return t.Code, true
-	case "description":
-		return t.Description, true
-	}
-	return nil, false
+	return binFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2624,30 +2458,12 @@ func (t *Bin) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *Bin) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"location_code": t.Location_code.String(),
-		"code":          t.Code.String(),
-		"description":   t.Description.String(),
-	}
+	return binFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *Bin) FromMap(data map[string]interface{}) {
-	if v, ok := data["location_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Location_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
+	binFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2668,38 +2484,71 @@ func (t *Bin) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *Bin) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "location_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return binFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in binFields.Fields
+func (t *Bin) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Location_code
+	case 1:
+		return &t.Code
+	case 2:
+		return &t.Description
 	}
+	return nil
+}
+
+// binFields describes the fields of Bin for the record functions
+// written once in foundation/tables
+var binFields = &tables.TableFields{
+	Table: BinTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "location_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Location_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

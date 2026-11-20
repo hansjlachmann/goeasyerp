@@ -57,7 +57,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -272,180 +271,12 @@ var IssuedFinChargeMemoHeader_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *IssuedFinChargeMemoHeader) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "no":
-		return 1
-	case "customer_no":
-		return 2
-	case "name":
-		return 3
-	case "name_2":
-		return 4
-	case "address":
-		return 5
-	case "address_2":
-		return 6
-	case "post_code":
-		return 7
-	case "city":
-		return 8
-	case "state":
-		return 9
-	case "country_code":
-		return 10
-	case "language_code":
-		return 11
-	case "currency_code":
-		return 12
-	case "contact":
-		return 13
-	case "your_reference":
-		return 14
-	case "dimension_1_code":
-		return 15
-	case "dimension_2_code":
-		return 16
-	case "customer_posting_group":
-		return 17
-	case "gen_bus_posting_group":
-		return 18
-	case "vat_registration_no":
-		return 19
-	case "reason_code":
-		return 20
-	case "posting_date":
-		return 21
-	case "document_date":
-		return 22
-	case "due_date":
-		return 23
-	case "fin_charge_terms_code":
-		return 25
-	case "interest_posted":
-		return 26
-	case "additional_fee_posted":
-		return 27
-	case "posting_description":
-		return 29
-	case "comment":
-		return 30
-	case "remaining_amount":
-		return 31
-	case "interest_amount":
-		return 32
-	case "additional_fee":
-		return 33
-	case "tax_amount":
-		return 34
-	case "no_printed":
-		return 35
-	case "user_id":
-		return 36
-	case "no_series":
-		return 37
-	case "pre_assigned_no_series":
-		return 38
-	case "pre_assigned_no":
-		return 39
-	case "source_code":
-		return 40
-	case "tax_area_code":
-		return 41
-	case "tax_liable":
-		return 42
-	case "tax_bus_posting_group":
-		return 43
-	}
-	return 0
+	return issuedFinChargeMemoHeaderFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *IssuedFinChargeMemoHeader) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "no"
-	case 2:
-		return "customer_no"
-	case 3:
-		return "name"
-	case 4:
-		return "name_2"
-	case 5:
-		return "address"
-	case 6:
-		return "address_2"
-	case 7:
-		return "post_code"
-	case 8:
-		return "city"
-	case 9:
-		return "state"
-	case 10:
-		return "country_code"
-	case 11:
-		return "language_code"
-	case 12:
-		return "currency_code"
-	case 13:
-		return "contact"
-	case 14:
-		return "your_reference"
-	case 15:
-		return "dimension_1_code"
-	case 16:
-		return "dimension_2_code"
-	case 17:
-		return "customer_posting_group"
-	case 18:
-		return "gen_bus_posting_group"
-	case 19:
-		return "vat_registration_no"
-	case 20:
-		return "reason_code"
-	case 21:
-		return "posting_date"
-	case 22:
-		return "document_date"
-	case 23:
-		return "due_date"
-	case 25:
-		return "fin_charge_terms_code"
-	case 26:
-		return "interest_posted"
-	case 27:
-		return "additional_fee_posted"
-	case 29:
-		return "posting_description"
-	case 30:
-		return "comment"
-	case 31:
-		return "remaining_amount"
-	case 32:
-		return "interest_amount"
-	case 33:
-		return "additional_fee"
-	case 34:
-		return "tax_amount"
-	case 35:
-		return "no_printed"
-	case 36:
-		return "user_id"
-	case 37:
-		return "no_series"
-	case 38:
-		return "pre_assigned_no_series"
-	case 39:
-		return "pre_assigned_no"
-	case 40:
-		return "source_code"
-	case 41:
-		return "tax_area_code"
-	case 42:
-		return "tax_liable"
-	case 43:
-		return "tax_bus_posting_group"
-	}
-	return ""
+	return issuedFinChargeMemoHeaderFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -557,114 +388,6 @@ type (
 	IssuedFinChargeMemoHeaderOnBeforeRename interface {
 		OnBeforeRename(rec *IssuedFinChargeMemoHeader, handled *bool) error
 	}
-	IssuedFinChargeMemoHeaderOnValidate_No interface {
-		OnValidate_No(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_Customer_no interface {
-		OnValidate_Customer_no(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_Name interface {
-		OnValidate_Name(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_Name_2 interface {
-		OnValidate_Name_2(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_Address interface {
-		OnValidate_Address(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_Address_2 interface {
-		OnValidate_Address_2(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_Post_code interface {
-		OnValidate_Post_code(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_City interface {
-		OnValidate_City(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_State interface {
-		OnValidate_State(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_Country_code interface {
-		OnValidate_Country_code(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_Language_code interface {
-		OnValidate_Language_code(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_Currency_code interface {
-		OnValidate_Currency_code(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_Contact interface {
-		OnValidate_Contact(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_Your_reference interface {
-		OnValidate_Your_reference(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_Dimension_1_code interface {
-		OnValidate_Dimension_1_code(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_Dimension_2_code interface {
-		OnValidate_Dimension_2_code(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_Customer_posting_group interface {
-		OnValidate_Customer_posting_group(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_Gen_bus_posting_group interface {
-		OnValidate_Gen_bus_posting_group(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_Vat_registration_no interface {
-		OnValidate_Vat_registration_no(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_Reason_code interface {
-		OnValidate_Reason_code(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_Posting_date interface {
-		OnValidate_Posting_date(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_Document_date interface {
-		OnValidate_Document_date(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_Due_date interface {
-		OnValidate_Due_date(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_Fin_charge_terms_code interface {
-		OnValidate_Fin_charge_terms_code(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_Interest_posted interface {
-		OnValidate_Interest_posted(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_Additional_fee_posted interface {
-		OnValidate_Additional_fee_posted(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_Posting_description interface {
-		OnValidate_Posting_description(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_No_printed interface {
-		OnValidate_No_printed(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_User_id interface {
-		OnValidate_User_id(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_No_series interface {
-		OnValidate_No_series(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_Pre_assigned_no_series interface {
-		OnValidate_Pre_assigned_no_series(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_Pre_assigned_no interface {
-		OnValidate_Pre_assigned_no(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_Source_code interface {
-		OnValidate_Source_code(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_Tax_area_code interface {
-		OnValidate_Tax_area_code(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_Tax_liable interface {
-		OnValidate_Tax_liable(rec *IssuedFinChargeMemoHeader) error
-	}
-	IssuedFinChargeMemoHeaderOnValidate_Tax_bus_posting_group interface {
-		OnValidate_Tax_bus_posting_group(rec *IssuedFinChargeMemoHeader) error
-	}
 )
 
 // issuedFinChargeMemoHeaderLogic is the registered business logic of Issued_Fin_Charge_Memo_Header, in
@@ -707,80 +430,9 @@ func issuedFinChargeMemoHeaderTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(IssuedFinChargeMemoHeaderOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(IssuedFinChargeMemoHeaderOnBeforeRename)
-	case "OnValidate_No":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_No)
-	case "OnValidate_Customer_no":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Customer_no)
-	case "OnValidate_Name":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Name)
-	case "OnValidate_Name_2":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Name_2)
-	case "OnValidate_Address":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Address)
-	case "OnValidate_Address_2":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Address_2)
-	case "OnValidate_Post_code":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Post_code)
-	case "OnValidate_City":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_City)
-	case "OnValidate_State":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_State)
-	case "OnValidate_Country_code":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Country_code)
-	case "OnValidate_Language_code":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Language_code)
-	case "OnValidate_Currency_code":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Currency_code)
-	case "OnValidate_Contact":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Contact)
-	case "OnValidate_Your_reference":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Your_reference)
-	case "OnValidate_Dimension_1_code":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Dimension_1_code)
-	case "OnValidate_Dimension_2_code":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Dimension_2_code)
-	case "OnValidate_Customer_posting_group":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Customer_posting_group)
-	case "OnValidate_Gen_bus_posting_group":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Gen_bus_posting_group)
-	case "OnValidate_Vat_registration_no":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Vat_registration_no)
-	case "OnValidate_Reason_code":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Reason_code)
-	case "OnValidate_Posting_date":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Posting_date)
-	case "OnValidate_Document_date":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Document_date)
-	case "OnValidate_Due_date":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Due_date)
-	case "OnValidate_Fin_charge_terms_code":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Fin_charge_terms_code)
-	case "OnValidate_Interest_posted":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Interest_posted)
-	case "OnValidate_Additional_fee_posted":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Additional_fee_posted)
-	case "OnValidate_Posting_description":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Posting_description)
-	case "OnValidate_No_printed":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_No_printed)
-	case "OnValidate_User_id":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_User_id)
-	case "OnValidate_No_series":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_No_series)
-	case "OnValidate_Pre_assigned_no_series":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Pre_assigned_no_series)
-	case "OnValidate_Pre_assigned_no":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Pre_assigned_no)
-	case "OnValidate_Source_code":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Source_code)
-	case "OnValidate_Tax_area_code":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Tax_area_code)
-	case "OnValidate_Tax_liable":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Tax_liable)
-	case "OnValidate_Tax_bus_posting_group":
-		_, ok = logic.(IssuedFinChargeMemoHeaderOnValidate_Tax_bus_posting_group)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return issuedFinChargeMemoHeaderFields.IsOnValidateTrigger(name, logic, (*IssuedFinChargeMemoHeader)(nil))
 	}
 	return true, ok
 }
@@ -1239,43 +891,7 @@ func (t *IssuedFinChargeMemoHeader) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *IssuedFinChargeMemoHeader) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["no"] = t.No
-	t.oldValues["customer_no"] = t.Customer_no
-	t.oldValues["name"] = t.Name
-	t.oldValues["name_2"] = t.Name_2
-	t.oldValues["address"] = t.Address
-	t.oldValues["address_2"] = t.Address_2
-	t.oldValues["post_code"] = t.Post_code
-	t.oldValues["city"] = t.City
-	t.oldValues["state"] = t.State
-	t.oldValues["country_code"] = t.Country_code
-	t.oldValues["language_code"] = t.Language_code
-	t.oldValues["currency_code"] = t.Currency_code
-	t.oldValues["contact"] = t.Contact
-	t.oldValues["your_reference"] = t.Your_reference
-	t.oldValues["dimension_1_code"] = t.Dimension_1_code
-	t.oldValues["dimension_2_code"] = t.Dimension_2_code
-	t.oldValues["customer_posting_group"] = t.Customer_posting_group
-	t.oldValues["gen_bus_posting_group"] = t.Gen_bus_posting_group
-	t.oldValues["vat_registration_no"] = t.Vat_registration_no
-	t.oldValues["reason_code"] = t.Reason_code
-	t.oldValues["posting_date"] = t.Posting_date
-	t.oldValues["document_date"] = t.Document_date
-	t.oldValues["due_date"] = t.Due_date
-	t.oldValues["fin_charge_terms_code"] = t.Fin_charge_terms_code
-	t.oldValues["interest_posted"] = t.Interest_posted
-	t.oldValues["additional_fee_posted"] = t.Additional_fee_posted
-	t.oldValues["posting_description"] = t.Posting_description
-	t.oldValues["no_printed"] = t.No_printed
-	t.oldValues["user_id"] = t.User_id
-	t.oldValues["no_series"] = t.No_series
-	t.oldValues["pre_assigned_no_series"] = t.Pre_assigned_no_series
-	t.oldValues["pre_assigned_no"] = t.Pre_assigned_no
-	t.oldValues["source_code"] = t.Source_code
-	t.oldValues["tax_area_code"] = t.Tax_area_code
-	t.oldValues["tax_liable"] = t.Tax_liable
-	t.oldValues["tax_bus_posting_group"] = t.Tax_bus_posting_group
+	t.oldValues = issuedFinChargeMemoHeaderFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1290,114 +906,7 @@ func (t *IssuedFinChargeMemoHeader) OldValue(fieldName string) interface{} {
 func (t *IssuedFinChargeMemoHeader) XRec() *IssuedFinChargeMemoHeader {
 	x := &IssuedFinChargeMemoHeader{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["no"].(types.Code); ok {
-		x.No = v
-	}
-	if v, ok := t.oldValues["customer_no"].(types.Code); ok {
-		x.Customer_no = v
-	}
-	if v, ok := t.oldValues["name"].(types.Text); ok {
-		x.Name = v
-	}
-	if v, ok := t.oldValues["name_2"].(types.Text); ok {
-		x.Name_2 = v
-	}
-	if v, ok := t.oldValues["address"].(types.Text); ok {
-		x.Address = v
-	}
-	if v, ok := t.oldValues["address_2"].(types.Text); ok {
-		x.Address_2 = v
-	}
-	if v, ok := t.oldValues["post_code"].(types.Code); ok {
-		x.Post_code = v
-	}
-	if v, ok := t.oldValues["city"].(types.Text); ok {
-		x.City = v
-	}
-	if v, ok := t.oldValues["state"].(types.Text); ok {
-		x.State = v
-	}
-	if v, ok := t.oldValues["country_code"].(types.Code); ok {
-		x.Country_code = v
-	}
-	if v, ok := t.oldValues["language_code"].(types.Code); ok {
-		x.Language_code = v
-	}
-	if v, ok := t.oldValues["currency_code"].(types.Code); ok {
-		x.Currency_code = v
-	}
-	if v, ok := t.oldValues["contact"].(types.Text); ok {
-		x.Contact = v
-	}
-	if v, ok := t.oldValues["your_reference"].(types.Text); ok {
-		x.Your_reference = v
-	}
-	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
-		x.Dimension_1_code = v
-	}
-	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
-		x.Dimension_2_code = v
-	}
-	if v, ok := t.oldValues["customer_posting_group"].(types.Code); ok {
-		x.Customer_posting_group = v
-	}
-	if v, ok := t.oldValues["gen_bus_posting_group"].(types.Code); ok {
-		x.Gen_bus_posting_group = v
-	}
-	if v, ok := t.oldValues["vat_registration_no"].(types.Text); ok {
-		x.Vat_registration_no = v
-	}
-	if v, ok := t.oldValues["reason_code"].(types.Code); ok {
-		x.Reason_code = v
-	}
-	if v, ok := t.oldValues["posting_date"].(types.Date); ok {
-		x.Posting_date = v
-	}
-	if v, ok := t.oldValues["document_date"].(types.Date); ok {
-		x.Document_date = v
-	}
-	if v, ok := t.oldValues["due_date"].(types.Date); ok {
-		x.Due_date = v
-	}
-	if v, ok := t.oldValues["fin_charge_terms_code"].(types.Code); ok {
-		x.Fin_charge_terms_code = v
-	}
-	if v, ok := t.oldValues["interest_posted"].(bool); ok {
-		x.Interest_posted = v
-	}
-	if v, ok := t.oldValues["additional_fee_posted"].(bool); ok {
-		x.Additional_fee_posted = v
-	}
-	if v, ok := t.oldValues["posting_description"].(types.Text); ok {
-		x.Posting_description = v
-	}
-	if v, ok := t.oldValues["no_printed"].(int); ok {
-		x.No_printed = v
-	}
-	if v, ok := t.oldValues["user_id"].(types.Code); ok {
-		x.User_id = v
-	}
-	if v, ok := t.oldValues["no_series"].(types.Code); ok {
-		x.No_series = v
-	}
-	if v, ok := t.oldValues["pre_assigned_no_series"].(types.Code); ok {
-		x.Pre_assigned_no_series = v
-	}
-	if v, ok := t.oldValues["pre_assigned_no"].(types.Code); ok {
-		x.Pre_assigned_no = v
-	}
-	if v, ok := t.oldValues["source_code"].(types.Code); ok {
-		x.Source_code = v
-	}
-	if v, ok := t.oldValues["tax_area_code"].(types.Code); ok {
-		x.Tax_area_code = v
-	}
-	if v, ok := t.oldValues["tax_liable"].(bool); ok {
-		x.Tax_liable = v
-	}
-	if v, ok := t.oldValues["tax_bus_posting_group"].(types.Code); ok {
-		x.Tax_bus_posting_group = v
-	}
+	issuedFinChargeMemoHeaderFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -2048,169 +1557,7 @@ func (t *IssuedFinChargeMemoHeader) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *IssuedFinChargeMemoHeader) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No.Equal(old)
-		}
-	case "customer_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Customer_no.Equal(old)
-		}
-	case "name":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Name.Equal(old)
-		}
-	case "name_2":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Name_2.Equal(old)
-		}
-	case "address":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Address.Equal(old)
-		}
-	case "address_2":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Address_2.Equal(old)
-		}
-	case "post_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Post_code.Equal(old)
-		}
-	case "city":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.City.Equal(old)
-		}
-	case "state":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.State.Equal(old)
-		}
-	case "country_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Country_code.Equal(old)
-		}
-	case "language_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Language_code.Equal(old)
-		}
-	case "currency_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Currency_code.Equal(old)
-		}
-	case "contact":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Contact.Equal(old)
-		}
-	case "your_reference":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Your_reference.Equal(old)
-		}
-	case "dimension_1_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_1_code.Equal(old)
-		}
-	case "dimension_2_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_2_code.Equal(old)
-		}
-	case "customer_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Customer_posting_group.Equal(old)
-		}
-	case "gen_bus_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Gen_bus_posting_group.Equal(old)
-		}
-	case "vat_registration_no":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Vat_registration_no.Equal(old)
-		}
-	case "reason_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Reason_code.Equal(old)
-		}
-	case "posting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Posting_date.Equal(old)
-		}
-	case "document_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Document_date.Equal(old)
-		}
-	case "due_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Due_date.Equal(old)
-		}
-	case "fin_charge_terms_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Fin_charge_terms_code.Equal(old)
-		}
-	case "interest_posted":
-		if old, ok := oldValue.(bool); ok {
-			return t.Interest_posted != old
-		}
-		return true // Type mismatch, assume changed
-	case "additional_fee_posted":
-		if old, ok := oldValue.(bool); ok {
-			return t.Additional_fee_posted != old
-		}
-		return true // Type mismatch, assume changed
-	case "posting_description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Posting_description.Equal(old)
-		}
-	case "no_printed":
-		if old, ok := oldValue.(int); ok {
-			return t.No_printed != old
-		}
-		return true // Type mismatch, assume changed
-	case "user_id":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.User_id.Equal(old)
-		}
-	case "no_series":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No_series.Equal(old)
-		}
-	case "pre_assigned_no_series":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Pre_assigned_no_series.Equal(old)
-		}
-	case "pre_assigned_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Pre_assigned_no.Equal(old)
-		}
-	case "source_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Source_code.Equal(old)
-		}
-	case "tax_area_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_area_code.Equal(old)
-		}
-	case "tax_liable":
-		if old, ok := oldValue.(bool); ok {
-			return t.Tax_liable != old
-		}
-		return true // Type mismatch, assume changed
-	case "tax_bus_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_bus_posting_group.Equal(old)
-		}
-	}
-
-	return false
+	return issuedFinChargeMemoHeaderFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -3146,81 +2493,7 @@ func (t *IssuedFinChargeMemoHeader) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *IssuedFinChargeMemoHeader) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("no"):
-		return "no", true
-	case strings.ToLower("customer_no"):
-		return "customer_no", true
-	case strings.ToLower("name"):
-		return "name", true
-	case strings.ToLower("name_2"):
-		return "name_2", true
-	case strings.ToLower("address"):
-		return "address", true
-	case strings.ToLower("address_2"):
-		return "address_2", true
-	case strings.ToLower("post_code"):
-		return "post_code", true
-	case strings.ToLower("city"):
-		return "city", true
-	case strings.ToLower("state"):
-		return "state", true
-	case strings.ToLower("country_code"):
-		return "country_code", true
-	case strings.ToLower("language_code"):
-		return "language_code", true
-	case strings.ToLower("currency_code"):
-		return "currency_code", true
-	case strings.ToLower("contact"):
-		return "contact", true
-	case strings.ToLower("your_reference"):
-		return "your_reference", true
-	case strings.ToLower("dimension_1_code"):
-		return "dimension_1_code", true
-	case strings.ToLower("dimension_2_code"):
-		return "dimension_2_code", true
-	case strings.ToLower("customer_posting_group"):
-		return "customer_posting_group", true
-	case strings.ToLower("gen_bus_posting_group"):
-		return "gen_bus_posting_group", true
-	case strings.ToLower("vat_registration_no"):
-		return "vat_registration_no", true
-	case strings.ToLower("reason_code"):
-		return "reason_code", true
-	case strings.ToLower("posting_date"):
-		return "posting_date", true
-	case strings.ToLower("document_date"):
-		return "document_date", true
-	case strings.ToLower("due_date"):
-		return "due_date", true
-	case strings.ToLower("fin_charge_terms_code"):
-		return "fin_charge_terms_code", true
-	case strings.ToLower("interest_posted"):
-		return "interest_posted", true
-	case strings.ToLower("additional_fee_posted"):
-		return "additional_fee_posted", true
-	case strings.ToLower("posting_description"):
-		return "posting_description", true
-	case strings.ToLower("no_printed"):
-		return "no_printed", true
-	case strings.ToLower("user_id"):
-		return "user_id", true
-	case strings.ToLower("no_series"):
-		return "no_series", true
-	case strings.ToLower("pre_assigned_no_series"):
-		return "pre_assigned_no_series", true
-	case strings.ToLower("pre_assigned_no"):
-		return "pre_assigned_no", true
-	case strings.ToLower("source_code"):
-		return "source_code", true
-	case strings.ToLower("tax_area_code"):
-		return "tax_area_code", true
-	case strings.ToLower("tax_liable"):
-		return "tax_liable", true
-	case strings.ToLower("tax_bus_posting_group"):
-		return "tax_bus_posting_group", true
-	}
-	return "", false
+	return issuedFinChargeMemoHeaderFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -4498,758 +3771,20 @@ func (t *IssuedFinChargeMemoHeader) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *IssuedFinChargeMemoHeader) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-		} else if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_No); ok {
-				if err := trg.OnValidate_No(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "customer_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Customer_no = v
-		} else if v, ok := value.(string); ok {
-			t.Customer_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field customer_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "customer_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Customer_no); ok {
-				if err := trg.OnValidate_Customer_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "name":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-		} else if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Name); ok {
-				if err := trg.OnValidate_Name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "name_2":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Name_2 = v
-		} else if v, ok := value.(string); ok {
-			t.Name_2 = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field name_2")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Name_2); ok {
-				if err := trg.OnValidate_Name_2(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "address":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Address = v
-		} else if v, ok := value.(string); ok {
-			t.Address = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field address")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Address); ok {
-				if err := trg.OnValidate_Address(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "address_2":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Address_2 = v
-		} else if v, ok := value.(string); ok {
-			t.Address_2 = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field address_2")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Address_2); ok {
-				if err := trg.OnValidate_Address_2(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "post_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Post_code = v
-		} else if v, ok := value.(string); ok {
-			t.Post_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field post_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "post_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Post_code); ok {
-				if err := trg.OnValidate_Post_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "city":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.City = v
-		} else if v, ok := value.(string); ok {
-			t.City = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field city")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_City); ok {
-				if err := trg.OnValidate_City(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "state":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.State = v
-		} else if v, ok := value.(string); ok {
-			t.State = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field state")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_State); ok {
-				if err := trg.OnValidate_State(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "country_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Country_code = v
-		} else if v, ok := value.(string); ok {
-			t.Country_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field country_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "country_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Country_code); ok {
-				if err := trg.OnValidate_Country_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "language_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Language_code = v
-		} else if v, ok := value.(string); ok {
-			t.Language_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field language_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "language_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Language_code); ok {
-				if err := trg.OnValidate_Language_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "currency_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Currency_code = v
-		} else if v, ok := value.(string); ok {
-			t.Currency_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field currency_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "currency_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Currency_code); ok {
-				if err := trg.OnValidate_Currency_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "contact":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Contact = v
-		} else if v, ok := value.(string); ok {
-			t.Contact = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field contact")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Contact); ok {
-				if err := trg.OnValidate_Contact(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "your_reference":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Your_reference = v
-		} else if v, ok := value.(string); ok {
-			t.Your_reference = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field your_reference")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Your_reference); ok {
-				if err := trg.OnValidate_Your_reference(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_1_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_1_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Dimension_1_code); ok {
-				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_2_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_2_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Dimension_2_code); ok {
-				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "customer_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Customer_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Customer_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field customer_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "customer_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Customer_posting_group); ok {
-				if err := trg.OnValidate_Customer_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "gen_bus_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Gen_bus_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Gen_bus_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field gen_bus_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "gen_bus_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Gen_bus_posting_group); ok {
-				if err := trg.OnValidate_Gen_bus_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "vat_registration_no":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Vat_registration_no = v
-		} else if v, ok := value.(string); ok {
-			t.Vat_registration_no = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field vat_registration_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Vat_registration_no); ok {
-				if err := trg.OnValidate_Vat_registration_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reason_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Reason_code = v
-		} else if v, ok := value.(string); ok {
-			t.Reason_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field reason_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "reason_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Reason_code); ok {
-				if err := trg.OnValidate_Reason_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "posting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Posting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Posting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field posting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Posting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field posting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Posting_date); ok {
-				if err := trg.OnValidate_Posting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Document_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Document_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field document_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Document_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field document_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Document_date); ok {
-				if err := trg.OnValidate_Document_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "due_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Due_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Due_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field due_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Due_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field due_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Due_date); ok {
-				if err := trg.OnValidate_Due_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fin_charge_terms_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Fin_charge_terms_code = v
-		} else if v, ok := value.(string); ok {
-			t.Fin_charge_terms_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field fin_charge_terms_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fin_charge_terms_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Fin_charge_terms_code); ok {
-				if err := trg.OnValidate_Fin_charge_terms_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "interest_posted":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Interest_posted = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Interest_posted = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field interest_posted")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Interest_posted); ok {
-				if err := trg.OnValidate_Interest_posted(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "additional_fee_posted":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Additional_fee_posted = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Additional_fee_posted = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field additional_fee_posted")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Additional_fee_posted); ok {
-				if err := trg.OnValidate_Additional_fee_posted(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "posting_description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Posting_description = v
-		} else if v, ok := value.(string); ok {
-			t.Posting_description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field posting_description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Posting_description); ok {
-				if err := trg.OnValidate_Posting_description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no_printed":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.No_printed = v
-		case float64:
-			t.No_printed = int(v)
-		case string:
-			if v == "" {
-				t.No_printed = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.No_printed = i
-			} else {
-				return fmt.Errorf("invalid integer value for field no_printed: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field no_printed")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_No_printed); ok {
-				if err := trg.OnValidate_No_printed(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "user_id":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-		} else if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field user_id")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "user_id"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_User_id); ok {
-				if err := trg.OnValidate_User_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no_series":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No_series = v
-		} else if v, ok := value.(string); ok {
-			t.No_series = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no_series")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "no_series"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_No_series); ok {
-				if err := trg.OnValidate_No_series(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "pre_assigned_no_series":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Pre_assigned_no_series = v
-		} else if v, ok := value.(string); ok {
-			t.Pre_assigned_no_series = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field pre_assigned_no_series")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "pre_assigned_no_series"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Pre_assigned_no_series); ok {
-				if err := trg.OnValidate_Pre_assigned_no_series(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "pre_assigned_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Pre_assigned_no = v
-		} else if v, ok := value.(string); ok {
-			t.Pre_assigned_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field pre_assigned_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Pre_assigned_no); ok {
-				if err := trg.OnValidate_Pre_assigned_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "source_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Source_code = v
-		} else if v, ok := value.(string); ok {
-			t.Source_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field source_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "source_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Source_code); ok {
-				if err := trg.OnValidate_Source_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_area_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_area_code = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_area_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_area_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_area_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Tax_area_code); ok {
-				if err := trg.OnValidate_Tax_area_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_liable":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Tax_liable = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Tax_liable = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field tax_liable")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Tax_liable); ok {
-				if err := trg.OnValidate_Tax_liable(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_bus_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_bus_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_bus_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_bus_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_bus_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IssuedFinChargeMemoHeaderOnValidate_Tax_bus_posting_group); ok {
-				if err := trg.OnValidate_Tax_bus_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := issuedFinChargeMemoHeaderFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &issuedFinChargeMemoHeaderFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -5258,402 +3793,18 @@ func (t *IssuedFinChargeMemoHeader) ValidateField(fieldName string, value interf
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *IssuedFinChargeMemoHeader) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.No, true
-	case 2:
-		return t.Customer_no, true
-	case 3:
-		return t.Name, true
-	case 4:
-		return t.Name_2, true
-	case 5:
-		return t.Address, true
-	case 6:
-		return t.Address_2, true
-	case 7:
-		return t.Post_code, true
-	case 8:
-		return t.City, true
-	case 9:
-		return t.State, true
-	case 10:
-		return t.Country_code, true
-	case 11:
-		return t.Language_code, true
-	case 12:
-		return t.Currency_code, true
-	case 13:
-		return t.Contact, true
-	case 14:
-		return t.Your_reference, true
-	case 15:
-		return t.Dimension_1_code, true
-	case 16:
-		return t.Dimension_2_code, true
-	case 17:
-		return t.Customer_posting_group, true
-	case 18:
-		return t.Gen_bus_posting_group, true
-	case 19:
-		return t.Vat_registration_no, true
-	case 20:
-		return t.Reason_code, true
-	case 21:
-		return t.Posting_date, true
-	case 22:
-		return t.Document_date, true
-	case 23:
-		return t.Due_date, true
-	case 25:
-		return t.Fin_charge_terms_code, true
-	case 26:
-		return t.Interest_posted, true
-	case 27:
-		return t.Additional_fee_posted, true
-	case 29:
-		return t.Posting_description, true
-	case 35:
-		return t.No_printed, true
-	case 36:
-		return t.User_id, true
-	case 37:
-		return t.No_series, true
-	case 38:
-		return t.Pre_assigned_no_series, true
-	case 39:
-		return t.Pre_assigned_no, true
-	case 40:
-		return t.Source_code, true
-	case 41:
-		return t.Tax_area_code, true
-	case 42:
-		return t.Tax_liable, true
-	case 43:
-		return t.Tax_bus_posting_group, true
-	}
-	return nil, false
+	return issuedFinChargeMemoHeaderFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *IssuedFinChargeMemoHeader) flowFieldValue(no int) (any, bool) {
-	switch no {
-	case 30:
-		return t.Comment, true
-	case 31:
-		return t.Remaining_amount, true
-	case 32:
-		return t.Interest_amount, true
-	case 33:
-		return t.Additional_fee, true
-	case 34:
-		return t.Tax_amount, true
-	}
-	return nil, false
+	return issuedFinChargeMemoHeaderFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *IssuedFinChargeMemoHeader) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Customer_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Customer_no = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Text); ok {
-			t.Name_2 = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Name_2 = types.NewText(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Text); ok {
-			t.Address = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Address = types.NewText(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Text); ok {
-			t.Address_2 = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Address_2 = types.NewText(v)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Code); ok {
-			t.Post_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Post_code = types.NewCode(v)
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Text); ok {
-			t.City = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.City = types.NewText(v)
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.Text); ok {
-			t.State = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.State = types.NewText(v)
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Code); ok {
-			t.Country_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Country_code = types.NewCode(v)
-			return true
-		}
-	case 11:
-		if v, ok := value.(types.Code); ok {
-			t.Language_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Language_code = types.NewCode(v)
-			return true
-		}
-	case 12:
-		if v, ok := value.(types.Code); ok {
-			t.Currency_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Currency_code = types.NewCode(v)
-			return true
-		}
-	case 13:
-		if v, ok := value.(types.Text); ok {
-			t.Contact = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Contact = types.NewText(v)
-			return true
-		}
-	case 14:
-		if v, ok := value.(types.Text); ok {
-			t.Your_reference = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Your_reference = types.NewText(v)
-			return true
-		}
-	case 15:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-			return true
-		}
-	case 16:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-			return true
-		}
-	case 17:
-		if v, ok := value.(types.Code); ok {
-			t.Customer_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Customer_posting_group = types.NewCode(v)
-			return true
-		}
-	case 18:
-		if v, ok := value.(types.Code); ok {
-			t.Gen_bus_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Gen_bus_posting_group = types.NewCode(v)
-			return true
-		}
-	case 19:
-		if v, ok := value.(types.Text); ok {
-			t.Vat_registration_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Vat_registration_no = types.NewText(v)
-			return true
-		}
-	case 20:
-		if v, ok := value.(types.Code); ok {
-			t.Reason_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Reason_code = types.NewCode(v)
-			return true
-		}
-	case 21:
-		if v, ok := value.(types.Date); ok {
-			t.Posting_date = v
-			return true
-		}
-	case 22:
-		if v, ok := value.(types.Date); ok {
-			t.Document_date = v
-			return true
-		}
-	case 23:
-		if v, ok := value.(types.Date); ok {
-			t.Due_date = v
-			return true
-		}
-	case 25:
-		if v, ok := value.(types.Code); ok {
-			t.Fin_charge_terms_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Fin_charge_terms_code = types.NewCode(v)
-			return true
-		}
-	case 26:
-		if v, ok := value.(bool); ok {
-			t.Interest_posted = v
-			return true
-		}
-	case 27:
-		if v, ok := value.(bool); ok {
-			t.Additional_fee_posted = v
-			return true
-		}
-	case 29:
-		if v, ok := value.(types.Text); ok {
-			t.Posting_description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Posting_description = types.NewText(v)
-			return true
-		}
-	case 35:
-		if v, ok := value.(int); ok {
-			t.No_printed = v
-			return true
-		}
-	case 36:
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-			return true
-		}
-	case 37:
-		if v, ok := value.(types.Code); ok {
-			t.No_series = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No_series = types.NewCode(v)
-			return true
-		}
-	case 38:
-		if v, ok := value.(types.Code); ok {
-			t.Pre_assigned_no_series = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Pre_assigned_no_series = types.NewCode(v)
-			return true
-		}
-	case 39:
-		if v, ok := value.(types.Code); ok {
-			t.Pre_assigned_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Pre_assigned_no = types.NewCode(v)
-			return true
-		}
-	case 40:
-		if v, ok := value.(types.Code); ok {
-			t.Source_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Source_code = types.NewCode(v)
-			return true
-		}
-	case 41:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_area_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_area_code = types.NewCode(v)
-			return true
-		}
-	case 42:
-		if v, ok := value.(bool); ok {
-			t.Tax_liable = v
-			return true
-		}
-	case 43:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_bus_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_bus_posting_group = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return issuedFinChargeMemoHeaderFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -6126,81 +4277,7 @@ func (t *IssuedFinChargeMemoHeader) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *IssuedFinChargeMemoHeader) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "no":
-		return t.No, true
-	case "customer_no":
-		return t.Customer_no, true
-	case "name":
-		return t.Name, true
-	case "name_2":
-		return t.Name_2, true
-	case "address":
-		return t.Address, true
-	case "address_2":
-		return t.Address_2, true
-	case "post_code":
-		return t.Post_code, true
-	case "city":
-		return t.City, true
-	case "state":
-		return t.State, true
-	case "country_code":
-		return t.Country_code, true
-	case "language_code":
-		return t.Language_code, true
-	case "currency_code":
-		return t.Currency_code, true
-	case "contact":
-		return t.Contact, true
-	case "your_reference":
-		return t.Your_reference, true
-	case "dimension_1_code":
-		return t.Dimension_1_code, true
-	case "dimension_2_code":
-		return t.Dimension_2_code, true
-	case "customer_posting_group":
-		return t.Customer_posting_group, true
-	case "gen_bus_posting_group":
-		return t.Gen_bus_posting_group, true
-	case "vat_registration_no":
-		return t.Vat_registration_no, true
-	case "reason_code":
-		return t.Reason_code, true
-	case "posting_date":
-		return t.Posting_date, true
-	case "document_date":
-		return t.Document_date, true
-	case "due_date":
-		return t.Due_date, true
-	case "fin_charge_terms_code":
-		return t.Fin_charge_terms_code, true
-	case "interest_posted":
-		return t.Interest_posted, true
-	case "additional_fee_posted":
-		return t.Additional_fee_posted, true
-	case "posting_description":
-		return t.Posting_description, true
-	case "no_printed":
-		return t.No_printed, true
-	case "user_id":
-		return t.User_id, true
-	case "no_series":
-		return t.No_series, true
-	case "pre_assigned_no_series":
-		return t.Pre_assigned_no_series, true
-	case "pre_assigned_no":
-		return t.Pre_assigned_no, true
-	case "source_code":
-		return t.Source_code, true
-	case "tax_area_code":
-		return t.Tax_area_code, true
-	case "tax_liable":
-		return t.Tax_liable, true
-	case "tax_bus_posting_group":
-		return t.Tax_bus_posting_group, true
-	}
-	return nil, false
+	return issuedFinChargeMemoHeaderFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -6321,246 +4398,12 @@ func (t *IssuedFinChargeMemoHeader) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *IssuedFinChargeMemoHeader) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"no":                     t.No.String(),
-		"customer_no":            t.Customer_no.String(),
-		"name":                   t.Name.String(),
-		"name_2":                 t.Name_2.String(),
-		"address":                t.Address.String(),
-		"address_2":              t.Address_2.String(),
-		"post_code":              t.Post_code.String(),
-		"city":                   t.City.String(),
-		"state":                  t.State.String(),
-		"country_code":           t.Country_code.String(),
-		"language_code":          t.Language_code.String(),
-		"currency_code":          t.Currency_code.String(),
-		"contact":                t.Contact.String(),
-		"your_reference":         t.Your_reference.String(),
-		"dimension_1_code":       t.Dimension_1_code.String(),
-		"dimension_2_code":       t.Dimension_2_code.String(),
-		"customer_posting_group": t.Customer_posting_group.String(),
-		"gen_bus_posting_group":  t.Gen_bus_posting_group.String(),
-		"vat_registration_no":    t.Vat_registration_no.String(),
-		"reason_code":            t.Reason_code.String(),
-		"posting_date":           t.Posting_date.String(),
-		"document_date":          t.Document_date.String(),
-		"due_date":               t.Due_date.String(),
-		"fin_charge_terms_code":  t.Fin_charge_terms_code.String(),
-		"interest_posted":        t.Interest_posted,
-		"additional_fee_posted":  t.Additional_fee_posted,
-		"posting_description":    t.Posting_description.String(),
-		// FlowField: comment
-		"comment": t.Comment,
-		// FlowField: remaining_amount
-		"remaining_amount": t.Remaining_amount.String(),
-		// FlowField: interest_amount
-		"interest_amount": t.Interest_amount.String(),
-		// FlowField: additional_fee
-		"additional_fee": t.Additional_fee.String(),
-		// FlowField: tax_amount
-		"tax_amount":             t.Tax_amount.String(),
-		"no_printed":             t.No_printed,
-		"user_id":                t.User_id.String(),
-		"no_series":              t.No_series.String(),
-		"pre_assigned_no_series": t.Pre_assigned_no_series.String(),
-		"pre_assigned_no":        t.Pre_assigned_no.String(),
-		"source_code":            t.Source_code.String(),
-		"tax_area_code":          t.Tax_area_code.String(),
-		"tax_liable":             t.Tax_liable,
-		"tax_bus_posting_group":  t.Tax_bus_posting_group.String(),
-	}
+	return issuedFinChargeMemoHeaderFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *IssuedFinChargeMemoHeader) FromMap(data map[string]interface{}) {
-	if v, ok := data["no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No = types.NewCode(s)
-		}
-	}
-	if v, ok := data["customer_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Customer_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Name = types.NewText(s)
-		}
-	}
-	if v, ok := data["name_2"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Name_2 = types.NewText(s)
-		}
-	}
-	if v, ok := data["address"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Address = types.NewText(s)
-		}
-	}
-	if v, ok := data["address_2"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Address_2 = types.NewText(s)
-		}
-	}
-	if v, ok := data["post_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Post_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["city"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.City = types.NewText(s)
-		}
-	}
-	if v, ok := data["state"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.State = types.NewText(s)
-		}
-	}
-	if v, ok := data["country_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Country_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["language_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Language_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["currency_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Currency_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["contact"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Contact = types.NewText(s)
-		}
-	}
-	if v, ok := data["your_reference"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Your_reference = types.NewText(s)
-		}
-	}
-	if v, ok := data["dimension_1_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_1_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["dimension_2_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_2_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["customer_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Customer_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["gen_bus_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Gen_bus_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["vat_registration_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Vat_registration_no = types.NewText(s)
-		}
-	}
-	if v, ok := data["reason_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Reason_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["posting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Posting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["document_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Document_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["due_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Due_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["fin_charge_terms_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fin_charge_terms_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["interest_posted"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Interest_posted = b
-		}
-	}
-	if v, ok := data["additional_fee_posted"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Additional_fee_posted = b
-		}
-	}
-	if v, ok := data["posting_description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Posting_description = types.NewText(s)
-		}
-	}
-	if v, ok := data["no_printed"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.No_printed = int(val)
-		case int:
-			t.No_printed = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.No_printed = n
-			}
-		}
-	}
-	if v, ok := data["user_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.User_id = types.NewCode(s)
-		}
-	}
-	if v, ok := data["no_series"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No_series = types.NewCode(s)
-		}
-	}
-	if v, ok := data["pre_assigned_no_series"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Pre_assigned_no_series = types.NewCode(s)
-		}
-	}
-	if v, ok := data["pre_assigned_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Pre_assigned_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["source_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Source_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_area_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_area_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_liable"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Tax_liable = b
-		}
-	}
-	if v, ok := data["tax_bus_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_bus_posting_group = types.NewCode(s)
-		}
-	}
+	issuedFinChargeMemoHeaderFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -6581,422 +4424,699 @@ func (t *IssuedFinChargeMemoHeader) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *IssuedFinChargeMemoHeader) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "customer_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "name",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "name_2",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "address",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "address_2",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "post_code",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "city",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "state",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "country_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "language_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "currency_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         13,
-			Name:       "contact",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         14,
-			Name:       "your_reference",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         15,
-			Name:       "dimension_1_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         16,
-			Name:       "dimension_2_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         17,
-			Name:       "customer_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         18,
-			Name:       "gen_bus_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         19,
-			Name:       "vat_registration_no",
-			Type:       tables.FieldTypeText,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         20,
-			Name:       "reason_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         21,
-			Name:       "posting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         22,
-			Name:       "document_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         23,
-			Name:       "due_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         25,
-			Name:       "fin_charge_terms_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         26,
-			Name:       "interest_posted",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         27,
-			Name:       "additional_fee_posted",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         29,
-			Name:       "posting_description",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         30,
-			Name:       "comment",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  true,
-		},
-		{
-			No:            31,
-			Name:          "remaining_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            32,
-			Name:          "interest_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            33,
-			Name:          "additional_fee",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            34,
-			Name:          "tax_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         35,
-			Name:       "no_printed",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         36,
-			Name:       "user_id",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         37,
-			Name:       "no_series",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         38,
-			Name:       "pre_assigned_no_series",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         39,
-			Name:       "pre_assigned_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         40,
-			Name:       "source_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         41,
-			Name:       "tax_area_code",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         42,
-			Name:       "tax_liable",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         43,
-			Name:       "tax_bus_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return issuedFinChargeMemoHeaderFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in issuedFinChargeMemoHeaderFields.Fields
+func (t *IssuedFinChargeMemoHeader) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.No
+	case 1:
+		return &t.Customer_no
+	case 2:
+		return &t.Name
+	case 3:
+		return &t.Name_2
+	case 4:
+		return &t.Address
+	case 5:
+		return &t.Address_2
+	case 6:
+		return &t.Post_code
+	case 7:
+		return &t.City
+	case 8:
+		return &t.State
+	case 9:
+		return &t.Country_code
+	case 10:
+		return &t.Language_code
+	case 11:
+		return &t.Currency_code
+	case 12:
+		return &t.Contact
+	case 13:
+		return &t.Your_reference
+	case 14:
+		return &t.Dimension_1_code
+	case 15:
+		return &t.Dimension_2_code
+	case 16:
+		return &t.Customer_posting_group
+	case 17:
+		return &t.Gen_bus_posting_group
+	case 18:
+		return &t.Vat_registration_no
+	case 19:
+		return &t.Reason_code
+	case 20:
+		return &t.Posting_date
+	case 21:
+		return &t.Document_date
+	case 22:
+		return &t.Due_date
+	case 23:
+		return &t.Fin_charge_terms_code
+	case 24:
+		return &t.Interest_posted
+	case 25:
+		return &t.Additional_fee_posted
+	case 26:
+		return &t.Posting_description
+	case 27:
+		return &t.Comment
+	case 28:
+		return &t.Remaining_amount
+	case 29:
+		return &t.Interest_amount
+	case 30:
+		return &t.Additional_fee
+	case 31:
+		return &t.Tax_amount
+	case 32:
+		return &t.No_printed
+	case 33:
+		return &t.User_id
+	case 34:
+		return &t.No_series
+	case 35:
+		return &t.Pre_assigned_no_series
+	case 36:
+		return &t.Pre_assigned_no
+	case 37:
+		return &t.Source_code
+	case 38:
+		return &t.Tax_area_code
+	case 39:
+		return &t.Tax_liable
+	case 40:
+		return &t.Tax_bus_posting_group
 	}
+	return nil
+}
+
+// issuedFinChargeMemoHeaderFields describes the fields of Issued_Fin_Charge_Memo_Header for the record functions
+// written once in foundation/tables
+var issuedFinChargeMemoHeaderFields = &tables.TableFields{
+	Table: IssuedFinChargeMemoHeaderTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_No",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "customer_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Customer_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "name",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "name_2",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Name_2",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "address",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Address",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "address_2",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Address_2",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "post_code",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Post_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "city",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_City",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "state",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_State",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "country_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Country_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "language_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Language_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "currency_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Currency_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "contact",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Contact",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "your_reference",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Your_reference",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         15,
+				Name:       "dimension_1_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_1_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         16,
+				Name:       "dimension_2_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_2_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         17,
+				Name:       "customer_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Customer_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         18,
+				Name:       "gen_bus_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Gen_bus_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         19,
+				Name:       "vat_registration_no",
+				Type:       tables.FieldTypeText,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Vat_registration_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         20,
+				Name:       "reason_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Reason_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         21,
+				Name:       "posting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Posting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         22,
+				Name:       "document_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Document_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         23,
+				Name:       "due_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Due_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         25,
+				Name:       "fin_charge_terms_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Fin_charge_terms_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         26,
+				Name:       "interest_posted",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Interest_posted",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         27,
+				Name:       "additional_fee_posted",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Additional_fee_posted",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         29,
+				Name:       "posting_description",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Posting_description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         30,
+				Name:       "comment",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  true,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Comment",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            31,
+				Name:          "remaining_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Remaining_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            32,
+				Name:          "interest_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Interest_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            33,
+				Name:          "additional_fee",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Additional_fee",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            34,
+				Name:          "tax_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Tax_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         35,
+				Name:       "no_printed",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_No_printed",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         36,
+				Name:       "user_id",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_User_id",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         37,
+				Name:       "no_series",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_No_series",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         38,
+				Name:       "pre_assigned_no_series",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Pre_assigned_no_series",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         39,
+				Name:       "pre_assigned_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Pre_assigned_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         40,
+				Name:       "source_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Source_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         41,
+				Name:       "tax_area_code",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_area_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         42,
+				Name:       "tax_liable",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Tax_liable",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         43,
+				Name:       "tax_bus_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_bus_posting_group",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

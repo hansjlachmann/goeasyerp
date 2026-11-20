@@ -113,24 +113,12 @@ var ResourcesSetup_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *ResourcesSetup) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "primary_key":
-		return 1
-	case "resource_nos":
-		return 2
-	}
-	return 0
+	return resourcesSetupFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *ResourcesSetup) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "primary_key"
-	case 2:
-		return "resource_nos"
-	}
-	return ""
+	return resourcesSetupFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -242,12 +230,6 @@ type (
 	ResourcesSetupOnBeforeRename interface {
 		OnBeforeRename(rec *ResourcesSetup, handled *bool) error
 	}
-	ResourcesSetupOnValidate_Primary_key interface {
-		OnValidate_Primary_key(rec *ResourcesSetup) error
-	}
-	ResourcesSetupOnValidate_Resource_nos interface {
-		OnValidate_Resource_nos(rec *ResourcesSetup) error
-	}
 )
 
 // resourcesSetupLogic is the registered business logic of Resources_Setup, in
@@ -290,12 +272,9 @@ func resourcesSetupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ResourcesSetupOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(ResourcesSetupOnBeforeRename)
-	case "OnValidate_Primary_key":
-		_, ok = logic.(ResourcesSetupOnValidate_Primary_key)
-	case "OnValidate_Resource_nos":
-		_, ok = logic.(ResourcesSetupOnValidate_Resource_nos)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return resourcesSetupFields.IsOnValidateTrigger(name, logic, (*ResourcesSetup)(nil))
 	}
 	return true, ok
 }
@@ -592,9 +571,7 @@ func (t *ResourcesSetup) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *ResourcesSetup) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["primary_key"] = t.Primary_key
-	t.oldValues["resource_nos"] = t.Resource_nos
+	t.oldValues = resourcesSetupFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -609,12 +586,7 @@ func (t *ResourcesSetup) OldValue(fieldName string) interface{} {
 func (t *ResourcesSetup) XRec() *ResourcesSetup {
 	x := &ResourcesSetup{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["primary_key"].(types.Code); ok {
-		x.Primary_key = v
-	}
-	if v, ok := t.oldValues["resource_nos"].(types.Code); ok {
-		x.Resource_nos = v
-	}
+	resourcesSetupFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -869,29 +841,7 @@ func (t *ResourcesSetup) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *ResourcesSetup) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "primary_key":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Primary_key.Equal(old)
-		}
-	case "resource_nos":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Resource_nos.Equal(old)
-		}
-	}
-
-	return false
+	return resourcesSetupFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1092,13 +1042,7 @@ func (t *ResourcesSetup) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *ResourcesSetup) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("primary_key"):
-		return "primary_key", true
-	case strings.ToLower("resource_nos"):
-		return "resource_nos", true
-	}
-	return "", false
+	return resourcesSetupFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -1907,52 +1851,20 @@ func (t *ResourcesSetup) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *ResourcesSetup) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "primary_key":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Primary_key = v
-		} else if v, ok := value.(string); ok {
-			t.Primary_key = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field primary_key")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ResourcesSetupOnValidate_Primary_key); ok {
-				if err := trg.OnValidate_Primary_key(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "resource_nos":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Resource_nos = v
-		} else if v, ok := value.(string); ok {
-			t.Resource_nos = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field resource_nos")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "resource_nos"); err != nil {
+	i, err := resourcesSetupFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
+	}
+	f := &resourcesSetupFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
 			return err
 		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ResourcesSetupOnValidate_Resource_nos); ok {
-				if err := trg.OnValidate_Resource_nos(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -1961,46 +1873,18 @@ func (t *ResourcesSetup) ValidateField(fieldName string, value interface{}) erro
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *ResourcesSetup) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Primary_key, true
-	case 2:
-		return t.Resource_nos, true
-	}
-	return nil, false
+	return resourcesSetupFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *ResourcesSetup) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return resourcesSetupFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *ResourcesSetup) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Primary_key = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Primary_key = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Resource_nos = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Resource_nos = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return resourcesSetupFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2449,13 +2333,7 @@ func (t *ResourcesSetup) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *ResourcesSetup) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "primary_key":
-		return t.Primary_key, true
-	case "resource_nos":
-		return t.Resource_nos, true
-	}
-	return nil, false
+	return resourcesSetupFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2542,24 +2420,12 @@ func (t *ResourcesSetup) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *ResourcesSetup) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"primary_key":  t.Primary_key.String(),
-		"resource_nos": t.Resource_nos.String(),
-	}
+	return resourcesSetupFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *ResourcesSetup) FromMap(data map[string]interface{}) {
-	if v, ok := data["primary_key"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Primary_key = types.NewCode(s)
-		}
-	}
-	if v, ok := data["resource_nos"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Resource_nos = types.NewCode(s)
-		}
-	}
+	resourcesSetupFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2580,28 +2446,55 @@ func (t *ResourcesSetup) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *ResourcesSetup) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "primary_key",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "resource_nos",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return resourcesSetupFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in resourcesSetupFields.Fields
+func (t *ResourcesSetup) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Primary_key
+	case 1:
+		return &t.Resource_nos
 	}
+	return nil
+}
+
+// resourcesSetupFields describes the fields of Resources_Setup for the record functions
+// written once in foundation/tables
+var resourcesSetupFields = &tables.TableFields{
+	Table: ResourcesSetupTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "primary_key",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Primary_key",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "resource_nos",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Resource_nos",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

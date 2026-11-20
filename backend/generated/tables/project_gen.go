@@ -41,11 +41,10 @@ package tables
 
 import (
 	"database/sql"
-	"encoding/base64"
+
 	"fmt"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -410,200 +409,12 @@ var Project_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *Project) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "no":
-		return 1
-	case "search_description":
-		return 2
-	case "description":
-		return 3
-	case "description_2":
-		return 4
-	case "bill_to_customer_no":
-		return 5
-	case "creation_date":
-		return 12
-	case "starting_date":
-		return 13
-	case "ending_date":
-		return 14
-	case "completion_date":
-		return 15
-	case "project_posting_date":
-		return 16
-	case "recognition_date":
-		return 17
-	case "completion_percent":
-		return 18
-	case "status":
-		return 19
-	case "person_responsible":
-		return 20
-	case "dimension_1_code":
-		return 21
-	case "dimension_2_code":
-		return 22
-	case "project_posting_group":
-		return 23
-	case "blocked":
-		return 24
-	case "recognition_method":
-		return 28
-	case "last_date_modified":
-		return 29
-	case "comment":
-		return 30
-	case "application_method":
-		return 41
-	case "project_usage_posting":
-		return 42
-	case "budgeted_cost":
-		return 44
-	case "budgeted_price":
-		return 45
-	case "usage_cost":
-		return 46
-	case "usage_price":
-		return 47
-	case "invoiced_price":
-		return 48
-	case "budgeted_res_qty":
-		return 49
-	case "budgeted_res_gr_qty":
-		return 56
-	case "picture":
-		return 57
-	case "name":
-		return 58
-	case "address":
-		return 59
-	case "address_2":
-		return 60
-	case "city":
-		return 61
-	case "contact":
-		return 62
-	case "state":
-		return 63
-	case "post_code":
-		return 64
-	case "no_series":
-		return 66
-	case "type_filter":
-		return 43
-	case "resource_filter":
-		return 50
-	case "date_filter":
-		return 51
-	case "phase_filter":
-		return 52
-	case "task_filter":
-		return 53
-	case "step_filter":
-		return 54
-	case "resource_gr_filter":
-		return 55
-	}
-	return 0
+	return projectFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *Project) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "no"
-	case 2:
-		return "search_description"
-	case 3:
-		return "description"
-	case 4:
-		return "description_2"
-	case 5:
-		return "bill_to_customer_no"
-	case 12:
-		return "creation_date"
-	case 13:
-		return "starting_date"
-	case 14:
-		return "ending_date"
-	case 15:
-		return "completion_date"
-	case 16:
-		return "project_posting_date"
-	case 17:
-		return "recognition_date"
-	case 18:
-		return "completion_percent"
-	case 19:
-		return "status"
-	case 20:
-		return "person_responsible"
-	case 21:
-		return "dimension_1_code"
-	case 22:
-		return "dimension_2_code"
-	case 23:
-		return "project_posting_group"
-	case 24:
-		return "blocked"
-	case 28:
-		return "recognition_method"
-	case 29:
-		return "last_date_modified"
-	case 30:
-		return "comment"
-	case 41:
-		return "application_method"
-	case 42:
-		return "project_usage_posting"
-	case 44:
-		return "budgeted_cost"
-	case 45:
-		return "budgeted_price"
-	case 46:
-		return "usage_cost"
-	case 47:
-		return "usage_price"
-	case 48:
-		return "invoiced_price"
-	case 49:
-		return "budgeted_res_qty"
-	case 56:
-		return "budgeted_res_gr_qty"
-	case 57:
-		return "picture"
-	case 58:
-		return "name"
-	case 59:
-		return "address"
-	case 60:
-		return "address_2"
-	case 61:
-		return "city"
-	case 62:
-		return "contact"
-	case 63:
-		return "state"
-	case 64:
-		return "post_code"
-	case 66:
-		return "no_series"
-	case 43:
-		return "type_filter"
-	case 50:
-		return "resource_filter"
-	case 51:
-		return "date_filter"
-	case 52:
-		return "phase_filter"
-	case 53:
-		return "task_filter"
-	case 54:
-		return "step_filter"
-	case 55:
-		return "resource_gr_filter"
-	}
-	return ""
+	return projectFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -707,30 +518,6 @@ type (
 	ProjectOnBeforeRename interface {
 		OnBeforeRename(rec *Project, handled *bool) error
 	}
-	ProjectOnValidate_No                    interface{ OnValidate_No(rec *Project) error }
-	ProjectOnValidate_Search_description    interface{ OnValidate_Search_description(rec *Project) error }
-	ProjectOnValidate_Description           interface{ OnValidate_Description(rec *Project) error }
-	ProjectOnValidate_Description_2         interface{ OnValidate_Description_2(rec *Project) error }
-	ProjectOnValidate_Bill_to_customer_no   interface{ OnValidate_Bill_to_customer_no(rec *Project) error }
-	ProjectOnValidate_Creation_date         interface{ OnValidate_Creation_date(rec *Project) error }
-	ProjectOnValidate_Starting_date         interface{ OnValidate_Starting_date(rec *Project) error }
-	ProjectOnValidate_Ending_date           interface{ OnValidate_Ending_date(rec *Project) error }
-	ProjectOnValidate_Completion_date       interface{ OnValidate_Completion_date(rec *Project) error }
-	ProjectOnValidate_Project_posting_date  interface{ OnValidate_Project_posting_date(rec *Project) error }
-	ProjectOnValidate_Recognition_date      interface{ OnValidate_Recognition_date(rec *Project) error }
-	ProjectOnValidate_Completion_percent    interface{ OnValidate_Completion_percent(rec *Project) error }
-	ProjectOnValidate_Status                interface{ OnValidate_Status(rec *Project) error }
-	ProjectOnValidate_Person_responsible    interface{ OnValidate_Person_responsible(rec *Project) error }
-	ProjectOnValidate_Dimension_1_code      interface{ OnValidate_Dimension_1_code(rec *Project) error }
-	ProjectOnValidate_Dimension_2_code      interface{ OnValidate_Dimension_2_code(rec *Project) error }
-	ProjectOnValidate_Project_posting_group interface{ OnValidate_Project_posting_group(rec *Project) error }
-	ProjectOnValidate_Blocked               interface{ OnValidate_Blocked(rec *Project) error }
-	ProjectOnValidate_Recognition_method    interface{ OnValidate_Recognition_method(rec *Project) error }
-	ProjectOnValidate_Last_date_modified    interface{ OnValidate_Last_date_modified(rec *Project) error }
-	ProjectOnValidate_Application_method    interface{ OnValidate_Application_method(rec *Project) error }
-	ProjectOnValidate_Project_usage_posting interface{ OnValidate_Project_usage_posting(rec *Project) error }
-	ProjectOnValidate_Picture               interface{ OnValidate_Picture(rec *Project) error }
-	ProjectOnValidate_No_series             interface{ OnValidate_No_series(rec *Project) error }
 )
 
 // projectLogic is the registered business logic of Project, in
@@ -773,56 +560,9 @@ func projectTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ProjectOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(ProjectOnBeforeRename)
-	case "OnValidate_No":
-		_, ok = logic.(ProjectOnValidate_No)
-	case "OnValidate_Search_description":
-		_, ok = logic.(ProjectOnValidate_Search_description)
-	case "OnValidate_Description":
-		_, ok = logic.(ProjectOnValidate_Description)
-	case "OnValidate_Description_2":
-		_, ok = logic.(ProjectOnValidate_Description_2)
-	case "OnValidate_Bill_to_customer_no":
-		_, ok = logic.(ProjectOnValidate_Bill_to_customer_no)
-	case "OnValidate_Creation_date":
-		_, ok = logic.(ProjectOnValidate_Creation_date)
-	case "OnValidate_Starting_date":
-		_, ok = logic.(ProjectOnValidate_Starting_date)
-	case "OnValidate_Ending_date":
-		_, ok = logic.(ProjectOnValidate_Ending_date)
-	case "OnValidate_Completion_date":
-		_, ok = logic.(ProjectOnValidate_Completion_date)
-	case "OnValidate_Project_posting_date":
-		_, ok = logic.(ProjectOnValidate_Project_posting_date)
-	case "OnValidate_Recognition_date":
-		_, ok = logic.(ProjectOnValidate_Recognition_date)
-	case "OnValidate_Completion_percent":
-		_, ok = logic.(ProjectOnValidate_Completion_percent)
-	case "OnValidate_Status":
-		_, ok = logic.(ProjectOnValidate_Status)
-	case "OnValidate_Person_responsible":
-		_, ok = logic.(ProjectOnValidate_Person_responsible)
-	case "OnValidate_Dimension_1_code":
-		_, ok = logic.(ProjectOnValidate_Dimension_1_code)
-	case "OnValidate_Dimension_2_code":
-		_, ok = logic.(ProjectOnValidate_Dimension_2_code)
-	case "OnValidate_Project_posting_group":
-		_, ok = logic.(ProjectOnValidate_Project_posting_group)
-	case "OnValidate_Blocked":
-		_, ok = logic.(ProjectOnValidate_Blocked)
-	case "OnValidate_Recognition_method":
-		_, ok = logic.(ProjectOnValidate_Recognition_method)
-	case "OnValidate_Last_date_modified":
-		_, ok = logic.(ProjectOnValidate_Last_date_modified)
-	case "OnValidate_Application_method":
-		_, ok = logic.(ProjectOnValidate_Application_method)
-	case "OnValidate_Project_usage_posting":
-		_, ok = logic.(ProjectOnValidate_Project_usage_posting)
-	case "OnValidate_Picture":
-		_, ok = logic.(ProjectOnValidate_Picture)
-	case "OnValidate_No_series":
-		_, ok = logic.(ProjectOnValidate_No_series)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return projectFields.IsOnValidateTrigger(name, logic, (*Project)(nil))
 	}
 	return true, ok
 }
@@ -1235,31 +975,7 @@ func (t *Project) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *Project) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["no"] = t.No
-	t.oldValues["search_description"] = t.Search_description
-	t.oldValues["description"] = t.Description
-	t.oldValues["description_2"] = t.Description_2
-	t.oldValues["bill_to_customer_no"] = t.Bill_to_customer_no
-	t.oldValues["creation_date"] = t.Creation_date
-	t.oldValues["starting_date"] = t.Starting_date
-	t.oldValues["ending_date"] = t.Ending_date
-	t.oldValues["completion_date"] = t.Completion_date
-	t.oldValues["project_posting_date"] = t.Project_posting_date
-	t.oldValues["recognition_date"] = t.Recognition_date
-	t.oldValues["completion_percent"] = t.Completion_percent
-	t.oldValues["status"] = t.Status
-	t.oldValues["person_responsible"] = t.Person_responsible
-	t.oldValues["dimension_1_code"] = t.Dimension_1_code
-	t.oldValues["dimension_2_code"] = t.Dimension_2_code
-	t.oldValues["project_posting_group"] = t.Project_posting_group
-	t.oldValues["blocked"] = t.Blocked
-	t.oldValues["recognition_method"] = t.Recognition_method
-	t.oldValues["last_date_modified"] = t.Last_date_modified
-	t.oldValues["application_method"] = t.Application_method
-	t.oldValues["project_usage_posting"] = t.Project_usage_posting
-	t.oldValues["picture"] = t.Picture
-	t.oldValues["no_series"] = t.No_series
+	t.oldValues = projectFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1274,78 +990,7 @@ func (t *Project) OldValue(fieldName string) interface{} {
 func (t *Project) XRec() *Project {
 	x := &Project{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["no"].(types.Code); ok {
-		x.No = v
-	}
-	if v, ok := t.oldValues["search_description"].(types.Code); ok {
-		x.Search_description = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["description_2"].(types.Text); ok {
-		x.Description_2 = v
-	}
-	if v, ok := t.oldValues["bill_to_customer_no"].(types.Code); ok {
-		x.Bill_to_customer_no = v
-	}
-	if v, ok := t.oldValues["creation_date"].(types.Date); ok {
-		x.Creation_date = v
-	}
-	if v, ok := t.oldValues["starting_date"].(types.Date); ok {
-		x.Starting_date = v
-	}
-	if v, ok := t.oldValues["ending_date"].(types.Date); ok {
-		x.Ending_date = v
-	}
-	if v, ok := t.oldValues["completion_date"].(types.Date); ok {
-		x.Completion_date = v
-	}
-	if v, ok := t.oldValues["project_posting_date"].(types.Date); ok {
-		x.Project_posting_date = v
-	}
-	if v, ok := t.oldValues["recognition_date"].(types.Date); ok {
-		x.Recognition_date = v
-	}
-	if v, ok := t.oldValues["completion_percent"].(types.Decimal); ok {
-		x.Completion_percent = v
-	}
-	if v, ok := t.oldValues["status"].(ProjectStatus); ok {
-		x.Status = v
-	}
-	if v, ok := t.oldValues["person_responsible"].(types.Code); ok {
-		x.Person_responsible = v
-	}
-	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
-		x.Dimension_1_code = v
-	}
-	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
-		x.Dimension_2_code = v
-	}
-	if v, ok := t.oldValues["project_posting_group"].(types.Code); ok {
-		x.Project_posting_group = v
-	}
-	if v, ok := t.oldValues["blocked"].(bool); ok {
-		x.Blocked = v
-	}
-	if v, ok := t.oldValues["recognition_method"].(ProjectRecognition_method); ok {
-		x.Recognition_method = v
-	}
-	if v, ok := t.oldValues["last_date_modified"].(types.Date); ok {
-		x.Last_date_modified = v
-	}
-	if v, ok := t.oldValues["application_method"].(ProjectApplication_method); ok {
-		x.Application_method = v
-	}
-	if v, ok := t.oldValues["project_usage_posting"].(ProjectProject_usage_posting); ok {
-		x.Project_usage_posting = v
-	}
-	if v, ok := t.oldValues["picture"].([]byte); ok {
-		x.Picture = v
-	}
-	if v, ok := t.oldValues["no_series"].(types.Code); ok {
-		x.No_series = v
-	}
+	projectFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1864,117 +1509,7 @@ func (t *Project) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *Project) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No.Equal(old)
-		}
-	case "search_description":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Search_description.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "description_2":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description_2.Equal(old)
-		}
-	case "bill_to_customer_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Bill_to_customer_no.Equal(old)
-		}
-	case "creation_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Creation_date.Equal(old)
-		}
-	case "starting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Starting_date.Equal(old)
-		}
-	case "ending_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Ending_date.Equal(old)
-		}
-	case "completion_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Completion_date.Equal(old)
-		}
-	case "project_posting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Project_posting_date.Equal(old)
-		}
-	case "recognition_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Recognition_date.Equal(old)
-		}
-	case "completion_percent":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Completion_percent.Equal(old)
-		}
-	case "status":
-		if old, ok := oldValue.(ProjectStatus); ok {
-			return t.Status != old
-		}
-	case "person_responsible":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Person_responsible.Equal(old)
-		}
-	case "dimension_1_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_1_code.Equal(old)
-		}
-	case "dimension_2_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_2_code.Equal(old)
-		}
-	case "project_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_posting_group.Equal(old)
-		}
-	case "blocked":
-		if old, ok := oldValue.(bool); ok {
-			return t.Blocked != old
-		}
-		return true // Type mismatch, assume changed
-	case "recognition_method":
-		if old, ok := oldValue.(ProjectRecognition_method); ok {
-			return t.Recognition_method != old
-		}
-	case "last_date_modified":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Last_date_modified.Equal(old)
-		}
-	case "application_method":
-		if old, ok := oldValue.(ProjectApplication_method); ok {
-			return t.Application_method != old
-		}
-	case "project_usage_posting":
-		if old, ok := oldValue.(ProjectProject_usage_posting); ok {
-			return t.Project_usage_posting != old
-		}
-	case "picture":
-		// Skip comparison for BLOB fields (too large, use always modified)
-		return true
-	case "no_series":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No_series.Equal(old)
-		}
-	}
-
-	return false
+	return projectFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -4389,57 +3924,7 @@ func (t *Project) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *Project) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("no"):
-		return "no", true
-	case strings.ToLower("search_description"):
-		return "search_description", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("description_2"):
-		return "description_2", true
-	case strings.ToLower("bill_to_customer_no"):
-		return "bill_to_customer_no", true
-	case strings.ToLower("creation_date"):
-		return "creation_date", true
-	case strings.ToLower("starting_date"):
-		return "starting_date", true
-	case strings.ToLower("ending_date"):
-		return "ending_date", true
-	case strings.ToLower("completion_date"):
-		return "completion_date", true
-	case strings.ToLower("project_posting_date"):
-		return "project_posting_date", true
-	case strings.ToLower("recognition_date"):
-		return "recognition_date", true
-	case strings.ToLower("completion_percent"):
-		return "completion_percent", true
-	case strings.ToLower("status"):
-		return "status", true
-	case strings.ToLower("person_responsible"):
-		return "person_responsible", true
-	case strings.ToLower("dimension_1_code"):
-		return "dimension_1_code", true
-	case strings.ToLower("dimension_2_code"):
-		return "dimension_2_code", true
-	case strings.ToLower("project_posting_group"):
-		return "project_posting_group", true
-	case strings.ToLower("blocked"):
-		return "blocked", true
-	case strings.ToLower("recognition_method"):
-		return "recognition_method", true
-	case strings.ToLower("last_date_modified"):
-		return "last_date_modified", true
-	case strings.ToLower("application_method"):
-		return "application_method", true
-	case strings.ToLower("project_usage_posting"):
-		return "project_usage_posting", true
-	case strings.ToLower("picture"):
-		return "picture", true
-	case strings.ToLower("no_series"):
-		return "no_series", true
-	}
-	return "", false
+	return projectFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -5577,657 +5062,20 @@ func (t *Project) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *Project) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-		} else if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectOnValidate_No); ok {
-				if err := trg.OnValidate_No(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "search_description":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Search_description = v
-		} else if v, ok := value.(string); ok {
-			t.Search_description = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field search_description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectOnValidate_Search_description); ok {
-				if err := trg.OnValidate_Search_description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description_2":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description_2 = v
-		} else if v, ok := value.(string); ok {
-			t.Description_2 = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description_2")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectOnValidate_Description_2); ok {
-				if err := trg.OnValidate_Description_2(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bill_to_customer_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Bill_to_customer_no = v
-		} else if v, ok := value.(string); ok {
-			t.Bill_to_customer_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field bill_to_customer_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "bill_to_customer_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectOnValidate_Bill_to_customer_no); ok {
-				if err := trg.OnValidate_Bill_to_customer_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "creation_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Creation_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Creation_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field creation_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Creation_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field creation_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectOnValidate_Creation_date); ok {
-				if err := trg.OnValidate_Creation_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "starting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Starting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Starting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field starting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Starting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field starting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectOnValidate_Starting_date); ok {
-				if err := trg.OnValidate_Starting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "ending_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Ending_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Ending_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field ending_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Ending_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field ending_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectOnValidate_Ending_date); ok {
-				if err := trg.OnValidate_Ending_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "completion_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Completion_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Completion_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field completion_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Completion_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field completion_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectOnValidate_Completion_date); ok {
-				if err := trg.OnValidate_Completion_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "project_posting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Project_posting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Project_posting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field project_posting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Project_posting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field project_posting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectOnValidate_Project_posting_date); ok {
-				if err := trg.OnValidate_Project_posting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "recognition_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Recognition_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Recognition_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field recognition_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Recognition_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field recognition_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectOnValidate_Recognition_date); ok {
-				if err := trg.OnValidate_Recognition_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "completion_percent":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Completion_percent = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Completion_percent, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field completion_percent: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Completion_percent = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Completion_percent = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Completion_percent = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field completion_percent (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectOnValidate_Completion_percent); ok {
-				if err := trg.OnValidate_Completion_percent(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "status":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ProjectStatus); ok {
-			t.Status = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field status (valid range: 0-%d)", v, 4-1)
-			}
-			t.Status = ProjectStatus(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field status (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Status = ProjectStatus(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Status = 0
-			} else {
-				options := []string{"Planning", "Quote", "Order", "Completed"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Status = ProjectStatus(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field status (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field status (expected ProjectStatus, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectOnValidate_Status); ok {
-				if err := trg.OnValidate_Status(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "person_responsible":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Person_responsible = v
-		} else if v, ok := value.(string); ok {
-			t.Person_responsible = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field person_responsible")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "person_responsible"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectOnValidate_Person_responsible); ok {
-				if err := trg.OnValidate_Person_responsible(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_1_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_1_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectOnValidate_Dimension_1_code); ok {
-				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_2_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_2_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectOnValidate_Dimension_2_code); ok {
-				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "project_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Project_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Project_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field project_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectOnValidate_Project_posting_group); ok {
-				if err := trg.OnValidate_Project_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "blocked":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Blocked = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Blocked = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field blocked")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectOnValidate_Blocked); ok {
-				if err := trg.OnValidate_Blocked(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "recognition_method":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ProjectRecognition_method); ok {
-			t.Recognition_method = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 2 {
-				return fmt.Errorf("invalid option value %d for field recognition_method (valid range: 0-%d)", v, 2-1)
-			}
-			t.Recognition_method = ProjectRecognition_method(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 2 {
-				return fmt.Errorf("invalid option value %d for field recognition_method (valid range: 0-%d)", intVal, 2-1)
-			}
-			t.Recognition_method = ProjectRecognition_method(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Recognition_method = 0
-			} else {
-				options := []string{"Percentage of Completion", "Completed Contract"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Recognition_method = ProjectRecognition_method(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field recognition_method (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field recognition_method (expected ProjectRecognition_method, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectOnValidate_Recognition_method); ok {
-				if err := trg.OnValidate_Recognition_method(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "last_date_modified":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Last_date_modified = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Last_date_modified, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field last_date_modified: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Last_date_modified = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field last_date_modified (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectOnValidate_Last_date_modified); ok {
-				if err := trg.OnValidate_Last_date_modified(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "application_method":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ProjectApplication_method); ok {
-			t.Application_method = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 2 {
-				return fmt.Errorf("invalid option value %d for field application_method (valid range: 0-%d)", v, 2-1)
-			}
-			t.Application_method = ProjectApplication_method(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 2 {
-				return fmt.Errorf("invalid option value %d for field application_method (valid range: 0-%d)", intVal, 2-1)
-			}
-			t.Application_method = ProjectApplication_method(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Application_method = 0
-			} else {
-				options := []string{"Apply to Oldest", "Manual"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Application_method = ProjectApplication_method(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field application_method (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field application_method (expected ProjectApplication_method, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectOnValidate_Application_method); ok {
-				if err := trg.OnValidate_Application_method(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "project_usage_posting":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ProjectProject_usage_posting); ok {
-			t.Project_usage_posting = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field project_usage_posting (valid range: 0-%d)", v, 3-1)
-			}
-			t.Project_usage_posting = ProjectProject_usage_posting(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field project_usage_posting (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Project_usage_posting = ProjectProject_usage_posting(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Project_usage_posting = 0
-			} else {
-				options := []string{"None", "Costs", "Prices"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Project_usage_posting = ProjectProject_usage_posting(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field project_usage_posting (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field project_usage_posting (expected ProjectProject_usage_posting, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectOnValidate_Project_usage_posting); ok {
-				if err := trg.OnValidate_Project_usage_posting(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "picture":
-		// Set field value
-		// Accept nil, []byte, or base64-encoded string
-		if value == nil {
-			t.Picture = nil
-		} else if v, ok := value.([]byte); ok {
-			t.Picture = v
-		} else if s, ok := value.(string); ok {
-			if s == "" {
-				t.Picture = nil
-			} else {
-				// Try base64 decode
-				decoded, err := base64.StdEncoding.DecodeString(s)
-				if err != nil {
-					return fmt.Errorf("invalid base64 value for field picture: %w", err)
-				}
-				t.Picture = decoded
-			}
-		} else {
-			return fmt.Errorf("invalid type for field picture (expected []byte, string, or nil)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectOnValidate_Picture); ok {
-				if err := trg.OnValidate_Picture(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no_series":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No_series = v
-		} else if v, ok := value.(string); ok {
-			t.No_series = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no_series")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "no_series"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectOnValidate_No_series); ok {
-				if err := trg.OnValidate_No_series(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := projectFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &projectFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -6236,262 +5084,18 @@ func (t *Project) ValidateField(fieldName string, value interface{}) error {
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *Project) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.No, true
-	case 2:
-		return t.Search_description, true
-	case 3:
-		return t.Description, true
-	case 4:
-		return t.Description_2, true
-	case 5:
-		return t.Bill_to_customer_no, true
-	case 12:
-		return t.Creation_date, true
-	case 13:
-		return t.Starting_date, true
-	case 14:
-		return t.Ending_date, true
-	case 15:
-		return t.Completion_date, true
-	case 16:
-		return t.Project_posting_date, true
-	case 17:
-		return t.Recognition_date, true
-	case 18:
-		return t.Completion_percent, true
-	case 19:
-		return t.Status, true
-	case 20:
-		return t.Person_responsible, true
-	case 21:
-		return t.Dimension_1_code, true
-	case 22:
-		return t.Dimension_2_code, true
-	case 23:
-		return t.Project_posting_group, true
-	case 24:
-		return t.Blocked, true
-	case 28:
-		return t.Recognition_method, true
-	case 29:
-		return t.Last_date_modified, true
-	case 41:
-		return t.Application_method, true
-	case 42:
-		return t.Project_usage_posting, true
-	case 57:
-		return t.Picture, true
-	case 66:
-		return t.No_series, true
-	}
-	return nil, false
+	return projectFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *Project) flowFieldValue(no int) (any, bool) {
-	switch no {
-	case 30:
-		return t.Comment, true
-	case 44:
-		return t.Budgeted_cost, true
-	case 45:
-		return t.Budgeted_price, true
-	case 46:
-		return t.Usage_cost, true
-	case 47:
-		return t.Usage_price, true
-	case 48:
-		return t.Invoiced_price, true
-	case 49:
-		return t.Budgeted_res_qty, true
-	case 56:
-		return t.Budgeted_res_gr_qty, true
-	case 58:
-		return t.Name, true
-	case 59:
-		return t.Address, true
-	case 60:
-		return t.Address_2, true
-	case 61:
-		return t.City, true
-	case 62:
-		return t.Contact, true
-	case 63:
-		return t.State, true
-	case 64:
-		return t.Post_code, true
-	}
-	return nil, false
+	return projectFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *Project) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Search_description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Search_description = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Text); ok {
-			t.Description_2 = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description_2 = types.NewText(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Code); ok {
-			t.Bill_to_customer_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Bill_to_customer_no = types.NewCode(v)
-			return true
-		}
-	case 12:
-		if v, ok := value.(types.Date); ok {
-			t.Creation_date = v
-			return true
-		}
-	case 13:
-		if v, ok := value.(types.Date); ok {
-			t.Starting_date = v
-			return true
-		}
-	case 14:
-		if v, ok := value.(types.Date); ok {
-			t.Ending_date = v
-			return true
-		}
-	case 15:
-		if v, ok := value.(types.Date); ok {
-			t.Completion_date = v
-			return true
-		}
-	case 16:
-		if v, ok := value.(types.Date); ok {
-			t.Project_posting_date = v
-			return true
-		}
-	case 17:
-		if v, ok := value.(types.Date); ok {
-			t.Recognition_date = v
-			return true
-		}
-	case 18:
-		if v, ok := value.(types.Decimal); ok {
-			t.Completion_percent = v
-			return true
-		}
-	case 19:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Status = ProjectStatus(i)
-			return true
-		}
-	case 20:
-		if v, ok := value.(types.Code); ok {
-			t.Person_responsible = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Person_responsible = types.NewCode(v)
-			return true
-		}
-	case 21:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-			return true
-		}
-	case 22:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-			return true
-		}
-	case 23:
-		if v, ok := value.(types.Code); ok {
-			t.Project_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Project_posting_group = types.NewCode(v)
-			return true
-		}
-	case 24:
-		if v, ok := value.(bool); ok {
-			t.Blocked = v
-			return true
-		}
-	case 28:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 2 {
-			t.Recognition_method = ProjectRecognition_method(i)
-			return true
-		}
-	case 29:
-		if v, ok := value.(types.Date); ok {
-			t.Last_date_modified = v
-			return true
-		}
-	case 41:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 2 {
-			t.Application_method = ProjectApplication_method(i)
-			return true
-		}
-	case 42:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Project_usage_posting = ProjectProject_usage_posting(i)
-			return true
-		}
-	case 57:
-		if v, ok := value.([]byte); ok {
-			t.Picture = v
-			return true
-		}
-	case 66:
-		if v, ok := value.(types.Code); ok {
-			t.No_series = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No_series = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return projectFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -6964,57 +5568,7 @@ func (t *Project) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *Project) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "no":
-		return t.No, true
-	case "search_description":
-		return t.Search_description, true
-	case "description":
-		return t.Description, true
-	case "description_2":
-		return t.Description_2, true
-	case "bill_to_customer_no":
-		return t.Bill_to_customer_no, true
-	case "creation_date":
-		return t.Creation_date, true
-	case "starting_date":
-		return t.Starting_date, true
-	case "ending_date":
-		return t.Ending_date, true
-	case "completion_date":
-		return t.Completion_date, true
-	case "project_posting_date":
-		return t.Project_posting_date, true
-	case "recognition_date":
-		return t.Recognition_date, true
-	case "completion_percent":
-		return t.Completion_percent, true
-	case "status":
-		return int(t.Status), true
-	case "person_responsible":
-		return t.Person_responsible, true
-	case "dimension_1_code":
-		return t.Dimension_1_code, true
-	case "dimension_2_code":
-		return t.Dimension_2_code, true
-	case "project_posting_group":
-		return t.Project_posting_group, true
-	case "blocked":
-		return t.Blocked, true
-	case "recognition_method":
-		return int(t.Recognition_method), true
-	case "last_date_modified":
-		return t.Last_date_modified, true
-	case "application_method":
-		return int(t.Application_method), true
-	case "project_usage_posting":
-		return int(t.Project_usage_posting), true
-	case "picture":
-		return t.Picture, true
-	case "no_series":
-		return t.No_series, true
-	}
-	return nil, false
+	return projectFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -7123,238 +5677,12 @@ func (t *Project) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *Project) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"no":                    t.No.String(),
-		"search_description":    t.Search_description.String(),
-		"description":           t.Description.String(),
-		"description_2":         t.Description_2.String(),
-		"bill_to_customer_no":   t.Bill_to_customer_no.String(),
-		"creation_date":         t.Creation_date.String(),
-		"starting_date":         t.Starting_date.String(),
-		"ending_date":           t.Ending_date.String(),
-		"completion_date":       t.Completion_date.String(),
-		"project_posting_date":  t.Project_posting_date.String(),
-		"recognition_date":      t.Recognition_date.String(),
-		"completion_percent":    t.Completion_percent.String(),
-		"status":                int(t.Status),
-		"person_responsible":    t.Person_responsible.String(),
-		"dimension_1_code":      t.Dimension_1_code.String(),
-		"dimension_2_code":      t.Dimension_2_code.String(),
-		"project_posting_group": t.Project_posting_group.String(),
-		"blocked":               t.Blocked,
-		"recognition_method":    int(t.Recognition_method),
-		"last_date_modified":    t.Last_date_modified.String(),
-		// FlowField: comment
-		"comment":               t.Comment,
-		"application_method":    int(t.Application_method),
-		"project_usage_posting": int(t.Project_usage_posting),
-		// FlowField: budgeted_cost
-		"budgeted_cost": t.Budgeted_cost.String(),
-		// FlowField: budgeted_price
-		"budgeted_price": t.Budgeted_price.String(),
-		// FlowField: usage_cost
-		"usage_cost": t.Usage_cost.String(),
-		// FlowField: usage_price
-		"usage_price": t.Usage_price.String(),
-		// FlowField: invoiced_price
-		"invoiced_price": t.Invoiced_price.String(),
-		// FlowField: budgeted_res_qty
-		"budgeted_res_qty": t.Budgeted_res_qty.String(),
-		// FlowField: budgeted_res_gr_qty
-		"budgeted_res_gr_qty": t.Budgeted_res_gr_qty.String(),
-		"picture":             t.Picture,
-		// FlowField: name
-		"name": t.Name,
-		// FlowField: address
-		"address": t.Address,
-		// FlowField: address_2
-		"address_2": t.Address_2,
-		// FlowField: city
-		"city": t.City,
-		// FlowField: contact
-		"contact": t.Contact,
-		// FlowField: state
-		"state": t.State,
-		// FlowField: post_code
-		"post_code": t.Post_code,
-		"no_series": t.No_series.String(),
-	}
+	return projectFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *Project) FromMap(data map[string]interface{}) {
-	if v, ok := data["no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No = types.NewCode(s)
-		}
-	}
-	if v, ok := data["search_description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Search_description = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["description_2"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description_2 = types.NewText(s)
-		}
-	}
-	if v, ok := data["bill_to_customer_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Bill_to_customer_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["creation_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Creation_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["starting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Starting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["ending_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Ending_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["completion_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Completion_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["project_posting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Project_posting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["recognition_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Recognition_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["completion_percent"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Completion_percent, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Completion_percent = types.NewDecimal(val)
-		case int:
-			t.Completion_percent = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Completion_percent = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["status"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Status = ProjectStatus(int(val))
-		case int:
-			t.Status = ProjectStatus(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Planning", "Quote", "Order", "Completed"}
-			for i, opt := range options {
-				if opt == val {
-					t.Status = ProjectStatus(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["person_responsible"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Person_responsible = types.NewCode(s)
-		}
-	}
-	if v, ok := data["dimension_1_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_1_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["dimension_2_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_2_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["project_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Project_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["blocked"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Blocked = b
-		}
-	}
-	if v, ok := data["recognition_method"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Recognition_method = ProjectRecognition_method(int(val))
-		case int:
-			t.Recognition_method = ProjectRecognition_method(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Percentage of Completion", "Completed Contract"}
-			for i, opt := range options {
-				if opt == val {
-					t.Recognition_method = ProjectRecognition_method(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["last_date_modified"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Last_date_modified, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["application_method"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Application_method = ProjectApplication_method(int(val))
-		case int:
-			t.Application_method = ProjectApplication_method(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Apply to Oldest", "Manual"}
-			for i, opt := range options {
-				if opt == val {
-					t.Application_method = ProjectApplication_method(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["project_usage_posting"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Project_usage_posting = ProjectProject_usage_posting(int(val))
-		case int:
-			t.Project_usage_posting = ProjectProject_usage_posting(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"None", "Costs", "Prices"}
-			for i, opt := range options {
-				if opt == val {
-					t.Project_usage_posting = ProjectProject_usage_posting(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["picture"]; ok && v != nil {
-	}
-	if v, ok := data["no_series"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No_series = types.NewCode(s)
-		}
-	}
+	projectFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -7375,411 +5703,678 @@ func (t *Project) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *Project) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "search_description",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "description_2",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "bill_to_customer_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "creation_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         13,
-			Name:       "starting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         14,
-			Name:       "ending_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         15,
-			Name:       "completion_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         16,
-			Name:       "project_posting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         17,
-			Name:       "recognition_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:            18,
-			Name:          "completion_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         19,
-			Name:       "status",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         20,
-			Name:       "person_responsible",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         21,
-			Name:       "dimension_1_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         22,
-			Name:       "dimension_2_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         23,
-			Name:       "project_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         24,
-			Name:       "blocked",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         28,
-			Name:       "recognition_method",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         29,
-			Name:       "last_date_modified",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         30,
-			Name:       "comment",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  true,
-		},
-		{
-			No:         41,
-			Name:       "application_method",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         42,
-			Name:       "project_usage_posting",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            44,
-			Name:          "budgeted_cost",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            45,
-			Name:          "budgeted_price",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            46,
-			Name:          "usage_cost",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            47,
-			Name:          "usage_price",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            48,
-			Name:          "invoiced_price",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            49,
-			Name:          "budgeted_res_qty",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            56,
-			Name:          "budgeted_res_gr_qty",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         57,
-			Name:       "picture",
-			Type:       tables.FieldTypeBlob,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         58,
-			Name:       "name",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  true,
-		},
-		{
-			No:         59,
-			Name:       "address",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  true,
-		},
-		{
-			No:         60,
-			Name:       "address_2",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  true,
-		},
-		{
-			No:         61,
-			Name:       "city",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  true,
-		},
-		{
-			No:         62,
-			Name:       "contact",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  true,
-		},
-		{
-			No:         63,
-			Name:       "state",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  true,
-		},
-		{
-			No:         64,
-			Name:       "post_code",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  true,
-		},
-		{
-			No:         66,
-			Name:       "no_series",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
+	return projectFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in projectFields.Fields
+func (t *Project) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.No
+	case 1:
+		return &t.Search_description
+	case 2:
+		return &t.Description
+	case 3:
+		return &t.Description_2
+	case 4:
+		return &t.Bill_to_customer_no
+	case 5:
+		return &t.Creation_date
+	case 6:
+		return &t.Starting_date
+	case 7:
+		return &t.Ending_date
+	case 8:
+		return &t.Completion_date
+	case 9:
+		return &t.Project_posting_date
+	case 10:
+		return &t.Recognition_date
+	case 11:
+		return &t.Completion_percent
+	case 12:
+		return &t.Status
+	case 13:
+		return &t.Person_responsible
+	case 14:
+		return &t.Dimension_1_code
+	case 15:
+		return &t.Dimension_2_code
+	case 16:
+		return &t.Project_posting_group
+	case 17:
+		return &t.Blocked
+	case 18:
+		return &t.Recognition_method
+	case 19:
+		return &t.Last_date_modified
+	case 20:
+		return &t.Comment
+	case 21:
+		return &t.Application_method
+	case 22:
+		return &t.Project_usage_posting
+	case 23:
+		return &t.Budgeted_cost
+	case 24:
+		return &t.Budgeted_price
+	case 25:
+		return &t.Usage_cost
+	case 26:
+		return &t.Usage_price
+	case 27:
+		return &t.Invoiced_price
+	case 28:
+		return &t.Budgeted_res_qty
+	case 29:
+		return &t.Budgeted_res_gr_qty
+	case 30:
+		return &t.Picture
+	case 31:
+		return &t.Name
+	case 32:
+		return &t.Address
+	case 33:
+		return &t.Address_2
+	case 34:
+		return &t.City
+	case 35:
+		return &t.Contact
+	case 36:
+		return &t.State
+	case 37:
+		return &t.Post_code
+	case 38:
+		return &t.No_series
 	}
+	return nil
+}
+
+// projectFields describes the fields of Project for the record functions
+// written once in foundation/tables
+var projectFields = &tables.TableFields{
+	Table: ProjectTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_No",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "search_description",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Search_description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "description_2",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description_2",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "bill_to_customer_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Bill_to_customer_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "creation_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Creation_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "starting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Starting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "ending_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Ending_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         15,
+				Name:       "completion_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Completion_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         16,
+				Name:       "project_posting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Project_posting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         17,
+				Name:       "recognition_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Recognition_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            18,
+				Name:          "completion_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Completion_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         19,
+				Name:       "status",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Status",
+			Options: []string{"Planning", "Quote", "Order", "Completed"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         20,
+				Name:       "person_responsible",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Person_responsible",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         21,
+				Name:       "dimension_1_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_1_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         22,
+				Name:       "dimension_2_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_2_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         23,
+				Name:       "project_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Project_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         24,
+				Name:       "blocked",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Blocked",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         28,
+				Name:       "recognition_method",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Recognition_method",
+			Options: []string{"Percentage of Completion", "Completed Contract"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         29,
+				Name:       "last_date_modified",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Last_date_modified",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         30,
+				Name:       "comment",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  true,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Comment",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         41,
+				Name:       "application_method",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Application_method",
+			Options: []string{"Apply to Oldest", "Manual"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         42,
+				Name:       "project_usage_posting",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Project_usage_posting",
+			Options: []string{"None", "Costs", "Prices"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            44,
+				Name:          "budgeted_cost",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Budgeted_cost",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            45,
+				Name:          "budgeted_price",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Budgeted_price",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            46,
+				Name:          "usage_cost",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Usage_cost",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            47,
+				Name:          "usage_price",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Usage_price",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            48,
+				Name:          "invoiced_price",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Invoiced_price",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            49,
+				Name:          "budgeted_res_qty",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Budgeted_res_qty",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            56,
+				Name:          "budgeted_res_gr_qty",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Budgeted_res_gr_qty",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         57,
+				Name:       "picture",
+				Type:       tables.FieldTypeBlob,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBlob,
+			Trigger: "OnValidate_Picture",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         58,
+				Name:       "name",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  true,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         59,
+				Name:       "address",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  true,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Address",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         60,
+				Name:       "address_2",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  true,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Address_2",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         61,
+				Name:       "city",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  true,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_City",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         62,
+				Name:       "contact",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  true,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Contact",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         63,
+				Name:       "state",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  true,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_State",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         64,
+				Name:       "post_code",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  true,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Post_code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         66,
+				Name:       "no_series",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_No_series",
+			Relation: true,
+		},
+	},
+	FlowFilters: []tables.FieldInfo{
+		{No: 43, Name: "type_filter"},
+		{No: 50, Name: "resource_filter"},
+		{No: 51, Name: "date_filter"},
+		{No: 52, Name: "phase_filter"},
+		{No: 53, Name: "task_filter"},
+		{No: 54, Name: "step_filter"},
+		{No: 55, Name: "resource_gr_filter"},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

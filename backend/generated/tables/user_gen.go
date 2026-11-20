@@ -29,7 +29,6 @@ import (
 	"fmt"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -142,52 +141,12 @@ var User_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *User) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "user_id":
-		return 1
-	case "user_name":
-		return 2
-	case "email":
-		return 3
-	case "password_hash":
-		return 4
-	case "language":
-		return 5
-	case "menu":
-		return 6
-	case "active":
-		return 7
-	case "created_at":
-		return 8
-	case "last_login":
-		return 9
-	}
-	return 0
+	return userFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *User) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "user_id"
-	case 2:
-		return "user_name"
-	case 3:
-		return "email"
-	case 4:
-		return "password_hash"
-	case 5:
-		return "language"
-	case 6:
-		return "menu"
-	case 7:
-		return "active"
-	case 8:
-		return "created_at"
-	case 9:
-		return "last_login"
-	}
-	return ""
+	return userFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -291,15 +250,6 @@ type (
 	UserOnBeforeRename interface {
 		OnBeforeRename(rec *User, handled *bool) error
 	}
-	UserOnValidate_User_id       interface{ OnValidate_User_id(rec *User) error }
-	UserOnValidate_User_name     interface{ OnValidate_User_name(rec *User) error }
-	UserOnValidate_Email         interface{ OnValidate_Email(rec *User) error }
-	UserOnValidate_Password_hash interface{ OnValidate_Password_hash(rec *User) error }
-	UserOnValidate_Language      interface{ OnValidate_Language(rec *User) error }
-	UserOnValidate_Menu          interface{ OnValidate_Menu(rec *User) error }
-	UserOnValidate_Active        interface{ OnValidate_Active(rec *User) error }
-	UserOnValidate_Created_at    interface{ OnValidate_Created_at(rec *User) error }
-	UserOnValidate_Last_login    interface{ OnValidate_Last_login(rec *User) error }
 )
 
 // userLogic is the registered business logic of User, in
@@ -342,26 +292,9 @@ func userTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(UserOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(UserOnBeforeRename)
-	case "OnValidate_User_id":
-		_, ok = logic.(UserOnValidate_User_id)
-	case "OnValidate_User_name":
-		_, ok = logic.(UserOnValidate_User_name)
-	case "OnValidate_Email":
-		_, ok = logic.(UserOnValidate_Email)
-	case "OnValidate_Password_hash":
-		_, ok = logic.(UserOnValidate_Password_hash)
-	case "OnValidate_Language":
-		_, ok = logic.(UserOnValidate_Language)
-	case "OnValidate_Menu":
-		_, ok = logic.(UserOnValidate_Menu)
-	case "OnValidate_Active":
-		_, ok = logic.(UserOnValidate_Active)
-	case "OnValidate_Created_at":
-		_, ok = logic.(UserOnValidate_Created_at)
-	case "OnValidate_Last_login":
-		_, ok = logic.(UserOnValidate_Last_login)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return userFields.IsOnValidateTrigger(name, logic, (*User)(nil))
 	}
 	return true, ok
 }
@@ -673,16 +606,7 @@ func (t *User) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *User) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["user_id"] = t.User_id
-	t.oldValues["user_name"] = t.User_name
-	t.oldValues["email"] = t.Email
-	t.oldValues["password_hash"] = t.Password_hash
-	t.oldValues["language"] = t.Language
-	t.oldValues["menu"] = t.Menu
-	t.oldValues["active"] = t.Active
-	t.oldValues["created_at"] = t.Created_at
-	t.oldValues["last_login"] = t.Last_login
+	t.oldValues = userFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -697,33 +621,7 @@ func (t *User) OldValue(fieldName string) interface{} {
 func (t *User) XRec() *User {
 	x := &User{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["user_id"].(types.Code); ok {
-		x.User_id = v
-	}
-	if v, ok := t.oldValues["user_name"].(types.Text); ok {
-		x.User_name = v
-	}
-	if v, ok := t.oldValues["email"].(types.Text); ok {
-		x.Email = v
-	}
-	if v, ok := t.oldValues["password_hash"].(types.Text); ok {
-		x.Password_hash = v
-	}
-	if v, ok := t.oldValues["language"].(types.Code); ok {
-		x.Language = v
-	}
-	if v, ok := t.oldValues["menu"].(types.Code); ok {
-		x.Menu = v
-	}
-	if v, ok := t.oldValues["active"].(bool); ok {
-		x.Active = v
-	}
-	if v, ok := t.oldValues["created_at"].(types.DateTime); ok {
-		x.Created_at = v
-	}
-	if v, ok := t.oldValues["last_login"].(types.DateTime); ok {
-		x.Last_login = v
-	}
+	userFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1077,58 +975,7 @@ func (t *User) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *User) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "user_id":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.User_id.Equal(old)
-		}
-	case "user_name":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.User_name.Equal(old)
-		}
-	case "email":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Email.Equal(old)
-		}
-	case "password_hash":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Password_hash.Equal(old)
-		}
-	case "language":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Language.Equal(old)
-		}
-	case "menu":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Menu.Equal(old)
-		}
-	case "active":
-		if old, ok := oldValue.(bool); ok {
-			return t.Active != old
-		}
-		return true // Type mismatch, assume changed
-	case "created_at":
-		if old, ok := oldValue.(types.DateTime); ok {
-			return !t.Created_at.Equal(old)
-		}
-	case "last_login":
-		if old, ok := oldValue.(types.DateTime); ok {
-			return !t.Last_login.Equal(old)
-		}
-	}
-
-	return false
+	return userFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1382,27 +1229,7 @@ func (t *User) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *User) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("user_id"):
-		return "user_id", true
-	case strings.ToLower("user_name"):
-		return "user_name", true
-	case strings.ToLower("email"):
-		return "email", true
-	case strings.ToLower("password_hash"):
-		return "password_hash", true
-	case strings.ToLower("language"):
-		return "language", true
-	case strings.ToLower("menu"):
-		return "menu", true
-	case strings.ToLower("active"):
-		return "active", true
-	case strings.ToLower("created_at"):
-		return "created_at", true
-	case strings.ToLower("last_login"):
-		return "last_login", true
-	}
-	return "", false
+	return userFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2304,195 +2131,20 @@ func (t *User) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *User) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "user_id":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-		} else if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field user_id")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserOnValidate_User_id); ok {
-				if err := trg.OnValidate_User_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "user_name":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.User_name = v
-		} else if v, ok := value.(string); ok {
-			t.User_name = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field user_name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserOnValidate_User_name); ok {
-				if err := trg.OnValidate_User_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "email":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Email = v
-		} else if v, ok := value.(string); ok {
-			t.Email = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field email")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserOnValidate_Email); ok {
-				if err := trg.OnValidate_Email(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "password_hash":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Password_hash = v
-		} else if v, ok := value.(string); ok {
-			t.Password_hash = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field password_hash")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserOnValidate_Password_hash); ok {
-				if err := trg.OnValidate_Password_hash(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "language":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Language = v
-		} else if v, ok := value.(string); ok {
-			t.Language = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field language")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "language"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserOnValidate_Language); ok {
-				if err := trg.OnValidate_Language(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "menu":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Menu = v
-		} else if v, ok := value.(string); ok {
-			t.Menu = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field menu")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "menu"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserOnValidate_Menu); ok {
-				if err := trg.OnValidate_Menu(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "active":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Active = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Active = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field active")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserOnValidate_Active); ok {
-				if err := trg.OnValidate_Active(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "created_at":
-		// Set field value
-		if v, ok := value.(types.DateTime); ok {
-			t.Created_at = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Created_at, err = types.NewDateTimeFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid datetime value for field created_at: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Created_at = types.NewDateTimeFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field created_at (expected DateTime, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserOnValidate_Created_at); ok {
-				if err := trg.OnValidate_Created_at(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "last_login":
-		// Set field value
-		if v, ok := value.(types.DateTime); ok {
-			t.Last_login = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Last_login, err = types.NewDateTimeFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid datetime value for field last_login: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Last_login = types.NewDateTimeFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field last_login (expected DateTime, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserOnValidate_Last_login); ok {
-				if err := trg.OnValidate_Last_login(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := userFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &userFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2501,111 +2153,18 @@ func (t *User) ValidateField(fieldName string, value interface{}) error {
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *User) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.User_id, true
-	case 2:
-		return t.User_name, true
-	case 3:
-		return t.Email, true
-	case 4:
-		return t.Password_hash, true
-	case 5:
-		return t.Language, true
-	case 6:
-		return t.Menu, true
-	case 7:
-		return t.Active, true
-	case 8:
-		return t.Created_at, true
-	case 9:
-		return t.Last_login, true
-	}
-	return nil, false
+	return userFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *User) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return userFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *User) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Text); ok {
-			t.User_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.User_name = types.NewText(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Text); ok {
-			t.Email = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Email = types.NewText(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Text); ok {
-			t.Password_hash = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Password_hash = types.NewText(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Code); ok {
-			t.Language = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Language = types.NewCode(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Code); ok {
-			t.Menu = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Menu = types.NewCode(v)
-			return true
-		}
-	case 7:
-		if v, ok := value.(bool); ok {
-			t.Active = v
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.DateTime); ok {
-			t.Created_at = v
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.DateTime); ok {
-			t.Last_login = v
-			return true
-		}
-	}
-	return false
+	return userFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3054,27 +2613,7 @@ func (t *User) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *User) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "user_id":
-		return t.User_id, true
-	case "user_name":
-		return t.User_name, true
-	case "email":
-		return t.Email, true
-	case "password_hash":
-		return t.Password_hash, true
-	case "language":
-		return t.Language, true
-	case "menu":
-		return t.Menu, true
-	case "active":
-		return t.Active, true
-	case "created_at":
-		return t.Created_at, true
-	case "last_login":
-		return t.Last_login, true
-	}
-	return nil, false
+	return userFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3168,66 +2707,12 @@ func (t *User) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *User) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"user_id":       t.User_id.String(),
-		"user_name":     t.User_name.String(),
-		"email":         t.Email.String(),
-		"password_hash": t.Password_hash.String(),
-		"language":      t.Language.String(),
-		"menu":          t.Menu.String(),
-		"active":        t.Active,
-		"created_at":    t.Created_at.String(),
-		"last_login":    t.Last_login.String(),
-	}
+	return userFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *User) FromMap(data map[string]interface{}) {
-	if v, ok := data["user_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.User_id = types.NewCode(s)
-		}
-	}
-	if v, ok := data["user_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.User_name = types.NewText(s)
-		}
-	}
-	if v, ok := data["email"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Email = types.NewText(s)
-		}
-	}
-	if v, ok := data["password_hash"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Password_hash = types.NewText(s)
-		}
-	}
-	if v, ok := data["language"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Language = types.NewCode(s)
-		}
-	}
-	if v, ok := data["menu"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Menu = types.NewCode(s)
-		}
-	}
-	if v, ok := data["active"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Active = b
-		}
-	}
-	if v, ok := data["created_at"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Created_at, _ = types.NewDateTimeFromString(s)
-		}
-	}
-	if v, ok := data["last_login"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Last_login, _ = types.NewDateTimeFromString(s)
-		}
-	}
+	userFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3248,99 +2733,169 @@ func (t *User) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *User) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "user_id",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "user_name",
-			Type:       tables.FieldTypeText,
-			Length:     100,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "email",
-			Type:       tables.FieldTypeText,
-			Length:     100,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "password_hash",
-			Type:       tables.FieldTypeText,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			Sensitive:  true,
-		},
-		{
-			No:         5,
-			Name:       "language",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "menu",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "active",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "created_at",
-			Type:       tables.FieldTypeDateTime,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "last_login",
-			Type:       tables.FieldTypeDateTime,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return userFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in userFields.Fields
+func (t *User) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.User_id
+	case 1:
+		return &t.User_name
+	case 2:
+		return &t.Email
+	case 3:
+		return &t.Password_hash
+	case 4:
+		return &t.Language
+	case 5:
+		return &t.Menu
+	case 6:
+		return &t.Active
+	case 7:
+		return &t.Created_at
+	case 8:
+		return &t.Last_login
 	}
+	return nil
+}
+
+// userFields describes the fields of User for the record functions
+// written once in foundation/tables
+var userFields = &tables.TableFields{
+	Table: UserTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "user_id",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_User_id",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "user_name",
+				Type:       tables.FieldTypeText,
+				Length:     100,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_User_name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "email",
+				Type:       tables.FieldTypeText,
+				Length:     100,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Email",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "password_hash",
+				Type:       tables.FieldTypeText,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				Sensitive:  true,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Password_hash",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "language",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Language",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "menu",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Menu",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "active",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Active",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "created_at",
+				Type:       tables.FieldTypeDateTime,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDateTime,
+			Trigger: "OnValidate_Created_at",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "last_login",
+				Type:       tables.FieldTypeDateTime,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDateTime,
+			Trigger: "OnValidate_Last_login",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

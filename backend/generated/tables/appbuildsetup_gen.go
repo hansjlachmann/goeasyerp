@@ -151,28 +151,12 @@ var AppBuildSetup_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *AppBuildSetup) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "primary_key":
-		return 1
-	case "builds_by":
-		return 2
-	case "allow_upload":
-		return 3
-	}
-	return 0
+	return appBuildSetupFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *AppBuildSetup) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "primary_key"
-	case 2:
-		return "builds_by"
-	case 3:
-		return "allow_upload"
-	}
-	return ""
+	return appBuildSetupFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -284,15 +268,6 @@ type (
 	AppBuildSetupOnBeforeRename interface {
 		OnBeforeRename(rec *AppBuildSetup, handled *bool) error
 	}
-	AppBuildSetupOnValidate_Primary_key interface {
-		OnValidate_Primary_key(rec *AppBuildSetup) error
-	}
-	AppBuildSetupOnValidate_Builds_by interface {
-		OnValidate_Builds_by(rec *AppBuildSetup) error
-	}
-	AppBuildSetupOnValidate_Allow_upload interface {
-		OnValidate_Allow_upload(rec *AppBuildSetup) error
-	}
 )
 
 // appBuildSetupLogic is the registered business logic of App_Build_Setup, in
@@ -335,14 +310,9 @@ func appBuildSetupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(AppBuildSetupOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(AppBuildSetupOnBeforeRename)
-	case "OnValidate_Primary_key":
-		_, ok = logic.(AppBuildSetupOnValidate_Primary_key)
-	case "OnValidate_Builds_by":
-		_, ok = logic.(AppBuildSetupOnValidate_Builds_by)
-	case "OnValidate_Allow_upload":
-		_, ok = logic.(AppBuildSetupOnValidate_Allow_upload)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return appBuildSetupFields.IsOnValidateTrigger(name, logic, (*AppBuildSetup)(nil))
 	}
 	return true, ok
 }
@@ -644,10 +614,7 @@ func (t *AppBuildSetup) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *AppBuildSetup) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["primary_key"] = t.Primary_key
-	t.oldValues["builds_by"] = t.Builds_by
-	t.oldValues["allow_upload"] = t.Allow_upload
+	t.oldValues = appBuildSetupFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -662,15 +629,7 @@ func (t *AppBuildSetup) OldValue(fieldName string) interface{} {
 func (t *AppBuildSetup) XRec() *AppBuildSetup {
 	x := &AppBuildSetup{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["primary_key"].(types.Code); ok {
-		x.Primary_key = v
-	}
-	if v, ok := t.oldValues["builds_by"].(AppBuildSetupBuilds_by); ok {
-		x.Builds_by = v
-	}
-	if v, ok := t.oldValues["allow_upload"].(bool); ok {
-		x.Allow_upload = v
-	}
+	appBuildSetupFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -936,34 +895,7 @@ func (t *AppBuildSetup) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *AppBuildSetup) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "primary_key":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Primary_key.Equal(old)
-		}
-	case "builds_by":
-		if old, ok := oldValue.(AppBuildSetupBuilds_by); ok {
-			return t.Builds_by != old
-		}
-	case "allow_upload":
-		if old, ok := oldValue.(bool); ok {
-			return t.Allow_upload != old
-		}
-		return true // Type mismatch, assume changed
-	}
-
-	return false
+	return appBuildSetupFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1164,15 +1096,7 @@ func (t *AppBuildSetup) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *AppBuildSetup) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("primary_key"):
-		return "primary_key", true
-	case strings.ToLower("builds_by"):
-		return "builds_by", true
-	case strings.ToLower("allow_upload"):
-		return "allow_upload", true
-	}
-	return "", false
+	return appBuildSetupFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -1996,98 +1920,20 @@ func (t *AppBuildSetup) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *AppBuildSetup) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "primary_key":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Primary_key = v
-		} else if v, ok := value.(string); ok {
-			t.Primary_key = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field primary_key")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AppBuildSetupOnValidate_Primary_key); ok {
-				if err := trg.OnValidate_Primary_key(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "builds_by":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(AppBuildSetupBuilds_by); ok {
-			t.Builds_by = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 2 {
-				return fmt.Errorf("invalid option value %d for field builds_by (valid range: 0-%d)", v, 2-1)
-			}
-			t.Builds_by = AppBuildSetupBuilds_by(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 2 {
-				return fmt.Errorf("invalid option value %d for field builds_by (valid range: 0-%d)", intVal, 2-1)
-			}
-			t.Builds_by = AppBuildSetupBuilds_by(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Builds_by = 0
-			} else {
-				options := []string{"CI Pipeline", "Local Builder"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Builds_by = AppBuildSetupBuilds_by(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field builds_by (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field builds_by (expected AppBuildSetupBuilds_by, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AppBuildSetupOnValidate_Builds_by); ok {
-				if err := trg.OnValidate_Builds_by(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "allow_upload":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Allow_upload = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Allow_upload = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field allow_upload")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AppBuildSetupOnValidate_Allow_upload); ok {
-				if err := trg.OnValidate_Allow_upload(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := appBuildSetupFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &appBuildSetupFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2096,49 +1942,18 @@ func (t *AppBuildSetup) ValidateField(fieldName string, value interface{}) error
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *AppBuildSetup) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Primary_key, true
-	case 2:
-		return t.Builds_by, true
-	case 3:
-		return t.Allow_upload, true
-	}
-	return nil, false
+	return appBuildSetupFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *AppBuildSetup) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return appBuildSetupFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *AppBuildSetup) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Primary_key = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Primary_key = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 2 {
-			t.Builds_by = AppBuildSetupBuilds_by(i)
-			return true
-		}
-	case 3:
-		if v, ok := value.(bool); ok {
-			t.Allow_upload = v
-			return true
-		}
-	}
-	return false
+	return appBuildSetupFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2587,15 +2402,7 @@ func (t *AppBuildSetup) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *AppBuildSetup) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "primary_key":
-		return t.Primary_key, true
-	case "builds_by":
-		return int(t.Builds_by), true
-	case "allow_upload":
-		return t.Allow_upload, true
-	}
-	return nil, false
+	return appBuildSetupFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2683,42 +2490,12 @@ func (t *AppBuildSetup) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *AppBuildSetup) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"primary_key":  t.Primary_key.String(),
-		"builds_by":    int(t.Builds_by),
-		"allow_upload": t.Allow_upload,
-	}
+	return appBuildSetupFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *AppBuildSetup) FromMap(data map[string]interface{}) {
-	if v, ok := data["primary_key"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Primary_key = types.NewCode(s)
-		}
-	}
-	if v, ok := data["builds_by"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Builds_by = AppBuildSetupBuilds_by(int(val))
-		case int:
-			t.Builds_by = AppBuildSetupBuilds_by(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"CI Pipeline", "Local Builder"}
-			for i, opt := range options {
-				if opt == val {
-					t.Builds_by = AppBuildSetupBuilds_by(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["allow_upload"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Allow_upload = b
-		}
-	}
+	appBuildSetupFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2739,38 +2516,71 @@ func (t *AppBuildSetup) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *AppBuildSetup) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "primary_key",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "builds_by",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "allow_upload",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return appBuildSetupFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in appBuildSetupFields.Fields
+func (t *AppBuildSetup) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Primary_key
+	case 1:
+		return &t.Builds_by
+	case 2:
+		return &t.Allow_upload
 	}
+	return nil
+}
+
+// appBuildSetupFields describes the fields of App_Build_Setup for the record functions
+// written once in foundation/tables
+var appBuildSetupFields = &tables.TableFields{
+	Table: AppBuildSetupTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "primary_key",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Primary_key",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "builds_by",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Builds_by",
+			Options: []string{"CI Pipeline", "Local Builder"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "allow_upload",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Allow_upload",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

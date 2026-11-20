@@ -62,7 +62,6 @@ import (
 	"fmt"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -435,244 +434,12 @@ var FADepreciationBook_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *FADepreciationBook) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "fa_no":
-		return 1
-	case "depreciation_book_code":
-		return 2
-	case "depreciation_method":
-		return 3
-	case "depreciation_starting_date":
-		return 4
-	case "straight_line_percent":
-		return 5
-	case "no_of_depreciation_years":
-		return 6
-	case "no_of_depreciation_months":
-		return 7
-	case "fixed_depr_amount":
-		return 8
-	case "declining_balance_percent":
-		return 9
-	case "depreciation_table_code":
-		return 10
-	case "final_rounding_amount":
-		return 11
-	case "ending_book_value":
-		return 12
-	case "fa_posting_group":
-		return 13
-	case "depreciation_ending_date":
-		return 14
-	case "acquisition_cost":
-		return 15
-	case "depreciation":
-		return 16
-	case "book_value":
-		return 17
-	case "proceeds_on_disposal":
-		return 18
-	case "gain_loss":
-		return 19
-	case "write_down":
-		return 20
-	case "appreciation":
-		return 21
-	case "custom_1":
-		return 22
-	case "custom_2":
-		return 23
-	case "depreciable_basis":
-		return 24
-	case "salvage_value":
-		return 25
-	case "book_value_on_disposal":
-		return 26
-	case "maintenance":
-		return 27
-	case "acquisition_date":
-		return 30
-	case "g_l_acquisition_date":
-		return 31
-	case "disposal_date":
-		return 32
-	case "last_acquisition_cost_date":
-		return 33
-	case "last_depreciation_date":
-		return 34
-	case "last_write_down_date":
-		return 35
-	case "last_appreciation_date":
-		return 36
-	case "last_custom_1_date":
-		return 37
-	case "last_custom_2_date":
-		return 38
-	case "last_salvage_value_date":
-		return 39
-	case "fa_exchange_rate":
-		return 40
-	case "fixed_depr_amount_below_zero":
-		return 41
-	case "last_date_modified":
-		return 42
-	case "first_user_defined_depr_date":
-		return 43
-	case "use_fa_ledger_check":
-		return 44
-	case "last_maintenance_date":
-		return 45
-	case "depr_below_zero_percent":
-		return 46
-	case "projected_disposal_date":
-		return 47
-	case "projected_proceeds_on_disposal":
-		return 48
-	case "depr_starting_date_custom_1":
-		return 50
-	case "depr_ending_date_custom_1":
-		return 51
-	case "accum_depr_percent_custom_1":
-		return 52
-	case "depr_this_year_percent_custom_1":
-		return 53
-	case "property_class_custom_1":
-		return 54
-	case "description":
-		return 55
-	case "main_asset_component":
-		return 56
-	case "component_of_main_asset":
-		return 57
-	case "fa_add_currency_factor":
-		return 58
-	case "maintenance_code_filter":
-		return 28
-	case "fa_posting_date_filter":
-		return 29
-	}
-	return 0
+	return fADepreciationBookFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *FADepreciationBook) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "fa_no"
-	case 2:
-		return "depreciation_book_code"
-	case 3:
-		return "depreciation_method"
-	case 4:
-		return "depreciation_starting_date"
-	case 5:
-		return "straight_line_percent"
-	case 6:
-		return "no_of_depreciation_years"
-	case 7:
-		return "no_of_depreciation_months"
-	case 8:
-		return "fixed_depr_amount"
-	case 9:
-		return "declining_balance_percent"
-	case 10:
-		return "depreciation_table_code"
-	case 11:
-		return "final_rounding_amount"
-	case 12:
-		return "ending_book_value"
-	case 13:
-		return "fa_posting_group"
-	case 14:
-		return "depreciation_ending_date"
-	case 15:
-		return "acquisition_cost"
-	case 16:
-		return "depreciation"
-	case 17:
-		return "book_value"
-	case 18:
-		return "proceeds_on_disposal"
-	case 19:
-		return "gain_loss"
-	case 20:
-		return "write_down"
-	case 21:
-		return "appreciation"
-	case 22:
-		return "custom_1"
-	case 23:
-		return "custom_2"
-	case 24:
-		return "depreciable_basis"
-	case 25:
-		return "salvage_value"
-	case 26:
-		return "book_value_on_disposal"
-	case 27:
-		return "maintenance"
-	case 30:
-		return "acquisition_date"
-	case 31:
-		return "g_l_acquisition_date"
-	case 32:
-		return "disposal_date"
-	case 33:
-		return "last_acquisition_cost_date"
-	case 34:
-		return "last_depreciation_date"
-	case 35:
-		return "last_write_down_date"
-	case 36:
-		return "last_appreciation_date"
-	case 37:
-		return "last_custom_1_date"
-	case 38:
-		return "last_custom_2_date"
-	case 39:
-		return "last_salvage_value_date"
-	case 40:
-		return "fa_exchange_rate"
-	case 41:
-		return "fixed_depr_amount_below_zero"
-	case 42:
-		return "last_date_modified"
-	case 43:
-		return "first_user_defined_depr_date"
-	case 44:
-		return "use_fa_ledger_check"
-	case 45:
-		return "last_maintenance_date"
-	case 46:
-		return "depr_below_zero_percent"
-	case 47:
-		return "projected_disposal_date"
-	case 48:
-		return "projected_proceeds_on_disposal"
-	case 50:
-		return "depr_starting_date_custom_1"
-	case 51:
-		return "depr_ending_date_custom_1"
-	case 52:
-		return "accum_depr_percent_custom_1"
-	case 53:
-		return "depr_this_year_percent_custom_1"
-	case 54:
-		return "property_class_custom_1"
-	case 55:
-		return "description"
-	case 56:
-		return "main_asset_component"
-	case 57:
-		return "component_of_main_asset"
-	case 58:
-		return "fa_add_currency_factor"
-	case 28:
-		return "maintenance_code_filter"
-	case 29:
-		return "fa_posting_date_filter"
-	}
-	return ""
+	return fADepreciationBookFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -784,132 +551,6 @@ type (
 	FADepreciationBookOnBeforeRename interface {
 		OnBeforeRename(rec *FADepreciationBook, handled *bool) error
 	}
-	FADepreciationBookOnValidate_Fa_no interface {
-		OnValidate_Fa_no(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Depreciation_book_code interface {
-		OnValidate_Depreciation_book_code(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Depreciation_method interface {
-		OnValidate_Depreciation_method(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Depreciation_starting_date interface {
-		OnValidate_Depreciation_starting_date(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Straight_line_percent interface {
-		OnValidate_Straight_line_percent(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_No_of_depreciation_years interface {
-		OnValidate_No_of_depreciation_years(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_No_of_depreciation_months interface {
-		OnValidate_No_of_depreciation_months(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Fixed_depr_amount interface {
-		OnValidate_Fixed_depr_amount(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Declining_balance_percent interface {
-		OnValidate_Declining_balance_percent(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Depreciation_table_code interface {
-		OnValidate_Depreciation_table_code(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Final_rounding_amount interface {
-		OnValidate_Final_rounding_amount(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Ending_book_value interface {
-		OnValidate_Ending_book_value(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Fa_posting_group interface {
-		OnValidate_Fa_posting_group(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Depreciation_ending_date interface {
-		OnValidate_Depreciation_ending_date(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Acquisition_date interface {
-		OnValidate_Acquisition_date(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_G_l_acquisition_date interface {
-		OnValidate_G_l_acquisition_date(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Disposal_date interface {
-		OnValidate_Disposal_date(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Last_acquisition_cost_date interface {
-		OnValidate_Last_acquisition_cost_date(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Last_depreciation_date interface {
-		OnValidate_Last_depreciation_date(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Last_write_down_date interface {
-		OnValidate_Last_write_down_date(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Last_appreciation_date interface {
-		OnValidate_Last_appreciation_date(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Last_custom_1_date interface {
-		OnValidate_Last_custom_1_date(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Last_custom_2_date interface {
-		OnValidate_Last_custom_2_date(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Last_salvage_value_date interface {
-		OnValidate_Last_salvage_value_date(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Fa_exchange_rate interface {
-		OnValidate_Fa_exchange_rate(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Fixed_depr_amount_below_zero interface {
-		OnValidate_Fixed_depr_amount_below_zero(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Last_date_modified interface {
-		OnValidate_Last_date_modified(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_First_user_defined_depr_date interface {
-		OnValidate_First_user_defined_depr_date(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Use_fa_ledger_check interface {
-		OnValidate_Use_fa_ledger_check(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Last_maintenance_date interface {
-		OnValidate_Last_maintenance_date(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Depr_below_zero_percent interface {
-		OnValidate_Depr_below_zero_percent(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Projected_disposal_date interface {
-		OnValidate_Projected_disposal_date(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Projected_proceeds_on_disposal interface {
-		OnValidate_Projected_proceeds_on_disposal(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Depr_starting_date_custom_1 interface {
-		OnValidate_Depr_starting_date_custom_1(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Depr_ending_date_custom_1 interface {
-		OnValidate_Depr_ending_date_custom_1(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Accum_depr_percent_custom_1 interface {
-		OnValidate_Accum_depr_percent_custom_1(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Depr_this_year_percent_custom_1 interface {
-		OnValidate_Depr_this_year_percent_custom_1(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Property_class_custom_1 interface {
-		OnValidate_Property_class_custom_1(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Description interface {
-		OnValidate_Description(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Main_asset_component interface {
-		OnValidate_Main_asset_component(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Component_of_main_asset interface {
-		OnValidate_Component_of_main_asset(rec *FADepreciationBook) error
-	}
-	FADepreciationBookOnValidate_Fa_add_currency_factor interface {
-		OnValidate_Fa_add_currency_factor(rec *FADepreciationBook) error
-	}
 )
 
 // fADepreciationBookLogic is the registered business logic of FA_Depreciation_Book, in
@@ -952,92 +593,9 @@ func fADepreciationBookTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(FADepreciationBookOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(FADepreciationBookOnBeforeRename)
-	case "OnValidate_Fa_no":
-		_, ok = logic.(FADepreciationBookOnValidate_Fa_no)
-	case "OnValidate_Depreciation_book_code":
-		_, ok = logic.(FADepreciationBookOnValidate_Depreciation_book_code)
-	case "OnValidate_Depreciation_method":
-		_, ok = logic.(FADepreciationBookOnValidate_Depreciation_method)
-	case "OnValidate_Depreciation_starting_date":
-		_, ok = logic.(FADepreciationBookOnValidate_Depreciation_starting_date)
-	case "OnValidate_Straight_line_percent":
-		_, ok = logic.(FADepreciationBookOnValidate_Straight_line_percent)
-	case "OnValidate_No_of_depreciation_years":
-		_, ok = logic.(FADepreciationBookOnValidate_No_of_depreciation_years)
-	case "OnValidate_No_of_depreciation_months":
-		_, ok = logic.(FADepreciationBookOnValidate_No_of_depreciation_months)
-	case "OnValidate_Fixed_depr_amount":
-		_, ok = logic.(FADepreciationBookOnValidate_Fixed_depr_amount)
-	case "OnValidate_Declining_balance_percent":
-		_, ok = logic.(FADepreciationBookOnValidate_Declining_balance_percent)
-	case "OnValidate_Depreciation_table_code":
-		_, ok = logic.(FADepreciationBookOnValidate_Depreciation_table_code)
-	case "OnValidate_Final_rounding_amount":
-		_, ok = logic.(FADepreciationBookOnValidate_Final_rounding_amount)
-	case "OnValidate_Ending_book_value":
-		_, ok = logic.(FADepreciationBookOnValidate_Ending_book_value)
-	case "OnValidate_Fa_posting_group":
-		_, ok = logic.(FADepreciationBookOnValidate_Fa_posting_group)
-	case "OnValidate_Depreciation_ending_date":
-		_, ok = logic.(FADepreciationBookOnValidate_Depreciation_ending_date)
-	case "OnValidate_Acquisition_date":
-		_, ok = logic.(FADepreciationBookOnValidate_Acquisition_date)
-	case "OnValidate_G_l_acquisition_date":
-		_, ok = logic.(FADepreciationBookOnValidate_G_l_acquisition_date)
-	case "OnValidate_Disposal_date":
-		_, ok = logic.(FADepreciationBookOnValidate_Disposal_date)
-	case "OnValidate_Last_acquisition_cost_date":
-		_, ok = logic.(FADepreciationBookOnValidate_Last_acquisition_cost_date)
-	case "OnValidate_Last_depreciation_date":
-		_, ok = logic.(FADepreciationBookOnValidate_Last_depreciation_date)
-	case "OnValidate_Last_write_down_date":
-		_, ok = logic.(FADepreciationBookOnValidate_Last_write_down_date)
-	case "OnValidate_Last_appreciation_date":
-		_, ok = logic.(FADepreciationBookOnValidate_Last_appreciation_date)
-	case "OnValidate_Last_custom_1_date":
-		_, ok = logic.(FADepreciationBookOnValidate_Last_custom_1_date)
-	case "OnValidate_Last_custom_2_date":
-		_, ok = logic.(FADepreciationBookOnValidate_Last_custom_2_date)
-	case "OnValidate_Last_salvage_value_date":
-		_, ok = logic.(FADepreciationBookOnValidate_Last_salvage_value_date)
-	case "OnValidate_Fa_exchange_rate":
-		_, ok = logic.(FADepreciationBookOnValidate_Fa_exchange_rate)
-	case "OnValidate_Fixed_depr_amount_below_zero":
-		_, ok = logic.(FADepreciationBookOnValidate_Fixed_depr_amount_below_zero)
-	case "OnValidate_Last_date_modified":
-		_, ok = logic.(FADepreciationBookOnValidate_Last_date_modified)
-	case "OnValidate_First_user_defined_depr_date":
-		_, ok = logic.(FADepreciationBookOnValidate_First_user_defined_depr_date)
-	case "OnValidate_Use_fa_ledger_check":
-		_, ok = logic.(FADepreciationBookOnValidate_Use_fa_ledger_check)
-	case "OnValidate_Last_maintenance_date":
-		_, ok = logic.(FADepreciationBookOnValidate_Last_maintenance_date)
-	case "OnValidate_Depr_below_zero_percent":
-		_, ok = logic.(FADepreciationBookOnValidate_Depr_below_zero_percent)
-	case "OnValidate_Projected_disposal_date":
-		_, ok = logic.(FADepreciationBookOnValidate_Projected_disposal_date)
-	case "OnValidate_Projected_proceeds_on_disposal":
-		_, ok = logic.(FADepreciationBookOnValidate_Projected_proceeds_on_disposal)
-	case "OnValidate_Depr_starting_date_custom_1":
-		_, ok = logic.(FADepreciationBookOnValidate_Depr_starting_date_custom_1)
-	case "OnValidate_Depr_ending_date_custom_1":
-		_, ok = logic.(FADepreciationBookOnValidate_Depr_ending_date_custom_1)
-	case "OnValidate_Accum_depr_percent_custom_1":
-		_, ok = logic.(FADepreciationBookOnValidate_Accum_depr_percent_custom_1)
-	case "OnValidate_Depr_this_year_percent_custom_1":
-		_, ok = logic.(FADepreciationBookOnValidate_Depr_this_year_percent_custom_1)
-	case "OnValidate_Property_class_custom_1":
-		_, ok = logic.(FADepreciationBookOnValidate_Property_class_custom_1)
-	case "OnValidate_Description":
-		_, ok = logic.(FADepreciationBookOnValidate_Description)
-	case "OnValidate_Main_asset_component":
-		_, ok = logic.(FADepreciationBookOnValidate_Main_asset_component)
-	case "OnValidate_Component_of_main_asset":
-		_, ok = logic.(FADepreciationBookOnValidate_Component_of_main_asset)
-	case "OnValidate_Fa_add_currency_factor":
-		_, ok = logic.(FADepreciationBookOnValidate_Fa_add_currency_factor)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return fADepreciationBookFields.IsOnValidateTrigger(name, logic, (*FADepreciationBook)(nil))
 	}
 	return true, ok
 }
@@ -1473,49 +1031,7 @@ func (t *FADepreciationBook) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *FADepreciationBook) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["fa_no"] = t.Fa_no
-	t.oldValues["depreciation_book_code"] = t.Depreciation_book_code
-	t.oldValues["depreciation_method"] = t.Depreciation_method
-	t.oldValues["depreciation_starting_date"] = t.Depreciation_starting_date
-	t.oldValues["straight_line_percent"] = t.Straight_line_percent
-	t.oldValues["no_of_depreciation_years"] = t.No_of_depreciation_years
-	t.oldValues["no_of_depreciation_months"] = t.No_of_depreciation_months
-	t.oldValues["fixed_depr_amount"] = t.Fixed_depr_amount
-	t.oldValues["declining_balance_percent"] = t.Declining_balance_percent
-	t.oldValues["depreciation_table_code"] = t.Depreciation_table_code
-	t.oldValues["final_rounding_amount"] = t.Final_rounding_amount
-	t.oldValues["ending_book_value"] = t.Ending_book_value
-	t.oldValues["fa_posting_group"] = t.Fa_posting_group
-	t.oldValues["depreciation_ending_date"] = t.Depreciation_ending_date
-	t.oldValues["acquisition_date"] = t.Acquisition_date
-	t.oldValues["g_l_acquisition_date"] = t.G_l_acquisition_date
-	t.oldValues["disposal_date"] = t.Disposal_date
-	t.oldValues["last_acquisition_cost_date"] = t.Last_acquisition_cost_date
-	t.oldValues["last_depreciation_date"] = t.Last_depreciation_date
-	t.oldValues["last_write_down_date"] = t.Last_write_down_date
-	t.oldValues["last_appreciation_date"] = t.Last_appreciation_date
-	t.oldValues["last_custom_1_date"] = t.Last_custom_1_date
-	t.oldValues["last_custom_2_date"] = t.Last_custom_2_date
-	t.oldValues["last_salvage_value_date"] = t.Last_salvage_value_date
-	t.oldValues["fa_exchange_rate"] = t.Fa_exchange_rate
-	t.oldValues["fixed_depr_amount_below_zero"] = t.Fixed_depr_amount_below_zero
-	t.oldValues["last_date_modified"] = t.Last_date_modified
-	t.oldValues["first_user_defined_depr_date"] = t.First_user_defined_depr_date
-	t.oldValues["use_fa_ledger_check"] = t.Use_fa_ledger_check
-	t.oldValues["last_maintenance_date"] = t.Last_maintenance_date
-	t.oldValues["depr_below_zero_percent"] = t.Depr_below_zero_percent
-	t.oldValues["projected_disposal_date"] = t.Projected_disposal_date
-	t.oldValues["projected_proceeds_on_disposal"] = t.Projected_proceeds_on_disposal
-	t.oldValues["depr_starting_date_custom_1"] = t.Depr_starting_date_custom_1
-	t.oldValues["depr_ending_date_custom_1"] = t.Depr_ending_date_custom_1
-	t.oldValues["accum_depr_percent_custom_1"] = t.Accum_depr_percent_custom_1
-	t.oldValues["depr_this_year_percent_custom_1"] = t.Depr_this_year_percent_custom_1
-	t.oldValues["property_class_custom_1"] = t.Property_class_custom_1
-	t.oldValues["description"] = t.Description
-	t.oldValues["main_asset_component"] = t.Main_asset_component
-	t.oldValues["component_of_main_asset"] = t.Component_of_main_asset
-	t.oldValues["fa_add_currency_factor"] = t.Fa_add_currency_factor
+	t.oldValues = fADepreciationBookFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1530,132 +1046,7 @@ func (t *FADepreciationBook) OldValue(fieldName string) interface{} {
 func (t *FADepreciationBook) XRec() *FADepreciationBook {
 	x := &FADepreciationBook{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["fa_no"].(types.Code); ok {
-		x.Fa_no = v
-	}
-	if v, ok := t.oldValues["depreciation_book_code"].(types.Code); ok {
-		x.Depreciation_book_code = v
-	}
-	if v, ok := t.oldValues["depreciation_method"].(FADepreciationBookDepreciation_method); ok {
-		x.Depreciation_method = v
-	}
-	if v, ok := t.oldValues["depreciation_starting_date"].(types.Date); ok {
-		x.Depreciation_starting_date = v
-	}
-	if v, ok := t.oldValues["straight_line_percent"].(types.Decimal); ok {
-		x.Straight_line_percent = v
-	}
-	if v, ok := t.oldValues["no_of_depreciation_years"].(types.Decimal); ok {
-		x.No_of_depreciation_years = v
-	}
-	if v, ok := t.oldValues["no_of_depreciation_months"].(types.Decimal); ok {
-		x.No_of_depreciation_months = v
-	}
-	if v, ok := t.oldValues["fixed_depr_amount"].(types.Decimal); ok {
-		x.Fixed_depr_amount = v
-	}
-	if v, ok := t.oldValues["declining_balance_percent"].(types.Decimal); ok {
-		x.Declining_balance_percent = v
-	}
-	if v, ok := t.oldValues["depreciation_table_code"].(types.Code); ok {
-		x.Depreciation_table_code = v
-	}
-	if v, ok := t.oldValues["final_rounding_amount"].(types.Decimal); ok {
-		x.Final_rounding_amount = v
-	}
-	if v, ok := t.oldValues["ending_book_value"].(types.Decimal); ok {
-		x.Ending_book_value = v
-	}
-	if v, ok := t.oldValues["fa_posting_group"].(types.Code); ok {
-		x.Fa_posting_group = v
-	}
-	if v, ok := t.oldValues["depreciation_ending_date"].(types.Date); ok {
-		x.Depreciation_ending_date = v
-	}
-	if v, ok := t.oldValues["acquisition_date"].(types.Date); ok {
-		x.Acquisition_date = v
-	}
-	if v, ok := t.oldValues["g_l_acquisition_date"].(types.Date); ok {
-		x.G_l_acquisition_date = v
-	}
-	if v, ok := t.oldValues["disposal_date"].(types.Date); ok {
-		x.Disposal_date = v
-	}
-	if v, ok := t.oldValues["last_acquisition_cost_date"].(types.Date); ok {
-		x.Last_acquisition_cost_date = v
-	}
-	if v, ok := t.oldValues["last_depreciation_date"].(types.Date); ok {
-		x.Last_depreciation_date = v
-	}
-	if v, ok := t.oldValues["last_write_down_date"].(types.Date); ok {
-		x.Last_write_down_date = v
-	}
-	if v, ok := t.oldValues["last_appreciation_date"].(types.Date); ok {
-		x.Last_appreciation_date = v
-	}
-	if v, ok := t.oldValues["last_custom_1_date"].(types.Date); ok {
-		x.Last_custom_1_date = v
-	}
-	if v, ok := t.oldValues["last_custom_2_date"].(types.Date); ok {
-		x.Last_custom_2_date = v
-	}
-	if v, ok := t.oldValues["last_salvage_value_date"].(types.Date); ok {
-		x.Last_salvage_value_date = v
-	}
-	if v, ok := t.oldValues["fa_exchange_rate"].(types.Decimal); ok {
-		x.Fa_exchange_rate = v
-	}
-	if v, ok := t.oldValues["fixed_depr_amount_below_zero"].(types.Decimal); ok {
-		x.Fixed_depr_amount_below_zero = v
-	}
-	if v, ok := t.oldValues["last_date_modified"].(types.Date); ok {
-		x.Last_date_modified = v
-	}
-	if v, ok := t.oldValues["first_user_defined_depr_date"].(types.Date); ok {
-		x.First_user_defined_depr_date = v
-	}
-	if v, ok := t.oldValues["use_fa_ledger_check"].(bool); ok {
-		x.Use_fa_ledger_check = v
-	}
-	if v, ok := t.oldValues["last_maintenance_date"].(types.Date); ok {
-		x.Last_maintenance_date = v
-	}
-	if v, ok := t.oldValues["depr_below_zero_percent"].(types.Decimal); ok {
-		x.Depr_below_zero_percent = v
-	}
-	if v, ok := t.oldValues["projected_disposal_date"].(types.Date); ok {
-		x.Projected_disposal_date = v
-	}
-	if v, ok := t.oldValues["projected_proceeds_on_disposal"].(types.Decimal); ok {
-		x.Projected_proceeds_on_disposal = v
-	}
-	if v, ok := t.oldValues["depr_starting_date_custom_1"].(types.Date); ok {
-		x.Depr_starting_date_custom_1 = v
-	}
-	if v, ok := t.oldValues["depr_ending_date_custom_1"].(types.Date); ok {
-		x.Depr_ending_date_custom_1 = v
-	}
-	if v, ok := t.oldValues["accum_depr_percent_custom_1"].(types.Decimal); ok {
-		x.Accum_depr_percent_custom_1 = v
-	}
-	if v, ok := t.oldValues["depr_this_year_percent_custom_1"].(types.Decimal); ok {
-		x.Depr_this_year_percent_custom_1 = v
-	}
-	if v, ok := t.oldValues["property_class_custom_1"].(FADepreciationBookProperty_class_custom_1); ok {
-		x.Property_class_custom_1 = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["main_asset_component"].(FADepreciationBookMain_asset_component); ok {
-		x.Main_asset_component = v
-	}
-	if v, ok := t.oldValues["component_of_main_asset"].(types.Code); ok {
-		x.Component_of_main_asset = v
-	}
-	if v, ok := t.oldValues["fa_add_currency_factor"].(types.Decimal); ok {
-		x.Fa_add_currency_factor = v
-	}
+	fADepreciationBookFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -2361,190 +1752,7 @@ func (t *FADepreciationBook) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *FADepreciationBook) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "fa_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Fa_no.Equal(old)
-		}
-	case "depreciation_book_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Depreciation_book_code.Equal(old)
-		}
-	case "depreciation_method":
-		if old, ok := oldValue.(FADepreciationBookDepreciation_method); ok {
-			return t.Depreciation_method != old
-		}
-	case "depreciation_starting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Depreciation_starting_date.Equal(old)
-		}
-	case "straight_line_percent":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Straight_line_percent.Equal(old)
-		}
-	case "no_of_depreciation_years":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.No_of_depreciation_years.Equal(old)
-		}
-	case "no_of_depreciation_months":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.No_of_depreciation_months.Equal(old)
-		}
-	case "fixed_depr_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Fixed_depr_amount.Equal(old)
-		}
-	case "declining_balance_percent":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Declining_balance_percent.Equal(old)
-		}
-	case "depreciation_table_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Depreciation_table_code.Equal(old)
-		}
-	case "final_rounding_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Final_rounding_amount.Equal(old)
-		}
-	case "ending_book_value":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Ending_book_value.Equal(old)
-		}
-	case "fa_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Fa_posting_group.Equal(old)
-		}
-	case "depreciation_ending_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Depreciation_ending_date.Equal(old)
-		}
-	case "acquisition_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Acquisition_date.Equal(old)
-		}
-	case "g_l_acquisition_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.G_l_acquisition_date.Equal(old)
-		}
-	case "disposal_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Disposal_date.Equal(old)
-		}
-	case "last_acquisition_cost_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Last_acquisition_cost_date.Equal(old)
-		}
-	case "last_depreciation_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Last_depreciation_date.Equal(old)
-		}
-	case "last_write_down_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Last_write_down_date.Equal(old)
-		}
-	case "last_appreciation_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Last_appreciation_date.Equal(old)
-		}
-	case "last_custom_1_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Last_custom_1_date.Equal(old)
-		}
-	case "last_custom_2_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Last_custom_2_date.Equal(old)
-		}
-	case "last_salvage_value_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Last_salvage_value_date.Equal(old)
-		}
-	case "fa_exchange_rate":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Fa_exchange_rate.Equal(old)
-		}
-	case "fixed_depr_amount_below_zero":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Fixed_depr_amount_below_zero.Equal(old)
-		}
-	case "last_date_modified":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Last_date_modified.Equal(old)
-		}
-	case "first_user_defined_depr_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.First_user_defined_depr_date.Equal(old)
-		}
-	case "use_fa_ledger_check":
-		if old, ok := oldValue.(bool); ok {
-			return t.Use_fa_ledger_check != old
-		}
-		return true // Type mismatch, assume changed
-	case "last_maintenance_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Last_maintenance_date.Equal(old)
-		}
-	case "depr_below_zero_percent":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Depr_below_zero_percent.Equal(old)
-		}
-	case "projected_disposal_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Projected_disposal_date.Equal(old)
-		}
-	case "projected_proceeds_on_disposal":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Projected_proceeds_on_disposal.Equal(old)
-		}
-	case "depr_starting_date_custom_1":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Depr_starting_date_custom_1.Equal(old)
-		}
-	case "depr_ending_date_custom_1":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Depr_ending_date_custom_1.Equal(old)
-		}
-	case "accum_depr_percent_custom_1":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Accum_depr_percent_custom_1.Equal(old)
-		}
-	case "depr_this_year_percent_custom_1":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Depr_this_year_percent_custom_1.Equal(old)
-		}
-	case "property_class_custom_1":
-		if old, ok := oldValue.(FADepreciationBookProperty_class_custom_1); ok {
-			return t.Property_class_custom_1 != old
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "main_asset_component":
-		if old, ok := oldValue.(FADepreciationBookMain_asset_component); ok {
-			return t.Main_asset_component != old
-		}
-	case "component_of_main_asset":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Component_of_main_asset.Equal(old)
-		}
-	case "fa_add_currency_factor":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Fa_add_currency_factor.Equal(old)
-		}
-	}
-
-	return false
+	return fADepreciationBookFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -4201,93 +3409,7 @@ func (t *FADepreciationBook) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *FADepreciationBook) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("fa_no"):
-		return "fa_no", true
-	case strings.ToLower("depreciation_book_code"):
-		return "depreciation_book_code", true
-	case strings.ToLower("depreciation_method"):
-		return "depreciation_method", true
-	case strings.ToLower("depreciation_starting_date"):
-		return "depreciation_starting_date", true
-	case strings.ToLower("straight_line_percent"):
-		return "straight_line_percent", true
-	case strings.ToLower("no_of_depreciation_years"):
-		return "no_of_depreciation_years", true
-	case strings.ToLower("no_of_depreciation_months"):
-		return "no_of_depreciation_months", true
-	case strings.ToLower("fixed_depr_amount"):
-		return "fixed_depr_amount", true
-	case strings.ToLower("declining_balance_percent"):
-		return "declining_balance_percent", true
-	case strings.ToLower("depreciation_table_code"):
-		return "depreciation_table_code", true
-	case strings.ToLower("final_rounding_amount"):
-		return "final_rounding_amount", true
-	case strings.ToLower("ending_book_value"):
-		return "ending_book_value", true
-	case strings.ToLower("fa_posting_group"):
-		return "fa_posting_group", true
-	case strings.ToLower("depreciation_ending_date"):
-		return "depreciation_ending_date", true
-	case strings.ToLower("acquisition_date"):
-		return "acquisition_date", true
-	case strings.ToLower("g_l_acquisition_date"):
-		return "g_l_acquisition_date", true
-	case strings.ToLower("disposal_date"):
-		return "disposal_date", true
-	case strings.ToLower("last_acquisition_cost_date"):
-		return "last_acquisition_cost_date", true
-	case strings.ToLower("last_depreciation_date"):
-		return "last_depreciation_date", true
-	case strings.ToLower("last_write_down_date"):
-		return "last_write_down_date", true
-	case strings.ToLower("last_appreciation_date"):
-		return "last_appreciation_date", true
-	case strings.ToLower("last_custom_1_date"):
-		return "last_custom_1_date", true
-	case strings.ToLower("last_custom_2_date"):
-		return "last_custom_2_date", true
-	case strings.ToLower("last_salvage_value_date"):
-		return "last_salvage_value_date", true
-	case strings.ToLower("fa_exchange_rate"):
-		return "fa_exchange_rate", true
-	case strings.ToLower("fixed_depr_amount_below_zero"):
-		return "fixed_depr_amount_below_zero", true
-	case strings.ToLower("last_date_modified"):
-		return "last_date_modified", true
-	case strings.ToLower("first_user_defined_depr_date"):
-		return "first_user_defined_depr_date", true
-	case strings.ToLower("use_fa_ledger_check"):
-		return "use_fa_ledger_check", true
-	case strings.ToLower("last_maintenance_date"):
-		return "last_maintenance_date", true
-	case strings.ToLower("depr_below_zero_percent"):
-		return "depr_below_zero_percent", true
-	case strings.ToLower("projected_disposal_date"):
-		return "projected_disposal_date", true
-	case strings.ToLower("projected_proceeds_on_disposal"):
-		return "projected_proceeds_on_disposal", true
-	case strings.ToLower("depr_starting_date_custom_1"):
-		return "depr_starting_date_custom_1", true
-	case strings.ToLower("depr_ending_date_custom_1"):
-		return "depr_ending_date_custom_1", true
-	case strings.ToLower("accum_depr_percent_custom_1"):
-		return "accum_depr_percent_custom_1", true
-	case strings.ToLower("depr_this_year_percent_custom_1"):
-		return "depr_this_year_percent_custom_1", true
-	case strings.ToLower("property_class_custom_1"):
-		return "property_class_custom_1", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("main_asset_component"):
-		return "main_asset_component", true
-	case strings.ToLower("component_of_main_asset"):
-		return "component_of_main_asset", true
-	case strings.ToLower("fa_add_currency_factor"):
-		return "fa_add_currency_factor", true
-	}
-	return "", false
+	return fADepreciationBookFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -5713,1130 +4835,20 @@ func (t *FADepreciationBook) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *FADepreciationBook) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "fa_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Fa_no = v
-		} else if v, ok := value.(string); ok {
-			t.Fa_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fa_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Fa_no); ok {
-				if err := trg.OnValidate_Fa_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "depreciation_book_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Depreciation_book_code = v
-		} else if v, ok := value.(string); ok {
-			t.Depreciation_book_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field depreciation_book_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "depreciation_book_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Depreciation_book_code); ok {
-				if err := trg.OnValidate_Depreciation_book_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "depreciation_method":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(FADepreciationBookDepreciation_method); ok {
-			t.Depreciation_method = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 7 {
-				return fmt.Errorf("invalid option value %d for field depreciation_method (valid range: 0-%d)", v, 7-1)
-			}
-			t.Depreciation_method = FADepreciationBookDepreciation_method(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 7 {
-				return fmt.Errorf("invalid option value %d for field depreciation_method (valid range: 0-%d)", intVal, 7-1)
-			}
-			t.Depreciation_method = FADepreciationBookDepreciation_method(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Depreciation_method = 0
-			} else {
-				options := []string{"Straight-Line", "Declining-Balance 1", "Declining-Balance 2", "DB1/SL", "DB2/SL", "User-Defined", "Manual"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Depreciation_method = FADepreciationBookDepreciation_method(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field depreciation_method (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field depreciation_method (expected FADepreciationBookDepreciation_method, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Depreciation_method); ok {
-				if err := trg.OnValidate_Depreciation_method(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "depreciation_starting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Depreciation_starting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Depreciation_starting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field depreciation_starting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Depreciation_starting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field depreciation_starting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Depreciation_starting_date); ok {
-				if err := trg.OnValidate_Depreciation_starting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "straight_line_percent":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Straight_line_percent = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Straight_line_percent, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field straight_line_percent: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Straight_line_percent = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Straight_line_percent = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Straight_line_percent = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field straight_line_percent (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Straight_line_percent); ok {
-				if err := trg.OnValidate_Straight_line_percent(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no_of_depreciation_years":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.No_of_depreciation_years = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.No_of_depreciation_years, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field no_of_depreciation_years: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.No_of_depreciation_years = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.No_of_depreciation_years = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.No_of_depreciation_years = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field no_of_depreciation_years (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_No_of_depreciation_years); ok {
-				if err := trg.OnValidate_No_of_depreciation_years(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no_of_depreciation_months":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.No_of_depreciation_months = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.No_of_depreciation_months, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field no_of_depreciation_months: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.No_of_depreciation_months = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.No_of_depreciation_months = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.No_of_depreciation_months = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field no_of_depreciation_months (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_No_of_depreciation_months); ok {
-				if err := trg.OnValidate_No_of_depreciation_months(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fixed_depr_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Fixed_depr_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Fixed_depr_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field fixed_depr_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Fixed_depr_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Fixed_depr_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Fixed_depr_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field fixed_depr_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Fixed_depr_amount); ok {
-				if err := trg.OnValidate_Fixed_depr_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "declining_balance_percent":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Declining_balance_percent = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Declining_balance_percent, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field declining_balance_percent: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Declining_balance_percent = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Declining_balance_percent = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Declining_balance_percent = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field declining_balance_percent (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Declining_balance_percent); ok {
-				if err := trg.OnValidate_Declining_balance_percent(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "depreciation_table_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Depreciation_table_code = v
-		} else if v, ok := value.(string); ok {
-			t.Depreciation_table_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field depreciation_table_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "depreciation_table_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Depreciation_table_code); ok {
-				if err := trg.OnValidate_Depreciation_table_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "final_rounding_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Final_rounding_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Final_rounding_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field final_rounding_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Final_rounding_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Final_rounding_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Final_rounding_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field final_rounding_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Final_rounding_amount); ok {
-				if err := trg.OnValidate_Final_rounding_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "ending_book_value":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Ending_book_value = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Ending_book_value, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field ending_book_value: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Ending_book_value = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Ending_book_value = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Ending_book_value = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field ending_book_value (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Ending_book_value); ok {
-				if err := trg.OnValidate_Ending_book_value(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Fa_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Fa_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fa_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Fa_posting_group); ok {
-				if err := trg.OnValidate_Fa_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "depreciation_ending_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Depreciation_ending_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Depreciation_ending_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field depreciation_ending_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Depreciation_ending_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field depreciation_ending_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Depreciation_ending_date); ok {
-				if err := trg.OnValidate_Depreciation_ending_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "acquisition_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Acquisition_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Acquisition_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field acquisition_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Acquisition_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field acquisition_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Acquisition_date); ok {
-				if err := trg.OnValidate_Acquisition_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "g_l_acquisition_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.G_l_acquisition_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.G_l_acquisition_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field g_l_acquisition_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.G_l_acquisition_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field g_l_acquisition_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_G_l_acquisition_date); ok {
-				if err := trg.OnValidate_G_l_acquisition_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "disposal_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Disposal_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Disposal_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field disposal_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Disposal_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field disposal_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Disposal_date); ok {
-				if err := trg.OnValidate_Disposal_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "last_acquisition_cost_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Last_acquisition_cost_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Last_acquisition_cost_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field last_acquisition_cost_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Last_acquisition_cost_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field last_acquisition_cost_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Last_acquisition_cost_date); ok {
-				if err := trg.OnValidate_Last_acquisition_cost_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "last_depreciation_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Last_depreciation_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Last_depreciation_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field last_depreciation_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Last_depreciation_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field last_depreciation_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Last_depreciation_date); ok {
-				if err := trg.OnValidate_Last_depreciation_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "last_write_down_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Last_write_down_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Last_write_down_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field last_write_down_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Last_write_down_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field last_write_down_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Last_write_down_date); ok {
-				if err := trg.OnValidate_Last_write_down_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "last_appreciation_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Last_appreciation_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Last_appreciation_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field last_appreciation_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Last_appreciation_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field last_appreciation_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Last_appreciation_date); ok {
-				if err := trg.OnValidate_Last_appreciation_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "last_custom_1_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Last_custom_1_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Last_custom_1_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field last_custom_1_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Last_custom_1_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field last_custom_1_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Last_custom_1_date); ok {
-				if err := trg.OnValidate_Last_custom_1_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "last_custom_2_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Last_custom_2_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Last_custom_2_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field last_custom_2_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Last_custom_2_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field last_custom_2_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Last_custom_2_date); ok {
-				if err := trg.OnValidate_Last_custom_2_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "last_salvage_value_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Last_salvage_value_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Last_salvage_value_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field last_salvage_value_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Last_salvage_value_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field last_salvage_value_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Last_salvage_value_date); ok {
-				if err := trg.OnValidate_Last_salvage_value_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_exchange_rate":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Fa_exchange_rate = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Fa_exchange_rate, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field fa_exchange_rate: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Fa_exchange_rate = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Fa_exchange_rate = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Fa_exchange_rate = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_exchange_rate (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Fa_exchange_rate); ok {
-				if err := trg.OnValidate_Fa_exchange_rate(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fixed_depr_amount_below_zero":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Fixed_depr_amount_below_zero = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Fixed_depr_amount_below_zero, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field fixed_depr_amount_below_zero: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Fixed_depr_amount_below_zero = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Fixed_depr_amount_below_zero = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Fixed_depr_amount_below_zero = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field fixed_depr_amount_below_zero (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Fixed_depr_amount_below_zero); ok {
-				if err := trg.OnValidate_Fixed_depr_amount_below_zero(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "last_date_modified":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Last_date_modified = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Last_date_modified, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field last_date_modified: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Last_date_modified = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field last_date_modified (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Last_date_modified); ok {
-				if err := trg.OnValidate_Last_date_modified(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "first_user_defined_depr_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.First_user_defined_depr_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.First_user_defined_depr_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field first_user_defined_depr_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.First_user_defined_depr_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field first_user_defined_depr_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_First_user_defined_depr_date); ok {
-				if err := trg.OnValidate_First_user_defined_depr_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "use_fa_ledger_check":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Use_fa_ledger_check = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Use_fa_ledger_check = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field use_fa_ledger_check")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Use_fa_ledger_check); ok {
-				if err := trg.OnValidate_Use_fa_ledger_check(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "last_maintenance_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Last_maintenance_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Last_maintenance_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field last_maintenance_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Last_maintenance_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field last_maintenance_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Last_maintenance_date); ok {
-				if err := trg.OnValidate_Last_maintenance_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "depr_below_zero_percent":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Depr_below_zero_percent = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Depr_below_zero_percent, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field depr_below_zero_percent: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Depr_below_zero_percent = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Depr_below_zero_percent = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Depr_below_zero_percent = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field depr_below_zero_percent (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Depr_below_zero_percent); ok {
-				if err := trg.OnValidate_Depr_below_zero_percent(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "projected_disposal_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Projected_disposal_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Projected_disposal_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field projected_disposal_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Projected_disposal_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field projected_disposal_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Projected_disposal_date); ok {
-				if err := trg.OnValidate_Projected_disposal_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "projected_proceeds_on_disposal":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Projected_proceeds_on_disposal = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Projected_proceeds_on_disposal, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field projected_proceeds_on_disposal: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Projected_proceeds_on_disposal = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Projected_proceeds_on_disposal = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Projected_proceeds_on_disposal = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field projected_proceeds_on_disposal (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Projected_proceeds_on_disposal); ok {
-				if err := trg.OnValidate_Projected_proceeds_on_disposal(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "depr_starting_date_custom_1":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Depr_starting_date_custom_1 = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Depr_starting_date_custom_1, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field depr_starting_date_custom_1: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Depr_starting_date_custom_1 = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field depr_starting_date_custom_1 (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Depr_starting_date_custom_1); ok {
-				if err := trg.OnValidate_Depr_starting_date_custom_1(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "depr_ending_date_custom_1":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Depr_ending_date_custom_1 = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Depr_ending_date_custom_1, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field depr_ending_date_custom_1: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Depr_ending_date_custom_1 = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field depr_ending_date_custom_1 (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Depr_ending_date_custom_1); ok {
-				if err := trg.OnValidate_Depr_ending_date_custom_1(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "accum_depr_percent_custom_1":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Accum_depr_percent_custom_1 = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Accum_depr_percent_custom_1, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field accum_depr_percent_custom_1: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Accum_depr_percent_custom_1 = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Accum_depr_percent_custom_1 = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Accum_depr_percent_custom_1 = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field accum_depr_percent_custom_1 (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Accum_depr_percent_custom_1); ok {
-				if err := trg.OnValidate_Accum_depr_percent_custom_1(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "depr_this_year_percent_custom_1":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Depr_this_year_percent_custom_1 = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Depr_this_year_percent_custom_1, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field depr_this_year_percent_custom_1: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Depr_this_year_percent_custom_1 = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Depr_this_year_percent_custom_1 = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Depr_this_year_percent_custom_1 = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field depr_this_year_percent_custom_1 (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Depr_this_year_percent_custom_1); ok {
-				if err := trg.OnValidate_Depr_this_year_percent_custom_1(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "property_class_custom_1":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(FADepreciationBookProperty_class_custom_1); ok {
-			t.Property_class_custom_1 = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field property_class_custom_1 (valid range: 0-%d)", v, 3-1)
-			}
-			t.Property_class_custom_1 = FADepreciationBookProperty_class_custom_1(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field property_class_custom_1 (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Property_class_custom_1 = FADepreciationBookProperty_class_custom_1(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Property_class_custom_1 = 0
-			} else {
-				options := []string{" ", "Personal Property", "Real Property"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Property_class_custom_1 = FADepreciationBookProperty_class_custom_1(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field property_class_custom_1 (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field property_class_custom_1 (expected FADepreciationBookProperty_class_custom_1, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Property_class_custom_1); ok {
-				if err := trg.OnValidate_Property_class_custom_1(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "main_asset_component":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(FADepreciationBookMain_asset_component); ok {
-			t.Main_asset_component = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field main_asset_component (valid range: 0-%d)", v, 3-1)
-			}
-			t.Main_asset_component = FADepreciationBookMain_asset_component(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field main_asset_component (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Main_asset_component = FADepreciationBookMain_asset_component(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Main_asset_component = 0
-			} else {
-				options := []string{" ", "Main Asset", "Component"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Main_asset_component = FADepreciationBookMain_asset_component(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field main_asset_component (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field main_asset_component (expected FADepreciationBookMain_asset_component, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Main_asset_component); ok {
-				if err := trg.OnValidate_Main_asset_component(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "component_of_main_asset":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Component_of_main_asset = v
-		} else if v, ok := value.(string); ok {
-			t.Component_of_main_asset = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field component_of_main_asset")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "component_of_main_asset"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Component_of_main_asset); ok {
-				if err := trg.OnValidate_Component_of_main_asset(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_add_currency_factor":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Fa_add_currency_factor = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Fa_add_currency_factor, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field fa_add_currency_factor: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Fa_add_currency_factor = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Fa_add_currency_factor = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Fa_add_currency_factor = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_add_currency_factor (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FADepreciationBookOnValidate_Fa_add_currency_factor); ok {
-				if err := trg.OnValidate_Fa_add_currency_factor(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := fADepreciationBookFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &fADepreciationBookFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -6845,368 +4857,18 @@ func (t *FADepreciationBook) ValidateField(fieldName string, value interface{}) 
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *FADepreciationBook) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Fa_no, true
-	case 2:
-		return t.Depreciation_book_code, true
-	case 3:
-		return t.Depreciation_method, true
-	case 4:
-		return t.Depreciation_starting_date, true
-	case 5:
-		return t.Straight_line_percent, true
-	case 6:
-		return t.No_of_depreciation_years, true
-	case 7:
-		return t.No_of_depreciation_months, true
-	case 8:
-		return t.Fixed_depr_amount, true
-	case 9:
-		return t.Declining_balance_percent, true
-	case 10:
-		return t.Depreciation_table_code, true
-	case 11:
-		return t.Final_rounding_amount, true
-	case 12:
-		return t.Ending_book_value, true
-	case 13:
-		return t.Fa_posting_group, true
-	case 14:
-		return t.Depreciation_ending_date, true
-	case 30:
-		return t.Acquisition_date, true
-	case 31:
-		return t.G_l_acquisition_date, true
-	case 32:
-		return t.Disposal_date, true
-	case 33:
-		return t.Last_acquisition_cost_date, true
-	case 34:
-		return t.Last_depreciation_date, true
-	case 35:
-		return t.Last_write_down_date, true
-	case 36:
-		return t.Last_appreciation_date, true
-	case 37:
-		return t.Last_custom_1_date, true
-	case 38:
-		return t.Last_custom_2_date, true
-	case 39:
-		return t.Last_salvage_value_date, true
-	case 40:
-		return t.Fa_exchange_rate, true
-	case 41:
-		return t.Fixed_depr_amount_below_zero, true
-	case 42:
-		return t.Last_date_modified, true
-	case 43:
-		return t.First_user_defined_depr_date, true
-	case 44:
-		return t.Use_fa_ledger_check, true
-	case 45:
-		return t.Last_maintenance_date, true
-	case 46:
-		return t.Depr_below_zero_percent, true
-	case 47:
-		return t.Projected_disposal_date, true
-	case 48:
-		return t.Projected_proceeds_on_disposal, true
-	case 50:
-		return t.Depr_starting_date_custom_1, true
-	case 51:
-		return t.Depr_ending_date_custom_1, true
-	case 52:
-		return t.Accum_depr_percent_custom_1, true
-	case 53:
-		return t.Depr_this_year_percent_custom_1, true
-	case 54:
-		return t.Property_class_custom_1, true
-	case 55:
-		return t.Description, true
-	case 56:
-		return t.Main_asset_component, true
-	case 57:
-		return t.Component_of_main_asset, true
-	case 58:
-		return t.Fa_add_currency_factor, true
-	}
-	return nil, false
+	return fADepreciationBookFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *FADepreciationBook) flowFieldValue(no int) (any, bool) {
-	switch no {
-	case 15:
-		return t.Acquisition_cost, true
-	case 16:
-		return t.Depreciation, true
-	case 17:
-		return t.Book_value, true
-	case 18:
-		return t.Proceeds_on_disposal, true
-	case 19:
-		return t.Gain_loss, true
-	case 20:
-		return t.Write_down, true
-	case 21:
-		return t.Appreciation, true
-	case 22:
-		return t.Custom_1, true
-	case 23:
-		return t.Custom_2, true
-	case 24:
-		return t.Depreciable_basis, true
-	case 25:
-		return t.Salvage_value, true
-	case 26:
-		return t.Book_value_on_disposal, true
-	case 27:
-		return t.Maintenance, true
-	}
-	return nil, false
+	return fADepreciationBookFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *FADepreciationBook) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Fa_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Fa_no = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Depreciation_book_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Depreciation_book_code = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 7 {
-			t.Depreciation_method = FADepreciationBookDepreciation_method(i)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Date); ok {
-			t.Depreciation_starting_date = v
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Decimal); ok {
-			t.Straight_line_percent = v
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Decimal); ok {
-			t.No_of_depreciation_years = v
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Decimal); ok {
-			t.No_of_depreciation_months = v
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Decimal); ok {
-			t.Fixed_depr_amount = v
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.Decimal); ok {
-			t.Declining_balance_percent = v
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Code); ok {
-			t.Depreciation_table_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Depreciation_table_code = types.NewCode(v)
-			return true
-		}
-	case 11:
-		if v, ok := value.(types.Decimal); ok {
-			t.Final_rounding_amount = v
-			return true
-		}
-	case 12:
-		if v, ok := value.(types.Decimal); ok {
-			t.Ending_book_value = v
-			return true
-		}
-	case 13:
-		if v, ok := value.(types.Code); ok {
-			t.Fa_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Fa_posting_group = types.NewCode(v)
-			return true
-		}
-	case 14:
-		if v, ok := value.(types.Date); ok {
-			t.Depreciation_ending_date = v
-			return true
-		}
-	case 30:
-		if v, ok := value.(types.Date); ok {
-			t.Acquisition_date = v
-			return true
-		}
-	case 31:
-		if v, ok := value.(types.Date); ok {
-			t.G_l_acquisition_date = v
-			return true
-		}
-	case 32:
-		if v, ok := value.(types.Date); ok {
-			t.Disposal_date = v
-			return true
-		}
-	case 33:
-		if v, ok := value.(types.Date); ok {
-			t.Last_acquisition_cost_date = v
-			return true
-		}
-	case 34:
-		if v, ok := value.(types.Date); ok {
-			t.Last_depreciation_date = v
-			return true
-		}
-	case 35:
-		if v, ok := value.(types.Date); ok {
-			t.Last_write_down_date = v
-			return true
-		}
-	case 36:
-		if v, ok := value.(types.Date); ok {
-			t.Last_appreciation_date = v
-			return true
-		}
-	case 37:
-		if v, ok := value.(types.Date); ok {
-			t.Last_custom_1_date = v
-			return true
-		}
-	case 38:
-		if v, ok := value.(types.Date); ok {
-			t.Last_custom_2_date = v
-			return true
-		}
-	case 39:
-		if v, ok := value.(types.Date); ok {
-			t.Last_salvage_value_date = v
-			return true
-		}
-	case 40:
-		if v, ok := value.(types.Decimal); ok {
-			t.Fa_exchange_rate = v
-			return true
-		}
-	case 41:
-		if v, ok := value.(types.Decimal); ok {
-			t.Fixed_depr_amount_below_zero = v
-			return true
-		}
-	case 42:
-		if v, ok := value.(types.Date); ok {
-			t.Last_date_modified = v
-			return true
-		}
-	case 43:
-		if v, ok := value.(types.Date); ok {
-			t.First_user_defined_depr_date = v
-			return true
-		}
-	case 44:
-		if v, ok := value.(bool); ok {
-			t.Use_fa_ledger_check = v
-			return true
-		}
-	case 45:
-		if v, ok := value.(types.Date); ok {
-			t.Last_maintenance_date = v
-			return true
-		}
-	case 46:
-		if v, ok := value.(types.Decimal); ok {
-			t.Depr_below_zero_percent = v
-			return true
-		}
-	case 47:
-		if v, ok := value.(types.Date); ok {
-			t.Projected_disposal_date = v
-			return true
-		}
-	case 48:
-		if v, ok := value.(types.Decimal); ok {
-			t.Projected_proceeds_on_disposal = v
-			return true
-		}
-	case 50:
-		if v, ok := value.(types.Date); ok {
-			t.Depr_starting_date_custom_1 = v
-			return true
-		}
-	case 51:
-		if v, ok := value.(types.Date); ok {
-			t.Depr_ending_date_custom_1 = v
-			return true
-		}
-	case 52:
-		if v, ok := value.(types.Decimal); ok {
-			t.Accum_depr_percent_custom_1 = v
-			return true
-		}
-	case 53:
-		if v, ok := value.(types.Decimal); ok {
-			t.Depr_this_year_percent_custom_1 = v
-			return true
-		}
-	case 54:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Property_class_custom_1 = FADepreciationBookProperty_class_custom_1(i)
-			return true
-		}
-	case 55:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 56:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Main_asset_component = FADepreciationBookMain_asset_component(i)
-			return true
-		}
-	case 57:
-		if v, ok := value.(types.Code); ok {
-			t.Component_of_main_asset = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Component_of_main_asset = types.NewCode(v)
-			return true
-		}
-	case 58:
-		if v, ok := value.(types.Decimal); ok {
-			t.Fa_add_currency_factor = v
-			return true
-		}
-	}
-	return false
+	return fADepreciationBookFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -7784,93 +5446,7 @@ func (t *FADepreciationBook) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *FADepreciationBook) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "fa_no":
-		return t.Fa_no, true
-	case "depreciation_book_code":
-		return t.Depreciation_book_code, true
-	case "depreciation_method":
-		return int(t.Depreciation_method), true
-	case "depreciation_starting_date":
-		return t.Depreciation_starting_date, true
-	case "straight_line_percent":
-		return t.Straight_line_percent, true
-	case "no_of_depreciation_years":
-		return t.No_of_depreciation_years, true
-	case "no_of_depreciation_months":
-		return t.No_of_depreciation_months, true
-	case "fixed_depr_amount":
-		return t.Fixed_depr_amount, true
-	case "declining_balance_percent":
-		return t.Declining_balance_percent, true
-	case "depreciation_table_code":
-		return t.Depreciation_table_code, true
-	case "final_rounding_amount":
-		return t.Final_rounding_amount, true
-	case "ending_book_value":
-		return t.Ending_book_value, true
-	case "fa_posting_group":
-		return t.Fa_posting_group, true
-	case "depreciation_ending_date":
-		return t.Depreciation_ending_date, true
-	case "acquisition_date":
-		return t.Acquisition_date, true
-	case "g_l_acquisition_date":
-		return t.G_l_acquisition_date, true
-	case "disposal_date":
-		return t.Disposal_date, true
-	case "last_acquisition_cost_date":
-		return t.Last_acquisition_cost_date, true
-	case "last_depreciation_date":
-		return t.Last_depreciation_date, true
-	case "last_write_down_date":
-		return t.Last_write_down_date, true
-	case "last_appreciation_date":
-		return t.Last_appreciation_date, true
-	case "last_custom_1_date":
-		return t.Last_custom_1_date, true
-	case "last_custom_2_date":
-		return t.Last_custom_2_date, true
-	case "last_salvage_value_date":
-		return t.Last_salvage_value_date, true
-	case "fa_exchange_rate":
-		return t.Fa_exchange_rate, true
-	case "fixed_depr_amount_below_zero":
-		return t.Fixed_depr_amount_below_zero, true
-	case "last_date_modified":
-		return t.Last_date_modified, true
-	case "first_user_defined_depr_date":
-		return t.First_user_defined_depr_date, true
-	case "use_fa_ledger_check":
-		return t.Use_fa_ledger_check, true
-	case "last_maintenance_date":
-		return t.Last_maintenance_date, true
-	case "depr_below_zero_percent":
-		return t.Depr_below_zero_percent, true
-	case "projected_disposal_date":
-		return t.Projected_disposal_date, true
-	case "projected_proceeds_on_disposal":
-		return t.Projected_proceeds_on_disposal, true
-	case "depr_starting_date_custom_1":
-		return t.Depr_starting_date_custom_1, true
-	case "depr_ending_date_custom_1":
-		return t.Depr_ending_date_custom_1, true
-	case "accum_depr_percent_custom_1":
-		return t.Accum_depr_percent_custom_1, true
-	case "depr_this_year_percent_custom_1":
-		return t.Depr_this_year_percent_custom_1, true
-	case "property_class_custom_1":
-		return int(t.Property_class_custom_1), true
-	case "description":
-		return t.Description, true
-	case "main_asset_component":
-		return int(t.Main_asset_component), true
-	case "component_of_main_asset":
-		return t.Component_of_main_asset, true
-	case "fa_add_currency_factor":
-		return t.Fa_add_currency_factor, true
-	}
-	return nil, false
+	return fADepreciationBookFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -8000,424 +5576,12 @@ func (t *FADepreciationBook) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *FADepreciationBook) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"fa_no":                      t.Fa_no.String(),
-		"depreciation_book_code":     t.Depreciation_book_code.String(),
-		"depreciation_method":        int(t.Depreciation_method),
-		"depreciation_starting_date": t.Depreciation_starting_date.String(),
-		"straight_line_percent":      t.Straight_line_percent.String(),
-		"no_of_depreciation_years":   t.No_of_depreciation_years.String(),
-		"no_of_depreciation_months":  t.No_of_depreciation_months.String(),
-		"fixed_depr_amount":          t.Fixed_depr_amount.String(),
-		"declining_balance_percent":  t.Declining_balance_percent.String(),
-		"depreciation_table_code":    t.Depreciation_table_code.String(),
-		"final_rounding_amount":      t.Final_rounding_amount.String(),
-		"ending_book_value":          t.Ending_book_value.String(),
-		"fa_posting_group":           t.Fa_posting_group.String(),
-		"depreciation_ending_date":   t.Depreciation_ending_date.String(),
-		// FlowField: acquisition_cost
-		"acquisition_cost": t.Acquisition_cost.String(),
-		// FlowField: depreciation
-		"depreciation": t.Depreciation.String(),
-		// FlowField: book_value
-		"book_value": t.Book_value.String(),
-		// FlowField: proceeds_on_disposal
-		"proceeds_on_disposal": t.Proceeds_on_disposal.String(),
-		// FlowField: gain_loss
-		"gain_loss": t.Gain_loss.String(),
-		// FlowField: write_down
-		"write_down": t.Write_down.String(),
-		// FlowField: appreciation
-		"appreciation": t.Appreciation.String(),
-		// FlowField: custom_1
-		"custom_1": t.Custom_1.String(),
-		// FlowField: custom_2
-		"custom_2": t.Custom_2.String(),
-		// FlowField: depreciable_basis
-		"depreciable_basis": t.Depreciable_basis.String(),
-		// FlowField: salvage_value
-		"salvage_value": t.Salvage_value.String(),
-		// FlowField: book_value_on_disposal
-		"book_value_on_disposal": t.Book_value_on_disposal.String(),
-		// FlowField: maintenance
-		"maintenance":                     t.Maintenance.String(),
-		"acquisition_date":                t.Acquisition_date.String(),
-		"g_l_acquisition_date":            t.G_l_acquisition_date.String(),
-		"disposal_date":                   t.Disposal_date.String(),
-		"last_acquisition_cost_date":      t.Last_acquisition_cost_date.String(),
-		"last_depreciation_date":          t.Last_depreciation_date.String(),
-		"last_write_down_date":            t.Last_write_down_date.String(),
-		"last_appreciation_date":          t.Last_appreciation_date.String(),
-		"last_custom_1_date":              t.Last_custom_1_date.String(),
-		"last_custom_2_date":              t.Last_custom_2_date.String(),
-		"last_salvage_value_date":         t.Last_salvage_value_date.String(),
-		"fa_exchange_rate":                t.Fa_exchange_rate.String(),
-		"fixed_depr_amount_below_zero":    t.Fixed_depr_amount_below_zero.String(),
-		"last_date_modified":              t.Last_date_modified.String(),
-		"first_user_defined_depr_date":    t.First_user_defined_depr_date.String(),
-		"use_fa_ledger_check":             t.Use_fa_ledger_check,
-		"last_maintenance_date":           t.Last_maintenance_date.String(),
-		"depr_below_zero_percent":         t.Depr_below_zero_percent.String(),
-		"projected_disposal_date":         t.Projected_disposal_date.String(),
-		"projected_proceeds_on_disposal":  t.Projected_proceeds_on_disposal.String(),
-		"depr_starting_date_custom_1":     t.Depr_starting_date_custom_1.String(),
-		"depr_ending_date_custom_1":       t.Depr_ending_date_custom_1.String(),
-		"accum_depr_percent_custom_1":     t.Accum_depr_percent_custom_1.String(),
-		"depr_this_year_percent_custom_1": t.Depr_this_year_percent_custom_1.String(),
-		"property_class_custom_1":         int(t.Property_class_custom_1),
-		"description":                     t.Description.String(),
-		"main_asset_component":            int(t.Main_asset_component),
-		"component_of_main_asset":         t.Component_of_main_asset.String(),
-		"fa_add_currency_factor":          t.Fa_add_currency_factor.String(),
-	}
+	return fADepreciationBookFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *FADepreciationBook) FromMap(data map[string]interface{}) {
-	if v, ok := data["fa_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fa_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["depreciation_book_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Depreciation_book_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["depreciation_method"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Depreciation_method = FADepreciationBookDepreciation_method(int(val))
-		case int:
-			t.Depreciation_method = FADepreciationBookDepreciation_method(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Straight-Line", "Declining-Balance 1", "Declining-Balance 2", "DB1/SL", "DB2/SL", "User-Defined", "Manual"}
-			for i, opt := range options {
-				if opt == val {
-					t.Depreciation_method = FADepreciationBookDepreciation_method(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["depreciation_starting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Depreciation_starting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["straight_line_percent"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Straight_line_percent, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Straight_line_percent = types.NewDecimal(val)
-		case int:
-			t.Straight_line_percent = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Straight_line_percent = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["no_of_depreciation_years"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.No_of_depreciation_years, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.No_of_depreciation_years = types.NewDecimal(val)
-		case int:
-			t.No_of_depreciation_years = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.No_of_depreciation_years = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["no_of_depreciation_months"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.No_of_depreciation_months, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.No_of_depreciation_months = types.NewDecimal(val)
-		case int:
-			t.No_of_depreciation_months = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.No_of_depreciation_months = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["fixed_depr_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Fixed_depr_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Fixed_depr_amount = types.NewDecimal(val)
-		case int:
-			t.Fixed_depr_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Fixed_depr_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["declining_balance_percent"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Declining_balance_percent, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Declining_balance_percent = types.NewDecimal(val)
-		case int:
-			t.Declining_balance_percent = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Declining_balance_percent = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["depreciation_table_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Depreciation_table_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["final_rounding_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Final_rounding_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Final_rounding_amount = types.NewDecimal(val)
-		case int:
-			t.Final_rounding_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Final_rounding_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["ending_book_value"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Ending_book_value, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Ending_book_value = types.NewDecimal(val)
-		case int:
-			t.Ending_book_value = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Ending_book_value = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["fa_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fa_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["depreciation_ending_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Depreciation_ending_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["acquisition_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Acquisition_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["g_l_acquisition_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.G_l_acquisition_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["disposal_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Disposal_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["last_acquisition_cost_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Last_acquisition_cost_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["last_depreciation_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Last_depreciation_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["last_write_down_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Last_write_down_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["last_appreciation_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Last_appreciation_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["last_custom_1_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Last_custom_1_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["last_custom_2_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Last_custom_2_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["last_salvage_value_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Last_salvage_value_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["fa_exchange_rate"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Fa_exchange_rate, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Fa_exchange_rate = types.NewDecimal(val)
-		case int:
-			t.Fa_exchange_rate = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Fa_exchange_rate = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["fixed_depr_amount_below_zero"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Fixed_depr_amount_below_zero, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Fixed_depr_amount_below_zero = types.NewDecimal(val)
-		case int:
-			t.Fixed_depr_amount_below_zero = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Fixed_depr_amount_below_zero = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["last_date_modified"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Last_date_modified, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["first_user_defined_depr_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.First_user_defined_depr_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["use_fa_ledger_check"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Use_fa_ledger_check = b
-		}
-	}
-	if v, ok := data["last_maintenance_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Last_maintenance_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["depr_below_zero_percent"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Depr_below_zero_percent, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Depr_below_zero_percent = types.NewDecimal(val)
-		case int:
-			t.Depr_below_zero_percent = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Depr_below_zero_percent = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["projected_disposal_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Projected_disposal_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["projected_proceeds_on_disposal"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Projected_proceeds_on_disposal, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Projected_proceeds_on_disposal = types.NewDecimal(val)
-		case int:
-			t.Projected_proceeds_on_disposal = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Projected_proceeds_on_disposal = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["depr_starting_date_custom_1"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Depr_starting_date_custom_1, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["depr_ending_date_custom_1"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Depr_ending_date_custom_1, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["accum_depr_percent_custom_1"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Accum_depr_percent_custom_1, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Accum_depr_percent_custom_1 = types.NewDecimal(val)
-		case int:
-			t.Accum_depr_percent_custom_1 = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Accum_depr_percent_custom_1 = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["depr_this_year_percent_custom_1"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Depr_this_year_percent_custom_1, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Depr_this_year_percent_custom_1 = types.NewDecimal(val)
-		case int:
-			t.Depr_this_year_percent_custom_1 = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Depr_this_year_percent_custom_1 = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["property_class_custom_1"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Property_class_custom_1 = FADepreciationBookProperty_class_custom_1(int(val))
-		case int:
-			t.Property_class_custom_1 = FADepreciationBookProperty_class_custom_1(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Personal Property", "Real Property"}
-			for i, opt := range options {
-				if opt == val {
-					t.Property_class_custom_1 = FADepreciationBookProperty_class_custom_1(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["main_asset_component"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Main_asset_component = FADepreciationBookMain_asset_component(int(val))
-		case int:
-			t.Main_asset_component = FADepreciationBookMain_asset_component(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Main Asset", "Component"}
-			for i, opt := range options {
-				if opt == val {
-					t.Main_asset_component = FADepreciationBookMain_asset_component(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["component_of_main_asset"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Component_of_main_asset = types.NewCode(s)
-		}
-	}
-	if v, ok := data["fa_add_currency_factor"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Fa_add_currency_factor, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Fa_add_currency_factor = types.NewDecimal(val)
-		case int:
-			t.Fa_add_currency_factor = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Fa_add_currency_factor = types.NewDecimalFromInt(val)
-		}
-	}
+	fADepreciationBookFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -8438,600 +5602,956 @@ func (t *FADepreciationBook) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *FADepreciationBook) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "fa_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "depreciation_book_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "depreciation_method",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "depreciation_starting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            5,
-			Name:          "straight_line_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:8",
-		},
-		{
-			No:            6,
-			Name:          "no_of_depreciation_years",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:8",
-		},
-		{
-			No:            7,
-			Name:          "no_of_depreciation_months",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:8",
-		},
-		{
-			No:            8,
-			Name:          "fixed_depr_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            9,
-			Name:          "declining_balance_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:8",
-		},
-		{
-			No:         10,
-			Name:       "depreciation_table_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            11,
-			Name:          "final_rounding_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            12,
-			Name:          "ending_book_value",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         13,
-			Name:       "fa_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         14,
-			Name:       "depreciation_ending_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            15,
-			Name:          "acquisition_cost",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            16,
-			Name:          "depreciation",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            17,
-			Name:          "book_value",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            18,
-			Name:          "proceeds_on_disposal",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            19,
-			Name:          "gain_loss",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            20,
-			Name:          "write_down",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            21,
-			Name:          "appreciation",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            22,
-			Name:          "custom_1",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            23,
-			Name:          "custom_2",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            24,
-			Name:          "depreciable_basis",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            25,
-			Name:          "salvage_value",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            26,
-			Name:          "book_value_on_disposal",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            27,
-			Name:          "maintenance",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         30,
-			Name:       "acquisition_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         31,
-			Name:       "g_l_acquisition_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         32,
-			Name:       "disposal_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         33,
-			Name:       "last_acquisition_cost_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         34,
-			Name:       "last_depreciation_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         35,
-			Name:       "last_write_down_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         36,
-			Name:       "last_appreciation_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         37,
-			Name:       "last_custom_1_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         38,
-			Name:       "last_custom_2_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         39,
-			Name:       "last_salvage_value_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:            40,
-			Name:          "fa_exchange_rate",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "4:4",
-		},
-		{
-			No:            41,
-			Name:          "fixed_depr_amount_below_zero",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         42,
-			Name:       "last_date_modified",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         43,
-			Name:       "first_user_defined_depr_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         44,
-			Name:       "use_fa_ledger_check",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         45,
-			Name:       "last_maintenance_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:            46,
-			Name:          "depr_below_zero_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:8",
-		},
-		{
-			No:         47,
-			Name:       "projected_disposal_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            48,
-			Name:          "projected_proceeds_on_disposal",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         50,
-			Name:       "depr_starting_date_custom_1",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         51,
-			Name:       "depr_ending_date_custom_1",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            52,
-			Name:          "accum_depr_percent_custom_1",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:8",
-		},
-		{
-			No:            53,
-			Name:          "depr_this_year_percent_custom_1",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:8",
-		},
-		{
-			No:         54,
-			Name:       "property_class_custom_1",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         55,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         56,
-			Name:       "main_asset_component",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         57,
-			Name:       "component_of_main_asset",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:            58,
-			Name:          "fa_add_currency_factor",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:15",
-		},
+	return fADepreciationBookFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in fADepreciationBookFields.Fields
+func (t *FADepreciationBook) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Fa_no
+	case 1:
+		return &t.Depreciation_book_code
+	case 2:
+		return &t.Depreciation_method
+	case 3:
+		return &t.Depreciation_starting_date
+	case 4:
+		return &t.Straight_line_percent
+	case 5:
+		return &t.No_of_depreciation_years
+	case 6:
+		return &t.No_of_depreciation_months
+	case 7:
+		return &t.Fixed_depr_amount
+	case 8:
+		return &t.Declining_balance_percent
+	case 9:
+		return &t.Depreciation_table_code
+	case 10:
+		return &t.Final_rounding_amount
+	case 11:
+		return &t.Ending_book_value
+	case 12:
+		return &t.Fa_posting_group
+	case 13:
+		return &t.Depreciation_ending_date
+	case 14:
+		return &t.Acquisition_cost
+	case 15:
+		return &t.Depreciation
+	case 16:
+		return &t.Book_value
+	case 17:
+		return &t.Proceeds_on_disposal
+	case 18:
+		return &t.Gain_loss
+	case 19:
+		return &t.Write_down
+	case 20:
+		return &t.Appreciation
+	case 21:
+		return &t.Custom_1
+	case 22:
+		return &t.Custom_2
+	case 23:
+		return &t.Depreciable_basis
+	case 24:
+		return &t.Salvage_value
+	case 25:
+		return &t.Book_value_on_disposal
+	case 26:
+		return &t.Maintenance
+	case 27:
+		return &t.Acquisition_date
+	case 28:
+		return &t.G_l_acquisition_date
+	case 29:
+		return &t.Disposal_date
+	case 30:
+		return &t.Last_acquisition_cost_date
+	case 31:
+		return &t.Last_depreciation_date
+	case 32:
+		return &t.Last_write_down_date
+	case 33:
+		return &t.Last_appreciation_date
+	case 34:
+		return &t.Last_custom_1_date
+	case 35:
+		return &t.Last_custom_2_date
+	case 36:
+		return &t.Last_salvage_value_date
+	case 37:
+		return &t.Fa_exchange_rate
+	case 38:
+		return &t.Fixed_depr_amount_below_zero
+	case 39:
+		return &t.Last_date_modified
+	case 40:
+		return &t.First_user_defined_depr_date
+	case 41:
+		return &t.Use_fa_ledger_check
+	case 42:
+		return &t.Last_maintenance_date
+	case 43:
+		return &t.Depr_below_zero_percent
+	case 44:
+		return &t.Projected_disposal_date
+	case 45:
+		return &t.Projected_proceeds_on_disposal
+	case 46:
+		return &t.Depr_starting_date_custom_1
+	case 47:
+		return &t.Depr_ending_date_custom_1
+	case 48:
+		return &t.Accum_depr_percent_custom_1
+	case 49:
+		return &t.Depr_this_year_percent_custom_1
+	case 50:
+		return &t.Property_class_custom_1
+	case 51:
+		return &t.Description
+	case 52:
+		return &t.Main_asset_component
+	case 53:
+		return &t.Component_of_main_asset
+	case 54:
+		return &t.Fa_add_currency_factor
 	}
+	return nil
+}
+
+// fADepreciationBookFields describes the fields of FA_Depreciation_Book for the record functions
+// written once in foundation/tables
+var fADepreciationBookFields = &tables.TableFields{
+	Table: FADepreciationBookTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "fa_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Fa_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "depreciation_book_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Depreciation_book_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "depreciation_method",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Depreciation_method",
+			Options: []string{"Straight-Line", "Declining-Balance 1", "Declining-Balance 2", "DB1/SL", "DB2/SL", "User-Defined", "Manual"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "depreciation_starting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Depreciation_starting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            5,
+				Name:          "straight_line_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:8",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Straight_line_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            6,
+				Name:          "no_of_depreciation_years",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:8",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_No_of_depreciation_years",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            7,
+				Name:          "no_of_depreciation_months",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:8",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_No_of_depreciation_months",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            8,
+				Name:          "fixed_depr_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Fixed_depr_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            9,
+				Name:          "declining_balance_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:8",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Declining_balance_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "depreciation_table_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Depreciation_table_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            11,
+				Name:          "final_rounding_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Final_rounding_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            12,
+				Name:          "ending_book_value",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Ending_book_value",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "fa_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Fa_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "depreciation_ending_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Depreciation_ending_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            15,
+				Name:          "acquisition_cost",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Acquisition_cost",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            16,
+				Name:          "depreciation",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Depreciation",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            17,
+				Name:          "book_value",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Book_value",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            18,
+				Name:          "proceeds_on_disposal",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Proceeds_on_disposal",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            19,
+				Name:          "gain_loss",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Gain_loss",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            20,
+				Name:          "write_down",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Write_down",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            21,
+				Name:          "appreciation",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Appreciation",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            22,
+				Name:          "custom_1",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Custom_1",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            23,
+				Name:          "custom_2",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Custom_2",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            24,
+				Name:          "depreciable_basis",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Depreciable_basis",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            25,
+				Name:          "salvage_value",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Salvage_value",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            26,
+				Name:          "book_value_on_disposal",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Book_value_on_disposal",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            27,
+				Name:          "maintenance",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Maintenance",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         30,
+				Name:       "acquisition_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Acquisition_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         31,
+				Name:       "g_l_acquisition_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_G_l_acquisition_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         32,
+				Name:       "disposal_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Disposal_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         33,
+				Name:       "last_acquisition_cost_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Last_acquisition_cost_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         34,
+				Name:       "last_depreciation_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Last_depreciation_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         35,
+				Name:       "last_write_down_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Last_write_down_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         36,
+				Name:       "last_appreciation_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Last_appreciation_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         37,
+				Name:       "last_custom_1_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Last_custom_1_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         38,
+				Name:       "last_custom_2_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Last_custom_2_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         39,
+				Name:       "last_salvage_value_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Last_salvage_value_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            40,
+				Name:          "fa_exchange_rate",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "4:4",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Fa_exchange_rate",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            41,
+				Name:          "fixed_depr_amount_below_zero",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Fixed_depr_amount_below_zero",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         42,
+				Name:       "last_date_modified",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Last_date_modified",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         43,
+				Name:       "first_user_defined_depr_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_First_user_defined_depr_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         44,
+				Name:       "use_fa_ledger_check",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Use_fa_ledger_check",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         45,
+				Name:       "last_maintenance_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Last_maintenance_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            46,
+				Name:          "depr_below_zero_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:8",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Depr_below_zero_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         47,
+				Name:       "projected_disposal_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Projected_disposal_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            48,
+				Name:          "projected_proceeds_on_disposal",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Projected_proceeds_on_disposal",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         50,
+				Name:       "depr_starting_date_custom_1",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Depr_starting_date_custom_1",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         51,
+				Name:       "depr_ending_date_custom_1",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Depr_ending_date_custom_1",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            52,
+				Name:          "accum_depr_percent_custom_1",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:8",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Accum_depr_percent_custom_1",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            53,
+				Name:          "depr_this_year_percent_custom_1",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:8",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Depr_this_year_percent_custom_1",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         54,
+				Name:       "property_class_custom_1",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Property_class_custom_1",
+			Options: []string{" ", "Personal Property", "Real Property"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         55,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         56,
+				Name:       "main_asset_component",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Main_asset_component",
+			Options: []string{" ", "Main Asset", "Component"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         57,
+				Name:       "component_of_main_asset",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Component_of_main_asset",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            58,
+				Name:          "fa_add_currency_factor",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:15",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Fa_add_currency_factor",
+		},
+	},
+	FlowFilters: []tables.FieldInfo{
+		{No: 28, Name: "maintenance_code_filter"},
+		{No: 29, Name: "fa_posting_date_filter"},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

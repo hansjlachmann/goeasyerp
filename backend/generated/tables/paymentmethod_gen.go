@@ -155,32 +155,12 @@ var PaymentMethod_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *PaymentMethod) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "code":
-		return 1
-	case "description":
-		return 2
-	case "bal_account_type":
-		return 3
-	case "bal_account_no":
-		return 4
-	}
-	return 0
+	return paymentMethodFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *PaymentMethod) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "code"
-	case 2:
-		return "description"
-	case 3:
-		return "bal_account_type"
-	case 4:
-		return "bal_account_no"
-	}
-	return ""
+	return paymentMethodFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -292,18 +272,6 @@ type (
 	PaymentMethodOnBeforeRename interface {
 		OnBeforeRename(rec *PaymentMethod, handled *bool) error
 	}
-	PaymentMethodOnValidate_Code interface {
-		OnValidate_Code(rec *PaymentMethod) error
-	}
-	PaymentMethodOnValidate_Description interface {
-		OnValidate_Description(rec *PaymentMethod) error
-	}
-	PaymentMethodOnValidate_Bal_account_type interface {
-		OnValidate_Bal_account_type(rec *PaymentMethod) error
-	}
-	PaymentMethodOnValidate_Bal_account_no interface {
-		OnValidate_Bal_account_no(rec *PaymentMethod) error
-	}
 )
 
 // paymentMethodLogic is the registered business logic of Payment_Method, in
@@ -346,16 +314,9 @@ func paymentMethodTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(PaymentMethodOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(PaymentMethodOnBeforeRename)
-	case "OnValidate_Code":
-		_, ok = logic.(PaymentMethodOnValidate_Code)
-	case "OnValidate_Description":
-		_, ok = logic.(PaymentMethodOnValidate_Description)
-	case "OnValidate_Bal_account_type":
-		_, ok = logic.(PaymentMethodOnValidate_Bal_account_type)
-	case "OnValidate_Bal_account_no":
-		_, ok = logic.(PaymentMethodOnValidate_Bal_account_no)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return paymentMethodFields.IsOnValidateTrigger(name, logic, (*PaymentMethod)(nil))
 	}
 	return true, ok
 }
@@ -656,11 +617,7 @@ func (t *PaymentMethod) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *PaymentMethod) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["code"] = t.Code
-	t.oldValues["description"] = t.Description
-	t.oldValues["bal_account_type"] = t.Bal_account_type
-	t.oldValues["bal_account_no"] = t.Bal_account_no
+	t.oldValues = paymentMethodFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -675,18 +632,7 @@ func (t *PaymentMethod) OldValue(fieldName string) interface{} {
 func (t *PaymentMethod) XRec() *PaymentMethod {
 	x := &PaymentMethod{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["code"].(types.Code); ok {
-		x.Code = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["bal_account_type"].(PaymentMethodBal_account_type); ok {
-		x.Bal_account_type = v
-	}
-	if v, ok := t.oldValues["bal_account_no"].(types.Code); ok {
-		x.Bal_account_no = v
-	}
+	paymentMethodFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -985,37 +931,7 @@ func (t *PaymentMethod) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *PaymentMethod) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Code.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "bal_account_type":
-		if old, ok := oldValue.(PaymentMethodBal_account_type); ok {
-			return t.Bal_account_type != old
-		}
-	case "bal_account_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Bal_account_no.Equal(old)
-		}
-	}
-
-	return false
+	return paymentMethodFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1282,17 +1198,7 @@ func (t *PaymentMethod) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *PaymentMethod) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("code"):
-		return "code", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("bal_account_type"):
-		return "bal_account_type", true
-	case strings.ToLower("bal_account_no"):
-		return "bal_account_no", true
-	}
-	return "", false
+	return paymentMethodFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2127,119 +2033,20 @@ func (t *PaymentMethod) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *PaymentMethod) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-		} else if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PaymentMethodOnValidate_Code); ok {
-				if err := trg.OnValidate_Code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PaymentMethodOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bal_account_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(PaymentMethodBal_account_type); ok {
-			t.Bal_account_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 2 {
-				return fmt.Errorf("invalid option value %d for field bal_account_type (valid range: 0-%d)", v, 2-1)
-			}
-			t.Bal_account_type = PaymentMethodBal_account_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 2 {
-				return fmt.Errorf("invalid option value %d for field bal_account_type (valid range: 0-%d)", intVal, 2-1)
-			}
-			t.Bal_account_type = PaymentMethodBal_account_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Bal_account_type = 0
-			} else {
-				options := []string{"G/L Account", "Bank Account"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Bal_account_type = PaymentMethodBal_account_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field bal_account_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field bal_account_type (expected PaymentMethodBal_account_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PaymentMethodOnValidate_Bal_account_type); ok {
-				if err := trg.OnValidate_Bal_account_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bal_account_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Bal_account_no = v
-		} else if v, ok := value.(string); ok {
-			t.Bal_account_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field bal_account_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "bal_account_no"); err != nil {
+	i, err := paymentMethodFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
+	}
+	f := &paymentMethodFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
 			return err
 		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PaymentMethodOnValidate_Bal_account_no); ok {
-				if err := trg.OnValidate_Bal_account_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2248,64 +2055,18 @@ func (t *PaymentMethod) ValidateField(fieldName string, value interface{}) error
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *PaymentMethod) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Code, true
-	case 2:
-		return t.Description, true
-	case 3:
-		return t.Bal_account_type, true
-	case 4:
-		return t.Bal_account_no, true
-	}
-	return nil, false
+	return paymentMethodFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *PaymentMethod) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return paymentMethodFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *PaymentMethod) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 3:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 2 {
-			t.Bal_account_type = PaymentMethodBal_account_type(i)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Code); ok {
-			t.Bal_account_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Bal_account_no = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return paymentMethodFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2754,17 +2515,7 @@ func (t *PaymentMethod) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *PaymentMethod) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "code":
-		return t.Code, true
-	case "description":
-		return t.Description, true
-	case "bal_account_type":
-		return int(t.Bal_account_type), true
-	case "bal_account_no":
-		return t.Bal_account_no, true
-	}
-	return nil, false
+	return paymentMethodFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2853,48 +2604,12 @@ func (t *PaymentMethod) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *PaymentMethod) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"code":             t.Code.String(),
-		"description":      t.Description.String(),
-		"bal_account_type": int(t.Bal_account_type),
-		"bal_account_no":   t.Bal_account_no.String(),
-	}
+	return paymentMethodFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *PaymentMethod) FromMap(data map[string]interface{}) {
-	if v, ok := data["code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["bal_account_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Bal_account_type = PaymentMethodBal_account_type(int(val))
-		case int:
-			t.Bal_account_type = PaymentMethodBal_account_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"G/L Account", "Bank Account"}
-			for i, opt := range options {
-				if opt == val {
-					t.Bal_account_type = PaymentMethodBal_account_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["bal_account_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Bal_account_no = types.NewCode(s)
-		}
-	}
+	paymentMethodFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2915,48 +2630,88 @@ func (t *PaymentMethod) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *PaymentMethod) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "bal_account_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "bal_account_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return paymentMethodFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in paymentMethodFields.Fields
+func (t *PaymentMethod) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Code
+	case 1:
+		return &t.Description
+	case 2:
+		return &t.Bal_account_type
+	case 3:
+		return &t.Bal_account_no
 	}
+	return nil
+}
+
+// paymentMethodFields describes the fields of Payment_Method for the record functions
+// written once in foundation/tables
+var paymentMethodFields = &tables.TableFields{
+	Table: PaymentMethodTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "bal_account_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Bal_account_type",
+			Options: []string{"G/L Account", "Bank Account"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "bal_account_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Bal_account_no",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

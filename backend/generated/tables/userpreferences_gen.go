@@ -28,7 +28,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -135,44 +134,12 @@ var UserPreferences_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *UserPreferences) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "user_id":
-		return 1
-	case "page_id":
-		return 2
-	case "preference_type":
-		return 3
-	case "preference_name":
-		return 4
-	case "preference_data":
-		return 5
-	case "created_at":
-		return 6
-	case "updated_at":
-		return 7
-	}
-	return 0
+	return userPreferencesFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *UserPreferences) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "user_id"
-	case 2:
-		return "page_id"
-	case 3:
-		return "preference_type"
-	case 4:
-		return "preference_name"
-	case 5:
-		return "preference_data"
-	case 6:
-		return "created_at"
-	case 7:
-		return "updated_at"
-	}
-	return ""
+	return userPreferencesFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -284,27 +251,6 @@ type (
 	UserPreferencesOnBeforeRename interface {
 		OnBeforeRename(rec *UserPreferences, handled *bool) error
 	}
-	UserPreferencesOnValidate_User_id interface {
-		OnValidate_User_id(rec *UserPreferences) error
-	}
-	UserPreferencesOnValidate_Page_id interface {
-		OnValidate_Page_id(rec *UserPreferences) error
-	}
-	UserPreferencesOnValidate_Preference_type interface {
-		OnValidate_Preference_type(rec *UserPreferences) error
-	}
-	UserPreferencesOnValidate_Preference_name interface {
-		OnValidate_Preference_name(rec *UserPreferences) error
-	}
-	UserPreferencesOnValidate_Preference_data interface {
-		OnValidate_Preference_data(rec *UserPreferences) error
-	}
-	UserPreferencesOnValidate_Created_at interface {
-		OnValidate_Created_at(rec *UserPreferences) error
-	}
-	UserPreferencesOnValidate_Updated_at interface {
-		OnValidate_Updated_at(rec *UserPreferences) error
-	}
 )
 
 // userPreferencesLogic is the registered business logic of User_Preferences, in
@@ -347,22 +293,9 @@ func userPreferencesTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(UserPreferencesOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(UserPreferencesOnBeforeRename)
-	case "OnValidate_User_id":
-		_, ok = logic.(UserPreferencesOnValidate_User_id)
-	case "OnValidate_Page_id":
-		_, ok = logic.(UserPreferencesOnValidate_Page_id)
-	case "OnValidate_Preference_type":
-		_, ok = logic.(UserPreferencesOnValidate_Preference_type)
-	case "OnValidate_Preference_name":
-		_, ok = logic.(UserPreferencesOnValidate_Preference_name)
-	case "OnValidate_Preference_data":
-		_, ok = logic.(UserPreferencesOnValidate_Preference_data)
-	case "OnValidate_Created_at":
-		_, ok = logic.(UserPreferencesOnValidate_Created_at)
-	case "OnValidate_Updated_at":
-		_, ok = logic.(UserPreferencesOnValidate_Updated_at)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return userPreferencesFields.IsOnValidateTrigger(name, logic, (*UserPreferences)(nil))
 	}
 	return true, ok
 }
@@ -662,14 +595,7 @@ func (t *UserPreferences) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *UserPreferences) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["user_id"] = t.User_id
-	t.oldValues["page_id"] = t.Page_id
-	t.oldValues["preference_type"] = t.Preference_type
-	t.oldValues["preference_name"] = t.Preference_name
-	t.oldValues["preference_data"] = t.Preference_data
-	t.oldValues["created_at"] = t.Created_at
-	t.oldValues["updated_at"] = t.Updated_at
+	t.oldValues = userPreferencesFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -684,27 +610,7 @@ func (t *UserPreferences) OldValue(fieldName string) interface{} {
 func (t *UserPreferences) XRec() *UserPreferences {
 	x := &UserPreferences{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["user_id"].(types.Code); ok {
-		x.User_id = v
-	}
-	if v, ok := t.oldValues["page_id"].(int); ok {
-		x.Page_id = v
-	}
-	if v, ok := t.oldValues["preference_type"].(types.Code); ok {
-		x.Preference_type = v
-	}
-	if v, ok := t.oldValues["preference_name"].(types.Code); ok {
-		x.Preference_name = v
-	}
-	if v, ok := t.oldValues["preference_data"].(types.Text); ok {
-		x.Preference_data = v
-	}
-	if v, ok := t.oldValues["created_at"].(types.DateTime); ok {
-		x.Created_at = v
-	}
-	if v, ok := t.oldValues["updated_at"].(types.DateTime); ok {
-		x.Updated_at = v
-	}
+	userPreferencesFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1062,50 +968,7 @@ func (t *UserPreferences) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *UserPreferences) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "user_id":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.User_id.Equal(old)
-		}
-	case "page_id":
-		if old, ok := oldValue.(int); ok {
-			return t.Page_id != old
-		}
-		return true // Type mismatch, assume changed
-	case "preference_type":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Preference_type.Equal(old)
-		}
-	case "preference_name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Preference_name.Equal(old)
-		}
-	case "preference_data":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Preference_data.Equal(old)
-		}
-	case "created_at":
-		if old, ok := oldValue.(types.DateTime); ok {
-			return !t.Created_at.Equal(old)
-		}
-	case "updated_at":
-		if old, ok := oldValue.(types.DateTime); ok {
-			return !t.Updated_at.Equal(old)
-		}
-	}
-
-	return false
+	return userPreferencesFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1309,23 +1172,7 @@ func (t *UserPreferences) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *UserPreferences) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("user_id"):
-		return "user_id", true
-	case strings.ToLower("page_id"):
-		return "page_id", true
-	case strings.ToLower("preference_type"):
-		return "preference_type", true
-	case strings.ToLower("preference_name"):
-		return "preference_name", true
-	case strings.ToLower("preference_data"):
-		return "preference_data", true
-	case strings.ToLower("created_at"):
-		return "created_at", true
-	case strings.ToLower("updated_at"):
-		return "updated_at", true
-	}
-	return "", false
+	return userPreferencesFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2191,163 +2038,20 @@ func (t *UserPreferences) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *UserPreferences) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "user_id":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-		} else if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field user_id")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserPreferencesOnValidate_User_id); ok {
-				if err := trg.OnValidate_User_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "page_id":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Page_id = v
-		case float64:
-			t.Page_id = int(v)
-		case string:
-			if v == "" {
-				t.Page_id = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Page_id = i
-			} else {
-				return fmt.Errorf("invalid integer value for field page_id: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field page_id")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "page_id"); err != nil {
+	i, err := userPreferencesFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
+	}
+	f := &userPreferencesFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
 			return err
 		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserPreferencesOnValidate_Page_id); ok {
-				if err := trg.OnValidate_Page_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "preference_type":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Preference_type = v
-		} else if v, ok := value.(string); ok {
-			t.Preference_type = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field preference_type")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserPreferencesOnValidate_Preference_type); ok {
-				if err := trg.OnValidate_Preference_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "preference_name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Preference_name = v
-		} else if v, ok := value.(string); ok {
-			t.Preference_name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field preference_name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserPreferencesOnValidate_Preference_name); ok {
-				if err := trg.OnValidate_Preference_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "preference_data":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Preference_data = v
-		} else if v, ok := value.(string); ok {
-			t.Preference_data = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field preference_data")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserPreferencesOnValidate_Preference_data); ok {
-				if err := trg.OnValidate_Preference_data(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "created_at":
-		// Set field value
-		if v, ok := value.(types.DateTime); ok {
-			t.Created_at = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Created_at, err = types.NewDateTimeFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid datetime value for field created_at: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Created_at = types.NewDateTimeFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field created_at (expected DateTime, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserPreferencesOnValidate_Created_at); ok {
-				if err := trg.OnValidate_Created_at(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "updated_at":
-		// Set field value
-		if v, ok := value.(types.DateTime); ok {
-			t.Updated_at = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Updated_at, err = types.NewDateTimeFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid datetime value for field updated_at: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Updated_at = types.NewDateTimeFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field updated_at (expected DateTime, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserPreferencesOnValidate_Updated_at); ok {
-				if err := trg.OnValidate_Updated_at(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2356,89 +2060,18 @@ func (t *UserPreferences) ValidateField(fieldName string, value interface{}) err
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *UserPreferences) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.User_id, true
-	case 2:
-		return t.Page_id, true
-	case 3:
-		return t.Preference_type, true
-	case 4:
-		return t.Preference_name, true
-	case 5:
-		return t.Preference_data, true
-	case 6:
-		return t.Created_at, true
-	case 7:
-		return t.Updated_at, true
-	}
-	return nil, false
+	return userPreferencesFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *UserPreferences) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return userPreferencesFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *UserPreferences) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(int); ok {
-			t.Page_id = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Code); ok {
-			t.Preference_type = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Preference_type = types.NewCode(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Code); ok {
-			t.Preference_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Preference_name = types.NewCode(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Text); ok {
-			t.Preference_data = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Preference_data = types.NewText(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.DateTime); ok {
-			t.Created_at = v
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.DateTime); ok {
-			t.Updated_at = v
-			return true
-		}
-	}
-	return false
+	return userPreferencesFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2911,23 +2544,7 @@ func (t *UserPreferences) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *UserPreferences) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "user_id":
-		return t.User_id, true
-	case "page_id":
-		return t.Page_id, true
-	case "preference_type":
-		return t.Preference_type, true
-	case "preference_name":
-		return t.Preference_name, true
-	case "preference_data":
-		return t.Preference_data, true
-	case "created_at":
-		return t.Created_at, true
-	case "updated_at":
-		return t.Updated_at, true
-	}
-	return nil, false
+	return userPreferencesFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3028,62 +2645,12 @@ func (t *UserPreferences) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *UserPreferences) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"user_id":         t.User_id.String(),
-		"page_id":         t.Page_id,
-		"preference_type": t.Preference_type.String(),
-		"preference_name": t.Preference_name.String(),
-		"preference_data": t.Preference_data.String(),
-		"created_at":      t.Created_at.String(),
-		"updated_at":      t.Updated_at.String(),
-	}
+	return userPreferencesFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *UserPreferences) FromMap(data map[string]interface{}) {
-	if v, ok := data["user_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.User_id = types.NewCode(s)
-		}
-	}
-	if v, ok := data["page_id"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Page_id = int(val)
-		case int:
-			t.Page_id = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Page_id = n
-			}
-		}
-	}
-	if v, ok := data["preference_type"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Preference_type = types.NewCode(s)
-		}
-	}
-	if v, ok := data["preference_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Preference_name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["preference_data"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Preference_data = types.NewText(s)
-		}
-	}
-	if v, ok := data["created_at"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Created_at, _ = types.NewDateTimeFromString(s)
-		}
-	}
-	if v, ok := data["updated_at"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Updated_at, _ = types.NewDateTimeFromString(s)
-		}
-	}
+	userPreferencesFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3104,78 +2671,135 @@ func (t *UserPreferences) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *UserPreferences) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "user_id",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "page_id",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "preference_type",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "preference_name",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "preference_data",
-			Type:       tables.FieldTypeText,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "created_at",
-			Type:       tables.FieldTypeDateTime,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "updated_at",
-			Type:       tables.FieldTypeDateTime,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return userPreferencesFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in userPreferencesFields.Fields
+func (t *UserPreferences) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.User_id
+	case 1:
+		return &t.Page_id
+	case 2:
+		return &t.Preference_type
+	case 3:
+		return &t.Preference_name
+	case 4:
+		return &t.Preference_data
+	case 5:
+		return &t.Created_at
+	case 6:
+		return &t.Updated_at
 	}
+	return nil
+}
+
+// userPreferencesFields describes the fields of User_Preferences for the record functions
+// written once in foundation/tables
+var userPreferencesFields = &tables.TableFields{
+	Table: UserPreferencesTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "user_id",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_User_id",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "page_id",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindInt,
+			Trigger:  "OnValidate_Page_id",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "preference_type",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Preference_type",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "preference_name",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Preference_name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "preference_data",
+				Type:       tables.FieldTypeText,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Preference_data",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "created_at",
+				Type:       tables.FieldTypeDateTime,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDateTime,
+			Trigger: "OnValidate_Created_at",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "updated_at",
+				Type:       tables.FieldTypeDateTime,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDateTime,
+			Trigger: "OnValidate_Updated_at",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

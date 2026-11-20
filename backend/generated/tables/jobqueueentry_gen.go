@@ -27,12 +27,11 @@ package tables
 
 import (
 	"database/sql"
-	"encoding/base64"
+
 	"fmt"
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -184,56 +183,12 @@ var JobQueueEntry_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *JobQueueEntry) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "entry_no":
-		return 1
-	case "job_queue_no":
-		return 2
-	case "status":
-		return 3
-	case "user_id":
-		return 4
-	case "description":
-		return 5
-	case "error_message":
-		return 6
-	case "start_date_time":
-		return 7
-	case "end_date_time":
-		return 8
-	case "printout":
-		return 9
-	case "printout_file_name":
-		return 10
-	}
-	return 0
+	return jobQueueEntryFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *JobQueueEntry) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "entry_no"
-	case 2:
-		return "job_queue_no"
-	case 3:
-		return "status"
-	case 4:
-		return "user_id"
-	case 5:
-		return "description"
-	case 6:
-		return "error_message"
-	case 7:
-		return "start_date_time"
-	case 8:
-		return "end_date_time"
-	case 9:
-		return "printout"
-	case 10:
-		return "printout_file_name"
-	}
-	return ""
+	return jobQueueEntryFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -345,36 +300,6 @@ type (
 	JobQueueEntryOnBeforeRename interface {
 		OnBeforeRename(rec *JobQueueEntry, handled *bool) error
 	}
-	JobQueueEntryOnValidate_Entry_no interface {
-		OnValidate_Entry_no(rec *JobQueueEntry) error
-	}
-	JobQueueEntryOnValidate_Job_queue_no interface {
-		OnValidate_Job_queue_no(rec *JobQueueEntry) error
-	}
-	JobQueueEntryOnValidate_Status interface {
-		OnValidate_Status(rec *JobQueueEntry) error
-	}
-	JobQueueEntryOnValidate_User_id interface {
-		OnValidate_User_id(rec *JobQueueEntry) error
-	}
-	JobQueueEntryOnValidate_Description interface {
-		OnValidate_Description(rec *JobQueueEntry) error
-	}
-	JobQueueEntryOnValidate_Error_message interface {
-		OnValidate_Error_message(rec *JobQueueEntry) error
-	}
-	JobQueueEntryOnValidate_Start_date_time interface {
-		OnValidate_Start_date_time(rec *JobQueueEntry) error
-	}
-	JobQueueEntryOnValidate_End_date_time interface {
-		OnValidate_End_date_time(rec *JobQueueEntry) error
-	}
-	JobQueueEntryOnValidate_Printout interface {
-		OnValidate_Printout(rec *JobQueueEntry) error
-	}
-	JobQueueEntryOnValidate_Printout_file_name interface {
-		OnValidate_Printout_file_name(rec *JobQueueEntry) error
-	}
 )
 
 // jobQueueEntryLogic is the registered business logic of Job_Queue_Entry, in
@@ -417,28 +342,9 @@ func jobQueueEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(JobQueueEntryOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(JobQueueEntryOnBeforeRename)
-	case "OnValidate_Entry_no":
-		_, ok = logic.(JobQueueEntryOnValidate_Entry_no)
-	case "OnValidate_Job_queue_no":
-		_, ok = logic.(JobQueueEntryOnValidate_Job_queue_no)
-	case "OnValidate_Status":
-		_, ok = logic.(JobQueueEntryOnValidate_Status)
-	case "OnValidate_User_id":
-		_, ok = logic.(JobQueueEntryOnValidate_User_id)
-	case "OnValidate_Description":
-		_, ok = logic.(JobQueueEntryOnValidate_Description)
-	case "OnValidate_Error_message":
-		_, ok = logic.(JobQueueEntryOnValidate_Error_message)
-	case "OnValidate_Start_date_time":
-		_, ok = logic.(JobQueueEntryOnValidate_Start_date_time)
-	case "OnValidate_End_date_time":
-		_, ok = logic.(JobQueueEntryOnValidate_End_date_time)
-	case "OnValidate_Printout":
-		_, ok = logic.(JobQueueEntryOnValidate_Printout)
-	case "OnValidate_Printout_file_name":
-		_, ok = logic.(JobQueueEntryOnValidate_Printout_file_name)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return jobQueueEntryFields.IsOnValidateTrigger(name, logic, (*JobQueueEntry)(nil))
 	}
 	return true, ok
 }
@@ -760,17 +666,7 @@ func (t *JobQueueEntry) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *JobQueueEntry) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["entry_no"] = t.Entry_no
-	t.oldValues["job_queue_no"] = t.Job_queue_no
-	t.oldValues["status"] = t.Status
-	t.oldValues["user_id"] = t.User_id
-	t.oldValues["description"] = t.Description
-	t.oldValues["error_message"] = t.Error_message
-	t.oldValues["start_date_time"] = t.Start_date_time
-	t.oldValues["end_date_time"] = t.End_date_time
-	t.oldValues["printout"] = t.Printout
-	t.oldValues["printout_file_name"] = t.Printout_file_name
+	t.oldValues = jobQueueEntryFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -785,36 +681,7 @@ func (t *JobQueueEntry) OldValue(fieldName string) interface{} {
 func (t *JobQueueEntry) XRec() *JobQueueEntry {
 	x := &JobQueueEntry{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["entry_no"].(int); ok {
-		x.Entry_no = v
-	}
-	if v, ok := t.oldValues["job_queue_no"].(types.Code); ok {
-		x.Job_queue_no = v
-	}
-	if v, ok := t.oldValues["status"].(JobQueueEntryStatus); ok {
-		x.Status = v
-	}
-	if v, ok := t.oldValues["user_id"].(types.Code); ok {
-		x.User_id = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["error_message"].(types.Text); ok {
-		x.Error_message = v
-	}
-	if v, ok := t.oldValues["start_date_time"].(types.DateTime); ok {
-		x.Start_date_time = v
-	}
-	if v, ok := t.oldValues["end_date_time"].(types.DateTime); ok {
-		x.End_date_time = v
-	}
-	if v, ok := t.oldValues["printout"].([]byte); ok {
-		x.Printout = v
-	}
-	if v, ok := t.oldValues["printout_file_name"].(types.Text); ok {
-		x.Printout_file_name = v
-	}
+	jobQueueEntryFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1167,61 +1034,7 @@ func (t *JobQueueEntry) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *JobQueueEntry) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "job_queue_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Job_queue_no.Equal(old)
-		}
-	case "status":
-		if old, ok := oldValue.(JobQueueEntryStatus); ok {
-			return t.Status != old
-		}
-	case "user_id":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.User_id.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "error_message":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Error_message.Equal(old)
-		}
-	case "start_date_time":
-		if old, ok := oldValue.(types.DateTime); ok {
-			return !t.Start_date_time.Equal(old)
-		}
-	case "end_date_time":
-		if old, ok := oldValue.(types.DateTime); ok {
-			return !t.End_date_time.Equal(old)
-		}
-	case "printout":
-		// Skip comparison for BLOB fields (too large, use always modified)
-		return true
-	case "printout_file_name":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Printout_file_name.Equal(old)
-		}
-	}
-
-	return false
+	return jobQueueEntryFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1422,29 +1235,7 @@ func (t *JobQueueEntry) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *JobQueueEntry) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("entry_no"):
-		return "entry_no", true
-	case strings.ToLower("job_queue_no"):
-		return "job_queue_no", true
-	case strings.ToLower("status"):
-		return "status", true
-	case strings.ToLower("user_id"):
-		return "user_id", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("error_message"):
-		return "error_message", true
-	case strings.ToLower("start_date_time"):
-		return "start_date_time", true
-	case strings.ToLower("end_date_time"):
-		return "end_date_time", true
-	case strings.ToLower("printout"):
-		return "printout", true
-	case strings.ToLower("printout_file_name"):
-		return "printout_file_name", true
-	}
-	return "", false
+	return jobQueueEntryFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2341,260 +2132,20 @@ func (t *JobQueueEntry) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *JobQueueEntry) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Entry_no = v
-		case float64:
-			t.Entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field entry_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(JobQueueEntryOnValidate_Entry_no); ok {
-				if err := trg.OnValidate_Entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "job_queue_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Job_queue_no = v
-		} else if v, ok := value.(string); ok {
-			t.Job_queue_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field job_queue_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "job_queue_no"); err != nil {
+	i, err := jobQueueEntryFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
+	}
+	f := &jobQueueEntryFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
 			return err
 		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(JobQueueEntryOnValidate_Job_queue_no); ok {
-				if err := trg.OnValidate_Job_queue_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "status":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(JobQueueEntryStatus); ok {
-			t.Status = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field status (valid range: 0-%d)", v, 3-1)
-			}
-			t.Status = JobQueueEntryStatus(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field status (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Status = JobQueueEntryStatus(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Status = 0
-			} else {
-				options := []string{"Success", "In Process", "Error"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Status = JobQueueEntryStatus(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field status (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field status (expected JobQueueEntryStatus, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(JobQueueEntryOnValidate_Status); ok {
-				if err := trg.OnValidate_Status(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "user_id":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-		} else if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field user_id")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(JobQueueEntryOnValidate_User_id); ok {
-				if err := trg.OnValidate_User_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(JobQueueEntryOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "error_message":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Error_message = v
-		} else if v, ok := value.(string); ok {
-			t.Error_message = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field error_message")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(JobQueueEntryOnValidate_Error_message); ok {
-				if err := trg.OnValidate_Error_message(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "start_date_time":
-		// Set field value
-		if v, ok := value.(types.DateTime); ok {
-			t.Start_date_time = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Start_date_time, err = types.NewDateTimeFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid datetime value for field start_date_time: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Start_date_time = types.NewDateTimeFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field start_date_time (expected DateTime, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(JobQueueEntryOnValidate_Start_date_time); ok {
-				if err := trg.OnValidate_Start_date_time(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "end_date_time":
-		// Set field value
-		if v, ok := value.(types.DateTime); ok {
-			t.End_date_time = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.End_date_time, err = types.NewDateTimeFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid datetime value for field end_date_time: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.End_date_time = types.NewDateTimeFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field end_date_time (expected DateTime, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(JobQueueEntryOnValidate_End_date_time); ok {
-				if err := trg.OnValidate_End_date_time(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "printout":
-		// Set field value
-		// Accept nil, []byte, or base64-encoded string
-		if value == nil {
-			t.Printout = nil
-		} else if v, ok := value.([]byte); ok {
-			t.Printout = v
-		} else if s, ok := value.(string); ok {
-			if s == "" {
-				t.Printout = nil
-			} else {
-				// Try base64 decode
-				decoded, err := base64.StdEncoding.DecodeString(s)
-				if err != nil {
-					return fmt.Errorf("invalid base64 value for field printout: %w", err)
-				}
-				t.Printout = decoded
-			}
-		} else {
-			return fmt.Errorf("invalid type for field printout (expected []byte, string, or nil)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(JobQueueEntryOnValidate_Printout); ok {
-				if err := trg.OnValidate_Printout(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "printout_file_name":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Printout_file_name = v
-		} else if v, ok := value.(string); ok {
-			t.Printout_file_name = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field printout_file_name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(JobQueueEntryOnValidate_Printout_file_name); ok {
-				if err := trg.OnValidate_Printout_file_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2603,114 +2154,18 @@ func (t *JobQueueEntry) ValidateField(fieldName string, value interface{}) error
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *JobQueueEntry) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Entry_no, true
-	case 2:
-		return t.Job_queue_no, true
-	case 3:
-		return t.Status, true
-	case 4:
-		return t.User_id, true
-	case 5:
-		return t.Description, true
-	case 6:
-		return t.Error_message, true
-	case 7:
-		return t.Start_date_time, true
-	case 8:
-		return t.End_date_time, true
-	case 9:
-		return t.Printout, true
-	case 10:
-		return t.Printout_file_name, true
-	}
-	return nil, false
+	return jobQueueEntryFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *JobQueueEntry) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return jobQueueEntryFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *JobQueueEntry) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(int); ok {
-			t.Entry_no = v
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Job_queue_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Job_queue_no = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Status = JobQueueEntryStatus(i)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Text); ok {
-			t.Error_message = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Error_message = types.NewText(v)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.DateTime); ok {
-			t.Start_date_time = v
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.DateTime); ok {
-			t.End_date_time = v
-			return true
-		}
-	case 9:
-		if v, ok := value.([]byte); ok {
-			t.Printout = v
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Text); ok {
-			t.Printout_file_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Printout_file_name = types.NewText(v)
-			return true
-		}
-	}
-	return false
+	return jobQueueEntryFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3180,29 +2635,7 @@ func (t *JobQueueEntry) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *JobQueueEntry) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "entry_no":
-		return t.Entry_no, true
-	case "job_queue_no":
-		return t.Job_queue_no, true
-	case "status":
-		return int(t.Status), true
-	case "user_id":
-		return t.User_id, true
-	case "description":
-		return t.Description, true
-	case "error_message":
-		return t.Error_message, true
-	case "start_date_time":
-		return t.Start_date_time, true
-	case "end_date_time":
-		return t.End_date_time, true
-	case "printout":
-		return t.Printout, true
-	case "printout_file_name":
-		return t.Printout_file_name, true
-	}
-	return nil, false
+	return jobQueueEntryFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3297,89 +2730,12 @@ func (t *JobQueueEntry) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *JobQueueEntry) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"entry_no":           t.Entry_no,
-		"job_queue_no":       t.Job_queue_no.String(),
-		"status":             int(t.Status),
-		"user_id":            t.User_id.String(),
-		"description":        t.Description.String(),
-		"error_message":      t.Error_message.String(),
-		"start_date_time":    t.Start_date_time.String(),
-		"end_date_time":      t.End_date_time.String(),
-		"printout":           t.Printout,
-		"printout_file_name": t.Printout_file_name.String(),
-	}
+	return jobQueueEntryFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *JobQueueEntry) FromMap(data map[string]interface{}) {
-	if v, ok := data["entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Entry_no = int(val)
-		case int:
-			t.Entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Entry_no = n
-			}
-		}
-	}
-	if v, ok := data["job_queue_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Job_queue_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["status"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Status = JobQueueEntryStatus(int(val))
-		case int:
-			t.Status = JobQueueEntryStatus(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Success", "In Process", "Error"}
-			for i, opt := range options {
-				if opt == val {
-					t.Status = JobQueueEntryStatus(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["user_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.User_id = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["error_message"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Error_message = types.NewText(s)
-		}
-	}
-	if v, ok := data["start_date_time"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Start_date_time, _ = types.NewDateTimeFromString(s)
-		}
-	}
-	if v, ok := data["end_date_time"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.End_date_time, _ = types.NewDateTimeFromString(s)
-		}
-	}
-	if v, ok := data["printout"]; ok && v != nil {
-	}
-	if v, ok := data["printout_file_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Printout_file_name = types.NewText(s)
-		}
-	}
+	jobQueueEntryFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3400,108 +2756,184 @@ func (t *JobQueueEntry) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *JobQueueEntry) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "job_queue_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "status",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "user_id",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     100,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "error_message",
-			Type:       tables.FieldTypeText,
-			Length:     250,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "start_date_time",
-			Type:       tables.FieldTypeDateTime,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "end_date_time",
-			Type:       tables.FieldTypeDateTime,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "printout",
-			Type:       tables.FieldTypeBlob,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "printout_file_name",
-			Type:       tables.FieldTypeText,
-			Length:     250,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return jobQueueEntryFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in jobQueueEntryFields.Fields
+func (t *JobQueueEntry) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Entry_no
+	case 1:
+		return &t.Job_queue_no
+	case 2:
+		return &t.Status
+	case 3:
+		return &t.User_id
+	case 4:
+		return &t.Description
+	case 5:
+		return &t.Error_message
+	case 6:
+		return &t.Start_date_time
+	case 7:
+		return &t.End_date_time
+	case 8:
+		return &t.Printout
+	case 9:
+		return &t.Printout_file_name
 	}
+	return nil
+}
+
+// jobQueueEntryFields describes the fields of Job_Queue_Entry for the record functions
+// written once in foundation/tables
+var jobQueueEntryFields = &tables.TableFields{
+	Table: JobQueueEntryTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Entry_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "job_queue_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Job_queue_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "status",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Status",
+			Options: []string{"Success", "In Process", "Error"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "user_id",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_User_id",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     100,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "error_message",
+				Type:       tables.FieldTypeText,
+				Length:     250,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Error_message",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "start_date_time",
+				Type:       tables.FieldTypeDateTime,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDateTime,
+			Trigger: "OnValidate_Start_date_time",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "end_date_time",
+				Type:       tables.FieldTypeDateTime,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDateTime,
+			Trigger: "OnValidate_End_date_time",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "printout",
+				Type:       tables.FieldTypeBlob,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBlob,
+			Trigger: "OnValidate_Printout",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "printout_file_name",
+				Type:       tables.FieldTypeText,
+				Length:     250,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Printout_file_name",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

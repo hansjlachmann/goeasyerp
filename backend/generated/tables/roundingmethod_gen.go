@@ -165,40 +165,12 @@ var RoundingMethod_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *RoundingMethod) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "code":
-		return 1
-	case "minimum_amount":
-		return 2
-	case "amount_added_before":
-		return 3
-	case "type":
-		return 4
-	case "precision":
-		return 5
-	case "amount_added_after":
-		return 6
-	}
-	return 0
+	return roundingMethodFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *RoundingMethod) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "code"
-	case 2:
-		return "minimum_amount"
-	case 3:
-		return "amount_added_before"
-	case 4:
-		return "type"
-	case 5:
-		return "precision"
-	case 6:
-		return "amount_added_after"
-	}
-	return ""
+	return roundingMethodFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -310,24 +282,6 @@ type (
 	RoundingMethodOnBeforeRename interface {
 		OnBeforeRename(rec *RoundingMethod, handled *bool) error
 	}
-	RoundingMethodOnValidate_Code interface {
-		OnValidate_Code(rec *RoundingMethod) error
-	}
-	RoundingMethodOnValidate_Minimum_amount interface {
-		OnValidate_Minimum_amount(rec *RoundingMethod) error
-	}
-	RoundingMethodOnValidate_Amount_added_before interface {
-		OnValidate_Amount_added_before(rec *RoundingMethod) error
-	}
-	RoundingMethodOnValidate_Type interface {
-		OnValidate_Type(rec *RoundingMethod) error
-	}
-	RoundingMethodOnValidate_Precision interface {
-		OnValidate_Precision(rec *RoundingMethod) error
-	}
-	RoundingMethodOnValidate_Amount_added_after interface {
-		OnValidate_Amount_added_after(rec *RoundingMethod) error
-	}
 )
 
 // roundingMethodLogic is the registered business logic of Rounding_Method, in
@@ -370,20 +324,9 @@ func roundingMethodTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(RoundingMethodOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(RoundingMethodOnBeforeRename)
-	case "OnValidate_Code":
-		_, ok = logic.(RoundingMethodOnValidate_Code)
-	case "OnValidate_Minimum_amount":
-		_, ok = logic.(RoundingMethodOnValidate_Minimum_amount)
-	case "OnValidate_Amount_added_before":
-		_, ok = logic.(RoundingMethodOnValidate_Amount_added_before)
-	case "OnValidate_Type":
-		_, ok = logic.(RoundingMethodOnValidate_Type)
-	case "OnValidate_Precision":
-		_, ok = logic.(RoundingMethodOnValidate_Precision)
-	case "OnValidate_Amount_added_after":
-		_, ok = logic.(RoundingMethodOnValidate_Amount_added_after)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return roundingMethodFields.IsOnValidateTrigger(name, logic, (*RoundingMethod)(nil))
 	}
 	return true, ok
 }
@@ -690,13 +633,7 @@ func (t *RoundingMethod) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *RoundingMethod) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["code"] = t.Code
-	t.oldValues["minimum_amount"] = t.Minimum_amount
-	t.oldValues["amount_added_before"] = t.Amount_added_before
-	t.oldValues["type"] = t.Type
-	t.oldValues["precision"] = t.Precision
-	t.oldValues["amount_added_after"] = t.Amount_added_after
+	t.oldValues = roundingMethodFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -711,24 +648,7 @@ func (t *RoundingMethod) OldValue(fieldName string) interface{} {
 func (t *RoundingMethod) XRec() *RoundingMethod {
 	x := &RoundingMethod{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["code"].(types.Code); ok {
-		x.Code = v
-	}
-	if v, ok := t.oldValues["minimum_amount"].(types.Decimal); ok {
-		x.Minimum_amount = v
-	}
-	if v, ok := t.oldValues["amount_added_before"].(types.Decimal); ok {
-		x.Amount_added_before = v
-	}
-	if v, ok := t.oldValues["type"].(RoundingMethodType); ok {
-		x.Type = v
-	}
-	if v, ok := t.oldValues["precision"].(types.Decimal); ok {
-		x.Precision = v
-	}
-	if v, ok := t.oldValues["amount_added_after"].(types.Decimal); ok {
-		x.Amount_added_after = v
-	}
+	roundingMethodFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1043,45 +963,7 @@ func (t *RoundingMethod) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *RoundingMethod) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Code.Equal(old)
-		}
-	case "minimum_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Minimum_amount.Equal(old)
-		}
-	case "amount_added_before":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Amount_added_before.Equal(old)
-		}
-	case "type":
-		if old, ok := oldValue.(RoundingMethodType); ok {
-			return t.Type != old
-		}
-	case "precision":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Precision.Equal(old)
-		}
-	case "amount_added_after":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Amount_added_after.Equal(old)
-		}
-	}
-
-	return false
+	return roundingMethodFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1283,21 +1165,7 @@ func (t *RoundingMethod) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *RoundingMethod) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("code"):
-		return "code", true
-	case strings.ToLower("minimum_amount"):
-		return "minimum_amount", true
-	case strings.ToLower("amount_added_before"):
-		return "amount_added_before", true
-	case strings.ToLower("type"):
-		return "type", true
-	case strings.ToLower("precision"):
-		return "precision", true
-	case strings.ToLower("amount_added_after"):
-		return "amount_added_after", true
-	}
-	return "", false
+	return roundingMethodFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2166,191 +2034,20 @@ func (t *RoundingMethod) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *RoundingMethod) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-		} else if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RoundingMethodOnValidate_Code); ok {
-				if err := trg.OnValidate_Code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "minimum_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Minimum_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Minimum_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field minimum_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Minimum_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Minimum_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Minimum_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field minimum_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RoundingMethodOnValidate_Minimum_amount); ok {
-				if err := trg.OnValidate_Minimum_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "amount_added_before":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount_added_before = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Amount_added_before, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field amount_added_before: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Amount_added_before = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Amount_added_before = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Amount_added_before = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field amount_added_before (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RoundingMethodOnValidate_Amount_added_before); ok {
-				if err := trg.OnValidate_Amount_added_before(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(RoundingMethodType); ok {
-			t.Type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", v, 3-1)
-			}
-			t.Type = RoundingMethodType(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Type = RoundingMethodType(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Type = 0
-			} else {
-				options := []string{"Nearest", "Up", "Down"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Type = RoundingMethodType(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field type (expected RoundingMethodType, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RoundingMethodOnValidate_Type); ok {
-				if err := trg.OnValidate_Type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "precision":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Precision = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Precision, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field precision: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Precision = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Precision = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Precision = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field precision (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RoundingMethodOnValidate_Precision); ok {
-				if err := trg.OnValidate_Precision(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "amount_added_after":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount_added_after = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Amount_added_after, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field amount_added_after: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Amount_added_after = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Amount_added_after = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Amount_added_after = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field amount_added_after (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RoundingMethodOnValidate_Amount_added_after); ok {
-				if err := trg.OnValidate_Amount_added_after(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := roundingMethodFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &roundingMethodFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2359,70 +2056,18 @@ func (t *RoundingMethod) ValidateField(fieldName string, value interface{}) erro
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *RoundingMethod) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Code, true
-	case 2:
-		return t.Minimum_amount, true
-	case 3:
-		return t.Amount_added_before, true
-	case 4:
-		return t.Type, true
-	case 5:
-		return t.Precision, true
-	case 6:
-		return t.Amount_added_after, true
-	}
-	return nil, false
+	return roundingMethodFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *RoundingMethod) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return roundingMethodFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *RoundingMethod) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Decimal); ok {
-			t.Minimum_amount = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount_added_before = v
-			return true
-		}
-	case 4:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Type = RoundingMethodType(i)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Decimal); ok {
-			t.Precision = v
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount_added_after = v
-			return true
-		}
-	}
-	return false
+	return roundingMethodFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2917,21 +2562,7 @@ func (t *RoundingMethod) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *RoundingMethod) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "code":
-		return t.Code, true
-	case "minimum_amount":
-		return t.Minimum_amount, true
-	case "amount_added_before":
-		return t.Amount_added_before, true
-	case "type":
-		return int(t.Type), true
-	case "precision":
-		return t.Precision, true
-	case "amount_added_after":
-		return t.Amount_added_after, true
-	}
-	return nil, false
+	return roundingMethodFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3025,88 +2656,12 @@ func (t *RoundingMethod) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *RoundingMethod) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"code":                t.Code.String(),
-		"minimum_amount":      t.Minimum_amount.String(),
-		"amount_added_before": t.Amount_added_before.String(),
-		"type":                int(t.Type),
-		"precision":           t.Precision.String(),
-		"amount_added_after":  t.Amount_added_after.String(),
-	}
+	return roundingMethodFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *RoundingMethod) FromMap(data map[string]interface{}) {
-	if v, ok := data["code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["minimum_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Minimum_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Minimum_amount = types.NewDecimal(val)
-		case int:
-			t.Minimum_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Minimum_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["amount_added_before"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Amount_added_before, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Amount_added_before = types.NewDecimal(val)
-		case int:
-			t.Amount_added_before = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Amount_added_before = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Type = RoundingMethodType(int(val))
-		case int:
-			t.Type = RoundingMethodType(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Nearest", "Up", "Down"}
-			for i, opt := range options {
-				if opt == val {
-					t.Type = RoundingMethodType(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["precision"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Precision, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Precision = types.NewDecimal(val)
-		case int:
-			t.Precision = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Precision = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["amount_added_after"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Amount_added_after, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Amount_added_after = types.NewDecimal(val)
-		case int:
-			t.Amount_added_after = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Amount_added_after = types.NewDecimalFromInt(val)
-		}
-	}
+	roundingMethodFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3127,72 +2682,123 @@ func (t *RoundingMethod) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *RoundingMethod) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:            2,
-			Name:          "minimum_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      false,
-			PrimaryKey:    true,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            3,
-			Name:          "amount_added_before",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         4,
-			Name:       "type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            5,
-			Name:          "precision",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            6,
-			Name:          "amount_added_after",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
+	return roundingMethodFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in roundingMethodFields.Fields
+func (t *RoundingMethod) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Code
+	case 1:
+		return &t.Minimum_amount
+	case 2:
+		return &t.Amount_added_before
+	case 3:
+		return &t.Type
+	case 4:
+		return &t.Precision
+	case 5:
+		return &t.Amount_added_after
 	}
+	return nil
+}
+
+// roundingMethodFields describes the fields of Rounding_Method for the record functions
+// written once in foundation/tables
+var roundingMethodFields = &tables.TableFields{
+	Table: RoundingMethodTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            2,
+				Name:          "minimum_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      false,
+				PrimaryKey:    true,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Minimum_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            3,
+				Name:          "amount_added_before",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Amount_added_before",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Type",
+			Options: []string{"Nearest", "Up", "Down"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            5,
+				Name:          "precision",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Precision",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            6,
+				Name:          "amount_added_after",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Amount_added_after",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

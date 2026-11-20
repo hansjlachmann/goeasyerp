@@ -122,32 +122,12 @@ var TaxAreaLine_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *TaxAreaLine) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "tax_area":
-		return 1
-	case "tax_jurisdiction_code":
-		return 2
-	case "jurisdiction_description":
-		return 3
-	case "calculation_order":
-		return 4
-	}
-	return 0
+	return taxAreaLineFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *TaxAreaLine) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "tax_area"
-	case 2:
-		return "tax_jurisdiction_code"
-	case 3:
-		return "jurisdiction_description"
-	case 4:
-		return "calculation_order"
-	}
-	return ""
+	return taxAreaLineFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -251,9 +231,6 @@ type (
 	TaxAreaLineOnBeforeRename interface {
 		OnBeforeRename(rec *TaxAreaLine, handled *bool) error
 	}
-	TaxAreaLineOnValidate_Tax_area              interface{ OnValidate_Tax_area(rec *TaxAreaLine) error }
-	TaxAreaLineOnValidate_Tax_jurisdiction_code interface{ OnValidate_Tax_jurisdiction_code(rec *TaxAreaLine) error }
-	TaxAreaLineOnValidate_Calculation_order     interface{ OnValidate_Calculation_order(rec *TaxAreaLine) error }
 )
 
 // taxAreaLineLogic is the registered business logic of Tax_Area_Line, in
@@ -296,14 +273,9 @@ func taxAreaLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(TaxAreaLineOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(TaxAreaLineOnBeforeRename)
-	case "OnValidate_Tax_area":
-		_, ok = logic.(TaxAreaLineOnValidate_Tax_area)
-	case "OnValidate_Tax_jurisdiction_code":
-		_, ok = logic.(TaxAreaLineOnValidate_Tax_jurisdiction_code)
-	case "OnValidate_Calculation_order":
-		_, ok = logic.(TaxAreaLineOnValidate_Calculation_order)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return taxAreaLineFields.IsOnValidateTrigger(name, logic, (*TaxAreaLine)(nil))
 	}
 	return true, ok
 }
@@ -612,10 +584,7 @@ func (t *TaxAreaLine) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *TaxAreaLine) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["tax_area"] = t.Tax_area
-	t.oldValues["tax_jurisdiction_code"] = t.Tax_jurisdiction_code
-	t.oldValues["calculation_order"] = t.Calculation_order
+	t.oldValues = taxAreaLineFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -630,15 +599,7 @@ func (t *TaxAreaLine) OldValue(fieldName string) interface{} {
 func (t *TaxAreaLine) XRec() *TaxAreaLine {
 	x := &TaxAreaLine{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["tax_area"].(types.Code); ok {
-		x.Tax_area = v
-	}
-	if v, ok := t.oldValues["tax_jurisdiction_code"].(types.Code); ok {
-		x.Tax_jurisdiction_code = v
-	}
-	if v, ok := t.oldValues["calculation_order"].(int); ok {
-		x.Calculation_order = v
-	}
+	taxAreaLineFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -915,34 +876,7 @@ func (t *TaxAreaLine) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *TaxAreaLine) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "tax_area":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_area.Equal(old)
-		}
-	case "tax_jurisdiction_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_jurisdiction_code.Equal(old)
-		}
-	case "calculation_order":
-		if old, ok := oldValue.(int); ok {
-			return t.Calculation_order != old
-		}
-		return true // Type mismatch, assume changed
-	}
-
-	return false
+	return taxAreaLineFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1218,15 +1152,7 @@ func (t *TaxAreaLine) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *TaxAreaLine) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("tax_area"):
-		return "tax_area", true
-	case strings.ToLower("tax_jurisdiction_code"):
-		return "tax_jurisdiction_code", true
-	case strings.ToLower("calculation_order"):
-		return "calculation_order", true
-	}
-	return "", false
+	return taxAreaLineFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2041,83 +1967,20 @@ func (t *TaxAreaLine) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *TaxAreaLine) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "tax_area":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_area = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_area = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_area")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_area"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxAreaLineOnValidate_Tax_area); ok {
-				if err := trg.OnValidate_Tax_area(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_jurisdiction_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_jurisdiction_code = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_jurisdiction_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_jurisdiction_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_jurisdiction_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxAreaLineOnValidate_Tax_jurisdiction_code); ok {
-				if err := trg.OnValidate_Tax_jurisdiction_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "calculation_order":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Calculation_order = v
-		case float64:
-			t.Calculation_order = int(v)
-		case string:
-			if v == "" {
-				t.Calculation_order = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Calculation_order = i
-			} else {
-				return fmt.Errorf("invalid integer value for field calculation_order: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field calculation_order")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxAreaLineOnValidate_Calculation_order); ok {
-				if err := trg.OnValidate_Calculation_order(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := taxAreaLineFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &taxAreaLineFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2126,55 +1989,18 @@ func (t *TaxAreaLine) ValidateField(fieldName string, value interface{}) error {
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *TaxAreaLine) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Tax_area, true
-	case 2:
-		return t.Tax_jurisdiction_code, true
-	case 4:
-		return t.Calculation_order, true
-	}
-	return nil, false
+	return taxAreaLineFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *TaxAreaLine) flowFieldValue(no int) (any, bool) {
-	switch no {
-	case 3:
-		return t.Jurisdiction_description, true
-	}
-	return nil, false
+	return taxAreaLineFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *TaxAreaLine) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_area = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_area = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_jurisdiction_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_jurisdiction_code = types.NewCode(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(int); ok {
-			t.Calculation_order = v
-			return true
-		}
-	}
-	return false
+	return taxAreaLineFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2645,15 +2471,7 @@ func (t *TaxAreaLine) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *TaxAreaLine) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "tax_area":
-		return t.Tax_area, true
-	case "tax_jurisdiction_code":
-		return t.Tax_jurisdiction_code, true
-	case "calculation_order":
-		return t.Calculation_order, true
-	}
-	return nil, false
+	return taxAreaLineFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2744,40 +2562,12 @@ func (t *TaxAreaLine) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *TaxAreaLine) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"tax_area":              t.Tax_area.String(),
-		"tax_jurisdiction_code": t.Tax_jurisdiction_code.String(),
-		// FlowField: jurisdiction_description
-		"jurisdiction_description": t.Jurisdiction_description,
-		"calculation_order":        t.Calculation_order,
-	}
+	return taxAreaLineFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *TaxAreaLine) FromMap(data map[string]interface{}) {
-	if v, ok := data["tax_area"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_area = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_jurisdiction_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_jurisdiction_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["calculation_order"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Calculation_order = int(val)
-		case int:
-			t.Calculation_order = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Calculation_order = n
-			}
-		}
-	}
+	taxAreaLineFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2798,48 +2588,88 @@ func (t *TaxAreaLine) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *TaxAreaLine) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "tax_area",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "tax_jurisdiction_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "jurisdiction_description",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  true,
-		},
-		{
-			No:         4,
-			Name:       "calculation_order",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return taxAreaLineFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in taxAreaLineFields.Fields
+func (t *TaxAreaLine) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Tax_area
+	case 1:
+		return &t.Tax_jurisdiction_code
+	case 2:
+		return &t.Jurisdiction_description
+	case 3:
+		return &t.Calculation_order
 	}
+	return nil
+}
+
+// taxAreaLineFields describes the fields of Tax_Area_Line for the record functions
+// written once in foundation/tables
+var taxAreaLineFields = &tables.TableFields{
+	Table: TaxAreaLineTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "tax_area",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_area",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "tax_jurisdiction_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_jurisdiction_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "jurisdiction_description",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  true,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Jurisdiction_description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "calculation_order",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Calculation_order",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

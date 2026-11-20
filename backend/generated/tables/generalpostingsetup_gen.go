@@ -169,80 +169,12 @@ var GeneralPostingSetup_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *GeneralPostingSetup) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "gen_bus_posting_group":
-		return 1
-	case "gen_prod_posting_group":
-		return 2
-	case "sales_account":
-		return 10
-	case "sales_line_disc_account":
-		return 11
-	case "sales_inv_disc_account":
-		return 12
-	case "sales_payment_disc_account":
-		return 13
-	case "purch_account":
-		return 14
-	case "purch_line_disc_account":
-		return 15
-	case "purch_inv_disc_account":
-		return 16
-	case "purch_payment_disc_account":
-		return 17
-	case "cogs_account":
-		return 18
-	case "inventory_adjmt_account":
-		return 19
-	case "project_sales_adjmt_account":
-		return 24
-	case "project_cost_adjmt_account":
-		return 25
-	case "sales_credit_memo_account":
-		return 27
-	case "purch_credit_memo_account":
-		return 28
-	}
-	return 0
+	return generalPostingSetupFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *GeneralPostingSetup) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "gen_bus_posting_group"
-	case 2:
-		return "gen_prod_posting_group"
-	case 10:
-		return "sales_account"
-	case 11:
-		return "sales_line_disc_account"
-	case 12:
-		return "sales_inv_disc_account"
-	case 13:
-		return "sales_payment_disc_account"
-	case 14:
-		return "purch_account"
-	case 15:
-		return "purch_line_disc_account"
-	case 16:
-		return "purch_inv_disc_account"
-	case 17:
-		return "purch_payment_disc_account"
-	case 18:
-		return "cogs_account"
-	case 19:
-		return "inventory_adjmt_account"
-	case 24:
-		return "project_sales_adjmt_account"
-	case 25:
-		return "project_cost_adjmt_account"
-	case 27:
-		return "sales_credit_memo_account"
-	case 28:
-		return "purch_credit_memo_account"
-	}
-	return ""
+	return generalPostingSetupFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -354,54 +286,6 @@ type (
 	GeneralPostingSetupOnBeforeRename interface {
 		OnBeforeRename(rec *GeneralPostingSetup, handled *bool) error
 	}
-	GeneralPostingSetupOnValidate_Gen_bus_posting_group interface {
-		OnValidate_Gen_bus_posting_group(rec *GeneralPostingSetup) error
-	}
-	GeneralPostingSetupOnValidate_Gen_prod_posting_group interface {
-		OnValidate_Gen_prod_posting_group(rec *GeneralPostingSetup) error
-	}
-	GeneralPostingSetupOnValidate_Sales_account interface {
-		OnValidate_Sales_account(rec *GeneralPostingSetup) error
-	}
-	GeneralPostingSetupOnValidate_Sales_line_disc_account interface {
-		OnValidate_Sales_line_disc_account(rec *GeneralPostingSetup) error
-	}
-	GeneralPostingSetupOnValidate_Sales_inv_disc_account interface {
-		OnValidate_Sales_inv_disc_account(rec *GeneralPostingSetup) error
-	}
-	GeneralPostingSetupOnValidate_Sales_payment_disc_account interface {
-		OnValidate_Sales_payment_disc_account(rec *GeneralPostingSetup) error
-	}
-	GeneralPostingSetupOnValidate_Purch_account interface {
-		OnValidate_Purch_account(rec *GeneralPostingSetup) error
-	}
-	GeneralPostingSetupOnValidate_Purch_line_disc_account interface {
-		OnValidate_Purch_line_disc_account(rec *GeneralPostingSetup) error
-	}
-	GeneralPostingSetupOnValidate_Purch_inv_disc_account interface {
-		OnValidate_Purch_inv_disc_account(rec *GeneralPostingSetup) error
-	}
-	GeneralPostingSetupOnValidate_Purch_payment_disc_account interface {
-		OnValidate_Purch_payment_disc_account(rec *GeneralPostingSetup) error
-	}
-	GeneralPostingSetupOnValidate_Cogs_account interface {
-		OnValidate_Cogs_account(rec *GeneralPostingSetup) error
-	}
-	GeneralPostingSetupOnValidate_Inventory_adjmt_account interface {
-		OnValidate_Inventory_adjmt_account(rec *GeneralPostingSetup) error
-	}
-	GeneralPostingSetupOnValidate_Project_sales_adjmt_account interface {
-		OnValidate_Project_sales_adjmt_account(rec *GeneralPostingSetup) error
-	}
-	GeneralPostingSetupOnValidate_Project_cost_adjmt_account interface {
-		OnValidate_Project_cost_adjmt_account(rec *GeneralPostingSetup) error
-	}
-	GeneralPostingSetupOnValidate_Sales_credit_memo_account interface {
-		OnValidate_Sales_credit_memo_account(rec *GeneralPostingSetup) error
-	}
-	GeneralPostingSetupOnValidate_Purch_credit_memo_account interface {
-		OnValidate_Purch_credit_memo_account(rec *GeneralPostingSetup) error
-	}
 )
 
 // generalPostingSetupLogic is the registered business logic of General_Posting_Setup, in
@@ -444,40 +328,9 @@ func generalPostingSetupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(GeneralPostingSetupOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(GeneralPostingSetupOnBeforeRename)
-	case "OnValidate_Gen_bus_posting_group":
-		_, ok = logic.(GeneralPostingSetupOnValidate_Gen_bus_posting_group)
-	case "OnValidate_Gen_prod_posting_group":
-		_, ok = logic.(GeneralPostingSetupOnValidate_Gen_prod_posting_group)
-	case "OnValidate_Sales_account":
-		_, ok = logic.(GeneralPostingSetupOnValidate_Sales_account)
-	case "OnValidate_Sales_line_disc_account":
-		_, ok = logic.(GeneralPostingSetupOnValidate_Sales_line_disc_account)
-	case "OnValidate_Sales_inv_disc_account":
-		_, ok = logic.(GeneralPostingSetupOnValidate_Sales_inv_disc_account)
-	case "OnValidate_Sales_payment_disc_account":
-		_, ok = logic.(GeneralPostingSetupOnValidate_Sales_payment_disc_account)
-	case "OnValidate_Purch_account":
-		_, ok = logic.(GeneralPostingSetupOnValidate_Purch_account)
-	case "OnValidate_Purch_line_disc_account":
-		_, ok = logic.(GeneralPostingSetupOnValidate_Purch_line_disc_account)
-	case "OnValidate_Purch_inv_disc_account":
-		_, ok = logic.(GeneralPostingSetupOnValidate_Purch_inv_disc_account)
-	case "OnValidate_Purch_payment_disc_account":
-		_, ok = logic.(GeneralPostingSetupOnValidate_Purch_payment_disc_account)
-	case "OnValidate_Cogs_account":
-		_, ok = logic.(GeneralPostingSetupOnValidate_Cogs_account)
-	case "OnValidate_Inventory_adjmt_account":
-		_, ok = logic.(GeneralPostingSetupOnValidate_Inventory_adjmt_account)
-	case "OnValidate_Project_sales_adjmt_account":
-		_, ok = logic.(GeneralPostingSetupOnValidate_Project_sales_adjmt_account)
-	case "OnValidate_Project_cost_adjmt_account":
-		_, ok = logic.(GeneralPostingSetupOnValidate_Project_cost_adjmt_account)
-	case "OnValidate_Sales_credit_memo_account":
-		_, ok = logic.(GeneralPostingSetupOnValidate_Sales_credit_memo_account)
-	case "OnValidate_Purch_credit_memo_account":
-		_, ok = logic.(GeneralPostingSetupOnValidate_Purch_credit_memo_account)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return generalPostingSetupFields.IsOnValidateTrigger(name, logic, (*GeneralPostingSetup)(nil))
 	}
 	return true, ok
 }
@@ -843,23 +696,7 @@ func (t *GeneralPostingSetup) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *GeneralPostingSetup) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["gen_bus_posting_group"] = t.Gen_bus_posting_group
-	t.oldValues["gen_prod_posting_group"] = t.Gen_prod_posting_group
-	t.oldValues["sales_account"] = t.Sales_account
-	t.oldValues["sales_line_disc_account"] = t.Sales_line_disc_account
-	t.oldValues["sales_inv_disc_account"] = t.Sales_inv_disc_account
-	t.oldValues["sales_payment_disc_account"] = t.Sales_payment_disc_account
-	t.oldValues["purch_account"] = t.Purch_account
-	t.oldValues["purch_line_disc_account"] = t.Purch_line_disc_account
-	t.oldValues["purch_inv_disc_account"] = t.Purch_inv_disc_account
-	t.oldValues["purch_payment_disc_account"] = t.Purch_payment_disc_account
-	t.oldValues["cogs_account"] = t.Cogs_account
-	t.oldValues["inventory_adjmt_account"] = t.Inventory_adjmt_account
-	t.oldValues["project_sales_adjmt_account"] = t.Project_sales_adjmt_account
-	t.oldValues["project_cost_adjmt_account"] = t.Project_cost_adjmt_account
-	t.oldValues["sales_credit_memo_account"] = t.Sales_credit_memo_account
-	t.oldValues["purch_credit_memo_account"] = t.Purch_credit_memo_account
+	t.oldValues = generalPostingSetupFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -874,54 +711,7 @@ func (t *GeneralPostingSetup) OldValue(fieldName string) interface{} {
 func (t *GeneralPostingSetup) XRec() *GeneralPostingSetup {
 	x := &GeneralPostingSetup{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["gen_bus_posting_group"].(types.Code); ok {
-		x.Gen_bus_posting_group = v
-	}
-	if v, ok := t.oldValues["gen_prod_posting_group"].(types.Code); ok {
-		x.Gen_prod_posting_group = v
-	}
-	if v, ok := t.oldValues["sales_account"].(types.Code); ok {
-		x.Sales_account = v
-	}
-	if v, ok := t.oldValues["sales_line_disc_account"].(types.Code); ok {
-		x.Sales_line_disc_account = v
-	}
-	if v, ok := t.oldValues["sales_inv_disc_account"].(types.Code); ok {
-		x.Sales_inv_disc_account = v
-	}
-	if v, ok := t.oldValues["sales_payment_disc_account"].(types.Code); ok {
-		x.Sales_payment_disc_account = v
-	}
-	if v, ok := t.oldValues["purch_account"].(types.Code); ok {
-		x.Purch_account = v
-	}
-	if v, ok := t.oldValues["purch_line_disc_account"].(types.Code); ok {
-		x.Purch_line_disc_account = v
-	}
-	if v, ok := t.oldValues["purch_inv_disc_account"].(types.Code); ok {
-		x.Purch_inv_disc_account = v
-	}
-	if v, ok := t.oldValues["purch_payment_disc_account"].(types.Code); ok {
-		x.Purch_payment_disc_account = v
-	}
-	if v, ok := t.oldValues["cogs_account"].(types.Code); ok {
-		x.Cogs_account = v
-	}
-	if v, ok := t.oldValues["inventory_adjmt_account"].(types.Code); ok {
-		x.Inventory_adjmt_account = v
-	}
-	if v, ok := t.oldValues["project_sales_adjmt_account"].(types.Code); ok {
-		x.Project_sales_adjmt_account = v
-	}
-	if v, ok := t.oldValues["project_cost_adjmt_account"].(types.Code); ok {
-		x.Project_cost_adjmt_account = v
-	}
-	if v, ok := t.oldValues["sales_credit_memo_account"].(types.Code); ok {
-		x.Sales_credit_memo_account = v
-	}
-	if v, ok := t.oldValues["purch_credit_memo_account"].(types.Code); ok {
-		x.Purch_credit_memo_account = v
-	}
+	generalPostingSetupFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1341,85 +1131,7 @@ func (t *GeneralPostingSetup) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *GeneralPostingSetup) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "gen_bus_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Gen_bus_posting_group.Equal(old)
-		}
-	case "gen_prod_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Gen_prod_posting_group.Equal(old)
-		}
-	case "sales_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Sales_account.Equal(old)
-		}
-	case "sales_line_disc_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Sales_line_disc_account.Equal(old)
-		}
-	case "sales_inv_disc_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Sales_inv_disc_account.Equal(old)
-		}
-	case "sales_payment_disc_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Sales_payment_disc_account.Equal(old)
-		}
-	case "purch_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Purch_account.Equal(old)
-		}
-	case "purch_line_disc_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Purch_line_disc_account.Equal(old)
-		}
-	case "purch_inv_disc_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Purch_inv_disc_account.Equal(old)
-		}
-	case "purch_payment_disc_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Purch_payment_disc_account.Equal(old)
-		}
-	case "cogs_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Cogs_account.Equal(old)
-		}
-	case "inventory_adjmt_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Inventory_adjmt_account.Equal(old)
-		}
-	case "project_sales_adjmt_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_sales_adjmt_account.Equal(old)
-		}
-	case "project_cost_adjmt_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_cost_adjmt_account.Equal(old)
-		}
-	case "sales_credit_memo_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Sales_credit_memo_account.Equal(old)
-		}
-	case "purch_credit_memo_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Purch_credit_memo_account.Equal(old)
-		}
-	}
-
-	return false
+	return generalPostingSetupFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1621,41 +1333,7 @@ func (t *GeneralPostingSetup) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *GeneralPostingSetup) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("gen_bus_posting_group"):
-		return "gen_bus_posting_group", true
-	case strings.ToLower("gen_prod_posting_group"):
-		return "gen_prod_posting_group", true
-	case strings.ToLower("sales_account"):
-		return "sales_account", true
-	case strings.ToLower("sales_line_disc_account"):
-		return "sales_line_disc_account", true
-	case strings.ToLower("sales_inv_disc_account"):
-		return "sales_inv_disc_account", true
-	case strings.ToLower("sales_payment_disc_account"):
-		return "sales_payment_disc_account", true
-	case strings.ToLower("purch_account"):
-		return "purch_account", true
-	case strings.ToLower("purch_line_disc_account"):
-		return "purch_line_disc_account", true
-	case strings.ToLower("purch_inv_disc_account"):
-		return "purch_inv_disc_account", true
-	case strings.ToLower("purch_payment_disc_account"):
-		return "purch_payment_disc_account", true
-	case strings.ToLower("cogs_account"):
-		return "cogs_account", true
-	case strings.ToLower("inventory_adjmt_account"):
-		return "inventory_adjmt_account", true
-	case strings.ToLower("project_sales_adjmt_account"):
-		return "project_sales_adjmt_account", true
-	case strings.ToLower("project_cost_adjmt_account"):
-		return "project_cost_adjmt_account", true
-	case strings.ToLower("sales_credit_memo_account"):
-		return "sales_credit_memo_account", true
-	case strings.ToLower("purch_credit_memo_account"):
-		return "purch_credit_memo_account", true
-	}
-	return "", false
+	return generalPostingSetupFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2646,364 +2324,20 @@ func (t *GeneralPostingSetup) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *GeneralPostingSetup) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "gen_bus_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Gen_bus_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Gen_bus_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field gen_bus_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "gen_bus_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralPostingSetupOnValidate_Gen_bus_posting_group); ok {
-				if err := trg.OnValidate_Gen_bus_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "gen_prod_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Gen_prod_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Gen_prod_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field gen_prod_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "gen_prod_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralPostingSetupOnValidate_Gen_prod_posting_group); ok {
-				if err := trg.OnValidate_Gen_prod_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sales_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Sales_account = v
-		} else if v, ok := value.(string); ok {
-			t.Sales_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field sales_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "sales_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralPostingSetupOnValidate_Sales_account); ok {
-				if err := trg.OnValidate_Sales_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sales_line_disc_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Sales_line_disc_account = v
-		} else if v, ok := value.(string); ok {
-			t.Sales_line_disc_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field sales_line_disc_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "sales_line_disc_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralPostingSetupOnValidate_Sales_line_disc_account); ok {
-				if err := trg.OnValidate_Sales_line_disc_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sales_inv_disc_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Sales_inv_disc_account = v
-		} else if v, ok := value.(string); ok {
-			t.Sales_inv_disc_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field sales_inv_disc_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "sales_inv_disc_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralPostingSetupOnValidate_Sales_inv_disc_account); ok {
-				if err := trg.OnValidate_Sales_inv_disc_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sales_payment_disc_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Sales_payment_disc_account = v
-		} else if v, ok := value.(string); ok {
-			t.Sales_payment_disc_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field sales_payment_disc_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "sales_payment_disc_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralPostingSetupOnValidate_Sales_payment_disc_account); ok {
-				if err := trg.OnValidate_Sales_payment_disc_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "purch_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Purch_account = v
-		} else if v, ok := value.(string); ok {
-			t.Purch_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field purch_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "purch_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralPostingSetupOnValidate_Purch_account); ok {
-				if err := trg.OnValidate_Purch_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "purch_line_disc_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Purch_line_disc_account = v
-		} else if v, ok := value.(string); ok {
-			t.Purch_line_disc_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field purch_line_disc_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "purch_line_disc_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralPostingSetupOnValidate_Purch_line_disc_account); ok {
-				if err := trg.OnValidate_Purch_line_disc_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "purch_inv_disc_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Purch_inv_disc_account = v
-		} else if v, ok := value.(string); ok {
-			t.Purch_inv_disc_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field purch_inv_disc_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "purch_inv_disc_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralPostingSetupOnValidate_Purch_inv_disc_account); ok {
-				if err := trg.OnValidate_Purch_inv_disc_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "purch_payment_disc_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Purch_payment_disc_account = v
-		} else if v, ok := value.(string); ok {
-			t.Purch_payment_disc_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field purch_payment_disc_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "purch_payment_disc_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralPostingSetupOnValidate_Purch_payment_disc_account); ok {
-				if err := trg.OnValidate_Purch_payment_disc_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "cogs_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Cogs_account = v
-		} else if v, ok := value.(string); ok {
-			t.Cogs_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field cogs_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "cogs_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralPostingSetupOnValidate_Cogs_account); ok {
-				if err := trg.OnValidate_Cogs_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "inventory_adjmt_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Inventory_adjmt_account = v
-		} else if v, ok := value.(string); ok {
-			t.Inventory_adjmt_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field inventory_adjmt_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "inventory_adjmt_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralPostingSetupOnValidate_Inventory_adjmt_account); ok {
-				if err := trg.OnValidate_Inventory_adjmt_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "project_sales_adjmt_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Project_sales_adjmt_account = v
-		} else if v, ok := value.(string); ok {
-			t.Project_sales_adjmt_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field project_sales_adjmt_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_sales_adjmt_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralPostingSetupOnValidate_Project_sales_adjmt_account); ok {
-				if err := trg.OnValidate_Project_sales_adjmt_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "project_cost_adjmt_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Project_cost_adjmt_account = v
-		} else if v, ok := value.(string); ok {
-			t.Project_cost_adjmt_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field project_cost_adjmt_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_cost_adjmt_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralPostingSetupOnValidate_Project_cost_adjmt_account); ok {
-				if err := trg.OnValidate_Project_cost_adjmt_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sales_credit_memo_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Sales_credit_memo_account = v
-		} else if v, ok := value.(string); ok {
-			t.Sales_credit_memo_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field sales_credit_memo_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "sales_credit_memo_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralPostingSetupOnValidate_Sales_credit_memo_account); ok {
-				if err := trg.OnValidate_Sales_credit_memo_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "purch_credit_memo_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Purch_credit_memo_account = v
-		} else if v, ok := value.(string); ok {
-			t.Purch_credit_memo_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field purch_credit_memo_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "purch_credit_memo_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralPostingSetupOnValidate_Purch_credit_memo_account); ok {
-				if err := trg.OnValidate_Purch_credit_memo_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := generalPostingSetupFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &generalPostingSetupFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -3012,200 +2346,18 @@ func (t *GeneralPostingSetup) ValidateField(fieldName string, value interface{})
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *GeneralPostingSetup) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Gen_bus_posting_group, true
-	case 2:
-		return t.Gen_prod_posting_group, true
-	case 10:
-		return t.Sales_account, true
-	case 11:
-		return t.Sales_line_disc_account, true
-	case 12:
-		return t.Sales_inv_disc_account, true
-	case 13:
-		return t.Sales_payment_disc_account, true
-	case 14:
-		return t.Purch_account, true
-	case 15:
-		return t.Purch_line_disc_account, true
-	case 16:
-		return t.Purch_inv_disc_account, true
-	case 17:
-		return t.Purch_payment_disc_account, true
-	case 18:
-		return t.Cogs_account, true
-	case 19:
-		return t.Inventory_adjmt_account, true
-	case 24:
-		return t.Project_sales_adjmt_account, true
-	case 25:
-		return t.Project_cost_adjmt_account, true
-	case 27:
-		return t.Sales_credit_memo_account, true
-	case 28:
-		return t.Purch_credit_memo_account, true
-	}
-	return nil, false
+	return generalPostingSetupFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *GeneralPostingSetup) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return generalPostingSetupFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *GeneralPostingSetup) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Gen_bus_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Gen_bus_posting_group = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Gen_prod_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Gen_prod_posting_group = types.NewCode(v)
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Code); ok {
-			t.Sales_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Sales_account = types.NewCode(v)
-			return true
-		}
-	case 11:
-		if v, ok := value.(types.Code); ok {
-			t.Sales_line_disc_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Sales_line_disc_account = types.NewCode(v)
-			return true
-		}
-	case 12:
-		if v, ok := value.(types.Code); ok {
-			t.Sales_inv_disc_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Sales_inv_disc_account = types.NewCode(v)
-			return true
-		}
-	case 13:
-		if v, ok := value.(types.Code); ok {
-			t.Sales_payment_disc_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Sales_payment_disc_account = types.NewCode(v)
-			return true
-		}
-	case 14:
-		if v, ok := value.(types.Code); ok {
-			t.Purch_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Purch_account = types.NewCode(v)
-			return true
-		}
-	case 15:
-		if v, ok := value.(types.Code); ok {
-			t.Purch_line_disc_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Purch_line_disc_account = types.NewCode(v)
-			return true
-		}
-	case 16:
-		if v, ok := value.(types.Code); ok {
-			t.Purch_inv_disc_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Purch_inv_disc_account = types.NewCode(v)
-			return true
-		}
-	case 17:
-		if v, ok := value.(types.Code); ok {
-			t.Purch_payment_disc_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Purch_payment_disc_account = types.NewCode(v)
-			return true
-		}
-	case 18:
-		if v, ok := value.(types.Code); ok {
-			t.Cogs_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Cogs_account = types.NewCode(v)
-			return true
-		}
-	case 19:
-		if v, ok := value.(types.Code); ok {
-			t.Inventory_adjmt_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Inventory_adjmt_account = types.NewCode(v)
-			return true
-		}
-	case 24:
-		if v, ok := value.(types.Code); ok {
-			t.Project_sales_adjmt_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Project_sales_adjmt_account = types.NewCode(v)
-			return true
-		}
-	case 25:
-		if v, ok := value.(types.Code); ok {
-			t.Project_cost_adjmt_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Project_cost_adjmt_account = types.NewCode(v)
-			return true
-		}
-	case 27:
-		if v, ok := value.(types.Code); ok {
-			t.Sales_credit_memo_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Sales_credit_memo_account = types.NewCode(v)
-			return true
-		}
-	case 28:
-		if v, ok := value.(types.Code); ok {
-			t.Purch_credit_memo_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Purch_credit_memo_account = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return generalPostingSetupFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3655,41 +2807,7 @@ func (t *GeneralPostingSetup) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *GeneralPostingSetup) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "gen_bus_posting_group":
-		return t.Gen_bus_posting_group, true
-	case "gen_prod_posting_group":
-		return t.Gen_prod_posting_group, true
-	case "sales_account":
-		return t.Sales_account, true
-	case "sales_line_disc_account":
-		return t.Sales_line_disc_account, true
-	case "sales_inv_disc_account":
-		return t.Sales_inv_disc_account, true
-	case "sales_payment_disc_account":
-		return t.Sales_payment_disc_account, true
-	case "purch_account":
-		return t.Purch_account, true
-	case "purch_line_disc_account":
-		return t.Purch_line_disc_account, true
-	case "purch_inv_disc_account":
-		return t.Purch_inv_disc_account, true
-	case "purch_payment_disc_account":
-		return t.Purch_payment_disc_account, true
-	case "cogs_account":
-		return t.Cogs_account, true
-	case "inventory_adjmt_account":
-		return t.Inventory_adjmt_account, true
-	case "project_sales_adjmt_account":
-		return t.Project_sales_adjmt_account, true
-	case "project_cost_adjmt_account":
-		return t.Project_cost_adjmt_account, true
-	case "sales_credit_memo_account":
-		return t.Sales_credit_memo_account, true
-	case "purch_credit_memo_account":
-		return t.Purch_credit_memo_account, true
-	}
-	return nil, false
+	return generalPostingSetupFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3793,108 +2911,12 @@ func (t *GeneralPostingSetup) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *GeneralPostingSetup) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"gen_bus_posting_group":       t.Gen_bus_posting_group.String(),
-		"gen_prod_posting_group":      t.Gen_prod_posting_group.String(),
-		"sales_account":               t.Sales_account.String(),
-		"sales_line_disc_account":     t.Sales_line_disc_account.String(),
-		"sales_inv_disc_account":      t.Sales_inv_disc_account.String(),
-		"sales_payment_disc_account":  t.Sales_payment_disc_account.String(),
-		"purch_account":               t.Purch_account.String(),
-		"purch_line_disc_account":     t.Purch_line_disc_account.String(),
-		"purch_inv_disc_account":      t.Purch_inv_disc_account.String(),
-		"purch_payment_disc_account":  t.Purch_payment_disc_account.String(),
-		"cogs_account":                t.Cogs_account.String(),
-		"inventory_adjmt_account":     t.Inventory_adjmt_account.String(),
-		"project_sales_adjmt_account": t.Project_sales_adjmt_account.String(),
-		"project_cost_adjmt_account":  t.Project_cost_adjmt_account.String(),
-		"sales_credit_memo_account":   t.Sales_credit_memo_account.String(),
-		"purch_credit_memo_account":   t.Purch_credit_memo_account.String(),
-	}
+	return generalPostingSetupFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *GeneralPostingSetup) FromMap(data map[string]interface{}) {
-	if v, ok := data["gen_bus_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Gen_bus_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["gen_prod_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Gen_prod_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["sales_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Sales_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["sales_line_disc_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Sales_line_disc_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["sales_inv_disc_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Sales_inv_disc_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["sales_payment_disc_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Sales_payment_disc_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["purch_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Purch_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["purch_line_disc_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Purch_line_disc_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["purch_inv_disc_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Purch_inv_disc_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["purch_payment_disc_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Purch_payment_disc_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["cogs_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Cogs_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["inventory_adjmt_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Inventory_adjmt_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["project_sales_adjmt_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Project_sales_adjmt_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["project_cost_adjmt_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Project_cost_adjmt_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["sales_credit_memo_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Sales_credit_memo_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["purch_credit_memo_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Purch_credit_memo_account = types.NewCode(s)
-		}
-	}
+	generalPostingSetupFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3915,168 +2937,294 @@ func (t *GeneralPostingSetup) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *GeneralPostingSetup) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "gen_bus_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "gen_prod_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "sales_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "sales_line_disc_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "sales_inv_disc_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         13,
-			Name:       "sales_payment_disc_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         14,
-			Name:       "purch_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         15,
-			Name:       "purch_line_disc_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         16,
-			Name:       "purch_inv_disc_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         17,
-			Name:       "purch_payment_disc_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         18,
-			Name:       "cogs_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         19,
-			Name:       "inventory_adjmt_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         24,
-			Name:       "project_sales_adjmt_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         25,
-			Name:       "project_cost_adjmt_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         27,
-			Name:       "sales_credit_memo_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         28,
-			Name:       "purch_credit_memo_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return generalPostingSetupFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in generalPostingSetupFields.Fields
+func (t *GeneralPostingSetup) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Gen_bus_posting_group
+	case 1:
+		return &t.Gen_prod_posting_group
+	case 2:
+		return &t.Sales_account
+	case 3:
+		return &t.Sales_line_disc_account
+	case 4:
+		return &t.Sales_inv_disc_account
+	case 5:
+		return &t.Sales_payment_disc_account
+	case 6:
+		return &t.Purch_account
+	case 7:
+		return &t.Purch_line_disc_account
+	case 8:
+		return &t.Purch_inv_disc_account
+	case 9:
+		return &t.Purch_payment_disc_account
+	case 10:
+		return &t.Cogs_account
+	case 11:
+		return &t.Inventory_adjmt_account
+	case 12:
+		return &t.Project_sales_adjmt_account
+	case 13:
+		return &t.Project_cost_adjmt_account
+	case 14:
+		return &t.Sales_credit_memo_account
+	case 15:
+		return &t.Purch_credit_memo_account
 	}
+	return nil
+}
+
+// generalPostingSetupFields describes the fields of General_Posting_Setup for the record functions
+// written once in foundation/tables
+var generalPostingSetupFields = &tables.TableFields{
+	Table: GeneralPostingSetupTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "gen_bus_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Gen_bus_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "gen_prod_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Gen_prod_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "sales_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Sales_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "sales_line_disc_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Sales_line_disc_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "sales_inv_disc_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Sales_inv_disc_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "sales_payment_disc_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Sales_payment_disc_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "purch_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Purch_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         15,
+				Name:       "purch_line_disc_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Purch_line_disc_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         16,
+				Name:       "purch_inv_disc_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Purch_inv_disc_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         17,
+				Name:       "purch_payment_disc_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Purch_payment_disc_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         18,
+				Name:       "cogs_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Cogs_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         19,
+				Name:       "inventory_adjmt_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Inventory_adjmt_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         24,
+				Name:       "project_sales_adjmt_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Project_sales_adjmt_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         25,
+				Name:       "project_cost_adjmt_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Project_cost_adjmt_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         27,
+				Name:       "sales_credit_memo_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Sales_credit_memo_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         28,
+				Name:       "purch_credit_memo_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Purch_credit_memo_account",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

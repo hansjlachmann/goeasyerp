@@ -220,68 +220,12 @@ var FinanceChargeTerms_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *FinanceChargeTerms) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "code":
-		return 1
-	case "interest_rate":
-		return 2
-	case "minimum_amount_lcy":
-		return 3
-	case "additional_fee_lcy":
-		return 5
-	case "description":
-		return 7
-	case "interest_calculation_method":
-		return 8
-	case "interest_period_days":
-		return 9
-	case "grace_period":
-		return 10
-	case "due_date_calculation":
-		return 11
-	case "interest_calculation":
-		return 12
-	case "post_interest":
-		return 13
-	case "post_additional_fee":
-		return 14
-	case "line_description":
-		return 15
-	}
-	return 0
+	return financeChargeTermsFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *FinanceChargeTerms) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "code"
-	case 2:
-		return "interest_rate"
-	case 3:
-		return "minimum_amount_lcy"
-	case 5:
-		return "additional_fee_lcy"
-	case 7:
-		return "description"
-	case 8:
-		return "interest_calculation_method"
-	case 9:
-		return "interest_period_days"
-	case 10:
-		return "grace_period"
-	case 11:
-		return "due_date_calculation"
-	case 12:
-		return "interest_calculation"
-	case 13:
-		return "post_interest"
-	case 14:
-		return "post_additional_fee"
-	case 15:
-		return "line_description"
-	}
-	return ""
+	return financeChargeTermsFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -393,45 +337,6 @@ type (
 	FinanceChargeTermsOnBeforeRename interface {
 		OnBeforeRename(rec *FinanceChargeTerms, handled *bool) error
 	}
-	FinanceChargeTermsOnValidate_Code interface {
-		OnValidate_Code(rec *FinanceChargeTerms) error
-	}
-	FinanceChargeTermsOnValidate_Interest_rate interface {
-		OnValidate_Interest_rate(rec *FinanceChargeTerms) error
-	}
-	FinanceChargeTermsOnValidate_Minimum_amount_lcy interface {
-		OnValidate_Minimum_amount_lcy(rec *FinanceChargeTerms) error
-	}
-	FinanceChargeTermsOnValidate_Additional_fee_lcy interface {
-		OnValidate_Additional_fee_lcy(rec *FinanceChargeTerms) error
-	}
-	FinanceChargeTermsOnValidate_Description interface {
-		OnValidate_Description(rec *FinanceChargeTerms) error
-	}
-	FinanceChargeTermsOnValidate_Interest_calculation_method interface {
-		OnValidate_Interest_calculation_method(rec *FinanceChargeTerms) error
-	}
-	FinanceChargeTermsOnValidate_Interest_period_days interface {
-		OnValidate_Interest_period_days(rec *FinanceChargeTerms) error
-	}
-	FinanceChargeTermsOnValidate_Grace_period interface {
-		OnValidate_Grace_period(rec *FinanceChargeTerms) error
-	}
-	FinanceChargeTermsOnValidate_Due_date_calculation interface {
-		OnValidate_Due_date_calculation(rec *FinanceChargeTerms) error
-	}
-	FinanceChargeTermsOnValidate_Interest_calculation interface {
-		OnValidate_Interest_calculation(rec *FinanceChargeTerms) error
-	}
-	FinanceChargeTermsOnValidate_Post_interest interface {
-		OnValidate_Post_interest(rec *FinanceChargeTerms) error
-	}
-	FinanceChargeTermsOnValidate_Post_additional_fee interface {
-		OnValidate_Post_additional_fee(rec *FinanceChargeTerms) error
-	}
-	FinanceChargeTermsOnValidate_Line_description interface {
-		OnValidate_Line_description(rec *FinanceChargeTerms) error
-	}
 )
 
 // financeChargeTermsLogic is the registered business logic of Finance_Charge_Terms, in
@@ -474,34 +379,9 @@ func financeChargeTermsTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(FinanceChargeTermsOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(FinanceChargeTermsOnBeforeRename)
-	case "OnValidate_Code":
-		_, ok = logic.(FinanceChargeTermsOnValidate_Code)
-	case "OnValidate_Interest_rate":
-		_, ok = logic.(FinanceChargeTermsOnValidate_Interest_rate)
-	case "OnValidate_Minimum_amount_lcy":
-		_, ok = logic.(FinanceChargeTermsOnValidate_Minimum_amount_lcy)
-	case "OnValidate_Additional_fee_lcy":
-		_, ok = logic.(FinanceChargeTermsOnValidate_Additional_fee_lcy)
-	case "OnValidate_Description":
-		_, ok = logic.(FinanceChargeTermsOnValidate_Description)
-	case "OnValidate_Interest_calculation_method":
-		_, ok = logic.(FinanceChargeTermsOnValidate_Interest_calculation_method)
-	case "OnValidate_Interest_period_days":
-		_, ok = logic.(FinanceChargeTermsOnValidate_Interest_period_days)
-	case "OnValidate_Grace_period":
-		_, ok = logic.(FinanceChargeTermsOnValidate_Grace_period)
-	case "OnValidate_Due_date_calculation":
-		_, ok = logic.(FinanceChargeTermsOnValidate_Due_date_calculation)
-	case "OnValidate_Interest_calculation":
-		_, ok = logic.(FinanceChargeTermsOnValidate_Interest_calculation)
-	case "OnValidate_Post_interest":
-		_, ok = logic.(FinanceChargeTermsOnValidate_Post_interest)
-	case "OnValidate_Post_additional_fee":
-		_, ok = logic.(FinanceChargeTermsOnValidate_Post_additional_fee)
-	case "OnValidate_Line_description":
-		_, ok = logic.(FinanceChargeTermsOnValidate_Line_description)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return financeChargeTermsFields.IsOnValidateTrigger(name, logic, (*FinanceChargeTerms)(nil))
 	}
 	return true, ok
 }
@@ -843,20 +723,7 @@ func (t *FinanceChargeTerms) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *FinanceChargeTerms) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["code"] = t.Code
-	t.oldValues["interest_rate"] = t.Interest_rate
-	t.oldValues["minimum_amount_lcy"] = t.Minimum_amount_lcy
-	t.oldValues["additional_fee_lcy"] = t.Additional_fee_lcy
-	t.oldValues["description"] = t.Description
-	t.oldValues["interest_calculation_method"] = t.Interest_calculation_method
-	t.oldValues["interest_period_days"] = t.Interest_period_days
-	t.oldValues["grace_period"] = t.Grace_period
-	t.oldValues["due_date_calculation"] = t.Due_date_calculation
-	t.oldValues["interest_calculation"] = t.Interest_calculation
-	t.oldValues["post_interest"] = t.Post_interest
-	t.oldValues["post_additional_fee"] = t.Post_additional_fee
-	t.oldValues["line_description"] = t.Line_description
+	t.oldValues = financeChargeTermsFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -871,45 +738,7 @@ func (t *FinanceChargeTerms) OldValue(fieldName string) interface{} {
 func (t *FinanceChargeTerms) XRec() *FinanceChargeTerms {
 	x := &FinanceChargeTerms{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["code"].(types.Code); ok {
-		x.Code = v
-	}
-	if v, ok := t.oldValues["interest_rate"].(types.Decimal); ok {
-		x.Interest_rate = v
-	}
-	if v, ok := t.oldValues["minimum_amount_lcy"].(types.Decimal); ok {
-		x.Minimum_amount_lcy = v
-	}
-	if v, ok := t.oldValues["additional_fee_lcy"].(types.Decimal); ok {
-		x.Additional_fee_lcy = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["interest_calculation_method"].(FinanceChargeTermsInterest_calculation_method); ok {
-		x.Interest_calculation_method = v
-	}
-	if v, ok := t.oldValues["interest_period_days"].(int); ok {
-		x.Interest_period_days = v
-	}
-	if v, ok := t.oldValues["grace_period"].(types.Code); ok {
-		x.Grace_period = v
-	}
-	if v, ok := t.oldValues["due_date_calculation"].(types.Code); ok {
-		x.Due_date_calculation = v
-	}
-	if v, ok := t.oldValues["interest_calculation"].(FinanceChargeTermsInterest_calculation); ok {
-		x.Interest_calculation = v
-	}
-	if v, ok := t.oldValues["post_interest"].(bool); ok {
-		x.Post_interest = v
-	}
-	if v, ok := t.oldValues["post_additional_fee"].(bool); ok {
-		x.Post_additional_fee = v
-	}
-	if v, ok := t.oldValues["line_description"].(types.Text); ok {
-		x.Line_description = v
-	}
+	financeChargeTermsFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1307,76 +1136,7 @@ func (t *FinanceChargeTerms) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *FinanceChargeTerms) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Code.Equal(old)
-		}
-	case "interest_rate":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Interest_rate.Equal(old)
-		}
-	case "minimum_amount_lcy":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Minimum_amount_lcy.Equal(old)
-		}
-	case "additional_fee_lcy":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Additional_fee_lcy.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "interest_calculation_method":
-		if old, ok := oldValue.(FinanceChargeTermsInterest_calculation_method); ok {
-			return t.Interest_calculation_method != old
-		}
-	case "interest_period_days":
-		if old, ok := oldValue.(int); ok {
-			return t.Interest_period_days != old
-		}
-		return true // Type mismatch, assume changed
-	case "grace_period":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Grace_period.Equal(old)
-		}
-	case "due_date_calculation":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Due_date_calculation.Equal(old)
-		}
-	case "interest_calculation":
-		if old, ok := oldValue.(FinanceChargeTermsInterest_calculation); ok {
-			return t.Interest_calculation != old
-		}
-	case "post_interest":
-		if old, ok := oldValue.(bool); ok {
-			return t.Post_interest != old
-		}
-		return true // Type mismatch, assume changed
-	case "post_additional_fee":
-		if old, ok := oldValue.(bool); ok {
-			return t.Post_additional_fee != old
-		}
-		return true // Type mismatch, assume changed
-	case "line_description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Line_description.Equal(old)
-		}
-	}
-
-	return false
+	return financeChargeTermsFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1641,35 +1401,7 @@ func (t *FinanceChargeTerms) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *FinanceChargeTerms) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("code"):
-		return "code", true
-	case strings.ToLower("interest_rate"):
-		return "interest_rate", true
-	case strings.ToLower("minimum_amount_lcy"):
-		return "minimum_amount_lcy", true
-	case strings.ToLower("additional_fee_lcy"):
-		return "additional_fee_lcy", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("interest_calculation_method"):
-		return "interest_calculation_method", true
-	case strings.ToLower("interest_period_days"):
-		return "interest_period_days", true
-	case strings.ToLower("grace_period"):
-		return "grace_period", true
-	case strings.ToLower("due_date_calculation"):
-		return "due_date_calculation", true
-	case strings.ToLower("interest_calculation"):
-		return "interest_calculation", true
-	case strings.ToLower("post_interest"):
-		return "post_interest", true
-	case strings.ToLower("post_additional_fee"):
-		return "post_additional_fee", true
-	case strings.ToLower("line_description"):
-		return "line_description", true
-	}
-	return "", false
+	return financeChargeTermsFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2623,355 +2355,20 @@ func (t *FinanceChargeTerms) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *FinanceChargeTerms) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-		} else if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FinanceChargeTermsOnValidate_Code); ok {
-				if err := trg.OnValidate_Code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "interest_rate":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Interest_rate = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Interest_rate, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field interest_rate: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Interest_rate = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Interest_rate = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Interest_rate = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field interest_rate (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FinanceChargeTermsOnValidate_Interest_rate); ok {
-				if err := trg.OnValidate_Interest_rate(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "minimum_amount_lcy":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Minimum_amount_lcy = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Minimum_amount_lcy, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field minimum_amount_lcy: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Minimum_amount_lcy = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Minimum_amount_lcy = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Minimum_amount_lcy = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field minimum_amount_lcy (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FinanceChargeTermsOnValidate_Minimum_amount_lcy); ok {
-				if err := trg.OnValidate_Minimum_amount_lcy(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "additional_fee_lcy":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Additional_fee_lcy = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Additional_fee_lcy, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field additional_fee_lcy: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Additional_fee_lcy = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Additional_fee_lcy = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Additional_fee_lcy = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field additional_fee_lcy (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FinanceChargeTermsOnValidate_Additional_fee_lcy); ok {
-				if err := trg.OnValidate_Additional_fee_lcy(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FinanceChargeTermsOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "interest_calculation_method":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(FinanceChargeTermsInterest_calculation_method); ok {
-			t.Interest_calculation_method = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 2 {
-				return fmt.Errorf("invalid option value %d for field interest_calculation_method (valid range: 0-%d)", v, 2-1)
-			}
-			t.Interest_calculation_method = FinanceChargeTermsInterest_calculation_method(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 2 {
-				return fmt.Errorf("invalid option value %d for field interest_calculation_method (valid range: 0-%d)", intVal, 2-1)
-			}
-			t.Interest_calculation_method = FinanceChargeTermsInterest_calculation_method(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Interest_calculation_method = 0
-			} else {
-				options := []string{"Average Daily Balance", "Balance Due"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Interest_calculation_method = FinanceChargeTermsInterest_calculation_method(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field interest_calculation_method (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field interest_calculation_method (expected FinanceChargeTermsInterest_calculation_method, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FinanceChargeTermsOnValidate_Interest_calculation_method); ok {
-				if err := trg.OnValidate_Interest_calculation_method(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "interest_period_days":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Interest_period_days = v
-		case float64:
-			t.Interest_period_days = int(v)
-		case string:
-			if v == "" {
-				t.Interest_period_days = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Interest_period_days = i
-			} else {
-				return fmt.Errorf("invalid integer value for field interest_period_days: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field interest_period_days")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FinanceChargeTermsOnValidate_Interest_period_days); ok {
-				if err := trg.OnValidate_Interest_period_days(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "grace_period":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Grace_period = v
-		} else if v, ok := value.(string); ok {
-			t.Grace_period = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field grace_period")
-		}
-		if err := tables.CheckDateFormula(FinanceChargeTermsTableName, "grace_period", string(t.Grace_period)); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FinanceChargeTermsOnValidate_Grace_period); ok {
-				if err := trg.OnValidate_Grace_period(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "due_date_calculation":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Due_date_calculation = v
-		} else if v, ok := value.(string); ok {
-			t.Due_date_calculation = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field due_date_calculation")
-		}
-		if err := tables.CheckDateFormula(FinanceChargeTermsTableName, "due_date_calculation", string(t.Due_date_calculation)); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FinanceChargeTermsOnValidate_Due_date_calculation); ok {
-				if err := trg.OnValidate_Due_date_calculation(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "interest_calculation":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(FinanceChargeTermsInterest_calculation); ok {
-			t.Interest_calculation = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field interest_calculation (valid range: 0-%d)", v, 3-1)
-			}
-			t.Interest_calculation = FinanceChargeTermsInterest_calculation(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field interest_calculation (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Interest_calculation = FinanceChargeTermsInterest_calculation(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Interest_calculation = 0
-			} else {
-				options := []string{"Open Entries", "Closed Entries", "All Entries"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Interest_calculation = FinanceChargeTermsInterest_calculation(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field interest_calculation (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field interest_calculation (expected FinanceChargeTermsInterest_calculation, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FinanceChargeTermsOnValidate_Interest_calculation); ok {
-				if err := trg.OnValidate_Interest_calculation(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "post_interest":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Post_interest = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Post_interest = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field post_interest")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FinanceChargeTermsOnValidate_Post_interest); ok {
-				if err := trg.OnValidate_Post_interest(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "post_additional_fee":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Post_additional_fee = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Post_additional_fee = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field post_additional_fee")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FinanceChargeTermsOnValidate_Post_additional_fee); ok {
-				if err := trg.OnValidate_Post_additional_fee(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "line_description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Line_description = v
-		} else if v, ok := value.(string); ok {
-			t.Line_description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field line_description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FinanceChargeTermsOnValidate_Line_description); ok {
-				if err := trg.OnValidate_Line_description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := financeChargeTermsFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &financeChargeTermsFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2980,135 +2377,18 @@ func (t *FinanceChargeTerms) ValidateField(fieldName string, value interface{}) 
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *FinanceChargeTerms) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Code, true
-	case 2:
-		return t.Interest_rate, true
-	case 3:
-		return t.Minimum_amount_lcy, true
-	case 5:
-		return t.Additional_fee_lcy, true
-	case 7:
-		return t.Description, true
-	case 8:
-		return t.Interest_calculation_method, true
-	case 9:
-		return t.Interest_period_days, true
-	case 10:
-		return t.Grace_period, true
-	case 11:
-		return t.Due_date_calculation, true
-	case 12:
-		return t.Interest_calculation, true
-	case 13:
-		return t.Post_interest, true
-	case 14:
-		return t.Post_additional_fee, true
-	case 15:
-		return t.Line_description, true
-	}
-	return nil, false
+	return financeChargeTermsFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *FinanceChargeTerms) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return financeChargeTermsFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *FinanceChargeTerms) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Decimal); ok {
-			t.Interest_rate = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Decimal); ok {
-			t.Minimum_amount_lcy = v
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Decimal); ok {
-			t.Additional_fee_lcy = v
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 8:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 2 {
-			t.Interest_calculation_method = FinanceChargeTermsInterest_calculation_method(i)
-			return true
-		}
-	case 9:
-		if v, ok := value.(int); ok {
-			t.Interest_period_days = v
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Code); ok {
-			t.Grace_period = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Grace_period = types.NewCode(v)
-			return true
-		}
-	case 11:
-		if v, ok := value.(types.Code); ok {
-			t.Due_date_calculation = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Due_date_calculation = types.NewCode(v)
-			return true
-		}
-	case 12:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Interest_calculation = FinanceChargeTermsInterest_calculation(i)
-			return true
-		}
-	case 13:
-		if v, ok := value.(bool); ok {
-			t.Post_interest = v
-			return true
-		}
-	case 14:
-		if v, ok := value.(bool); ok {
-			t.Post_additional_fee = v
-			return true
-		}
-	case 15:
-		if v, ok := value.(types.Text); ok {
-			t.Line_description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Line_description = types.NewText(v)
-			return true
-		}
-	}
-	return false
+	return financeChargeTermsFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3602,35 +2882,7 @@ func (t *FinanceChargeTerms) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *FinanceChargeTerms) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "code":
-		return t.Code, true
-	case "interest_rate":
-		return t.Interest_rate, true
-	case "minimum_amount_lcy":
-		return t.Minimum_amount_lcy, true
-	case "additional_fee_lcy":
-		return t.Additional_fee_lcy, true
-	case "description":
-		return t.Description, true
-	case "interest_calculation_method":
-		return int(t.Interest_calculation_method), true
-	case "interest_period_days":
-		return t.Interest_period_days, true
-	case "grace_period":
-		return t.Grace_period, true
-	case "due_date_calculation":
-		return t.Due_date_calculation, true
-	case "interest_calculation":
-		return int(t.Interest_calculation), true
-	case "post_interest":
-		return t.Post_interest, true
-	case "post_additional_fee":
-		return t.Post_additional_fee, true
-	case "line_description":
-		return t.Line_description, true
-	}
-	return nil, false
+	return financeChargeTermsFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3728,143 +2980,12 @@ func (t *FinanceChargeTerms) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *FinanceChargeTerms) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"code":                        t.Code.String(),
-		"interest_rate":               t.Interest_rate.String(),
-		"minimum_amount_lcy":          t.Minimum_amount_lcy.String(),
-		"additional_fee_lcy":          t.Additional_fee_lcy.String(),
-		"description":                 t.Description.String(),
-		"interest_calculation_method": int(t.Interest_calculation_method),
-		"interest_period_days":        t.Interest_period_days,
-		"grace_period":                t.Grace_period.String(),
-		"due_date_calculation":        t.Due_date_calculation.String(),
-		"interest_calculation":        int(t.Interest_calculation),
-		"post_interest":               t.Post_interest,
-		"post_additional_fee":         t.Post_additional_fee,
-		"line_description":            t.Line_description.String(),
-	}
+	return financeChargeTermsFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *FinanceChargeTerms) FromMap(data map[string]interface{}) {
-	if v, ok := data["code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["interest_rate"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Interest_rate, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Interest_rate = types.NewDecimal(val)
-		case int:
-			t.Interest_rate = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Interest_rate = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["minimum_amount_lcy"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Minimum_amount_lcy, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Minimum_amount_lcy = types.NewDecimal(val)
-		case int:
-			t.Minimum_amount_lcy = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Minimum_amount_lcy = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["additional_fee_lcy"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Additional_fee_lcy, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Additional_fee_lcy = types.NewDecimal(val)
-		case int:
-			t.Additional_fee_lcy = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Additional_fee_lcy = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["interest_calculation_method"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Interest_calculation_method = FinanceChargeTermsInterest_calculation_method(int(val))
-		case int:
-			t.Interest_calculation_method = FinanceChargeTermsInterest_calculation_method(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Average Daily Balance", "Balance Due"}
-			for i, opt := range options {
-				if opt == val {
-					t.Interest_calculation_method = FinanceChargeTermsInterest_calculation_method(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["interest_period_days"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Interest_period_days = int(val)
-		case int:
-			t.Interest_period_days = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Interest_period_days = n
-			}
-		}
-	}
-	if v, ok := data["grace_period"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Grace_period = types.NewCode(s)
-		}
-	}
-	if v, ok := data["due_date_calculation"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Due_date_calculation = types.NewCode(s)
-		}
-	}
-	if v, ok := data["interest_calculation"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Interest_calculation = FinanceChargeTermsInterest_calculation(int(val))
-		case int:
-			t.Interest_calculation = FinanceChargeTermsInterest_calculation(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Open Entries", "Closed Entries", "All Entries"}
-			for i, opt := range options {
-				if opt == val {
-					t.Interest_calculation = FinanceChargeTermsInterest_calculation(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["post_interest"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Post_interest = b
-		}
-	}
-	if v, ok := data["post_additional_fee"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Post_additional_fee = b
-		}
-	}
-	if v, ok := data["line_description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Line_description = types.NewText(s)
-		}
-	}
+	financeChargeTermsFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3885,141 +3006,237 @@ func (t *FinanceChargeTerms) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *FinanceChargeTerms) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:            2,
-			Name:          "interest_rate",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            3,
-			Name:          "minimum_amount_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            5,
-			Name:          "additional_fee_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         7,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "interest_calculation_method",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "interest_period_days",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "grace_period",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "due_date_calculation",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "interest_calculation",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         13,
-			Name:       "post_interest",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         14,
-			Name:       "post_additional_fee",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         15,
-			Name:       "line_description",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return financeChargeTermsFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in financeChargeTermsFields.Fields
+func (t *FinanceChargeTerms) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Code
+	case 1:
+		return &t.Interest_rate
+	case 2:
+		return &t.Minimum_amount_lcy
+	case 3:
+		return &t.Additional_fee_lcy
+	case 4:
+		return &t.Description
+	case 5:
+		return &t.Interest_calculation_method
+	case 6:
+		return &t.Interest_period_days
+	case 7:
+		return &t.Grace_period
+	case 8:
+		return &t.Due_date_calculation
+	case 9:
+		return &t.Interest_calculation
+	case 10:
+		return &t.Post_interest
+	case 11:
+		return &t.Post_additional_fee
+	case 12:
+		return &t.Line_description
 	}
+	return nil
+}
+
+// financeChargeTermsFields describes the fields of Finance_Charge_Terms for the record functions
+// written once in foundation/tables
+var financeChargeTermsFields = &tables.TableFields{
+	Table: FinanceChargeTermsTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            2,
+				Name:          "interest_rate",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Interest_rate",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            3,
+				Name:          "minimum_amount_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Minimum_amount_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            5,
+				Name:          "additional_fee_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Additional_fee_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "interest_calculation_method",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Interest_calculation_method",
+			Options: []string{"Average Daily Balance", "Balance Due"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "interest_period_days",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Interest_period_days",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "grace_period",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:        tables.KindCode,
+			Trigger:     "OnValidate_Grace_period",
+			DateFormula: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "due_date_calculation",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:        tables.KindCode,
+			Trigger:     "OnValidate_Due_date_calculation",
+			DateFormula: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "interest_calculation",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Interest_calculation",
+			Options: []string{"Open Entries", "Closed Entries", "All Entries"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "post_interest",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Post_interest",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "post_additional_fee",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Post_additional_fee",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         15,
+				Name:       "line_description",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Line_description",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

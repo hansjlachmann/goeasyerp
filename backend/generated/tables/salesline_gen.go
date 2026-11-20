@@ -115,7 +115,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -611,392 +610,12 @@ var SalesLine_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *SalesLine) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "document_type":
-		return 1
-	case "sell_to_customer_no":
-		return 2
-	case "document_no":
-		return 3
-	case "line_no":
-		return 4
-	case "type":
-		return 5
-	case "no":
-		return 6
-	case "location_code":
-		return 7
-	case "posting_group":
-		return 8
-	case "quantity_disc_code":
-		return 9
-	case "shipment_date":
-		return 10
-	case "description":
-		return 11
-	case "description_2":
-		return 12
-	case "unit_of_measure":
-		return 13
-	case "quantity":
-		return 15
-	case "outstanding_quantity":
-		return 16
-	case "qty_to_invoice":
-		return 17
-	case "qty_to_ship":
-		return 18
-	case "unit_price":
-		return 22
-	case "unit_cost_lcy":
-		return 23
-	case "tax_percent":
-		return 25
-	case "quantity_disc_percent":
-		return 26
-	case "line_discount_percent":
-		return 27
-	case "line_discount_amount":
-		return 28
-	case "amount":
-		return 29
-	case "amount_including_tax":
-		return 30
-	case "allow_invoice_disc":
-		return 32
-	case "gross_weight":
-		return 34
-	case "net_weight":
-		return 35
-	case "units_per_parcel":
-		return 36
-	case "unit_volume":
-		return 37
-	case "dimension_1_code":
-		return 40
-	case "dimension_2_code":
-		return 41
-	case "price_group_code":
-		return 42
-	case "allow_quantity_disc":
-		return 43
-	case "work_type_code":
-		return 52
-	case "cust_item_disc_percent":
-		return 55
-	case "outstanding_amount":
-		return 57
-	case "qty_shipped_not_invoiced":
-		return 58
-	case "shipped_not_invoiced":
-		return 59
-	case "quantity_shipped":
-		return 60
-	case "quantity_invoiced":
-		return 61
-	case "shipment_no":
-		return 63
-	case "shipment_line_no":
-		return 64
-	case "profit_percent":
-		return 67
-	case "bill_to_customer_no":
-		return 68
-	case "inv_discount_amount":
-		return 69
-	case "gen_bus_posting_group":
-		return 74
-	case "gen_prod_posting_group":
-		return 75
-	case "tax_calculation_type":
-		return 77
-	case "transaction_type":
-		return 78
-	case "transport_method":
-		return 79
-	case "exit_point":
-		return 81
-	case "area":
-		return 82
-	case "transaction_specification":
-		return 83
-	case "tax_area_code":
-		return 85
-	case "tax_liable":
-		return 86
-	case "tax_group_code":
-		return 87
-	case "tax_bus_posting_group":
-		return 89
-	case "tax_prod_posting_group":
-		return 90
-	case "currency_code":
-		return 91
-	case "outstanding_amount_lcy":
-		return 92
-	case "shipped_not_invoiced_lcy":
-		return 93
-	case "blanket_order_no":
-		return 97
-	case "blanket_order_line_no":
-		return 98
-	case "tax_base_amount":
-		return 99
-	case "unit_cost":
-		return 100
-	case "variant_code":
-		return 5402
-	case "qty_per_unit_of_measure":
-		return 5404
-	case "unit_of_measure_code":
-		return 5407
-	case "quantity_base":
-		return 5415
-	case "outstanding_qty_base":
-		return 5416
-	case "qty_to_invoice_base":
-		return 5417
-	case "qty_to_ship_base":
-		return 5418
-	case "qty_shpd_not_invd_base":
-		return 5458
-	case "qty_shipped_base":
-		return 5460
-	case "qty_invoiced_base":
-		return 5461
-	case "reserved_quantity":
-		return 95
-	case "reserve":
-		return 96
-	case "planned":
-		return 5405
-	case "reserved_qty_base":
-		return 5495
-	case "serial_no":
-		return 53
-	case "lot_no":
-		return 5400
-	case "bin_code":
-		return 5403
-	case "project_no":
-		return 45
-	case "appl_to_project_entry":
-		return 46
-	case "phase_code":
-		return 47
-	case "task_code":
-		return 48
-	case "step_code":
-		return 49
-	case "project_applies_to_id":
-		return 50
-	case "apply_and_close_project":
-		return 51
-	case "attached_to_line_no":
-		return 80
-	case "purchase_order_no":
-		return 71
-	case "purch_order_line_no":
-		return 72
-	case "drop_shipment":
-		return 73
-	}
-	return 0
+	return salesLineFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *SalesLine) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "document_type"
-	case 2:
-		return "sell_to_customer_no"
-	case 3:
-		return "document_no"
-	case 4:
-		return "line_no"
-	case 5:
-		return "type"
-	case 6:
-		return "no"
-	case 7:
-		return "location_code"
-	case 8:
-		return "posting_group"
-	case 9:
-		return "quantity_disc_code"
-	case 10:
-		return "shipment_date"
-	case 11:
-		return "description"
-	case 12:
-		return "description_2"
-	case 13:
-		return "unit_of_measure"
-	case 15:
-		return "quantity"
-	case 16:
-		return "outstanding_quantity"
-	case 17:
-		return "qty_to_invoice"
-	case 18:
-		return "qty_to_ship"
-	case 22:
-		return "unit_price"
-	case 23:
-		return "unit_cost_lcy"
-	case 25:
-		return "tax_percent"
-	case 26:
-		return "quantity_disc_percent"
-	case 27:
-		return "line_discount_percent"
-	case 28:
-		return "line_discount_amount"
-	case 29:
-		return "amount"
-	case 30:
-		return "amount_including_tax"
-	case 32:
-		return "allow_invoice_disc"
-	case 34:
-		return "gross_weight"
-	case 35:
-		return "net_weight"
-	case 36:
-		return "units_per_parcel"
-	case 37:
-		return "unit_volume"
-	case 40:
-		return "dimension_1_code"
-	case 41:
-		return "dimension_2_code"
-	case 42:
-		return "price_group_code"
-	case 43:
-		return "allow_quantity_disc"
-	case 52:
-		return "work_type_code"
-	case 55:
-		return "cust_item_disc_percent"
-	case 57:
-		return "outstanding_amount"
-	case 58:
-		return "qty_shipped_not_invoiced"
-	case 59:
-		return "shipped_not_invoiced"
-	case 60:
-		return "quantity_shipped"
-	case 61:
-		return "quantity_invoiced"
-	case 63:
-		return "shipment_no"
-	case 64:
-		return "shipment_line_no"
-	case 67:
-		return "profit_percent"
-	case 68:
-		return "bill_to_customer_no"
-	case 69:
-		return "inv_discount_amount"
-	case 74:
-		return "gen_bus_posting_group"
-	case 75:
-		return "gen_prod_posting_group"
-	case 77:
-		return "tax_calculation_type"
-	case 78:
-		return "transaction_type"
-	case 79:
-		return "transport_method"
-	case 81:
-		return "exit_point"
-	case 82:
-		return "area"
-	case 83:
-		return "transaction_specification"
-	case 85:
-		return "tax_area_code"
-	case 86:
-		return "tax_liable"
-	case 87:
-		return "tax_group_code"
-	case 89:
-		return "tax_bus_posting_group"
-	case 90:
-		return "tax_prod_posting_group"
-	case 91:
-		return "currency_code"
-	case 92:
-		return "outstanding_amount_lcy"
-	case 93:
-		return "shipped_not_invoiced_lcy"
-	case 97:
-		return "blanket_order_no"
-	case 98:
-		return "blanket_order_line_no"
-	case 99:
-		return "tax_base_amount"
-	case 100:
-		return "unit_cost"
-	case 5402:
-		return "variant_code"
-	case 5404:
-		return "qty_per_unit_of_measure"
-	case 5407:
-		return "unit_of_measure_code"
-	case 5415:
-		return "quantity_base"
-	case 5416:
-		return "outstanding_qty_base"
-	case 5417:
-		return "qty_to_invoice_base"
-	case 5418:
-		return "qty_to_ship_base"
-	case 5458:
-		return "qty_shpd_not_invd_base"
-	case 5460:
-		return "qty_shipped_base"
-	case 5461:
-		return "qty_invoiced_base"
-	case 95:
-		return "reserved_quantity"
-	case 96:
-		return "reserve"
-	case 5405:
-		return "planned"
-	case 5495:
-		return "reserved_qty_base"
-	case 53:
-		return "serial_no"
-	case 5400:
-		return "lot_no"
-	case 5403:
-		return "bin_code"
-	case 45:
-		return "project_no"
-	case 46:
-		return "appl_to_project_entry"
-	case 47:
-		return "phase_code"
-	case 48:
-		return "task_code"
-	case 49:
-		return "step_code"
-	case 50:
-		return "project_applies_to_id"
-	case 51:
-		return "apply_and_close_project"
-	case 80:
-		return "attached_to_line_no"
-	case 71:
-		return "purchase_order_no"
-	case 72:
-		return "purch_order_line_no"
-	case 73:
-		return "drop_shipment"
-	}
-	return ""
+	return salesLineFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -1100,100 +719,6 @@ type (
 	SalesLineOnBeforeRename interface {
 		OnBeforeRename(rec *SalesLine, handled *bool) error
 	}
-	SalesLineOnValidate_Document_type             interface{ OnValidate_Document_type(rec *SalesLine) error }
-	SalesLineOnValidate_Sell_to_customer_no       interface{ OnValidate_Sell_to_customer_no(rec *SalesLine) error }
-	SalesLineOnValidate_Document_no               interface{ OnValidate_Document_no(rec *SalesLine) error }
-	SalesLineOnValidate_Line_no                   interface{ OnValidate_Line_no(rec *SalesLine) error }
-	SalesLineOnValidate_Type                      interface{ OnValidate_Type(rec *SalesLine) error }
-	SalesLineOnValidate_No                        interface{ OnValidate_No(rec *SalesLine) error }
-	SalesLineOnValidate_Location_code             interface{ OnValidate_Location_code(rec *SalesLine) error }
-	SalesLineOnValidate_Posting_group             interface{ OnValidate_Posting_group(rec *SalesLine) error }
-	SalesLineOnValidate_Quantity_disc_code        interface{ OnValidate_Quantity_disc_code(rec *SalesLine) error }
-	SalesLineOnValidate_Shipment_date             interface{ OnValidate_Shipment_date(rec *SalesLine) error }
-	SalesLineOnValidate_Description               interface{ OnValidate_Description(rec *SalesLine) error }
-	SalesLineOnValidate_Description_2             interface{ OnValidate_Description_2(rec *SalesLine) error }
-	SalesLineOnValidate_Unit_of_measure           interface{ OnValidate_Unit_of_measure(rec *SalesLine) error }
-	SalesLineOnValidate_Quantity                  interface{ OnValidate_Quantity(rec *SalesLine) error }
-	SalesLineOnValidate_Outstanding_quantity      interface{ OnValidate_Outstanding_quantity(rec *SalesLine) error }
-	SalesLineOnValidate_Qty_to_invoice            interface{ OnValidate_Qty_to_invoice(rec *SalesLine) error }
-	SalesLineOnValidate_Qty_to_ship               interface{ OnValidate_Qty_to_ship(rec *SalesLine) error }
-	SalesLineOnValidate_Unit_price                interface{ OnValidate_Unit_price(rec *SalesLine) error }
-	SalesLineOnValidate_Unit_cost_lcy             interface{ OnValidate_Unit_cost_lcy(rec *SalesLine) error }
-	SalesLineOnValidate_Tax_percent               interface{ OnValidate_Tax_percent(rec *SalesLine) error }
-	SalesLineOnValidate_Quantity_disc_percent     interface{ OnValidate_Quantity_disc_percent(rec *SalesLine) error }
-	SalesLineOnValidate_Line_discount_percent     interface{ OnValidate_Line_discount_percent(rec *SalesLine) error }
-	SalesLineOnValidate_Line_discount_amount      interface{ OnValidate_Line_discount_amount(rec *SalesLine) error }
-	SalesLineOnValidate_Amount                    interface{ OnValidate_Amount(rec *SalesLine) error }
-	SalesLineOnValidate_Amount_including_tax      interface{ OnValidate_Amount_including_tax(rec *SalesLine) error }
-	SalesLineOnValidate_Allow_invoice_disc        interface{ OnValidate_Allow_invoice_disc(rec *SalesLine) error }
-	SalesLineOnValidate_Gross_weight              interface{ OnValidate_Gross_weight(rec *SalesLine) error }
-	SalesLineOnValidate_Net_weight                interface{ OnValidate_Net_weight(rec *SalesLine) error }
-	SalesLineOnValidate_Units_per_parcel          interface{ OnValidate_Units_per_parcel(rec *SalesLine) error }
-	SalesLineOnValidate_Unit_volume               interface{ OnValidate_Unit_volume(rec *SalesLine) error }
-	SalesLineOnValidate_Dimension_1_code          interface{ OnValidate_Dimension_1_code(rec *SalesLine) error }
-	SalesLineOnValidate_Dimension_2_code          interface{ OnValidate_Dimension_2_code(rec *SalesLine) error }
-	SalesLineOnValidate_Price_group_code          interface{ OnValidate_Price_group_code(rec *SalesLine) error }
-	SalesLineOnValidate_Allow_quantity_disc       interface{ OnValidate_Allow_quantity_disc(rec *SalesLine) error }
-	SalesLineOnValidate_Work_type_code            interface{ OnValidate_Work_type_code(rec *SalesLine) error }
-	SalesLineOnValidate_Cust_item_disc_percent    interface{ OnValidate_Cust_item_disc_percent(rec *SalesLine) error }
-	SalesLineOnValidate_Outstanding_amount        interface{ OnValidate_Outstanding_amount(rec *SalesLine) error }
-	SalesLineOnValidate_Qty_shipped_not_invoiced  interface{ OnValidate_Qty_shipped_not_invoiced(rec *SalesLine) error }
-	SalesLineOnValidate_Shipped_not_invoiced      interface{ OnValidate_Shipped_not_invoiced(rec *SalesLine) error }
-	SalesLineOnValidate_Quantity_shipped          interface{ OnValidate_Quantity_shipped(rec *SalesLine) error }
-	SalesLineOnValidate_Quantity_invoiced         interface{ OnValidate_Quantity_invoiced(rec *SalesLine) error }
-	SalesLineOnValidate_Shipment_no               interface{ OnValidate_Shipment_no(rec *SalesLine) error }
-	SalesLineOnValidate_Shipment_line_no          interface{ OnValidate_Shipment_line_no(rec *SalesLine) error }
-	SalesLineOnValidate_Profit_percent            interface{ OnValidate_Profit_percent(rec *SalesLine) error }
-	SalesLineOnValidate_Bill_to_customer_no       interface{ OnValidate_Bill_to_customer_no(rec *SalesLine) error }
-	SalesLineOnValidate_Inv_discount_amount       interface{ OnValidate_Inv_discount_amount(rec *SalesLine) error }
-	SalesLineOnValidate_Gen_bus_posting_group     interface{ OnValidate_Gen_bus_posting_group(rec *SalesLine) error }
-	SalesLineOnValidate_Gen_prod_posting_group    interface{ OnValidate_Gen_prod_posting_group(rec *SalesLine) error }
-	SalesLineOnValidate_Tax_calculation_type      interface{ OnValidate_Tax_calculation_type(rec *SalesLine) error }
-	SalesLineOnValidate_Transaction_type          interface{ OnValidate_Transaction_type(rec *SalesLine) error }
-	SalesLineOnValidate_Transport_method          interface{ OnValidate_Transport_method(rec *SalesLine) error }
-	SalesLineOnValidate_Exit_point                interface{ OnValidate_Exit_point(rec *SalesLine) error }
-	SalesLineOnValidate_Area                      interface{ OnValidate_Area(rec *SalesLine) error }
-	SalesLineOnValidate_Transaction_specification interface{ OnValidate_Transaction_specification(rec *SalesLine) error }
-	SalesLineOnValidate_Tax_area_code             interface{ OnValidate_Tax_area_code(rec *SalesLine) error }
-	SalesLineOnValidate_Tax_liable                interface{ OnValidate_Tax_liable(rec *SalesLine) error }
-	SalesLineOnValidate_Tax_group_code            interface{ OnValidate_Tax_group_code(rec *SalesLine) error }
-	SalesLineOnValidate_Tax_bus_posting_group     interface{ OnValidate_Tax_bus_posting_group(rec *SalesLine) error }
-	SalesLineOnValidate_Tax_prod_posting_group    interface{ OnValidate_Tax_prod_posting_group(rec *SalesLine) error }
-	SalesLineOnValidate_Currency_code             interface{ OnValidate_Currency_code(rec *SalesLine) error }
-	SalesLineOnValidate_Outstanding_amount_lcy    interface{ OnValidate_Outstanding_amount_lcy(rec *SalesLine) error }
-	SalesLineOnValidate_Shipped_not_invoiced_lcy  interface{ OnValidate_Shipped_not_invoiced_lcy(rec *SalesLine) error }
-	SalesLineOnValidate_Blanket_order_no          interface{ OnValidate_Blanket_order_no(rec *SalesLine) error }
-	SalesLineOnValidate_Blanket_order_line_no     interface{ OnValidate_Blanket_order_line_no(rec *SalesLine) error }
-	SalesLineOnValidate_Tax_base_amount           interface{ OnValidate_Tax_base_amount(rec *SalesLine) error }
-	SalesLineOnValidate_Unit_cost                 interface{ OnValidate_Unit_cost(rec *SalesLine) error }
-	SalesLineOnValidate_Variant_code              interface{ OnValidate_Variant_code(rec *SalesLine) error }
-	SalesLineOnValidate_Qty_per_unit_of_measure   interface{ OnValidate_Qty_per_unit_of_measure(rec *SalesLine) error }
-	SalesLineOnValidate_Unit_of_measure_code      interface{ OnValidate_Unit_of_measure_code(rec *SalesLine) error }
-	SalesLineOnValidate_Quantity_base             interface{ OnValidate_Quantity_base(rec *SalesLine) error }
-	SalesLineOnValidate_Outstanding_qty_base      interface{ OnValidate_Outstanding_qty_base(rec *SalesLine) error }
-	SalesLineOnValidate_Qty_to_invoice_base       interface{ OnValidate_Qty_to_invoice_base(rec *SalesLine) error }
-	SalesLineOnValidate_Qty_to_ship_base          interface{ OnValidate_Qty_to_ship_base(rec *SalesLine) error }
-	SalesLineOnValidate_Qty_shpd_not_invd_base    interface{ OnValidate_Qty_shpd_not_invd_base(rec *SalesLine) error }
-	SalesLineOnValidate_Qty_shipped_base          interface{ OnValidate_Qty_shipped_base(rec *SalesLine) error }
-	SalesLineOnValidate_Qty_invoiced_base         interface{ OnValidate_Qty_invoiced_base(rec *SalesLine) error }
-	SalesLineOnValidate_Reserved_quantity         interface{ OnValidate_Reserved_quantity(rec *SalesLine) error }
-	SalesLineOnValidate_Reserve                   interface{ OnValidate_Reserve(rec *SalesLine) error }
-	SalesLineOnValidate_Planned                   interface{ OnValidate_Planned(rec *SalesLine) error }
-	SalesLineOnValidate_Reserved_qty_base         interface{ OnValidate_Reserved_qty_base(rec *SalesLine) error }
-	SalesLineOnValidate_Serial_no                 interface{ OnValidate_Serial_no(rec *SalesLine) error }
-	SalesLineOnValidate_Lot_no                    interface{ OnValidate_Lot_no(rec *SalesLine) error }
-	SalesLineOnValidate_Bin_code                  interface{ OnValidate_Bin_code(rec *SalesLine) error }
-	SalesLineOnValidate_Project_no                interface{ OnValidate_Project_no(rec *SalesLine) error }
-	SalesLineOnValidate_Appl_to_project_entry     interface{ OnValidate_Appl_to_project_entry(rec *SalesLine) error }
-	SalesLineOnValidate_Phase_code                interface{ OnValidate_Phase_code(rec *SalesLine) error }
-	SalesLineOnValidate_Task_code                 interface{ OnValidate_Task_code(rec *SalesLine) error }
-	SalesLineOnValidate_Step_code                 interface{ OnValidate_Step_code(rec *SalesLine) error }
-	SalesLineOnValidate_Project_applies_to_id     interface{ OnValidate_Project_applies_to_id(rec *SalesLine) error }
-	SalesLineOnValidate_Apply_and_close_project   interface{ OnValidate_Apply_and_close_project(rec *SalesLine) error }
-	SalesLineOnValidate_Attached_to_line_no       interface{ OnValidate_Attached_to_line_no(rec *SalesLine) error }
-	SalesLineOnValidate_Purchase_order_no         interface{ OnValidate_Purchase_order_no(rec *SalesLine) error }
-	SalesLineOnValidate_Purch_order_line_no       interface{ OnValidate_Purch_order_line_no(rec *SalesLine) error }
-	SalesLineOnValidate_Drop_shipment             interface{ OnValidate_Drop_shipment(rec *SalesLine) error }
 )
 
 // salesLineLogic is the registered business logic of Sales_Line, in
@@ -1236,196 +761,9 @@ func salesLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(SalesLineOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(SalesLineOnBeforeRename)
-	case "OnValidate_Document_type":
-		_, ok = logic.(SalesLineOnValidate_Document_type)
-	case "OnValidate_Sell_to_customer_no":
-		_, ok = logic.(SalesLineOnValidate_Sell_to_customer_no)
-	case "OnValidate_Document_no":
-		_, ok = logic.(SalesLineOnValidate_Document_no)
-	case "OnValidate_Line_no":
-		_, ok = logic.(SalesLineOnValidate_Line_no)
-	case "OnValidate_Type":
-		_, ok = logic.(SalesLineOnValidate_Type)
-	case "OnValidate_No":
-		_, ok = logic.(SalesLineOnValidate_No)
-	case "OnValidate_Location_code":
-		_, ok = logic.(SalesLineOnValidate_Location_code)
-	case "OnValidate_Posting_group":
-		_, ok = logic.(SalesLineOnValidate_Posting_group)
-	case "OnValidate_Quantity_disc_code":
-		_, ok = logic.(SalesLineOnValidate_Quantity_disc_code)
-	case "OnValidate_Shipment_date":
-		_, ok = logic.(SalesLineOnValidate_Shipment_date)
-	case "OnValidate_Description":
-		_, ok = logic.(SalesLineOnValidate_Description)
-	case "OnValidate_Description_2":
-		_, ok = logic.(SalesLineOnValidate_Description_2)
-	case "OnValidate_Unit_of_measure":
-		_, ok = logic.(SalesLineOnValidate_Unit_of_measure)
-	case "OnValidate_Quantity":
-		_, ok = logic.(SalesLineOnValidate_Quantity)
-	case "OnValidate_Outstanding_quantity":
-		_, ok = logic.(SalesLineOnValidate_Outstanding_quantity)
-	case "OnValidate_Qty_to_invoice":
-		_, ok = logic.(SalesLineOnValidate_Qty_to_invoice)
-	case "OnValidate_Qty_to_ship":
-		_, ok = logic.(SalesLineOnValidate_Qty_to_ship)
-	case "OnValidate_Unit_price":
-		_, ok = logic.(SalesLineOnValidate_Unit_price)
-	case "OnValidate_Unit_cost_lcy":
-		_, ok = logic.(SalesLineOnValidate_Unit_cost_lcy)
-	case "OnValidate_Tax_percent":
-		_, ok = logic.(SalesLineOnValidate_Tax_percent)
-	case "OnValidate_Quantity_disc_percent":
-		_, ok = logic.(SalesLineOnValidate_Quantity_disc_percent)
-	case "OnValidate_Line_discount_percent":
-		_, ok = logic.(SalesLineOnValidate_Line_discount_percent)
-	case "OnValidate_Line_discount_amount":
-		_, ok = logic.(SalesLineOnValidate_Line_discount_amount)
-	case "OnValidate_Amount":
-		_, ok = logic.(SalesLineOnValidate_Amount)
-	case "OnValidate_Amount_including_tax":
-		_, ok = logic.(SalesLineOnValidate_Amount_including_tax)
-	case "OnValidate_Allow_invoice_disc":
-		_, ok = logic.(SalesLineOnValidate_Allow_invoice_disc)
-	case "OnValidate_Gross_weight":
-		_, ok = logic.(SalesLineOnValidate_Gross_weight)
-	case "OnValidate_Net_weight":
-		_, ok = logic.(SalesLineOnValidate_Net_weight)
-	case "OnValidate_Units_per_parcel":
-		_, ok = logic.(SalesLineOnValidate_Units_per_parcel)
-	case "OnValidate_Unit_volume":
-		_, ok = logic.(SalesLineOnValidate_Unit_volume)
-	case "OnValidate_Dimension_1_code":
-		_, ok = logic.(SalesLineOnValidate_Dimension_1_code)
-	case "OnValidate_Dimension_2_code":
-		_, ok = logic.(SalesLineOnValidate_Dimension_2_code)
-	case "OnValidate_Price_group_code":
-		_, ok = logic.(SalesLineOnValidate_Price_group_code)
-	case "OnValidate_Allow_quantity_disc":
-		_, ok = logic.(SalesLineOnValidate_Allow_quantity_disc)
-	case "OnValidate_Work_type_code":
-		_, ok = logic.(SalesLineOnValidate_Work_type_code)
-	case "OnValidate_Cust_item_disc_percent":
-		_, ok = logic.(SalesLineOnValidate_Cust_item_disc_percent)
-	case "OnValidate_Outstanding_amount":
-		_, ok = logic.(SalesLineOnValidate_Outstanding_amount)
-	case "OnValidate_Qty_shipped_not_invoiced":
-		_, ok = logic.(SalesLineOnValidate_Qty_shipped_not_invoiced)
-	case "OnValidate_Shipped_not_invoiced":
-		_, ok = logic.(SalesLineOnValidate_Shipped_not_invoiced)
-	case "OnValidate_Quantity_shipped":
-		_, ok = logic.(SalesLineOnValidate_Quantity_shipped)
-	case "OnValidate_Quantity_invoiced":
-		_, ok = logic.(SalesLineOnValidate_Quantity_invoiced)
-	case "OnValidate_Shipment_no":
-		_, ok = logic.(SalesLineOnValidate_Shipment_no)
-	case "OnValidate_Shipment_line_no":
-		_, ok = logic.(SalesLineOnValidate_Shipment_line_no)
-	case "OnValidate_Profit_percent":
-		_, ok = logic.(SalesLineOnValidate_Profit_percent)
-	case "OnValidate_Bill_to_customer_no":
-		_, ok = logic.(SalesLineOnValidate_Bill_to_customer_no)
-	case "OnValidate_Inv_discount_amount":
-		_, ok = logic.(SalesLineOnValidate_Inv_discount_amount)
-	case "OnValidate_Gen_bus_posting_group":
-		_, ok = logic.(SalesLineOnValidate_Gen_bus_posting_group)
-	case "OnValidate_Gen_prod_posting_group":
-		_, ok = logic.(SalesLineOnValidate_Gen_prod_posting_group)
-	case "OnValidate_Tax_calculation_type":
-		_, ok = logic.(SalesLineOnValidate_Tax_calculation_type)
-	case "OnValidate_Transaction_type":
-		_, ok = logic.(SalesLineOnValidate_Transaction_type)
-	case "OnValidate_Transport_method":
-		_, ok = logic.(SalesLineOnValidate_Transport_method)
-	case "OnValidate_Exit_point":
-		_, ok = logic.(SalesLineOnValidate_Exit_point)
-	case "OnValidate_Area":
-		_, ok = logic.(SalesLineOnValidate_Area)
-	case "OnValidate_Transaction_specification":
-		_, ok = logic.(SalesLineOnValidate_Transaction_specification)
-	case "OnValidate_Tax_area_code":
-		_, ok = logic.(SalesLineOnValidate_Tax_area_code)
-	case "OnValidate_Tax_liable":
-		_, ok = logic.(SalesLineOnValidate_Tax_liable)
-	case "OnValidate_Tax_group_code":
-		_, ok = logic.(SalesLineOnValidate_Tax_group_code)
-	case "OnValidate_Tax_bus_posting_group":
-		_, ok = logic.(SalesLineOnValidate_Tax_bus_posting_group)
-	case "OnValidate_Tax_prod_posting_group":
-		_, ok = logic.(SalesLineOnValidate_Tax_prod_posting_group)
-	case "OnValidate_Currency_code":
-		_, ok = logic.(SalesLineOnValidate_Currency_code)
-	case "OnValidate_Outstanding_amount_lcy":
-		_, ok = logic.(SalesLineOnValidate_Outstanding_amount_lcy)
-	case "OnValidate_Shipped_not_invoiced_lcy":
-		_, ok = logic.(SalesLineOnValidate_Shipped_not_invoiced_lcy)
-	case "OnValidate_Blanket_order_no":
-		_, ok = logic.(SalesLineOnValidate_Blanket_order_no)
-	case "OnValidate_Blanket_order_line_no":
-		_, ok = logic.(SalesLineOnValidate_Blanket_order_line_no)
-	case "OnValidate_Tax_base_amount":
-		_, ok = logic.(SalesLineOnValidate_Tax_base_amount)
-	case "OnValidate_Unit_cost":
-		_, ok = logic.(SalesLineOnValidate_Unit_cost)
-	case "OnValidate_Variant_code":
-		_, ok = logic.(SalesLineOnValidate_Variant_code)
-	case "OnValidate_Qty_per_unit_of_measure":
-		_, ok = logic.(SalesLineOnValidate_Qty_per_unit_of_measure)
-	case "OnValidate_Unit_of_measure_code":
-		_, ok = logic.(SalesLineOnValidate_Unit_of_measure_code)
-	case "OnValidate_Quantity_base":
-		_, ok = logic.(SalesLineOnValidate_Quantity_base)
-	case "OnValidate_Outstanding_qty_base":
-		_, ok = logic.(SalesLineOnValidate_Outstanding_qty_base)
-	case "OnValidate_Qty_to_invoice_base":
-		_, ok = logic.(SalesLineOnValidate_Qty_to_invoice_base)
-	case "OnValidate_Qty_to_ship_base":
-		_, ok = logic.(SalesLineOnValidate_Qty_to_ship_base)
-	case "OnValidate_Qty_shpd_not_invd_base":
-		_, ok = logic.(SalesLineOnValidate_Qty_shpd_not_invd_base)
-	case "OnValidate_Qty_shipped_base":
-		_, ok = logic.(SalesLineOnValidate_Qty_shipped_base)
-	case "OnValidate_Qty_invoiced_base":
-		_, ok = logic.(SalesLineOnValidate_Qty_invoiced_base)
-	case "OnValidate_Reserved_quantity":
-		_, ok = logic.(SalesLineOnValidate_Reserved_quantity)
-	case "OnValidate_Reserve":
-		_, ok = logic.(SalesLineOnValidate_Reserve)
-	case "OnValidate_Planned":
-		_, ok = logic.(SalesLineOnValidate_Planned)
-	case "OnValidate_Reserved_qty_base":
-		_, ok = logic.(SalesLineOnValidate_Reserved_qty_base)
-	case "OnValidate_Serial_no":
-		_, ok = logic.(SalesLineOnValidate_Serial_no)
-	case "OnValidate_Lot_no":
-		_, ok = logic.(SalesLineOnValidate_Lot_no)
-	case "OnValidate_Bin_code":
-		_, ok = logic.(SalesLineOnValidate_Bin_code)
-	case "OnValidate_Project_no":
-		_, ok = logic.(SalesLineOnValidate_Project_no)
-	case "OnValidate_Appl_to_project_entry":
-		_, ok = logic.(SalesLineOnValidate_Appl_to_project_entry)
-	case "OnValidate_Phase_code":
-		_, ok = logic.(SalesLineOnValidate_Phase_code)
-	case "OnValidate_Task_code":
-		_, ok = logic.(SalesLineOnValidate_Task_code)
-	case "OnValidate_Step_code":
-		_, ok = logic.(SalesLineOnValidate_Step_code)
-	case "OnValidate_Project_applies_to_id":
-		_, ok = logic.(SalesLineOnValidate_Project_applies_to_id)
-	case "OnValidate_Apply_and_close_project":
-		_, ok = logic.(SalesLineOnValidate_Apply_and_close_project)
-	case "OnValidate_Attached_to_line_no":
-		_, ok = logic.(SalesLineOnValidate_Attached_to_line_no)
-	case "OnValidate_Purchase_order_no":
-		_, ok = logic.(SalesLineOnValidate_Purchase_order_no)
-	case "OnValidate_Purch_order_line_no":
-		_, ok = logic.(SalesLineOnValidate_Purch_order_line_no)
-	case "OnValidate_Drop_shipment":
-		_, ok = logic.(SalesLineOnValidate_Drop_shipment)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return salesLineFields.IsOnValidateTrigger(name, logic, (*SalesLine)(nil))
 	}
 	return true, ok
 }
@@ -2037,101 +1375,7 @@ func (t *SalesLine) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *SalesLine) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["document_type"] = t.Document_type
-	t.oldValues["sell_to_customer_no"] = t.Sell_to_customer_no
-	t.oldValues["document_no"] = t.Document_no
-	t.oldValues["line_no"] = t.Line_no
-	t.oldValues["type"] = t.Type
-	t.oldValues["no"] = t.No
-	t.oldValues["location_code"] = t.Location_code
-	t.oldValues["posting_group"] = t.Posting_group
-	t.oldValues["quantity_disc_code"] = t.Quantity_disc_code
-	t.oldValues["shipment_date"] = t.Shipment_date
-	t.oldValues["description"] = t.Description
-	t.oldValues["description_2"] = t.Description_2
-	t.oldValues["unit_of_measure"] = t.Unit_of_measure
-	t.oldValues["quantity"] = t.Quantity
-	t.oldValues["outstanding_quantity"] = t.Outstanding_quantity
-	t.oldValues["qty_to_invoice"] = t.Qty_to_invoice
-	t.oldValues["qty_to_ship"] = t.Qty_to_ship
-	t.oldValues["unit_price"] = t.Unit_price
-	t.oldValues["unit_cost_lcy"] = t.Unit_cost_lcy
-	t.oldValues["tax_percent"] = t.Tax_percent
-	t.oldValues["quantity_disc_percent"] = t.Quantity_disc_percent
-	t.oldValues["line_discount_percent"] = t.Line_discount_percent
-	t.oldValues["line_discount_amount"] = t.Line_discount_amount
-	t.oldValues["amount"] = t.Amount
-	t.oldValues["amount_including_tax"] = t.Amount_including_tax
-	t.oldValues["allow_invoice_disc"] = t.Allow_invoice_disc
-	t.oldValues["gross_weight"] = t.Gross_weight
-	t.oldValues["net_weight"] = t.Net_weight
-	t.oldValues["units_per_parcel"] = t.Units_per_parcel
-	t.oldValues["unit_volume"] = t.Unit_volume
-	t.oldValues["dimension_1_code"] = t.Dimension_1_code
-	t.oldValues["dimension_2_code"] = t.Dimension_2_code
-	t.oldValues["price_group_code"] = t.Price_group_code
-	t.oldValues["allow_quantity_disc"] = t.Allow_quantity_disc
-	t.oldValues["work_type_code"] = t.Work_type_code
-	t.oldValues["cust_item_disc_percent"] = t.Cust_item_disc_percent
-	t.oldValues["outstanding_amount"] = t.Outstanding_amount
-	t.oldValues["qty_shipped_not_invoiced"] = t.Qty_shipped_not_invoiced
-	t.oldValues["shipped_not_invoiced"] = t.Shipped_not_invoiced
-	t.oldValues["quantity_shipped"] = t.Quantity_shipped
-	t.oldValues["quantity_invoiced"] = t.Quantity_invoiced
-	t.oldValues["shipment_no"] = t.Shipment_no
-	t.oldValues["shipment_line_no"] = t.Shipment_line_no
-	t.oldValues["profit_percent"] = t.Profit_percent
-	t.oldValues["bill_to_customer_no"] = t.Bill_to_customer_no
-	t.oldValues["inv_discount_amount"] = t.Inv_discount_amount
-	t.oldValues["gen_bus_posting_group"] = t.Gen_bus_posting_group
-	t.oldValues["gen_prod_posting_group"] = t.Gen_prod_posting_group
-	t.oldValues["tax_calculation_type"] = t.Tax_calculation_type
-	t.oldValues["transaction_type"] = t.Transaction_type
-	t.oldValues["transport_method"] = t.Transport_method
-	t.oldValues["exit_point"] = t.Exit_point
-	t.oldValues["area"] = t.Area
-	t.oldValues["transaction_specification"] = t.Transaction_specification
-	t.oldValues["tax_area_code"] = t.Tax_area_code
-	t.oldValues["tax_liable"] = t.Tax_liable
-	t.oldValues["tax_group_code"] = t.Tax_group_code
-	t.oldValues["tax_bus_posting_group"] = t.Tax_bus_posting_group
-	t.oldValues["tax_prod_posting_group"] = t.Tax_prod_posting_group
-	t.oldValues["currency_code"] = t.Currency_code
-	t.oldValues["outstanding_amount_lcy"] = t.Outstanding_amount_lcy
-	t.oldValues["shipped_not_invoiced_lcy"] = t.Shipped_not_invoiced_lcy
-	t.oldValues["blanket_order_no"] = t.Blanket_order_no
-	t.oldValues["blanket_order_line_no"] = t.Blanket_order_line_no
-	t.oldValues["tax_base_amount"] = t.Tax_base_amount
-	t.oldValues["unit_cost"] = t.Unit_cost
-	t.oldValues["variant_code"] = t.Variant_code
-	t.oldValues["qty_per_unit_of_measure"] = t.Qty_per_unit_of_measure
-	t.oldValues["unit_of_measure_code"] = t.Unit_of_measure_code
-	t.oldValues["quantity_base"] = t.Quantity_base
-	t.oldValues["outstanding_qty_base"] = t.Outstanding_qty_base
-	t.oldValues["qty_to_invoice_base"] = t.Qty_to_invoice_base
-	t.oldValues["qty_to_ship_base"] = t.Qty_to_ship_base
-	t.oldValues["qty_shpd_not_invd_base"] = t.Qty_shpd_not_invd_base
-	t.oldValues["qty_shipped_base"] = t.Qty_shipped_base
-	t.oldValues["qty_invoiced_base"] = t.Qty_invoiced_base
-	t.oldValues["reserved_quantity"] = t.Reserved_quantity
-	t.oldValues["reserve"] = t.Reserve
-	t.oldValues["planned"] = t.Planned
-	t.oldValues["reserved_qty_base"] = t.Reserved_qty_base
-	t.oldValues["serial_no"] = t.Serial_no
-	t.oldValues["lot_no"] = t.Lot_no
-	t.oldValues["bin_code"] = t.Bin_code
-	t.oldValues["project_no"] = t.Project_no
-	t.oldValues["appl_to_project_entry"] = t.Appl_to_project_entry
-	t.oldValues["phase_code"] = t.Phase_code
-	t.oldValues["task_code"] = t.Task_code
-	t.oldValues["step_code"] = t.Step_code
-	t.oldValues["project_applies_to_id"] = t.Project_applies_to_id
-	t.oldValues["apply_and_close_project"] = t.Apply_and_close_project
-	t.oldValues["attached_to_line_no"] = t.Attached_to_line_no
-	t.oldValues["purchase_order_no"] = t.Purchase_order_no
-	t.oldValues["purch_order_line_no"] = t.Purch_order_line_no
-	t.oldValues["drop_shipment"] = t.Drop_shipment
+	t.oldValues = salesLineFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -2146,288 +1390,7 @@ func (t *SalesLine) OldValue(fieldName string) interface{} {
 func (t *SalesLine) XRec() *SalesLine {
 	x := &SalesLine{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["document_type"].(SalesLineDocument_type); ok {
-		x.Document_type = v
-	}
-	if v, ok := t.oldValues["sell_to_customer_no"].(types.Code); ok {
-		x.Sell_to_customer_no = v
-	}
-	if v, ok := t.oldValues["document_no"].(types.Code); ok {
-		x.Document_no = v
-	}
-	if v, ok := t.oldValues["line_no"].(int); ok {
-		x.Line_no = v
-	}
-	if v, ok := t.oldValues["type"].(SalesLineType); ok {
-		x.Type = v
-	}
-	if v, ok := t.oldValues["no"].(types.Code); ok {
-		x.No = v
-	}
-	if v, ok := t.oldValues["location_code"].(types.Code); ok {
-		x.Location_code = v
-	}
-	if v, ok := t.oldValues["posting_group"].(types.Code); ok {
-		x.Posting_group = v
-	}
-	if v, ok := t.oldValues["quantity_disc_code"].(types.Code); ok {
-		x.Quantity_disc_code = v
-	}
-	if v, ok := t.oldValues["shipment_date"].(types.Date); ok {
-		x.Shipment_date = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["description_2"].(types.Text); ok {
-		x.Description_2 = v
-	}
-	if v, ok := t.oldValues["unit_of_measure"].(types.Text); ok {
-		x.Unit_of_measure = v
-	}
-	if v, ok := t.oldValues["quantity"].(types.Decimal); ok {
-		x.Quantity = v
-	}
-	if v, ok := t.oldValues["outstanding_quantity"].(types.Decimal); ok {
-		x.Outstanding_quantity = v
-	}
-	if v, ok := t.oldValues["qty_to_invoice"].(types.Decimal); ok {
-		x.Qty_to_invoice = v
-	}
-	if v, ok := t.oldValues["qty_to_ship"].(types.Decimal); ok {
-		x.Qty_to_ship = v
-	}
-	if v, ok := t.oldValues["unit_price"].(types.Decimal); ok {
-		x.Unit_price = v
-	}
-	if v, ok := t.oldValues["unit_cost_lcy"].(types.Decimal); ok {
-		x.Unit_cost_lcy = v
-	}
-	if v, ok := t.oldValues["tax_percent"].(types.Decimal); ok {
-		x.Tax_percent = v
-	}
-	if v, ok := t.oldValues["quantity_disc_percent"].(types.Decimal); ok {
-		x.Quantity_disc_percent = v
-	}
-	if v, ok := t.oldValues["line_discount_percent"].(types.Decimal); ok {
-		x.Line_discount_percent = v
-	}
-	if v, ok := t.oldValues["line_discount_amount"].(types.Decimal); ok {
-		x.Line_discount_amount = v
-	}
-	if v, ok := t.oldValues["amount"].(types.Decimal); ok {
-		x.Amount = v
-	}
-	if v, ok := t.oldValues["amount_including_tax"].(types.Decimal); ok {
-		x.Amount_including_tax = v
-	}
-	if v, ok := t.oldValues["allow_invoice_disc"].(bool); ok {
-		x.Allow_invoice_disc = v
-	}
-	if v, ok := t.oldValues["gross_weight"].(types.Decimal); ok {
-		x.Gross_weight = v
-	}
-	if v, ok := t.oldValues["net_weight"].(types.Decimal); ok {
-		x.Net_weight = v
-	}
-	if v, ok := t.oldValues["units_per_parcel"].(types.Decimal); ok {
-		x.Units_per_parcel = v
-	}
-	if v, ok := t.oldValues["unit_volume"].(types.Decimal); ok {
-		x.Unit_volume = v
-	}
-	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
-		x.Dimension_1_code = v
-	}
-	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
-		x.Dimension_2_code = v
-	}
-	if v, ok := t.oldValues["price_group_code"].(types.Code); ok {
-		x.Price_group_code = v
-	}
-	if v, ok := t.oldValues["allow_quantity_disc"].(bool); ok {
-		x.Allow_quantity_disc = v
-	}
-	if v, ok := t.oldValues["work_type_code"].(types.Code); ok {
-		x.Work_type_code = v
-	}
-	if v, ok := t.oldValues["cust_item_disc_percent"].(types.Decimal); ok {
-		x.Cust_item_disc_percent = v
-	}
-	if v, ok := t.oldValues["outstanding_amount"].(types.Decimal); ok {
-		x.Outstanding_amount = v
-	}
-	if v, ok := t.oldValues["qty_shipped_not_invoiced"].(types.Decimal); ok {
-		x.Qty_shipped_not_invoiced = v
-	}
-	if v, ok := t.oldValues["shipped_not_invoiced"].(types.Decimal); ok {
-		x.Shipped_not_invoiced = v
-	}
-	if v, ok := t.oldValues["quantity_shipped"].(types.Decimal); ok {
-		x.Quantity_shipped = v
-	}
-	if v, ok := t.oldValues["quantity_invoiced"].(types.Decimal); ok {
-		x.Quantity_invoiced = v
-	}
-	if v, ok := t.oldValues["shipment_no"].(types.Code); ok {
-		x.Shipment_no = v
-	}
-	if v, ok := t.oldValues["shipment_line_no"].(int); ok {
-		x.Shipment_line_no = v
-	}
-	if v, ok := t.oldValues["profit_percent"].(types.Decimal); ok {
-		x.Profit_percent = v
-	}
-	if v, ok := t.oldValues["bill_to_customer_no"].(types.Code); ok {
-		x.Bill_to_customer_no = v
-	}
-	if v, ok := t.oldValues["inv_discount_amount"].(types.Decimal); ok {
-		x.Inv_discount_amount = v
-	}
-	if v, ok := t.oldValues["gen_bus_posting_group"].(types.Code); ok {
-		x.Gen_bus_posting_group = v
-	}
-	if v, ok := t.oldValues["gen_prod_posting_group"].(types.Code); ok {
-		x.Gen_prod_posting_group = v
-	}
-	if v, ok := t.oldValues["tax_calculation_type"].(SalesLineTax_calculation_type); ok {
-		x.Tax_calculation_type = v
-	}
-	if v, ok := t.oldValues["transaction_type"].(types.Code); ok {
-		x.Transaction_type = v
-	}
-	if v, ok := t.oldValues["transport_method"].(types.Code); ok {
-		x.Transport_method = v
-	}
-	if v, ok := t.oldValues["exit_point"].(types.Code); ok {
-		x.Exit_point = v
-	}
-	if v, ok := t.oldValues["area"].(types.Code); ok {
-		x.Area = v
-	}
-	if v, ok := t.oldValues["transaction_specification"].(types.Code); ok {
-		x.Transaction_specification = v
-	}
-	if v, ok := t.oldValues["tax_area_code"].(types.Code); ok {
-		x.Tax_area_code = v
-	}
-	if v, ok := t.oldValues["tax_liable"].(bool); ok {
-		x.Tax_liable = v
-	}
-	if v, ok := t.oldValues["tax_group_code"].(types.Code); ok {
-		x.Tax_group_code = v
-	}
-	if v, ok := t.oldValues["tax_bus_posting_group"].(types.Code); ok {
-		x.Tax_bus_posting_group = v
-	}
-	if v, ok := t.oldValues["tax_prod_posting_group"].(types.Code); ok {
-		x.Tax_prod_posting_group = v
-	}
-	if v, ok := t.oldValues["currency_code"].(types.Code); ok {
-		x.Currency_code = v
-	}
-	if v, ok := t.oldValues["outstanding_amount_lcy"].(types.Decimal); ok {
-		x.Outstanding_amount_lcy = v
-	}
-	if v, ok := t.oldValues["shipped_not_invoiced_lcy"].(types.Decimal); ok {
-		x.Shipped_not_invoiced_lcy = v
-	}
-	if v, ok := t.oldValues["blanket_order_no"].(types.Code); ok {
-		x.Blanket_order_no = v
-	}
-	if v, ok := t.oldValues["blanket_order_line_no"].(int); ok {
-		x.Blanket_order_line_no = v
-	}
-	if v, ok := t.oldValues["tax_base_amount"].(types.Decimal); ok {
-		x.Tax_base_amount = v
-	}
-	if v, ok := t.oldValues["unit_cost"].(types.Decimal); ok {
-		x.Unit_cost = v
-	}
-	if v, ok := t.oldValues["variant_code"].(types.Code); ok {
-		x.Variant_code = v
-	}
-	if v, ok := t.oldValues["qty_per_unit_of_measure"].(types.Decimal); ok {
-		x.Qty_per_unit_of_measure = v
-	}
-	if v, ok := t.oldValues["unit_of_measure_code"].(types.Code); ok {
-		x.Unit_of_measure_code = v
-	}
-	if v, ok := t.oldValues["quantity_base"].(types.Decimal); ok {
-		x.Quantity_base = v
-	}
-	if v, ok := t.oldValues["outstanding_qty_base"].(types.Decimal); ok {
-		x.Outstanding_qty_base = v
-	}
-	if v, ok := t.oldValues["qty_to_invoice_base"].(types.Decimal); ok {
-		x.Qty_to_invoice_base = v
-	}
-	if v, ok := t.oldValues["qty_to_ship_base"].(types.Decimal); ok {
-		x.Qty_to_ship_base = v
-	}
-	if v, ok := t.oldValues["qty_shpd_not_invd_base"].(types.Decimal); ok {
-		x.Qty_shpd_not_invd_base = v
-	}
-	if v, ok := t.oldValues["qty_shipped_base"].(types.Decimal); ok {
-		x.Qty_shipped_base = v
-	}
-	if v, ok := t.oldValues["qty_invoiced_base"].(types.Decimal); ok {
-		x.Qty_invoiced_base = v
-	}
-	if v, ok := t.oldValues["reserved_quantity"].(types.Decimal); ok {
-		x.Reserved_quantity = v
-	}
-	if v, ok := t.oldValues["reserve"].(SalesLineReserve); ok {
-		x.Reserve = v
-	}
-	if v, ok := t.oldValues["planned"].(bool); ok {
-		x.Planned = v
-	}
-	if v, ok := t.oldValues["reserved_qty_base"].(types.Decimal); ok {
-		x.Reserved_qty_base = v
-	}
-	if v, ok := t.oldValues["serial_no"].(types.Code); ok {
-		x.Serial_no = v
-	}
-	if v, ok := t.oldValues["lot_no"].(types.Code); ok {
-		x.Lot_no = v
-	}
-	if v, ok := t.oldValues["bin_code"].(types.Code); ok {
-		x.Bin_code = v
-	}
-	if v, ok := t.oldValues["project_no"].(types.Code); ok {
-		x.Project_no = v
-	}
-	if v, ok := t.oldValues["appl_to_project_entry"].(int); ok {
-		x.Appl_to_project_entry = v
-	}
-	if v, ok := t.oldValues["phase_code"].(types.Code); ok {
-		x.Phase_code = v
-	}
-	if v, ok := t.oldValues["task_code"].(types.Code); ok {
-		x.Task_code = v
-	}
-	if v, ok := t.oldValues["step_code"].(types.Code); ok {
-		x.Step_code = v
-	}
-	if v, ok := t.oldValues["project_applies_to_id"].(types.Code); ok {
-		x.Project_applies_to_id = v
-	}
-	if v, ok := t.oldValues["apply_and_close_project"].(bool); ok {
-		x.Apply_and_close_project = v
-	}
-	if v, ok := t.oldValues["attached_to_line_no"].(int); ok {
-		x.Attached_to_line_no = v
-	}
-	if v, ok := t.oldValues["purchase_order_no"].(types.Code); ok {
-		x.Purchase_order_no = v
-	}
-	if v, ok := t.oldValues["purch_order_line_no"].(int); ok {
-		x.Purch_order_line_no = v
-	}
-	if v, ok := t.oldValues["drop_shipment"].(bool); ok {
-		x.Drop_shipment = v
-	}
+	salesLineFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -3732,409 +2695,7 @@ func (t *SalesLine) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *SalesLine) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "document_type":
-		if old, ok := oldValue.(SalesLineDocument_type); ok {
-			return t.Document_type != old
-		}
-	case "sell_to_customer_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Sell_to_customer_no.Equal(old)
-		}
-	case "document_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Document_no.Equal(old)
-		}
-	case "line_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Line_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "type":
-		if old, ok := oldValue.(SalesLineType); ok {
-			return t.Type != old
-		}
-	case "no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No.Equal(old)
-		}
-	case "location_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Location_code.Equal(old)
-		}
-	case "posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Posting_group.Equal(old)
-		}
-	case "quantity_disc_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Quantity_disc_code.Equal(old)
-		}
-	case "shipment_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Shipment_date.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "description_2":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description_2.Equal(old)
-		}
-	case "unit_of_measure":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Unit_of_measure.Equal(old)
-		}
-	case "quantity":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Quantity.Equal(old)
-		}
-	case "outstanding_quantity":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Outstanding_quantity.Equal(old)
-		}
-	case "qty_to_invoice":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Qty_to_invoice.Equal(old)
-		}
-	case "qty_to_ship":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Qty_to_ship.Equal(old)
-		}
-	case "unit_price":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Unit_price.Equal(old)
-		}
-	case "unit_cost_lcy":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Unit_cost_lcy.Equal(old)
-		}
-	case "tax_percent":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Tax_percent.Equal(old)
-		}
-	case "quantity_disc_percent":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Quantity_disc_percent.Equal(old)
-		}
-	case "line_discount_percent":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Line_discount_percent.Equal(old)
-		}
-	case "line_discount_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Line_discount_amount.Equal(old)
-		}
-	case "amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Amount.Equal(old)
-		}
-	case "amount_including_tax":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Amount_including_tax.Equal(old)
-		}
-	case "allow_invoice_disc":
-		if old, ok := oldValue.(bool); ok {
-			return t.Allow_invoice_disc != old
-		}
-		return true // Type mismatch, assume changed
-	case "gross_weight":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Gross_weight.Equal(old)
-		}
-	case "net_weight":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Net_weight.Equal(old)
-		}
-	case "units_per_parcel":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Units_per_parcel.Equal(old)
-		}
-	case "unit_volume":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Unit_volume.Equal(old)
-		}
-	case "dimension_1_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_1_code.Equal(old)
-		}
-	case "dimension_2_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_2_code.Equal(old)
-		}
-	case "price_group_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Price_group_code.Equal(old)
-		}
-	case "allow_quantity_disc":
-		if old, ok := oldValue.(bool); ok {
-			return t.Allow_quantity_disc != old
-		}
-		return true // Type mismatch, assume changed
-	case "work_type_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Work_type_code.Equal(old)
-		}
-	case "cust_item_disc_percent":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Cust_item_disc_percent.Equal(old)
-		}
-	case "outstanding_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Outstanding_amount.Equal(old)
-		}
-	case "qty_shipped_not_invoiced":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Qty_shipped_not_invoiced.Equal(old)
-		}
-	case "shipped_not_invoiced":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Shipped_not_invoiced.Equal(old)
-		}
-	case "quantity_shipped":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Quantity_shipped.Equal(old)
-		}
-	case "quantity_invoiced":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Quantity_invoiced.Equal(old)
-		}
-	case "shipment_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Shipment_no.Equal(old)
-		}
-	case "shipment_line_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Shipment_line_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "profit_percent":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Profit_percent.Equal(old)
-		}
-	case "bill_to_customer_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Bill_to_customer_no.Equal(old)
-		}
-	case "inv_discount_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Inv_discount_amount.Equal(old)
-		}
-	case "gen_bus_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Gen_bus_posting_group.Equal(old)
-		}
-	case "gen_prod_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Gen_prod_posting_group.Equal(old)
-		}
-	case "tax_calculation_type":
-		if old, ok := oldValue.(SalesLineTax_calculation_type); ok {
-			return t.Tax_calculation_type != old
-		}
-	case "transaction_type":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Transaction_type.Equal(old)
-		}
-	case "transport_method":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Transport_method.Equal(old)
-		}
-	case "exit_point":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Exit_point.Equal(old)
-		}
-	case "area":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Area.Equal(old)
-		}
-	case "transaction_specification":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Transaction_specification.Equal(old)
-		}
-	case "tax_area_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_area_code.Equal(old)
-		}
-	case "tax_liable":
-		if old, ok := oldValue.(bool); ok {
-			return t.Tax_liable != old
-		}
-		return true // Type mismatch, assume changed
-	case "tax_group_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_group_code.Equal(old)
-		}
-	case "tax_bus_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_bus_posting_group.Equal(old)
-		}
-	case "tax_prod_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_prod_posting_group.Equal(old)
-		}
-	case "currency_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Currency_code.Equal(old)
-		}
-	case "outstanding_amount_lcy":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Outstanding_amount_lcy.Equal(old)
-		}
-	case "shipped_not_invoiced_lcy":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Shipped_not_invoiced_lcy.Equal(old)
-		}
-	case "blanket_order_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Blanket_order_no.Equal(old)
-		}
-	case "blanket_order_line_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Blanket_order_line_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "tax_base_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Tax_base_amount.Equal(old)
-		}
-	case "unit_cost":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Unit_cost.Equal(old)
-		}
-	case "variant_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Variant_code.Equal(old)
-		}
-	case "qty_per_unit_of_measure":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Qty_per_unit_of_measure.Equal(old)
-		}
-	case "unit_of_measure_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Unit_of_measure_code.Equal(old)
-		}
-	case "quantity_base":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Quantity_base.Equal(old)
-		}
-	case "outstanding_qty_base":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Outstanding_qty_base.Equal(old)
-		}
-	case "qty_to_invoice_base":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Qty_to_invoice_base.Equal(old)
-		}
-	case "qty_to_ship_base":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Qty_to_ship_base.Equal(old)
-		}
-	case "qty_shpd_not_invd_base":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Qty_shpd_not_invd_base.Equal(old)
-		}
-	case "qty_shipped_base":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Qty_shipped_base.Equal(old)
-		}
-	case "qty_invoiced_base":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Qty_invoiced_base.Equal(old)
-		}
-	case "reserved_quantity":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Reserved_quantity.Equal(old)
-		}
-	case "reserve":
-		if old, ok := oldValue.(SalesLineReserve); ok {
-			return t.Reserve != old
-		}
-	case "planned":
-		if old, ok := oldValue.(bool); ok {
-			return t.Planned != old
-		}
-		return true // Type mismatch, assume changed
-	case "reserved_qty_base":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Reserved_qty_base.Equal(old)
-		}
-	case "serial_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Serial_no.Equal(old)
-		}
-	case "lot_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Lot_no.Equal(old)
-		}
-	case "bin_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Bin_code.Equal(old)
-		}
-	case "project_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_no.Equal(old)
-		}
-	case "appl_to_project_entry":
-		if old, ok := oldValue.(int); ok {
-			return t.Appl_to_project_entry != old
-		}
-		return true // Type mismatch, assume changed
-	case "phase_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Phase_code.Equal(old)
-		}
-	case "task_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Task_code.Equal(old)
-		}
-	case "step_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Step_code.Equal(old)
-		}
-	case "project_applies_to_id":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_applies_to_id.Equal(old)
-		}
-	case "apply_and_close_project":
-		if old, ok := oldValue.(bool); ok {
-			return t.Apply_and_close_project != old
-		}
-		return true // Type mismatch, assume changed
-	case "attached_to_line_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Attached_to_line_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "purchase_order_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Purchase_order_no.Equal(old)
-		}
-	case "purch_order_line_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Purch_order_line_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "drop_shipment":
-		if old, ok := oldValue.(bool); ok {
-			return t.Drop_shipment != old
-		}
-		return true // Type mismatch, assume changed
-	}
-
-	return false
+	return salesLineFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -4337,197 +2898,7 @@ func (t *SalesLine) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *SalesLine) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("document_type"):
-		return "document_type", true
-	case strings.ToLower("sell_to_customer_no"):
-		return "sell_to_customer_no", true
-	case strings.ToLower("document_no"):
-		return "document_no", true
-	case strings.ToLower("line_no"):
-		return "line_no", true
-	case strings.ToLower("type"):
-		return "type", true
-	case strings.ToLower("no"):
-		return "no", true
-	case strings.ToLower("location_code"):
-		return "location_code", true
-	case strings.ToLower("posting_group"):
-		return "posting_group", true
-	case strings.ToLower("quantity_disc_code"):
-		return "quantity_disc_code", true
-	case strings.ToLower("shipment_date"):
-		return "shipment_date", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("description_2"):
-		return "description_2", true
-	case strings.ToLower("unit_of_measure"):
-		return "unit_of_measure", true
-	case strings.ToLower("quantity"):
-		return "quantity", true
-	case strings.ToLower("outstanding_quantity"):
-		return "outstanding_quantity", true
-	case strings.ToLower("qty_to_invoice"):
-		return "qty_to_invoice", true
-	case strings.ToLower("qty_to_ship"):
-		return "qty_to_ship", true
-	case strings.ToLower("unit_price"):
-		return "unit_price", true
-	case strings.ToLower("unit_cost_lcy"):
-		return "unit_cost_lcy", true
-	case strings.ToLower("tax_percent"):
-		return "tax_percent", true
-	case strings.ToLower("quantity_disc_percent"):
-		return "quantity_disc_percent", true
-	case strings.ToLower("line_discount_percent"):
-		return "line_discount_percent", true
-	case strings.ToLower("line_discount_amount"):
-		return "line_discount_amount", true
-	case strings.ToLower("amount"):
-		return "amount", true
-	case strings.ToLower("amount_including_tax"):
-		return "amount_including_tax", true
-	case strings.ToLower("allow_invoice_disc"):
-		return "allow_invoice_disc", true
-	case strings.ToLower("gross_weight"):
-		return "gross_weight", true
-	case strings.ToLower("net_weight"):
-		return "net_weight", true
-	case strings.ToLower("units_per_parcel"):
-		return "units_per_parcel", true
-	case strings.ToLower("unit_volume"):
-		return "unit_volume", true
-	case strings.ToLower("dimension_1_code"):
-		return "dimension_1_code", true
-	case strings.ToLower("dimension_2_code"):
-		return "dimension_2_code", true
-	case strings.ToLower("price_group_code"):
-		return "price_group_code", true
-	case strings.ToLower("allow_quantity_disc"):
-		return "allow_quantity_disc", true
-	case strings.ToLower("work_type_code"):
-		return "work_type_code", true
-	case strings.ToLower("cust_item_disc_percent"):
-		return "cust_item_disc_percent", true
-	case strings.ToLower("outstanding_amount"):
-		return "outstanding_amount", true
-	case strings.ToLower("qty_shipped_not_invoiced"):
-		return "qty_shipped_not_invoiced", true
-	case strings.ToLower("shipped_not_invoiced"):
-		return "shipped_not_invoiced", true
-	case strings.ToLower("quantity_shipped"):
-		return "quantity_shipped", true
-	case strings.ToLower("quantity_invoiced"):
-		return "quantity_invoiced", true
-	case strings.ToLower("shipment_no"):
-		return "shipment_no", true
-	case strings.ToLower("shipment_line_no"):
-		return "shipment_line_no", true
-	case strings.ToLower("profit_percent"):
-		return "profit_percent", true
-	case strings.ToLower("bill_to_customer_no"):
-		return "bill_to_customer_no", true
-	case strings.ToLower("inv_discount_amount"):
-		return "inv_discount_amount", true
-	case strings.ToLower("gen_bus_posting_group"):
-		return "gen_bus_posting_group", true
-	case strings.ToLower("gen_prod_posting_group"):
-		return "gen_prod_posting_group", true
-	case strings.ToLower("tax_calculation_type"):
-		return "tax_calculation_type", true
-	case strings.ToLower("transaction_type"):
-		return "transaction_type", true
-	case strings.ToLower("transport_method"):
-		return "transport_method", true
-	case strings.ToLower("exit_point"):
-		return "exit_point", true
-	case strings.ToLower("area"):
-		return "area", true
-	case strings.ToLower("transaction_specification"):
-		return "transaction_specification", true
-	case strings.ToLower("tax_area_code"):
-		return "tax_area_code", true
-	case strings.ToLower("tax_liable"):
-		return "tax_liable", true
-	case strings.ToLower("tax_group_code"):
-		return "tax_group_code", true
-	case strings.ToLower("tax_bus_posting_group"):
-		return "tax_bus_posting_group", true
-	case strings.ToLower("tax_prod_posting_group"):
-		return "tax_prod_posting_group", true
-	case strings.ToLower("currency_code"):
-		return "currency_code", true
-	case strings.ToLower("outstanding_amount_lcy"):
-		return "outstanding_amount_lcy", true
-	case strings.ToLower("shipped_not_invoiced_lcy"):
-		return "shipped_not_invoiced_lcy", true
-	case strings.ToLower("blanket_order_no"):
-		return "blanket_order_no", true
-	case strings.ToLower("blanket_order_line_no"):
-		return "blanket_order_line_no", true
-	case strings.ToLower("tax_base_amount"):
-		return "tax_base_amount", true
-	case strings.ToLower("unit_cost"):
-		return "unit_cost", true
-	case strings.ToLower("variant_code"):
-		return "variant_code", true
-	case strings.ToLower("qty_per_unit_of_measure"):
-		return "qty_per_unit_of_measure", true
-	case strings.ToLower("unit_of_measure_code"):
-		return "unit_of_measure_code", true
-	case strings.ToLower("quantity_base"):
-		return "quantity_base", true
-	case strings.ToLower("outstanding_qty_base"):
-		return "outstanding_qty_base", true
-	case strings.ToLower("qty_to_invoice_base"):
-		return "qty_to_invoice_base", true
-	case strings.ToLower("qty_to_ship_base"):
-		return "qty_to_ship_base", true
-	case strings.ToLower("qty_shpd_not_invd_base"):
-		return "qty_shpd_not_invd_base", true
-	case strings.ToLower("qty_shipped_base"):
-		return "qty_shipped_base", true
-	case strings.ToLower("qty_invoiced_base"):
-		return "qty_invoiced_base", true
-	case strings.ToLower("reserved_quantity"):
-		return "reserved_quantity", true
-	case strings.ToLower("reserve"):
-		return "reserve", true
-	case strings.ToLower("planned"):
-		return "planned", true
-	case strings.ToLower("reserved_qty_base"):
-		return "reserved_qty_base", true
-	case strings.ToLower("serial_no"):
-		return "serial_no", true
-	case strings.ToLower("lot_no"):
-		return "lot_no", true
-	case strings.ToLower("bin_code"):
-		return "bin_code", true
-	case strings.ToLower("project_no"):
-		return "project_no", true
-	case strings.ToLower("appl_to_project_entry"):
-		return "appl_to_project_entry", true
-	case strings.ToLower("phase_code"):
-		return "phase_code", true
-	case strings.ToLower("task_code"):
-		return "task_code", true
-	case strings.ToLower("step_code"):
-		return "step_code", true
-	case strings.ToLower("project_applies_to_id"):
-		return "project_applies_to_id", true
-	case strings.ToLower("apply_and_close_project"):
-		return "apply_and_close_project", true
-	case strings.ToLower("attached_to_line_no"):
-		return "attached_to_line_no", true
-	case strings.ToLower("purchase_order_no"):
-		return "purchase_order_no", true
-	case strings.ToLower("purch_order_line_no"):
-		return "purch_order_line_no", true
-	case strings.ToLower("drop_shipment"):
-		return "drop_shipment", true
-	}
-	return "", false
+	return salesLineFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -6574,2402 +4945,20 @@ func (t *SalesLine) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *SalesLine) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "document_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(SalesLineDocument_type); ok {
-			t.Document_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 5 {
-				return fmt.Errorf("invalid option value %d for field document_type (valid range: 0-%d)", v, 5-1)
-			}
-			t.Document_type = SalesLineDocument_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 5 {
-				return fmt.Errorf("invalid option value %d for field document_type (valid range: 0-%d)", intVal, 5-1)
-			}
-			t.Document_type = SalesLineDocument_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Document_type = 0
-			} else {
-				options := []string{"Quote", "Order", "Invoice", "Credit Memo", "Blanket Order"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Document_type = SalesLineDocument_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field document_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field document_type (expected SalesLineDocument_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Document_type); ok {
-				if err := trg.OnValidate_Document_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sell_to_customer_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Sell_to_customer_no = v
-		} else if v, ok := value.(string); ok {
-			t.Sell_to_customer_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field sell_to_customer_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "sell_to_customer_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Sell_to_customer_no); ok {
-				if err := trg.OnValidate_Sell_to_customer_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Document_no = v
-		} else if v, ok := value.(string); ok {
-			t.Document_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field document_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Document_no); ok {
-				if err := trg.OnValidate_Document_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "line_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Line_no = v
-		case float64:
-			t.Line_no = int(v)
-		case string:
-			if v == "" {
-				t.Line_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Line_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field line_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field line_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Line_no); ok {
-				if err := trg.OnValidate_Line_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(SalesLineType); ok {
-			t.Type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", v, 4-1)
-			}
-			t.Type = SalesLineType(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Type = SalesLineType(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Type = 0
-			} else {
-				options := []string{" ", "G/L Account", "Item", "Resource"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Type = SalesLineType(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field type (expected SalesLineType, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Type); ok {
-				if err := trg.OnValidate_Type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-		} else if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_No); ok {
-				if err := trg.OnValidate_No(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "location_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Location_code = v
-		} else if v, ok := value.(string); ok {
-			t.Location_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field location_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "location_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Location_code); ok {
-				if err := trg.OnValidate_Location_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Posting_group); ok {
-				if err := trg.OnValidate_Posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "quantity_disc_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Quantity_disc_code = v
-		} else if v, ok := value.(string); ok {
-			t.Quantity_disc_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field quantity_disc_code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Quantity_disc_code); ok {
-				if err := trg.OnValidate_Quantity_disc_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "shipment_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Shipment_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Shipment_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field shipment_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Shipment_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field shipment_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Shipment_date); ok {
-				if err := trg.OnValidate_Shipment_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description_2":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description_2 = v
-		} else if v, ok := value.(string); ok {
-			t.Description_2 = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description_2")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Description_2); ok {
-				if err := trg.OnValidate_Description_2(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unit_of_measure":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Unit_of_measure = v
-		} else if v, ok := value.(string); ok {
-			t.Unit_of_measure = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field unit_of_measure")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Unit_of_measure); ok {
-				if err := trg.OnValidate_Unit_of_measure(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "quantity":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Quantity, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field quantity: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Quantity = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Quantity = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Quantity = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field quantity (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Quantity); ok {
-				if err := trg.OnValidate_Quantity(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "outstanding_quantity":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Outstanding_quantity = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Outstanding_quantity, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field outstanding_quantity: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Outstanding_quantity = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Outstanding_quantity = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Outstanding_quantity = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field outstanding_quantity (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Outstanding_quantity); ok {
-				if err := trg.OnValidate_Outstanding_quantity(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "qty_to_invoice":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Qty_to_invoice = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Qty_to_invoice, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field qty_to_invoice: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Qty_to_invoice = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Qty_to_invoice = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Qty_to_invoice = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field qty_to_invoice (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Qty_to_invoice); ok {
-				if err := trg.OnValidate_Qty_to_invoice(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "qty_to_ship":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Qty_to_ship = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Qty_to_ship, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field qty_to_ship: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Qty_to_ship = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Qty_to_ship = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Qty_to_ship = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field qty_to_ship (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Qty_to_ship); ok {
-				if err := trg.OnValidate_Qty_to_ship(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unit_price":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Unit_price = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Unit_price, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field unit_price: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Unit_price = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Unit_price = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Unit_price = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field unit_price (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Unit_price); ok {
-				if err := trg.OnValidate_Unit_price(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unit_cost_lcy":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Unit_cost_lcy = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Unit_cost_lcy, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field unit_cost_lcy: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Unit_cost_lcy = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Unit_cost_lcy = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Unit_cost_lcy = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field unit_cost_lcy (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Unit_cost_lcy); ok {
-				if err := trg.OnValidate_Unit_cost_lcy(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_percent":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Tax_percent = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Tax_percent, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field tax_percent: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Tax_percent = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Tax_percent = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Tax_percent = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_percent (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Tax_percent); ok {
-				if err := trg.OnValidate_Tax_percent(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "quantity_disc_percent":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity_disc_percent = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Quantity_disc_percent, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field quantity_disc_percent: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Quantity_disc_percent = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Quantity_disc_percent = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Quantity_disc_percent = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field quantity_disc_percent (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Quantity_disc_percent); ok {
-				if err := trg.OnValidate_Quantity_disc_percent(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "line_discount_percent":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Line_discount_percent = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Line_discount_percent, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field line_discount_percent: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Line_discount_percent = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Line_discount_percent = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Line_discount_percent = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field line_discount_percent (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Line_discount_percent); ok {
-				if err := trg.OnValidate_Line_discount_percent(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "line_discount_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Line_discount_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Line_discount_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field line_discount_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Line_discount_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Line_discount_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Line_discount_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field line_discount_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Line_discount_amount); ok {
-				if err := trg.OnValidate_Line_discount_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Amount); ok {
-				if err := trg.OnValidate_Amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "amount_including_tax":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount_including_tax = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Amount_including_tax, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field amount_including_tax: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Amount_including_tax = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Amount_including_tax = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Amount_including_tax = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field amount_including_tax (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Amount_including_tax); ok {
-				if err := trg.OnValidate_Amount_including_tax(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "allow_invoice_disc":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Allow_invoice_disc = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Allow_invoice_disc = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field allow_invoice_disc")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Allow_invoice_disc); ok {
-				if err := trg.OnValidate_Allow_invoice_disc(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "gross_weight":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Gross_weight = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Gross_weight, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field gross_weight: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Gross_weight = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Gross_weight = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Gross_weight = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field gross_weight (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Gross_weight); ok {
-				if err := trg.OnValidate_Gross_weight(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "net_weight":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Net_weight = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Net_weight, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field net_weight: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Net_weight = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Net_weight = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Net_weight = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field net_weight (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Net_weight); ok {
-				if err := trg.OnValidate_Net_weight(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "units_per_parcel":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Units_per_parcel = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Units_per_parcel, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field units_per_parcel: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Units_per_parcel = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Units_per_parcel = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Units_per_parcel = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field units_per_parcel (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Units_per_parcel); ok {
-				if err := trg.OnValidate_Units_per_parcel(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unit_volume":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Unit_volume = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Unit_volume, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field unit_volume: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Unit_volume = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Unit_volume = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Unit_volume = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field unit_volume (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Unit_volume); ok {
-				if err := trg.OnValidate_Unit_volume(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_1_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_1_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Dimension_1_code); ok {
-				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_2_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_2_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Dimension_2_code); ok {
-				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "price_group_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Price_group_code = v
-		} else if v, ok := value.(string); ok {
-			t.Price_group_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field price_group_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "price_group_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Price_group_code); ok {
-				if err := trg.OnValidate_Price_group_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "allow_quantity_disc":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Allow_quantity_disc = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Allow_quantity_disc = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field allow_quantity_disc")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Allow_quantity_disc); ok {
-				if err := trg.OnValidate_Allow_quantity_disc(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "work_type_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Work_type_code = v
-		} else if v, ok := value.(string); ok {
-			t.Work_type_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field work_type_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "work_type_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Work_type_code); ok {
-				if err := trg.OnValidate_Work_type_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "cust_item_disc_percent":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Cust_item_disc_percent = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Cust_item_disc_percent, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field cust_item_disc_percent: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Cust_item_disc_percent = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Cust_item_disc_percent = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Cust_item_disc_percent = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field cust_item_disc_percent (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Cust_item_disc_percent); ok {
-				if err := trg.OnValidate_Cust_item_disc_percent(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "outstanding_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Outstanding_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Outstanding_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field outstanding_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Outstanding_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Outstanding_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Outstanding_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field outstanding_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Outstanding_amount); ok {
-				if err := trg.OnValidate_Outstanding_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "qty_shipped_not_invoiced":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Qty_shipped_not_invoiced = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Qty_shipped_not_invoiced, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field qty_shipped_not_invoiced: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Qty_shipped_not_invoiced = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Qty_shipped_not_invoiced = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Qty_shipped_not_invoiced = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field qty_shipped_not_invoiced (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Qty_shipped_not_invoiced); ok {
-				if err := trg.OnValidate_Qty_shipped_not_invoiced(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "shipped_not_invoiced":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Shipped_not_invoiced = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Shipped_not_invoiced, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field shipped_not_invoiced: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Shipped_not_invoiced = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Shipped_not_invoiced = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Shipped_not_invoiced = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field shipped_not_invoiced (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Shipped_not_invoiced); ok {
-				if err := trg.OnValidate_Shipped_not_invoiced(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "quantity_shipped":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity_shipped = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Quantity_shipped, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field quantity_shipped: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Quantity_shipped = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Quantity_shipped = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Quantity_shipped = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field quantity_shipped (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Quantity_shipped); ok {
-				if err := trg.OnValidate_Quantity_shipped(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "quantity_invoiced":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity_invoiced = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Quantity_invoiced, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field quantity_invoiced: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Quantity_invoiced = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Quantity_invoiced = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Quantity_invoiced = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field quantity_invoiced (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Quantity_invoiced); ok {
-				if err := trg.OnValidate_Quantity_invoiced(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "shipment_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Shipment_no = v
-		} else if v, ok := value.(string); ok {
-			t.Shipment_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field shipment_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Shipment_no); ok {
-				if err := trg.OnValidate_Shipment_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "shipment_line_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Shipment_line_no = v
-		case float64:
-			t.Shipment_line_no = int(v)
-		case string:
-			if v == "" {
-				t.Shipment_line_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Shipment_line_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field shipment_line_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field shipment_line_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Shipment_line_no); ok {
-				if err := trg.OnValidate_Shipment_line_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "profit_percent":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Profit_percent = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Profit_percent, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field profit_percent: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Profit_percent = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Profit_percent = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Profit_percent = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field profit_percent (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Profit_percent); ok {
-				if err := trg.OnValidate_Profit_percent(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bill_to_customer_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Bill_to_customer_no = v
-		} else if v, ok := value.(string); ok {
-			t.Bill_to_customer_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field bill_to_customer_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "bill_to_customer_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Bill_to_customer_no); ok {
-				if err := trg.OnValidate_Bill_to_customer_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "inv_discount_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Inv_discount_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Inv_discount_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field inv_discount_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Inv_discount_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Inv_discount_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Inv_discount_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field inv_discount_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Inv_discount_amount); ok {
-				if err := trg.OnValidate_Inv_discount_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "gen_bus_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Gen_bus_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Gen_bus_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field gen_bus_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "gen_bus_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Gen_bus_posting_group); ok {
-				if err := trg.OnValidate_Gen_bus_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "gen_prod_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Gen_prod_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Gen_prod_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field gen_prod_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "gen_prod_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Gen_prod_posting_group); ok {
-				if err := trg.OnValidate_Gen_prod_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_calculation_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(SalesLineTax_calculation_type); ok {
-			t.Tax_calculation_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field tax_calculation_type (valid range: 0-%d)", v, 4-1)
-			}
-			t.Tax_calculation_type = SalesLineTax_calculation_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field tax_calculation_type (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Tax_calculation_type = SalesLineTax_calculation_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Tax_calculation_type = 0
-			} else {
-				options := []string{"Normal VAT", "Reverse Charge VAT", "Full VAT", "Sales Tax"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Tax_calculation_type = SalesLineTax_calculation_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field tax_calculation_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field tax_calculation_type (expected SalesLineTax_calculation_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Tax_calculation_type); ok {
-				if err := trg.OnValidate_Tax_calculation_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "transaction_type":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Transaction_type = v
-		} else if v, ok := value.(string); ok {
-			t.Transaction_type = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field transaction_type")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "transaction_type"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Transaction_type); ok {
-				if err := trg.OnValidate_Transaction_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "transport_method":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Transport_method = v
-		} else if v, ok := value.(string); ok {
-			t.Transport_method = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field transport_method")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "transport_method"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Transport_method); ok {
-				if err := trg.OnValidate_Transport_method(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "exit_point":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Exit_point = v
-		} else if v, ok := value.(string); ok {
-			t.Exit_point = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field exit_point")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "exit_point"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Exit_point); ok {
-				if err := trg.OnValidate_Exit_point(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "area":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Area = v
-		} else if v, ok := value.(string); ok {
-			t.Area = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field area")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "area"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Area); ok {
-				if err := trg.OnValidate_Area(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "transaction_specification":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Transaction_specification = v
-		} else if v, ok := value.(string); ok {
-			t.Transaction_specification = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field transaction_specification")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "transaction_specification"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Transaction_specification); ok {
-				if err := trg.OnValidate_Transaction_specification(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_area_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_area_code = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_area_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_area_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_area_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Tax_area_code); ok {
-				if err := trg.OnValidate_Tax_area_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_liable":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Tax_liable = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Tax_liable = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field tax_liable")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Tax_liable); ok {
-				if err := trg.OnValidate_Tax_liable(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_group_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_group_code = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_group_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_group_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_group_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Tax_group_code); ok {
-				if err := trg.OnValidate_Tax_group_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_bus_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_bus_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_bus_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_bus_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_bus_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Tax_bus_posting_group); ok {
-				if err := trg.OnValidate_Tax_bus_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_prod_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_prod_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_prod_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_prod_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_prod_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Tax_prod_posting_group); ok {
-				if err := trg.OnValidate_Tax_prod_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "currency_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Currency_code = v
-		} else if v, ok := value.(string); ok {
-			t.Currency_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field currency_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "currency_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Currency_code); ok {
-				if err := trg.OnValidate_Currency_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "outstanding_amount_lcy":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Outstanding_amount_lcy = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Outstanding_amount_lcy, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field outstanding_amount_lcy: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Outstanding_amount_lcy = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Outstanding_amount_lcy = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Outstanding_amount_lcy = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field outstanding_amount_lcy (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Outstanding_amount_lcy); ok {
-				if err := trg.OnValidate_Outstanding_amount_lcy(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "shipped_not_invoiced_lcy":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Shipped_not_invoiced_lcy = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Shipped_not_invoiced_lcy, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field shipped_not_invoiced_lcy: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Shipped_not_invoiced_lcy = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Shipped_not_invoiced_lcy = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Shipped_not_invoiced_lcy = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field shipped_not_invoiced_lcy (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Shipped_not_invoiced_lcy); ok {
-				if err := trg.OnValidate_Shipped_not_invoiced_lcy(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "blanket_order_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Blanket_order_no = v
-		} else if v, ok := value.(string); ok {
-			t.Blanket_order_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field blanket_order_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "blanket_order_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Blanket_order_no); ok {
-				if err := trg.OnValidate_Blanket_order_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "blanket_order_line_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Blanket_order_line_no = v
-		case float64:
-			t.Blanket_order_line_no = int(v)
-		case string:
-			if v == "" {
-				t.Blanket_order_line_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Blanket_order_line_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field blanket_order_line_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field blanket_order_line_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "blanket_order_line_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Blanket_order_line_no); ok {
-				if err := trg.OnValidate_Blanket_order_line_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_base_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Tax_base_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Tax_base_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field tax_base_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Tax_base_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Tax_base_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Tax_base_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_base_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Tax_base_amount); ok {
-				if err := trg.OnValidate_Tax_base_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unit_cost":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Unit_cost = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Unit_cost, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field unit_cost: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Unit_cost = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Unit_cost = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Unit_cost = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field unit_cost (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Unit_cost); ok {
-				if err := trg.OnValidate_Unit_cost(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "variant_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Variant_code = v
-		} else if v, ok := value.(string); ok {
-			t.Variant_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field variant_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "variant_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Variant_code); ok {
-				if err := trg.OnValidate_Variant_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "qty_per_unit_of_measure":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Qty_per_unit_of_measure = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Qty_per_unit_of_measure, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field qty_per_unit_of_measure: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Qty_per_unit_of_measure = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Qty_per_unit_of_measure = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Qty_per_unit_of_measure = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field qty_per_unit_of_measure (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Qty_per_unit_of_measure); ok {
-				if err := trg.OnValidate_Qty_per_unit_of_measure(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unit_of_measure_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Unit_of_measure_code = v
-		} else if v, ok := value.(string); ok {
-			t.Unit_of_measure_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field unit_of_measure_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "unit_of_measure_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Unit_of_measure_code); ok {
-				if err := trg.OnValidate_Unit_of_measure_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "quantity_base":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity_base = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Quantity_base, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field quantity_base: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Quantity_base = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Quantity_base = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Quantity_base = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field quantity_base (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Quantity_base); ok {
-				if err := trg.OnValidate_Quantity_base(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "outstanding_qty_base":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Outstanding_qty_base = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Outstanding_qty_base, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field outstanding_qty_base: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Outstanding_qty_base = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Outstanding_qty_base = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Outstanding_qty_base = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field outstanding_qty_base (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Outstanding_qty_base); ok {
-				if err := trg.OnValidate_Outstanding_qty_base(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "qty_to_invoice_base":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Qty_to_invoice_base = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Qty_to_invoice_base, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field qty_to_invoice_base: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Qty_to_invoice_base = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Qty_to_invoice_base = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Qty_to_invoice_base = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field qty_to_invoice_base (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Qty_to_invoice_base); ok {
-				if err := trg.OnValidate_Qty_to_invoice_base(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "qty_to_ship_base":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Qty_to_ship_base = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Qty_to_ship_base, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field qty_to_ship_base: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Qty_to_ship_base = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Qty_to_ship_base = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Qty_to_ship_base = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field qty_to_ship_base (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Qty_to_ship_base); ok {
-				if err := trg.OnValidate_Qty_to_ship_base(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "qty_shpd_not_invd_base":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Qty_shpd_not_invd_base = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Qty_shpd_not_invd_base, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field qty_shpd_not_invd_base: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Qty_shpd_not_invd_base = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Qty_shpd_not_invd_base = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Qty_shpd_not_invd_base = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field qty_shpd_not_invd_base (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Qty_shpd_not_invd_base); ok {
-				if err := trg.OnValidate_Qty_shpd_not_invd_base(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "qty_shipped_base":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Qty_shipped_base = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Qty_shipped_base, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field qty_shipped_base: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Qty_shipped_base = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Qty_shipped_base = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Qty_shipped_base = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field qty_shipped_base (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Qty_shipped_base); ok {
-				if err := trg.OnValidate_Qty_shipped_base(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "qty_invoiced_base":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Qty_invoiced_base = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Qty_invoiced_base, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field qty_invoiced_base: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Qty_invoiced_base = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Qty_invoiced_base = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Qty_invoiced_base = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field qty_invoiced_base (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Qty_invoiced_base); ok {
-				if err := trg.OnValidate_Qty_invoiced_base(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reserved_quantity":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Reserved_quantity = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Reserved_quantity, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field reserved_quantity: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Reserved_quantity = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Reserved_quantity = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Reserved_quantity = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field reserved_quantity (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Reserved_quantity); ok {
-				if err := trg.OnValidate_Reserved_quantity(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reserve":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(SalesLineReserve); ok {
-			t.Reserve = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field reserve (valid range: 0-%d)", v, 3-1)
-			}
-			t.Reserve = SalesLineReserve(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field reserve (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Reserve = SalesLineReserve(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Reserve = 0
-			} else {
-				options := []string{"Never", "Optional", "Always"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Reserve = SalesLineReserve(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field reserve (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field reserve (expected SalesLineReserve, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Reserve); ok {
-				if err := trg.OnValidate_Reserve(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "planned":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Planned = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Planned = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field planned")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Planned); ok {
-				if err := trg.OnValidate_Planned(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reserved_qty_base":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Reserved_qty_base = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Reserved_qty_base, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field reserved_qty_base: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Reserved_qty_base = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Reserved_qty_base = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Reserved_qty_base = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field reserved_qty_base (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Reserved_qty_base); ok {
-				if err := trg.OnValidate_Reserved_qty_base(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "serial_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Serial_no = v
-		} else if v, ok := value.(string); ok {
-			t.Serial_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field serial_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Serial_no); ok {
-				if err := trg.OnValidate_Serial_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "lot_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Lot_no = v
-		} else if v, ok := value.(string); ok {
-			t.Lot_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field lot_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Lot_no); ok {
-				if err := trg.OnValidate_Lot_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bin_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Bin_code = v
-		} else if v, ok := value.(string); ok {
-			t.Bin_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field bin_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "bin_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Bin_code); ok {
-				if err := trg.OnValidate_Bin_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "project_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Project_no = v
-		} else if v, ok := value.(string); ok {
-			t.Project_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field project_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Project_no); ok {
-				if err := trg.OnValidate_Project_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "appl_to_project_entry":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Appl_to_project_entry = v
-		case float64:
-			t.Appl_to_project_entry = int(v)
-		case string:
-			if v == "" {
-				t.Appl_to_project_entry = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Appl_to_project_entry = i
-			} else {
-				return fmt.Errorf("invalid integer value for field appl_to_project_entry: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field appl_to_project_entry")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "appl_to_project_entry"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Appl_to_project_entry); ok {
-				if err := trg.OnValidate_Appl_to_project_entry(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "phase_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Phase_code = v
-		} else if v, ok := value.(string); ok {
-			t.Phase_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field phase_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "phase_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Phase_code); ok {
-				if err := trg.OnValidate_Phase_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "task_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Task_code = v
-		} else if v, ok := value.(string); ok {
-			t.Task_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field task_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "task_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Task_code); ok {
-				if err := trg.OnValidate_Task_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "step_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Step_code = v
-		} else if v, ok := value.(string); ok {
-			t.Step_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field step_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "step_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Step_code); ok {
-				if err := trg.OnValidate_Step_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "project_applies_to_id":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Project_applies_to_id = v
-		} else if v, ok := value.(string); ok {
-			t.Project_applies_to_id = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field project_applies_to_id")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Project_applies_to_id); ok {
-				if err := trg.OnValidate_Project_applies_to_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "apply_and_close_project":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Apply_and_close_project = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Apply_and_close_project = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field apply_and_close_project")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Apply_and_close_project); ok {
-				if err := trg.OnValidate_Apply_and_close_project(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "attached_to_line_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Attached_to_line_no = v
-		case float64:
-			t.Attached_to_line_no = int(v)
-		case string:
-			if v == "" {
-				t.Attached_to_line_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Attached_to_line_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field attached_to_line_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field attached_to_line_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Attached_to_line_no); ok {
-				if err := trg.OnValidate_Attached_to_line_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "purchase_order_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Purchase_order_no = v
-		} else if v, ok := value.(string); ok {
-			t.Purchase_order_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field purchase_order_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "purchase_order_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Purchase_order_no); ok {
-				if err := trg.OnValidate_Purchase_order_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "purch_order_line_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Purch_order_line_no = v
-		case float64:
-			t.Purch_order_line_no = int(v)
-		case string:
-			if v == "" {
-				t.Purch_order_line_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Purch_order_line_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field purch_order_line_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field purch_order_line_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Purch_order_line_no); ok {
-				if err := trg.OnValidate_Purch_order_line_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "drop_shipment":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Drop_shipment = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Drop_shipment = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field drop_shipment")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalesLineOnValidate_Drop_shipment); ok {
-				if err := trg.OnValidate_Drop_shipment(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := salesLineFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &salesLineFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -8978,838 +4967,18 @@ func (t *SalesLine) ValidateField(fieldName string, value interface{}) error {
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *SalesLine) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Document_type, true
-	case 2:
-		return t.Sell_to_customer_no, true
-	case 3:
-		return t.Document_no, true
-	case 4:
-		return t.Line_no, true
-	case 5:
-		return t.Type, true
-	case 6:
-		return t.No, true
-	case 7:
-		return t.Location_code, true
-	case 8:
-		return t.Posting_group, true
-	case 9:
-		return t.Quantity_disc_code, true
-	case 10:
-		return t.Shipment_date, true
-	case 11:
-		return t.Description, true
-	case 12:
-		return t.Description_2, true
-	case 13:
-		return t.Unit_of_measure, true
-	case 15:
-		return t.Quantity, true
-	case 16:
-		return t.Outstanding_quantity, true
-	case 17:
-		return t.Qty_to_invoice, true
-	case 18:
-		return t.Qty_to_ship, true
-	case 22:
-		return t.Unit_price, true
-	case 23:
-		return t.Unit_cost_lcy, true
-	case 25:
-		return t.Tax_percent, true
-	case 26:
-		return t.Quantity_disc_percent, true
-	case 27:
-		return t.Line_discount_percent, true
-	case 28:
-		return t.Line_discount_amount, true
-	case 29:
-		return t.Amount, true
-	case 30:
-		return t.Amount_including_tax, true
-	case 32:
-		return t.Allow_invoice_disc, true
-	case 34:
-		return t.Gross_weight, true
-	case 35:
-		return t.Net_weight, true
-	case 36:
-		return t.Units_per_parcel, true
-	case 37:
-		return t.Unit_volume, true
-	case 40:
-		return t.Dimension_1_code, true
-	case 41:
-		return t.Dimension_2_code, true
-	case 42:
-		return t.Price_group_code, true
-	case 43:
-		return t.Allow_quantity_disc, true
-	case 52:
-		return t.Work_type_code, true
-	case 55:
-		return t.Cust_item_disc_percent, true
-	case 57:
-		return t.Outstanding_amount, true
-	case 58:
-		return t.Qty_shipped_not_invoiced, true
-	case 59:
-		return t.Shipped_not_invoiced, true
-	case 60:
-		return t.Quantity_shipped, true
-	case 61:
-		return t.Quantity_invoiced, true
-	case 63:
-		return t.Shipment_no, true
-	case 64:
-		return t.Shipment_line_no, true
-	case 67:
-		return t.Profit_percent, true
-	case 68:
-		return t.Bill_to_customer_no, true
-	case 69:
-		return t.Inv_discount_amount, true
-	case 74:
-		return t.Gen_bus_posting_group, true
-	case 75:
-		return t.Gen_prod_posting_group, true
-	case 77:
-		return t.Tax_calculation_type, true
-	case 78:
-		return t.Transaction_type, true
-	case 79:
-		return t.Transport_method, true
-	case 81:
-		return t.Exit_point, true
-	case 82:
-		return t.Area, true
-	case 83:
-		return t.Transaction_specification, true
-	case 85:
-		return t.Tax_area_code, true
-	case 86:
-		return t.Tax_liable, true
-	case 87:
-		return t.Tax_group_code, true
-	case 89:
-		return t.Tax_bus_posting_group, true
-	case 90:
-		return t.Tax_prod_posting_group, true
-	case 91:
-		return t.Currency_code, true
-	case 92:
-		return t.Outstanding_amount_lcy, true
-	case 93:
-		return t.Shipped_not_invoiced_lcy, true
-	case 97:
-		return t.Blanket_order_no, true
-	case 98:
-		return t.Blanket_order_line_no, true
-	case 99:
-		return t.Tax_base_amount, true
-	case 100:
-		return t.Unit_cost, true
-	case 5402:
-		return t.Variant_code, true
-	case 5404:
-		return t.Qty_per_unit_of_measure, true
-	case 5407:
-		return t.Unit_of_measure_code, true
-	case 5415:
-		return t.Quantity_base, true
-	case 5416:
-		return t.Outstanding_qty_base, true
-	case 5417:
-		return t.Qty_to_invoice_base, true
-	case 5418:
-		return t.Qty_to_ship_base, true
-	case 5458:
-		return t.Qty_shpd_not_invd_base, true
-	case 5460:
-		return t.Qty_shipped_base, true
-	case 5461:
-		return t.Qty_invoiced_base, true
-	case 95:
-		return t.Reserved_quantity, true
-	case 96:
-		return t.Reserve, true
-	case 5405:
-		return t.Planned, true
-	case 5495:
-		return t.Reserved_qty_base, true
-	case 53:
-		return t.Serial_no, true
-	case 5400:
-		return t.Lot_no, true
-	case 5403:
-		return t.Bin_code, true
-	case 45:
-		return t.Project_no, true
-	case 46:
-		return t.Appl_to_project_entry, true
-	case 47:
-		return t.Phase_code, true
-	case 48:
-		return t.Task_code, true
-	case 49:
-		return t.Step_code, true
-	case 50:
-		return t.Project_applies_to_id, true
-	case 51:
-		return t.Apply_and_close_project, true
-	case 80:
-		return t.Attached_to_line_no, true
-	case 71:
-		return t.Purchase_order_no, true
-	case 72:
-		return t.Purch_order_line_no, true
-	case 73:
-		return t.Drop_shipment, true
-	}
-	return nil, false
+	return salesLineFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *SalesLine) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return salesLineFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *SalesLine) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 5 {
-			t.Document_type = SalesLineDocument_type(i)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Sell_to_customer_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Sell_to_customer_no = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Code); ok {
-			t.Document_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Document_no = types.NewCode(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(int); ok {
-			t.Line_no = v
-			return true
-		}
-	case 5:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Type = SalesLineType(i)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Code); ok {
-			t.Location_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Location_code = types.NewCode(v)
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Code); ok {
-			t.Posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Posting_group = types.NewCode(v)
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.Code); ok {
-			t.Quantity_disc_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Quantity_disc_code = types.NewCode(v)
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Date); ok {
-			t.Shipment_date = v
-			return true
-		}
-	case 11:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 12:
-		if v, ok := value.(types.Text); ok {
-			t.Description_2 = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description_2 = types.NewText(v)
-			return true
-		}
-	case 13:
-		if v, ok := value.(types.Text); ok {
-			t.Unit_of_measure = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Unit_of_measure = types.NewText(v)
-			return true
-		}
-	case 15:
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity = v
-			return true
-		}
-	case 16:
-		if v, ok := value.(types.Decimal); ok {
-			t.Outstanding_quantity = v
-			return true
-		}
-	case 17:
-		if v, ok := value.(types.Decimal); ok {
-			t.Qty_to_invoice = v
-			return true
-		}
-	case 18:
-		if v, ok := value.(types.Decimal); ok {
-			t.Qty_to_ship = v
-			return true
-		}
-	case 22:
-		if v, ok := value.(types.Decimal); ok {
-			t.Unit_price = v
-			return true
-		}
-	case 23:
-		if v, ok := value.(types.Decimal); ok {
-			t.Unit_cost_lcy = v
-			return true
-		}
-	case 25:
-		if v, ok := value.(types.Decimal); ok {
-			t.Tax_percent = v
-			return true
-		}
-	case 26:
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity_disc_percent = v
-			return true
-		}
-	case 27:
-		if v, ok := value.(types.Decimal); ok {
-			t.Line_discount_percent = v
-			return true
-		}
-	case 28:
-		if v, ok := value.(types.Decimal); ok {
-			t.Line_discount_amount = v
-			return true
-		}
-	case 29:
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount = v
-			return true
-		}
-	case 30:
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount_including_tax = v
-			return true
-		}
-	case 32:
-		if v, ok := value.(bool); ok {
-			t.Allow_invoice_disc = v
-			return true
-		}
-	case 34:
-		if v, ok := value.(types.Decimal); ok {
-			t.Gross_weight = v
-			return true
-		}
-	case 35:
-		if v, ok := value.(types.Decimal); ok {
-			t.Net_weight = v
-			return true
-		}
-	case 36:
-		if v, ok := value.(types.Decimal); ok {
-			t.Units_per_parcel = v
-			return true
-		}
-	case 37:
-		if v, ok := value.(types.Decimal); ok {
-			t.Unit_volume = v
-			return true
-		}
-	case 40:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-			return true
-		}
-	case 41:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-			return true
-		}
-	case 42:
-		if v, ok := value.(types.Code); ok {
-			t.Price_group_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Price_group_code = types.NewCode(v)
-			return true
-		}
-	case 43:
-		if v, ok := value.(bool); ok {
-			t.Allow_quantity_disc = v
-			return true
-		}
-	case 52:
-		if v, ok := value.(types.Code); ok {
-			t.Work_type_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Work_type_code = types.NewCode(v)
-			return true
-		}
-	case 55:
-		if v, ok := value.(types.Decimal); ok {
-			t.Cust_item_disc_percent = v
-			return true
-		}
-	case 57:
-		if v, ok := value.(types.Decimal); ok {
-			t.Outstanding_amount = v
-			return true
-		}
-	case 58:
-		if v, ok := value.(types.Decimal); ok {
-			t.Qty_shipped_not_invoiced = v
-			return true
-		}
-	case 59:
-		if v, ok := value.(types.Decimal); ok {
-			t.Shipped_not_invoiced = v
-			return true
-		}
-	case 60:
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity_shipped = v
-			return true
-		}
-	case 61:
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity_invoiced = v
-			return true
-		}
-	case 63:
-		if v, ok := value.(types.Code); ok {
-			t.Shipment_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Shipment_no = types.NewCode(v)
-			return true
-		}
-	case 64:
-		if v, ok := value.(int); ok {
-			t.Shipment_line_no = v
-			return true
-		}
-	case 67:
-		if v, ok := value.(types.Decimal); ok {
-			t.Profit_percent = v
-			return true
-		}
-	case 68:
-		if v, ok := value.(types.Code); ok {
-			t.Bill_to_customer_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Bill_to_customer_no = types.NewCode(v)
-			return true
-		}
-	case 69:
-		if v, ok := value.(types.Decimal); ok {
-			t.Inv_discount_amount = v
-			return true
-		}
-	case 74:
-		if v, ok := value.(types.Code); ok {
-			t.Gen_bus_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Gen_bus_posting_group = types.NewCode(v)
-			return true
-		}
-	case 75:
-		if v, ok := value.(types.Code); ok {
-			t.Gen_prod_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Gen_prod_posting_group = types.NewCode(v)
-			return true
-		}
-	case 77:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Tax_calculation_type = SalesLineTax_calculation_type(i)
-			return true
-		}
-	case 78:
-		if v, ok := value.(types.Code); ok {
-			t.Transaction_type = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Transaction_type = types.NewCode(v)
-			return true
-		}
-	case 79:
-		if v, ok := value.(types.Code); ok {
-			t.Transport_method = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Transport_method = types.NewCode(v)
-			return true
-		}
-	case 81:
-		if v, ok := value.(types.Code); ok {
-			t.Exit_point = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Exit_point = types.NewCode(v)
-			return true
-		}
-	case 82:
-		if v, ok := value.(types.Code); ok {
-			t.Area = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Area = types.NewCode(v)
-			return true
-		}
-	case 83:
-		if v, ok := value.(types.Code); ok {
-			t.Transaction_specification = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Transaction_specification = types.NewCode(v)
-			return true
-		}
-	case 85:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_area_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_area_code = types.NewCode(v)
-			return true
-		}
-	case 86:
-		if v, ok := value.(bool); ok {
-			t.Tax_liable = v
-			return true
-		}
-	case 87:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_group_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_group_code = types.NewCode(v)
-			return true
-		}
-	case 89:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_bus_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_bus_posting_group = types.NewCode(v)
-			return true
-		}
-	case 90:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_prod_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_prod_posting_group = types.NewCode(v)
-			return true
-		}
-	case 91:
-		if v, ok := value.(types.Code); ok {
-			t.Currency_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Currency_code = types.NewCode(v)
-			return true
-		}
-	case 92:
-		if v, ok := value.(types.Decimal); ok {
-			t.Outstanding_amount_lcy = v
-			return true
-		}
-	case 93:
-		if v, ok := value.(types.Decimal); ok {
-			t.Shipped_not_invoiced_lcy = v
-			return true
-		}
-	case 97:
-		if v, ok := value.(types.Code); ok {
-			t.Blanket_order_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Blanket_order_no = types.NewCode(v)
-			return true
-		}
-	case 98:
-		if v, ok := value.(int); ok {
-			t.Blanket_order_line_no = v
-			return true
-		}
-	case 99:
-		if v, ok := value.(types.Decimal); ok {
-			t.Tax_base_amount = v
-			return true
-		}
-	case 100:
-		if v, ok := value.(types.Decimal); ok {
-			t.Unit_cost = v
-			return true
-		}
-	case 5402:
-		if v, ok := value.(types.Code); ok {
-			t.Variant_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Variant_code = types.NewCode(v)
-			return true
-		}
-	case 5404:
-		if v, ok := value.(types.Decimal); ok {
-			t.Qty_per_unit_of_measure = v
-			return true
-		}
-	case 5407:
-		if v, ok := value.(types.Code); ok {
-			t.Unit_of_measure_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Unit_of_measure_code = types.NewCode(v)
-			return true
-		}
-	case 5415:
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity_base = v
-			return true
-		}
-	case 5416:
-		if v, ok := value.(types.Decimal); ok {
-			t.Outstanding_qty_base = v
-			return true
-		}
-	case 5417:
-		if v, ok := value.(types.Decimal); ok {
-			t.Qty_to_invoice_base = v
-			return true
-		}
-	case 5418:
-		if v, ok := value.(types.Decimal); ok {
-			t.Qty_to_ship_base = v
-			return true
-		}
-	case 5458:
-		if v, ok := value.(types.Decimal); ok {
-			t.Qty_shpd_not_invd_base = v
-			return true
-		}
-	case 5460:
-		if v, ok := value.(types.Decimal); ok {
-			t.Qty_shipped_base = v
-			return true
-		}
-	case 5461:
-		if v, ok := value.(types.Decimal); ok {
-			t.Qty_invoiced_base = v
-			return true
-		}
-	case 95:
-		if v, ok := value.(types.Decimal); ok {
-			t.Reserved_quantity = v
-			return true
-		}
-	case 96:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Reserve = SalesLineReserve(i)
-			return true
-		}
-	case 5405:
-		if v, ok := value.(bool); ok {
-			t.Planned = v
-			return true
-		}
-	case 5495:
-		if v, ok := value.(types.Decimal); ok {
-			t.Reserved_qty_base = v
-			return true
-		}
-	case 53:
-		if v, ok := value.(types.Code); ok {
-			t.Serial_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Serial_no = types.NewCode(v)
-			return true
-		}
-	case 5400:
-		if v, ok := value.(types.Code); ok {
-			t.Lot_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Lot_no = types.NewCode(v)
-			return true
-		}
-	case 5403:
-		if v, ok := value.(types.Code); ok {
-			t.Bin_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Bin_code = types.NewCode(v)
-			return true
-		}
-	case 45:
-		if v, ok := value.(types.Code); ok {
-			t.Project_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Project_no = types.NewCode(v)
-			return true
-		}
-	case 46:
-		if v, ok := value.(int); ok {
-			t.Appl_to_project_entry = v
-			return true
-		}
-	case 47:
-		if v, ok := value.(types.Code); ok {
-			t.Phase_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Phase_code = types.NewCode(v)
-			return true
-		}
-	case 48:
-		if v, ok := value.(types.Code); ok {
-			t.Task_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Task_code = types.NewCode(v)
-			return true
-		}
-	case 49:
-		if v, ok := value.(types.Code); ok {
-			t.Step_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Step_code = types.NewCode(v)
-			return true
-		}
-	case 50:
-		if v, ok := value.(types.Code); ok {
-			t.Project_applies_to_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Project_applies_to_id = types.NewCode(v)
-			return true
-		}
-	case 51:
-		if v, ok := value.(bool); ok {
-			t.Apply_and_close_project = v
-			return true
-		}
-	case 80:
-		if v, ok := value.(int); ok {
-			t.Attached_to_line_no = v
-			return true
-		}
-	case 71:
-		if v, ok := value.(types.Code); ok {
-			t.Purchase_order_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Purchase_order_no = types.NewCode(v)
-			return true
-		}
-	case 72:
-		if v, ok := value.(int); ok {
-			t.Purch_order_line_no = v
-			return true
-		}
-	case 73:
-		if v, ok := value.(bool); ok {
-			t.Drop_shipment = v
-			return true
-		}
-	}
-	return false
+	return salesLineFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -10625,197 +5794,7 @@ func (t *SalesLine) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *SalesLine) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "document_type":
-		return int(t.Document_type), true
-	case "sell_to_customer_no":
-		return t.Sell_to_customer_no, true
-	case "document_no":
-		return t.Document_no, true
-	case "line_no":
-		return t.Line_no, true
-	case "type":
-		return int(t.Type), true
-	case "no":
-		return t.No, true
-	case "location_code":
-		return t.Location_code, true
-	case "posting_group":
-		return t.Posting_group, true
-	case "quantity_disc_code":
-		return t.Quantity_disc_code, true
-	case "shipment_date":
-		return t.Shipment_date, true
-	case "description":
-		return t.Description, true
-	case "description_2":
-		return t.Description_2, true
-	case "unit_of_measure":
-		return t.Unit_of_measure, true
-	case "quantity":
-		return t.Quantity, true
-	case "outstanding_quantity":
-		return t.Outstanding_quantity, true
-	case "qty_to_invoice":
-		return t.Qty_to_invoice, true
-	case "qty_to_ship":
-		return t.Qty_to_ship, true
-	case "unit_price":
-		return t.Unit_price, true
-	case "unit_cost_lcy":
-		return t.Unit_cost_lcy, true
-	case "tax_percent":
-		return t.Tax_percent, true
-	case "quantity_disc_percent":
-		return t.Quantity_disc_percent, true
-	case "line_discount_percent":
-		return t.Line_discount_percent, true
-	case "line_discount_amount":
-		return t.Line_discount_amount, true
-	case "amount":
-		return t.Amount, true
-	case "amount_including_tax":
-		return t.Amount_including_tax, true
-	case "allow_invoice_disc":
-		return t.Allow_invoice_disc, true
-	case "gross_weight":
-		return t.Gross_weight, true
-	case "net_weight":
-		return t.Net_weight, true
-	case "units_per_parcel":
-		return t.Units_per_parcel, true
-	case "unit_volume":
-		return t.Unit_volume, true
-	case "dimension_1_code":
-		return t.Dimension_1_code, true
-	case "dimension_2_code":
-		return t.Dimension_2_code, true
-	case "price_group_code":
-		return t.Price_group_code, true
-	case "allow_quantity_disc":
-		return t.Allow_quantity_disc, true
-	case "work_type_code":
-		return t.Work_type_code, true
-	case "cust_item_disc_percent":
-		return t.Cust_item_disc_percent, true
-	case "outstanding_amount":
-		return t.Outstanding_amount, true
-	case "qty_shipped_not_invoiced":
-		return t.Qty_shipped_not_invoiced, true
-	case "shipped_not_invoiced":
-		return t.Shipped_not_invoiced, true
-	case "quantity_shipped":
-		return t.Quantity_shipped, true
-	case "quantity_invoiced":
-		return t.Quantity_invoiced, true
-	case "shipment_no":
-		return t.Shipment_no, true
-	case "shipment_line_no":
-		return t.Shipment_line_no, true
-	case "profit_percent":
-		return t.Profit_percent, true
-	case "bill_to_customer_no":
-		return t.Bill_to_customer_no, true
-	case "inv_discount_amount":
-		return t.Inv_discount_amount, true
-	case "gen_bus_posting_group":
-		return t.Gen_bus_posting_group, true
-	case "gen_prod_posting_group":
-		return t.Gen_prod_posting_group, true
-	case "tax_calculation_type":
-		return int(t.Tax_calculation_type), true
-	case "transaction_type":
-		return t.Transaction_type, true
-	case "transport_method":
-		return t.Transport_method, true
-	case "exit_point":
-		return t.Exit_point, true
-	case "area":
-		return t.Area, true
-	case "transaction_specification":
-		return t.Transaction_specification, true
-	case "tax_area_code":
-		return t.Tax_area_code, true
-	case "tax_liable":
-		return t.Tax_liable, true
-	case "tax_group_code":
-		return t.Tax_group_code, true
-	case "tax_bus_posting_group":
-		return t.Tax_bus_posting_group, true
-	case "tax_prod_posting_group":
-		return t.Tax_prod_posting_group, true
-	case "currency_code":
-		return t.Currency_code, true
-	case "outstanding_amount_lcy":
-		return t.Outstanding_amount_lcy, true
-	case "shipped_not_invoiced_lcy":
-		return t.Shipped_not_invoiced_lcy, true
-	case "blanket_order_no":
-		return t.Blanket_order_no, true
-	case "blanket_order_line_no":
-		return t.Blanket_order_line_no, true
-	case "tax_base_amount":
-		return t.Tax_base_amount, true
-	case "unit_cost":
-		return t.Unit_cost, true
-	case "variant_code":
-		return t.Variant_code, true
-	case "qty_per_unit_of_measure":
-		return t.Qty_per_unit_of_measure, true
-	case "unit_of_measure_code":
-		return t.Unit_of_measure_code, true
-	case "quantity_base":
-		return t.Quantity_base, true
-	case "outstanding_qty_base":
-		return t.Outstanding_qty_base, true
-	case "qty_to_invoice_base":
-		return t.Qty_to_invoice_base, true
-	case "qty_to_ship_base":
-		return t.Qty_to_ship_base, true
-	case "qty_shpd_not_invd_base":
-		return t.Qty_shpd_not_invd_base, true
-	case "qty_shipped_base":
-		return t.Qty_shipped_base, true
-	case "qty_invoiced_base":
-		return t.Qty_invoiced_base, true
-	case "reserved_quantity":
-		return t.Reserved_quantity, true
-	case "reserve":
-		return int(t.Reserve), true
-	case "planned":
-		return t.Planned, true
-	case "reserved_qty_base":
-		return t.Reserved_qty_base, true
-	case "serial_no":
-		return t.Serial_no, true
-	case "lot_no":
-		return t.Lot_no, true
-	case "bin_code":
-		return t.Bin_code, true
-	case "project_no":
-		return t.Project_no, true
-	case "appl_to_project_entry":
-		return t.Appl_to_project_entry, true
-	case "phase_code":
-		return t.Phase_code, true
-	case "task_code":
-		return t.Task_code, true
-	case "step_code":
-		return t.Step_code, true
-	case "project_applies_to_id":
-		return t.Project_applies_to_id, true
-	case "apply_and_close_project":
-		return t.Apply_and_close_project, true
-	case "attached_to_line_no":
-		return t.Attached_to_line_no, true
-	case "purchase_order_no":
-		return t.Purchase_order_no, true
-	case "purch_order_line_no":
-		return t.Purch_order_line_no, true
-	case "drop_shipment":
-		return t.Drop_shipment, true
-	}
-	return nil, false
+	return salesLineFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -11000,938 +5979,12 @@ func (t *SalesLine) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *SalesLine) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"document_type":             int(t.Document_type),
-		"sell_to_customer_no":       t.Sell_to_customer_no.String(),
-		"document_no":               t.Document_no.String(),
-		"line_no":                   t.Line_no,
-		"type":                      int(t.Type),
-		"no":                        t.No.String(),
-		"location_code":             t.Location_code.String(),
-		"posting_group":             t.Posting_group.String(),
-		"quantity_disc_code":        t.Quantity_disc_code.String(),
-		"shipment_date":             t.Shipment_date.String(),
-		"description":               t.Description.String(),
-		"description_2":             t.Description_2.String(),
-		"unit_of_measure":           t.Unit_of_measure.String(),
-		"quantity":                  t.Quantity.String(),
-		"outstanding_quantity":      t.Outstanding_quantity.String(),
-		"qty_to_invoice":            t.Qty_to_invoice.String(),
-		"qty_to_ship":               t.Qty_to_ship.String(),
-		"unit_price":                t.Unit_price.String(),
-		"unit_cost_lcy":             t.Unit_cost_lcy.String(),
-		"tax_percent":               t.Tax_percent.String(),
-		"quantity_disc_percent":     t.Quantity_disc_percent.String(),
-		"line_discount_percent":     t.Line_discount_percent.String(),
-		"line_discount_amount":      t.Line_discount_amount.String(),
-		"amount":                    t.Amount.String(),
-		"amount_including_tax":      t.Amount_including_tax.String(),
-		"allow_invoice_disc":        t.Allow_invoice_disc,
-		"gross_weight":              t.Gross_weight.String(),
-		"net_weight":                t.Net_weight.String(),
-		"units_per_parcel":          t.Units_per_parcel.String(),
-		"unit_volume":               t.Unit_volume.String(),
-		"dimension_1_code":          t.Dimension_1_code.String(),
-		"dimension_2_code":          t.Dimension_2_code.String(),
-		"price_group_code":          t.Price_group_code.String(),
-		"allow_quantity_disc":       t.Allow_quantity_disc,
-		"work_type_code":            t.Work_type_code.String(),
-		"cust_item_disc_percent":    t.Cust_item_disc_percent.String(),
-		"outstanding_amount":        t.Outstanding_amount.String(),
-		"qty_shipped_not_invoiced":  t.Qty_shipped_not_invoiced.String(),
-		"shipped_not_invoiced":      t.Shipped_not_invoiced.String(),
-		"quantity_shipped":          t.Quantity_shipped.String(),
-		"quantity_invoiced":         t.Quantity_invoiced.String(),
-		"shipment_no":               t.Shipment_no.String(),
-		"shipment_line_no":          t.Shipment_line_no,
-		"profit_percent":            t.Profit_percent.String(),
-		"bill_to_customer_no":       t.Bill_to_customer_no.String(),
-		"inv_discount_amount":       t.Inv_discount_amount.String(),
-		"gen_bus_posting_group":     t.Gen_bus_posting_group.String(),
-		"gen_prod_posting_group":    t.Gen_prod_posting_group.String(),
-		"tax_calculation_type":      int(t.Tax_calculation_type),
-		"transaction_type":          t.Transaction_type.String(),
-		"transport_method":          t.Transport_method.String(),
-		"exit_point":                t.Exit_point.String(),
-		"area":                      t.Area.String(),
-		"transaction_specification": t.Transaction_specification.String(),
-		"tax_area_code":             t.Tax_area_code.String(),
-		"tax_liable":                t.Tax_liable,
-		"tax_group_code":            t.Tax_group_code.String(),
-		"tax_bus_posting_group":     t.Tax_bus_posting_group.String(),
-		"tax_prod_posting_group":    t.Tax_prod_posting_group.String(),
-		"currency_code":             t.Currency_code.String(),
-		"outstanding_amount_lcy":    t.Outstanding_amount_lcy.String(),
-		"shipped_not_invoiced_lcy":  t.Shipped_not_invoiced_lcy.String(),
-		"blanket_order_no":          t.Blanket_order_no.String(),
-		"blanket_order_line_no":     t.Blanket_order_line_no,
-		"tax_base_amount":           t.Tax_base_amount.String(),
-		"unit_cost":                 t.Unit_cost.String(),
-		"variant_code":              t.Variant_code.String(),
-		"qty_per_unit_of_measure":   t.Qty_per_unit_of_measure.String(),
-		"unit_of_measure_code":      t.Unit_of_measure_code.String(),
-		"quantity_base":             t.Quantity_base.String(),
-		"outstanding_qty_base":      t.Outstanding_qty_base.String(),
-		"qty_to_invoice_base":       t.Qty_to_invoice_base.String(),
-		"qty_to_ship_base":          t.Qty_to_ship_base.String(),
-		"qty_shpd_not_invd_base":    t.Qty_shpd_not_invd_base.String(),
-		"qty_shipped_base":          t.Qty_shipped_base.String(),
-		"qty_invoiced_base":         t.Qty_invoiced_base.String(),
-		"reserved_quantity":         t.Reserved_quantity.String(),
-		"reserve":                   int(t.Reserve),
-		"planned":                   t.Planned,
-		"reserved_qty_base":         t.Reserved_qty_base.String(),
-		"serial_no":                 t.Serial_no.String(),
-		"lot_no":                    t.Lot_no.String(),
-		"bin_code":                  t.Bin_code.String(),
-		"project_no":                t.Project_no.String(),
-		"appl_to_project_entry":     t.Appl_to_project_entry,
-		"phase_code":                t.Phase_code.String(),
-		"task_code":                 t.Task_code.String(),
-		"step_code":                 t.Step_code.String(),
-		"project_applies_to_id":     t.Project_applies_to_id.String(),
-		"apply_and_close_project":   t.Apply_and_close_project,
-		"attached_to_line_no":       t.Attached_to_line_no,
-		"purchase_order_no":         t.Purchase_order_no.String(),
-		"purch_order_line_no":       t.Purch_order_line_no,
-		"drop_shipment":             t.Drop_shipment,
-	}
+	return salesLineFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *SalesLine) FromMap(data map[string]interface{}) {
-	if v, ok := data["document_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Document_type = SalesLineDocument_type(int(val))
-		case int:
-			t.Document_type = SalesLineDocument_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Quote", "Order", "Invoice", "Credit Memo", "Blanket Order"}
-			for i, opt := range options {
-				if opt == val {
-					t.Document_type = SalesLineDocument_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["sell_to_customer_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Sell_to_customer_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["document_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Document_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["line_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Line_no = int(val)
-		case int:
-			t.Line_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Line_no = n
-			}
-		}
-	}
-	if v, ok := data["type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Type = SalesLineType(int(val))
-		case int:
-			t.Type = SalesLineType(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "G/L Account", "Item", "Resource"}
-			for i, opt := range options {
-				if opt == val {
-					t.Type = SalesLineType(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No = types.NewCode(s)
-		}
-	}
-	if v, ok := data["location_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Location_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["quantity_disc_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Quantity_disc_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["shipment_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Shipment_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["description_2"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description_2 = types.NewText(s)
-		}
-	}
-	if v, ok := data["unit_of_measure"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Unit_of_measure = types.NewText(s)
-		}
-	}
-	if v, ok := data["quantity"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Quantity, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Quantity = types.NewDecimal(val)
-		case int:
-			t.Quantity = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Quantity = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["outstanding_quantity"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Outstanding_quantity, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Outstanding_quantity = types.NewDecimal(val)
-		case int:
-			t.Outstanding_quantity = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Outstanding_quantity = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["qty_to_invoice"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Qty_to_invoice, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Qty_to_invoice = types.NewDecimal(val)
-		case int:
-			t.Qty_to_invoice = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Qty_to_invoice = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["qty_to_ship"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Qty_to_ship, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Qty_to_ship = types.NewDecimal(val)
-		case int:
-			t.Qty_to_ship = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Qty_to_ship = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["unit_price"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Unit_price, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Unit_price = types.NewDecimal(val)
-		case int:
-			t.Unit_price = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Unit_price = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["unit_cost_lcy"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Unit_cost_lcy, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Unit_cost_lcy = types.NewDecimal(val)
-		case int:
-			t.Unit_cost_lcy = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Unit_cost_lcy = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["tax_percent"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Tax_percent, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Tax_percent = types.NewDecimal(val)
-		case int:
-			t.Tax_percent = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Tax_percent = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["quantity_disc_percent"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Quantity_disc_percent, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Quantity_disc_percent = types.NewDecimal(val)
-		case int:
-			t.Quantity_disc_percent = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Quantity_disc_percent = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["line_discount_percent"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Line_discount_percent, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Line_discount_percent = types.NewDecimal(val)
-		case int:
-			t.Line_discount_percent = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Line_discount_percent = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["line_discount_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Line_discount_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Line_discount_amount = types.NewDecimal(val)
-		case int:
-			t.Line_discount_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Line_discount_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Amount = types.NewDecimal(val)
-		case int:
-			t.Amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["amount_including_tax"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Amount_including_tax, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Amount_including_tax = types.NewDecimal(val)
-		case int:
-			t.Amount_including_tax = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Amount_including_tax = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["allow_invoice_disc"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Allow_invoice_disc = b
-		}
-	}
-	if v, ok := data["gross_weight"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Gross_weight, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Gross_weight = types.NewDecimal(val)
-		case int:
-			t.Gross_weight = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Gross_weight = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["net_weight"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Net_weight, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Net_weight = types.NewDecimal(val)
-		case int:
-			t.Net_weight = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Net_weight = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["units_per_parcel"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Units_per_parcel, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Units_per_parcel = types.NewDecimal(val)
-		case int:
-			t.Units_per_parcel = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Units_per_parcel = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["unit_volume"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Unit_volume, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Unit_volume = types.NewDecimal(val)
-		case int:
-			t.Unit_volume = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Unit_volume = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["dimension_1_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_1_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["dimension_2_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_2_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["price_group_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Price_group_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["allow_quantity_disc"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Allow_quantity_disc = b
-		}
-	}
-	if v, ok := data["work_type_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Work_type_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["cust_item_disc_percent"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Cust_item_disc_percent, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Cust_item_disc_percent = types.NewDecimal(val)
-		case int:
-			t.Cust_item_disc_percent = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Cust_item_disc_percent = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["outstanding_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Outstanding_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Outstanding_amount = types.NewDecimal(val)
-		case int:
-			t.Outstanding_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Outstanding_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["qty_shipped_not_invoiced"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Qty_shipped_not_invoiced, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Qty_shipped_not_invoiced = types.NewDecimal(val)
-		case int:
-			t.Qty_shipped_not_invoiced = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Qty_shipped_not_invoiced = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["shipped_not_invoiced"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Shipped_not_invoiced, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Shipped_not_invoiced = types.NewDecimal(val)
-		case int:
-			t.Shipped_not_invoiced = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Shipped_not_invoiced = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["quantity_shipped"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Quantity_shipped, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Quantity_shipped = types.NewDecimal(val)
-		case int:
-			t.Quantity_shipped = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Quantity_shipped = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["quantity_invoiced"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Quantity_invoiced, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Quantity_invoiced = types.NewDecimal(val)
-		case int:
-			t.Quantity_invoiced = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Quantity_invoiced = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["shipment_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Shipment_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["shipment_line_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Shipment_line_no = int(val)
-		case int:
-			t.Shipment_line_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Shipment_line_no = n
-			}
-		}
-	}
-	if v, ok := data["profit_percent"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Profit_percent, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Profit_percent = types.NewDecimal(val)
-		case int:
-			t.Profit_percent = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Profit_percent = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["bill_to_customer_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Bill_to_customer_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["inv_discount_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Inv_discount_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Inv_discount_amount = types.NewDecimal(val)
-		case int:
-			t.Inv_discount_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Inv_discount_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["gen_bus_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Gen_bus_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["gen_prod_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Gen_prod_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_calculation_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Tax_calculation_type = SalesLineTax_calculation_type(int(val))
-		case int:
-			t.Tax_calculation_type = SalesLineTax_calculation_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Normal VAT", "Reverse Charge VAT", "Full VAT", "Sales Tax"}
-			for i, opt := range options {
-				if opt == val {
-					t.Tax_calculation_type = SalesLineTax_calculation_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["transaction_type"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Transaction_type = types.NewCode(s)
-		}
-	}
-	if v, ok := data["transport_method"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Transport_method = types.NewCode(s)
-		}
-	}
-	if v, ok := data["exit_point"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Exit_point = types.NewCode(s)
-		}
-	}
-	if v, ok := data["area"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Area = types.NewCode(s)
-		}
-	}
-	if v, ok := data["transaction_specification"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Transaction_specification = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_area_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_area_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_liable"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Tax_liable = b
-		}
-	}
-	if v, ok := data["tax_group_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_group_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_bus_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_bus_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_prod_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_prod_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["currency_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Currency_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["outstanding_amount_lcy"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Outstanding_amount_lcy, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Outstanding_amount_lcy = types.NewDecimal(val)
-		case int:
-			t.Outstanding_amount_lcy = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Outstanding_amount_lcy = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["shipped_not_invoiced_lcy"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Shipped_not_invoiced_lcy, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Shipped_not_invoiced_lcy = types.NewDecimal(val)
-		case int:
-			t.Shipped_not_invoiced_lcy = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Shipped_not_invoiced_lcy = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["blanket_order_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Blanket_order_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["blanket_order_line_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Blanket_order_line_no = int(val)
-		case int:
-			t.Blanket_order_line_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Blanket_order_line_no = n
-			}
-		}
-	}
-	if v, ok := data["tax_base_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Tax_base_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Tax_base_amount = types.NewDecimal(val)
-		case int:
-			t.Tax_base_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Tax_base_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["unit_cost"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Unit_cost, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Unit_cost = types.NewDecimal(val)
-		case int:
-			t.Unit_cost = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Unit_cost = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["variant_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Variant_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["qty_per_unit_of_measure"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Qty_per_unit_of_measure, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Qty_per_unit_of_measure = types.NewDecimal(val)
-		case int:
-			t.Qty_per_unit_of_measure = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Qty_per_unit_of_measure = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["unit_of_measure_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Unit_of_measure_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["quantity_base"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Quantity_base, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Quantity_base = types.NewDecimal(val)
-		case int:
-			t.Quantity_base = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Quantity_base = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["outstanding_qty_base"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Outstanding_qty_base, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Outstanding_qty_base = types.NewDecimal(val)
-		case int:
-			t.Outstanding_qty_base = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Outstanding_qty_base = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["qty_to_invoice_base"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Qty_to_invoice_base, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Qty_to_invoice_base = types.NewDecimal(val)
-		case int:
-			t.Qty_to_invoice_base = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Qty_to_invoice_base = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["qty_to_ship_base"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Qty_to_ship_base, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Qty_to_ship_base = types.NewDecimal(val)
-		case int:
-			t.Qty_to_ship_base = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Qty_to_ship_base = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["qty_shpd_not_invd_base"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Qty_shpd_not_invd_base, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Qty_shpd_not_invd_base = types.NewDecimal(val)
-		case int:
-			t.Qty_shpd_not_invd_base = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Qty_shpd_not_invd_base = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["qty_shipped_base"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Qty_shipped_base, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Qty_shipped_base = types.NewDecimal(val)
-		case int:
-			t.Qty_shipped_base = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Qty_shipped_base = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["qty_invoiced_base"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Qty_invoiced_base, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Qty_invoiced_base = types.NewDecimal(val)
-		case int:
-			t.Qty_invoiced_base = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Qty_invoiced_base = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["reserved_quantity"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Reserved_quantity, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Reserved_quantity = types.NewDecimal(val)
-		case int:
-			t.Reserved_quantity = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Reserved_quantity = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["reserve"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Reserve = SalesLineReserve(int(val))
-		case int:
-			t.Reserve = SalesLineReserve(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Never", "Optional", "Always"}
-			for i, opt := range options {
-				if opt == val {
-					t.Reserve = SalesLineReserve(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["planned"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Planned = b
-		}
-	}
-	if v, ok := data["reserved_qty_base"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Reserved_qty_base, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Reserved_qty_base = types.NewDecimal(val)
-		case int:
-			t.Reserved_qty_base = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Reserved_qty_base = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["serial_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Serial_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["lot_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Lot_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["bin_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Bin_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["project_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Project_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["appl_to_project_entry"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Appl_to_project_entry = int(val)
-		case int:
-			t.Appl_to_project_entry = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Appl_to_project_entry = n
-			}
-		}
-	}
-	if v, ok := data["phase_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Phase_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["task_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Task_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["step_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Step_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["project_applies_to_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Project_applies_to_id = types.NewCode(s)
-		}
-	}
-	if v, ok := data["apply_and_close_project"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Apply_and_close_project = b
-		}
-	}
-	if v, ok := data["attached_to_line_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Attached_to_line_no = int(val)
-		case int:
-			t.Attached_to_line_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Attached_to_line_no = n
-			}
-		}
-	}
-	if v, ok := data["purchase_order_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Purchase_order_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["purch_order_line_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Purch_order_line_no = int(val)
-		case int:
-			t.Purch_order_line_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Purch_order_line_no = n
-			}
-		}
-	}
-	if v, ok := data["drop_shipment"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Drop_shipment = b
-		}
-	}
+	salesLineFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -11952,1024 +6005,1638 @@ func (t *SalesLine) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *SalesLine) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "document_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "sell_to_customer_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         3,
-			Name:       "document_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "line_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "location_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         9,
-			Name:       "quantity_disc_code",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         10,
-			Name:       "shipment_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "description_2",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         13,
-			Name:       "unit_of_measure",
-			Type:       tables.FieldTypeText,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:            15,
-			Name:          "quantity",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            16,
-			Name:          "outstanding_quantity",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            17,
-			Name:          "qty_to_invoice",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            18,
-			Name:          "qty_to_ship",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            22,
-			Name:          "unit_price",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:5",
-		},
-		{
-			No:            23,
-			Name:          "unit_cost_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:5",
-		},
-		{
-			No:            25,
-			Name:          "tax_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            26,
-			Name:          "quantity_disc_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            27,
-			Name:          "line_discount_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            28,
-			Name:          "line_discount_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            29,
-			Name:          "amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            30,
-			Name:          "amount_including_tax",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         32,
-			Name:       "allow_invoice_disc",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            34,
-			Name:          "gross_weight",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            35,
-			Name:          "net_weight",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            36,
-			Name:          "units_per_parcel",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            37,
-			Name:          "unit_volume",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         40,
-			Name:       "dimension_1_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         41,
-			Name:       "dimension_2_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         42,
-			Name:       "price_group_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         43,
-			Name:       "allow_quantity_disc",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         52,
-			Name:       "work_type_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            55,
-			Name:          "cust_item_disc_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            57,
-			Name:          "outstanding_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            58,
-			Name:          "qty_shipped_not_invoiced",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            59,
-			Name:          "shipped_not_invoiced",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            60,
-			Name:          "quantity_shipped",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            61,
-			Name:          "quantity_invoiced",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         63,
-			Name:       "shipment_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         64,
-			Name:       "shipment_line_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:            67,
-			Name:          "profit_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         68,
-			Name:       "bill_to_customer_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:            69,
-			Name:          "inv_discount_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         74,
-			Name:       "gen_bus_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         75,
-			Name:       "gen_prod_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         77,
-			Name:       "tax_calculation_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         78,
-			Name:       "transaction_type",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         79,
-			Name:       "transport_method",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         81,
-			Name:       "exit_point",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         82,
-			Name:       "area",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         83,
-			Name:       "transaction_specification",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         85,
-			Name:       "tax_area_code",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         86,
-			Name:       "tax_liable",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         87,
-			Name:       "tax_group_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         89,
-			Name:       "tax_bus_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         90,
-			Name:       "tax_prod_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         91,
-			Name:       "currency_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:            92,
-			Name:          "outstanding_amount_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            93,
-			Name:          "shipped_not_invoiced_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         97,
-			Name:       "blanket_order_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         98,
-			Name:       "blanket_order_line_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            99,
-			Name:          "tax_base_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            100,
-			Name:          "unit_cost",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "2:5",
-		},
-		{
-			No:         5402,
-			Name:       "variant_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            5404,
-			Name:          "qty_per_unit_of_measure",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         5407,
-			Name:       "unit_of_measure_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            5415,
-			Name:          "quantity_base",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            5416,
-			Name:          "outstanding_qty_base",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            5417,
-			Name:          "qty_to_invoice_base",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            5418,
-			Name:          "qty_to_ship_base",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            5458,
-			Name:          "qty_shpd_not_invd_base",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            5460,
-			Name:          "qty_shipped_base",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            5461,
-			Name:          "qty_invoiced_base",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            95,
-			Name:          "reserved_quantity",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         96,
-			Name:       "reserve",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5405,
-			Name:       "planned",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:            5495,
-			Name:          "reserved_qty_base",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         53,
-			Name:       "serial_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5400,
-			Name:       "lot_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5403,
-			Name:       "bin_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         45,
-			Name:       "project_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         46,
-			Name:       "appl_to_project_entry",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         47,
-			Name:       "phase_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         48,
-			Name:       "task_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         49,
-			Name:       "step_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         50,
-			Name:       "project_applies_to_id",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         51,
-			Name:       "apply_and_close_project",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         80,
-			Name:       "attached_to_line_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         71,
-			Name:       "purchase_order_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         72,
-			Name:       "purch_order_line_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         73,
-			Name:       "drop_shipment",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return salesLineFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in salesLineFields.Fields
+func (t *SalesLine) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Document_type
+	case 1:
+		return &t.Sell_to_customer_no
+	case 2:
+		return &t.Document_no
+	case 3:
+		return &t.Line_no
+	case 4:
+		return &t.Type
+	case 5:
+		return &t.No
+	case 6:
+		return &t.Location_code
+	case 7:
+		return &t.Posting_group
+	case 8:
+		return &t.Quantity_disc_code
+	case 9:
+		return &t.Shipment_date
+	case 10:
+		return &t.Description
+	case 11:
+		return &t.Description_2
+	case 12:
+		return &t.Unit_of_measure
+	case 13:
+		return &t.Quantity
+	case 14:
+		return &t.Outstanding_quantity
+	case 15:
+		return &t.Qty_to_invoice
+	case 16:
+		return &t.Qty_to_ship
+	case 17:
+		return &t.Unit_price
+	case 18:
+		return &t.Unit_cost_lcy
+	case 19:
+		return &t.Tax_percent
+	case 20:
+		return &t.Quantity_disc_percent
+	case 21:
+		return &t.Line_discount_percent
+	case 22:
+		return &t.Line_discount_amount
+	case 23:
+		return &t.Amount
+	case 24:
+		return &t.Amount_including_tax
+	case 25:
+		return &t.Allow_invoice_disc
+	case 26:
+		return &t.Gross_weight
+	case 27:
+		return &t.Net_weight
+	case 28:
+		return &t.Units_per_parcel
+	case 29:
+		return &t.Unit_volume
+	case 30:
+		return &t.Dimension_1_code
+	case 31:
+		return &t.Dimension_2_code
+	case 32:
+		return &t.Price_group_code
+	case 33:
+		return &t.Allow_quantity_disc
+	case 34:
+		return &t.Work_type_code
+	case 35:
+		return &t.Cust_item_disc_percent
+	case 36:
+		return &t.Outstanding_amount
+	case 37:
+		return &t.Qty_shipped_not_invoiced
+	case 38:
+		return &t.Shipped_not_invoiced
+	case 39:
+		return &t.Quantity_shipped
+	case 40:
+		return &t.Quantity_invoiced
+	case 41:
+		return &t.Shipment_no
+	case 42:
+		return &t.Shipment_line_no
+	case 43:
+		return &t.Profit_percent
+	case 44:
+		return &t.Bill_to_customer_no
+	case 45:
+		return &t.Inv_discount_amount
+	case 46:
+		return &t.Gen_bus_posting_group
+	case 47:
+		return &t.Gen_prod_posting_group
+	case 48:
+		return &t.Tax_calculation_type
+	case 49:
+		return &t.Transaction_type
+	case 50:
+		return &t.Transport_method
+	case 51:
+		return &t.Exit_point
+	case 52:
+		return &t.Area
+	case 53:
+		return &t.Transaction_specification
+	case 54:
+		return &t.Tax_area_code
+	case 55:
+		return &t.Tax_liable
+	case 56:
+		return &t.Tax_group_code
+	case 57:
+		return &t.Tax_bus_posting_group
+	case 58:
+		return &t.Tax_prod_posting_group
+	case 59:
+		return &t.Currency_code
+	case 60:
+		return &t.Outstanding_amount_lcy
+	case 61:
+		return &t.Shipped_not_invoiced_lcy
+	case 62:
+		return &t.Blanket_order_no
+	case 63:
+		return &t.Blanket_order_line_no
+	case 64:
+		return &t.Tax_base_amount
+	case 65:
+		return &t.Unit_cost
+	case 66:
+		return &t.Variant_code
+	case 67:
+		return &t.Qty_per_unit_of_measure
+	case 68:
+		return &t.Unit_of_measure_code
+	case 69:
+		return &t.Quantity_base
+	case 70:
+		return &t.Outstanding_qty_base
+	case 71:
+		return &t.Qty_to_invoice_base
+	case 72:
+		return &t.Qty_to_ship_base
+	case 73:
+		return &t.Qty_shpd_not_invd_base
+	case 74:
+		return &t.Qty_shipped_base
+	case 75:
+		return &t.Qty_invoiced_base
+	case 76:
+		return &t.Reserved_quantity
+	case 77:
+		return &t.Reserve
+	case 78:
+		return &t.Planned
+	case 79:
+		return &t.Reserved_qty_base
+	case 80:
+		return &t.Serial_no
+	case 81:
+		return &t.Lot_no
+	case 82:
+		return &t.Bin_code
+	case 83:
+		return &t.Project_no
+	case 84:
+		return &t.Appl_to_project_entry
+	case 85:
+		return &t.Phase_code
+	case 86:
+		return &t.Task_code
+	case 87:
+		return &t.Step_code
+	case 88:
+		return &t.Project_applies_to_id
+	case 89:
+		return &t.Apply_and_close_project
+	case 90:
+		return &t.Attached_to_line_no
+	case 91:
+		return &t.Purchase_order_no
+	case 92:
+		return &t.Purch_order_line_no
+	case 93:
+		return &t.Drop_shipment
 	}
+	return nil
+}
+
+// salesLineFields describes the fields of Sales_Line for the record functions
+// written once in foundation/tables
+var salesLineFields = &tables.TableFields{
+	Table: SalesLineTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "document_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Document_type",
+			Options: []string{"Quote", "Order", "Invoice", "Credit Memo", "Blanket Order"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "sell_to_customer_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Sell_to_customer_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "document_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Document_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "line_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Line_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Type",
+			Options: []string{" ", "G/L Account", "Item", "Resource"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_No",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "location_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Location_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "quantity_disc_code",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Quantity_disc_code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "shipment_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Shipment_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "description_2",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description_2",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "unit_of_measure",
+				Type:       tables.FieldTypeText,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Unit_of_measure",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            15,
+				Name:          "quantity",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Quantity",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            16,
+				Name:          "outstanding_quantity",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Outstanding_quantity",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            17,
+				Name:          "qty_to_invoice",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Qty_to_invoice",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            18,
+				Name:          "qty_to_ship",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Qty_to_ship",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            22,
+				Name:          "unit_price",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Unit_price",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            23,
+				Name:          "unit_cost_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Unit_cost_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            25,
+				Name:          "tax_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Tax_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            26,
+				Name:          "quantity_disc_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Quantity_disc_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            27,
+				Name:          "line_discount_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Line_discount_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            28,
+				Name:          "line_discount_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Line_discount_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            29,
+				Name:          "amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            30,
+				Name:          "amount_including_tax",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Amount_including_tax",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         32,
+				Name:       "allow_invoice_disc",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Allow_invoice_disc",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            34,
+				Name:          "gross_weight",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Gross_weight",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            35,
+				Name:          "net_weight",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Net_weight",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            36,
+				Name:          "units_per_parcel",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Units_per_parcel",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            37,
+				Name:          "unit_volume",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Unit_volume",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         40,
+				Name:       "dimension_1_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_1_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         41,
+				Name:       "dimension_2_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_2_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         42,
+				Name:       "price_group_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Price_group_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         43,
+				Name:       "allow_quantity_disc",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Allow_quantity_disc",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         52,
+				Name:       "work_type_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Work_type_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            55,
+				Name:          "cust_item_disc_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Cust_item_disc_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            57,
+				Name:          "outstanding_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Outstanding_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            58,
+				Name:          "qty_shipped_not_invoiced",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Qty_shipped_not_invoiced",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            59,
+				Name:          "shipped_not_invoiced",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Shipped_not_invoiced",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            60,
+				Name:          "quantity_shipped",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Quantity_shipped",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            61,
+				Name:          "quantity_invoiced",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Quantity_invoiced",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         63,
+				Name:       "shipment_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Shipment_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         64,
+				Name:       "shipment_line_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Shipment_line_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            67,
+				Name:          "profit_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Profit_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         68,
+				Name:       "bill_to_customer_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Bill_to_customer_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            69,
+				Name:          "inv_discount_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Inv_discount_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         74,
+				Name:       "gen_bus_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Gen_bus_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         75,
+				Name:       "gen_prod_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Gen_prod_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         77,
+				Name:       "tax_calculation_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Tax_calculation_type",
+			Options: []string{"Normal VAT", "Reverse Charge VAT", "Full VAT", "Sales Tax"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         78,
+				Name:       "transaction_type",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Transaction_type",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         79,
+				Name:       "transport_method",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Transport_method",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         81,
+				Name:       "exit_point",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Exit_point",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         82,
+				Name:       "area",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Area",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         83,
+				Name:       "transaction_specification",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Transaction_specification",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         85,
+				Name:       "tax_area_code",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_area_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         86,
+				Name:       "tax_liable",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Tax_liable",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         87,
+				Name:       "tax_group_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_group_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         89,
+				Name:       "tax_bus_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_bus_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         90,
+				Name:       "tax_prod_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_prod_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         91,
+				Name:       "currency_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Currency_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            92,
+				Name:          "outstanding_amount_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Outstanding_amount_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            93,
+				Name:          "shipped_not_invoiced_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Shipped_not_invoiced_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         97,
+				Name:       "blanket_order_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Blanket_order_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         98,
+				Name:       "blanket_order_line_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindInt,
+			Trigger:  "OnValidate_Blanket_order_line_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            99,
+				Name:          "tax_base_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Tax_base_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            100,
+				Name:          "unit_cost",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "2:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Unit_cost",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5402,
+				Name:       "variant_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Variant_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            5404,
+				Name:          "qty_per_unit_of_measure",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Qty_per_unit_of_measure",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5407,
+				Name:       "unit_of_measure_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Unit_of_measure_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            5415,
+				Name:          "quantity_base",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Quantity_base",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            5416,
+				Name:          "outstanding_qty_base",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Outstanding_qty_base",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            5417,
+				Name:          "qty_to_invoice_base",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Qty_to_invoice_base",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            5418,
+				Name:          "qty_to_ship_base",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Qty_to_ship_base",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            5458,
+				Name:          "qty_shpd_not_invd_base",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Qty_shpd_not_invd_base",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            5460,
+				Name:          "qty_shipped_base",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Qty_shipped_base",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            5461,
+				Name:          "qty_invoiced_base",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Qty_invoiced_base",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            95,
+				Name:          "reserved_quantity",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Reserved_quantity",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         96,
+				Name:       "reserve",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Reserve",
+			Options: []string{"Never", "Optional", "Always"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5405,
+				Name:       "planned",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Planned",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            5495,
+				Name:          "reserved_qty_base",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Reserved_qty_base",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         53,
+				Name:       "serial_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Serial_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5400,
+				Name:       "lot_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Lot_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5403,
+				Name:       "bin_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Bin_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         45,
+				Name:       "project_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Project_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         46,
+				Name:       "appl_to_project_entry",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindInt,
+			Trigger:  "OnValidate_Appl_to_project_entry",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         47,
+				Name:       "phase_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Phase_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         48,
+				Name:       "task_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Task_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         49,
+				Name:       "step_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Step_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         50,
+				Name:       "project_applies_to_id",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Project_applies_to_id",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         51,
+				Name:       "apply_and_close_project",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Apply_and_close_project",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         80,
+				Name:       "attached_to_line_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Attached_to_line_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         71,
+				Name:       "purchase_order_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Purchase_order_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         72,
+				Name:       "purch_order_line_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Purch_order_line_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         73,
+				Name:       "drop_shipment",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Drop_shipment",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

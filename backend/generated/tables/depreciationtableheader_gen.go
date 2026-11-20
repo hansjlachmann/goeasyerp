@@ -159,32 +159,12 @@ var DepreciationTableHeader_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *DepreciationTableHeader) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "code":
-		return 1
-	case "description":
-		return 2
-	case "period_length":
-		return 3
-	case "total_no_of_units":
-		return 4
-	}
-	return 0
+	return depreciationTableHeaderFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *DepreciationTableHeader) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "code"
-	case 2:
-		return "description"
-	case 3:
-		return "period_length"
-	case 4:
-		return "total_no_of_units"
-	}
-	return ""
+	return depreciationTableHeaderFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -296,18 +276,6 @@ type (
 	DepreciationTableHeaderOnBeforeRename interface {
 		OnBeforeRename(rec *DepreciationTableHeader, handled *bool) error
 	}
-	DepreciationTableHeaderOnValidate_Code interface {
-		OnValidate_Code(rec *DepreciationTableHeader) error
-	}
-	DepreciationTableHeaderOnValidate_Description interface {
-		OnValidate_Description(rec *DepreciationTableHeader) error
-	}
-	DepreciationTableHeaderOnValidate_Period_length interface {
-		OnValidate_Period_length(rec *DepreciationTableHeader) error
-	}
-	DepreciationTableHeaderOnValidate_Total_no_of_units interface {
-		OnValidate_Total_no_of_units(rec *DepreciationTableHeader) error
-	}
 )
 
 // depreciationTableHeaderLogic is the registered business logic of Depreciation_Table_Header, in
@@ -350,16 +318,9 @@ func depreciationTableHeaderTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(DepreciationTableHeaderOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(DepreciationTableHeaderOnBeforeRename)
-	case "OnValidate_Code":
-		_, ok = logic.(DepreciationTableHeaderOnValidate_Code)
-	case "OnValidate_Description":
-		_, ok = logic.(DepreciationTableHeaderOnValidate_Description)
-	case "OnValidate_Period_length":
-		_, ok = logic.(DepreciationTableHeaderOnValidate_Period_length)
-	case "OnValidate_Total_no_of_units":
-		_, ok = logic.(DepreciationTableHeaderOnValidate_Total_no_of_units)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return depreciationTableHeaderFields.IsOnValidateTrigger(name, logic, (*DepreciationTableHeader)(nil))
 	}
 	return true, ok
 }
@@ -660,11 +621,7 @@ func (t *DepreciationTableHeader) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *DepreciationTableHeader) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["code"] = t.Code
-	t.oldValues["description"] = t.Description
-	t.oldValues["period_length"] = t.Period_length
-	t.oldValues["total_no_of_units"] = t.Total_no_of_units
+	t.oldValues = depreciationTableHeaderFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -679,18 +636,7 @@ func (t *DepreciationTableHeader) OldValue(fieldName string) interface{} {
 func (t *DepreciationTableHeader) XRec() *DepreciationTableHeader {
 	x := &DepreciationTableHeader{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["code"].(types.Code); ok {
-		x.Code = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["period_length"].(DepreciationTableHeaderPeriod_length); ok {
-		x.Period_length = v
-	}
-	if v, ok := t.oldValues["total_no_of_units"].(types.Decimal); ok {
-		x.Total_no_of_units = v
-	}
+	depreciationTableHeaderFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -989,37 +935,7 @@ func (t *DepreciationTableHeader) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *DepreciationTableHeader) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Code.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "period_length":
-		if old, ok := oldValue.(DepreciationTableHeaderPeriod_length); ok {
-			return t.Period_length != old
-		}
-	case "total_no_of_units":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Total_no_of_units.Equal(old)
-		}
-	}
-
-	return false
+	return depreciationTableHeaderFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1278,17 +1194,7 @@ func (t *DepreciationTableHeader) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *DepreciationTableHeader) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("code"):
-		return "code", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("period_length"):
-		return "period_length", true
-	case strings.ToLower("total_no_of_units"):
-		return "total_no_of_units", true
-	}
-	return "", false
+	return depreciationTableHeaderFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2125,125 +2031,20 @@ func (t *DepreciationTableHeader) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *DepreciationTableHeader) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-		} else if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationTableHeaderOnValidate_Code); ok {
-				if err := trg.OnValidate_Code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationTableHeaderOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "period_length":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(DepreciationTableHeaderPeriod_length); ok {
-			t.Period_length = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field period_length (valid range: 0-%d)", v, 4-1)
-			}
-			t.Period_length = DepreciationTableHeaderPeriod_length(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field period_length (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Period_length = DepreciationTableHeaderPeriod_length(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Period_length = 0
-			} else {
-				options := []string{"Month", "Period", "Quarter", "Year"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Period_length = DepreciationTableHeaderPeriod_length(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field period_length (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field period_length (expected DepreciationTableHeaderPeriod_length, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationTableHeaderOnValidate_Period_length); ok {
-				if err := trg.OnValidate_Period_length(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "total_no_of_units":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Total_no_of_units = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Total_no_of_units, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field total_no_of_units: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Total_no_of_units = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Total_no_of_units = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Total_no_of_units = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field total_no_of_units (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationTableHeaderOnValidate_Total_no_of_units); ok {
-				if err := trg.OnValidate_Total_no_of_units(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := depreciationTableHeaderFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &depreciationTableHeaderFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2252,60 +2053,18 @@ func (t *DepreciationTableHeader) ValidateField(fieldName string, value interfac
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *DepreciationTableHeader) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Code, true
-	case 2:
-		return t.Description, true
-	case 3:
-		return t.Period_length, true
-	case 4:
-		return t.Total_no_of_units, true
-	}
-	return nil, false
+	return depreciationTableHeaderFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *DepreciationTableHeader) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return depreciationTableHeaderFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *DepreciationTableHeader) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 3:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Period_length = DepreciationTableHeaderPeriod_length(i)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Decimal); ok {
-			t.Total_no_of_units = v
-			return true
-		}
-	}
-	return false
+	return depreciationTableHeaderFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2775,17 +2534,7 @@ func (t *DepreciationTableHeader) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *DepreciationTableHeader) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "code":
-		return t.Code, true
-	case "description":
-		return t.Description, true
-	case "period_length":
-		return int(t.Period_length), true
-	case "total_no_of_units":
-		return t.Total_no_of_units, true
-	}
-	return nil, false
+	return depreciationTableHeaderFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2874,55 +2623,12 @@ func (t *DepreciationTableHeader) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *DepreciationTableHeader) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"code":              t.Code.String(),
-		"description":       t.Description.String(),
-		"period_length":     int(t.Period_length),
-		"total_no_of_units": t.Total_no_of_units.String(),
-	}
+	return depreciationTableHeaderFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *DepreciationTableHeader) FromMap(data map[string]interface{}) {
-	if v, ok := data["code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["period_length"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Period_length = DepreciationTableHeaderPeriod_length(int(val))
-		case int:
-			t.Period_length = DepreciationTableHeaderPeriod_length(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Month", "Period", "Quarter", "Year"}
-			for i, opt := range options {
-				if opt == val {
-					t.Period_length = DepreciationTableHeaderPeriod_length(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["total_no_of_units"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Total_no_of_units, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Total_no_of_units = types.NewDecimal(val)
-		case int:
-			t.Total_no_of_units = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Total_no_of_units = types.NewDecimalFromInt(val)
-		}
-	}
+	depreciationTableHeaderFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2943,49 +2649,88 @@ func (t *DepreciationTableHeader) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *DepreciationTableHeader) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "period_length",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            4,
-			Name:          "total_no_of_units",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
+	return depreciationTableHeaderFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in depreciationTableHeaderFields.Fields
+func (t *DepreciationTableHeader) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Code
+	case 1:
+		return &t.Description
+	case 2:
+		return &t.Period_length
+	case 3:
+		return &t.Total_no_of_units
 	}
+	return nil
+}
+
+// depreciationTableHeaderFields describes the fields of Depreciation_Table_Header for the record functions
+// written once in foundation/tables
+var depreciationTableHeaderFields = &tables.TableFields{
+	Table: DepreciationTableHeaderTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "period_length",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Period_length",
+			Options: []string{"Month", "Period", "Quarter", "Year"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            4,
+				Name:          "total_no_of_units",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Total_no_of_units",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

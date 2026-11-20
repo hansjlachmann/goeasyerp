@@ -122,32 +122,12 @@ var TaxStatementName_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *TaxStatementName) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "statement_template_name":
-		return 1
-	case "name":
-		return 2
-	case "description":
-		return 3
-	case "date_filter":
-		return 4
-	}
-	return 0
+	return taxStatementNameFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *TaxStatementName) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "statement_template_name"
-	case 2:
-		return "name"
-	case 3:
-		return "description"
-	case 4:
-		return "date_filter"
-	}
-	return ""
+	return taxStatementNameFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -259,15 +239,6 @@ type (
 	TaxStatementNameOnBeforeRename interface {
 		OnBeforeRename(rec *TaxStatementName, handled *bool) error
 	}
-	TaxStatementNameOnValidate_Statement_template_name interface {
-		OnValidate_Statement_template_name(rec *TaxStatementName) error
-	}
-	TaxStatementNameOnValidate_Name interface {
-		OnValidate_Name(rec *TaxStatementName) error
-	}
-	TaxStatementNameOnValidate_Description interface {
-		OnValidate_Description(rec *TaxStatementName) error
-	}
 )
 
 // taxStatementNameLogic is the registered business logic of Tax_Statement_Name, in
@@ -310,14 +281,9 @@ func taxStatementNameTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(TaxStatementNameOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(TaxStatementNameOnBeforeRename)
-	case "OnValidate_Statement_template_name":
-		_, ok = logic.(TaxStatementNameOnValidate_Statement_template_name)
-	case "OnValidate_Name":
-		_, ok = logic.(TaxStatementNameOnValidate_Name)
-	case "OnValidate_Description":
-		_, ok = logic.(TaxStatementNameOnValidate_Description)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return taxStatementNameFields.IsOnValidateTrigger(name, logic, (*TaxStatementName)(nil))
 	}
 	return true, ok
 }
@@ -615,10 +581,7 @@ func (t *TaxStatementName) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *TaxStatementName) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["statement_template_name"] = t.Statement_template_name
-	t.oldValues["name"] = t.Name
-	t.oldValues["description"] = t.Description
+	t.oldValues = taxStatementNameFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -633,15 +596,7 @@ func (t *TaxStatementName) OldValue(fieldName string) interface{} {
 func (t *TaxStatementName) XRec() *TaxStatementName {
 	x := &TaxStatementName{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["statement_template_name"].(types.Code); ok {
-		x.Statement_template_name = v
-	}
-	if v, ok := t.oldValues["name"].(types.Code); ok {
-		x.Name = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
+	taxStatementNameFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -918,33 +873,7 @@ func (t *TaxStatementName) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *TaxStatementName) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "statement_template_name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Statement_template_name.Equal(old)
-		}
-	case "name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Name.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	}
-
-	return false
+	return taxStatementNameFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1146,15 +1075,7 @@ func (t *TaxStatementName) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *TaxStatementName) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("statement_template_name"):
-		return "statement_template_name", true
-	case strings.ToLower("name"):
-		return "name", true
-	case strings.ToLower("description"):
-		return "description", true
-	}
-	return "", false
+	return taxStatementNameFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -1976,70 +1897,20 @@ func (t *TaxStatementName) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *TaxStatementName) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "statement_template_name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Statement_template_name = v
-		} else if v, ok := value.(string); ok {
-			t.Statement_template_name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field statement_template_name")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "statement_template_name"); err != nil {
+	i, err := taxStatementNameFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
+	}
+	f := &taxStatementNameFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
 			return err
 		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxStatementNameOnValidate_Statement_template_name); ok {
-				if err := trg.OnValidate_Statement_template_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Name = v
-		} else if v, ok := value.(string); ok {
-			t.Name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxStatementNameOnValidate_Name); ok {
-				if err := trg.OnValidate_Name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxStatementNameOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2048,57 +1919,18 @@ func (t *TaxStatementName) ValidateField(fieldName string, value interface{}) er
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *TaxStatementName) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Statement_template_name, true
-	case 2:
-		return t.Name, true
-	case 3:
-		return t.Description, true
-	}
-	return nil, false
+	return taxStatementNameFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *TaxStatementName) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return taxStatementNameFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *TaxStatementName) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Statement_template_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Statement_template_name = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Name = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	}
-	return false
+	return taxStatementNameFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2548,15 +2380,7 @@ func (t *TaxStatementName) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *TaxStatementName) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "statement_template_name":
-		return t.Statement_template_name, true
-	case "name":
-		return t.Name, true
-	case "description":
-		return t.Description, true
-	}
-	return nil, false
+	return taxStatementNameFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2647,30 +2471,12 @@ func (t *TaxStatementName) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *TaxStatementName) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"statement_template_name": t.Statement_template_name.String(),
-		"name":                    t.Name.String(),
-		"description":             t.Description.String(),
-	}
+	return taxStatementNameFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *TaxStatementName) FromMap(data map[string]interface{}) {
-	if v, ok := data["statement_template_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Statement_template_name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
+	taxStatementNameFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2691,38 +2497,74 @@ func (t *TaxStatementName) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *TaxStatementName) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "statement_template_name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return taxStatementNameFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in taxStatementNameFields.Fields
+func (t *TaxStatementName) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Statement_template_name
+	case 1:
+		return &t.Name
+	case 2:
+		return &t.Description
 	}
+	return nil
+}
+
+// taxStatementNameFields describes the fields of Tax_Statement_Name for the record functions
+// written once in foundation/tables
+var taxStatementNameFields = &tables.TableFields{
+	Table: TaxStatementNameTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "statement_template_name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Statement_template_name",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+	},
+	FlowFilters: []tables.FieldInfo{
+		{No: 4, Name: "date_filter"},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

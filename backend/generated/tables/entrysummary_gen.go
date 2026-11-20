@@ -138,48 +138,12 @@ var EntrySummary_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *EntrySummary) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "entry_no":
-		return 1
-	case "table_id":
-		return 2
-	case "summary_type":
-		return 3
-	case "total_quantity":
-		return 4
-	case "total_reserved_quantity":
-		return 5
-	case "total_available_quantity":
-		return 6
-	case "current_reserved_quantity":
-		return 7
-	case "available_page_id":
-		return 900
-	}
-	return 0
+	return entrySummaryFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *EntrySummary) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "entry_no"
-	case 2:
-		return "table_id"
-	case 3:
-		return "summary_type"
-	case 4:
-		return "total_quantity"
-	case 5:
-		return "total_reserved_quantity"
-	case 6:
-		return "total_available_quantity"
-	case 7:
-		return "current_reserved_quantity"
-	case 900:
-		return "available_page_id"
-	}
-	return ""
+	return entrySummaryFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -283,14 +247,6 @@ type (
 	EntrySummaryOnBeforeRename interface {
 		OnBeforeRename(rec *EntrySummary, handled *bool) error
 	}
-	EntrySummaryOnValidate_Entry_no                  interface{ OnValidate_Entry_no(rec *EntrySummary) error }
-	EntrySummaryOnValidate_Table_id                  interface{ OnValidate_Table_id(rec *EntrySummary) error }
-	EntrySummaryOnValidate_Summary_type              interface{ OnValidate_Summary_type(rec *EntrySummary) error }
-	EntrySummaryOnValidate_Total_quantity            interface{ OnValidate_Total_quantity(rec *EntrySummary) error }
-	EntrySummaryOnValidate_Total_reserved_quantity   interface{ OnValidate_Total_reserved_quantity(rec *EntrySummary) error }
-	EntrySummaryOnValidate_Total_available_quantity  interface{ OnValidate_Total_available_quantity(rec *EntrySummary) error }
-	EntrySummaryOnValidate_Current_reserved_quantity interface{ OnValidate_Current_reserved_quantity(rec *EntrySummary) error }
-	EntrySummaryOnValidate_Available_page_id         interface{ OnValidate_Available_page_id(rec *EntrySummary) error }
 )
 
 // entrySummaryLogic is the registered business logic of Entry_Summary, in
@@ -333,24 +289,9 @@ func entrySummaryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(EntrySummaryOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(EntrySummaryOnBeforeRename)
-	case "OnValidate_Entry_no":
-		_, ok = logic.(EntrySummaryOnValidate_Entry_no)
-	case "OnValidate_Table_id":
-		_, ok = logic.(EntrySummaryOnValidate_Table_id)
-	case "OnValidate_Summary_type":
-		_, ok = logic.(EntrySummaryOnValidate_Summary_type)
-	case "OnValidate_Total_quantity":
-		_, ok = logic.(EntrySummaryOnValidate_Total_quantity)
-	case "OnValidate_Total_reserved_quantity":
-		_, ok = logic.(EntrySummaryOnValidate_Total_reserved_quantity)
-	case "OnValidate_Total_available_quantity":
-		_, ok = logic.(EntrySummaryOnValidate_Total_available_quantity)
-	case "OnValidate_Current_reserved_quantity":
-		_, ok = logic.(EntrySummaryOnValidate_Current_reserved_quantity)
-	case "OnValidate_Available_page_id":
-		_, ok = logic.(EntrySummaryOnValidate_Available_page_id)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return entrySummaryFields.IsOnValidateTrigger(name, logic, (*EntrySummary)(nil))
 	}
 	return true, ok
 }
@@ -644,15 +585,7 @@ func (t *EntrySummary) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *EntrySummary) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["entry_no"] = t.Entry_no
-	t.oldValues["table_id"] = t.Table_id
-	t.oldValues["summary_type"] = t.Summary_type
-	t.oldValues["total_quantity"] = t.Total_quantity
-	t.oldValues["total_reserved_quantity"] = t.Total_reserved_quantity
-	t.oldValues["total_available_quantity"] = t.Total_available_quantity
-	t.oldValues["current_reserved_quantity"] = t.Current_reserved_quantity
-	t.oldValues["available_page_id"] = t.Available_page_id
+	t.oldValues = entrySummaryFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -667,30 +600,7 @@ func (t *EntrySummary) OldValue(fieldName string) interface{} {
 func (t *EntrySummary) XRec() *EntrySummary {
 	x := &EntrySummary{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["entry_no"].(int); ok {
-		x.Entry_no = v
-	}
-	if v, ok := t.oldValues["table_id"].(int); ok {
-		x.Table_id = v
-	}
-	if v, ok := t.oldValues["summary_type"].(types.Text); ok {
-		x.Summary_type = v
-	}
-	if v, ok := t.oldValues["total_quantity"].(types.Decimal); ok {
-		x.Total_quantity = v
-	}
-	if v, ok := t.oldValues["total_reserved_quantity"].(types.Decimal); ok {
-		x.Total_reserved_quantity = v
-	}
-	if v, ok := t.oldValues["total_available_quantity"].(types.Decimal); ok {
-		x.Total_available_quantity = v
-	}
-	if v, ok := t.oldValues["current_reserved_quantity"].(types.Decimal); ok {
-		x.Current_reserved_quantity = v
-	}
-	if v, ok := t.oldValues["available_page_id"].(int); ok {
-		x.Available_page_id = v
-	}
+	entrySummaryFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1021,56 +931,7 @@ func (t *EntrySummary) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *EntrySummary) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "table_id":
-		if old, ok := oldValue.(int); ok {
-			return t.Table_id != old
-		}
-		return true // Type mismatch, assume changed
-	case "summary_type":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Summary_type.Equal(old)
-		}
-	case "total_quantity":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Total_quantity.Equal(old)
-		}
-	case "total_reserved_quantity":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Total_reserved_quantity.Equal(old)
-		}
-	case "total_available_quantity":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Total_available_quantity.Equal(old)
-		}
-	case "current_reserved_quantity":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Current_reserved_quantity.Equal(old)
-		}
-	case "available_page_id":
-		if old, ok := oldValue.(int); ok {
-			return t.Available_page_id != old
-		}
-		return true // Type mismatch, assume changed
-	}
-
-	return false
+	return entrySummaryFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1271,25 +1132,7 @@ func (t *EntrySummary) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *EntrySummary) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("entry_no"):
-		return "entry_no", true
-	case strings.ToLower("table_id"):
-		return "table_id", true
-	case strings.ToLower("summary_type"):
-		return "summary_type", true
-	case strings.ToLower("total_quantity"):
-		return "total_quantity", true
-	case strings.ToLower("total_reserved_quantity"):
-		return "total_reserved_quantity", true
-	case strings.ToLower("total_available_quantity"):
-		return "total_available_quantity", true
-	case strings.ToLower("current_reserved_quantity"):
-		return "current_reserved_quantity", true
-	case strings.ToLower("available_page_id"):
-		return "available_page_id", true
-	}
-	return "", false
+	return entrySummaryFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2160,223 +2003,20 @@ func (t *EntrySummary) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *EntrySummary) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Entry_no = v
-		case float64:
-			t.Entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field entry_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntrySummaryOnValidate_Entry_no); ok {
-				if err := trg.OnValidate_Entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "table_id":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Table_id = v
-		case float64:
-			t.Table_id = int(v)
-		case string:
-			if v == "" {
-				t.Table_id = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Table_id = i
-			} else {
-				return fmt.Errorf("invalid integer value for field table_id: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field table_id")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntrySummaryOnValidate_Table_id); ok {
-				if err := trg.OnValidate_Table_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "summary_type":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Summary_type = v
-		} else if v, ok := value.(string); ok {
-			t.Summary_type = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field summary_type")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntrySummaryOnValidate_Summary_type); ok {
-				if err := trg.OnValidate_Summary_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "total_quantity":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Total_quantity = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Total_quantity, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field total_quantity: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Total_quantity = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Total_quantity = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Total_quantity = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field total_quantity (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntrySummaryOnValidate_Total_quantity); ok {
-				if err := trg.OnValidate_Total_quantity(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "total_reserved_quantity":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Total_reserved_quantity = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Total_reserved_quantity, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field total_reserved_quantity: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Total_reserved_quantity = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Total_reserved_quantity = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Total_reserved_quantity = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field total_reserved_quantity (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntrySummaryOnValidate_Total_reserved_quantity); ok {
-				if err := trg.OnValidate_Total_reserved_quantity(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "total_available_quantity":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Total_available_quantity = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Total_available_quantity, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field total_available_quantity: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Total_available_quantity = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Total_available_quantity = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Total_available_quantity = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field total_available_quantity (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntrySummaryOnValidate_Total_available_quantity); ok {
-				if err := trg.OnValidate_Total_available_quantity(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "current_reserved_quantity":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Current_reserved_quantity = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Current_reserved_quantity, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field current_reserved_quantity: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Current_reserved_quantity = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Current_reserved_quantity = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Current_reserved_quantity = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field current_reserved_quantity (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntrySummaryOnValidate_Current_reserved_quantity); ok {
-				if err := trg.OnValidate_Current_reserved_quantity(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "available_page_id":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Available_page_id = v
-		case float64:
-			t.Available_page_id = int(v)
-		case string:
-			if v == "" {
-				t.Available_page_id = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Available_page_id = i
-			} else {
-				return fmt.Errorf("invalid integer value for field available_page_id: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field available_page_id")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntrySummaryOnValidate_Available_page_id); ok {
-				if err := trg.OnValidate_Available_page_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := entrySummaryFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &entrySummaryFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2385,84 +2025,18 @@ func (t *EntrySummary) ValidateField(fieldName string, value interface{}) error 
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *EntrySummary) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Entry_no, true
-	case 2:
-		return t.Table_id, true
-	case 3:
-		return t.Summary_type, true
-	case 4:
-		return t.Total_quantity, true
-	case 5:
-		return t.Total_reserved_quantity, true
-	case 6:
-		return t.Total_available_quantity, true
-	case 7:
-		return t.Current_reserved_quantity, true
-	case 900:
-		return t.Available_page_id, true
-	}
-	return nil, false
+	return entrySummaryFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *EntrySummary) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return entrySummaryFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *EntrySummary) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(int); ok {
-			t.Entry_no = v
-			return true
-		}
-	case 2:
-		if v, ok := value.(int); ok {
-			t.Table_id = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Text); ok {
-			t.Summary_type = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Summary_type = types.NewText(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Decimal); ok {
-			t.Total_quantity = v
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Decimal); ok {
-			t.Total_reserved_quantity = v
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Decimal); ok {
-			t.Total_available_quantity = v
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Decimal); ok {
-			t.Current_reserved_quantity = v
-			return true
-		}
-	case 900:
-		if v, ok := value.(int); ok {
-			t.Available_page_id = v
-			return true
-		}
-	}
-	return false
+	return entrySummaryFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2980,25 +2554,7 @@ func (t *EntrySummary) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *EntrySummary) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "entry_no":
-		return t.Entry_no, true
-	case "table_id":
-		return t.Table_id, true
-	case "summary_type":
-		return t.Summary_type, true
-	case "total_quantity":
-		return t.Total_quantity, true
-	case "total_reserved_quantity":
-		return t.Total_reserved_quantity, true
-	case "total_available_quantity":
-		return t.Total_available_quantity, true
-	case "current_reserved_quantity":
-		return t.Current_reserved_quantity, true
-	case "available_page_id":
-		return t.Available_page_id, true
-	}
-	return nil, false
+	return entrySummaryFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3091,112 +2647,12 @@ func (t *EntrySummary) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *EntrySummary) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"entry_no":                  t.Entry_no,
-		"table_id":                  t.Table_id,
-		"summary_type":              t.Summary_type.String(),
-		"total_quantity":            t.Total_quantity.String(),
-		"total_reserved_quantity":   t.Total_reserved_quantity.String(),
-		"total_available_quantity":  t.Total_available_quantity.String(),
-		"current_reserved_quantity": t.Current_reserved_quantity.String(),
-		"available_page_id":         t.Available_page_id,
-	}
+	return entrySummaryFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *EntrySummary) FromMap(data map[string]interface{}) {
-	if v, ok := data["entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Entry_no = int(val)
-		case int:
-			t.Entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Entry_no = n
-			}
-		}
-	}
-	if v, ok := data["table_id"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Table_id = int(val)
-		case int:
-			t.Table_id = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Table_id = n
-			}
-		}
-	}
-	if v, ok := data["summary_type"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Summary_type = types.NewText(s)
-		}
-	}
-	if v, ok := data["total_quantity"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Total_quantity, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Total_quantity = types.NewDecimal(val)
-		case int:
-			t.Total_quantity = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Total_quantity = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["total_reserved_quantity"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Total_reserved_quantity, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Total_reserved_quantity = types.NewDecimal(val)
-		case int:
-			t.Total_reserved_quantity = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Total_reserved_quantity = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["total_available_quantity"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Total_available_quantity, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Total_available_quantity = types.NewDecimal(val)
-		case int:
-			t.Total_available_quantity = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Total_available_quantity = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["current_reserved_quantity"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Current_reserved_quantity, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Current_reserved_quantity = types.NewDecimal(val)
-		case int:
-			t.Current_reserved_quantity = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Current_reserved_quantity = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["available_page_id"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Available_page_id = int(val)
-		case int:
-			t.Available_page_id = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Available_page_id = n
-			}
-		}
-	}
+	entrySummaryFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3217,92 +2673,154 @@ func (t *EntrySummary) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *EntrySummary) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "table_id",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "summary_type",
-			Type:       tables.FieldTypeText,
-			Length:     80,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            4,
-			Name:          "total_quantity",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            5,
-			Name:          "total_reserved_quantity",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            6,
-			Name:          "total_available_quantity",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            7,
-			Name:          "current_reserved_quantity",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         900,
-			Name:       "available_page_id",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return entrySummaryFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in entrySummaryFields.Fields
+func (t *EntrySummary) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Entry_no
+	case 1:
+		return &t.Table_id
+	case 2:
+		return &t.Summary_type
+	case 3:
+		return &t.Total_quantity
+	case 4:
+		return &t.Total_reserved_quantity
+	case 5:
+		return &t.Total_available_quantity
+	case 6:
+		return &t.Current_reserved_quantity
+	case 7:
+		return &t.Available_page_id
 	}
+	return nil
+}
+
+// entrySummaryFields describes the fields of Entry_Summary for the record functions
+// written once in foundation/tables
+var entrySummaryFields = &tables.TableFields{
+	Table: EntrySummaryTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Entry_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "table_id",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Table_id",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "summary_type",
+				Type:       tables.FieldTypeText,
+				Length:     80,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Summary_type",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            4,
+				Name:          "total_quantity",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Total_quantity",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            5,
+				Name:          "total_reserved_quantity",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Total_reserved_quantity",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            6,
+				Name:          "total_available_quantity",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Total_available_quantity",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            7,
+				Name:          "current_reserved_quantity",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Current_reserved_quantity",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         900,
+				Name:       "available_page_id",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Available_page_id",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

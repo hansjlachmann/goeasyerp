@@ -60,7 +60,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -369,172 +368,12 @@ var FAJournalLine_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *FAJournalLine) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "journal_template_name":
-		return 1
-	case "journal_batch_name":
-		return 2
-	case "line_no":
-		return 3
-	case "depreciation_book_code":
-		return 4
-	case "fa_posting_type":
-		return 5
-	case "fa_no":
-		return 6
-	case "fa_posting_date":
-		return 7
-	case "posting_date":
-		return 8
-	case "document_type":
-		return 9
-	case "document_date":
-		return 10
-	case "document_no":
-		return 11
-	case "external_document_no":
-		return 12
-	case "description":
-		return 13
-	case "amount":
-		return 14
-	case "debit_amount":
-		return 15
-	case "credit_amount":
-		return 16
-	case "salvage_value":
-		return 17
-	case "quantity":
-		return 18
-	case "correction":
-		return 19
-	case "no_of_depreciation_days":
-		return 20
-	case "depr_until_fa_posting_date":
-		return 21
-	case "depr_acquisition_cost":
-		return 22
-	case "fa_posting_group":
-		return 24
-	case "maintenance_code":
-		return 26
-	case "dimension_1_code":
-		return 27
-	case "dimension_2_code":
-		return 28
-	case "insurance_no":
-		return 30
-	case "budgeted_fa_no":
-		return 31
-	case "use_duplication_list":
-		return 32
-	case "duplicate_in_depreciation_book":
-		return 33
-	case "fa_reclassification_entry":
-		return 34
-	case "fa_error_entry_no":
-		return 35
-	case "reason_code":
-		return 36
-	case "source_code":
-		return 37
-	case "index_entry":
-		return 42
-	case "posting_no_series":
-		return 43
-	case "recurring_method":
-		return 38
-	case "expiration_date":
-		return 41
-	case "recurring_frequency":
-		return 39
-	}
-	return 0
+	return fAJournalLineFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *FAJournalLine) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "journal_template_name"
-	case 2:
-		return "journal_batch_name"
-	case 3:
-		return "line_no"
-	case 4:
-		return "depreciation_book_code"
-	case 5:
-		return "fa_posting_type"
-	case 6:
-		return "fa_no"
-	case 7:
-		return "fa_posting_date"
-	case 8:
-		return "posting_date"
-	case 9:
-		return "document_type"
-	case 10:
-		return "document_date"
-	case 11:
-		return "document_no"
-	case 12:
-		return "external_document_no"
-	case 13:
-		return "description"
-	case 14:
-		return "amount"
-	case 15:
-		return "debit_amount"
-	case 16:
-		return "credit_amount"
-	case 17:
-		return "salvage_value"
-	case 18:
-		return "quantity"
-	case 19:
-		return "correction"
-	case 20:
-		return "no_of_depreciation_days"
-	case 21:
-		return "depr_until_fa_posting_date"
-	case 22:
-		return "depr_acquisition_cost"
-	case 24:
-		return "fa_posting_group"
-	case 26:
-		return "maintenance_code"
-	case 27:
-		return "dimension_1_code"
-	case 28:
-		return "dimension_2_code"
-	case 30:
-		return "insurance_no"
-	case 31:
-		return "budgeted_fa_no"
-	case 32:
-		return "use_duplication_list"
-	case 33:
-		return "duplicate_in_depreciation_book"
-	case 34:
-		return "fa_reclassification_entry"
-	case 35:
-		return "fa_error_entry_no"
-	case 36:
-		return "reason_code"
-	case 37:
-		return "source_code"
-	case 42:
-		return "index_entry"
-	case 43:
-		return "posting_no_series"
-	case 38:
-		return "recurring_method"
-	case 41:
-		return "expiration_date"
-	case 39:
-		return "recurring_frequency"
-	}
-	return ""
+	return fAJournalLineFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -646,123 +485,6 @@ type (
 	FAJournalLineOnBeforeRename interface {
 		OnBeforeRename(rec *FAJournalLine, handled *bool) error
 	}
-	FAJournalLineOnValidate_Journal_template_name interface {
-		OnValidate_Journal_template_name(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Journal_batch_name interface {
-		OnValidate_Journal_batch_name(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Line_no interface {
-		OnValidate_Line_no(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Depreciation_book_code interface {
-		OnValidate_Depreciation_book_code(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Fa_posting_type interface {
-		OnValidate_Fa_posting_type(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Fa_no interface {
-		OnValidate_Fa_no(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Fa_posting_date interface {
-		OnValidate_Fa_posting_date(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Posting_date interface {
-		OnValidate_Posting_date(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Document_type interface {
-		OnValidate_Document_type(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Document_date interface {
-		OnValidate_Document_date(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Document_no interface {
-		OnValidate_Document_no(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_External_document_no interface {
-		OnValidate_External_document_no(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Description interface {
-		OnValidate_Description(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Amount interface {
-		OnValidate_Amount(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Debit_amount interface {
-		OnValidate_Debit_amount(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Credit_amount interface {
-		OnValidate_Credit_amount(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Salvage_value interface {
-		OnValidate_Salvage_value(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Quantity interface {
-		OnValidate_Quantity(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Correction interface {
-		OnValidate_Correction(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_No_of_depreciation_days interface {
-		OnValidate_No_of_depreciation_days(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Depr_until_fa_posting_date interface {
-		OnValidate_Depr_until_fa_posting_date(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Depr_acquisition_cost interface {
-		OnValidate_Depr_acquisition_cost(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Fa_posting_group interface {
-		OnValidate_Fa_posting_group(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Maintenance_code interface {
-		OnValidate_Maintenance_code(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Dimension_1_code interface {
-		OnValidate_Dimension_1_code(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Dimension_2_code interface {
-		OnValidate_Dimension_2_code(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Insurance_no interface {
-		OnValidate_Insurance_no(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Budgeted_fa_no interface {
-		OnValidate_Budgeted_fa_no(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Use_duplication_list interface {
-		OnValidate_Use_duplication_list(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Duplicate_in_depreciation_book interface {
-		OnValidate_Duplicate_in_depreciation_book(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Fa_reclassification_entry interface {
-		OnValidate_Fa_reclassification_entry(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Fa_error_entry_no interface {
-		OnValidate_Fa_error_entry_no(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Reason_code interface {
-		OnValidate_Reason_code(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Source_code interface {
-		OnValidate_Source_code(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Index_entry interface {
-		OnValidate_Index_entry(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Posting_no_series interface {
-		OnValidate_Posting_no_series(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Recurring_method interface {
-		OnValidate_Recurring_method(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Expiration_date interface {
-		OnValidate_Expiration_date(rec *FAJournalLine) error
-	}
-	FAJournalLineOnValidate_Recurring_frequency interface {
-		OnValidate_Recurring_frequency(rec *FAJournalLine) error
-	}
 )
 
 // fAJournalLineLogic is the registered business logic of FA_Journal_Line, in
@@ -805,86 +527,9 @@ func fAJournalLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(FAJournalLineOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(FAJournalLineOnBeforeRename)
-	case "OnValidate_Journal_template_name":
-		_, ok = logic.(FAJournalLineOnValidate_Journal_template_name)
-	case "OnValidate_Journal_batch_name":
-		_, ok = logic.(FAJournalLineOnValidate_Journal_batch_name)
-	case "OnValidate_Line_no":
-		_, ok = logic.(FAJournalLineOnValidate_Line_no)
-	case "OnValidate_Depreciation_book_code":
-		_, ok = logic.(FAJournalLineOnValidate_Depreciation_book_code)
-	case "OnValidate_Fa_posting_type":
-		_, ok = logic.(FAJournalLineOnValidate_Fa_posting_type)
-	case "OnValidate_Fa_no":
-		_, ok = logic.(FAJournalLineOnValidate_Fa_no)
-	case "OnValidate_Fa_posting_date":
-		_, ok = logic.(FAJournalLineOnValidate_Fa_posting_date)
-	case "OnValidate_Posting_date":
-		_, ok = logic.(FAJournalLineOnValidate_Posting_date)
-	case "OnValidate_Document_type":
-		_, ok = logic.(FAJournalLineOnValidate_Document_type)
-	case "OnValidate_Document_date":
-		_, ok = logic.(FAJournalLineOnValidate_Document_date)
-	case "OnValidate_Document_no":
-		_, ok = logic.(FAJournalLineOnValidate_Document_no)
-	case "OnValidate_External_document_no":
-		_, ok = logic.(FAJournalLineOnValidate_External_document_no)
-	case "OnValidate_Description":
-		_, ok = logic.(FAJournalLineOnValidate_Description)
-	case "OnValidate_Amount":
-		_, ok = logic.(FAJournalLineOnValidate_Amount)
-	case "OnValidate_Debit_amount":
-		_, ok = logic.(FAJournalLineOnValidate_Debit_amount)
-	case "OnValidate_Credit_amount":
-		_, ok = logic.(FAJournalLineOnValidate_Credit_amount)
-	case "OnValidate_Salvage_value":
-		_, ok = logic.(FAJournalLineOnValidate_Salvage_value)
-	case "OnValidate_Quantity":
-		_, ok = logic.(FAJournalLineOnValidate_Quantity)
-	case "OnValidate_Correction":
-		_, ok = logic.(FAJournalLineOnValidate_Correction)
-	case "OnValidate_No_of_depreciation_days":
-		_, ok = logic.(FAJournalLineOnValidate_No_of_depreciation_days)
-	case "OnValidate_Depr_until_fa_posting_date":
-		_, ok = logic.(FAJournalLineOnValidate_Depr_until_fa_posting_date)
-	case "OnValidate_Depr_acquisition_cost":
-		_, ok = logic.(FAJournalLineOnValidate_Depr_acquisition_cost)
-	case "OnValidate_Fa_posting_group":
-		_, ok = logic.(FAJournalLineOnValidate_Fa_posting_group)
-	case "OnValidate_Maintenance_code":
-		_, ok = logic.(FAJournalLineOnValidate_Maintenance_code)
-	case "OnValidate_Dimension_1_code":
-		_, ok = logic.(FAJournalLineOnValidate_Dimension_1_code)
-	case "OnValidate_Dimension_2_code":
-		_, ok = logic.(FAJournalLineOnValidate_Dimension_2_code)
-	case "OnValidate_Insurance_no":
-		_, ok = logic.(FAJournalLineOnValidate_Insurance_no)
-	case "OnValidate_Budgeted_fa_no":
-		_, ok = logic.(FAJournalLineOnValidate_Budgeted_fa_no)
-	case "OnValidate_Use_duplication_list":
-		_, ok = logic.(FAJournalLineOnValidate_Use_duplication_list)
-	case "OnValidate_Duplicate_in_depreciation_book":
-		_, ok = logic.(FAJournalLineOnValidate_Duplicate_in_depreciation_book)
-	case "OnValidate_Fa_reclassification_entry":
-		_, ok = logic.(FAJournalLineOnValidate_Fa_reclassification_entry)
-	case "OnValidate_Fa_error_entry_no":
-		_, ok = logic.(FAJournalLineOnValidate_Fa_error_entry_no)
-	case "OnValidate_Reason_code":
-		_, ok = logic.(FAJournalLineOnValidate_Reason_code)
-	case "OnValidate_Source_code":
-		_, ok = logic.(FAJournalLineOnValidate_Source_code)
-	case "OnValidate_Index_entry":
-		_, ok = logic.(FAJournalLineOnValidate_Index_entry)
-	case "OnValidate_Posting_no_series":
-		_, ok = logic.(FAJournalLineOnValidate_Posting_no_series)
-	case "OnValidate_Recurring_method":
-		_, ok = logic.(FAJournalLineOnValidate_Recurring_method)
-	case "OnValidate_Expiration_date":
-		_, ok = logic.(FAJournalLineOnValidate_Expiration_date)
-	case "OnValidate_Recurring_frequency":
-		_, ok = logic.(FAJournalLineOnValidate_Recurring_frequency)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return fAJournalLineFields.IsOnValidateTrigger(name, logic, (*FAJournalLine)(nil))
 	}
 	return true, ok
 }
@@ -1320,46 +965,7 @@ func (t *FAJournalLine) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *FAJournalLine) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["journal_template_name"] = t.Journal_template_name
-	t.oldValues["journal_batch_name"] = t.Journal_batch_name
-	t.oldValues["line_no"] = t.Line_no
-	t.oldValues["depreciation_book_code"] = t.Depreciation_book_code
-	t.oldValues["fa_posting_type"] = t.Fa_posting_type
-	t.oldValues["fa_no"] = t.Fa_no
-	t.oldValues["fa_posting_date"] = t.Fa_posting_date
-	t.oldValues["posting_date"] = t.Posting_date
-	t.oldValues["document_type"] = t.Document_type
-	t.oldValues["document_date"] = t.Document_date
-	t.oldValues["document_no"] = t.Document_no
-	t.oldValues["external_document_no"] = t.External_document_no
-	t.oldValues["description"] = t.Description
-	t.oldValues["amount"] = t.Amount
-	t.oldValues["debit_amount"] = t.Debit_amount
-	t.oldValues["credit_amount"] = t.Credit_amount
-	t.oldValues["salvage_value"] = t.Salvage_value
-	t.oldValues["quantity"] = t.Quantity
-	t.oldValues["correction"] = t.Correction
-	t.oldValues["no_of_depreciation_days"] = t.No_of_depreciation_days
-	t.oldValues["depr_until_fa_posting_date"] = t.Depr_until_fa_posting_date
-	t.oldValues["depr_acquisition_cost"] = t.Depr_acquisition_cost
-	t.oldValues["fa_posting_group"] = t.Fa_posting_group
-	t.oldValues["maintenance_code"] = t.Maintenance_code
-	t.oldValues["dimension_1_code"] = t.Dimension_1_code
-	t.oldValues["dimension_2_code"] = t.Dimension_2_code
-	t.oldValues["insurance_no"] = t.Insurance_no
-	t.oldValues["budgeted_fa_no"] = t.Budgeted_fa_no
-	t.oldValues["use_duplication_list"] = t.Use_duplication_list
-	t.oldValues["duplicate_in_depreciation_book"] = t.Duplicate_in_depreciation_book
-	t.oldValues["fa_reclassification_entry"] = t.Fa_reclassification_entry
-	t.oldValues["fa_error_entry_no"] = t.Fa_error_entry_no
-	t.oldValues["reason_code"] = t.Reason_code
-	t.oldValues["source_code"] = t.Source_code
-	t.oldValues["index_entry"] = t.Index_entry
-	t.oldValues["posting_no_series"] = t.Posting_no_series
-	t.oldValues["recurring_method"] = t.Recurring_method
-	t.oldValues["expiration_date"] = t.Expiration_date
-	t.oldValues["recurring_frequency"] = t.Recurring_frequency
+	t.oldValues = fAJournalLineFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1374,123 +980,7 @@ func (t *FAJournalLine) OldValue(fieldName string) interface{} {
 func (t *FAJournalLine) XRec() *FAJournalLine {
 	x := &FAJournalLine{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["journal_template_name"].(types.Code); ok {
-		x.Journal_template_name = v
-	}
-	if v, ok := t.oldValues["journal_batch_name"].(types.Code); ok {
-		x.Journal_batch_name = v
-	}
-	if v, ok := t.oldValues["line_no"].(int); ok {
-		x.Line_no = v
-	}
-	if v, ok := t.oldValues["depreciation_book_code"].(types.Code); ok {
-		x.Depreciation_book_code = v
-	}
-	if v, ok := t.oldValues["fa_posting_type"].(FAJournalLineFa_posting_type); ok {
-		x.Fa_posting_type = v
-	}
-	if v, ok := t.oldValues["fa_no"].(types.Code); ok {
-		x.Fa_no = v
-	}
-	if v, ok := t.oldValues["fa_posting_date"].(types.Date); ok {
-		x.Fa_posting_date = v
-	}
-	if v, ok := t.oldValues["posting_date"].(types.Date); ok {
-		x.Posting_date = v
-	}
-	if v, ok := t.oldValues["document_type"].(FAJournalLineDocument_type); ok {
-		x.Document_type = v
-	}
-	if v, ok := t.oldValues["document_date"].(types.Date); ok {
-		x.Document_date = v
-	}
-	if v, ok := t.oldValues["document_no"].(types.Code); ok {
-		x.Document_no = v
-	}
-	if v, ok := t.oldValues["external_document_no"].(types.Code); ok {
-		x.External_document_no = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["amount"].(types.Decimal); ok {
-		x.Amount = v
-	}
-	if v, ok := t.oldValues["debit_amount"].(types.Decimal); ok {
-		x.Debit_amount = v
-	}
-	if v, ok := t.oldValues["credit_amount"].(types.Decimal); ok {
-		x.Credit_amount = v
-	}
-	if v, ok := t.oldValues["salvage_value"].(types.Decimal); ok {
-		x.Salvage_value = v
-	}
-	if v, ok := t.oldValues["quantity"].(types.Decimal); ok {
-		x.Quantity = v
-	}
-	if v, ok := t.oldValues["correction"].(bool); ok {
-		x.Correction = v
-	}
-	if v, ok := t.oldValues["no_of_depreciation_days"].(int); ok {
-		x.No_of_depreciation_days = v
-	}
-	if v, ok := t.oldValues["depr_until_fa_posting_date"].(bool); ok {
-		x.Depr_until_fa_posting_date = v
-	}
-	if v, ok := t.oldValues["depr_acquisition_cost"].(bool); ok {
-		x.Depr_acquisition_cost = v
-	}
-	if v, ok := t.oldValues["fa_posting_group"].(types.Code); ok {
-		x.Fa_posting_group = v
-	}
-	if v, ok := t.oldValues["maintenance_code"].(types.Code); ok {
-		x.Maintenance_code = v
-	}
-	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
-		x.Dimension_1_code = v
-	}
-	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
-		x.Dimension_2_code = v
-	}
-	if v, ok := t.oldValues["insurance_no"].(types.Code); ok {
-		x.Insurance_no = v
-	}
-	if v, ok := t.oldValues["budgeted_fa_no"].(types.Code); ok {
-		x.Budgeted_fa_no = v
-	}
-	if v, ok := t.oldValues["use_duplication_list"].(bool); ok {
-		x.Use_duplication_list = v
-	}
-	if v, ok := t.oldValues["duplicate_in_depreciation_book"].(types.Code); ok {
-		x.Duplicate_in_depreciation_book = v
-	}
-	if v, ok := t.oldValues["fa_reclassification_entry"].(bool); ok {
-		x.Fa_reclassification_entry = v
-	}
-	if v, ok := t.oldValues["fa_error_entry_no"].(int); ok {
-		x.Fa_error_entry_no = v
-	}
-	if v, ok := t.oldValues["reason_code"].(types.Code); ok {
-		x.Reason_code = v
-	}
-	if v, ok := t.oldValues["source_code"].(types.Code); ok {
-		x.Source_code = v
-	}
-	if v, ok := t.oldValues["index_entry"].(bool); ok {
-		x.Index_entry = v
-	}
-	if v, ok := t.oldValues["posting_no_series"].(types.Code); ok {
-		x.Posting_no_series = v
-	}
-	if v, ok := t.oldValues["recurring_method"].(FAJournalLineRecurring_method); ok {
-		x.Recurring_method = v
-	}
-	if v, ok := t.oldValues["expiration_date"].(types.Date); ok {
-		x.Expiration_date = v
-	}
-	if v, ok := t.oldValues["recurring_frequency"].(types.Code); ok {
-		x.Recurring_frequency = v
-	}
+	fAJournalLineFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -2184,186 +1674,7 @@ func (t *FAJournalLine) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *FAJournalLine) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "journal_template_name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Journal_template_name.Equal(old)
-		}
-	case "journal_batch_name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Journal_batch_name.Equal(old)
-		}
-	case "line_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Line_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "depreciation_book_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Depreciation_book_code.Equal(old)
-		}
-	case "fa_posting_type":
-		if old, ok := oldValue.(FAJournalLineFa_posting_type); ok {
-			return t.Fa_posting_type != old
-		}
-	case "fa_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Fa_no.Equal(old)
-		}
-	case "fa_posting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Fa_posting_date.Equal(old)
-		}
-	case "posting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Posting_date.Equal(old)
-		}
-	case "document_type":
-		if old, ok := oldValue.(FAJournalLineDocument_type); ok {
-			return t.Document_type != old
-		}
-	case "document_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Document_date.Equal(old)
-		}
-	case "document_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Document_no.Equal(old)
-		}
-	case "external_document_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.External_document_no.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Amount.Equal(old)
-		}
-	case "debit_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Debit_amount.Equal(old)
-		}
-	case "credit_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Credit_amount.Equal(old)
-		}
-	case "salvage_value":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Salvage_value.Equal(old)
-		}
-	case "quantity":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Quantity.Equal(old)
-		}
-	case "correction":
-		if old, ok := oldValue.(bool); ok {
-			return t.Correction != old
-		}
-		return true // Type mismatch, assume changed
-	case "no_of_depreciation_days":
-		if old, ok := oldValue.(int); ok {
-			return t.No_of_depreciation_days != old
-		}
-		return true // Type mismatch, assume changed
-	case "depr_until_fa_posting_date":
-		if old, ok := oldValue.(bool); ok {
-			return t.Depr_until_fa_posting_date != old
-		}
-		return true // Type mismatch, assume changed
-	case "depr_acquisition_cost":
-		if old, ok := oldValue.(bool); ok {
-			return t.Depr_acquisition_cost != old
-		}
-		return true // Type mismatch, assume changed
-	case "fa_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Fa_posting_group.Equal(old)
-		}
-	case "maintenance_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Maintenance_code.Equal(old)
-		}
-	case "dimension_1_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_1_code.Equal(old)
-		}
-	case "dimension_2_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_2_code.Equal(old)
-		}
-	case "insurance_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Insurance_no.Equal(old)
-		}
-	case "budgeted_fa_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Budgeted_fa_no.Equal(old)
-		}
-	case "use_duplication_list":
-		if old, ok := oldValue.(bool); ok {
-			return t.Use_duplication_list != old
-		}
-		return true // Type mismatch, assume changed
-	case "duplicate_in_depreciation_book":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Duplicate_in_depreciation_book.Equal(old)
-		}
-	case "fa_reclassification_entry":
-		if old, ok := oldValue.(bool); ok {
-			return t.Fa_reclassification_entry != old
-		}
-		return true // Type mismatch, assume changed
-	case "fa_error_entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Fa_error_entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "reason_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Reason_code.Equal(old)
-		}
-	case "source_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Source_code.Equal(old)
-		}
-	case "index_entry":
-		if old, ok := oldValue.(bool); ok {
-			return t.Index_entry != old
-		}
-		return true // Type mismatch, assume changed
-	case "posting_no_series":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Posting_no_series.Equal(old)
-		}
-	case "recurring_method":
-		if old, ok := oldValue.(FAJournalLineRecurring_method); ok {
-			return t.Recurring_method != old
-		}
-	case "expiration_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Expiration_date.Equal(old)
-		}
-	case "recurring_frequency":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Recurring_frequency.Equal(old)
-		}
-	}
-
-	return false
+	return fAJournalLineFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -2566,87 +1877,7 @@ func (t *FAJournalLine) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *FAJournalLine) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("journal_template_name"):
-		return "journal_template_name", true
-	case strings.ToLower("journal_batch_name"):
-		return "journal_batch_name", true
-	case strings.ToLower("line_no"):
-		return "line_no", true
-	case strings.ToLower("depreciation_book_code"):
-		return "depreciation_book_code", true
-	case strings.ToLower("fa_posting_type"):
-		return "fa_posting_type", true
-	case strings.ToLower("fa_no"):
-		return "fa_no", true
-	case strings.ToLower("fa_posting_date"):
-		return "fa_posting_date", true
-	case strings.ToLower("posting_date"):
-		return "posting_date", true
-	case strings.ToLower("document_type"):
-		return "document_type", true
-	case strings.ToLower("document_date"):
-		return "document_date", true
-	case strings.ToLower("document_no"):
-		return "document_no", true
-	case strings.ToLower("external_document_no"):
-		return "external_document_no", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("amount"):
-		return "amount", true
-	case strings.ToLower("debit_amount"):
-		return "debit_amount", true
-	case strings.ToLower("credit_amount"):
-		return "credit_amount", true
-	case strings.ToLower("salvage_value"):
-		return "salvage_value", true
-	case strings.ToLower("quantity"):
-		return "quantity", true
-	case strings.ToLower("correction"):
-		return "correction", true
-	case strings.ToLower("no_of_depreciation_days"):
-		return "no_of_depreciation_days", true
-	case strings.ToLower("depr_until_fa_posting_date"):
-		return "depr_until_fa_posting_date", true
-	case strings.ToLower("depr_acquisition_cost"):
-		return "depr_acquisition_cost", true
-	case strings.ToLower("fa_posting_group"):
-		return "fa_posting_group", true
-	case strings.ToLower("maintenance_code"):
-		return "maintenance_code", true
-	case strings.ToLower("dimension_1_code"):
-		return "dimension_1_code", true
-	case strings.ToLower("dimension_2_code"):
-		return "dimension_2_code", true
-	case strings.ToLower("insurance_no"):
-		return "insurance_no", true
-	case strings.ToLower("budgeted_fa_no"):
-		return "budgeted_fa_no", true
-	case strings.ToLower("use_duplication_list"):
-		return "use_duplication_list", true
-	case strings.ToLower("duplicate_in_depreciation_book"):
-		return "duplicate_in_depreciation_book", true
-	case strings.ToLower("fa_reclassification_entry"):
-		return "fa_reclassification_entry", true
-	case strings.ToLower("fa_error_entry_no"):
-		return "fa_error_entry_no", true
-	case strings.ToLower("reason_code"):
-		return "reason_code", true
-	case strings.ToLower("source_code"):
-		return "source_code", true
-	case strings.ToLower("index_entry"):
-		return "index_entry", true
-	case strings.ToLower("posting_no_series"):
-		return "posting_no_series", true
-	case strings.ToLower("recurring_method"):
-		return "recurring_method", true
-	case strings.ToLower("expiration_date"):
-		return "expiration_date", true
-	case strings.ToLower("recurring_frequency"):
-		return "recurring_frequency", true
-	}
-	return "", false
+	return fAJournalLineFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -3942,977 +3173,20 @@ func (t *FAJournalLine) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *FAJournalLine) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "journal_template_name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Journal_template_name = v
-		} else if v, ok := value.(string); ok {
-			t.Journal_template_name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field journal_template_name")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "journal_template_name"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Journal_template_name); ok {
-				if err := trg.OnValidate_Journal_template_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "journal_batch_name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Journal_batch_name = v
-		} else if v, ok := value.(string); ok {
-			t.Journal_batch_name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field journal_batch_name")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "journal_batch_name"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Journal_batch_name); ok {
-				if err := trg.OnValidate_Journal_batch_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "line_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Line_no = v
-		case float64:
-			t.Line_no = int(v)
-		case string:
-			if v == "" {
-				t.Line_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Line_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field line_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field line_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Line_no); ok {
-				if err := trg.OnValidate_Line_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "depreciation_book_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Depreciation_book_code = v
-		} else if v, ok := value.(string); ok {
-			t.Depreciation_book_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field depreciation_book_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "depreciation_book_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Depreciation_book_code); ok {
-				if err := trg.OnValidate_Depreciation_book_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_posting_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(FAJournalLineFa_posting_type); ok {
-			t.Fa_posting_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 9 {
-				return fmt.Errorf("invalid option value %d for field fa_posting_type (valid range: 0-%d)", v, 9-1)
-			}
-			t.Fa_posting_type = FAJournalLineFa_posting_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 9 {
-				return fmt.Errorf("invalid option value %d for field fa_posting_type (valid range: 0-%d)", intVal, 9-1)
-			}
-			t.Fa_posting_type = FAJournalLineFa_posting_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Fa_posting_type = 0
-			} else {
-				options := []string{"Acquisition Cost", "Depreciation", "Write-Down", "Appreciation", "Custom 1", "Custom 2", "Disposal", "Maintenance", "Salvage Value"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Fa_posting_type = FAJournalLineFa_posting_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field fa_posting_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field fa_posting_type (expected FAJournalLineFa_posting_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Fa_posting_type); ok {
-				if err := trg.OnValidate_Fa_posting_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Fa_no = v
-		} else if v, ok := value.(string); ok {
-			t.Fa_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fa_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Fa_no); ok {
-				if err := trg.OnValidate_Fa_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_posting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Fa_posting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Fa_posting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field fa_posting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Fa_posting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_posting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Fa_posting_date); ok {
-				if err := trg.OnValidate_Fa_posting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "posting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Posting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Posting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field posting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Posting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field posting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Posting_date); ok {
-				if err := trg.OnValidate_Posting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(FAJournalLineDocument_type); ok {
-			t.Document_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field document_type (valid range: 0-%d)", v, 4-1)
-			}
-			t.Document_type = FAJournalLineDocument_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field document_type (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Document_type = FAJournalLineDocument_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Document_type = 0
-			} else {
-				options := []string{" ", "", "Invoice", "Credit Memo"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Document_type = FAJournalLineDocument_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field document_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field document_type (expected FAJournalLineDocument_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Document_type); ok {
-				if err := trg.OnValidate_Document_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Document_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Document_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field document_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Document_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field document_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Document_date); ok {
-				if err := trg.OnValidate_Document_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Document_no = v
-		} else if v, ok := value.(string); ok {
-			t.Document_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field document_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Document_no); ok {
-				if err := trg.OnValidate_Document_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "external_document_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.External_document_no = v
-		} else if v, ok := value.(string); ok {
-			t.External_document_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field external_document_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_External_document_no); ok {
-				if err := trg.OnValidate_External_document_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Amount); ok {
-				if err := trg.OnValidate_Amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "debit_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Debit_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Debit_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field debit_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Debit_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Debit_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Debit_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field debit_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Debit_amount); ok {
-				if err := trg.OnValidate_Debit_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "credit_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Credit_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Credit_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field credit_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Credit_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Credit_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Credit_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field credit_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Credit_amount); ok {
-				if err := trg.OnValidate_Credit_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "salvage_value":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Salvage_value = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Salvage_value, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field salvage_value: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Salvage_value = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Salvage_value = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Salvage_value = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field salvage_value (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Salvage_value); ok {
-				if err := trg.OnValidate_Salvage_value(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "quantity":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Quantity, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field quantity: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Quantity = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Quantity = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Quantity = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field quantity (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Quantity); ok {
-				if err := trg.OnValidate_Quantity(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "correction":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Correction = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Correction = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field correction")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Correction); ok {
-				if err := trg.OnValidate_Correction(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no_of_depreciation_days":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.No_of_depreciation_days = v
-		case float64:
-			t.No_of_depreciation_days = int(v)
-		case string:
-			if v == "" {
-				t.No_of_depreciation_days = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.No_of_depreciation_days = i
-			} else {
-				return fmt.Errorf("invalid integer value for field no_of_depreciation_days: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field no_of_depreciation_days")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_No_of_depreciation_days); ok {
-				if err := trg.OnValidate_No_of_depreciation_days(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "depr_until_fa_posting_date":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Depr_until_fa_posting_date = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Depr_until_fa_posting_date = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field depr_until_fa_posting_date")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Depr_until_fa_posting_date); ok {
-				if err := trg.OnValidate_Depr_until_fa_posting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "depr_acquisition_cost":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Depr_acquisition_cost = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Depr_acquisition_cost = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field depr_acquisition_cost")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Depr_acquisition_cost); ok {
-				if err := trg.OnValidate_Depr_acquisition_cost(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Fa_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Fa_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fa_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Fa_posting_group); ok {
-				if err := trg.OnValidate_Fa_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "maintenance_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Maintenance_code = v
-		} else if v, ok := value.(string); ok {
-			t.Maintenance_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field maintenance_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "maintenance_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Maintenance_code); ok {
-				if err := trg.OnValidate_Maintenance_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_1_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_1_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Dimension_1_code); ok {
-				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_2_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_2_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Dimension_2_code); ok {
-				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "insurance_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Insurance_no = v
-		} else if v, ok := value.(string); ok {
-			t.Insurance_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field insurance_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "insurance_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Insurance_no); ok {
-				if err := trg.OnValidate_Insurance_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "budgeted_fa_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Budgeted_fa_no = v
-		} else if v, ok := value.(string); ok {
-			t.Budgeted_fa_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field budgeted_fa_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "budgeted_fa_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Budgeted_fa_no); ok {
-				if err := trg.OnValidate_Budgeted_fa_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "use_duplication_list":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Use_duplication_list = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Use_duplication_list = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field use_duplication_list")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Use_duplication_list); ok {
-				if err := trg.OnValidate_Use_duplication_list(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "duplicate_in_depreciation_book":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Duplicate_in_depreciation_book = v
-		} else if v, ok := value.(string); ok {
-			t.Duplicate_in_depreciation_book = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field duplicate_in_depreciation_book")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "duplicate_in_depreciation_book"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Duplicate_in_depreciation_book); ok {
-				if err := trg.OnValidate_Duplicate_in_depreciation_book(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_reclassification_entry":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Fa_reclassification_entry = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Fa_reclassification_entry = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field fa_reclassification_entry")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Fa_reclassification_entry); ok {
-				if err := trg.OnValidate_Fa_reclassification_entry(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_error_entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Fa_error_entry_no = v
-		case float64:
-			t.Fa_error_entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Fa_error_entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Fa_error_entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field fa_error_entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field fa_error_entry_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fa_error_entry_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Fa_error_entry_no); ok {
-				if err := trg.OnValidate_Fa_error_entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reason_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Reason_code = v
-		} else if v, ok := value.(string); ok {
-			t.Reason_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field reason_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "reason_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Reason_code); ok {
-				if err := trg.OnValidate_Reason_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "source_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Source_code = v
-		} else if v, ok := value.(string); ok {
-			t.Source_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field source_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "source_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Source_code); ok {
-				if err := trg.OnValidate_Source_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "index_entry":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Index_entry = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Index_entry = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field index_entry")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Index_entry); ok {
-				if err := trg.OnValidate_Index_entry(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "posting_no_series":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Posting_no_series = v
-		} else if v, ok := value.(string); ok {
-			t.Posting_no_series = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field posting_no_series")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "posting_no_series"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Posting_no_series); ok {
-				if err := trg.OnValidate_Posting_no_series(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "recurring_method":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(FAJournalLineRecurring_method); ok {
-			t.Recurring_method = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field recurring_method (valid range: 0-%d)", v, 3-1)
-			}
-			t.Recurring_method = FAJournalLineRecurring_method(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field recurring_method (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Recurring_method = FAJournalLineRecurring_method(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Recurring_method = 0
-			} else {
-				options := []string{" ", "F Fixed", "V Variable"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Recurring_method = FAJournalLineRecurring_method(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field recurring_method (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field recurring_method (expected FAJournalLineRecurring_method, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Recurring_method); ok {
-				if err := trg.OnValidate_Recurring_method(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "expiration_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Expiration_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Expiration_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field expiration_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Expiration_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field expiration_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Expiration_date); ok {
-				if err := trg.OnValidate_Expiration_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "recurring_frequency":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Recurring_frequency = v
-		} else if v, ok := value.(string); ok {
-			t.Recurring_frequency = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field recurring_frequency")
-		}
-		if err := tables.CheckDateFormula(FAJournalLineTableName, "recurring_frequency", string(t.Recurring_frequency)); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalLineOnValidate_Recurring_frequency); ok {
-				if err := trg.OnValidate_Recurring_frequency(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := fAJournalLineFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &fAJournalLineFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -4921,369 +3195,18 @@ func (t *FAJournalLine) ValidateField(fieldName string, value interface{}) error
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *FAJournalLine) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Journal_template_name, true
-	case 2:
-		return t.Journal_batch_name, true
-	case 3:
-		return t.Line_no, true
-	case 4:
-		return t.Depreciation_book_code, true
-	case 5:
-		return t.Fa_posting_type, true
-	case 6:
-		return t.Fa_no, true
-	case 7:
-		return t.Fa_posting_date, true
-	case 8:
-		return t.Posting_date, true
-	case 9:
-		return t.Document_type, true
-	case 10:
-		return t.Document_date, true
-	case 11:
-		return t.Document_no, true
-	case 12:
-		return t.External_document_no, true
-	case 13:
-		return t.Description, true
-	case 14:
-		return t.Amount, true
-	case 15:
-		return t.Debit_amount, true
-	case 16:
-		return t.Credit_amount, true
-	case 17:
-		return t.Salvage_value, true
-	case 18:
-		return t.Quantity, true
-	case 19:
-		return t.Correction, true
-	case 20:
-		return t.No_of_depreciation_days, true
-	case 21:
-		return t.Depr_until_fa_posting_date, true
-	case 22:
-		return t.Depr_acquisition_cost, true
-	case 24:
-		return t.Fa_posting_group, true
-	case 26:
-		return t.Maintenance_code, true
-	case 27:
-		return t.Dimension_1_code, true
-	case 28:
-		return t.Dimension_2_code, true
-	case 30:
-		return t.Insurance_no, true
-	case 31:
-		return t.Budgeted_fa_no, true
-	case 32:
-		return t.Use_duplication_list, true
-	case 33:
-		return t.Duplicate_in_depreciation_book, true
-	case 34:
-		return t.Fa_reclassification_entry, true
-	case 35:
-		return t.Fa_error_entry_no, true
-	case 36:
-		return t.Reason_code, true
-	case 37:
-		return t.Source_code, true
-	case 42:
-		return t.Index_entry, true
-	case 43:
-		return t.Posting_no_series, true
-	case 38:
-		return t.Recurring_method, true
-	case 41:
-		return t.Expiration_date, true
-	case 39:
-		return t.Recurring_frequency, true
-	}
-	return nil, false
+	return fAJournalLineFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *FAJournalLine) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return fAJournalLineFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *FAJournalLine) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Journal_template_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Journal_template_name = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Journal_batch_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Journal_batch_name = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(int); ok {
-			t.Line_no = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Code); ok {
-			t.Depreciation_book_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Depreciation_book_code = types.NewCode(v)
-			return true
-		}
-	case 5:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 9 {
-			t.Fa_posting_type = FAJournalLineFa_posting_type(i)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Code); ok {
-			t.Fa_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Fa_no = types.NewCode(v)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Date); ok {
-			t.Fa_posting_date = v
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Date); ok {
-			t.Posting_date = v
-			return true
-		}
-	case 9:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Document_type = FAJournalLineDocument_type(i)
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Date); ok {
-			t.Document_date = v
-			return true
-		}
-	case 11:
-		if v, ok := value.(types.Code); ok {
-			t.Document_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Document_no = types.NewCode(v)
-			return true
-		}
-	case 12:
-		if v, ok := value.(types.Code); ok {
-			t.External_document_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.External_document_no = types.NewCode(v)
-			return true
-		}
-	case 13:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 14:
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount = v
-			return true
-		}
-	case 15:
-		if v, ok := value.(types.Decimal); ok {
-			t.Debit_amount = v
-			return true
-		}
-	case 16:
-		if v, ok := value.(types.Decimal); ok {
-			t.Credit_amount = v
-			return true
-		}
-	case 17:
-		if v, ok := value.(types.Decimal); ok {
-			t.Salvage_value = v
-			return true
-		}
-	case 18:
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity = v
-			return true
-		}
-	case 19:
-		if v, ok := value.(bool); ok {
-			t.Correction = v
-			return true
-		}
-	case 20:
-		if v, ok := value.(int); ok {
-			t.No_of_depreciation_days = v
-			return true
-		}
-	case 21:
-		if v, ok := value.(bool); ok {
-			t.Depr_until_fa_posting_date = v
-			return true
-		}
-	case 22:
-		if v, ok := value.(bool); ok {
-			t.Depr_acquisition_cost = v
-			return true
-		}
-	case 24:
-		if v, ok := value.(types.Code); ok {
-			t.Fa_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Fa_posting_group = types.NewCode(v)
-			return true
-		}
-	case 26:
-		if v, ok := value.(types.Code); ok {
-			t.Maintenance_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Maintenance_code = types.NewCode(v)
-			return true
-		}
-	case 27:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-			return true
-		}
-	case 28:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-			return true
-		}
-	case 30:
-		if v, ok := value.(types.Code); ok {
-			t.Insurance_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Insurance_no = types.NewCode(v)
-			return true
-		}
-	case 31:
-		if v, ok := value.(types.Code); ok {
-			t.Budgeted_fa_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Budgeted_fa_no = types.NewCode(v)
-			return true
-		}
-	case 32:
-		if v, ok := value.(bool); ok {
-			t.Use_duplication_list = v
-			return true
-		}
-	case 33:
-		if v, ok := value.(types.Code); ok {
-			t.Duplicate_in_depreciation_book = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Duplicate_in_depreciation_book = types.NewCode(v)
-			return true
-		}
-	case 34:
-		if v, ok := value.(bool); ok {
-			t.Fa_reclassification_entry = v
-			return true
-		}
-	case 35:
-		if v, ok := value.(int); ok {
-			t.Fa_error_entry_no = v
-			return true
-		}
-	case 36:
-		if v, ok := value.(types.Code); ok {
-			t.Reason_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Reason_code = types.NewCode(v)
-			return true
-		}
-	case 37:
-		if v, ok := value.(types.Code); ok {
-			t.Source_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Source_code = types.NewCode(v)
-			return true
-		}
-	case 42:
-		if v, ok := value.(bool); ok {
-			t.Index_entry = v
-			return true
-		}
-	case 43:
-		if v, ok := value.(types.Code); ok {
-			t.Posting_no_series = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Posting_no_series = types.NewCode(v)
-			return true
-		}
-	case 38:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Recurring_method = FAJournalLineRecurring_method(i)
-			return true
-		}
-	case 41:
-		if v, ok := value.(types.Date); ok {
-			t.Expiration_date = v
-			return true
-		}
-	case 39:
-		if v, ok := value.(types.Code); ok {
-			t.Recurring_frequency = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Recurring_frequency = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return fAJournalLineFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -5811,87 +3734,7 @@ func (t *FAJournalLine) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *FAJournalLine) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "journal_template_name":
-		return t.Journal_template_name, true
-	case "journal_batch_name":
-		return t.Journal_batch_name, true
-	case "line_no":
-		return t.Line_no, true
-	case "depreciation_book_code":
-		return t.Depreciation_book_code, true
-	case "fa_posting_type":
-		return int(t.Fa_posting_type), true
-	case "fa_no":
-		return t.Fa_no, true
-	case "fa_posting_date":
-		return t.Fa_posting_date, true
-	case "posting_date":
-		return t.Posting_date, true
-	case "document_type":
-		return int(t.Document_type), true
-	case "document_date":
-		return t.Document_date, true
-	case "document_no":
-		return t.Document_no, true
-	case "external_document_no":
-		return t.External_document_no, true
-	case "description":
-		return t.Description, true
-	case "amount":
-		return t.Amount, true
-	case "debit_amount":
-		return t.Debit_amount, true
-	case "credit_amount":
-		return t.Credit_amount, true
-	case "salvage_value":
-		return t.Salvage_value, true
-	case "quantity":
-		return t.Quantity, true
-	case "correction":
-		return t.Correction, true
-	case "no_of_depreciation_days":
-		return t.No_of_depreciation_days, true
-	case "depr_until_fa_posting_date":
-		return t.Depr_until_fa_posting_date, true
-	case "depr_acquisition_cost":
-		return t.Depr_acquisition_cost, true
-	case "fa_posting_group":
-		return t.Fa_posting_group, true
-	case "maintenance_code":
-		return t.Maintenance_code, true
-	case "dimension_1_code":
-		return t.Dimension_1_code, true
-	case "dimension_2_code":
-		return t.Dimension_2_code, true
-	case "insurance_no":
-		return t.Insurance_no, true
-	case "budgeted_fa_no":
-		return t.Budgeted_fa_no, true
-	case "use_duplication_list":
-		return t.Use_duplication_list, true
-	case "duplicate_in_depreciation_book":
-		return t.Duplicate_in_depreciation_book, true
-	case "fa_reclassification_entry":
-		return t.Fa_reclassification_entry, true
-	case "fa_error_entry_no":
-		return t.Fa_error_entry_no, true
-	case "reason_code":
-		return t.Reason_code, true
-	case "source_code":
-		return t.Source_code, true
-	case "index_entry":
-		return t.Index_entry, true
-	case "posting_no_series":
-		return t.Posting_no_series, true
-	case "recurring_method":
-		return int(t.Recurring_method), true
-	case "expiration_date":
-		return t.Expiration_date, true
-	case "recurring_frequency":
-		return t.Recurring_frequency, true
-	}
-	return nil, false
+	return fAJournalLineFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -6021,341 +3864,12 @@ func (t *FAJournalLine) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *FAJournalLine) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"journal_template_name":          t.Journal_template_name.String(),
-		"journal_batch_name":             t.Journal_batch_name.String(),
-		"line_no":                        t.Line_no,
-		"depreciation_book_code":         t.Depreciation_book_code.String(),
-		"fa_posting_type":                int(t.Fa_posting_type),
-		"fa_no":                          t.Fa_no.String(),
-		"fa_posting_date":                t.Fa_posting_date.String(),
-		"posting_date":                   t.Posting_date.String(),
-		"document_type":                  int(t.Document_type),
-		"document_date":                  t.Document_date.String(),
-		"document_no":                    t.Document_no.String(),
-		"external_document_no":           t.External_document_no.String(),
-		"description":                    t.Description.String(),
-		"amount":                         t.Amount.String(),
-		"debit_amount":                   t.Debit_amount.String(),
-		"credit_amount":                  t.Credit_amount.String(),
-		"salvage_value":                  t.Salvage_value.String(),
-		"quantity":                       t.Quantity.String(),
-		"correction":                     t.Correction,
-		"no_of_depreciation_days":        t.No_of_depreciation_days,
-		"depr_until_fa_posting_date":     t.Depr_until_fa_posting_date,
-		"depr_acquisition_cost":          t.Depr_acquisition_cost,
-		"fa_posting_group":               t.Fa_posting_group.String(),
-		"maintenance_code":               t.Maintenance_code.String(),
-		"dimension_1_code":               t.Dimension_1_code.String(),
-		"dimension_2_code":               t.Dimension_2_code.String(),
-		"insurance_no":                   t.Insurance_no.String(),
-		"budgeted_fa_no":                 t.Budgeted_fa_no.String(),
-		"use_duplication_list":           t.Use_duplication_list,
-		"duplicate_in_depreciation_book": t.Duplicate_in_depreciation_book.String(),
-		"fa_reclassification_entry":      t.Fa_reclassification_entry,
-		"fa_error_entry_no":              t.Fa_error_entry_no,
-		"reason_code":                    t.Reason_code.String(),
-		"source_code":                    t.Source_code.String(),
-		"index_entry":                    t.Index_entry,
-		"posting_no_series":              t.Posting_no_series.String(),
-		"recurring_method":               int(t.Recurring_method),
-		"expiration_date":                t.Expiration_date.String(),
-		"recurring_frequency":            t.Recurring_frequency.String(),
-	}
+	return fAJournalLineFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *FAJournalLine) FromMap(data map[string]interface{}) {
-	if v, ok := data["journal_template_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Journal_template_name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["journal_batch_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Journal_batch_name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["line_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Line_no = int(val)
-		case int:
-			t.Line_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Line_no = n
-			}
-		}
-	}
-	if v, ok := data["depreciation_book_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Depreciation_book_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["fa_posting_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Fa_posting_type = FAJournalLineFa_posting_type(int(val))
-		case int:
-			t.Fa_posting_type = FAJournalLineFa_posting_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Acquisition Cost", "Depreciation", "Write-Down", "Appreciation", "Custom 1", "Custom 2", "Disposal", "Maintenance", "Salvage Value"}
-			for i, opt := range options {
-				if opt == val {
-					t.Fa_posting_type = FAJournalLineFa_posting_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["fa_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fa_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["fa_posting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fa_posting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["posting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Posting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["document_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Document_type = FAJournalLineDocument_type(int(val))
-		case int:
-			t.Document_type = FAJournalLineDocument_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "", "Invoice", "Credit Memo"}
-			for i, opt := range options {
-				if opt == val {
-					t.Document_type = FAJournalLineDocument_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["document_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Document_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["document_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Document_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["external_document_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.External_document_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Amount = types.NewDecimal(val)
-		case int:
-			t.Amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["debit_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Debit_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Debit_amount = types.NewDecimal(val)
-		case int:
-			t.Debit_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Debit_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["credit_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Credit_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Credit_amount = types.NewDecimal(val)
-		case int:
-			t.Credit_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Credit_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["salvage_value"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Salvage_value, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Salvage_value = types.NewDecimal(val)
-		case int:
-			t.Salvage_value = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Salvage_value = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["quantity"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Quantity, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Quantity = types.NewDecimal(val)
-		case int:
-			t.Quantity = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Quantity = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["correction"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Correction = b
-		}
-	}
-	if v, ok := data["no_of_depreciation_days"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.No_of_depreciation_days = int(val)
-		case int:
-			t.No_of_depreciation_days = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.No_of_depreciation_days = n
-			}
-		}
-	}
-	if v, ok := data["depr_until_fa_posting_date"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Depr_until_fa_posting_date = b
-		}
-	}
-	if v, ok := data["depr_acquisition_cost"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Depr_acquisition_cost = b
-		}
-	}
-	if v, ok := data["fa_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fa_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["maintenance_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Maintenance_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["dimension_1_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_1_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["dimension_2_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_2_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["insurance_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Insurance_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["budgeted_fa_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Budgeted_fa_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["use_duplication_list"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Use_duplication_list = b
-		}
-	}
-	if v, ok := data["duplicate_in_depreciation_book"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Duplicate_in_depreciation_book = types.NewCode(s)
-		}
-	}
-	if v, ok := data["fa_reclassification_entry"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Fa_reclassification_entry = b
-		}
-	}
-	if v, ok := data["fa_error_entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Fa_error_entry_no = int(val)
-		case int:
-			t.Fa_error_entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Fa_error_entry_no = n
-			}
-		}
-	}
-	if v, ok := data["reason_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Reason_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["source_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Source_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["index_entry"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Index_entry = b
-		}
-	}
-	if v, ok := data["posting_no_series"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Posting_no_series = types.NewCode(s)
-		}
-	}
-	if v, ok := data["recurring_method"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Recurring_method = FAJournalLineRecurring_method(int(val))
-		case int:
-			t.Recurring_method = FAJournalLineRecurring_method(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "F Fixed", "V Variable"}
-			for i, opt := range options {
-				if opt == val {
-					t.Recurring_method = FAJournalLineRecurring_method(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["expiration_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Expiration_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["recurring_frequency"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Recurring_frequency = types.NewCode(s)
-		}
-	}
+	fAJournalLineFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -6376,403 +3890,670 @@ func (t *FAJournalLine) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *FAJournalLine) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "journal_template_name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "journal_batch_name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "line_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "depreciation_book_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "fa_posting_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "fa_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "fa_posting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "posting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "document_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "document_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "document_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "external_document_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         13,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            14,
-			Name:          "amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            15,
-			Name:          "debit_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            16,
-			Name:          "credit_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            17,
-			Name:          "salvage_value",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            18,
-			Name:          "quantity",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         19,
-			Name:       "correction",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         20,
-			Name:       "no_of_depreciation_days",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         21,
-			Name:       "depr_until_fa_posting_date",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         22,
-			Name:       "depr_acquisition_cost",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         24,
-			Name:       "fa_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         26,
-			Name:       "maintenance_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         27,
-			Name:       "dimension_1_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         28,
-			Name:       "dimension_2_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         30,
-			Name:       "insurance_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         31,
-			Name:       "budgeted_fa_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         32,
-			Name:       "use_duplication_list",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         33,
-			Name:       "duplicate_in_depreciation_book",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         34,
-			Name:       "fa_reclassification_entry",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         35,
-			Name:       "fa_error_entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         36,
-			Name:       "reason_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         37,
-			Name:       "source_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         42,
-			Name:       "index_entry",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         43,
-			Name:       "posting_no_series",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         38,
-			Name:       "recurring_method",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         41,
-			Name:       "expiration_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         39,
-			Name:       "recurring_frequency",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return fAJournalLineFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in fAJournalLineFields.Fields
+func (t *FAJournalLine) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Journal_template_name
+	case 1:
+		return &t.Journal_batch_name
+	case 2:
+		return &t.Line_no
+	case 3:
+		return &t.Depreciation_book_code
+	case 4:
+		return &t.Fa_posting_type
+	case 5:
+		return &t.Fa_no
+	case 6:
+		return &t.Fa_posting_date
+	case 7:
+		return &t.Posting_date
+	case 8:
+		return &t.Document_type
+	case 9:
+		return &t.Document_date
+	case 10:
+		return &t.Document_no
+	case 11:
+		return &t.External_document_no
+	case 12:
+		return &t.Description
+	case 13:
+		return &t.Amount
+	case 14:
+		return &t.Debit_amount
+	case 15:
+		return &t.Credit_amount
+	case 16:
+		return &t.Salvage_value
+	case 17:
+		return &t.Quantity
+	case 18:
+		return &t.Correction
+	case 19:
+		return &t.No_of_depreciation_days
+	case 20:
+		return &t.Depr_until_fa_posting_date
+	case 21:
+		return &t.Depr_acquisition_cost
+	case 22:
+		return &t.Fa_posting_group
+	case 23:
+		return &t.Maintenance_code
+	case 24:
+		return &t.Dimension_1_code
+	case 25:
+		return &t.Dimension_2_code
+	case 26:
+		return &t.Insurance_no
+	case 27:
+		return &t.Budgeted_fa_no
+	case 28:
+		return &t.Use_duplication_list
+	case 29:
+		return &t.Duplicate_in_depreciation_book
+	case 30:
+		return &t.Fa_reclassification_entry
+	case 31:
+		return &t.Fa_error_entry_no
+	case 32:
+		return &t.Reason_code
+	case 33:
+		return &t.Source_code
+	case 34:
+		return &t.Index_entry
+	case 35:
+		return &t.Posting_no_series
+	case 36:
+		return &t.Recurring_method
+	case 37:
+		return &t.Expiration_date
+	case 38:
+		return &t.Recurring_frequency
 	}
+	return nil
+}
+
+// fAJournalLineFields describes the fields of FA_Journal_Line for the record functions
+// written once in foundation/tables
+var fAJournalLineFields = &tables.TableFields{
+	Table: FAJournalLineTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "journal_template_name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Journal_template_name",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "journal_batch_name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Journal_batch_name",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "line_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Line_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "depreciation_book_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Depreciation_book_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "fa_posting_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Fa_posting_type",
+			Options: []string{"Acquisition Cost", "Depreciation", "Write-Down", "Appreciation", "Custom 1", "Custom 2", "Disposal", "Maintenance", "Salvage Value"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "fa_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Fa_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "fa_posting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Fa_posting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "posting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Posting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "document_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Document_type",
+			Options: []string{" ", "", "Invoice", "Credit Memo"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "document_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Document_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "document_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Document_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "external_document_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_External_document_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            14,
+				Name:          "amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            15,
+				Name:          "debit_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Debit_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            16,
+				Name:          "credit_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Credit_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            17,
+				Name:          "salvage_value",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Salvage_value",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            18,
+				Name:          "quantity",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Quantity",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         19,
+				Name:       "correction",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Correction",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         20,
+				Name:       "no_of_depreciation_days",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_No_of_depreciation_days",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         21,
+				Name:       "depr_until_fa_posting_date",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Depr_until_fa_posting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         22,
+				Name:       "depr_acquisition_cost",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Depr_acquisition_cost",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         24,
+				Name:       "fa_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Fa_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         26,
+				Name:       "maintenance_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Maintenance_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         27,
+				Name:       "dimension_1_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_1_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         28,
+				Name:       "dimension_2_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_2_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         30,
+				Name:       "insurance_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Insurance_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         31,
+				Name:       "budgeted_fa_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Budgeted_fa_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         32,
+				Name:       "use_duplication_list",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Use_duplication_list",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         33,
+				Name:       "duplicate_in_depreciation_book",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Duplicate_in_depreciation_book",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         34,
+				Name:       "fa_reclassification_entry",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Fa_reclassification_entry",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         35,
+				Name:       "fa_error_entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindInt,
+			Trigger:  "OnValidate_Fa_error_entry_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         36,
+				Name:       "reason_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Reason_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         37,
+				Name:       "source_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Source_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         42,
+				Name:       "index_entry",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Index_entry",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         43,
+				Name:       "posting_no_series",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Posting_no_series",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         38,
+				Name:       "recurring_method",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Recurring_method",
+			Options: []string{" ", "F Fixed", "V Variable"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         41,
+				Name:       "expiration_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Expiration_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         39,
+				Name:       "recurring_frequency",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:        tables.KindCode,
+			Trigger:     "OnValidate_Recurring_frequency",
+			DateFormula: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

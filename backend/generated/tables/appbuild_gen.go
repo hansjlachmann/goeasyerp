@@ -31,12 +31,11 @@ package tables
 
 import (
 	"database/sql"
-	"encoding/base64"
+
 	"fmt"
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -230,72 +229,12 @@ var AppBuild_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *AppBuild) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "entry_no":
-		return 1
-	case "status":
-		return 2
-	case "base_version":
-		return 3
-	case "trigger":
-		return 4
-	case "requested_by":
-		return 5
-	case "requested_at":
-		return 6
-	case "started_at":
-		return 7
-	case "finished_at":
-		return 8
-	case "apps":
-		return 9
-	case "build_list":
-		return 10
-	case "log":
-		return 11
-	case "binary_sha256":
-		return 12
-	case "bundle_path":
-		return 13
-	case "error_message":
-		return 14
-	}
-	return 0
+	return appBuildFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *AppBuild) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "entry_no"
-	case 2:
-		return "status"
-	case 3:
-		return "base_version"
-	case 4:
-		return "trigger"
-	case 5:
-		return "requested_by"
-	case 6:
-		return "requested_at"
-	case 7:
-		return "started_at"
-	case 8:
-		return "finished_at"
-	case 9:
-		return "apps"
-	case 10:
-		return "build_list"
-	case 11:
-		return "log"
-	case 12:
-		return "binary_sha256"
-	case 13:
-		return "bundle_path"
-	case 14:
-		return "error_message"
-	}
-	return ""
+	return appBuildFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -399,20 +338,6 @@ type (
 	AppBuildOnBeforeRename interface {
 		OnBeforeRename(rec *AppBuild, handled *bool) error
 	}
-	AppBuildOnValidate_Entry_no      interface{ OnValidate_Entry_no(rec *AppBuild) error }
-	AppBuildOnValidate_Status        interface{ OnValidate_Status(rec *AppBuild) error }
-	AppBuildOnValidate_Base_version  interface{ OnValidate_Base_version(rec *AppBuild) error }
-	AppBuildOnValidate_Trigger       interface{ OnValidate_Trigger(rec *AppBuild) error }
-	AppBuildOnValidate_Requested_by  interface{ OnValidate_Requested_by(rec *AppBuild) error }
-	AppBuildOnValidate_Requested_at  interface{ OnValidate_Requested_at(rec *AppBuild) error }
-	AppBuildOnValidate_Started_at    interface{ OnValidate_Started_at(rec *AppBuild) error }
-	AppBuildOnValidate_Finished_at   interface{ OnValidate_Finished_at(rec *AppBuild) error }
-	AppBuildOnValidate_Apps          interface{ OnValidate_Apps(rec *AppBuild) error }
-	AppBuildOnValidate_Build_list    interface{ OnValidate_Build_list(rec *AppBuild) error }
-	AppBuildOnValidate_Log           interface{ OnValidate_Log(rec *AppBuild) error }
-	AppBuildOnValidate_Binary_sha256 interface{ OnValidate_Binary_sha256(rec *AppBuild) error }
-	AppBuildOnValidate_Bundle_path   interface{ OnValidate_Bundle_path(rec *AppBuild) error }
-	AppBuildOnValidate_Error_message interface{ OnValidate_Error_message(rec *AppBuild) error }
 )
 
 // appBuildLogic is the registered business logic of App_Build, in
@@ -455,36 +380,9 @@ func appBuildTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(AppBuildOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(AppBuildOnBeforeRename)
-	case "OnValidate_Entry_no":
-		_, ok = logic.(AppBuildOnValidate_Entry_no)
-	case "OnValidate_Status":
-		_, ok = logic.(AppBuildOnValidate_Status)
-	case "OnValidate_Base_version":
-		_, ok = logic.(AppBuildOnValidate_Base_version)
-	case "OnValidate_Trigger":
-		_, ok = logic.(AppBuildOnValidate_Trigger)
-	case "OnValidate_Requested_by":
-		_, ok = logic.(AppBuildOnValidate_Requested_by)
-	case "OnValidate_Requested_at":
-		_, ok = logic.(AppBuildOnValidate_Requested_at)
-	case "OnValidate_Started_at":
-		_, ok = logic.(AppBuildOnValidate_Started_at)
-	case "OnValidate_Finished_at":
-		_, ok = logic.(AppBuildOnValidate_Finished_at)
-	case "OnValidate_Apps":
-		_, ok = logic.(AppBuildOnValidate_Apps)
-	case "OnValidate_Build_list":
-		_, ok = logic.(AppBuildOnValidate_Build_list)
-	case "OnValidate_Log":
-		_, ok = logic.(AppBuildOnValidate_Log)
-	case "OnValidate_Binary_sha256":
-		_, ok = logic.(AppBuildOnValidate_Binary_sha256)
-	case "OnValidate_Bundle_path":
-		_, ok = logic.(AppBuildOnValidate_Bundle_path)
-	case "OnValidate_Error_message":
-		_, ok = logic.(AppBuildOnValidate_Error_message)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return appBuildFields.IsOnValidateTrigger(name, logic, (*AppBuild)(nil))
 	}
 	return true, ok
 }
@@ -811,21 +709,7 @@ func (t *AppBuild) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *AppBuild) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["entry_no"] = t.Entry_no
-	t.oldValues["status"] = t.Status
-	t.oldValues["base_version"] = t.Base_version
-	t.oldValues["trigger"] = t.Trigger
-	t.oldValues["requested_by"] = t.Requested_by
-	t.oldValues["requested_at"] = t.Requested_at
-	t.oldValues["started_at"] = t.Started_at
-	t.oldValues["finished_at"] = t.Finished_at
-	t.oldValues["apps"] = t.Apps
-	t.oldValues["build_list"] = t.Build_list
-	t.oldValues["log"] = t.Log
-	t.oldValues["binary_sha256"] = t.Binary_sha256
-	t.oldValues["bundle_path"] = t.Bundle_path
-	t.oldValues["error_message"] = t.Error_message
+	t.oldValues = appBuildFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -840,48 +724,7 @@ func (t *AppBuild) OldValue(fieldName string) interface{} {
 func (t *AppBuild) XRec() *AppBuild {
 	x := &AppBuild{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["entry_no"].(int); ok {
-		x.Entry_no = v
-	}
-	if v, ok := t.oldValues["status"].(AppBuildStatus); ok {
-		x.Status = v
-	}
-	if v, ok := t.oldValues["base_version"].(types.Text); ok {
-		x.Base_version = v
-	}
-	if v, ok := t.oldValues["trigger"].(AppBuildTrigger); ok {
-		x.Trigger = v
-	}
-	if v, ok := t.oldValues["requested_by"].(types.Code); ok {
-		x.Requested_by = v
-	}
-	if v, ok := t.oldValues["requested_at"].(types.DateTime); ok {
-		x.Requested_at = v
-	}
-	if v, ok := t.oldValues["started_at"].(types.DateTime); ok {
-		x.Started_at = v
-	}
-	if v, ok := t.oldValues["finished_at"].(types.DateTime); ok {
-		x.Finished_at = v
-	}
-	if v, ok := t.oldValues["apps"].(types.Text); ok {
-		x.Apps = v
-	}
-	if v, ok := t.oldValues["build_list"].([]byte); ok {
-		x.Build_list = v
-	}
-	if v, ok := t.oldValues["log"].([]byte); ok {
-		x.Log = v
-	}
-	if v, ok := t.oldValues["binary_sha256"].(types.Text); ok {
-		x.Binary_sha256 = v
-	}
-	if v, ok := t.oldValues["bundle_path"].(types.Text); ok {
-		x.Bundle_path = v
-	}
-	if v, ok := t.oldValues["error_message"].(types.Text); ok {
-		x.Error_message = v
-	}
+	appBuildFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1278,76 +1121,7 @@ func (t *AppBuild) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *AppBuild) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "status":
-		if old, ok := oldValue.(AppBuildStatus); ok {
-			return t.Status != old
-		}
-	case "base_version":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Base_version.Equal(old)
-		}
-	case "trigger":
-		if old, ok := oldValue.(AppBuildTrigger); ok {
-			return t.Trigger != old
-		}
-	case "requested_by":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Requested_by.Equal(old)
-		}
-	case "requested_at":
-		if old, ok := oldValue.(types.DateTime); ok {
-			return !t.Requested_at.Equal(old)
-		}
-	case "started_at":
-		if old, ok := oldValue.(types.DateTime); ok {
-			return !t.Started_at.Equal(old)
-		}
-	case "finished_at":
-		if old, ok := oldValue.(types.DateTime); ok {
-			return !t.Finished_at.Equal(old)
-		}
-	case "apps":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Apps.Equal(old)
-		}
-	case "build_list":
-		// Skip comparison for BLOB fields (too large, use always modified)
-		return true
-	case "log":
-		// Skip comparison for BLOB fields (too large, use always modified)
-		return true
-	case "binary_sha256":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Binary_sha256.Equal(old)
-		}
-	case "bundle_path":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Bundle_path.Equal(old)
-		}
-	case "error_message":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Error_message.Equal(old)
-		}
-	}
-
-	return false
+	return appBuildFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1548,37 +1322,7 @@ func (t *AppBuild) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *AppBuild) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("entry_no"):
-		return "entry_no", true
-	case strings.ToLower("status"):
-		return "status", true
-	case strings.ToLower("base_version"):
-		return "base_version", true
-	case strings.ToLower("trigger"):
-		return "trigger", true
-	case strings.ToLower("requested_by"):
-		return "requested_by", true
-	case strings.ToLower("requested_at"):
-		return "requested_at", true
-	case strings.ToLower("started_at"):
-		return "started_at", true
-	case strings.ToLower("finished_at"):
-		return "finished_at", true
-	case strings.ToLower("apps"):
-		return "apps", true
-	case strings.ToLower("build_list"):
-		return "build_list", true
-	case strings.ToLower("log"):
-		return "log", true
-	case strings.ToLower("binary_sha256"):
-		return "binary_sha256", true
-	case strings.ToLower("bundle_path"):
-		return "bundle_path", true
-	case strings.ToLower("error_message"):
-		return "error_message", true
-	}
-	return "", false
+	return appBuildFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2519,377 +2263,20 @@ func (t *AppBuild) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *AppBuild) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Entry_no = v
-		case float64:
-			t.Entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field entry_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AppBuildOnValidate_Entry_no); ok {
-				if err := trg.OnValidate_Entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "status":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(AppBuildStatus); ok {
-			t.Status = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 5 {
-				return fmt.Errorf("invalid option value %d for field status (valid range: 0-%d)", v, 5-1)
-			}
-			t.Status = AppBuildStatus(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 5 {
-				return fmt.Errorf("invalid option value %d for field status (valid range: 0-%d)", intVal, 5-1)
-			}
-			t.Status = AppBuildStatus(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Status = 0
-			} else {
-				options := []string{"Requested", "Running", "Succeeded", "Failed", "Superseded"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Status = AppBuildStatus(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field status (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field status (expected AppBuildStatus, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AppBuildOnValidate_Status); ok {
-				if err := trg.OnValidate_Status(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "base_version":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Base_version = v
-		} else if v, ok := value.(string); ok {
-			t.Base_version = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field base_version")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AppBuildOnValidate_Base_version); ok {
-				if err := trg.OnValidate_Base_version(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "trigger":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(AppBuildTrigger); ok {
-			t.Trigger = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 2 {
-				return fmt.Errorf("invalid option value %d for field trigger (valid range: 0-%d)", v, 2-1)
-			}
-			t.Trigger = AppBuildTrigger(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 2 {
-				return fmt.Errorf("invalid option value %d for field trigger (valid range: 0-%d)", intVal, 2-1)
-			}
-			t.Trigger = AppBuildTrigger(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Trigger = 0
-			} else {
-				options := []string{"User", "Base Upgrade"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Trigger = AppBuildTrigger(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field trigger (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field trigger (expected AppBuildTrigger, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AppBuildOnValidate_Trigger); ok {
-				if err := trg.OnValidate_Trigger(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "requested_by":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Requested_by = v
-		} else if v, ok := value.(string); ok {
-			t.Requested_by = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field requested_by")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AppBuildOnValidate_Requested_by); ok {
-				if err := trg.OnValidate_Requested_by(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "requested_at":
-		// Set field value
-		if v, ok := value.(types.DateTime); ok {
-			t.Requested_at = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Requested_at, err = types.NewDateTimeFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid datetime value for field requested_at: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Requested_at = types.NewDateTimeFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field requested_at (expected DateTime, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AppBuildOnValidate_Requested_at); ok {
-				if err := trg.OnValidate_Requested_at(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "started_at":
-		// Set field value
-		if v, ok := value.(types.DateTime); ok {
-			t.Started_at = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Started_at, err = types.NewDateTimeFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid datetime value for field started_at: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Started_at = types.NewDateTimeFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field started_at (expected DateTime, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AppBuildOnValidate_Started_at); ok {
-				if err := trg.OnValidate_Started_at(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "finished_at":
-		// Set field value
-		if v, ok := value.(types.DateTime); ok {
-			t.Finished_at = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Finished_at, err = types.NewDateTimeFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid datetime value for field finished_at: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Finished_at = types.NewDateTimeFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field finished_at (expected DateTime, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AppBuildOnValidate_Finished_at); ok {
-				if err := trg.OnValidate_Finished_at(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "apps":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Apps = v
-		} else if v, ok := value.(string); ok {
-			t.Apps = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field apps")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AppBuildOnValidate_Apps); ok {
-				if err := trg.OnValidate_Apps(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "build_list":
-		// Set field value
-		// Accept nil, []byte, or base64-encoded string
-		if value == nil {
-			t.Build_list = nil
-		} else if v, ok := value.([]byte); ok {
-			t.Build_list = v
-		} else if s, ok := value.(string); ok {
-			if s == "" {
-				t.Build_list = nil
-			} else {
-				// Try base64 decode
-				decoded, err := base64.StdEncoding.DecodeString(s)
-				if err != nil {
-					return fmt.Errorf("invalid base64 value for field build_list: %w", err)
-				}
-				t.Build_list = decoded
-			}
-		} else {
-			return fmt.Errorf("invalid type for field build_list (expected []byte, string, or nil)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AppBuildOnValidate_Build_list); ok {
-				if err := trg.OnValidate_Build_list(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "log":
-		// Set field value
-		// Accept nil, []byte, or base64-encoded string
-		if value == nil {
-			t.Log = nil
-		} else if v, ok := value.([]byte); ok {
-			t.Log = v
-		} else if s, ok := value.(string); ok {
-			if s == "" {
-				t.Log = nil
-			} else {
-				// Try base64 decode
-				decoded, err := base64.StdEncoding.DecodeString(s)
-				if err != nil {
-					return fmt.Errorf("invalid base64 value for field log: %w", err)
-				}
-				t.Log = decoded
-			}
-		} else {
-			return fmt.Errorf("invalid type for field log (expected []byte, string, or nil)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AppBuildOnValidate_Log); ok {
-				if err := trg.OnValidate_Log(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "binary_sha256":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Binary_sha256 = v
-		} else if v, ok := value.(string); ok {
-			t.Binary_sha256 = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field binary_sha256")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AppBuildOnValidate_Binary_sha256); ok {
-				if err := trg.OnValidate_Binary_sha256(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bundle_path":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Bundle_path = v
-		} else if v, ok := value.(string); ok {
-			t.Bundle_path = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field bundle_path")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AppBuildOnValidate_Bundle_path); ok {
-				if err := trg.OnValidate_Bundle_path(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "error_message":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Error_message = v
-		} else if v, ok := value.(string); ok {
-			t.Error_message = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field error_message")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AppBuildOnValidate_Error_message); ok {
-				if err := trg.OnValidate_Error_message(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := appBuildFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &appBuildFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2898,146 +2285,18 @@ func (t *AppBuild) ValidateField(fieldName string, value interface{}) error {
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *AppBuild) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Entry_no, true
-	case 2:
-		return t.Status, true
-	case 3:
-		return t.Base_version, true
-	case 4:
-		return t.Trigger, true
-	case 5:
-		return t.Requested_by, true
-	case 6:
-		return t.Requested_at, true
-	case 7:
-		return t.Started_at, true
-	case 8:
-		return t.Finished_at, true
-	case 9:
-		return t.Apps, true
-	case 10:
-		return t.Build_list, true
-	case 11:
-		return t.Log, true
-	case 12:
-		return t.Binary_sha256, true
-	case 13:
-		return t.Bundle_path, true
-	case 14:
-		return t.Error_message, true
-	}
-	return nil, false
+	return appBuildFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *AppBuild) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return appBuildFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *AppBuild) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(int); ok {
-			t.Entry_no = v
-			return true
-		}
-	case 2:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 5 {
-			t.Status = AppBuildStatus(i)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Text); ok {
-			t.Base_version = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Base_version = types.NewText(v)
-			return true
-		}
-	case 4:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 2 {
-			t.Trigger = AppBuildTrigger(i)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Code); ok {
-			t.Requested_by = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Requested_by = types.NewCode(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.DateTime); ok {
-			t.Requested_at = v
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.DateTime); ok {
-			t.Started_at = v
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.DateTime); ok {
-			t.Finished_at = v
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.Text); ok {
-			t.Apps = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Apps = types.NewText(v)
-			return true
-		}
-	case 10:
-		if v, ok := value.([]byte); ok {
-			t.Build_list = v
-			return true
-		}
-	case 11:
-		if v, ok := value.([]byte); ok {
-			t.Log = v
-			return true
-		}
-	case 12:
-		if v, ok := value.(types.Text); ok {
-			t.Binary_sha256 = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Binary_sha256 = types.NewText(v)
-			return true
-		}
-	case 13:
-		if v, ok := value.(types.Text); ok {
-			t.Bundle_path = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Bundle_path = types.NewText(v)
-			return true
-		}
-	case 14:
-		if v, ok := value.(types.Text); ok {
-			t.Error_message = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Error_message = types.NewText(v)
-			return true
-		}
-	}
-	return false
+	return appBuildFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3507,37 +2766,7 @@ func (t *AppBuild) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *AppBuild) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "entry_no":
-		return t.Entry_no, true
-	case "status":
-		return int(t.Status), true
-	case "base_version":
-		return t.Base_version, true
-	case "trigger":
-		return int(t.Trigger), true
-	case "requested_by":
-		return t.Requested_by, true
-	case "requested_at":
-		return t.Requested_at, true
-	case "started_at":
-		return t.Started_at, true
-	case "finished_at":
-		return t.Finished_at, true
-	case "apps":
-		return t.Apps, true
-	case "build_list":
-		return t.Build_list, true
-	case "log":
-		return t.Log, true
-	case "binary_sha256":
-		return t.Binary_sha256, true
-	case "bundle_path":
-		return t.Bundle_path, true
-	case "error_message":
-		return t.Error_message, true
-	}
-	return nil, false
+	return appBuildFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3636,122 +2865,12 @@ func (t *AppBuild) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *AppBuild) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"entry_no":      t.Entry_no,
-		"status":        int(t.Status),
-		"base_version":  t.Base_version.String(),
-		"trigger":       int(t.Trigger),
-		"requested_by":  t.Requested_by.String(),
-		"requested_at":  t.Requested_at.String(),
-		"started_at":    t.Started_at.String(),
-		"finished_at":   t.Finished_at.String(),
-		"apps":          t.Apps.String(),
-		"build_list":    t.Build_list,
-		"log":           t.Log,
-		"binary_sha256": t.Binary_sha256.String(),
-		"bundle_path":   t.Bundle_path.String(),
-		"error_message": t.Error_message.String(),
-	}
+	return appBuildFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *AppBuild) FromMap(data map[string]interface{}) {
-	if v, ok := data["entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Entry_no = int(val)
-		case int:
-			t.Entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Entry_no = n
-			}
-		}
-	}
-	if v, ok := data["status"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Status = AppBuildStatus(int(val))
-		case int:
-			t.Status = AppBuildStatus(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Requested", "Running", "Succeeded", "Failed", "Superseded"}
-			for i, opt := range options {
-				if opt == val {
-					t.Status = AppBuildStatus(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["base_version"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Base_version = types.NewText(s)
-		}
-	}
-	if v, ok := data["trigger"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Trigger = AppBuildTrigger(int(val))
-		case int:
-			t.Trigger = AppBuildTrigger(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"User", "Base Upgrade"}
-			for i, opt := range options {
-				if opt == val {
-					t.Trigger = AppBuildTrigger(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["requested_by"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Requested_by = types.NewCode(s)
-		}
-	}
-	if v, ok := data["requested_at"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Requested_at, _ = types.NewDateTimeFromString(s)
-		}
-	}
-	if v, ok := data["started_at"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Started_at, _ = types.NewDateTimeFromString(s)
-		}
-	}
-	if v, ok := data["finished_at"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Finished_at, _ = types.NewDateTimeFromString(s)
-		}
-	}
-	if v, ok := data["apps"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Apps = types.NewText(s)
-		}
-	}
-	if v, ok := data["build_list"]; ok && v != nil {
-	}
-	if v, ok := data["log"]; ok && v != nil {
-	}
-	if v, ok := data["binary_sha256"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Binary_sha256 = types.NewText(s)
-		}
-	}
-	if v, ok := data["bundle_path"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Bundle_path = types.NewText(s)
-		}
-	}
-	if v, ok := data["error_message"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Error_message = types.NewText(s)
-		}
-	}
+	appBuildFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3772,159 +2891,259 @@ func (t *AppBuild) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *AppBuild) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "status",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         3,
-			Name:       "base_version",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         4,
-			Name:       "trigger",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         5,
-			Name:       "requested_by",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         6,
-			Name:       "requested_at",
-			Type:       tables.FieldTypeDateTime,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         7,
-			Name:       "started_at",
-			Type:       tables.FieldTypeDateTime,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         8,
-			Name:       "finished_at",
-			Type:       tables.FieldTypeDateTime,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         9,
-			Name:       "apps",
-			Type:       tables.FieldTypeText,
-			Length:     250,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         10,
-			Name:       "build_list",
-			Type:       tables.FieldTypeBlob,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "log",
-			Type:       tables.FieldTypeBlob,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "binary_sha256",
-			Type:       tables.FieldTypeText,
-			Length:     64,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         13,
-			Name:       "bundle_path",
-			Type:       tables.FieldTypeText,
-			Length:     250,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         14,
-			Name:       "error_message",
-			Type:       tables.FieldTypeText,
-			Length:     250,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
+	return appBuildFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in appBuildFields.Fields
+func (t *AppBuild) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Entry_no
+	case 1:
+		return &t.Status
+	case 2:
+		return &t.Base_version
+	case 3:
+		return &t.Trigger
+	case 4:
+		return &t.Requested_by
+	case 5:
+		return &t.Requested_at
+	case 6:
+		return &t.Started_at
+	case 7:
+		return &t.Finished_at
+	case 8:
+		return &t.Apps
+	case 9:
+		return &t.Build_list
+	case 10:
+		return &t.Log
+	case 11:
+		return &t.Binary_sha256
+	case 12:
+		return &t.Bundle_path
+	case 13:
+		return &t.Error_message
 	}
+	return nil
+}
+
+// appBuildFields describes the fields of App_Build for the record functions
+// written once in foundation/tables
+var appBuildFields = &tables.TableFields{
+	Table: AppBuildTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Entry_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "status",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Status",
+			Options: []string{"Requested", "Running", "Succeeded", "Failed", "Superseded"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "base_version",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Base_version",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "trigger",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Trigger",
+			Options: []string{"User", "Base Upgrade"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "requested_by",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Requested_by",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "requested_at",
+				Type:       tables.FieldTypeDateTime,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindDateTime,
+			Trigger: "OnValidate_Requested_at",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "started_at",
+				Type:       tables.FieldTypeDateTime,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindDateTime,
+			Trigger: "OnValidate_Started_at",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "finished_at",
+				Type:       tables.FieldTypeDateTime,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindDateTime,
+			Trigger: "OnValidate_Finished_at",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "apps",
+				Type:       tables.FieldTypeText,
+				Length:     250,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Apps",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "build_list",
+				Type:       tables.FieldTypeBlob,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBlob,
+			Trigger: "OnValidate_Build_list",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "log",
+				Type:       tables.FieldTypeBlob,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBlob,
+			Trigger: "OnValidate_Log",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "binary_sha256",
+				Type:       tables.FieldTypeText,
+				Length:     64,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Binary_sha256",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "bundle_path",
+				Type:       tables.FieldTypeText,
+				Length:     250,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Bundle_path",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "error_message",
+				Type:       tables.FieldTypeText,
+				Length:     250,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Error_message",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

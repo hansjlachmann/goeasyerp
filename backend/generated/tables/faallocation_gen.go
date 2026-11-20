@@ -194,52 +194,12 @@ var FAAllocation_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *FAAllocation) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "code":
-		return 1
-	case "line_no":
-		return 2
-	case "description":
-		return 3
-	case "account_no":
-		return 4
-	case "dimension_1_code":
-		return 5
-	case "dimension_2_code":
-		return 6
-	case "allocation_percent":
-		return 7
-	case "allocation_type":
-		return 8
-	case "account_name":
-		return 9
-	}
-	return 0
+	return fAAllocationFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *FAAllocation) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "code"
-	case 2:
-		return "line_no"
-	case 3:
-		return "description"
-	case 4:
-		return "account_no"
-	case 5:
-		return "dimension_1_code"
-	case 6:
-		return "dimension_2_code"
-	case 7:
-		return "allocation_percent"
-	case 8:
-		return "allocation_type"
-	case 9:
-		return "account_name"
-	}
-	return ""
+	return fAAllocationFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -343,14 +303,6 @@ type (
 	FAAllocationOnBeforeRename interface {
 		OnBeforeRename(rec *FAAllocation, handled *bool) error
 	}
-	FAAllocationOnValidate_Code               interface{ OnValidate_Code(rec *FAAllocation) error }
-	FAAllocationOnValidate_Line_no            interface{ OnValidate_Line_no(rec *FAAllocation) error }
-	FAAllocationOnValidate_Description        interface{ OnValidate_Description(rec *FAAllocation) error }
-	FAAllocationOnValidate_Account_no         interface{ OnValidate_Account_no(rec *FAAllocation) error }
-	FAAllocationOnValidate_Dimension_1_code   interface{ OnValidate_Dimension_1_code(rec *FAAllocation) error }
-	FAAllocationOnValidate_Dimension_2_code   interface{ OnValidate_Dimension_2_code(rec *FAAllocation) error }
-	FAAllocationOnValidate_Allocation_percent interface{ OnValidate_Allocation_percent(rec *FAAllocation) error }
-	FAAllocationOnValidate_Allocation_type    interface{ OnValidate_Allocation_type(rec *FAAllocation) error }
 )
 
 // fAAllocationLogic is the registered business logic of FA_Allocation, in
@@ -393,24 +345,9 @@ func fAAllocationTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(FAAllocationOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(FAAllocationOnBeforeRename)
-	case "OnValidate_Code":
-		_, ok = logic.(FAAllocationOnValidate_Code)
-	case "OnValidate_Line_no":
-		_, ok = logic.(FAAllocationOnValidate_Line_no)
-	case "OnValidate_Description":
-		_, ok = logic.(FAAllocationOnValidate_Description)
-	case "OnValidate_Account_no":
-		_, ok = logic.(FAAllocationOnValidate_Account_no)
-	case "OnValidate_Dimension_1_code":
-		_, ok = logic.(FAAllocationOnValidate_Dimension_1_code)
-	case "OnValidate_Dimension_2_code":
-		_, ok = logic.(FAAllocationOnValidate_Dimension_2_code)
-	case "OnValidate_Allocation_percent":
-		_, ok = logic.(FAAllocationOnValidate_Allocation_percent)
-	case "OnValidate_Allocation_type":
-		_, ok = logic.(FAAllocationOnValidate_Allocation_type)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return fAAllocationFields.IsOnValidateTrigger(name, logic, (*FAAllocation)(nil))
 	}
 	return true, ok
 }
@@ -744,15 +681,7 @@ func (t *FAAllocation) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *FAAllocation) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["code"] = t.Code
-	t.oldValues["line_no"] = t.Line_no
-	t.oldValues["description"] = t.Description
-	t.oldValues["account_no"] = t.Account_no
-	t.oldValues["dimension_1_code"] = t.Dimension_1_code
-	t.oldValues["dimension_2_code"] = t.Dimension_2_code
-	t.oldValues["allocation_percent"] = t.Allocation_percent
-	t.oldValues["allocation_type"] = t.Allocation_type
+	t.oldValues = fAAllocationFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -767,30 +696,7 @@ func (t *FAAllocation) OldValue(fieldName string) interface{} {
 func (t *FAAllocation) XRec() *FAAllocation {
 	x := &FAAllocation{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["code"].(types.Code); ok {
-		x.Code = v
-	}
-	if v, ok := t.oldValues["line_no"].(int); ok {
-		x.Line_no = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["account_no"].(types.Code); ok {
-		x.Account_no = v
-	}
-	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
-		x.Dimension_1_code = v
-	}
-	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
-		x.Dimension_2_code = v
-	}
-	if v, ok := t.oldValues["allocation_percent"].(types.Decimal); ok {
-		x.Allocation_percent = v
-	}
-	if v, ok := t.oldValues["allocation_type"].(FAAllocationAllocation_type); ok {
-		x.Allocation_type = v
-	}
+	fAAllocationFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1149,54 +1055,7 @@ func (t *FAAllocation) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *FAAllocation) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Code.Equal(old)
-		}
-	case "line_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Line_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "account_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Account_no.Equal(old)
-		}
-	case "dimension_1_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_1_code.Equal(old)
-		}
-	case "dimension_2_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_2_code.Equal(old)
-		}
-	case "allocation_percent":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Allocation_percent.Equal(old)
-		}
-	case "allocation_type":
-		if old, ok := oldValue.(FAAllocationAllocation_type); ok {
-			return t.Allocation_type != old
-		}
-	}
-
-	return false
+	return fAAllocationFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1473,25 +1332,7 @@ func (t *FAAllocation) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *FAAllocation) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("code"):
-		return "code", true
-	case strings.ToLower("line_no"):
-		return "line_no", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("account_no"):
-		return "account_no", true
-	case strings.ToLower("dimension_1_code"):
-		return "dimension_1_code", true
-	case strings.ToLower("dimension_2_code"):
-		return "dimension_2_code", true
-	case strings.ToLower("allocation_percent"):
-		return "allocation_percent", true
-	case strings.ToLower("allocation_type"):
-		return "allocation_type", true
-	}
-	return "", false
+	return fAAllocationFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2373,222 +2214,20 @@ func (t *FAAllocation) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *FAAllocation) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-		} else if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAAllocationOnValidate_Code); ok {
-				if err := trg.OnValidate_Code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "line_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Line_no = v
-		case float64:
-			t.Line_no = int(v)
-		case string:
-			if v == "" {
-				t.Line_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Line_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field line_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field line_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAAllocationOnValidate_Line_no); ok {
-				if err := trg.OnValidate_Line_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAAllocationOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "account_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Account_no = v
-		} else if v, ok := value.(string); ok {
-			t.Account_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field account_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "account_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAAllocationOnValidate_Account_no); ok {
-				if err := trg.OnValidate_Account_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_1_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_1_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAAllocationOnValidate_Dimension_1_code); ok {
-				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_2_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_2_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAAllocationOnValidate_Dimension_2_code); ok {
-				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "allocation_percent":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Allocation_percent = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Allocation_percent, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field allocation_percent: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Allocation_percent = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Allocation_percent = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Allocation_percent = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field allocation_percent (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAAllocationOnValidate_Allocation_percent); ok {
-				if err := trg.OnValidate_Allocation_percent(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "allocation_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(FAAllocationAllocation_type); ok {
-			t.Allocation_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 11 {
-				return fmt.Errorf("invalid option value %d for field allocation_type (valid range: 0-%d)", v, 11-1)
-			}
-			t.Allocation_type = FAAllocationAllocation_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 11 {
-				return fmt.Errorf("invalid option value %d for field allocation_type (valid range: 0-%d)", intVal, 11-1)
-			}
-			t.Allocation_type = FAAllocationAllocation_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Allocation_type = 0
-			} else {
-				options := []string{"Acquisition", "Depreciation", "Write-Down", "Appreciation", "Custom 1", "Custom 2", "Disposal", "Maintenance", "Gain", "Loss", "Book Value"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Allocation_type = FAAllocationAllocation_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field allocation_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field allocation_type (expected FAAllocationAllocation_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAAllocationOnValidate_Allocation_type); ok {
-				if err := trg.OnValidate_Allocation_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := fAAllocationFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &fAAllocationFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2597,102 +2236,18 @@ func (t *FAAllocation) ValidateField(fieldName string, value interface{}) error 
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *FAAllocation) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Code, true
-	case 2:
-		return t.Line_no, true
-	case 3:
-		return t.Description, true
-	case 4:
-		return t.Account_no, true
-	case 5:
-		return t.Dimension_1_code, true
-	case 6:
-		return t.Dimension_2_code, true
-	case 7:
-		return t.Allocation_percent, true
-	case 8:
-		return t.Allocation_type, true
-	}
-	return nil, false
+	return fAAllocationFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *FAAllocation) flowFieldValue(no int) (any, bool) {
-	switch no {
-	case 9:
-		return t.Account_name, true
-	}
-	return nil, false
+	return fAAllocationFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *FAAllocation) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(int); ok {
-			t.Line_no = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Code); ok {
-			t.Account_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Account_no = types.NewCode(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Decimal); ok {
-			t.Allocation_percent = v
-			return true
-		}
-	case 8:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 11 {
-			t.Allocation_type = FAAllocationAllocation_type(i)
-			return true
-		}
-	}
-	return false
+	return fAAllocationFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3172,25 +2727,7 @@ func (t *FAAllocation) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *FAAllocation) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "code":
-		return t.Code, true
-	case "line_no":
-		return t.Line_no, true
-	case "description":
-		return t.Description, true
-	case "account_no":
-		return t.Account_no, true
-	case "dimension_1_code":
-		return t.Dimension_1_code, true
-	case "dimension_2_code":
-		return t.Dimension_2_code, true
-	case "allocation_percent":
-		return t.Allocation_percent, true
-	case "allocation_type":
-		return int(t.Allocation_type), true
-	}
-	return nil, false
+	return fAAllocationFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3289,89 +2826,12 @@ func (t *FAAllocation) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *FAAllocation) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"code":               t.Code.String(),
-		"line_no":            t.Line_no,
-		"description":        t.Description.String(),
-		"account_no":         t.Account_no.String(),
-		"dimension_1_code":   t.Dimension_1_code.String(),
-		"dimension_2_code":   t.Dimension_2_code.String(),
-		"allocation_percent": t.Allocation_percent.String(),
-		"allocation_type":    int(t.Allocation_type),
-		// FlowField: account_name
-		"account_name": t.Account_name,
-	}
+	return fAAllocationFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *FAAllocation) FromMap(data map[string]interface{}) {
-	if v, ok := data["code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["line_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Line_no = int(val)
-		case int:
-			t.Line_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Line_no = n
-			}
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["account_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Account_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["dimension_1_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_1_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["dimension_2_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_2_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["allocation_percent"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Allocation_percent, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Allocation_percent = types.NewDecimal(val)
-		case int:
-			t.Allocation_percent = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Allocation_percent = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["allocation_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Allocation_type = FAAllocationAllocation_type(int(val))
-		case int:
-			t.Allocation_type = FAAllocationAllocation_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Acquisition", "Depreciation", "Write-Down", "Appreciation", "Custom 1", "Custom 2", "Disposal", "Maintenance", "Gain", "Loss", "Book Value"}
-			for i, opt := range options {
-				if opt == val {
-					t.Allocation_type = FAAllocationAllocation_type(i)
-					break
-				}
-			}
-		}
-	}
+	fAAllocationFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3392,99 +2852,172 @@ func (t *FAAllocation) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *FAAllocation) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "line_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "account_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "dimension_1_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "dimension_2_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            7,
-			Name:          "allocation_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         8,
-			Name:       "allocation_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "account_name",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  true,
-		},
+	return fAAllocationFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in fAAllocationFields.Fields
+func (t *FAAllocation) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Code
+	case 1:
+		return &t.Line_no
+	case 2:
+		return &t.Description
+	case 3:
+		return &t.Account_no
+	case 4:
+		return &t.Dimension_1_code
+	case 5:
+		return &t.Dimension_2_code
+	case 6:
+		return &t.Allocation_percent
+	case 7:
+		return &t.Allocation_type
+	case 8:
+		return &t.Account_name
 	}
+	return nil
+}
+
+// fAAllocationFields describes the fields of FA_Allocation for the record functions
+// written once in foundation/tables
+var fAAllocationFields = &tables.TableFields{
+	Table: FAAllocationTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "line_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Line_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "account_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Account_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "dimension_1_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_1_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "dimension_2_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_2_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            7,
+				Name:          "allocation_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Allocation_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "allocation_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Allocation_type",
+			Options: []string{"Acquisition", "Depreciation", "Write-Down", "Appreciation", "Custom 1", "Custom 2", "Disposal", "Maintenance", "Gain", "Loss", "Book Value"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "account_name",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  true,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Account_name",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

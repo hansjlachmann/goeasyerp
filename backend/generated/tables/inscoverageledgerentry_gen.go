@@ -45,7 +45,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -245,112 +244,12 @@ var InsCoverageLedgerEntry_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *InsCoverageLedgerEntry) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "entry_no":
-		return 1
-	case "insurance_no":
-		return 2
-	case "disposed_fa":
-		return 3
-	case "fa_no":
-		return 4
-	case "fa_description":
-		return 5
-	case "posting_date":
-		return 6
-	case "document_type":
-		return 7
-	case "document_date":
-		return 8
-	case "document_no":
-		return 9
-	case "external_document_no":
-		return 10
-	case "amount":
-		return 14
-	case "description":
-		return 16
-	case "fa_class_code":
-		return 17
-	case "fa_subclass_code":
-		return 18
-	case "fa_location_code":
-		return 19
-	case "dimension_1_code":
-		return 20
-	case "dimension_2_code":
-		return 21
-	case "location_code":
-		return 22
-	case "user_id":
-		return 23
-	case "source_code":
-		return 24
-	case "journal_batch_name":
-		return 25
-	case "reason_code":
-		return 26
-	case "index_entry":
-		return 27
-	case "no_series":
-		return 28
-	}
-	return 0
+	return insCoverageLedgerEntryFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *InsCoverageLedgerEntry) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "entry_no"
-	case 2:
-		return "insurance_no"
-	case 3:
-		return "disposed_fa"
-	case 4:
-		return "fa_no"
-	case 5:
-		return "fa_description"
-	case 6:
-		return "posting_date"
-	case 7:
-		return "document_type"
-	case 8:
-		return "document_date"
-	case 9:
-		return "document_no"
-	case 10:
-		return "external_document_no"
-	case 14:
-		return "amount"
-	case 16:
-		return "description"
-	case 17:
-		return "fa_class_code"
-	case 18:
-		return "fa_subclass_code"
-	case 19:
-		return "fa_location_code"
-	case 20:
-		return "dimension_1_code"
-	case 21:
-		return "dimension_2_code"
-	case 22:
-		return "location_code"
-	case 23:
-		return "user_id"
-	case 24:
-		return "source_code"
-	case 25:
-		return "journal_batch_name"
-	case 26:
-		return "reason_code"
-	case 27:
-		return "index_entry"
-	case 28:
-		return "no_series"
-	}
-	return ""
+	return insCoverageLedgerEntryFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -462,78 +361,6 @@ type (
 	InsCoverageLedgerEntryOnBeforeRename interface {
 		OnBeforeRename(rec *InsCoverageLedgerEntry, handled *bool) error
 	}
-	InsCoverageLedgerEntryOnValidate_Entry_no interface {
-		OnValidate_Entry_no(rec *InsCoverageLedgerEntry) error
-	}
-	InsCoverageLedgerEntryOnValidate_Insurance_no interface {
-		OnValidate_Insurance_no(rec *InsCoverageLedgerEntry) error
-	}
-	InsCoverageLedgerEntryOnValidate_Disposed_fa interface {
-		OnValidate_Disposed_fa(rec *InsCoverageLedgerEntry) error
-	}
-	InsCoverageLedgerEntryOnValidate_Fa_no interface {
-		OnValidate_Fa_no(rec *InsCoverageLedgerEntry) error
-	}
-	InsCoverageLedgerEntryOnValidate_Fa_description interface {
-		OnValidate_Fa_description(rec *InsCoverageLedgerEntry) error
-	}
-	InsCoverageLedgerEntryOnValidate_Posting_date interface {
-		OnValidate_Posting_date(rec *InsCoverageLedgerEntry) error
-	}
-	InsCoverageLedgerEntryOnValidate_Document_type interface {
-		OnValidate_Document_type(rec *InsCoverageLedgerEntry) error
-	}
-	InsCoverageLedgerEntryOnValidate_Document_date interface {
-		OnValidate_Document_date(rec *InsCoverageLedgerEntry) error
-	}
-	InsCoverageLedgerEntryOnValidate_Document_no interface {
-		OnValidate_Document_no(rec *InsCoverageLedgerEntry) error
-	}
-	InsCoverageLedgerEntryOnValidate_External_document_no interface {
-		OnValidate_External_document_no(rec *InsCoverageLedgerEntry) error
-	}
-	InsCoverageLedgerEntryOnValidate_Amount interface {
-		OnValidate_Amount(rec *InsCoverageLedgerEntry) error
-	}
-	InsCoverageLedgerEntryOnValidate_Description interface {
-		OnValidate_Description(rec *InsCoverageLedgerEntry) error
-	}
-	InsCoverageLedgerEntryOnValidate_Fa_class_code interface {
-		OnValidate_Fa_class_code(rec *InsCoverageLedgerEntry) error
-	}
-	InsCoverageLedgerEntryOnValidate_Fa_subclass_code interface {
-		OnValidate_Fa_subclass_code(rec *InsCoverageLedgerEntry) error
-	}
-	InsCoverageLedgerEntryOnValidate_Fa_location_code interface {
-		OnValidate_Fa_location_code(rec *InsCoverageLedgerEntry) error
-	}
-	InsCoverageLedgerEntryOnValidate_Dimension_1_code interface {
-		OnValidate_Dimension_1_code(rec *InsCoverageLedgerEntry) error
-	}
-	InsCoverageLedgerEntryOnValidate_Dimension_2_code interface {
-		OnValidate_Dimension_2_code(rec *InsCoverageLedgerEntry) error
-	}
-	InsCoverageLedgerEntryOnValidate_Location_code interface {
-		OnValidate_Location_code(rec *InsCoverageLedgerEntry) error
-	}
-	InsCoverageLedgerEntryOnValidate_User_id interface {
-		OnValidate_User_id(rec *InsCoverageLedgerEntry) error
-	}
-	InsCoverageLedgerEntryOnValidate_Source_code interface {
-		OnValidate_Source_code(rec *InsCoverageLedgerEntry) error
-	}
-	InsCoverageLedgerEntryOnValidate_Journal_batch_name interface {
-		OnValidate_Journal_batch_name(rec *InsCoverageLedgerEntry) error
-	}
-	InsCoverageLedgerEntryOnValidate_Reason_code interface {
-		OnValidate_Reason_code(rec *InsCoverageLedgerEntry) error
-	}
-	InsCoverageLedgerEntryOnValidate_Index_entry interface {
-		OnValidate_Index_entry(rec *InsCoverageLedgerEntry) error
-	}
-	InsCoverageLedgerEntryOnValidate_No_series interface {
-		OnValidate_No_series(rec *InsCoverageLedgerEntry) error
-	}
 )
 
 // insCoverageLedgerEntryLogic is the registered business logic of Ins_Coverage_Ledger_Entry, in
@@ -576,56 +403,9 @@ func insCoverageLedgerEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(InsCoverageLedgerEntryOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(InsCoverageLedgerEntryOnBeforeRename)
-	case "OnValidate_Entry_no":
-		_, ok = logic.(InsCoverageLedgerEntryOnValidate_Entry_no)
-	case "OnValidate_Insurance_no":
-		_, ok = logic.(InsCoverageLedgerEntryOnValidate_Insurance_no)
-	case "OnValidate_Disposed_fa":
-		_, ok = logic.(InsCoverageLedgerEntryOnValidate_Disposed_fa)
-	case "OnValidate_Fa_no":
-		_, ok = logic.(InsCoverageLedgerEntryOnValidate_Fa_no)
-	case "OnValidate_Fa_description":
-		_, ok = logic.(InsCoverageLedgerEntryOnValidate_Fa_description)
-	case "OnValidate_Posting_date":
-		_, ok = logic.(InsCoverageLedgerEntryOnValidate_Posting_date)
-	case "OnValidate_Document_type":
-		_, ok = logic.(InsCoverageLedgerEntryOnValidate_Document_type)
-	case "OnValidate_Document_date":
-		_, ok = logic.(InsCoverageLedgerEntryOnValidate_Document_date)
-	case "OnValidate_Document_no":
-		_, ok = logic.(InsCoverageLedgerEntryOnValidate_Document_no)
-	case "OnValidate_External_document_no":
-		_, ok = logic.(InsCoverageLedgerEntryOnValidate_External_document_no)
-	case "OnValidate_Amount":
-		_, ok = logic.(InsCoverageLedgerEntryOnValidate_Amount)
-	case "OnValidate_Description":
-		_, ok = logic.(InsCoverageLedgerEntryOnValidate_Description)
-	case "OnValidate_Fa_class_code":
-		_, ok = logic.(InsCoverageLedgerEntryOnValidate_Fa_class_code)
-	case "OnValidate_Fa_subclass_code":
-		_, ok = logic.(InsCoverageLedgerEntryOnValidate_Fa_subclass_code)
-	case "OnValidate_Fa_location_code":
-		_, ok = logic.(InsCoverageLedgerEntryOnValidate_Fa_location_code)
-	case "OnValidate_Dimension_1_code":
-		_, ok = logic.(InsCoverageLedgerEntryOnValidate_Dimension_1_code)
-	case "OnValidate_Dimension_2_code":
-		_, ok = logic.(InsCoverageLedgerEntryOnValidate_Dimension_2_code)
-	case "OnValidate_Location_code":
-		_, ok = logic.(InsCoverageLedgerEntryOnValidate_Location_code)
-	case "OnValidate_User_id":
-		_, ok = logic.(InsCoverageLedgerEntryOnValidate_User_id)
-	case "OnValidate_Source_code":
-		_, ok = logic.(InsCoverageLedgerEntryOnValidate_Source_code)
-	case "OnValidate_Journal_batch_name":
-		_, ok = logic.(InsCoverageLedgerEntryOnValidate_Journal_batch_name)
-	case "OnValidate_Reason_code":
-		_, ok = logic.(InsCoverageLedgerEntryOnValidate_Reason_code)
-	case "OnValidate_Index_entry":
-		_, ok = logic.(InsCoverageLedgerEntryOnValidate_Index_entry)
-	case "OnValidate_No_series":
-		_, ok = logic.(InsCoverageLedgerEntryOnValidate_No_series)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return insCoverageLedgerEntryFields.IsOnValidateTrigger(name, logic, (*InsCoverageLedgerEntry)(nil))
 	}
 	return true, ok
 }
@@ -1057,31 +837,7 @@ func (t *InsCoverageLedgerEntry) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *InsCoverageLedgerEntry) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["entry_no"] = t.Entry_no
-	t.oldValues["insurance_no"] = t.Insurance_no
-	t.oldValues["disposed_fa"] = t.Disposed_fa
-	t.oldValues["fa_no"] = t.Fa_no
-	t.oldValues["fa_description"] = t.Fa_description
-	t.oldValues["posting_date"] = t.Posting_date
-	t.oldValues["document_type"] = t.Document_type
-	t.oldValues["document_date"] = t.Document_date
-	t.oldValues["document_no"] = t.Document_no
-	t.oldValues["external_document_no"] = t.External_document_no
-	t.oldValues["amount"] = t.Amount
-	t.oldValues["description"] = t.Description
-	t.oldValues["fa_class_code"] = t.Fa_class_code
-	t.oldValues["fa_subclass_code"] = t.Fa_subclass_code
-	t.oldValues["fa_location_code"] = t.Fa_location_code
-	t.oldValues["dimension_1_code"] = t.Dimension_1_code
-	t.oldValues["dimension_2_code"] = t.Dimension_2_code
-	t.oldValues["location_code"] = t.Location_code
-	t.oldValues["user_id"] = t.User_id
-	t.oldValues["source_code"] = t.Source_code
-	t.oldValues["journal_batch_name"] = t.Journal_batch_name
-	t.oldValues["reason_code"] = t.Reason_code
-	t.oldValues["index_entry"] = t.Index_entry
-	t.oldValues["no_series"] = t.No_series
+	t.oldValues = insCoverageLedgerEntryFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1096,78 +852,7 @@ func (t *InsCoverageLedgerEntry) OldValue(fieldName string) interface{} {
 func (t *InsCoverageLedgerEntry) XRec() *InsCoverageLedgerEntry {
 	x := &InsCoverageLedgerEntry{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["entry_no"].(int); ok {
-		x.Entry_no = v
-	}
-	if v, ok := t.oldValues["insurance_no"].(types.Code); ok {
-		x.Insurance_no = v
-	}
-	if v, ok := t.oldValues["disposed_fa"].(bool); ok {
-		x.Disposed_fa = v
-	}
-	if v, ok := t.oldValues["fa_no"].(types.Code); ok {
-		x.Fa_no = v
-	}
-	if v, ok := t.oldValues["fa_description"].(types.Text); ok {
-		x.Fa_description = v
-	}
-	if v, ok := t.oldValues["posting_date"].(types.Date); ok {
-		x.Posting_date = v
-	}
-	if v, ok := t.oldValues["document_type"].(InsCoverageLedgerEntryDocument_type); ok {
-		x.Document_type = v
-	}
-	if v, ok := t.oldValues["document_date"].(types.Date); ok {
-		x.Document_date = v
-	}
-	if v, ok := t.oldValues["document_no"].(types.Code); ok {
-		x.Document_no = v
-	}
-	if v, ok := t.oldValues["external_document_no"].(types.Code); ok {
-		x.External_document_no = v
-	}
-	if v, ok := t.oldValues["amount"].(types.Decimal); ok {
-		x.Amount = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["fa_class_code"].(types.Code); ok {
-		x.Fa_class_code = v
-	}
-	if v, ok := t.oldValues["fa_subclass_code"].(types.Code); ok {
-		x.Fa_subclass_code = v
-	}
-	if v, ok := t.oldValues["fa_location_code"].(types.Code); ok {
-		x.Fa_location_code = v
-	}
-	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
-		x.Dimension_1_code = v
-	}
-	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
-		x.Dimension_2_code = v
-	}
-	if v, ok := t.oldValues["location_code"].(types.Code); ok {
-		x.Location_code = v
-	}
-	if v, ok := t.oldValues["user_id"].(types.Code); ok {
-		x.User_id = v
-	}
-	if v, ok := t.oldValues["source_code"].(types.Code); ok {
-		x.Source_code = v
-	}
-	if v, ok := t.oldValues["journal_batch_name"].(types.Code); ok {
-		x.Journal_batch_name = v
-	}
-	if v, ok := t.oldValues["reason_code"].(types.Code); ok {
-		x.Reason_code = v
-	}
-	if v, ok := t.oldValues["index_entry"].(bool); ok {
-		x.Index_entry = v
-	}
-	if v, ok := t.oldValues["no_series"].(types.Code); ok {
-		x.No_series = v
-	}
+	insCoverageLedgerEntryFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1696,120 +1381,7 @@ func (t *InsCoverageLedgerEntry) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *InsCoverageLedgerEntry) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "insurance_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Insurance_no.Equal(old)
-		}
-	case "disposed_fa":
-		if old, ok := oldValue.(bool); ok {
-			return t.Disposed_fa != old
-		}
-		return true // Type mismatch, assume changed
-	case "fa_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Fa_no.Equal(old)
-		}
-	case "fa_description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Fa_description.Equal(old)
-		}
-	case "posting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Posting_date.Equal(old)
-		}
-	case "document_type":
-		if old, ok := oldValue.(InsCoverageLedgerEntryDocument_type); ok {
-			return t.Document_type != old
-		}
-	case "document_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Document_date.Equal(old)
-		}
-	case "document_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Document_no.Equal(old)
-		}
-	case "external_document_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.External_document_no.Equal(old)
-		}
-	case "amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Amount.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "fa_class_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Fa_class_code.Equal(old)
-		}
-	case "fa_subclass_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Fa_subclass_code.Equal(old)
-		}
-	case "fa_location_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Fa_location_code.Equal(old)
-		}
-	case "dimension_1_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_1_code.Equal(old)
-		}
-	case "dimension_2_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_2_code.Equal(old)
-		}
-	case "location_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Location_code.Equal(old)
-		}
-	case "user_id":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.User_id.Equal(old)
-		}
-	case "source_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Source_code.Equal(old)
-		}
-	case "journal_batch_name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Journal_batch_name.Equal(old)
-		}
-	case "reason_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Reason_code.Equal(old)
-		}
-	case "index_entry":
-		if old, ok := oldValue.(bool); ok {
-			return t.Index_entry != old
-		}
-		return true // Type mismatch, assume changed
-	case "no_series":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No_series.Equal(old)
-		}
-	}
-
-	return false
+	return insCoverageLedgerEntryFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -2050,57 +1622,7 @@ func (t *InsCoverageLedgerEntry) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *InsCoverageLedgerEntry) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("entry_no"):
-		return "entry_no", true
-	case strings.ToLower("insurance_no"):
-		return "insurance_no", true
-	case strings.ToLower("disposed_fa"):
-		return "disposed_fa", true
-	case strings.ToLower("fa_no"):
-		return "fa_no", true
-	case strings.ToLower("fa_description"):
-		return "fa_description", true
-	case strings.ToLower("posting_date"):
-		return "posting_date", true
-	case strings.ToLower("document_type"):
-		return "document_type", true
-	case strings.ToLower("document_date"):
-		return "document_date", true
-	case strings.ToLower("document_no"):
-		return "document_no", true
-	case strings.ToLower("external_document_no"):
-		return "external_document_no", true
-	case strings.ToLower("amount"):
-		return "amount", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("fa_class_code"):
-		return "fa_class_code", true
-	case strings.ToLower("fa_subclass_code"):
-		return "fa_subclass_code", true
-	case strings.ToLower("fa_location_code"):
-		return "fa_location_code", true
-	case strings.ToLower("dimension_1_code"):
-		return "dimension_1_code", true
-	case strings.ToLower("dimension_2_code"):
-		return "dimension_2_code", true
-	case strings.ToLower("location_code"):
-		return "location_code", true
-	case strings.ToLower("user_id"):
-		return "user_id", true
-	case strings.ToLower("source_code"):
-		return "source_code", true
-	case strings.ToLower("journal_batch_name"):
-		return "journal_batch_name", true
-	case strings.ToLower("reason_code"):
-		return "reason_code", true
-	case strings.ToLower("index_entry"):
-		return "index_entry", true
-	case strings.ToLower("no_series"):
-		return "no_series", true
-	}
-	return "", false
+	return insCoverageLedgerEntryFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -3197,556 +2719,20 @@ func (t *InsCoverageLedgerEntry) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *InsCoverageLedgerEntry) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Entry_no = v
-		case float64:
-			t.Entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field entry_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsCoverageLedgerEntryOnValidate_Entry_no); ok {
-				if err := trg.OnValidate_Entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "insurance_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Insurance_no = v
-		} else if v, ok := value.(string); ok {
-			t.Insurance_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field insurance_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "insurance_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsCoverageLedgerEntryOnValidate_Insurance_no); ok {
-				if err := trg.OnValidate_Insurance_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "disposed_fa":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Disposed_fa = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Disposed_fa = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field disposed_fa")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsCoverageLedgerEntryOnValidate_Disposed_fa); ok {
-				if err := trg.OnValidate_Disposed_fa(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Fa_no = v
-		} else if v, ok := value.(string); ok {
-			t.Fa_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fa_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsCoverageLedgerEntryOnValidate_Fa_no); ok {
-				if err := trg.OnValidate_Fa_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Fa_description = v
-		} else if v, ok := value.(string); ok {
-			t.Fa_description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsCoverageLedgerEntryOnValidate_Fa_description); ok {
-				if err := trg.OnValidate_Fa_description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "posting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Posting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Posting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field posting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Posting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field posting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsCoverageLedgerEntryOnValidate_Posting_date); ok {
-				if err := trg.OnValidate_Posting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(InsCoverageLedgerEntryDocument_type); ok {
-			t.Document_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 6 {
-				return fmt.Errorf("invalid option value %d for field document_type (valid range: 0-%d)", v, 6-1)
-			}
-			t.Document_type = InsCoverageLedgerEntryDocument_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 6 {
-				return fmt.Errorf("invalid option value %d for field document_type (valid range: 0-%d)", intVal, 6-1)
-			}
-			t.Document_type = InsCoverageLedgerEntryDocument_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Document_type = 0
-			} else {
-				options := []string{" ", "Payment", "Invoice", "Credit Memo", "Finance Charge Memo", "Reminder"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Document_type = InsCoverageLedgerEntryDocument_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field document_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field document_type (expected InsCoverageLedgerEntryDocument_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsCoverageLedgerEntryOnValidate_Document_type); ok {
-				if err := trg.OnValidate_Document_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Document_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Document_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field document_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Document_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field document_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsCoverageLedgerEntryOnValidate_Document_date); ok {
-				if err := trg.OnValidate_Document_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Document_no = v
-		} else if v, ok := value.(string); ok {
-			t.Document_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field document_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsCoverageLedgerEntryOnValidate_Document_no); ok {
-				if err := trg.OnValidate_Document_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "external_document_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.External_document_no = v
-		} else if v, ok := value.(string); ok {
-			t.External_document_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field external_document_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsCoverageLedgerEntryOnValidate_External_document_no); ok {
-				if err := trg.OnValidate_External_document_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsCoverageLedgerEntryOnValidate_Amount); ok {
-				if err := trg.OnValidate_Amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsCoverageLedgerEntryOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_class_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Fa_class_code = v
-		} else if v, ok := value.(string); ok {
-			t.Fa_class_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_class_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fa_class_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsCoverageLedgerEntryOnValidate_Fa_class_code); ok {
-				if err := trg.OnValidate_Fa_class_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_subclass_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Fa_subclass_code = v
-		} else if v, ok := value.(string); ok {
-			t.Fa_subclass_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_subclass_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fa_subclass_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsCoverageLedgerEntryOnValidate_Fa_subclass_code); ok {
-				if err := trg.OnValidate_Fa_subclass_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_location_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Fa_location_code = v
-		} else if v, ok := value.(string); ok {
-			t.Fa_location_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_location_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fa_location_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsCoverageLedgerEntryOnValidate_Fa_location_code); ok {
-				if err := trg.OnValidate_Fa_location_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_1_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_1_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsCoverageLedgerEntryOnValidate_Dimension_1_code); ok {
-				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_2_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_2_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsCoverageLedgerEntryOnValidate_Dimension_2_code); ok {
-				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "location_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Location_code = v
-		} else if v, ok := value.(string); ok {
-			t.Location_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field location_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "location_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsCoverageLedgerEntryOnValidate_Location_code); ok {
-				if err := trg.OnValidate_Location_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "user_id":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-		} else if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field user_id")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "user_id"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsCoverageLedgerEntryOnValidate_User_id); ok {
-				if err := trg.OnValidate_User_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "source_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Source_code = v
-		} else if v, ok := value.(string); ok {
-			t.Source_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field source_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "source_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsCoverageLedgerEntryOnValidate_Source_code); ok {
-				if err := trg.OnValidate_Source_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "journal_batch_name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Journal_batch_name = v
-		} else if v, ok := value.(string); ok {
-			t.Journal_batch_name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field journal_batch_name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsCoverageLedgerEntryOnValidate_Journal_batch_name); ok {
-				if err := trg.OnValidate_Journal_batch_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reason_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Reason_code = v
-		} else if v, ok := value.(string); ok {
-			t.Reason_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field reason_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "reason_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsCoverageLedgerEntryOnValidate_Reason_code); ok {
-				if err := trg.OnValidate_Reason_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "index_entry":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Index_entry = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Index_entry = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field index_entry")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsCoverageLedgerEntryOnValidate_Index_entry); ok {
-				if err := trg.OnValidate_Index_entry(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no_series":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No_series = v
-		} else if v, ok := value.(string); ok {
-			t.No_series = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no_series")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "no_series"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsCoverageLedgerEntryOnValidate_No_series); ok {
-				if err := trg.OnValidate_No_series(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := insCoverageLedgerEntryFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &insCoverageLedgerEntryFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -3755,260 +2741,18 @@ func (t *InsCoverageLedgerEntry) ValidateField(fieldName string, value interface
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *InsCoverageLedgerEntry) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Entry_no, true
-	case 2:
-		return t.Insurance_no, true
-	case 3:
-		return t.Disposed_fa, true
-	case 4:
-		return t.Fa_no, true
-	case 5:
-		return t.Fa_description, true
-	case 6:
-		return t.Posting_date, true
-	case 7:
-		return t.Document_type, true
-	case 8:
-		return t.Document_date, true
-	case 9:
-		return t.Document_no, true
-	case 10:
-		return t.External_document_no, true
-	case 14:
-		return t.Amount, true
-	case 16:
-		return t.Description, true
-	case 17:
-		return t.Fa_class_code, true
-	case 18:
-		return t.Fa_subclass_code, true
-	case 19:
-		return t.Fa_location_code, true
-	case 20:
-		return t.Dimension_1_code, true
-	case 21:
-		return t.Dimension_2_code, true
-	case 22:
-		return t.Location_code, true
-	case 23:
-		return t.User_id, true
-	case 24:
-		return t.Source_code, true
-	case 25:
-		return t.Journal_batch_name, true
-	case 26:
-		return t.Reason_code, true
-	case 27:
-		return t.Index_entry, true
-	case 28:
-		return t.No_series, true
-	}
-	return nil, false
+	return insCoverageLedgerEntryFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *InsCoverageLedgerEntry) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return insCoverageLedgerEntryFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *InsCoverageLedgerEntry) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(int); ok {
-			t.Entry_no = v
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Insurance_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Insurance_no = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(bool); ok {
-			t.Disposed_fa = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Code); ok {
-			t.Fa_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Fa_no = types.NewCode(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Text); ok {
-			t.Fa_description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Fa_description = types.NewText(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Date); ok {
-			t.Posting_date = v
-			return true
-		}
-	case 7:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 6 {
-			t.Document_type = InsCoverageLedgerEntryDocument_type(i)
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Date); ok {
-			t.Document_date = v
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.Code); ok {
-			t.Document_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Document_no = types.NewCode(v)
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Code); ok {
-			t.External_document_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.External_document_no = types.NewCode(v)
-			return true
-		}
-	case 14:
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount = v
-			return true
-		}
-	case 16:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 17:
-		if v, ok := value.(types.Code); ok {
-			t.Fa_class_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Fa_class_code = types.NewCode(v)
-			return true
-		}
-	case 18:
-		if v, ok := value.(types.Code); ok {
-			t.Fa_subclass_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Fa_subclass_code = types.NewCode(v)
-			return true
-		}
-	case 19:
-		if v, ok := value.(types.Code); ok {
-			t.Fa_location_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Fa_location_code = types.NewCode(v)
-			return true
-		}
-	case 20:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-			return true
-		}
-	case 21:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-			return true
-		}
-	case 22:
-		if v, ok := value.(types.Code); ok {
-			t.Location_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Location_code = types.NewCode(v)
-			return true
-		}
-	case 23:
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-			return true
-		}
-	case 24:
-		if v, ok := value.(types.Code); ok {
-			t.Source_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Source_code = types.NewCode(v)
-			return true
-		}
-	case 25:
-		if v, ok := value.(types.Code); ok {
-			t.Journal_batch_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Journal_batch_name = types.NewCode(v)
-			return true
-		}
-	case 26:
-		if v, ok := value.(types.Code); ok {
-			t.Reason_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Reason_code = types.NewCode(v)
-			return true
-		}
-	case 27:
-		if v, ok := value.(bool); ok {
-			t.Index_entry = v
-			return true
-		}
-	case 28:
-		if v, ok := value.(types.Code); ok {
-			t.No_series = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No_series = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return insCoverageLedgerEntryFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -4486,57 +3230,7 @@ func (t *InsCoverageLedgerEntry) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *InsCoverageLedgerEntry) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "entry_no":
-		return t.Entry_no, true
-	case "insurance_no":
-		return t.Insurance_no, true
-	case "disposed_fa":
-		return t.Disposed_fa, true
-	case "fa_no":
-		return t.Fa_no, true
-	case "fa_description":
-		return t.Fa_description, true
-	case "posting_date":
-		return t.Posting_date, true
-	case "document_type":
-		return int(t.Document_type), true
-	case "document_date":
-		return t.Document_date, true
-	case "document_no":
-		return t.Document_no, true
-	case "external_document_no":
-		return t.External_document_no, true
-	case "amount":
-		return t.Amount, true
-	case "description":
-		return t.Description, true
-	case "fa_class_code":
-		return t.Fa_class_code, true
-	case "fa_subclass_code":
-		return t.Fa_subclass_code, true
-	case "fa_location_code":
-		return t.Fa_location_code, true
-	case "dimension_1_code":
-		return t.Dimension_1_code, true
-	case "dimension_2_code":
-		return t.Dimension_2_code, true
-	case "location_code":
-		return t.Location_code, true
-	case "user_id":
-		return t.User_id, true
-	case "source_code":
-		return t.Source_code, true
-	case "journal_batch_name":
-		return t.Journal_batch_name, true
-	case "reason_code":
-		return t.Reason_code, true
-	case "index_entry":
-		return t.Index_entry, true
-	case "no_series":
-		return t.No_series, true
-	}
-	return nil, false
+	return insCoverageLedgerEntryFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -4645,183 +3339,12 @@ func (t *InsCoverageLedgerEntry) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *InsCoverageLedgerEntry) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"entry_no":             t.Entry_no,
-		"insurance_no":         t.Insurance_no.String(),
-		"disposed_fa":          t.Disposed_fa,
-		"fa_no":                t.Fa_no.String(),
-		"fa_description":       t.Fa_description.String(),
-		"posting_date":         t.Posting_date.String(),
-		"document_type":        int(t.Document_type),
-		"document_date":        t.Document_date.String(),
-		"document_no":          t.Document_no.String(),
-		"external_document_no": t.External_document_no.String(),
-		"amount":               t.Amount.String(),
-		"description":          t.Description.String(),
-		"fa_class_code":        t.Fa_class_code.String(),
-		"fa_subclass_code":     t.Fa_subclass_code.String(),
-		"fa_location_code":     t.Fa_location_code.String(),
-		"dimension_1_code":     t.Dimension_1_code.String(),
-		"dimension_2_code":     t.Dimension_2_code.String(),
-		"location_code":        t.Location_code.String(),
-		"user_id":              t.User_id.String(),
-		"source_code":          t.Source_code.String(),
-		"journal_batch_name":   t.Journal_batch_name.String(),
-		"reason_code":          t.Reason_code.String(),
-		"index_entry":          t.Index_entry,
-		"no_series":            t.No_series.String(),
-	}
+	return insCoverageLedgerEntryFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *InsCoverageLedgerEntry) FromMap(data map[string]interface{}) {
-	if v, ok := data["entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Entry_no = int(val)
-		case int:
-			t.Entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Entry_no = n
-			}
-		}
-	}
-	if v, ok := data["insurance_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Insurance_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["disposed_fa"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Disposed_fa = b
-		}
-	}
-	if v, ok := data["fa_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fa_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["fa_description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fa_description = types.NewText(s)
-		}
-	}
-	if v, ok := data["posting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Posting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["document_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Document_type = InsCoverageLedgerEntryDocument_type(int(val))
-		case int:
-			t.Document_type = InsCoverageLedgerEntryDocument_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Payment", "Invoice", "Credit Memo", "Finance Charge Memo", "Reminder"}
-			for i, opt := range options {
-				if opt == val {
-					t.Document_type = InsCoverageLedgerEntryDocument_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["document_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Document_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["document_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Document_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["external_document_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.External_document_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Amount = types.NewDecimal(val)
-		case int:
-			t.Amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["fa_class_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fa_class_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["fa_subclass_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fa_subclass_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["fa_location_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fa_location_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["dimension_1_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_1_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["dimension_2_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_2_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["location_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Location_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["user_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.User_id = types.NewCode(s)
-		}
-	}
-	if v, ok := data["source_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Source_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["journal_batch_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Journal_batch_name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["reason_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Reason_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["index_entry"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Index_entry = b
-		}
-	}
-	if v, ok := data["no_series"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No_series = types.NewCode(s)
-		}
-	}
+	insCoverageLedgerEntryFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -4842,249 +3365,420 @@ func (t *InsCoverageLedgerEntry) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *InsCoverageLedgerEntry) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "insurance_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "disposed_fa",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "fa_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "fa_description",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "posting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "document_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "document_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "document_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "external_document_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            14,
-			Name:          "amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         16,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     100,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         17,
-			Name:       "fa_class_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         18,
-			Name:       "fa_subclass_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         19,
-			Name:       "fa_location_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         20,
-			Name:       "dimension_1_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         21,
-			Name:       "dimension_2_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         22,
-			Name:       "location_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         23,
-			Name:       "user_id",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         24,
-			Name:       "source_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         25,
-			Name:       "journal_batch_name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         26,
-			Name:       "reason_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         27,
-			Name:       "index_entry",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         28,
-			Name:       "no_series",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return insCoverageLedgerEntryFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in insCoverageLedgerEntryFields.Fields
+func (t *InsCoverageLedgerEntry) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Entry_no
+	case 1:
+		return &t.Insurance_no
+	case 2:
+		return &t.Disposed_fa
+	case 3:
+		return &t.Fa_no
+	case 4:
+		return &t.Fa_description
+	case 5:
+		return &t.Posting_date
+	case 6:
+		return &t.Document_type
+	case 7:
+		return &t.Document_date
+	case 8:
+		return &t.Document_no
+	case 9:
+		return &t.External_document_no
+	case 10:
+		return &t.Amount
+	case 11:
+		return &t.Description
+	case 12:
+		return &t.Fa_class_code
+	case 13:
+		return &t.Fa_subclass_code
+	case 14:
+		return &t.Fa_location_code
+	case 15:
+		return &t.Dimension_1_code
+	case 16:
+		return &t.Dimension_2_code
+	case 17:
+		return &t.Location_code
+	case 18:
+		return &t.User_id
+	case 19:
+		return &t.Source_code
+	case 20:
+		return &t.Journal_batch_name
+	case 21:
+		return &t.Reason_code
+	case 22:
+		return &t.Index_entry
+	case 23:
+		return &t.No_series
 	}
+	return nil
+}
+
+// insCoverageLedgerEntryFields describes the fields of Ins_Coverage_Ledger_Entry for the record functions
+// written once in foundation/tables
+var insCoverageLedgerEntryFields = &tables.TableFields{
+	Table: InsCoverageLedgerEntryTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Entry_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "insurance_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Insurance_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "disposed_fa",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Disposed_fa",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "fa_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Fa_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "fa_description",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Fa_description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "posting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Posting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "document_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Document_type",
+			Options: []string{" ", "Payment", "Invoice", "Credit Memo", "Finance Charge Memo", "Reminder"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "document_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Document_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "document_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Document_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "external_document_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_External_document_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            14,
+				Name:          "amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         16,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     100,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         17,
+				Name:       "fa_class_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Fa_class_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         18,
+				Name:       "fa_subclass_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Fa_subclass_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         19,
+				Name:       "fa_location_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Fa_location_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         20,
+				Name:       "dimension_1_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_1_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         21,
+				Name:       "dimension_2_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_2_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         22,
+				Name:       "location_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Location_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         23,
+				Name:       "user_id",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_User_id",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         24,
+				Name:       "source_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Source_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         25,
+				Name:       "journal_batch_name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Journal_batch_name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         26,
+				Name:       "reason_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Reason_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         27,
+				Name:       "index_entry",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Index_entry",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         28,
+				Name:       "no_series",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_No_series",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

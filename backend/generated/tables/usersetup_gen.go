@@ -26,7 +26,6 @@ import (
 	"fmt"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -130,40 +129,12 @@ var UserSetup_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *UserSetup) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "user_id":
-		return 1
-	case "allow_posting_from":
-		return 2
-	case "allow_posting_to":
-		return 3
-	case "register_time":
-		return 4
-	case "allow_fa_posting_from":
-		return 5600
-	case "allow_fa_posting_to":
-		return 5601
-	}
-	return 0
+	return userSetupFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *UserSetup) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "user_id"
-	case 2:
-		return "allow_posting_from"
-	case 3:
-		return "allow_posting_to"
-	case 4:
-		return "register_time"
-	case 5600:
-		return "allow_fa_posting_from"
-	case 5601:
-		return "allow_fa_posting_to"
-	}
-	return ""
+	return userSetupFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -267,12 +238,6 @@ type (
 	UserSetupOnBeforeRename interface {
 		OnBeforeRename(rec *UserSetup, handled *bool) error
 	}
-	UserSetupOnValidate_User_id               interface{ OnValidate_User_id(rec *UserSetup) error }
-	UserSetupOnValidate_Allow_posting_from    interface{ OnValidate_Allow_posting_from(rec *UserSetup) error }
-	UserSetupOnValidate_Allow_posting_to      interface{ OnValidate_Allow_posting_to(rec *UserSetup) error }
-	UserSetupOnValidate_Register_time         interface{ OnValidate_Register_time(rec *UserSetup) error }
-	UserSetupOnValidate_Allow_fa_posting_from interface{ OnValidate_Allow_fa_posting_from(rec *UserSetup) error }
-	UserSetupOnValidate_Allow_fa_posting_to   interface{ OnValidate_Allow_fa_posting_to(rec *UserSetup) error }
 )
 
 // userSetupLogic is the registered business logic of User_Setup, in
@@ -315,20 +280,9 @@ func userSetupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(UserSetupOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(UserSetupOnBeforeRename)
-	case "OnValidate_User_id":
-		_, ok = logic.(UserSetupOnValidate_User_id)
-	case "OnValidate_Allow_posting_from":
-		_, ok = logic.(UserSetupOnValidate_Allow_posting_from)
-	case "OnValidate_Allow_posting_to":
-		_, ok = logic.(UserSetupOnValidate_Allow_posting_to)
-	case "OnValidate_Register_time":
-		_, ok = logic.(UserSetupOnValidate_Register_time)
-	case "OnValidate_Allow_fa_posting_from":
-		_, ok = logic.(UserSetupOnValidate_Allow_fa_posting_from)
-	case "OnValidate_Allow_fa_posting_to":
-		_, ok = logic.(UserSetupOnValidate_Allow_fa_posting_to)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return userSetupFields.IsOnValidateTrigger(name, logic, (*UserSetup)(nil))
 	}
 	return true, ok
 }
@@ -621,13 +575,7 @@ func (t *UserSetup) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *UserSetup) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["user_id"] = t.User_id
-	t.oldValues["allow_posting_from"] = t.Allow_posting_from
-	t.oldValues["allow_posting_to"] = t.Allow_posting_to
-	t.oldValues["register_time"] = t.Register_time
-	t.oldValues["allow_fa_posting_from"] = t.Allow_fa_posting_from
-	t.oldValues["allow_fa_posting_to"] = t.Allow_fa_posting_to
+	t.oldValues = userSetupFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -642,24 +590,7 @@ func (t *UserSetup) OldValue(fieldName string) interface{} {
 func (t *UserSetup) XRec() *UserSetup {
 	x := &UserSetup{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["user_id"].(types.Code); ok {
-		x.User_id = v
-	}
-	if v, ok := t.oldValues["allow_posting_from"].(types.Date); ok {
-		x.Allow_posting_from = v
-	}
-	if v, ok := t.oldValues["allow_posting_to"].(types.Date); ok {
-		x.Allow_posting_to = v
-	}
-	if v, ok := t.oldValues["register_time"].(bool); ok {
-		x.Register_time = v
-	}
-	if v, ok := t.oldValues["allow_fa_posting_from"].(types.Date); ok {
-		x.Allow_fa_posting_from = v
-	}
-	if v, ok := t.oldValues["allow_fa_posting_to"].(types.Date); ok {
-		x.Allow_fa_posting_to = v
-	}
+	userSetupFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -980,46 +911,7 @@ func (t *UserSetup) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *UserSetup) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "user_id":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.User_id.Equal(old)
-		}
-	case "allow_posting_from":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Allow_posting_from.Equal(old)
-		}
-	case "allow_posting_to":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Allow_posting_to.Equal(old)
-		}
-	case "register_time":
-		if old, ok := oldValue.(bool); ok {
-			return t.Register_time != old
-		}
-		return true // Type mismatch, assume changed
-	case "allow_fa_posting_from":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Allow_fa_posting_from.Equal(old)
-		}
-	case "allow_fa_posting_to":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Allow_fa_posting_to.Equal(old)
-		}
-	}
-
-	return false
+	return userSetupFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1260,21 +1152,7 @@ func (t *UserSetup) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *UserSetup) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("user_id"):
-		return "user_id", true
-	case strings.ToLower("allow_posting_from"):
-		return "allow_posting_from", true
-	case strings.ToLower("allow_posting_to"):
-		return "allow_posting_to", true
-	case strings.ToLower("register_time"):
-		return "register_time", true
-	case strings.ToLower("allow_fa_posting_from"):
-		return "allow_fa_posting_from", true
-	case strings.ToLower("allow_fa_posting_to"):
-		return "allow_fa_posting_to", true
-	}
-	return "", false
+	return userSetupFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2145,149 +2023,20 @@ func (t *UserSetup) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *UserSetup) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "user_id":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-		} else if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field user_id")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "user_id"); err != nil {
+	i, err := userSetupFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
+	}
+	f := &userSetupFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
 			return err
 		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserSetupOnValidate_User_id); ok {
-				if err := trg.OnValidate_User_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "allow_posting_from":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Allow_posting_from = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Allow_posting_from, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field allow_posting_from: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Allow_posting_from = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field allow_posting_from (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserSetupOnValidate_Allow_posting_from); ok {
-				if err := trg.OnValidate_Allow_posting_from(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "allow_posting_to":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Allow_posting_to = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Allow_posting_to, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field allow_posting_to: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Allow_posting_to = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field allow_posting_to (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserSetupOnValidate_Allow_posting_to); ok {
-				if err := trg.OnValidate_Allow_posting_to(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "register_time":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Register_time = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Register_time = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field register_time")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserSetupOnValidate_Register_time); ok {
-				if err := trg.OnValidate_Register_time(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "allow_fa_posting_from":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Allow_fa_posting_from = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Allow_fa_posting_from, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field allow_fa_posting_from: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Allow_fa_posting_from = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field allow_fa_posting_from (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserSetupOnValidate_Allow_fa_posting_from); ok {
-				if err := trg.OnValidate_Allow_fa_posting_from(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "allow_fa_posting_to":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Allow_fa_posting_to = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Allow_fa_posting_to, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field allow_fa_posting_to: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Allow_fa_posting_to = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field allow_fa_posting_to (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserSetupOnValidate_Allow_fa_posting_to); ok {
-				if err := trg.OnValidate_Allow_fa_posting_to(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2296,70 +2045,18 @@ func (t *UserSetup) ValidateField(fieldName string, value interface{}) error {
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *UserSetup) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.User_id, true
-	case 2:
-		return t.Allow_posting_from, true
-	case 3:
-		return t.Allow_posting_to, true
-	case 4:
-		return t.Register_time, true
-	case 5600:
-		return t.Allow_fa_posting_from, true
-	case 5601:
-		return t.Allow_fa_posting_to, true
-	}
-	return nil, false
+	return userSetupFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *UserSetup) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return userSetupFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *UserSetup) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Date); ok {
-			t.Allow_posting_from = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Date); ok {
-			t.Allow_posting_to = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(bool); ok {
-			t.Register_time = v
-			return true
-		}
-	case 5600:
-		if v, ok := value.(types.Date); ok {
-			t.Allow_fa_posting_from = v
-			return true
-		}
-	case 5601:
-		if v, ok := value.(types.Date); ok {
-			t.Allow_fa_posting_to = v
-			return true
-		}
-	}
-	return false
+	return userSetupFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2808,21 +2505,7 @@ func (t *UserSetup) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *UserSetup) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "user_id":
-		return t.User_id, true
-	case "allow_posting_from":
-		return t.Allow_posting_from, true
-	case "allow_posting_to":
-		return t.Allow_posting_to, true
-	case "register_time":
-		return t.Register_time, true
-	case "allow_fa_posting_from":
-		return t.Allow_fa_posting_from, true
-	case "allow_fa_posting_to":
-		return t.Allow_fa_posting_to, true
-	}
-	return nil, false
+	return userSetupFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2913,48 +2596,12 @@ func (t *UserSetup) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *UserSetup) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"user_id":               t.User_id.String(),
-		"allow_posting_from":    t.Allow_posting_from.String(),
-		"allow_posting_to":      t.Allow_posting_to.String(),
-		"register_time":         t.Register_time,
-		"allow_fa_posting_from": t.Allow_fa_posting_from.String(),
-		"allow_fa_posting_to":   t.Allow_fa_posting_to.String(),
-	}
+	return userSetupFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *UserSetup) FromMap(data map[string]interface{}) {
-	if v, ok := data["user_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.User_id = types.NewCode(s)
-		}
-	}
-	if v, ok := data["allow_posting_from"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Allow_posting_from, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["allow_posting_to"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Allow_posting_to, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["register_time"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Register_time = b
-		}
-	}
-	if v, ok := data["allow_fa_posting_from"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Allow_fa_posting_from, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["allow_fa_posting_to"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Allow_fa_posting_to, _ = types.NewDateFromString(s)
-		}
-	}
+	userSetupFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2975,68 +2622,119 @@ func (t *UserSetup) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *UserSetup) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "user_id",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "allow_posting_from",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "allow_posting_to",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "register_time",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5600,
-			Name:       "allow_fa_posting_from",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5601,
-			Name:       "allow_fa_posting_to",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return userSetupFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in userSetupFields.Fields
+func (t *UserSetup) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.User_id
+	case 1:
+		return &t.Allow_posting_from
+	case 2:
+		return &t.Allow_posting_to
+	case 3:
+		return &t.Register_time
+	case 4:
+		return &t.Allow_fa_posting_from
+	case 5:
+		return &t.Allow_fa_posting_to
 	}
+	return nil
+}
+
+// userSetupFields describes the fields of User_Setup for the record functions
+// written once in foundation/tables
+var userSetupFields = &tables.TableFields{
+	Table: UserSetupTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "user_id",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_User_id",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "allow_posting_from",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Allow_posting_from",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "allow_posting_to",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Allow_posting_to",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "register_time",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Register_time",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5600,
+				Name:       "allow_fa_posting_from",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Allow_fa_posting_from",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5601,
+				Name:       "allow_fa_posting_to",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Allow_fa_posting_to",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

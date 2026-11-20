@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"go/ast"
 	"go/format"
+	"go/parser"
 	"go/token"
 	"os"
 	"path/filepath"
@@ -1319,11 +1321,67 @@ func generateFile(filename, name, text string, data any) error {
 	if err := tmpl.Execute(&buf, data); err != nil {
 		return err
 	}
-	src, err := format.Source(buf.Bytes())
+	src, err := withoutUnusedImports(buf.Bytes())
+	if err != nil {
+		return fmt.Errorf("imports: %w", err)
+	}
+	src, err = format.Source(src)
 	if err != nil {
 		return fmt.Errorf("format: %w", err)
 	}
 	return os.WriteFile(filename, src, 0644)
+}
+
+// withoutUnusedImports removes the imports the generated code does not use (a package is
+// used when a selector names it), so the templates need no condition per import
+func withoutUnusedImports(src []byte) ([]byte, error) {
+	fset := token.NewFileSet()
+	file, err := parser.ParseFile(fset, "", src, parser.ParseComments)
+	if err != nil {
+		return nil, err
+	}
+	used := map[string]bool{}
+	ast.Inspect(file, func(n ast.Node) bool {
+		if se, ok := n.(*ast.SelectorExpr); ok {
+			if id, ok := se.X.(*ast.Ident); ok {
+				used[id.Name] = true
+			}
+		}
+		return true
+	})
+	removed := false
+	for _, decl := range file.Decls {
+		gd, ok := decl.(*ast.GenDecl)
+		if !ok || gd.Tok != token.IMPORT {
+			continue
+		}
+		specs := gd.Specs[:0]
+		for _, spec := range gd.Specs {
+			imp := spec.(*ast.ImportSpec)
+			path, err := strconv.Unquote(imp.Path.Value)
+			if err != nil {
+				return nil, err
+			}
+			name := path[strings.LastIndex(path, "/")+1:]
+			if imp.Name != nil {
+				name = imp.Name.Name
+			}
+			if name == "_" || name == "." || used[name] {
+				specs = append(specs, spec)
+			} else {
+				removed = true
+			}
+		}
+		gd.Specs = specs
+	}
+	if !removed {
+		return src, nil
+	}
+	var out bytes.Buffer
+	if err := format.Node(&out, fset, file); err != nil {
+		return nil, err
+	}
+	return out.Bytes(), nil
 }
 
 // getTableNameExpr returns the Go code expression for getting the table name
@@ -1348,6 +1406,8 @@ func templateFuncs() template.FuncMap {
 			}
 			return expr
 		},
+		"fieldKind":     fieldKind,
+		"fieldInfoType": fieldInfoType,
 		"lowerFirst":    lowerFirst,
 		"sqlType":       getSQLType,
 		"goDefault":     goDefault,
@@ -1687,11 +1747,6 @@ type (
 	{{ .StructName }}OnBeforeModify interface{ OnBeforeModify(rec *{{ .StructName }}, handled *bool) error }
 	{{ .StructName }}OnBeforeDelete interface{ OnBeforeDelete(rec *{{ .StructName }}, handled *bool) error }
 	{{ .StructName }}OnBeforeRename interface{ OnBeforeRename(rec *{{ .StructName }}, handled *bool) error }
-{{- range .Table.Fields }}
-{{- if not .FlowField }}
-	{{ $.StructName }}OnValidate_{{ upperFirst .Name }} interface{ OnValidate_{{ upperFirst .Name }}(rec *{{ $.StructName }}) error }
-{{- end }}
-{{- end }}
 )
 
 // {{ lowerFirst .StructName }}Logic is the registered business logic of {{ .Table.Name }}, in
@@ -1734,14 +1789,9 @@ func {{ lowerFirst .StructName }}Trigger(name string, logic any) (known, ok bool
 		_, ok = logic.({{ .StructName }}OnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.({{ .StructName }}OnBeforeRename)
-{{- range .Table.Fields }}
-{{- if not .FlowField }}
-	case "OnValidate_{{ upperFirst .Name }}":
-		_, ok = logic.({{ $.StructName }}OnValidate_{{ upperFirst .Name }})
-{{- end }}
-{{- end }}
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return {{ lowerFirst .StructName }}Fields.IsOnValidateTrigger(name, logic, (*{{ .StructName }})(nil))
 	}
 	return true, ok
 }
@@ -2142,32 +2192,12 @@ var {{ .StructName }}_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *{{ .StructName }}) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-{{- range .Table.Fields }}
-	case "{{ .DBName }}":
-		return {{ .No }}
-{{- end }}
-{{- range .FlowFilterFields }}
-	case "{{ .DBName }}":
-		return {{ .No }}
-{{- end }}
-	}
-	return 0
+	return {{ lowerFirst .StructName }}Fields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *{{ .StructName }}) FieldName(fieldNo int) string {
-	switch fieldNo {
-{{- range .Table.Fields }}
-	case {{ .No }}:
-		return "{{ .DBName }}"
-{{- end }}
-{{- range .FlowFilterFields }}
-	case {{ .No }}:
-		return "{{ .DBName }}"
-{{- end }}
-	}
-	return ""
+	return {{ lowerFirst .StructName }}Fields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -2491,12 +2521,7 @@ func (t *{{ .StructName }}) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *{{ .StructName }}) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-{{- range .Table.Fields }}
-{{- if not .FlowField }}
-	t.oldValues["{{ .DBName }}"] = t.{{ upperFirst .Name }}
-{{- end }}
-{{- end }}
+	t.oldValues = {{ lowerFirst .StructName }}Fields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -2511,13 +2536,7 @@ func (t *{{ .StructName }}) OldValue(fieldName string) interface{} {
 func (t *{{ .StructName }}) XRec() *{{ .StructName }} {
 	x := &{{ .StructName }}{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-{{- range .Table.Fields }}
-{{- if not .FlowField }}
-	if v, ok := t.oldValues["{{ .DBName }}"].({{ fieldGoType $.StructName . }}); ok {
-		x.{{ upperFirst .Name }} = v
-	}
-{{- end }}
-{{- end }}
+	{{ lowerFirst .StructName }}Fields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -3156,59 +3175,7 @@ func (t *{{ .StructName }}) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *{{ .StructName }}) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-{{- range .Table.Fields }}
-{{- if not .FlowField }}
-	case "{{ .DBName }}":
-{{- if eq .Type "Option" }}
-		if old, ok := oldValue.({{ $.StructName }}{{ upperFirst .Name }}); ok {
-			return t.{{ upperFirst .Name }} != old
-		}
-{{- else if eq .Type "types.Code" }}
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.{{ upperFirst .Name }}.Equal(old)
-		}
-{{- else if eq .Type "types.Text" }}
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.{{ upperFirst .Name }}.Equal(old)
-		}
-{{- else if eq .Type "types.Decimal" }}
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.{{ upperFirst .Name }}.Equal(old)
-		}
-{{- else if eq .Type "types.Date" }}
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.{{ upperFirst .Name }}.Equal(old)
-		}
-{{- else if eq .Type "types.DateTime" }}
-		if old, ok := oldValue.(types.DateTime); ok {
-			return !t.{{ upperFirst .Name }}.Equal(old)
-		}
-{{- else if eq .Type "[]byte" }}
-		// Skip comparison for BLOB fields (too large, use always modified)
-		return true
-{{- else }}
-		if old, ok := oldValue.({{ .Type }}); ok {
-			return t.{{ upperFirst .Name }} != old
-		}
-		return true // Type mismatch, assume changed
-{{- end }}
-{{- end }}
-{{- end }}
-	}
-
-	return false
+	return {{ lowerFirst .StructName }}Fields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -3977,15 +3944,7 @@ func (t *{{ .StructName }}) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *{{ .StructName }}) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-{{- range .Table.Fields }}
-{{- if not .FlowField }}
-	case strings.ToLower("{{ .DBName }}"):
-		return "{{ .DBName }}", true
-{{- end }}
-{{- end }}
-	}
-	return "", false
+	return {{ lowerFirst .StructName }}Fields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -5108,201 +5067,20 @@ func (t *{{ .StructName }}) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *{{ .StructName }}) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-{{- range .Table.Fields }}
-{{- if not .FlowField }}
-	case "{{ .DBName }}":
-		// Set field value
-{{- if eq .Type "types.Code" }}
-		if v, ok := value.(types.Code); ok {
-			t.{{ upperFirst .Name }} = v
-		} else if v, ok := value.(string); ok {
-			t.{{ upperFirst .Name }} = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field {{ .Name }}")
-		}
-{{- if .DateFormula }}
-		if err := tables.CheckDateFormula({{ $.StructName }}TableName, "{{ .Name }}", string(t.{{ upperFirst .Name }})); err != nil {
-			return err
-		}
-{{- end }}
-{{- else if eq .Type "types.Text" }}
-		if v, ok := value.(types.Text); ok {
-			t.{{ upperFirst .Name }} = v
-		} else if v, ok := value.(string); ok {
-			t.{{ upperFirst .Name }} = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field {{ .Name }}")
-		}
-{{- else if eq .Type "types.Decimal" }}
-		if v, ok := value.(types.Decimal); ok {
-			t.{{ upperFirst .Name }} = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.{{ upperFirst .Name }}, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field {{ .Name }}: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.{{ upperFirst .Name }} = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.{{ upperFirst .Name }} = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.{{ upperFirst .Name }} = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field {{ .Name }} (expected Decimal, string, float64, int, or int64)")
-		}
-{{- else if eq .Type "types.Date" }}
-		if v, ok := value.(types.Date); ok {
-			t.{{ upperFirst .Name }} = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.{{ upperFirst .Name }}, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field {{ .Name }}: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.{{ upperFirst .Name }} = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field {{ .Name }} (expected Date, string, or time.Time)")
-		}
-{{- else if eq .Type "types.DateTime" }}
-		if v, ok := value.(types.DateTime); ok {
-			t.{{ upperFirst .Name }} = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.{{ upperFirst .Name }}, err = types.NewDateTimeFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid datetime value for field {{ .Name }}: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.{{ upperFirst .Name }} = types.NewDateTimeFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field {{ .Name }} (expected DateTime, string, or time.Time)")
-		}
-{{- else if eq .Type "[]byte" }}
-		// Accept nil, []byte, or base64-encoded string
-		if value == nil {
-			t.{{ upperFirst .Name }} = nil
-		} else if v, ok := value.([]byte); ok {
-			t.{{ upperFirst .Name }} = v
-		} else if s, ok := value.(string); ok {
-			if s == "" {
-				t.{{ upperFirst .Name }} = nil
-			} else {
-				// Try base64 decode
-				decoded, err := base64.StdEncoding.DecodeString(s)
-				if err != nil {
-					return fmt.Errorf("invalid base64 value for field {{ .Name }}: %w", err)
-				}
-				t.{{ upperFirst .Name }} = decoded
-			}
-		} else {
-			return fmt.Errorf("invalid type for field {{ .Name }} (expected []byte, string, or nil)")
-		}
-{{- else if eq .Type "bool" }}
-		if v, ok := value.(bool); ok {
-			t.{{ upperFirst .Name }} = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.{{ upperFirst .Name }} = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field {{ .Name }}")
-		}
-{{- else if eq .Type "Option" }}
-		// Accept enum type directly
-		if v, ok := value.({{ $.StructName }}{{ upperFirst .Name }}); ok {
-			t.{{ upperFirst .Name }} = v
-		// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= {{ len .Options }} {
-				return fmt.Errorf("invalid option value %d for field {{ .Name }} (valid range: 0-%d)", v, {{ len .Options }}-1)
-			}
-			t.{{ upperFirst .Name }} = {{ $.StructName }}{{ upperFirst .Name }}(v)
-		// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= {{ len .Options }} {
-				return fmt.Errorf("invalid option value %d for field {{ .Name }} (valid range: 0-%d)", intVal, {{ len .Options }}-1)
-			}
-			t.{{ upperFirst .Name }} = {{ $.StructName }}{{ upperFirst .Name }}(intVal)
-		// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.{{ upperFirst .Name }} = 0
-			} else {
-				options := []string{ {{- range $i, $opt := .Options }}{{- if $i }}, {{ end }}"{{ $opt }}"{{- end }} }
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.{{ upperFirst .Name }} = {{ $.StructName }}{{ upperFirst .Name }}(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field {{ .Name }} (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field {{ .Name }} (expected {{ $.StructName }}{{ upperFirst .Name }}, int, or string)")
-		}
-{{- else if eq .Type "int" }}
-		switch v := value.(type) {
-		case int:
-			t.{{ upperFirst .Name }} = v
-		case float64:
-			t.{{ upperFirst .Name }} = int(v)
-		case string:
-			if v == "" {
-				t.{{ upperFirst .Name }} = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.{{ upperFirst .Name }} = i
-			} else {
-				return fmt.Errorf("invalid integer value for field {{ .Name }}: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field {{ .Name }}")
-		}
-{{- else if eq .Type "time.Time" }}
-		if v, ok := value.(time.Time); ok {
-			t.{{ upperFirst .Name }} = v
-		} else {
-			return fmt.Errorf("invalid type for field {{ .Name }}")
-		}
-{{- end }}
-{{- if .TableRelation }}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-{{- if .App }}
-		// — a field of an extension app: checked while the app is enabled
-		if extensions.Enabled("{{ .App }}") {
-			if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "{{ .DBName }}"); err != nil {
-				return err
-			}
-		}
-{{- else }}
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "{{ .DBName }}"); err != nil {
-			return err
-		}
-{{- end }}
-{{- end }}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.({{ $.StructName }}OnValidate_{{ upperFirst .Name }}); ok {
-				if err := trg.OnValidate_{{ upperFirst .Name }}(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-{{- end }}
-{{- end }}
+	i, err := {{ lowerFirst .StructName }}Fields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &{{ lowerFirst .StructName }}Fields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 
@@ -5312,68 +5090,18 @@ func (t *{{ .StructName }}) ValidateField(fieldName string, value interface{}) e
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *{{ .StructName }}) FieldValue(no int) (any, bool) {
-	switch no {
-{{- range .Table.Fields }}
-{{- if not .FlowField }}
-	case {{ .No }}:
-		return t.{{ upperFirst .Name }}, true
-{{- end }}
-{{- end }}
-	}
-	return nil, false
+	return {{ lowerFirst .StructName }}Fields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *{{ .StructName }}) flowFieldValue(no int) (any, bool) {
-	switch no {
-{{- range .Table.Fields }}
-{{- if .FlowField }}
-	case {{ .No }}:
-		return t.{{ upperFirst .Name }}, true
-{{- end }}
-{{- end }}
-	}
-	return nil, false
+	return {{ lowerFirst .StructName }}Fields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *{{ .StructName }}) SetFieldValue(no int, value any) bool {
-	switch no {
-{{- range .Table.Fields }}
-{{- if not .FlowField }}
-	case {{ .No }}:
-{{- if eq .Type "Option" }}
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < {{ len .Options }} {
-			t.{{ upperFirst .Name }} = {{ $.StructName }}{{ upperFirst .Name }}(i)
-			return true
-		}
-{{- else if eq .Type "BLOB" }}
-		if v, ok := value.([]byte); ok {
-			t.{{ upperFirst .Name }} = v
-			return true
-		}
-{{- else }}
-		if v, ok := value.({{ .Type }}); ok {
-			t.{{ upperFirst .Name }} = v
-			return true
-		}
-{{- if eq .Type "types.Code" }}
-		if v, ok := value.(string); ok {
-			t.{{ upperFirst .Name }} = types.NewCode(v)
-			return true
-		}
-{{- else if eq .Type "types.Text" }}
-		if v, ok := value.(string); ok {
-			t.{{ upperFirst .Name }} = types.NewText(v)
-			return true
-		}
-{{- end }}
-{{- end }}
-{{- end }}
-{{- end }}
-	}
-	return false
+	return {{ lowerFirst .StructName }}Fields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -5880,19 +5608,7 @@ func (t *{{ .StructName }}) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *{{ .StructName }}) columnValue(column string) (interface{}, bool) {
-	switch column {
-{{- range .Table.Fields }}
-{{- if not .FlowField }}
-	case "{{ .DBName }}":
-{{- if eq .Type "Option" }}
-		return int(t.{{ upperFirst .Name }}), true
-{{- else }}
-		return t.{{ upperFirst .Name }}, true
-{{- end }}
-{{- end }}
-{{- end }}
-	}
-	return nil, false
+	return {{ lowerFirst .StructName }}Fields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -5991,121 +5707,12 @@ func (t *{{ .StructName }}) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *{{ .StructName }}) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-{{- range .Table.Fields }}
-{{- if not .FlowField }}
-{{- if eq .Type "types.Code" }}
-		"{{ .DBName }}": t.{{ upperFirst .Name }}.String(),
-{{- else if eq .Type "types.Text" }}
-		"{{ .DBName }}": t.{{ upperFirst .Name }}.String(),
-{{- else if eq .Type "types.Decimal" }}
-		"{{ .DBName }}": t.{{ upperFirst .Name }}.String(),
-{{- else if eq .Type "types.Date" }}
-		"{{ .DBName }}": t.{{ upperFirst .Name }}.String(),
-{{- else if eq .Type "types.DateTime" }}
-		"{{ .DBName }}": t.{{ upperFirst .Name }}.String(),
-{{- else if eq .Type "Option" }}
-		"{{ .DBName }}": int(t.{{ upperFirst .Name }}),
-{{- else }}
-		"{{ .DBName }}": t.{{ upperFirst .Name }},
-{{- end }}
-{{- else }}
-		// FlowField: {{ .DBName }}
-{{- if eq .Type "types.Decimal" }}
-		"{{ .DBName }}": t.{{ upperFirst .Name }}.String(),
-{{- else }}
-		"{{ .DBName }}": t.{{ upperFirst .Name }},
-{{- end }}
-{{- end }}
-{{- end }}
-	}
+	return {{ lowerFirst .StructName }}Fields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *{{ .StructName }}) FromMap(data map[string]interface{}) {
-{{- range .Table.Fields }}
-{{- if not .FlowField }}
-	if v, ok := data["{{ .DBName }}"]; ok && v != nil {
-{{- if eq .Type "types.Code" }}
-		if s, ok := v.(string); ok {
-			t.{{ upperFirst .Name }} = types.NewCode(s)
-		}
-{{- else if eq .Type "types.Text" }}
-		if s, ok := v.(string); ok {
-			t.{{ upperFirst .Name }} = types.NewText(s)
-		}
-{{- else if eq .Type "types.Decimal" }}
-		switch val := v.(type) {
-		case string:
-			t.{{ upperFirst .Name }}, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.{{ upperFirst .Name }} = types.NewDecimal(val)
-		case int:
-			t.{{ upperFirst .Name }} = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.{{ upperFirst .Name }} = types.NewDecimalFromInt(val)
-		}
-{{- else if eq .Type "types.Date" }}
-		if s, ok := v.(string); ok {
-			t.{{ upperFirst .Name }}, _ = types.NewDateFromString(s)
-		}
-{{- else if eq .Type "types.DateTime" }}
-		if s, ok := v.(string); ok {
-			t.{{ upperFirst .Name }}, _ = types.NewDateTimeFromString(s)
-		}
-{{- else if eq .Type "Option" }}
-		switch val := v.(type) {
-		case float64:
-			t.{{ upperFirst .Name }} = {{ $.StructName }}{{ upperFirst .Name }}(int(val))
-		case int:
-			t.{{ upperFirst .Name }} = {{ $.StructName }}{{ upperFirst .Name }}(val)
-		case string:
-			// Lookup string value in options
-			options := []string{ {{- range $i, $opt := .Options }}{{- if $i }}, {{ end }}"{{ $opt }}"{{- end }} }
-			for i, opt := range options {
-				if opt == val {
-					t.{{ upperFirst .Name }} = {{ $.StructName }}{{ upperFirst .Name }}(i)
-					break
-				}
-			}
-		}
-{{- else if eq .Type "bool" }}
-		if b, ok := v.(bool); ok {
-			t.{{ upperFirst .Name }} = b
-		}
-{{- else if eq .Type "int" }}
-		switch val := v.(type) {
-		case float64:
-			t.{{ upperFirst .Name }} = int(val)
-		case int:
-			t.{{ upperFirst .Name }} = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.{{ upperFirst .Name }} = n
-			}
-		}
-{{- else if eq .Type "int64" }}
-		switch val := v.(type) {
-		case float64:
-			t.{{ upperFirst .Name }} = int64(val)
-		case int64:
-			t.{{ upperFirst .Name }} = val
-		case int:
-			t.{{ upperFirst .Name }} = int64(val)
-		}
-{{- else if eq .Type "float64" }}
-		if f, ok := v.(float64); ok {
-			t.{{ upperFirst .Name }} = f
-		}
-{{- else if eq .Type "string" }}
-		if s, ok := v.(string); ok {
-			t.{{ upperFirst .Name }} = s
-		}
-{{- end }}
-	}
-{{- end }}
-{{- end }}
+	{{ lowerFirst .StructName }}Fields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -6146,56 +5753,73 @@ func (t *{{ .StructName }}) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *{{ .StructName }}) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
+	return {{ lowerFirst .StructName }}Fields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in {{ lowerFirst .StructName }}Fields.Fields
+func (t *{{ .StructName }}) fieldRef(i int) any {
+	switch i {
+{{- range $i, $f := .Table.Fields }}
+	case {{ $i }}:
+		return &t.{{ upperFirst $f.Name }}
+{{- end }}
+	}
+	return nil
+}
+
+// {{ lowerFirst .StructName }}Fields describes the fields of {{ .Table.Name }} for the record functions
+// written once in foundation/tables
+var {{ lowerFirst .StructName }}Fields = &tables.TableFields{
+	Table: {{ .StructName }}TableName,
+	Fields: []tables.FieldMeta{
 {{- range .Table.Fields }}
 		{
-			No:         {{ .No }},
-			Name:       "{{ .DBName }}",
-{{- if eq .Type "types.Code" }}
-			Type:       tables.FieldTypeCode,
-{{- else if eq .Type "types.Text" }}
-			Type:       tables.FieldTypeText,
-{{- else if eq .Type "int" }}
-			Type:       tables.FieldTypeInteger,
-{{- else if eq .Type "int64" }}
-			Type:       tables.FieldTypeInteger,
-{{- else if eq .Type "types.Decimal" }}
-			Type:       tables.FieldTypeDecimal,
-{{- else if eq .Type "float64" }}
-			Type:       tables.FieldTypeDecimal,
-{{- else if eq .Type "bool" }}
-			Type:       tables.FieldTypeBoolean,
-{{- else if eq .Type "types.Date" }}
-			Type:       tables.FieldTypeDate,
-{{- else if eq .Type "types.DateTime" }}
-			Type:       tables.FieldTypeDateTime,
-{{- else if eq .Type "Option" }}
-			Type:       tables.FieldTypeOption,
-{{- else if or (eq .Type "[]byte") (eq .Type "BLOB") }}
-			Type:       tables.FieldTypeBlob,
-{{- else }}
-			Type:       tables.FieldTypeText,
-{{- end }}
-			Length:     {{ .Length }},
-			Required:   {{ .Required }},
-			Editable:   {{ not .PrimaryKey }},
-			PrimaryKey: {{ .PrimaryKey }},
-			FlowField:  {{ .FlowField }},
+			Info: tables.FieldInfo{
+				No:         {{ .No }},
+				Name:       "{{ .DBName }}",
+				Type:       {{ fieldInfoType . }},
+				Length:     {{ .Length }},
+				Required:   {{ .Required }},
+				Editable:   {{ not .PrimaryKey }},
+				PrimaryKey: {{ .PrimaryKey }},
+				FlowField:  {{ .FlowField }},
 {{- if readOnly . }}
-			ReadOnly:   true,
+				ReadOnly:   true,
 {{- end }}
 {{- if .DecimalPlaces }}
-			DecimalPlaces: "{{ .DecimalPlaces }}",
+				DecimalPlaces: "{{ .DecimalPlaces }}",
 {{- end }}
 {{- if .Sensitive }}
-			Sensitive:  true,
+				Sensitive:  true,
 {{- end }}
 {{- if .Masked }}
-			Masked:     true,
+				Masked:     true,
+{{- end }}
+			},
+			Kind:    {{ fieldKind . }},
+			Trigger: "OnValidate_{{ upperFirst .Name }}",
+{{- if .Options }}
+			Options: []string{ {{- range $i, $opt := .Options }}{{- if $i }}, {{ end }}"{{ $opt }}"{{- end }} },
+{{- end }}
+{{- if .DateFormula }}
+			DateFormula: true,
+{{- end }}
+{{- if .TableRelation }}
+			Relation: true,
+{{- end }}
+{{- if .App }}
+			App: "{{ .App }}",
 {{- end }}
 		},
 {{- end }}
-	}
+	},
+{{- if .FlowFilterFields }}
+	FlowFilters: []tables.FieldInfo{
+{{- range .FlowFilterFields }}
+		{No: {{ .No }}, Name: "{{ .DBName }}"},
+{{- end }}
+	},
+{{- end }}
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a
@@ -6480,3 +6104,51 @@ func checkLogic(table, record string, logic any, trigger func(name string, logic
 	}
 }
 `
+
+// fieldKinds: the field types the record functions in foundation/tables handle (tables.Kind)
+var fieldKinds = map[string]string{
+	"types.Code":     "tables.KindCode",
+	"types.Text":     "tables.KindText",
+	"types.Decimal":  "tables.KindDecimal",
+	"types.Date":     "tables.KindDate",
+	"types.DateTime": "tables.KindDateTime",
+	"[]byte":         "tables.KindBlob",
+	"bool":           "tables.KindBool",
+	"Option":         "tables.KindOption",
+	"int":            "tables.KindInt",
+}
+
+// fieldKind: the tables.Kind of a field; another type is refused
+func fieldKind(f Field) (string, error) {
+	kind, ok := fieldKinds[f.Type]
+	if !ok {
+		return "", fmt.Errorf("field %s: type %q is not supported (types.Code, types.Text, types.Decimal, types.Date, types.DateTime, []byte, bool, Option, int)", f.Name, f.Type)
+	}
+	if f.DBName != "" && f.Name != f.DBName {
+		return "", fmt.Errorf("field %s: db_name %q must be the field's name", f.Name, f.DBName)
+	}
+	return kind, nil
+}
+
+// fieldInfoType: the tables.FieldType of a field (FieldInfo.Type)
+func fieldInfoType(f Field) string {
+	switch f.Type {
+	case "types.Code":
+		return "tables.FieldTypeCode"
+	case "int":
+		return "tables.FieldTypeInteger"
+	case "types.Decimal":
+		return "tables.FieldTypeDecimal"
+	case "bool":
+		return "tables.FieldTypeBoolean"
+	case "types.Date":
+		return "tables.FieldTypeDate"
+	case "types.DateTime":
+		return "tables.FieldTypeDateTime"
+	case "Option":
+		return "tables.FieldTypeOption"
+	case "[]byte":
+		return "tables.FieldTypeBlob"
+	}
+	return "tables.FieldTypeText"
+}

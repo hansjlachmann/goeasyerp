@@ -196,32 +196,12 @@ var ReportSelections_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *ReportSelections) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "usage":
-		return 1
-	case "sequence":
-		return 2
-	case "report_id":
-		return 3
-	case "report_name":
-		return 4
-	}
-	return 0
+	return reportSelectionsFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *ReportSelections) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "usage"
-	case 2:
-		return "sequence"
-	case 3:
-		return "report_id"
-	case 4:
-		return "report_name"
-	}
-	return ""
+	return reportSelectionsFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -333,15 +313,6 @@ type (
 	ReportSelectionsOnBeforeRename interface {
 		OnBeforeRename(rec *ReportSelections, handled *bool) error
 	}
-	ReportSelectionsOnValidate_Usage interface {
-		OnValidate_Usage(rec *ReportSelections) error
-	}
-	ReportSelectionsOnValidate_Sequence interface {
-		OnValidate_Sequence(rec *ReportSelections) error
-	}
-	ReportSelectionsOnValidate_Report_id interface {
-		OnValidate_Report_id(rec *ReportSelections) error
-	}
 )
 
 // reportSelectionsLogic is the registered business logic of Report_Selections, in
@@ -384,14 +355,9 @@ func reportSelectionsTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ReportSelectionsOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(ReportSelectionsOnBeforeRename)
-	case "OnValidate_Usage":
-		_, ok = logic.(ReportSelectionsOnValidate_Usage)
-	case "OnValidate_Sequence":
-		_, ok = logic.(ReportSelectionsOnValidate_Sequence)
-	case "OnValidate_Report_id":
-		_, ok = logic.(ReportSelectionsOnValidate_Report_id)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return reportSelectionsFields.IsOnValidateTrigger(name, logic, (*ReportSelections)(nil))
 	}
 	return true, ok
 }
@@ -685,10 +651,7 @@ func (t *ReportSelections) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *ReportSelections) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["usage"] = t.Usage
-	t.oldValues["sequence"] = t.Sequence
-	t.oldValues["report_id"] = t.Report_id
+	t.oldValues = reportSelectionsFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -703,15 +666,7 @@ func (t *ReportSelections) OldValue(fieldName string) interface{} {
 func (t *ReportSelections) XRec() *ReportSelections {
 	x := &ReportSelections{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["usage"].(ReportSelectionsUsage); ok {
-		x.Usage = v
-	}
-	if v, ok := t.oldValues["sequence"].(types.Code); ok {
-		x.Sequence = v
-	}
-	if v, ok := t.oldValues["report_id"].(int); ok {
-		x.Report_id = v
-	}
+	reportSelectionsFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -994,34 +949,7 @@ func (t *ReportSelections) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *ReportSelections) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "usage":
-		if old, ok := oldValue.(ReportSelectionsUsage); ok {
-			return t.Usage != old
-		}
-	case "sequence":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Sequence.Equal(old)
-		}
-	case "report_id":
-		if old, ok := oldValue.(int); ok {
-			return t.Report_id != old
-		}
-		return true // Type mismatch, assume changed
-	}
-
-	return false
+	return reportSelectionsFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1301,15 +1229,7 @@ func (t *ReportSelections) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *ReportSelections) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("usage"):
-		return "usage", true
-	case strings.ToLower("sequence"):
-		return "sequence", true
-	case strings.ToLower("report_id"):
-		return "report_id", true
-	}
-	return "", false
+	return reportSelectionsFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2124,110 +2044,20 @@ func (t *ReportSelections) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *ReportSelections) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "usage":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ReportSelectionsUsage); ok {
-			t.Usage = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 22 {
-				return fmt.Errorf("invalid option value %d for field usage (valid range: 0-%d)", v, 22-1)
-			}
-			t.Usage = ReportSelectionsUsage(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 22 {
-				return fmt.Errorf("invalid option value %d for field usage (valid range: 0-%d)", intVal, 22-1)
-			}
-			t.Usage = ReportSelectionsUsage(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Usage = 0
-			} else {
-				options := []string{"S.Quote", "S.Order", "S.Invoice", "S.Cr.Memo", "S.Shipment", "S.Test", "P.Quote", "P.Order", "P.Invoice", "P.Cr.Memo", "P.Receipt", "P.Test", "B.Stmt", "B.Recon.Test", "B.Check", "Reminder", "Fin.Charge", "Rem.Test", "F.C.Test", "Prod. Order", "S.Blanket", "P.Blanket"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Usage = ReportSelectionsUsage(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field usage (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field usage (expected ReportSelectionsUsage, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReportSelectionsOnValidate_Usage); ok {
-				if err := trg.OnValidate_Usage(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sequence":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Sequence = v
-		} else if v, ok := value.(string); ok {
-			t.Sequence = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field sequence")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReportSelectionsOnValidate_Sequence); ok {
-				if err := trg.OnValidate_Sequence(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "report_id":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Report_id = v
-		case float64:
-			t.Report_id = int(v)
-		case string:
-			if v == "" {
-				t.Report_id = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Report_id = i
-			} else {
-				return fmt.Errorf("invalid integer value for field report_id: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field report_id")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "report_id"); err != nil {
+	i, err := reportSelectionsFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
+	}
+	f := &reportSelectionsFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
 			return err
 		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReportSelectionsOnValidate_Report_id); ok {
-				if err := trg.OnValidate_Report_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2236,51 +2066,18 @@ func (t *ReportSelections) ValidateField(fieldName string, value interface{}) er
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *ReportSelections) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Usage, true
-	case 2:
-		return t.Sequence, true
-	case 3:
-		return t.Report_id, true
-	}
-	return nil, false
+	return reportSelectionsFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *ReportSelections) flowFieldValue(no int) (any, bool) {
-	switch no {
-	case 4:
-		return t.Report_name, true
-	}
-	return nil, false
+	return reportSelectionsFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *ReportSelections) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 22 {
-			t.Usage = ReportSelectionsUsage(i)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Sequence = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Sequence = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(int); ok {
-			t.Report_id = v
-			return true
-		}
-	}
-	return false
+	return reportSelectionsFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2751,15 +2548,7 @@ func (t *ReportSelections) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *ReportSelections) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "usage":
-		return int(t.Usage), true
-	case "sequence":
-		return t.Sequence, true
-	case "report_id":
-		return t.Report_id, true
-	}
-	return nil, false
+	return reportSelectionsFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2850,52 +2639,12 @@ func (t *ReportSelections) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *ReportSelections) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"usage":     int(t.Usage),
-		"sequence":  t.Sequence.String(),
-		"report_id": t.Report_id,
-		// FlowField: report_name
-		"report_name": t.Report_name,
-	}
+	return reportSelectionsFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *ReportSelections) FromMap(data map[string]interface{}) {
-	if v, ok := data["usage"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Usage = ReportSelectionsUsage(int(val))
-		case int:
-			t.Usage = ReportSelectionsUsage(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"S.Quote", "S.Order", "S.Invoice", "S.Cr.Memo", "S.Shipment", "S.Test", "P.Quote", "P.Order", "P.Invoice", "P.Cr.Memo", "P.Receipt", "P.Test", "B.Stmt", "B.Recon.Test", "B.Check", "Reminder", "Fin.Charge", "Rem.Test", "F.C.Test", "Prod. Order", "S.Blanket", "P.Blanket"}
-			for i, opt := range options {
-				if opt == val {
-					t.Usage = ReportSelectionsUsage(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["sequence"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Sequence = types.NewCode(s)
-		}
-	}
-	if v, ok := data["report_id"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Report_id = int(val)
-		case int:
-			t.Report_id = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Report_id = n
-			}
-		}
-	}
+	reportSelectionsFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2916,48 +2665,88 @@ func (t *ReportSelections) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *ReportSelections) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "usage",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "sequence",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "report_id",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "report_name",
-			Type:       tables.FieldTypeText,
-			Length:     80,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  true,
-		},
+	return reportSelectionsFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in reportSelectionsFields.Fields
+func (t *ReportSelections) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Usage
+	case 1:
+		return &t.Sequence
+	case 2:
+		return &t.Report_id
+	case 3:
+		return &t.Report_name
 	}
+	return nil
+}
+
+// reportSelectionsFields describes the fields of Report_Selections for the record functions
+// written once in foundation/tables
+var reportSelectionsFields = &tables.TableFields{
+	Table: ReportSelectionsTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "usage",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Usage",
+			Options: []string{"S.Quote", "S.Order", "S.Invoice", "S.Cr.Memo", "S.Shipment", "S.Test", "P.Quote", "P.Order", "P.Invoice", "P.Cr.Memo", "P.Receipt", "P.Test", "B.Stmt", "B.Recon.Test", "B.Check", "Reminder", "Fin.Charge", "Rem.Test", "F.C.Test", "Prod. Order", "S.Blanket", "P.Blanket"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "sequence",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Sequence",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "report_id",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindInt,
+			Trigger:  "OnValidate_Report_id",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "report_name",
+				Type:       tables.FieldTypeText,
+				Length:     80,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  true,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Report_name",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

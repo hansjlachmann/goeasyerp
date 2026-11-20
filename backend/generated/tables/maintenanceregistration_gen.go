@@ -29,7 +29,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -139,48 +138,12 @@ var MaintenanceRegistration_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *MaintenanceRegistration) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "fa_no":
-		return 1
-	case "line_no":
-		return 2
-	case "service_date":
-		return 3
-	case "maintenance_vendor_no":
-		return 4
-	case "comment":
-		return 5
-	case "service_agent_name":
-		return 6
-	case "service_agent_phone_no":
-		return 7
-	case "service_agent_mobile_phone":
-		return 8
-	}
-	return 0
+	return maintenanceRegistrationFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *MaintenanceRegistration) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "fa_no"
-	case 2:
-		return "line_no"
-	case 3:
-		return "service_date"
-	case 4:
-		return "maintenance_vendor_no"
-	case 5:
-		return "comment"
-	case 6:
-		return "service_agent_name"
-	case 7:
-		return "service_agent_phone_no"
-	case 8:
-		return "service_agent_mobile_phone"
-	}
-	return ""
+	return maintenanceRegistrationFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -292,30 +255,6 @@ type (
 	MaintenanceRegistrationOnBeforeRename interface {
 		OnBeforeRename(rec *MaintenanceRegistration, handled *bool) error
 	}
-	MaintenanceRegistrationOnValidate_Fa_no interface {
-		OnValidate_Fa_no(rec *MaintenanceRegistration) error
-	}
-	MaintenanceRegistrationOnValidate_Line_no interface {
-		OnValidate_Line_no(rec *MaintenanceRegistration) error
-	}
-	MaintenanceRegistrationOnValidate_Service_date interface {
-		OnValidate_Service_date(rec *MaintenanceRegistration) error
-	}
-	MaintenanceRegistrationOnValidate_Maintenance_vendor_no interface {
-		OnValidate_Maintenance_vendor_no(rec *MaintenanceRegistration) error
-	}
-	MaintenanceRegistrationOnValidate_Comment interface {
-		OnValidate_Comment(rec *MaintenanceRegistration) error
-	}
-	MaintenanceRegistrationOnValidate_Service_agent_name interface {
-		OnValidate_Service_agent_name(rec *MaintenanceRegistration) error
-	}
-	MaintenanceRegistrationOnValidate_Service_agent_phone_no interface {
-		OnValidate_Service_agent_phone_no(rec *MaintenanceRegistration) error
-	}
-	MaintenanceRegistrationOnValidate_Service_agent_mobile_phone interface {
-		OnValidate_Service_agent_mobile_phone(rec *MaintenanceRegistration) error
-	}
 )
 
 // maintenanceRegistrationLogic is the registered business logic of Maintenance_Registration, in
@@ -358,24 +297,9 @@ func maintenanceRegistrationTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(MaintenanceRegistrationOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(MaintenanceRegistrationOnBeforeRename)
-	case "OnValidate_Fa_no":
-		_, ok = logic.(MaintenanceRegistrationOnValidate_Fa_no)
-	case "OnValidate_Line_no":
-		_, ok = logic.(MaintenanceRegistrationOnValidate_Line_no)
-	case "OnValidate_Service_date":
-		_, ok = logic.(MaintenanceRegistrationOnValidate_Service_date)
-	case "OnValidate_Maintenance_vendor_no":
-		_, ok = logic.(MaintenanceRegistrationOnValidate_Maintenance_vendor_no)
-	case "OnValidate_Comment":
-		_, ok = logic.(MaintenanceRegistrationOnValidate_Comment)
-	case "OnValidate_Service_agent_name":
-		_, ok = logic.(MaintenanceRegistrationOnValidate_Service_agent_name)
-	case "OnValidate_Service_agent_phone_no":
-		_, ok = logic.(MaintenanceRegistrationOnValidate_Service_agent_phone_no)
-	case "OnValidate_Service_agent_mobile_phone":
-		_, ok = logic.(MaintenanceRegistrationOnValidate_Service_agent_mobile_phone)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return maintenanceRegistrationFields.IsOnValidateTrigger(name, logic, (*MaintenanceRegistration)(nil))
 	}
 	return true, ok
 }
@@ -689,15 +613,7 @@ func (t *MaintenanceRegistration) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *MaintenanceRegistration) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["fa_no"] = t.Fa_no
-	t.oldValues["line_no"] = t.Line_no
-	t.oldValues["service_date"] = t.Service_date
-	t.oldValues["maintenance_vendor_no"] = t.Maintenance_vendor_no
-	t.oldValues["comment"] = t.Comment
-	t.oldValues["service_agent_name"] = t.Service_agent_name
-	t.oldValues["service_agent_phone_no"] = t.Service_agent_phone_no
-	t.oldValues["service_agent_mobile_phone"] = t.Service_agent_mobile_phone
+	t.oldValues = maintenanceRegistrationFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -712,30 +628,7 @@ func (t *MaintenanceRegistration) OldValue(fieldName string) interface{} {
 func (t *MaintenanceRegistration) XRec() *MaintenanceRegistration {
 	x := &MaintenanceRegistration{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["fa_no"].(types.Code); ok {
-		x.Fa_no = v
-	}
-	if v, ok := t.oldValues["line_no"].(int); ok {
-		x.Line_no = v
-	}
-	if v, ok := t.oldValues["service_date"].(types.Date); ok {
-		x.Service_date = v
-	}
-	if v, ok := t.oldValues["maintenance_vendor_no"].(types.Code); ok {
-		x.Maintenance_vendor_no = v
-	}
-	if v, ok := t.oldValues["comment"].(types.Text); ok {
-		x.Comment = v
-	}
-	if v, ok := t.oldValues["service_agent_name"].(types.Text); ok {
-		x.Service_agent_name = v
-	}
-	if v, ok := t.oldValues["service_agent_phone_no"].(types.Text); ok {
-		x.Service_agent_phone_no = v
-	}
-	if v, ok := t.oldValues["service_agent_mobile_phone"].(types.Text); ok {
-		x.Service_agent_mobile_phone = v
-	}
+	maintenanceRegistrationFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1072,54 +965,7 @@ func (t *MaintenanceRegistration) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *MaintenanceRegistration) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "fa_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Fa_no.Equal(old)
-		}
-	case "line_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Line_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "service_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Service_date.Equal(old)
-		}
-	case "maintenance_vendor_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Maintenance_vendor_no.Equal(old)
-		}
-	case "comment":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Comment.Equal(old)
-		}
-	case "service_agent_name":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Service_agent_name.Equal(old)
-		}
-	case "service_agent_phone_no":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Service_agent_phone_no.Equal(old)
-		}
-	case "service_agent_mobile_phone":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Service_agent_mobile_phone.Equal(old)
-		}
-	}
-
-	return false
+	return maintenanceRegistrationFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1321,25 +1167,7 @@ func (t *MaintenanceRegistration) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *MaintenanceRegistration) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("fa_no"):
-		return "fa_no", true
-	case strings.ToLower("line_no"):
-		return "line_no", true
-	case strings.ToLower("service_date"):
-		return "service_date", true
-	case strings.ToLower("maintenance_vendor_no"):
-		return "maintenance_vendor_no", true
-	case strings.ToLower("comment"):
-		return "comment", true
-	case strings.ToLower("service_agent_name"):
-		return "service_agent_name", true
-	case strings.ToLower("service_agent_phone_no"):
-		return "service_agent_phone_no", true
-	case strings.ToLower("service_agent_mobile_phone"):
-		return "service_agent_mobile_phone", true
-	}
-	return "", false
+	return maintenanceRegistrationFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2220,179 +2048,20 @@ func (t *MaintenanceRegistration) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *MaintenanceRegistration) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "fa_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Fa_no = v
-		} else if v, ok := value.(string); ok {
-			t.Fa_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fa_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(MaintenanceRegistrationOnValidate_Fa_no); ok {
-				if err := trg.OnValidate_Fa_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "line_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Line_no = v
-		case float64:
-			t.Line_no = int(v)
-		case string:
-			if v == "" {
-				t.Line_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Line_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field line_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field line_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(MaintenanceRegistrationOnValidate_Line_no); ok {
-				if err := trg.OnValidate_Line_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "service_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Service_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Service_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field service_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Service_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field service_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(MaintenanceRegistrationOnValidate_Service_date); ok {
-				if err := trg.OnValidate_Service_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "maintenance_vendor_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Maintenance_vendor_no = v
-		} else if v, ok := value.(string); ok {
-			t.Maintenance_vendor_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field maintenance_vendor_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "maintenance_vendor_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(MaintenanceRegistrationOnValidate_Maintenance_vendor_no); ok {
-				if err := trg.OnValidate_Maintenance_vendor_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "comment":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Comment = v
-		} else if v, ok := value.(string); ok {
-			t.Comment = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field comment")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(MaintenanceRegistrationOnValidate_Comment); ok {
-				if err := trg.OnValidate_Comment(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "service_agent_name":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Service_agent_name = v
-		} else if v, ok := value.(string); ok {
-			t.Service_agent_name = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field service_agent_name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(MaintenanceRegistrationOnValidate_Service_agent_name); ok {
-				if err := trg.OnValidate_Service_agent_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "service_agent_phone_no":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Service_agent_phone_no = v
-		} else if v, ok := value.(string); ok {
-			t.Service_agent_phone_no = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field service_agent_phone_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(MaintenanceRegistrationOnValidate_Service_agent_phone_no); ok {
-				if err := trg.OnValidate_Service_agent_phone_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "service_agent_mobile_phone":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Service_agent_mobile_phone = v
-		} else if v, ok := value.(string); ok {
-			t.Service_agent_mobile_phone = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field service_agent_mobile_phone")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(MaintenanceRegistrationOnValidate_Service_agent_mobile_phone); ok {
-				if err := trg.OnValidate_Service_agent_mobile_phone(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := maintenanceRegistrationFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &maintenanceRegistrationFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2401,104 +2070,18 @@ func (t *MaintenanceRegistration) ValidateField(fieldName string, value interfac
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *MaintenanceRegistration) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Fa_no, true
-	case 2:
-		return t.Line_no, true
-	case 3:
-		return t.Service_date, true
-	case 4:
-		return t.Maintenance_vendor_no, true
-	case 5:
-		return t.Comment, true
-	case 6:
-		return t.Service_agent_name, true
-	case 7:
-		return t.Service_agent_phone_no, true
-	case 8:
-		return t.Service_agent_mobile_phone, true
-	}
-	return nil, false
+	return maintenanceRegistrationFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *MaintenanceRegistration) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return maintenanceRegistrationFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *MaintenanceRegistration) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Fa_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Fa_no = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(int); ok {
-			t.Line_no = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Date); ok {
-			t.Service_date = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Code); ok {
-			t.Maintenance_vendor_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Maintenance_vendor_no = types.NewCode(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Text); ok {
-			t.Comment = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Comment = types.NewText(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Text); ok {
-			t.Service_agent_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Service_agent_name = types.NewText(v)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Text); ok {
-			t.Service_agent_phone_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Service_agent_phone_no = types.NewText(v)
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Text); ok {
-			t.Service_agent_mobile_phone = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Service_agent_mobile_phone = types.NewText(v)
-			return true
-		}
-	}
-	return false
+	return maintenanceRegistrationFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2969,25 +2552,7 @@ func (t *MaintenanceRegistration) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *MaintenanceRegistration) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "fa_no":
-		return t.Fa_no, true
-	case "line_no":
-		return t.Line_no, true
-	case "service_date":
-		return t.Service_date, true
-	case "maintenance_vendor_no":
-		return t.Maintenance_vendor_no, true
-	case "comment":
-		return t.Comment, true
-	case "service_agent_name":
-		return t.Service_agent_name, true
-	case "service_agent_phone_no":
-		return t.Service_agent_phone_no, true
-	case "service_agent_mobile_phone":
-		return t.Service_agent_mobile_phone, true
-	}
-	return nil, false
+	return maintenanceRegistrationFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3083,68 +2648,12 @@ func (t *MaintenanceRegistration) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *MaintenanceRegistration) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"fa_no":                      t.Fa_no.String(),
-		"line_no":                    t.Line_no,
-		"service_date":               t.Service_date.String(),
-		"maintenance_vendor_no":      t.Maintenance_vendor_no.String(),
-		"comment":                    t.Comment.String(),
-		"service_agent_name":         t.Service_agent_name.String(),
-		"service_agent_phone_no":     t.Service_agent_phone_no.String(),
-		"service_agent_mobile_phone": t.Service_agent_mobile_phone.String(),
-	}
+	return maintenanceRegistrationFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *MaintenanceRegistration) FromMap(data map[string]interface{}) {
-	if v, ok := data["fa_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fa_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["line_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Line_no = int(val)
-		case int:
-			t.Line_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Line_no = n
-			}
-		}
-	}
-	if v, ok := data["service_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Service_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["maintenance_vendor_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Maintenance_vendor_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["comment"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Comment = types.NewText(s)
-		}
-	}
-	if v, ok := data["service_agent_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Service_agent_name = types.NewText(s)
-		}
-	}
-	if v, ok := data["service_agent_phone_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Service_agent_phone_no = types.NewText(s)
-		}
-	}
-	if v, ok := data["service_agent_mobile_phone"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Service_agent_mobile_phone = types.NewText(s)
-		}
-	}
+	maintenanceRegistrationFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3165,88 +2674,152 @@ func (t *MaintenanceRegistration) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *MaintenanceRegistration) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "fa_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "line_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "service_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "maintenance_vendor_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "comment",
-			Type:       tables.FieldTypeText,
-			Length:     80,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "service_agent_name",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "service_agent_phone_no",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "service_agent_mobile_phone",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return maintenanceRegistrationFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in maintenanceRegistrationFields.Fields
+func (t *MaintenanceRegistration) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Fa_no
+	case 1:
+		return &t.Line_no
+	case 2:
+		return &t.Service_date
+	case 3:
+		return &t.Maintenance_vendor_no
+	case 4:
+		return &t.Comment
+	case 5:
+		return &t.Service_agent_name
+	case 6:
+		return &t.Service_agent_phone_no
+	case 7:
+		return &t.Service_agent_mobile_phone
 	}
+	return nil
+}
+
+// maintenanceRegistrationFields describes the fields of Maintenance_Registration for the record functions
+// written once in foundation/tables
+var maintenanceRegistrationFields = &tables.TableFields{
+	Table: MaintenanceRegistrationTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "fa_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Fa_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "line_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Line_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "service_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Service_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "maintenance_vendor_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Maintenance_vendor_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "comment",
+				Type:       tables.FieldTypeText,
+				Length:     80,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Comment",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "service_agent_name",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Service_agent_name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "service_agent_phone_no",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Service_agent_phone_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "service_agent_mobile_phone",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Service_agent_mobile_phone",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

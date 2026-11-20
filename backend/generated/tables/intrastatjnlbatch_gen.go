@@ -133,44 +133,12 @@ var IntrastatJnlBatch_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *IntrastatJnlBatch) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "journal_template_name":
-		return 1
-	case "name":
-		return 2
-	case "description":
-		return 3
-	case "reported":
-		return 13
-	case "amounts_in_add_currency":
-		return 15
-	case "statistics_period":
-		return 14
-	case "currency_identifier":
-		return 16
-	}
-	return 0
+	return intrastatJnlBatchFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *IntrastatJnlBatch) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "journal_template_name"
-	case 2:
-		return "name"
-	case 3:
-		return "description"
-	case 13:
-		return "reported"
-	case 15:
-		return "amounts_in_add_currency"
-	case 14:
-		return "statistics_period"
-	case 16:
-		return "currency_identifier"
-	}
-	return ""
+	return intrastatJnlBatchFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -282,27 +250,6 @@ type (
 	IntrastatJnlBatchOnBeforeRename interface {
 		OnBeforeRename(rec *IntrastatJnlBatch, handled *bool) error
 	}
-	IntrastatJnlBatchOnValidate_Journal_template_name interface {
-		OnValidate_Journal_template_name(rec *IntrastatJnlBatch) error
-	}
-	IntrastatJnlBatchOnValidate_Name interface {
-		OnValidate_Name(rec *IntrastatJnlBatch) error
-	}
-	IntrastatJnlBatchOnValidate_Description interface {
-		OnValidate_Description(rec *IntrastatJnlBatch) error
-	}
-	IntrastatJnlBatchOnValidate_Reported interface {
-		OnValidate_Reported(rec *IntrastatJnlBatch) error
-	}
-	IntrastatJnlBatchOnValidate_Amounts_in_add_currency interface {
-		OnValidate_Amounts_in_add_currency(rec *IntrastatJnlBatch) error
-	}
-	IntrastatJnlBatchOnValidate_Statistics_period interface {
-		OnValidate_Statistics_period(rec *IntrastatJnlBatch) error
-	}
-	IntrastatJnlBatchOnValidate_Currency_identifier interface {
-		OnValidate_Currency_identifier(rec *IntrastatJnlBatch) error
-	}
 )
 
 // intrastatJnlBatchLogic is the registered business logic of Intrastat_Jnl_Batch, in
@@ -345,22 +292,9 @@ func intrastatJnlBatchTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(IntrastatJnlBatchOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(IntrastatJnlBatchOnBeforeRename)
-	case "OnValidate_Journal_template_name":
-		_, ok = logic.(IntrastatJnlBatchOnValidate_Journal_template_name)
-	case "OnValidate_Name":
-		_, ok = logic.(IntrastatJnlBatchOnValidate_Name)
-	case "OnValidate_Description":
-		_, ok = logic.(IntrastatJnlBatchOnValidate_Description)
-	case "OnValidate_Reported":
-		_, ok = logic.(IntrastatJnlBatchOnValidate_Reported)
-	case "OnValidate_Amounts_in_add_currency":
-		_, ok = logic.(IntrastatJnlBatchOnValidate_Amounts_in_add_currency)
-	case "OnValidate_Statistics_period":
-		_, ok = logic.(IntrastatJnlBatchOnValidate_Statistics_period)
-	case "OnValidate_Currency_identifier":
-		_, ok = logic.(IntrastatJnlBatchOnValidate_Currency_identifier)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return intrastatJnlBatchFields.IsOnValidateTrigger(name, logic, (*IntrastatJnlBatch)(nil))
 	}
 	return true, ok
 }
@@ -672,14 +606,7 @@ func (t *IntrastatJnlBatch) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *IntrastatJnlBatch) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["journal_template_name"] = t.Journal_template_name
-	t.oldValues["name"] = t.Name
-	t.oldValues["description"] = t.Description
-	t.oldValues["reported"] = t.Reported
-	t.oldValues["amounts_in_add_currency"] = t.Amounts_in_add_currency
-	t.oldValues["statistics_period"] = t.Statistics_period
-	t.oldValues["currency_identifier"] = t.Currency_identifier
+	t.oldValues = intrastatJnlBatchFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -694,27 +621,7 @@ func (t *IntrastatJnlBatch) OldValue(fieldName string) interface{} {
 func (t *IntrastatJnlBatch) XRec() *IntrastatJnlBatch {
 	x := &IntrastatJnlBatch{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["journal_template_name"].(types.Code); ok {
-		x.Journal_template_name = v
-	}
-	if v, ok := t.oldValues["name"].(types.Code); ok {
-		x.Name = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["reported"].(bool); ok {
-		x.Reported = v
-	}
-	if v, ok := t.oldValues["amounts_in_add_currency"].(bool); ok {
-		x.Amounts_in_add_currency = v
-	}
-	if v, ok := t.oldValues["statistics_period"].(types.Code); ok {
-		x.Statistics_period = v
-	}
-	if v, ok := t.oldValues["currency_identifier"].(types.Code); ok {
-		x.Currency_identifier = v
-	}
+	intrastatJnlBatchFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1035,51 +942,7 @@ func (t *IntrastatJnlBatch) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *IntrastatJnlBatch) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "journal_template_name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Journal_template_name.Equal(old)
-		}
-	case "name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Name.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "reported":
-		if old, ok := oldValue.(bool); ok {
-			return t.Reported != old
-		}
-		return true // Type mismatch, assume changed
-	case "amounts_in_add_currency":
-		if old, ok := oldValue.(bool); ok {
-			return t.Amounts_in_add_currency != old
-		}
-		return true // Type mismatch, assume changed
-	case "statistics_period":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Statistics_period.Equal(old)
-		}
-	case "currency_identifier":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Currency_identifier.Equal(old)
-		}
-	}
-
-	return false
+	return intrastatJnlBatchFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1281,23 +1144,7 @@ func (t *IntrastatJnlBatch) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *IntrastatJnlBatch) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("journal_template_name"):
-		return "journal_template_name", true
-	case strings.ToLower("name"):
-		return "name", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("reported"):
-		return "reported", true
-	case strings.ToLower("amounts_in_add_currency"):
-		return "amounts_in_add_currency", true
-	case strings.ToLower("statistics_period"):
-		return "statistics_period", true
-	case strings.ToLower("currency_identifier"):
-		return "currency_identifier", true
-	}
-	return "", false
+	return intrastatJnlBatchFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2175,144 +2022,20 @@ func (t *IntrastatJnlBatch) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *IntrastatJnlBatch) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "journal_template_name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Journal_template_name = v
-		} else if v, ok := value.(string); ok {
-			t.Journal_template_name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field journal_template_name")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "journal_template_name"); err != nil {
+	i, err := intrastatJnlBatchFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
+	}
+	f := &intrastatJnlBatchFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
 			return err
 		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlBatchOnValidate_Journal_template_name); ok {
-				if err := trg.OnValidate_Journal_template_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Name = v
-		} else if v, ok := value.(string); ok {
-			t.Name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlBatchOnValidate_Name); ok {
-				if err := trg.OnValidate_Name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlBatchOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reported":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Reported = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Reported = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field reported")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlBatchOnValidate_Reported); ok {
-				if err := trg.OnValidate_Reported(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "amounts_in_add_currency":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Amounts_in_add_currency = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Amounts_in_add_currency = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field amounts_in_add_currency")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlBatchOnValidate_Amounts_in_add_currency); ok {
-				if err := trg.OnValidate_Amounts_in_add_currency(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "statistics_period":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Statistics_period = v
-		} else if v, ok := value.(string); ok {
-			t.Statistics_period = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field statistics_period")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlBatchOnValidate_Statistics_period); ok {
-				if err := trg.OnValidate_Statistics_period(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "currency_identifier":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Currency_identifier = v
-		} else if v, ok := value.(string); ok {
-			t.Currency_identifier = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field currency_identifier")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlBatchOnValidate_Currency_identifier); ok {
-				if err := trg.OnValidate_Currency_identifier(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2321,93 +2044,18 @@ func (t *IntrastatJnlBatch) ValidateField(fieldName string, value interface{}) e
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *IntrastatJnlBatch) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Journal_template_name, true
-	case 2:
-		return t.Name, true
-	case 3:
-		return t.Description, true
-	case 13:
-		return t.Reported, true
-	case 15:
-		return t.Amounts_in_add_currency, true
-	case 14:
-		return t.Statistics_period, true
-	case 16:
-		return t.Currency_identifier, true
-	}
-	return nil, false
+	return intrastatJnlBatchFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *IntrastatJnlBatch) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return intrastatJnlBatchFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *IntrastatJnlBatch) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Journal_template_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Journal_template_name = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Name = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 13:
-		if v, ok := value.(bool); ok {
-			t.Reported = v
-			return true
-		}
-	case 15:
-		if v, ok := value.(bool); ok {
-			t.Amounts_in_add_currency = v
-			return true
-		}
-	case 14:
-		if v, ok := value.(types.Code); ok {
-			t.Statistics_period = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Statistics_period = types.NewCode(v)
-			return true
-		}
-	case 16:
-		if v, ok := value.(types.Code); ok {
-			t.Currency_identifier = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Currency_identifier = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return intrastatJnlBatchFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2857,23 +2505,7 @@ func (t *IntrastatJnlBatch) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *IntrastatJnlBatch) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "journal_template_name":
-		return t.Journal_template_name, true
-	case "name":
-		return t.Name, true
-	case "description":
-		return t.Description, true
-	case "reported":
-		return t.Reported, true
-	case "amounts_in_add_currency":
-		return t.Amounts_in_add_currency, true
-	case "statistics_period":
-		return t.Statistics_period, true
-	case "currency_identifier":
-		return t.Currency_identifier, true
-	}
-	return nil, false
+	return intrastatJnlBatchFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2968,54 +2600,12 @@ func (t *IntrastatJnlBatch) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *IntrastatJnlBatch) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"journal_template_name":   t.Journal_template_name.String(),
-		"name":                    t.Name.String(),
-		"description":             t.Description.String(),
-		"reported":                t.Reported,
-		"amounts_in_add_currency": t.Amounts_in_add_currency,
-		"statistics_period":       t.Statistics_period.String(),
-		"currency_identifier":     t.Currency_identifier.String(),
-	}
+	return intrastatJnlBatchFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *IntrastatJnlBatch) FromMap(data map[string]interface{}) {
-	if v, ok := data["journal_template_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Journal_template_name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["reported"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Reported = b
-		}
-	}
-	if v, ok := data["amounts_in_add_currency"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Amounts_in_add_currency = b
-		}
-	}
-	if v, ok := data["statistics_period"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Statistics_period = types.NewCode(s)
-		}
-	}
-	if v, ok := data["currency_identifier"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Currency_identifier = types.NewCode(s)
-		}
-	}
+	intrastatJnlBatchFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3036,78 +2626,135 @@ func (t *IntrastatJnlBatch) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *IntrastatJnlBatch) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "journal_template_name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         13,
-			Name:       "reported",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         15,
-			Name:       "amounts_in_add_currency",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         14,
-			Name:       "statistics_period",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         16,
-			Name:       "currency_identifier",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return intrastatJnlBatchFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in intrastatJnlBatchFields.Fields
+func (t *IntrastatJnlBatch) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Journal_template_name
+	case 1:
+		return &t.Name
+	case 2:
+		return &t.Description
+	case 3:
+		return &t.Reported
+	case 4:
+		return &t.Amounts_in_add_currency
+	case 5:
+		return &t.Statistics_period
+	case 6:
+		return &t.Currency_identifier
 	}
+	return nil
+}
+
+// intrastatJnlBatchFields describes the fields of Intrastat_Jnl_Batch for the record functions
+// written once in foundation/tables
+var intrastatJnlBatchFields = &tables.TableFields{
+	Table: IntrastatJnlBatchTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "journal_template_name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Journal_template_name",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "reported",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Reported",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         15,
+				Name:       "amounts_in_add_currency",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Amounts_in_add_currency",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "statistics_period",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Statistics_period",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         16,
+				Name:       "currency_identifier",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Currency_identifier",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

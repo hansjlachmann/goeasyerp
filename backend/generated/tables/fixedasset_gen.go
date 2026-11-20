@@ -42,11 +42,10 @@ package tables
 
 import (
 	"database/sql"
-	"encoding/base64"
+
 	"fmt"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -256,128 +255,12 @@ var FixedAsset_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *FixedAsset) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "no":
-		return 1
-	case "description":
-		return 2
-	case "search_description":
-		return 3
-	case "description_2":
-		return 4
-	case "fa_class_code":
-		return 5
-	case "fa_subclass_code":
-		return 6
-	case "dimension_1_code":
-		return 7
-	case "dimension_2_code":
-		return 8
-	case "location_code":
-		return 9
-	case "fa_location_code":
-		return 10
-	case "vendor_no":
-		return 11
-	case "main_asset_component":
-		return 12
-	case "component_of_main_asset":
-		return 13
-	case "budgeted_asset":
-		return 14
-	case "warranty_date":
-		return 15
-	case "responsible_employee":
-		return 16
-	case "serial_no":
-		return 17
-	case "last_date_modified":
-		return 18
-	case "insured":
-		return 19
-	case "comment":
-		return 20
-	case "blocked":
-		return 21
-	case "picture":
-		return 22
-	case "maintenance_vendor_no":
-		return 23
-	case "under_maintenance":
-		return 24
-	case "next_service_date":
-		return 25
-	case "inactive":
-		return 26
-	case "no_series":
-		return 28
-	case "fa_posting_date_filter":
-		return 27
-	}
-	return 0
+	return fixedAssetFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *FixedAsset) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "no"
-	case 2:
-		return "description"
-	case 3:
-		return "search_description"
-	case 4:
-		return "description_2"
-	case 5:
-		return "fa_class_code"
-	case 6:
-		return "fa_subclass_code"
-	case 7:
-		return "dimension_1_code"
-	case 8:
-		return "dimension_2_code"
-	case 9:
-		return "location_code"
-	case 10:
-		return "fa_location_code"
-	case 11:
-		return "vendor_no"
-	case 12:
-		return "main_asset_component"
-	case 13:
-		return "component_of_main_asset"
-	case 14:
-		return "budgeted_asset"
-	case 15:
-		return "warranty_date"
-	case 16:
-		return "responsible_employee"
-	case 17:
-		return "serial_no"
-	case 18:
-		return "last_date_modified"
-	case 19:
-		return "insured"
-	case 20:
-		return "comment"
-	case 21:
-		return "blocked"
-	case 22:
-		return "picture"
-	case 23:
-		return "maintenance_vendor_no"
-	case 24:
-		return "under_maintenance"
-	case 25:
-		return "next_service_date"
-	case 26:
-		return "inactive"
-	case 28:
-		return "no_series"
-	case 27:
-		return "fa_posting_date_filter"
-	}
-	return ""
+	return fixedAssetFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -481,31 +364,6 @@ type (
 	FixedAssetOnBeforeRename interface {
 		OnBeforeRename(rec *FixedAsset, handled *bool) error
 	}
-	FixedAssetOnValidate_No                      interface{ OnValidate_No(rec *FixedAsset) error }
-	FixedAssetOnValidate_Description             interface{ OnValidate_Description(rec *FixedAsset) error }
-	FixedAssetOnValidate_Search_description      interface{ OnValidate_Search_description(rec *FixedAsset) error }
-	FixedAssetOnValidate_Description_2           interface{ OnValidate_Description_2(rec *FixedAsset) error }
-	FixedAssetOnValidate_Fa_class_code           interface{ OnValidate_Fa_class_code(rec *FixedAsset) error }
-	FixedAssetOnValidate_Fa_subclass_code        interface{ OnValidate_Fa_subclass_code(rec *FixedAsset) error }
-	FixedAssetOnValidate_Dimension_1_code        interface{ OnValidate_Dimension_1_code(rec *FixedAsset) error }
-	FixedAssetOnValidate_Dimension_2_code        interface{ OnValidate_Dimension_2_code(rec *FixedAsset) error }
-	FixedAssetOnValidate_Location_code           interface{ OnValidate_Location_code(rec *FixedAsset) error }
-	FixedAssetOnValidate_Fa_location_code        interface{ OnValidate_Fa_location_code(rec *FixedAsset) error }
-	FixedAssetOnValidate_Vendor_no               interface{ OnValidate_Vendor_no(rec *FixedAsset) error }
-	FixedAssetOnValidate_Main_asset_component    interface{ OnValidate_Main_asset_component(rec *FixedAsset) error }
-	FixedAssetOnValidate_Component_of_main_asset interface{ OnValidate_Component_of_main_asset(rec *FixedAsset) error }
-	FixedAssetOnValidate_Budgeted_asset          interface{ OnValidate_Budgeted_asset(rec *FixedAsset) error }
-	FixedAssetOnValidate_Warranty_date           interface{ OnValidate_Warranty_date(rec *FixedAsset) error }
-	FixedAssetOnValidate_Responsible_employee    interface{ OnValidate_Responsible_employee(rec *FixedAsset) error }
-	FixedAssetOnValidate_Serial_no               interface{ OnValidate_Serial_no(rec *FixedAsset) error }
-	FixedAssetOnValidate_Last_date_modified      interface{ OnValidate_Last_date_modified(rec *FixedAsset) error }
-	FixedAssetOnValidate_Blocked                 interface{ OnValidate_Blocked(rec *FixedAsset) error }
-	FixedAssetOnValidate_Picture                 interface{ OnValidate_Picture(rec *FixedAsset) error }
-	FixedAssetOnValidate_Maintenance_vendor_no   interface{ OnValidate_Maintenance_vendor_no(rec *FixedAsset) error }
-	FixedAssetOnValidate_Under_maintenance       interface{ OnValidate_Under_maintenance(rec *FixedAsset) error }
-	FixedAssetOnValidate_Next_service_date       interface{ OnValidate_Next_service_date(rec *FixedAsset) error }
-	FixedAssetOnValidate_Inactive                interface{ OnValidate_Inactive(rec *FixedAsset) error }
-	FixedAssetOnValidate_No_series               interface{ OnValidate_No_series(rec *FixedAsset) error }
 )
 
 // fixedAssetLogic is the registered business logic of Fixed_Asset, in
@@ -548,58 +406,9 @@ func fixedAssetTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(FixedAssetOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(FixedAssetOnBeforeRename)
-	case "OnValidate_No":
-		_, ok = logic.(FixedAssetOnValidate_No)
-	case "OnValidate_Description":
-		_, ok = logic.(FixedAssetOnValidate_Description)
-	case "OnValidate_Search_description":
-		_, ok = logic.(FixedAssetOnValidate_Search_description)
-	case "OnValidate_Description_2":
-		_, ok = logic.(FixedAssetOnValidate_Description_2)
-	case "OnValidate_Fa_class_code":
-		_, ok = logic.(FixedAssetOnValidate_Fa_class_code)
-	case "OnValidate_Fa_subclass_code":
-		_, ok = logic.(FixedAssetOnValidate_Fa_subclass_code)
-	case "OnValidate_Dimension_1_code":
-		_, ok = logic.(FixedAssetOnValidate_Dimension_1_code)
-	case "OnValidate_Dimension_2_code":
-		_, ok = logic.(FixedAssetOnValidate_Dimension_2_code)
-	case "OnValidate_Location_code":
-		_, ok = logic.(FixedAssetOnValidate_Location_code)
-	case "OnValidate_Fa_location_code":
-		_, ok = logic.(FixedAssetOnValidate_Fa_location_code)
-	case "OnValidate_Vendor_no":
-		_, ok = logic.(FixedAssetOnValidate_Vendor_no)
-	case "OnValidate_Main_asset_component":
-		_, ok = logic.(FixedAssetOnValidate_Main_asset_component)
-	case "OnValidate_Component_of_main_asset":
-		_, ok = logic.(FixedAssetOnValidate_Component_of_main_asset)
-	case "OnValidate_Budgeted_asset":
-		_, ok = logic.(FixedAssetOnValidate_Budgeted_asset)
-	case "OnValidate_Warranty_date":
-		_, ok = logic.(FixedAssetOnValidate_Warranty_date)
-	case "OnValidate_Responsible_employee":
-		_, ok = logic.(FixedAssetOnValidate_Responsible_employee)
-	case "OnValidate_Serial_no":
-		_, ok = logic.(FixedAssetOnValidate_Serial_no)
-	case "OnValidate_Last_date_modified":
-		_, ok = logic.(FixedAssetOnValidate_Last_date_modified)
-	case "OnValidate_Blocked":
-		_, ok = logic.(FixedAssetOnValidate_Blocked)
-	case "OnValidate_Picture":
-		_, ok = logic.(FixedAssetOnValidate_Picture)
-	case "OnValidate_Maintenance_vendor_no":
-		_, ok = logic.(FixedAssetOnValidate_Maintenance_vendor_no)
-	case "OnValidate_Under_maintenance":
-		_, ok = logic.(FixedAssetOnValidate_Under_maintenance)
-	case "OnValidate_Next_service_date":
-		_, ok = logic.(FixedAssetOnValidate_Next_service_date)
-	case "OnValidate_Inactive":
-		_, ok = logic.(FixedAssetOnValidate_Inactive)
-	case "OnValidate_No_series":
-		_, ok = logic.(FixedAssetOnValidate_No_series)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return fixedAssetFields.IsOnValidateTrigger(name, logic, (*FixedAsset)(nil))
 	}
 	return true, ok
 }
@@ -1033,32 +842,7 @@ func (t *FixedAsset) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *FixedAsset) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["no"] = t.No
-	t.oldValues["description"] = t.Description
-	t.oldValues["search_description"] = t.Search_description
-	t.oldValues["description_2"] = t.Description_2
-	t.oldValues["fa_class_code"] = t.Fa_class_code
-	t.oldValues["fa_subclass_code"] = t.Fa_subclass_code
-	t.oldValues["dimension_1_code"] = t.Dimension_1_code
-	t.oldValues["dimension_2_code"] = t.Dimension_2_code
-	t.oldValues["location_code"] = t.Location_code
-	t.oldValues["fa_location_code"] = t.Fa_location_code
-	t.oldValues["vendor_no"] = t.Vendor_no
-	t.oldValues["main_asset_component"] = t.Main_asset_component
-	t.oldValues["component_of_main_asset"] = t.Component_of_main_asset
-	t.oldValues["budgeted_asset"] = t.Budgeted_asset
-	t.oldValues["warranty_date"] = t.Warranty_date
-	t.oldValues["responsible_employee"] = t.Responsible_employee
-	t.oldValues["serial_no"] = t.Serial_no
-	t.oldValues["last_date_modified"] = t.Last_date_modified
-	t.oldValues["blocked"] = t.Blocked
-	t.oldValues["picture"] = t.Picture
-	t.oldValues["maintenance_vendor_no"] = t.Maintenance_vendor_no
-	t.oldValues["under_maintenance"] = t.Under_maintenance
-	t.oldValues["next_service_date"] = t.Next_service_date
-	t.oldValues["inactive"] = t.Inactive
-	t.oldValues["no_series"] = t.No_series
+	t.oldValues = fixedAssetFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1073,81 +857,7 @@ func (t *FixedAsset) OldValue(fieldName string) interface{} {
 func (t *FixedAsset) XRec() *FixedAsset {
 	x := &FixedAsset{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["no"].(types.Code); ok {
-		x.No = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["search_description"].(types.Code); ok {
-		x.Search_description = v
-	}
-	if v, ok := t.oldValues["description_2"].(types.Text); ok {
-		x.Description_2 = v
-	}
-	if v, ok := t.oldValues["fa_class_code"].(types.Code); ok {
-		x.Fa_class_code = v
-	}
-	if v, ok := t.oldValues["fa_subclass_code"].(types.Code); ok {
-		x.Fa_subclass_code = v
-	}
-	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
-		x.Dimension_1_code = v
-	}
-	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
-		x.Dimension_2_code = v
-	}
-	if v, ok := t.oldValues["location_code"].(types.Code); ok {
-		x.Location_code = v
-	}
-	if v, ok := t.oldValues["fa_location_code"].(types.Code); ok {
-		x.Fa_location_code = v
-	}
-	if v, ok := t.oldValues["vendor_no"].(types.Code); ok {
-		x.Vendor_no = v
-	}
-	if v, ok := t.oldValues["main_asset_component"].(FixedAssetMain_asset_component); ok {
-		x.Main_asset_component = v
-	}
-	if v, ok := t.oldValues["component_of_main_asset"].(types.Code); ok {
-		x.Component_of_main_asset = v
-	}
-	if v, ok := t.oldValues["budgeted_asset"].(bool); ok {
-		x.Budgeted_asset = v
-	}
-	if v, ok := t.oldValues["warranty_date"].(types.Date); ok {
-		x.Warranty_date = v
-	}
-	if v, ok := t.oldValues["responsible_employee"].(types.Code); ok {
-		x.Responsible_employee = v
-	}
-	if v, ok := t.oldValues["serial_no"].(types.Text); ok {
-		x.Serial_no = v
-	}
-	if v, ok := t.oldValues["last_date_modified"].(types.Date); ok {
-		x.Last_date_modified = v
-	}
-	if v, ok := t.oldValues["blocked"].(bool); ok {
-		x.Blocked = v
-	}
-	if v, ok := t.oldValues["picture"].([]byte); ok {
-		x.Picture = v
-	}
-	if v, ok := t.oldValues["maintenance_vendor_no"].(types.Code); ok {
-		x.Maintenance_vendor_no = v
-	}
-	if v, ok := t.oldValues["under_maintenance"].(bool); ok {
-		x.Under_maintenance = v
-	}
-	if v, ok := t.oldValues["next_service_date"].(types.Date); ok {
-		x.Next_service_date = v
-	}
-	if v, ok := t.oldValues["inactive"].(bool); ok {
-		x.Inactive = v
-	}
-	if v, ok := t.oldValues["no_series"].(types.Code); ok {
-		x.No_series = v
-	}
+	fixedAssetFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1677,124 +1387,7 @@ func (t *FixedAsset) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *FixedAsset) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "search_description":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Search_description.Equal(old)
-		}
-	case "description_2":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description_2.Equal(old)
-		}
-	case "fa_class_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Fa_class_code.Equal(old)
-		}
-	case "fa_subclass_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Fa_subclass_code.Equal(old)
-		}
-	case "dimension_1_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_1_code.Equal(old)
-		}
-	case "dimension_2_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_2_code.Equal(old)
-		}
-	case "location_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Location_code.Equal(old)
-		}
-	case "fa_location_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Fa_location_code.Equal(old)
-		}
-	case "vendor_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Vendor_no.Equal(old)
-		}
-	case "main_asset_component":
-		if old, ok := oldValue.(FixedAssetMain_asset_component); ok {
-			return t.Main_asset_component != old
-		}
-	case "component_of_main_asset":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Component_of_main_asset.Equal(old)
-		}
-	case "budgeted_asset":
-		if old, ok := oldValue.(bool); ok {
-			return t.Budgeted_asset != old
-		}
-		return true // Type mismatch, assume changed
-	case "warranty_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Warranty_date.Equal(old)
-		}
-	case "responsible_employee":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Responsible_employee.Equal(old)
-		}
-	case "serial_no":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Serial_no.Equal(old)
-		}
-	case "last_date_modified":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Last_date_modified.Equal(old)
-		}
-	case "blocked":
-		if old, ok := oldValue.(bool); ok {
-			return t.Blocked != old
-		}
-		return true // Type mismatch, assume changed
-	case "picture":
-		// Skip comparison for BLOB fields (too large, use always modified)
-		return true
-	case "maintenance_vendor_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Maintenance_vendor_no.Equal(old)
-		}
-	case "under_maintenance":
-		if old, ok := oldValue.(bool); ok {
-			return t.Under_maintenance != old
-		}
-		return true // Type mismatch, assume changed
-	case "next_service_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Next_service_date.Equal(old)
-		}
-	case "inactive":
-		if old, ok := oldValue.(bool); ok {
-			return t.Inactive != old
-		}
-		return true // Type mismatch, assume changed
-	case "no_series":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No_series.Equal(old)
-		}
-	}
-
-	return false
+	return fixedAssetFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -2337,59 +1930,7 @@ func (t *FixedAsset) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *FixedAsset) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("no"):
-		return "no", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("search_description"):
-		return "search_description", true
-	case strings.ToLower("description_2"):
-		return "description_2", true
-	case strings.ToLower("fa_class_code"):
-		return "fa_class_code", true
-	case strings.ToLower("fa_subclass_code"):
-		return "fa_subclass_code", true
-	case strings.ToLower("dimension_1_code"):
-		return "dimension_1_code", true
-	case strings.ToLower("dimension_2_code"):
-		return "dimension_2_code", true
-	case strings.ToLower("location_code"):
-		return "location_code", true
-	case strings.ToLower("fa_location_code"):
-		return "fa_location_code", true
-	case strings.ToLower("vendor_no"):
-		return "vendor_no", true
-	case strings.ToLower("main_asset_component"):
-		return "main_asset_component", true
-	case strings.ToLower("component_of_main_asset"):
-		return "component_of_main_asset", true
-	case strings.ToLower("budgeted_asset"):
-		return "budgeted_asset", true
-	case strings.ToLower("warranty_date"):
-		return "warranty_date", true
-	case strings.ToLower("responsible_employee"):
-		return "responsible_employee", true
-	case strings.ToLower("serial_no"):
-		return "serial_no", true
-	case strings.ToLower("last_date_modified"):
-		return "last_date_modified", true
-	case strings.ToLower("blocked"):
-		return "blocked", true
-	case strings.ToLower("picture"):
-		return "picture", true
-	case strings.ToLower("maintenance_vendor_no"):
-		return "maintenance_vendor_no", true
-	case strings.ToLower("under_maintenance"):
-		return "under_maintenance", true
-	case strings.ToLower("next_service_date"):
-		return "next_service_date", true
-	case strings.ToLower("inactive"):
-		return "inactive", true
-	case strings.ToLower("no_series"):
-		return "no_series", true
-	}
-	return "", false
+	return fixedAssetFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -3505,567 +3046,20 @@ func (t *FixedAsset) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *FixedAsset) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-		} else if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FixedAssetOnValidate_No); ok {
-				if err := trg.OnValidate_No(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FixedAssetOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "search_description":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Search_description = v
-		} else if v, ok := value.(string); ok {
-			t.Search_description = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field search_description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FixedAssetOnValidate_Search_description); ok {
-				if err := trg.OnValidate_Search_description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description_2":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description_2 = v
-		} else if v, ok := value.(string); ok {
-			t.Description_2 = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description_2")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FixedAssetOnValidate_Description_2); ok {
-				if err := trg.OnValidate_Description_2(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_class_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Fa_class_code = v
-		} else if v, ok := value.(string); ok {
-			t.Fa_class_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_class_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fa_class_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FixedAssetOnValidate_Fa_class_code); ok {
-				if err := trg.OnValidate_Fa_class_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_subclass_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Fa_subclass_code = v
-		} else if v, ok := value.(string); ok {
-			t.Fa_subclass_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_subclass_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fa_subclass_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FixedAssetOnValidate_Fa_subclass_code); ok {
-				if err := trg.OnValidate_Fa_subclass_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_1_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_1_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FixedAssetOnValidate_Dimension_1_code); ok {
-				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_2_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_2_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FixedAssetOnValidate_Dimension_2_code); ok {
-				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "location_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Location_code = v
-		} else if v, ok := value.(string); ok {
-			t.Location_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field location_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "location_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FixedAssetOnValidate_Location_code); ok {
-				if err := trg.OnValidate_Location_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_location_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Fa_location_code = v
-		} else if v, ok := value.(string); ok {
-			t.Fa_location_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_location_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fa_location_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FixedAssetOnValidate_Fa_location_code); ok {
-				if err := trg.OnValidate_Fa_location_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "vendor_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Vendor_no = v
-		} else if v, ok := value.(string); ok {
-			t.Vendor_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field vendor_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "vendor_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FixedAssetOnValidate_Vendor_no); ok {
-				if err := trg.OnValidate_Vendor_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "main_asset_component":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(FixedAssetMain_asset_component); ok {
-			t.Main_asset_component = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field main_asset_component (valid range: 0-%d)", v, 3-1)
-			}
-			t.Main_asset_component = FixedAssetMain_asset_component(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field main_asset_component (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Main_asset_component = FixedAssetMain_asset_component(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Main_asset_component = 0
-			} else {
-				options := []string{" ", "Main Asset", "Component"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Main_asset_component = FixedAssetMain_asset_component(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field main_asset_component (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field main_asset_component (expected FixedAssetMain_asset_component, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FixedAssetOnValidate_Main_asset_component); ok {
-				if err := trg.OnValidate_Main_asset_component(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "component_of_main_asset":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Component_of_main_asset = v
-		} else if v, ok := value.(string); ok {
-			t.Component_of_main_asset = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field component_of_main_asset")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "component_of_main_asset"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FixedAssetOnValidate_Component_of_main_asset); ok {
-				if err := trg.OnValidate_Component_of_main_asset(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "budgeted_asset":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Budgeted_asset = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Budgeted_asset = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field budgeted_asset")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FixedAssetOnValidate_Budgeted_asset); ok {
-				if err := trg.OnValidate_Budgeted_asset(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "warranty_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Warranty_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Warranty_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field warranty_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Warranty_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field warranty_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FixedAssetOnValidate_Warranty_date); ok {
-				if err := trg.OnValidate_Warranty_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "responsible_employee":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Responsible_employee = v
-		} else if v, ok := value.(string); ok {
-			t.Responsible_employee = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field responsible_employee")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FixedAssetOnValidate_Responsible_employee); ok {
-				if err := trg.OnValidate_Responsible_employee(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "serial_no":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Serial_no = v
-		} else if v, ok := value.(string); ok {
-			t.Serial_no = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field serial_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FixedAssetOnValidate_Serial_no); ok {
-				if err := trg.OnValidate_Serial_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "last_date_modified":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Last_date_modified = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Last_date_modified, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field last_date_modified: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Last_date_modified = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field last_date_modified (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FixedAssetOnValidate_Last_date_modified); ok {
-				if err := trg.OnValidate_Last_date_modified(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "blocked":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Blocked = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Blocked = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field blocked")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FixedAssetOnValidate_Blocked); ok {
-				if err := trg.OnValidate_Blocked(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "picture":
-		// Set field value
-		// Accept nil, []byte, or base64-encoded string
-		if value == nil {
-			t.Picture = nil
-		} else if v, ok := value.([]byte); ok {
-			t.Picture = v
-		} else if s, ok := value.(string); ok {
-			if s == "" {
-				t.Picture = nil
-			} else {
-				// Try base64 decode
-				decoded, err := base64.StdEncoding.DecodeString(s)
-				if err != nil {
-					return fmt.Errorf("invalid base64 value for field picture: %w", err)
-				}
-				t.Picture = decoded
-			}
-		} else {
-			return fmt.Errorf("invalid type for field picture (expected []byte, string, or nil)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FixedAssetOnValidate_Picture); ok {
-				if err := trg.OnValidate_Picture(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "maintenance_vendor_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Maintenance_vendor_no = v
-		} else if v, ok := value.(string); ok {
-			t.Maintenance_vendor_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field maintenance_vendor_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "maintenance_vendor_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FixedAssetOnValidate_Maintenance_vendor_no); ok {
-				if err := trg.OnValidate_Maintenance_vendor_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "under_maintenance":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Under_maintenance = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Under_maintenance = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field under_maintenance")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FixedAssetOnValidate_Under_maintenance); ok {
-				if err := trg.OnValidate_Under_maintenance(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "next_service_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Next_service_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Next_service_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field next_service_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Next_service_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field next_service_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FixedAssetOnValidate_Next_service_date); ok {
-				if err := trg.OnValidate_Next_service_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "inactive":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Inactive = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Inactive = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field inactive")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FixedAssetOnValidate_Inactive); ok {
-				if err := trg.OnValidate_Inactive(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no_series":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No_series = v
-		} else if v, ok := value.(string); ok {
-			t.No_series = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no_series")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "no_series"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FixedAssetOnValidate_No_series); ok {
-				if err := trg.OnValidate_No_series(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := fixedAssetFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &fixedAssetFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -4074,267 +3068,18 @@ func (t *FixedAsset) ValidateField(fieldName string, value interface{}) error {
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *FixedAsset) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.No, true
-	case 2:
-		return t.Description, true
-	case 3:
-		return t.Search_description, true
-	case 4:
-		return t.Description_2, true
-	case 5:
-		return t.Fa_class_code, true
-	case 6:
-		return t.Fa_subclass_code, true
-	case 7:
-		return t.Dimension_1_code, true
-	case 8:
-		return t.Dimension_2_code, true
-	case 9:
-		return t.Location_code, true
-	case 10:
-		return t.Fa_location_code, true
-	case 11:
-		return t.Vendor_no, true
-	case 12:
-		return t.Main_asset_component, true
-	case 13:
-		return t.Component_of_main_asset, true
-	case 14:
-		return t.Budgeted_asset, true
-	case 15:
-		return t.Warranty_date, true
-	case 16:
-		return t.Responsible_employee, true
-	case 17:
-		return t.Serial_no, true
-	case 18:
-		return t.Last_date_modified, true
-	case 21:
-		return t.Blocked, true
-	case 22:
-		return t.Picture, true
-	case 23:
-		return t.Maintenance_vendor_no, true
-	case 24:
-		return t.Under_maintenance, true
-	case 25:
-		return t.Next_service_date, true
-	case 26:
-		return t.Inactive, true
-	case 28:
-		return t.No_series, true
-	}
-	return nil, false
+	return fixedAssetFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *FixedAsset) flowFieldValue(no int) (any, bool) {
-	switch no {
-	case 19:
-		return t.Insured, true
-	case 20:
-		return t.Comment, true
-	}
-	return nil, false
+	return fixedAssetFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *FixedAsset) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Code); ok {
-			t.Search_description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Search_description = types.NewCode(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Text); ok {
-			t.Description_2 = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description_2 = types.NewText(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Code); ok {
-			t.Fa_class_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Fa_class_code = types.NewCode(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Code); ok {
-			t.Fa_subclass_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Fa_subclass_code = types.NewCode(v)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.Code); ok {
-			t.Location_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Location_code = types.NewCode(v)
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Code); ok {
-			t.Fa_location_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Fa_location_code = types.NewCode(v)
-			return true
-		}
-	case 11:
-		if v, ok := value.(types.Code); ok {
-			t.Vendor_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Vendor_no = types.NewCode(v)
-			return true
-		}
-	case 12:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Main_asset_component = FixedAssetMain_asset_component(i)
-			return true
-		}
-	case 13:
-		if v, ok := value.(types.Code); ok {
-			t.Component_of_main_asset = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Component_of_main_asset = types.NewCode(v)
-			return true
-		}
-	case 14:
-		if v, ok := value.(bool); ok {
-			t.Budgeted_asset = v
-			return true
-		}
-	case 15:
-		if v, ok := value.(types.Date); ok {
-			t.Warranty_date = v
-			return true
-		}
-	case 16:
-		if v, ok := value.(types.Code); ok {
-			t.Responsible_employee = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Responsible_employee = types.NewCode(v)
-			return true
-		}
-	case 17:
-		if v, ok := value.(types.Text); ok {
-			t.Serial_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Serial_no = types.NewText(v)
-			return true
-		}
-	case 18:
-		if v, ok := value.(types.Date); ok {
-			t.Last_date_modified = v
-			return true
-		}
-	case 21:
-		if v, ok := value.(bool); ok {
-			t.Blocked = v
-			return true
-		}
-	case 22:
-		if v, ok := value.([]byte); ok {
-			t.Picture = v
-			return true
-		}
-	case 23:
-		if v, ok := value.(types.Code); ok {
-			t.Maintenance_vendor_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Maintenance_vendor_no = types.NewCode(v)
-			return true
-		}
-	case 24:
-		if v, ok := value.(bool); ok {
-			t.Under_maintenance = v
-			return true
-		}
-	case 25:
-		if v, ok := value.(types.Date); ok {
-			t.Next_service_date = v
-			return true
-		}
-	case 26:
-		if v, ok := value.(bool); ok {
-			t.Inactive = v
-			return true
-		}
-	case 28:
-		if v, ok := value.(types.Code); ok {
-			t.No_series = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No_series = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return fixedAssetFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -4783,59 +3528,7 @@ func (t *FixedAsset) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *FixedAsset) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "no":
-		return t.No, true
-	case "description":
-		return t.Description, true
-	case "search_description":
-		return t.Search_description, true
-	case "description_2":
-		return t.Description_2, true
-	case "fa_class_code":
-		return t.Fa_class_code, true
-	case "fa_subclass_code":
-		return t.Fa_subclass_code, true
-	case "dimension_1_code":
-		return t.Dimension_1_code, true
-	case "dimension_2_code":
-		return t.Dimension_2_code, true
-	case "location_code":
-		return t.Location_code, true
-	case "fa_location_code":
-		return t.Fa_location_code, true
-	case "vendor_no":
-		return t.Vendor_no, true
-	case "main_asset_component":
-		return int(t.Main_asset_component), true
-	case "component_of_main_asset":
-		return t.Component_of_main_asset, true
-	case "budgeted_asset":
-		return t.Budgeted_asset, true
-	case "warranty_date":
-		return t.Warranty_date, true
-	case "responsible_employee":
-		return t.Responsible_employee, true
-	case "serial_no":
-		return t.Serial_no, true
-	case "last_date_modified":
-		return t.Last_date_modified, true
-	case "blocked":
-		return t.Blocked, true
-	case "picture":
-		return t.Picture, true
-	case "maintenance_vendor_no":
-		return t.Maintenance_vendor_no, true
-	case "under_maintenance":
-		return t.Under_maintenance, true
-	case "next_service_date":
-		return t.Next_service_date, true
-	case "inactive":
-		return t.Inactive, true
-	case "no_series":
-		return t.No_series, true
-	}
-	return nil, false
+	return fixedAssetFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -4945,175 +3638,12 @@ func (t *FixedAsset) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *FixedAsset) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"no":                      t.No.String(),
-		"description":             t.Description.String(),
-		"search_description":      t.Search_description.String(),
-		"description_2":           t.Description_2.String(),
-		"fa_class_code":           t.Fa_class_code.String(),
-		"fa_subclass_code":        t.Fa_subclass_code.String(),
-		"dimension_1_code":        t.Dimension_1_code.String(),
-		"dimension_2_code":        t.Dimension_2_code.String(),
-		"location_code":           t.Location_code.String(),
-		"fa_location_code":        t.Fa_location_code.String(),
-		"vendor_no":               t.Vendor_no.String(),
-		"main_asset_component":    int(t.Main_asset_component),
-		"component_of_main_asset": t.Component_of_main_asset.String(),
-		"budgeted_asset":          t.Budgeted_asset,
-		"warranty_date":           t.Warranty_date.String(),
-		"responsible_employee":    t.Responsible_employee.String(),
-		"serial_no":               t.Serial_no.String(),
-		"last_date_modified":      t.Last_date_modified.String(),
-		// FlowField: insured
-		"insured": t.Insured,
-		// FlowField: comment
-		"comment":               t.Comment,
-		"blocked":               t.Blocked,
-		"picture":               t.Picture,
-		"maintenance_vendor_no": t.Maintenance_vendor_no.String(),
-		"under_maintenance":     t.Under_maintenance,
-		"next_service_date":     t.Next_service_date.String(),
-		"inactive":              t.Inactive,
-		"no_series":             t.No_series.String(),
-	}
+	return fixedAssetFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *FixedAsset) FromMap(data map[string]interface{}) {
-	if v, ok := data["no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["search_description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Search_description = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description_2"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description_2 = types.NewText(s)
-		}
-	}
-	if v, ok := data["fa_class_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fa_class_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["fa_subclass_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fa_subclass_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["dimension_1_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_1_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["dimension_2_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_2_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["location_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Location_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["fa_location_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fa_location_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["vendor_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Vendor_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["main_asset_component"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Main_asset_component = FixedAssetMain_asset_component(int(val))
-		case int:
-			t.Main_asset_component = FixedAssetMain_asset_component(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Main Asset", "Component"}
-			for i, opt := range options {
-				if opt == val {
-					t.Main_asset_component = FixedAssetMain_asset_component(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["component_of_main_asset"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Component_of_main_asset = types.NewCode(s)
-		}
-	}
-	if v, ok := data["budgeted_asset"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Budgeted_asset = b
-		}
-	}
-	if v, ok := data["warranty_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Warranty_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["responsible_employee"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Responsible_employee = types.NewCode(s)
-		}
-	}
-	if v, ok := data["serial_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Serial_no = types.NewText(s)
-		}
-	}
-	if v, ok := data["last_date_modified"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Last_date_modified, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["blocked"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Blocked = b
-		}
-	}
-	if v, ok := data["picture"]; ok && v != nil {
-	}
-	if v, ok := data["maintenance_vendor_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Maintenance_vendor_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["under_maintenance"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Under_maintenance = b
-		}
-	}
-	if v, ok := data["next_service_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Next_service_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["inactive"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Inactive = b
-		}
-	}
-	if v, ok := data["no_series"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No_series = types.NewCode(s)
-		}
-	}
+	fixedAssetFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -5134,282 +3664,472 @@ func (t *FixedAsset) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *FixedAsset) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "search_description",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "description_2",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "fa_class_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "fa_subclass_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "dimension_1_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "dimension_2_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "location_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "fa_location_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "vendor_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "main_asset_component",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         13,
-			Name:       "component_of_main_asset",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         14,
-			Name:       "budgeted_asset",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         15,
-			Name:       "warranty_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         16,
-			Name:       "responsible_employee",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         17,
-			Name:       "serial_no",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         18,
-			Name:       "last_date_modified",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         19,
-			Name:       "insured",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  true,
-		},
-		{
-			No:         20,
-			Name:       "comment",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  true,
-		},
-		{
-			No:         21,
-			Name:       "blocked",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         22,
-			Name:       "picture",
-			Type:       tables.FieldTypeBlob,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         23,
-			Name:       "maintenance_vendor_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         24,
-			Name:       "under_maintenance",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         25,
-			Name:       "next_service_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         26,
-			Name:       "inactive",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         28,
-			Name:       "no_series",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
+	return fixedAssetFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in fixedAssetFields.Fields
+func (t *FixedAsset) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.No
+	case 1:
+		return &t.Description
+	case 2:
+		return &t.Search_description
+	case 3:
+		return &t.Description_2
+	case 4:
+		return &t.Fa_class_code
+	case 5:
+		return &t.Fa_subclass_code
+	case 6:
+		return &t.Dimension_1_code
+	case 7:
+		return &t.Dimension_2_code
+	case 8:
+		return &t.Location_code
+	case 9:
+		return &t.Fa_location_code
+	case 10:
+		return &t.Vendor_no
+	case 11:
+		return &t.Main_asset_component
+	case 12:
+		return &t.Component_of_main_asset
+	case 13:
+		return &t.Budgeted_asset
+	case 14:
+		return &t.Warranty_date
+	case 15:
+		return &t.Responsible_employee
+	case 16:
+		return &t.Serial_no
+	case 17:
+		return &t.Last_date_modified
+	case 18:
+		return &t.Insured
+	case 19:
+		return &t.Comment
+	case 20:
+		return &t.Blocked
+	case 21:
+		return &t.Picture
+	case 22:
+		return &t.Maintenance_vendor_no
+	case 23:
+		return &t.Under_maintenance
+	case 24:
+		return &t.Next_service_date
+	case 25:
+		return &t.Inactive
+	case 26:
+		return &t.No_series
 	}
+	return nil
+}
+
+// fixedAssetFields describes the fields of Fixed_Asset for the record functions
+// written once in foundation/tables
+var fixedAssetFields = &tables.TableFields{
+	Table: FixedAssetTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_No",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "search_description",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Search_description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "description_2",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description_2",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "fa_class_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Fa_class_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "fa_subclass_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Fa_subclass_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "dimension_1_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_1_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "dimension_2_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_2_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "location_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Location_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "fa_location_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Fa_location_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "vendor_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Vendor_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "main_asset_component",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Main_asset_component",
+			Options: []string{" ", "Main Asset", "Component"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "component_of_main_asset",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Component_of_main_asset",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "budgeted_asset",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Budgeted_asset",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         15,
+				Name:       "warranty_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Warranty_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         16,
+				Name:       "responsible_employee",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Responsible_employee",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         17,
+				Name:       "serial_no",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Serial_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         18,
+				Name:       "last_date_modified",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Last_date_modified",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         19,
+				Name:       "insured",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  true,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Insured",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         20,
+				Name:       "comment",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  true,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Comment",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         21,
+				Name:       "blocked",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Blocked",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         22,
+				Name:       "picture",
+				Type:       tables.FieldTypeBlob,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBlob,
+			Trigger: "OnValidate_Picture",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         23,
+				Name:       "maintenance_vendor_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Maintenance_vendor_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         24,
+				Name:       "under_maintenance",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Under_maintenance",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         25,
+				Name:       "next_service_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Next_service_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         26,
+				Name:       "inactive",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Inactive",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         28,
+				Name:       "no_series",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_No_series",
+			Relation: true,
+		},
+	},
+	FlowFilters: []tables.FieldInfo{
+		{No: 27, Name: "fa_posting_date_filter"},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

@@ -32,7 +32,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -151,60 +150,12 @@ var DocumentEntry_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *DocumentEntry) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "table_id":
-		return 1
-	case "no_of_records":
-		return 2
-	case "document_no":
-		return 3
-	case "posting_date":
-		return 4
-	case "entry_no":
-		return 5
-	case "table_name":
-		return 6
-	case "page_id":
-		return 900
-	case "document_no_filter":
-		return 901
-	case "posting_date_filter":
-		return 902
-	case "no_filter":
-		return 903
-	case "preview_id":
-		return 904
-	}
-	return 0
+	return documentEntryFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *DocumentEntry) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "table_id"
-	case 2:
-		return "no_of_records"
-	case 3:
-		return "document_no"
-	case 4:
-		return "posting_date"
-	case 5:
-		return "entry_no"
-	case 6:
-		return "table_name"
-	case 900:
-		return "page_id"
-	case 901:
-		return "document_no_filter"
-	case 902:
-		return "posting_date_filter"
-	case 903:
-		return "no_filter"
-	case 904:
-		return "preview_id"
-	}
-	return ""
+	return documentEntryFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -316,39 +267,6 @@ type (
 	DocumentEntryOnBeforeRename interface {
 		OnBeforeRename(rec *DocumentEntry, handled *bool) error
 	}
-	DocumentEntryOnValidate_Table_id interface {
-		OnValidate_Table_id(rec *DocumentEntry) error
-	}
-	DocumentEntryOnValidate_No_of_records interface {
-		OnValidate_No_of_records(rec *DocumentEntry) error
-	}
-	DocumentEntryOnValidate_Document_no interface {
-		OnValidate_Document_no(rec *DocumentEntry) error
-	}
-	DocumentEntryOnValidate_Posting_date interface {
-		OnValidate_Posting_date(rec *DocumentEntry) error
-	}
-	DocumentEntryOnValidate_Entry_no interface {
-		OnValidate_Entry_no(rec *DocumentEntry) error
-	}
-	DocumentEntryOnValidate_Table_name interface {
-		OnValidate_Table_name(rec *DocumentEntry) error
-	}
-	DocumentEntryOnValidate_Page_id interface {
-		OnValidate_Page_id(rec *DocumentEntry) error
-	}
-	DocumentEntryOnValidate_Document_no_filter interface {
-		OnValidate_Document_no_filter(rec *DocumentEntry) error
-	}
-	DocumentEntryOnValidate_Posting_date_filter interface {
-		OnValidate_Posting_date_filter(rec *DocumentEntry) error
-	}
-	DocumentEntryOnValidate_No_filter interface {
-		OnValidate_No_filter(rec *DocumentEntry) error
-	}
-	DocumentEntryOnValidate_Preview_id interface {
-		OnValidate_Preview_id(rec *DocumentEntry) error
-	}
 )
 
 // documentEntryLogic is the registered business logic of Document_Entry, in
@@ -391,30 +309,9 @@ func documentEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(DocumentEntryOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(DocumentEntryOnBeforeRename)
-	case "OnValidate_Table_id":
-		_, ok = logic.(DocumentEntryOnValidate_Table_id)
-	case "OnValidate_No_of_records":
-		_, ok = logic.(DocumentEntryOnValidate_No_of_records)
-	case "OnValidate_Document_no":
-		_, ok = logic.(DocumentEntryOnValidate_Document_no)
-	case "OnValidate_Posting_date":
-		_, ok = logic.(DocumentEntryOnValidate_Posting_date)
-	case "OnValidate_Entry_no":
-		_, ok = logic.(DocumentEntryOnValidate_Entry_no)
-	case "OnValidate_Table_name":
-		_, ok = logic.(DocumentEntryOnValidate_Table_name)
-	case "OnValidate_Page_id":
-		_, ok = logic.(DocumentEntryOnValidate_Page_id)
-	case "OnValidate_Document_no_filter":
-		_, ok = logic.(DocumentEntryOnValidate_Document_no_filter)
-	case "OnValidate_Posting_date_filter":
-		_, ok = logic.(DocumentEntryOnValidate_Posting_date_filter)
-	case "OnValidate_No_filter":
-		_, ok = logic.(DocumentEntryOnValidate_No_filter)
-	case "OnValidate_Preview_id":
-		_, ok = logic.(DocumentEntryOnValidate_Preview_id)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return documentEntryFields.IsOnValidateTrigger(name, logic, (*DocumentEntry)(nil))
 	}
 	return true, ok
 }
@@ -729,18 +626,7 @@ func (t *DocumentEntry) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *DocumentEntry) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["table_id"] = t.Table_id
-	t.oldValues["no_of_records"] = t.No_of_records
-	t.oldValues["document_no"] = t.Document_no
-	t.oldValues["posting_date"] = t.Posting_date
-	t.oldValues["entry_no"] = t.Entry_no
-	t.oldValues["table_name"] = t.Table_name
-	t.oldValues["page_id"] = t.Page_id
-	t.oldValues["document_no_filter"] = t.Document_no_filter
-	t.oldValues["posting_date_filter"] = t.Posting_date_filter
-	t.oldValues["no_filter"] = t.No_filter
-	t.oldValues["preview_id"] = t.Preview_id
+	t.oldValues = documentEntryFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -755,39 +641,7 @@ func (t *DocumentEntry) OldValue(fieldName string) interface{} {
 func (t *DocumentEntry) XRec() *DocumentEntry {
 	x := &DocumentEntry{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["table_id"].(int); ok {
-		x.Table_id = v
-	}
-	if v, ok := t.oldValues["no_of_records"].(int); ok {
-		x.No_of_records = v
-	}
-	if v, ok := t.oldValues["document_no"].(types.Code); ok {
-		x.Document_no = v
-	}
-	if v, ok := t.oldValues["posting_date"].(types.Date); ok {
-		x.Posting_date = v
-	}
-	if v, ok := t.oldValues["entry_no"].(int); ok {
-		x.Entry_no = v
-	}
-	if v, ok := t.oldValues["table_name"].(types.Text); ok {
-		x.Table_name = v
-	}
-	if v, ok := t.oldValues["page_id"].(int); ok {
-		x.Page_id = v
-	}
-	if v, ok := t.oldValues["document_no_filter"].(types.Text); ok {
-		x.Document_no_filter = v
-	}
-	if v, ok := t.oldValues["posting_date_filter"].(types.Text); ok {
-		x.Posting_date_filter = v
-	}
-	if v, ok := t.oldValues["no_filter"].(types.Text); ok {
-		x.No_filter = v
-	}
-	if v, ok := t.oldValues["preview_id"].(types.Text); ok {
-		x.Preview_id = v
-	}
+	documentEntryFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1151,69 +1005,7 @@ func (t *DocumentEntry) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *DocumentEntry) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "table_id":
-		if old, ok := oldValue.(int); ok {
-			return t.Table_id != old
-		}
-		return true // Type mismatch, assume changed
-	case "no_of_records":
-		if old, ok := oldValue.(int); ok {
-			return t.No_of_records != old
-		}
-		return true // Type mismatch, assume changed
-	case "document_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Document_no.Equal(old)
-		}
-	case "posting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Posting_date.Equal(old)
-		}
-	case "entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "table_name":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Table_name.Equal(old)
-		}
-	case "page_id":
-		if old, ok := oldValue.(int); ok {
-			return t.Page_id != old
-		}
-		return true // Type mismatch, assume changed
-	case "document_no_filter":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Document_no_filter.Equal(old)
-		}
-	case "posting_date_filter":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Posting_date_filter.Equal(old)
-		}
-	case "no_filter":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.No_filter.Equal(old)
-		}
-	case "preview_id":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Preview_id.Equal(old)
-		}
-	}
-
-	return false
+	return documentEntryFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1414,31 +1206,7 @@ func (t *DocumentEntry) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *DocumentEntry) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("table_id"):
-		return "table_id", true
-	case strings.ToLower("no_of_records"):
-		return "no_of_records", true
-	case strings.ToLower("document_no"):
-		return "document_no", true
-	case strings.ToLower("posting_date"):
-		return "posting_date", true
-	case strings.ToLower("entry_no"):
-		return "entry_no", true
-	case strings.ToLower("table_name"):
-		return "table_name", true
-	case strings.ToLower("page_id"):
-		return "page_id", true
-	case strings.ToLower("document_no_filter"):
-		return "document_no_filter", true
-	case strings.ToLower("posting_date_filter"):
-		return "posting_date_filter", true
-	case strings.ToLower("no_filter"):
-		return "no_filter", true
-	case strings.ToLower("preview_id"):
-		return "preview_id", true
-	}
-	return "", false
+	return documentEntryFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2334,252 +2102,20 @@ func (t *DocumentEntry) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *DocumentEntry) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "table_id":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Table_id = v
-		case float64:
-			t.Table_id = int(v)
-		case string:
-			if v == "" {
-				t.Table_id = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Table_id = i
-			} else {
-				return fmt.Errorf("invalid integer value for field table_id: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field table_id")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DocumentEntryOnValidate_Table_id); ok {
-				if err := trg.OnValidate_Table_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no_of_records":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.No_of_records = v
-		case float64:
-			t.No_of_records = int(v)
-		case string:
-			if v == "" {
-				t.No_of_records = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.No_of_records = i
-			} else {
-				return fmt.Errorf("invalid integer value for field no_of_records: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field no_of_records")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DocumentEntryOnValidate_No_of_records); ok {
-				if err := trg.OnValidate_No_of_records(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Document_no = v
-		} else if v, ok := value.(string); ok {
-			t.Document_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field document_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DocumentEntryOnValidate_Document_no); ok {
-				if err := trg.OnValidate_Document_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "posting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Posting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Posting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field posting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Posting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field posting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DocumentEntryOnValidate_Posting_date); ok {
-				if err := trg.OnValidate_Posting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Entry_no = v
-		case float64:
-			t.Entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field entry_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DocumentEntryOnValidate_Entry_no); ok {
-				if err := trg.OnValidate_Entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "table_name":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Table_name = v
-		} else if v, ok := value.(string); ok {
-			t.Table_name = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field table_name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DocumentEntryOnValidate_Table_name); ok {
-				if err := trg.OnValidate_Table_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "page_id":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Page_id = v
-		case float64:
-			t.Page_id = int(v)
-		case string:
-			if v == "" {
-				t.Page_id = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Page_id = i
-			} else {
-				return fmt.Errorf("invalid integer value for field page_id: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field page_id")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DocumentEntryOnValidate_Page_id); ok {
-				if err := trg.OnValidate_Page_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_no_filter":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Document_no_filter = v
-		} else if v, ok := value.(string); ok {
-			t.Document_no_filter = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field document_no_filter")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DocumentEntryOnValidate_Document_no_filter); ok {
-				if err := trg.OnValidate_Document_no_filter(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "posting_date_filter":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Posting_date_filter = v
-		} else if v, ok := value.(string); ok {
-			t.Posting_date_filter = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field posting_date_filter")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DocumentEntryOnValidate_Posting_date_filter); ok {
-				if err := trg.OnValidate_Posting_date_filter(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no_filter":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.No_filter = v
-		} else if v, ok := value.(string); ok {
-			t.No_filter = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field no_filter")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DocumentEntryOnValidate_No_filter); ok {
-				if err := trg.OnValidate_No_filter(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "preview_id":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Preview_id = v
-		} else if v, ok := value.(string); ok {
-			t.Preview_id = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field preview_id")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DocumentEntryOnValidate_Preview_id); ok {
-				if err := trg.OnValidate_Preview_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := documentEntryFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &documentEntryFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2588,125 +2124,18 @@ func (t *DocumentEntry) ValidateField(fieldName string, value interface{}) error
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *DocumentEntry) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Table_id, true
-	case 2:
-		return t.No_of_records, true
-	case 3:
-		return t.Document_no, true
-	case 4:
-		return t.Posting_date, true
-	case 5:
-		return t.Entry_no, true
-	case 6:
-		return t.Table_name, true
-	case 900:
-		return t.Page_id, true
-	case 901:
-		return t.Document_no_filter, true
-	case 902:
-		return t.Posting_date_filter, true
-	case 903:
-		return t.No_filter, true
-	case 904:
-		return t.Preview_id, true
-	}
-	return nil, false
+	return documentEntryFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *DocumentEntry) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return documentEntryFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *DocumentEntry) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(int); ok {
-			t.Table_id = v
-			return true
-		}
-	case 2:
-		if v, ok := value.(int); ok {
-			t.No_of_records = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Code); ok {
-			t.Document_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Document_no = types.NewCode(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Date); ok {
-			t.Posting_date = v
-			return true
-		}
-	case 5:
-		if v, ok := value.(int); ok {
-			t.Entry_no = v
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Text); ok {
-			t.Table_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Table_name = types.NewText(v)
-			return true
-		}
-	case 900:
-		if v, ok := value.(int); ok {
-			t.Page_id = v
-			return true
-		}
-	case 901:
-		if v, ok := value.(types.Text); ok {
-			t.Document_no_filter = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Document_no_filter = types.NewText(v)
-			return true
-		}
-	case 902:
-		if v, ok := value.(types.Text); ok {
-			t.Posting_date_filter = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Posting_date_filter = types.NewText(v)
-			return true
-		}
-	case 903:
-		if v, ok := value.(types.Text); ok {
-			t.No_filter = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No_filter = types.NewText(v)
-			return true
-		}
-	case 904:
-		if v, ok := value.(types.Text); ok {
-			t.Preview_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Preview_id = types.NewText(v)
-			return true
-		}
-	}
-	return false
+	return documentEntryFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3200,31 +2629,7 @@ func (t *DocumentEntry) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *DocumentEntry) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "table_id":
-		return t.Table_id, true
-	case "no_of_records":
-		return t.No_of_records, true
-	case "document_no":
-		return t.Document_no, true
-	case "posting_date":
-		return t.Posting_date, true
-	case "entry_no":
-		return t.Entry_no, true
-	case "table_name":
-		return t.Table_name, true
-	case "page_id":
-		return t.Page_id, true
-	case "document_no_filter":
-		return t.Document_no_filter, true
-	case "posting_date_filter":
-		return t.Posting_date_filter, true
-	case "no_filter":
-		return t.No_filter, true
-	case "preview_id":
-		return t.Preview_id, true
-	}
-	return nil, false
+	return documentEntryFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3320,110 +2725,12 @@ func (t *DocumentEntry) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *DocumentEntry) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"table_id":            t.Table_id,
-		"no_of_records":       t.No_of_records,
-		"document_no":         t.Document_no.String(),
-		"posting_date":        t.Posting_date.String(),
-		"entry_no":            t.Entry_no,
-		"table_name":          t.Table_name.String(),
-		"page_id":             t.Page_id,
-		"document_no_filter":  t.Document_no_filter.String(),
-		"posting_date_filter": t.Posting_date_filter.String(),
-		"no_filter":           t.No_filter.String(),
-		"preview_id":          t.Preview_id.String(),
-	}
+	return documentEntryFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *DocumentEntry) FromMap(data map[string]interface{}) {
-	if v, ok := data["table_id"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Table_id = int(val)
-		case int:
-			t.Table_id = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Table_id = n
-			}
-		}
-	}
-	if v, ok := data["no_of_records"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.No_of_records = int(val)
-		case int:
-			t.No_of_records = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.No_of_records = n
-			}
-		}
-	}
-	if v, ok := data["document_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Document_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["posting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Posting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Entry_no = int(val)
-		case int:
-			t.Entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Entry_no = n
-			}
-		}
-	}
-	if v, ok := data["table_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Table_name = types.NewText(s)
-		}
-	}
-	if v, ok := data["page_id"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Page_id = int(val)
-		case int:
-			t.Page_id = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Page_id = n
-			}
-		}
-	}
-	if v, ok := data["document_no_filter"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Document_no_filter = types.NewText(s)
-		}
-	}
-	if v, ok := data["posting_date_filter"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Posting_date_filter = types.NewText(s)
-		}
-	}
-	if v, ok := data["no_filter"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No_filter = types.NewText(s)
-		}
-	}
-	if v, ok := data["preview_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Preview_id = types.NewText(s)
-		}
-	}
+	documentEntryFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3444,118 +2751,198 @@ func (t *DocumentEntry) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *DocumentEntry) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "table_id",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "no_of_records",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "document_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "posting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "table_name",
-			Type:       tables.FieldTypeText,
-			Length:     100,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         900,
-			Name:       "page_id",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         901,
-			Name:       "document_no_filter",
-			Type:       tables.FieldTypeText,
-			Length:     250,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         902,
-			Name:       "posting_date_filter",
-			Type:       tables.FieldTypeText,
-			Length:     250,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         903,
-			Name:       "no_filter",
-			Type:       tables.FieldTypeText,
-			Length:     250,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         904,
-			Name:       "preview_id",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return documentEntryFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in documentEntryFields.Fields
+func (t *DocumentEntry) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Table_id
+	case 1:
+		return &t.No_of_records
+	case 2:
+		return &t.Document_no
+	case 3:
+		return &t.Posting_date
+	case 4:
+		return &t.Entry_no
+	case 5:
+		return &t.Table_name
+	case 6:
+		return &t.Page_id
+	case 7:
+		return &t.Document_no_filter
+	case 8:
+		return &t.Posting_date_filter
+	case 9:
+		return &t.No_filter
+	case 10:
+		return &t.Preview_id
 	}
+	return nil
+}
+
+// documentEntryFields describes the fields of Document_Entry for the record functions
+// written once in foundation/tables
+var documentEntryFields = &tables.TableFields{
+	Table: DocumentEntryTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "table_id",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Table_id",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "no_of_records",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_No_of_records",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "document_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Document_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "posting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Posting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Entry_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "table_name",
+				Type:       tables.FieldTypeText,
+				Length:     100,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Table_name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         900,
+				Name:       "page_id",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Page_id",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         901,
+				Name:       "document_no_filter",
+				Type:       tables.FieldTypeText,
+				Length:     250,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Document_no_filter",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         902,
+				Name:       "posting_date_filter",
+				Type:       tables.FieldTypeText,
+				Length:     250,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Posting_date_filter",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         903,
+				Name:       "no_filter",
+				Type:       tables.FieldTypeText,
+				Length:     250,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_No_filter",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         904,
+				Name:       "preview_id",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Preview_id",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

@@ -33,7 +33,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -189,64 +188,12 @@ var Theme_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *Theme) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "code":
-		return 1
-	case "name":
-		return 2
-	case "mode":
-		return 3
-	case "repo_url":
-		return 4
-	case "repo_ref":
-		return 5
-	case "commit_sha":
-		return 6
-	case "author":
-		return 7
-	case "tokens":
-		return 8
-	case "wallpapers":
-		return 9
-	case "installed_by":
-		return 10
-	case "installed_at":
-		return 11
-	case "updated_at":
-		return 12
-	}
-	return 0
+	return themeFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *Theme) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "code"
-	case 2:
-		return "name"
-	case 3:
-		return "mode"
-	case 4:
-		return "repo_url"
-	case 5:
-		return "repo_ref"
-	case 6:
-		return "commit_sha"
-	case 7:
-		return "author"
-	case 8:
-		return "tokens"
-	case 9:
-		return "wallpapers"
-	case 10:
-		return "installed_by"
-	case 11:
-		return "installed_at"
-	case 12:
-		return "updated_at"
-	}
-	return ""
+	return themeFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -350,18 +297,6 @@ type (
 	ThemeOnBeforeRename interface {
 		OnBeforeRename(rec *Theme, handled *bool) error
 	}
-	ThemeOnValidate_Code         interface{ OnValidate_Code(rec *Theme) error }
-	ThemeOnValidate_Name         interface{ OnValidate_Name(rec *Theme) error }
-	ThemeOnValidate_Mode         interface{ OnValidate_Mode(rec *Theme) error }
-	ThemeOnValidate_Repo_url     interface{ OnValidate_Repo_url(rec *Theme) error }
-	ThemeOnValidate_Repo_ref     interface{ OnValidate_Repo_ref(rec *Theme) error }
-	ThemeOnValidate_Commit_sha   interface{ OnValidate_Commit_sha(rec *Theme) error }
-	ThemeOnValidate_Author       interface{ OnValidate_Author(rec *Theme) error }
-	ThemeOnValidate_Tokens       interface{ OnValidate_Tokens(rec *Theme) error }
-	ThemeOnValidate_Wallpapers   interface{ OnValidate_Wallpapers(rec *Theme) error }
-	ThemeOnValidate_Installed_by interface{ OnValidate_Installed_by(rec *Theme) error }
-	ThemeOnValidate_Installed_at interface{ OnValidate_Installed_at(rec *Theme) error }
-	ThemeOnValidate_Updated_at   interface{ OnValidate_Updated_at(rec *Theme) error }
 )
 
 // themeLogic is the registered business logic of Theme, in
@@ -404,32 +339,9 @@ func themeTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ThemeOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(ThemeOnBeforeRename)
-	case "OnValidate_Code":
-		_, ok = logic.(ThemeOnValidate_Code)
-	case "OnValidate_Name":
-		_, ok = logic.(ThemeOnValidate_Name)
-	case "OnValidate_Mode":
-		_, ok = logic.(ThemeOnValidate_Mode)
-	case "OnValidate_Repo_url":
-		_, ok = logic.(ThemeOnValidate_Repo_url)
-	case "OnValidate_Repo_ref":
-		_, ok = logic.(ThemeOnValidate_Repo_ref)
-	case "OnValidate_Commit_sha":
-		_, ok = logic.(ThemeOnValidate_Commit_sha)
-	case "OnValidate_Author":
-		_, ok = logic.(ThemeOnValidate_Author)
-	case "OnValidate_Tokens":
-		_, ok = logic.(ThemeOnValidate_Tokens)
-	case "OnValidate_Wallpapers":
-		_, ok = logic.(ThemeOnValidate_Wallpapers)
-	case "OnValidate_Installed_by":
-		_, ok = logic.(ThemeOnValidate_Installed_by)
-	case "OnValidate_Installed_at":
-		_, ok = logic.(ThemeOnValidate_Installed_at)
-	case "OnValidate_Updated_at":
-		_, ok = logic.(ThemeOnValidate_Updated_at)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return themeFields.IsOnValidateTrigger(name, logic, (*Theme)(nil))
 	}
 	return true, ok
 }
@@ -758,19 +670,7 @@ func (t *Theme) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *Theme) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["code"] = t.Code
-	t.oldValues["name"] = t.Name
-	t.oldValues["mode"] = t.Mode
-	t.oldValues["repo_url"] = t.Repo_url
-	t.oldValues["repo_ref"] = t.Repo_ref
-	t.oldValues["commit_sha"] = t.Commit_sha
-	t.oldValues["author"] = t.Author
-	t.oldValues["tokens"] = t.Tokens
-	t.oldValues["wallpapers"] = t.Wallpapers
-	t.oldValues["installed_by"] = t.Installed_by
-	t.oldValues["installed_at"] = t.Installed_at
-	t.oldValues["updated_at"] = t.Updated_at
+	t.oldValues = themeFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -785,42 +685,7 @@ func (t *Theme) OldValue(fieldName string) interface{} {
 func (t *Theme) XRec() *Theme {
 	x := &Theme{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["code"].(types.Code); ok {
-		x.Code = v
-	}
-	if v, ok := t.oldValues["name"].(types.Text); ok {
-		x.Name = v
-	}
-	if v, ok := t.oldValues["mode"].(ThemeMode); ok {
-		x.Mode = v
-	}
-	if v, ok := t.oldValues["repo_url"].(types.Text); ok {
-		x.Repo_url = v
-	}
-	if v, ok := t.oldValues["repo_ref"].(types.Text); ok {
-		x.Repo_ref = v
-	}
-	if v, ok := t.oldValues["commit_sha"].(types.Text); ok {
-		x.Commit_sha = v
-	}
-	if v, ok := t.oldValues["author"].(types.Text); ok {
-		x.Author = v
-	}
-	if v, ok := t.oldValues["tokens"].(types.Text); ok {
-		x.Tokens = v
-	}
-	if v, ok := t.oldValues["wallpapers"].(int); ok {
-		x.Wallpapers = v
-	}
-	if v, ok := t.oldValues["installed_by"].(types.Code); ok {
-		x.Installed_by = v
-	}
-	if v, ok := t.oldValues["installed_at"].(types.DateTime); ok {
-		x.Installed_at = v
-	}
-	if v, ok := t.oldValues["updated_at"].(types.DateTime); ok {
-		x.Updated_at = v
-	}
+	themeFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1207,70 +1072,7 @@ func (t *Theme) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *Theme) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Code.Equal(old)
-		}
-	case "name":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Name.Equal(old)
-		}
-	case "mode":
-		if old, ok := oldValue.(ThemeMode); ok {
-			return t.Mode != old
-		}
-	case "repo_url":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Repo_url.Equal(old)
-		}
-	case "repo_ref":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Repo_ref.Equal(old)
-		}
-	case "commit_sha":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Commit_sha.Equal(old)
-		}
-	case "author":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Author.Equal(old)
-		}
-	case "tokens":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Tokens.Equal(old)
-		}
-	case "wallpapers":
-		if old, ok := oldValue.(int); ok {
-			return t.Wallpapers != old
-		}
-		return true // Type mismatch, assume changed
-	case "installed_by":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Installed_by.Equal(old)
-		}
-	case "installed_at":
-		if old, ok := oldValue.(types.DateTime); ok {
-			return !t.Installed_at.Equal(old)
-		}
-	case "updated_at":
-		if old, ok := oldValue.(types.DateTime); ok {
-			return !t.Updated_at.Equal(old)
-		}
-	}
-
-	return false
+	return themeFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1524,33 +1326,7 @@ func (t *Theme) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *Theme) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("code"):
-		return "code", true
-	case strings.ToLower("name"):
-		return "name", true
-	case strings.ToLower("mode"):
-		return "mode", true
-	case strings.ToLower("repo_url"):
-		return "repo_url", true
-	case strings.ToLower("repo_ref"):
-		return "repo_ref", true
-	case strings.ToLower("commit_sha"):
-		return "commit_sha", true
-	case strings.ToLower("author"):
-		return "author", true
-	case strings.ToLower("tokens"):
-		return "tokens", true
-	case strings.ToLower("wallpapers"):
-		return "wallpapers", true
-	case strings.ToLower("installed_by"):
-		return "installed_by", true
-	case strings.ToLower("installed_at"):
-		return "installed_at", true
-	case strings.ToLower("updated_at"):
-		return "updated_at", true
-	}
-	return "", false
+	return themeFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2481,280 +2257,20 @@ func (t *Theme) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *Theme) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-		} else if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ThemeOnValidate_Code); ok {
-				if err := trg.OnValidate_Code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "name":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-		} else if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ThemeOnValidate_Name); ok {
-				if err := trg.OnValidate_Name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "mode":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ThemeMode); ok {
-			t.Mode = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 2 {
-				return fmt.Errorf("invalid option value %d for field mode (valid range: 0-%d)", v, 2-1)
-			}
-			t.Mode = ThemeMode(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 2 {
-				return fmt.Errorf("invalid option value %d for field mode (valid range: 0-%d)", intVal, 2-1)
-			}
-			t.Mode = ThemeMode(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Mode = 0
-			} else {
-				options := []string{"Dark", "Light"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Mode = ThemeMode(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field mode (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field mode (expected ThemeMode, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ThemeOnValidate_Mode); ok {
-				if err := trg.OnValidate_Mode(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "repo_url":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Repo_url = v
-		} else if v, ok := value.(string); ok {
-			t.Repo_url = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field repo_url")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ThemeOnValidate_Repo_url); ok {
-				if err := trg.OnValidate_Repo_url(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "repo_ref":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Repo_ref = v
-		} else if v, ok := value.(string); ok {
-			t.Repo_ref = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field repo_ref")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ThemeOnValidate_Repo_ref); ok {
-				if err := trg.OnValidate_Repo_ref(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "commit_sha":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Commit_sha = v
-		} else if v, ok := value.(string); ok {
-			t.Commit_sha = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field commit_sha")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ThemeOnValidate_Commit_sha); ok {
-				if err := trg.OnValidate_Commit_sha(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "author":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Author = v
-		} else if v, ok := value.(string); ok {
-			t.Author = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field author")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ThemeOnValidate_Author); ok {
-				if err := trg.OnValidate_Author(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tokens":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Tokens = v
-		} else if v, ok := value.(string); ok {
-			t.Tokens = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field tokens")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ThemeOnValidate_Tokens); ok {
-				if err := trg.OnValidate_Tokens(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "wallpapers":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Wallpapers = v
-		case float64:
-			t.Wallpapers = int(v)
-		case string:
-			if v == "" {
-				t.Wallpapers = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Wallpapers = i
-			} else {
-				return fmt.Errorf("invalid integer value for field wallpapers: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field wallpapers")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ThemeOnValidate_Wallpapers); ok {
-				if err := trg.OnValidate_Wallpapers(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "installed_by":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Installed_by = v
-		} else if v, ok := value.(string); ok {
-			t.Installed_by = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field installed_by")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ThemeOnValidate_Installed_by); ok {
-				if err := trg.OnValidate_Installed_by(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "installed_at":
-		// Set field value
-		if v, ok := value.(types.DateTime); ok {
-			t.Installed_at = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Installed_at, err = types.NewDateTimeFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid datetime value for field installed_at: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Installed_at = types.NewDateTimeFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field installed_at (expected DateTime, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ThemeOnValidate_Installed_at); ok {
-				if err := trg.OnValidate_Installed_at(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "updated_at":
-		// Set field value
-		if v, ok := value.(types.DateTime); ok {
-			t.Updated_at = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Updated_at, err = types.NewDateTimeFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid datetime value for field updated_at: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Updated_at = types.NewDateTimeFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field updated_at (expected DateTime, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ThemeOnValidate_Updated_at); ok {
-				if err := trg.OnValidate_Updated_at(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := themeFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &themeFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2763,140 +2279,18 @@ func (t *Theme) ValidateField(fieldName string, value interface{}) error {
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *Theme) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Code, true
-	case 2:
-		return t.Name, true
-	case 3:
-		return t.Mode, true
-	case 4:
-		return t.Repo_url, true
-	case 5:
-		return t.Repo_ref, true
-	case 6:
-		return t.Commit_sha, true
-	case 7:
-		return t.Author, true
-	case 8:
-		return t.Tokens, true
-	case 9:
-		return t.Wallpapers, true
-	case 10:
-		return t.Installed_by, true
-	case 11:
-		return t.Installed_at, true
-	case 12:
-		return t.Updated_at, true
-	}
-	return nil, false
+	return themeFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *Theme) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return themeFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *Theme) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-			return true
-		}
-	case 3:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 2 {
-			t.Mode = ThemeMode(i)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Text); ok {
-			t.Repo_url = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Repo_url = types.NewText(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Text); ok {
-			t.Repo_ref = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Repo_ref = types.NewText(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Text); ok {
-			t.Commit_sha = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Commit_sha = types.NewText(v)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Text); ok {
-			t.Author = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Author = types.NewText(v)
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Text); ok {
-			t.Tokens = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tokens = types.NewText(v)
-			return true
-		}
-	case 9:
-		if v, ok := value.(int); ok {
-			t.Wallpapers = v
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Code); ok {
-			t.Installed_by = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Installed_by = types.NewCode(v)
-			return true
-		}
-	case 11:
-		if v, ok := value.(types.DateTime); ok {
-			t.Installed_at = v
-			return true
-		}
-	case 12:
-		if v, ok := value.(types.DateTime); ok {
-			t.Updated_at = v
-			return true
-		}
-	}
-	return false
+	return themeFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3366,33 +2760,7 @@ func (t *Theme) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *Theme) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "code":
-		return t.Code, true
-	case "name":
-		return t.Name, true
-	case "mode":
-		return int(t.Mode), true
-	case "repo_url":
-		return t.Repo_url, true
-	case "repo_ref":
-		return t.Repo_ref, true
-	case "commit_sha":
-		return t.Commit_sha, true
-	case "author":
-		return t.Author, true
-	case "tokens":
-		return t.Tokens, true
-	case "wallpapers":
-		return t.Wallpapers, true
-	case "installed_by":
-		return t.Installed_by, true
-	case "installed_at":
-		return t.Installed_at, true
-	case "updated_at":
-		return t.Updated_at, true
-	}
-	return nil, false
+	return themeFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3489,104 +2857,12 @@ func (t *Theme) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *Theme) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"code":         t.Code.String(),
-		"name":         t.Name.String(),
-		"mode":         int(t.Mode),
-		"repo_url":     t.Repo_url.String(),
-		"repo_ref":     t.Repo_ref.String(),
-		"commit_sha":   t.Commit_sha.String(),
-		"author":       t.Author.String(),
-		"tokens":       t.Tokens.String(),
-		"wallpapers":   t.Wallpapers,
-		"installed_by": t.Installed_by.String(),
-		"installed_at": t.Installed_at.String(),
-		"updated_at":   t.Updated_at.String(),
-	}
+	return themeFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *Theme) FromMap(data map[string]interface{}) {
-	if v, ok := data["code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Name = types.NewText(s)
-		}
-	}
-	if v, ok := data["mode"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Mode = ThemeMode(int(val))
-		case int:
-			t.Mode = ThemeMode(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Dark", "Light"}
-			for i, opt := range options {
-				if opt == val {
-					t.Mode = ThemeMode(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["repo_url"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Repo_url = types.NewText(s)
-		}
-	}
-	if v, ok := data["repo_ref"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Repo_ref = types.NewText(s)
-		}
-	}
-	if v, ok := data["commit_sha"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Commit_sha = types.NewText(s)
-		}
-	}
-	if v, ok := data["author"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Author = types.NewText(s)
-		}
-	}
-	if v, ok := data["tokens"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tokens = types.NewText(s)
-		}
-	}
-	if v, ok := data["wallpapers"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Wallpapers = int(val)
-		case int:
-			t.Wallpapers = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Wallpapers = n
-			}
-		}
-	}
-	if v, ok := data["installed_by"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Installed_by = types.NewCode(s)
-		}
-	}
-	if v, ok := data["installed_at"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Installed_at, _ = types.NewDateTimeFromString(s)
-		}
-	}
-	if v, ok := data["updated_at"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Updated_at, _ = types.NewDateTimeFromString(s)
-		}
-	}
+	themeFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3607,128 +2883,215 @@ func (t *Theme) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *Theme) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "code",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "name",
-			Type:       tables.FieldTypeText,
-			Length:     100,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "mode",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "repo_url",
-			Type:       tables.FieldTypeText,
-			Length:     250,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "repo_ref",
-			Type:       tables.FieldTypeText,
-			Length:     100,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "commit_sha",
-			Type:       tables.FieldTypeText,
-			Length:     40,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "author",
-			Type:       tables.FieldTypeText,
-			Length:     100,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "tokens",
-			Type:       tables.FieldTypeText,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "wallpapers",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "installed_by",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "installed_at",
-			Type:       tables.FieldTypeDateTime,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "updated_at",
-			Type:       tables.FieldTypeDateTime,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return themeFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in themeFields.Fields
+func (t *Theme) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Code
+	case 1:
+		return &t.Name
+	case 2:
+		return &t.Mode
+	case 3:
+		return &t.Repo_url
+	case 4:
+		return &t.Repo_ref
+	case 5:
+		return &t.Commit_sha
+	case 6:
+		return &t.Author
+	case 7:
+		return &t.Tokens
+	case 8:
+		return &t.Wallpapers
+	case 9:
+		return &t.Installed_by
+	case 10:
+		return &t.Installed_at
+	case 11:
+		return &t.Updated_at
 	}
+	return nil
+}
+
+// themeFields describes the fields of Theme for the record functions
+// written once in foundation/tables
+var themeFields = &tables.TableFields{
+	Table: ThemeTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "code",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "name",
+				Type:       tables.FieldTypeText,
+				Length:     100,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "mode",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Mode",
+			Options: []string{"Dark", "Light"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "repo_url",
+				Type:       tables.FieldTypeText,
+				Length:     250,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Repo_url",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "repo_ref",
+				Type:       tables.FieldTypeText,
+				Length:     100,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Repo_ref",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "commit_sha",
+				Type:       tables.FieldTypeText,
+				Length:     40,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Commit_sha",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "author",
+				Type:       tables.FieldTypeText,
+				Length:     100,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Author",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "tokens",
+				Type:       tables.FieldTypeText,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Tokens",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "wallpapers",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Wallpapers",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "installed_by",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Installed_by",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "installed_at",
+				Type:       tables.FieldTypeDateTime,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDateTime,
+			Trigger: "OnValidate_Installed_at",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "updated_at",
+				Type:       tables.FieldTypeDateTime,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDateTime,
+			Trigger: "OnValidate_Updated_at",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

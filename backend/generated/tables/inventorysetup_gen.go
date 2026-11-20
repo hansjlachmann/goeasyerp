@@ -121,32 +121,12 @@ var InventorySetup_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *InventorySetup) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "primary_key":
-		return 1
-	case "automatic_cost_posting":
-		return 2
-	case "location_mandatory":
-		return 3
-	case "item_nos":
-		return 4
-	}
-	return 0
+	return inventorySetupFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *InventorySetup) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "primary_key"
-	case 2:
-		return "automatic_cost_posting"
-	case 3:
-		return "location_mandatory"
-	case 4:
-		return "item_nos"
-	}
-	return ""
+	return inventorySetupFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -258,18 +238,6 @@ type (
 	InventorySetupOnBeforeRename interface {
 		OnBeforeRename(rec *InventorySetup, handled *bool) error
 	}
-	InventorySetupOnValidate_Primary_key interface {
-		OnValidate_Primary_key(rec *InventorySetup) error
-	}
-	InventorySetupOnValidate_Automatic_cost_posting interface {
-		OnValidate_Automatic_cost_posting(rec *InventorySetup) error
-	}
-	InventorySetupOnValidate_Location_mandatory interface {
-		OnValidate_Location_mandatory(rec *InventorySetup) error
-	}
-	InventorySetupOnValidate_Item_nos interface {
-		OnValidate_Item_nos(rec *InventorySetup) error
-	}
 )
 
 // inventorySetupLogic is the registered business logic of Inventory_Setup, in
@@ -312,16 +280,9 @@ func inventorySetupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(InventorySetupOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(InventorySetupOnBeforeRename)
-	case "OnValidate_Primary_key":
-		_, ok = logic.(InventorySetupOnValidate_Primary_key)
-	case "OnValidate_Automatic_cost_posting":
-		_, ok = logic.(InventorySetupOnValidate_Automatic_cost_posting)
-	case "OnValidate_Location_mandatory":
-		_, ok = logic.(InventorySetupOnValidate_Location_mandatory)
-	case "OnValidate_Item_nos":
-		_, ok = logic.(InventorySetupOnValidate_Item_nos)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return inventorySetupFields.IsOnValidateTrigger(name, logic, (*InventorySetup)(nil))
 	}
 	return true, ok
 }
@@ -622,11 +583,7 @@ func (t *InventorySetup) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *InventorySetup) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["primary_key"] = t.Primary_key
-	t.oldValues["automatic_cost_posting"] = t.Automatic_cost_posting
-	t.oldValues["location_mandatory"] = t.Location_mandatory
-	t.oldValues["item_nos"] = t.Item_nos
+	t.oldValues = inventorySetupFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -641,18 +598,7 @@ func (t *InventorySetup) OldValue(fieldName string) interface{} {
 func (t *InventorySetup) XRec() *InventorySetup {
 	x := &InventorySetup{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["primary_key"].(types.Code); ok {
-		x.Primary_key = v
-	}
-	if v, ok := t.oldValues["automatic_cost_posting"].(bool); ok {
-		x.Automatic_cost_posting = v
-	}
-	if v, ok := t.oldValues["location_mandatory"].(bool); ok {
-		x.Location_mandatory = v
-	}
-	if v, ok := t.oldValues["item_nos"].(types.Code); ok {
-		x.Item_nos = v
-	}
+	inventorySetupFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -929,39 +875,7 @@ func (t *InventorySetup) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *InventorySetup) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "primary_key":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Primary_key.Equal(old)
-		}
-	case "automatic_cost_posting":
-		if old, ok := oldValue.(bool); ok {
-			return t.Automatic_cost_posting != old
-		}
-		return true // Type mismatch, assume changed
-	case "location_mandatory":
-		if old, ok := oldValue.(bool); ok {
-			return t.Location_mandatory != old
-		}
-		return true // Type mismatch, assume changed
-	case "item_nos":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Item_nos.Equal(old)
-		}
-	}
-
-	return false
+	return inventorySetupFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1162,17 +1076,7 @@ func (t *InventorySetup) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *InventorySetup) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("primary_key"):
-		return "primary_key", true
-	case strings.ToLower("automatic_cost_posting"):
-		return "automatic_cost_posting", true
-	case strings.ToLower("location_mandatory"):
-		return "location_mandatory", true
-	case strings.ToLower("item_nos"):
-		return "item_nos", true
-	}
-	return "", false
+	return inventorySetupFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2011,90 +1915,20 @@ func (t *InventorySetup) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *InventorySetup) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "primary_key":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Primary_key = v
-		} else if v, ok := value.(string); ok {
-			t.Primary_key = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field primary_key")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InventorySetupOnValidate_Primary_key); ok {
-				if err := trg.OnValidate_Primary_key(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "automatic_cost_posting":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Automatic_cost_posting = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Automatic_cost_posting = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field automatic_cost_posting")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InventorySetupOnValidate_Automatic_cost_posting); ok {
-				if err := trg.OnValidate_Automatic_cost_posting(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "location_mandatory":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Location_mandatory = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Location_mandatory = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field location_mandatory")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InventorySetupOnValidate_Location_mandatory); ok {
-				if err := trg.OnValidate_Location_mandatory(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "item_nos":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Item_nos = v
-		} else if v, ok := value.(string); ok {
-			t.Item_nos = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field item_nos")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "item_nos"); err != nil {
+	i, err := inventorySetupFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
+	}
+	f := &inventorySetupFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
 			return err
 		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InventorySetupOnValidate_Item_nos); ok {
-				if err := trg.OnValidate_Item_nos(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2103,60 +1937,18 @@ func (t *InventorySetup) ValidateField(fieldName string, value interface{}) erro
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *InventorySetup) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Primary_key, true
-	case 2:
-		return t.Automatic_cost_posting, true
-	case 3:
-		return t.Location_mandatory, true
-	case 4:
-		return t.Item_nos, true
-	}
-	return nil, false
+	return inventorySetupFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *InventorySetup) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return inventorySetupFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *InventorySetup) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Primary_key = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Primary_key = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(bool); ok {
-			t.Automatic_cost_posting = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(bool); ok {
-			t.Location_mandatory = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Code); ok {
-			t.Item_nos = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Item_nos = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return inventorySetupFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2605,17 +2397,7 @@ func (t *InventorySetup) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *InventorySetup) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "primary_key":
-		return t.Primary_key, true
-	case "automatic_cost_posting":
-		return t.Automatic_cost_posting, true
-	case "location_mandatory":
-		return t.Location_mandatory, true
-	case "item_nos":
-		return t.Item_nos, true
-	}
-	return nil, false
+	return inventorySetupFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2704,36 +2486,12 @@ func (t *InventorySetup) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *InventorySetup) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"primary_key":            t.Primary_key.String(),
-		"automatic_cost_posting": t.Automatic_cost_posting,
-		"location_mandatory":     t.Location_mandatory,
-		"item_nos":               t.Item_nos.String(),
-	}
+	return inventorySetupFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *InventorySetup) FromMap(data map[string]interface{}) {
-	if v, ok := data["primary_key"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Primary_key = types.NewCode(s)
-		}
-	}
-	if v, ok := data["automatic_cost_posting"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Automatic_cost_posting = b
-		}
-	}
-	if v, ok := data["location_mandatory"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Location_mandatory = b
-		}
-	}
-	if v, ok := data["item_nos"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Item_nos = types.NewCode(s)
-		}
-	}
+	inventorySetupFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2754,48 +2512,87 @@ func (t *InventorySetup) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *InventorySetup) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "primary_key",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "automatic_cost_posting",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "location_mandatory",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "item_nos",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return inventorySetupFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in inventorySetupFields.Fields
+func (t *InventorySetup) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Primary_key
+	case 1:
+		return &t.Automatic_cost_posting
+	case 2:
+		return &t.Location_mandatory
+	case 3:
+		return &t.Item_nos
 	}
+	return nil
+}
+
+// inventorySetupFields describes the fields of Inventory_Setup for the record functions
+// written once in foundation/tables
+var inventorySetupFields = &tables.TableFields{
+	Table: InventorySetupTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "primary_key",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Primary_key",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "automatic_cost_posting",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Automatic_cost_posting",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "location_mandatory",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Location_mandatory",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "item_nos",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Item_nos",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

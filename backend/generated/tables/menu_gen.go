@@ -117,28 +117,12 @@ var Menu_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *Menu) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "code":
-		return 1
-	case "description":
-		return 2
-	case "filename":
-		return 3
-	}
-	return 0
+	return menuFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *Menu) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "code"
-	case 2:
-		return "description"
-	case 3:
-		return "filename"
-	}
-	return ""
+	return menuFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -242,9 +226,6 @@ type (
 	MenuOnBeforeRename interface {
 		OnBeforeRename(rec *Menu, handled *bool) error
 	}
-	MenuOnValidate_Code        interface{ OnValidate_Code(rec *Menu) error }
-	MenuOnValidate_Description interface{ OnValidate_Description(rec *Menu) error }
-	MenuOnValidate_Filename    interface{ OnValidate_Filename(rec *Menu) error }
 )
 
 // menuLogic is the registered business logic of Menu, in
@@ -287,14 +268,9 @@ func menuTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(MenuOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(MenuOnBeforeRename)
-	case "OnValidate_Code":
-		_, ok = logic.(MenuOnValidate_Code)
-	case "OnValidate_Description":
-		_, ok = logic.(MenuOnValidate_Description)
-	case "OnValidate_Filename":
-		_, ok = logic.(MenuOnValidate_Filename)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return menuFields.IsOnValidateTrigger(name, logic, (*Menu)(nil))
 	}
 	return true, ok
 }
@@ -587,10 +563,7 @@ func (t *Menu) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *Menu) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["code"] = t.Code
-	t.oldValues["description"] = t.Description
-	t.oldValues["filename"] = t.Filename
+	t.oldValues = menuFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -605,15 +578,7 @@ func (t *Menu) OldValue(fieldName string) interface{} {
 func (t *Menu) XRec() *Menu {
 	x := &Menu{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["code"].(types.Code); ok {
-		x.Code = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["filename"].(types.Text); ok {
-		x.Filename = v
-	}
+	menuFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -901,33 +866,7 @@ func (t *Menu) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *Menu) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Code.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "filename":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Filename.Equal(old)
-		}
-	}
-
-	return false
+	return menuFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1198,15 +1137,7 @@ func (t *Menu) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *Menu) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("code"):
-		return "code", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("filename"):
-		return "filename", true
-	}
-	return "", false
+	return menuFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2028,66 +1959,20 @@ func (t *Menu) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *Menu) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-		} else if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(MenuOnValidate_Code); ok {
-				if err := trg.OnValidate_Code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(MenuOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "filename":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Filename = v
-		} else if v, ok := value.(string); ok {
-			t.Filename = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field filename")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(MenuOnValidate_Filename); ok {
-				if err := trg.OnValidate_Filename(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := menuFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &menuFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2096,57 +1981,18 @@ func (t *Menu) ValidateField(fieldName string, value interface{}) error {
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *Menu) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Code, true
-	case 2:
-		return t.Description, true
-	case 3:
-		return t.Filename, true
-	}
-	return nil, false
+	return menuFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *Menu) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return menuFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *Menu) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Text); ok {
-			t.Filename = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Filename = types.NewText(v)
-			return true
-		}
-	}
-	return false
+	return menuFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2595,15 +2441,7 @@ func (t *Menu) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *Menu) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "code":
-		return t.Code, true
-	case "description":
-		return t.Description, true
-	case "filename":
-		return t.Filename, true
-	}
-	return nil, false
+	return menuFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2691,30 +2529,12 @@ func (t *Menu) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *Menu) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"code":        t.Code.String(),
-		"description": t.Description.String(),
-		"filename":    t.Filename.String(),
-	}
+	return menuFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *Menu) FromMap(data map[string]interface{}) {
-	if v, ok := data["code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["filename"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Filename = types.NewText(s)
-		}
-	}
+	menuFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2735,38 +2555,70 @@ func (t *Menu) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *Menu) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "code",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "filename",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return menuFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in menuFields.Fields
+func (t *Menu) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Code
+	case 1:
+		return &t.Description
+	case 2:
+		return &t.Filename
 	}
+	return nil
+}
+
+// menuFields describes the fields of Menu for the record functions
+// written once in foundation/tables
+var menuFields = &tables.TableFields{
+	Table: MenuTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "code",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "filename",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Filename",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

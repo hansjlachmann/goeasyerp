@@ -164,32 +164,12 @@ var ObjectTranslation_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *ObjectTranslation) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "object_type":
-		return 1
-	case "object_id":
-		return 2
-	case "language_id":
-		return 3
-	case "object_name":
-		return 5
-	}
-	return 0
+	return objectTranslationFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *ObjectTranslation) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "object_type"
-	case 2:
-		return "object_id"
-	case 3:
-		return "language_id"
-	case 5:
-		return "object_name"
-	}
-	return ""
+	return objectTranslationFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -301,18 +281,6 @@ type (
 	ObjectTranslationOnBeforeRename interface {
 		OnBeforeRename(rec *ObjectTranslation, handled *bool) error
 	}
-	ObjectTranslationOnValidate_Object_type interface {
-		OnValidate_Object_type(rec *ObjectTranslation) error
-	}
-	ObjectTranslationOnValidate_Object_id interface {
-		OnValidate_Object_id(rec *ObjectTranslation) error
-	}
-	ObjectTranslationOnValidate_Language_id interface {
-		OnValidate_Language_id(rec *ObjectTranslation) error
-	}
-	ObjectTranslationOnValidate_Object_name interface {
-		OnValidate_Object_name(rec *ObjectTranslation) error
-	}
 )
 
 // objectTranslationLogic is the registered business logic of Object Translation, in
@@ -355,16 +323,9 @@ func objectTranslationTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ObjectTranslationOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(ObjectTranslationOnBeforeRename)
-	case "OnValidate_Object_type":
-		_, ok = logic.(ObjectTranslationOnValidate_Object_type)
-	case "OnValidate_Object_id":
-		_, ok = logic.(ObjectTranslationOnValidate_Object_id)
-	case "OnValidate_Language_id":
-		_, ok = logic.(ObjectTranslationOnValidate_Language_id)
-	case "OnValidate_Object_name":
-		_, ok = logic.(ObjectTranslationOnValidate_Object_name)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return objectTranslationFields.IsOnValidateTrigger(name, logic, (*ObjectTranslation)(nil))
 	}
 	return true, ok
 }
@@ -661,11 +622,7 @@ func (t *ObjectTranslation) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *ObjectTranslation) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["object_type"] = t.Object_type
-	t.oldValues["object_id"] = t.Object_id
-	t.oldValues["language_id"] = t.Language_id
-	t.oldValues["object_name"] = t.Object_name
+	t.oldValues = objectTranslationFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -680,18 +637,7 @@ func (t *ObjectTranslation) OldValue(fieldName string) interface{} {
 func (t *ObjectTranslation) XRec() *ObjectTranslation {
 	x := &ObjectTranslation{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["object_type"].(ObjectTranslationObject_type); ok {
-		x.Object_type = v
-	}
-	if v, ok := t.oldValues["object_id"].(int); ok {
-		x.Object_id = v
-	}
-	if v, ok := t.oldValues["language_id"].(types.Code); ok {
-		x.Language_id = v
-	}
-	if v, ok := t.oldValues["object_name"].(types.Text); ok {
-		x.Object_name = v
-	}
+	objectTranslationFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1006,38 +952,7 @@ func (t *ObjectTranslation) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *ObjectTranslation) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "object_type":
-		if old, ok := oldValue.(ObjectTranslationObject_type); ok {
-			return t.Object_type != old
-		}
-	case "object_id":
-		if old, ok := oldValue.(int); ok {
-			return t.Object_id != old
-		}
-		return true // Type mismatch, assume changed
-	case "language_id":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Language_id.Equal(old)
-		}
-	case "object_name":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Object_name.Equal(old)
-		}
-	}
-
-	return false
+	return objectTranslationFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1240,17 +1155,7 @@ func (t *ObjectTranslation) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *ObjectTranslation) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("object_type"):
-		return "object_type", true
-	case strings.ToLower("object_id"):
-		return "object_id", true
-	case strings.ToLower("language_id"):
-		return "language_id", true
-	case strings.ToLower("object_name"):
-		return "object_name", true
-	}
-	return "", false
+	return objectTranslationFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2077,124 +1982,20 @@ func (t *ObjectTranslation) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *ObjectTranslation) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "object_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ObjectTranslationObject_type); ok {
-			t.Object_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 6 {
-				return fmt.Errorf("invalid option value %d for field object_type (valid range: 0-%d)", v, 6-1)
-			}
-			t.Object_type = ObjectTranslationObject_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 6 {
-				return fmt.Errorf("invalid option value %d for field object_type (valid range: 0-%d)", intVal, 6-1)
-			}
-			t.Object_type = ObjectTranslationObject_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Object_type = 0
-			} else {
-				options := []string{"TableData", "Table", "Page", "Report", "Dataport", "Codeunit"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Object_type = ObjectTranslationObject_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field object_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field object_type (expected ObjectTranslationObject_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ObjectTranslationOnValidate_Object_type); ok {
-				if err := trg.OnValidate_Object_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "object_id":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Object_id = v
-		case float64:
-			t.Object_id = int(v)
-		case string:
-			if v == "" {
-				t.Object_id = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Object_id = i
-			} else {
-				return fmt.Errorf("invalid integer value for field object_id: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field object_id")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ObjectTranslationOnValidate_Object_id); ok {
-				if err := trg.OnValidate_Object_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "language_id":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Language_id = v
-		} else if v, ok := value.(string); ok {
-			t.Language_id = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field language_id")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ObjectTranslationOnValidate_Language_id); ok {
-				if err := trg.OnValidate_Language_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "object_name":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Object_name = v
-		} else if v, ok := value.(string); ok {
-			t.Object_name = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field object_name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ObjectTranslationOnValidate_Object_name); ok {
-				if err := trg.OnValidate_Object_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := objectTranslationFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &objectTranslationFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2203,60 +2004,18 @@ func (t *ObjectTranslation) ValidateField(fieldName string, value interface{}) e
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *ObjectTranslation) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Object_type, true
-	case 2:
-		return t.Object_id, true
-	case 3:
-		return t.Language_id, true
-	case 5:
-		return t.Object_name, true
-	}
-	return nil, false
+	return objectTranslationFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *ObjectTranslation) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return objectTranslationFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *ObjectTranslation) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 6 {
-			t.Object_type = ObjectTranslationObject_type(i)
-			return true
-		}
-	case 2:
-		if v, ok := value.(int); ok {
-			t.Object_id = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Code); ok {
-			t.Language_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Language_id = types.NewCode(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Text); ok {
-			t.Object_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Object_name = types.NewText(v)
-			return true
-		}
-	}
-	return false
+	return objectTranslationFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2728,17 +2487,7 @@ func (t *ObjectTranslation) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *ObjectTranslation) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "object_type":
-		return int(t.Object_type), true
-	case "object_id":
-		return t.Object_id, true
-	case "language_id":
-		return t.Language_id, true
-	case "object_name":
-		return t.Object_name, true
-	}
-	return nil, false
+	return objectTranslationFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2833,56 +2582,12 @@ func (t *ObjectTranslation) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *ObjectTranslation) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"object_type": int(t.Object_type),
-		"object_id":   t.Object_id,
-		"language_id": t.Language_id.String(),
-		"object_name": t.Object_name.String(),
-	}
+	return objectTranslationFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *ObjectTranslation) FromMap(data map[string]interface{}) {
-	if v, ok := data["object_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Object_type = ObjectTranslationObject_type(int(val))
-		case int:
-			t.Object_type = ObjectTranslationObject_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"TableData", "Table", "Page", "Report", "Dataport", "Codeunit"}
-			for i, opt := range options {
-				if opt == val {
-					t.Object_type = ObjectTranslationObject_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["object_id"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Object_id = int(val)
-		case int:
-			t.Object_id = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Object_id = n
-			}
-		}
-	}
-	if v, ok := data["language_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Language_id = types.NewCode(s)
-		}
-	}
-	if v, ok := data["object_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Object_name = types.NewText(s)
-		}
-	}
+	objectTranslationFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2903,48 +2608,87 @@ func (t *ObjectTranslation) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *ObjectTranslation) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "object_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "object_id",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "language_id",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "object_name",
-			Type:       tables.FieldTypeText,
-			Length:     80,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return objectTranslationFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in objectTranslationFields.Fields
+func (t *ObjectTranslation) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Object_type
+	case 1:
+		return &t.Object_id
+	case 2:
+		return &t.Language_id
+	case 3:
+		return &t.Object_name
 	}
+	return nil
+}
+
+// objectTranslationFields describes the fields of Object Translation for the record functions
+// written once in foundation/tables
+var objectTranslationFields = &tables.TableFields{
+	Table: ObjectTranslationTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "object_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Object_type",
+			Options: []string{"TableData", "Table", "Page", "Report", "Dataport", "Codeunit"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "object_id",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Object_id",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "language_id",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Language_id",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "object_name",
+				Type:       tables.FieldTypeText,
+				Length:     80,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Object_name",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

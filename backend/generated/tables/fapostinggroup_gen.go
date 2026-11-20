@@ -270,180 +270,12 @@ var FAPostingGroup_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *FAPostingGroup) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "code":
-		return 1
-	case "acquisition_cost_account":
-		return 2
-	case "accum_depreciation_account":
-		return 3
-	case "write_down_account":
-		return 4
-	case "appreciation_account":
-		return 5
-	case "custom_1_account":
-		return 6
-	case "custom_2_account":
-		return 7
-	case "acq_cost_acc_on_disposal":
-		return 8
-	case "accum_depr_acc_on_disposal":
-		return 9
-	case "write_down_acc_on_disposal":
-		return 10
-	case "appreciation_acc_on_disposal":
-		return 11
-	case "custom_1_account_on_disposal":
-		return 12
-	case "custom_2_account_on_disposal":
-		return 13
-	case "gains_acc_on_disposal":
-		return 14
-	case "losses_acc_on_disposal":
-		return 15
-	case "book_value_acc_on_disposal":
-		return 16
-	case "sales_acc_on_disposal":
-		return 17
-	case "write_down_bal_acc_on_disp":
-		return 18
-	case "apprec_bal_acc_on_disp":
-		return 19
-	case "custom_1_bal_acc_on_disposal":
-		return 20
-	case "custom_2_bal_acc_on_disposal":
-		return 21
-	case "maintenance_expense_account":
-		return 22
-	case "maintenance_bal_acc":
-		return 23
-	case "acquisition_cost_bal_acc":
-		return 24
-	case "depreciation_expense_acc":
-		return 25
-	case "write_down_expense_acc":
-		return 26
-	case "appreciation_bal_account":
-		return 27
-	case "custom_1_expense_acc":
-		return 28
-	case "custom_2_expense_acc":
-		return 29
-	case "sales_bal_acc":
-		return 30
-	case "allocated_acquisition_cost_percent":
-		return 31
-	case "allocated_depreciation_percent":
-		return 32
-	case "allocated_write_down_percent":
-		return 33
-	case "allocated_appreciation_percent":
-		return 34
-	case "allocated_custom_1_percent":
-		return 35
-	case "allocated_custom_2_percent":
-		return 36
-	case "allocated_sales_price_percent":
-		return 37
-	case "allocated_maintenance_percent":
-		return 38
-	case "allocated_gain_percent":
-		return 39
-	case "allocated_loss_percent":
-		return 40
-	case "allocated_book_value_percent":
-		return 41
-	}
-	return 0
+	return fAPostingGroupFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *FAPostingGroup) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "code"
-	case 2:
-		return "acquisition_cost_account"
-	case 3:
-		return "accum_depreciation_account"
-	case 4:
-		return "write_down_account"
-	case 5:
-		return "appreciation_account"
-	case 6:
-		return "custom_1_account"
-	case 7:
-		return "custom_2_account"
-	case 8:
-		return "acq_cost_acc_on_disposal"
-	case 9:
-		return "accum_depr_acc_on_disposal"
-	case 10:
-		return "write_down_acc_on_disposal"
-	case 11:
-		return "appreciation_acc_on_disposal"
-	case 12:
-		return "custom_1_account_on_disposal"
-	case 13:
-		return "custom_2_account_on_disposal"
-	case 14:
-		return "gains_acc_on_disposal"
-	case 15:
-		return "losses_acc_on_disposal"
-	case 16:
-		return "book_value_acc_on_disposal"
-	case 17:
-		return "sales_acc_on_disposal"
-	case 18:
-		return "write_down_bal_acc_on_disp"
-	case 19:
-		return "apprec_bal_acc_on_disp"
-	case 20:
-		return "custom_1_bal_acc_on_disposal"
-	case 21:
-		return "custom_2_bal_acc_on_disposal"
-	case 22:
-		return "maintenance_expense_account"
-	case 23:
-		return "maintenance_bal_acc"
-	case 24:
-		return "acquisition_cost_bal_acc"
-	case 25:
-		return "depreciation_expense_acc"
-	case 26:
-		return "write_down_expense_acc"
-	case 27:
-		return "appreciation_bal_account"
-	case 28:
-		return "custom_1_expense_acc"
-	case 29:
-		return "custom_2_expense_acc"
-	case 30:
-		return "sales_bal_acc"
-	case 31:
-		return "allocated_acquisition_cost_percent"
-	case 32:
-		return "allocated_depreciation_percent"
-	case 33:
-		return "allocated_write_down_percent"
-	case 34:
-		return "allocated_appreciation_percent"
-	case 35:
-		return "allocated_custom_1_percent"
-	case 36:
-		return "allocated_custom_2_percent"
-	case 37:
-		return "allocated_sales_price_percent"
-	case 38:
-		return "allocated_maintenance_percent"
-	case 39:
-		return "allocated_gain_percent"
-	case 40:
-		return "allocated_loss_percent"
-	case 41:
-		return "allocated_book_value_percent"
-	}
-	return ""
+	return fAPostingGroupFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -555,96 +387,6 @@ type (
 	FAPostingGroupOnBeforeRename interface {
 		OnBeforeRename(rec *FAPostingGroup, handled *bool) error
 	}
-	FAPostingGroupOnValidate_Code interface {
-		OnValidate_Code(rec *FAPostingGroup) error
-	}
-	FAPostingGroupOnValidate_Acquisition_cost_account interface {
-		OnValidate_Acquisition_cost_account(rec *FAPostingGroup) error
-	}
-	FAPostingGroupOnValidate_Accum_depreciation_account interface {
-		OnValidate_Accum_depreciation_account(rec *FAPostingGroup) error
-	}
-	FAPostingGroupOnValidate_Write_down_account interface {
-		OnValidate_Write_down_account(rec *FAPostingGroup) error
-	}
-	FAPostingGroupOnValidate_Appreciation_account interface {
-		OnValidate_Appreciation_account(rec *FAPostingGroup) error
-	}
-	FAPostingGroupOnValidate_Custom_1_account interface {
-		OnValidate_Custom_1_account(rec *FAPostingGroup) error
-	}
-	FAPostingGroupOnValidate_Custom_2_account interface {
-		OnValidate_Custom_2_account(rec *FAPostingGroup) error
-	}
-	FAPostingGroupOnValidate_Acq_cost_acc_on_disposal interface {
-		OnValidate_Acq_cost_acc_on_disposal(rec *FAPostingGroup) error
-	}
-	FAPostingGroupOnValidate_Accum_depr_acc_on_disposal interface {
-		OnValidate_Accum_depr_acc_on_disposal(rec *FAPostingGroup) error
-	}
-	FAPostingGroupOnValidate_Write_down_acc_on_disposal interface {
-		OnValidate_Write_down_acc_on_disposal(rec *FAPostingGroup) error
-	}
-	FAPostingGroupOnValidate_Appreciation_acc_on_disposal interface {
-		OnValidate_Appreciation_acc_on_disposal(rec *FAPostingGroup) error
-	}
-	FAPostingGroupOnValidate_Custom_1_account_on_disposal interface {
-		OnValidate_Custom_1_account_on_disposal(rec *FAPostingGroup) error
-	}
-	FAPostingGroupOnValidate_Custom_2_account_on_disposal interface {
-		OnValidate_Custom_2_account_on_disposal(rec *FAPostingGroup) error
-	}
-	FAPostingGroupOnValidate_Gains_acc_on_disposal interface {
-		OnValidate_Gains_acc_on_disposal(rec *FAPostingGroup) error
-	}
-	FAPostingGroupOnValidate_Losses_acc_on_disposal interface {
-		OnValidate_Losses_acc_on_disposal(rec *FAPostingGroup) error
-	}
-	FAPostingGroupOnValidate_Book_value_acc_on_disposal interface {
-		OnValidate_Book_value_acc_on_disposal(rec *FAPostingGroup) error
-	}
-	FAPostingGroupOnValidate_Sales_acc_on_disposal interface {
-		OnValidate_Sales_acc_on_disposal(rec *FAPostingGroup) error
-	}
-	FAPostingGroupOnValidate_Write_down_bal_acc_on_disp interface {
-		OnValidate_Write_down_bal_acc_on_disp(rec *FAPostingGroup) error
-	}
-	FAPostingGroupOnValidate_Apprec_bal_acc_on_disp interface {
-		OnValidate_Apprec_bal_acc_on_disp(rec *FAPostingGroup) error
-	}
-	FAPostingGroupOnValidate_Custom_1_bal_acc_on_disposal interface {
-		OnValidate_Custom_1_bal_acc_on_disposal(rec *FAPostingGroup) error
-	}
-	FAPostingGroupOnValidate_Custom_2_bal_acc_on_disposal interface {
-		OnValidate_Custom_2_bal_acc_on_disposal(rec *FAPostingGroup) error
-	}
-	FAPostingGroupOnValidate_Maintenance_expense_account interface {
-		OnValidate_Maintenance_expense_account(rec *FAPostingGroup) error
-	}
-	FAPostingGroupOnValidate_Maintenance_bal_acc interface {
-		OnValidate_Maintenance_bal_acc(rec *FAPostingGroup) error
-	}
-	FAPostingGroupOnValidate_Acquisition_cost_bal_acc interface {
-		OnValidate_Acquisition_cost_bal_acc(rec *FAPostingGroup) error
-	}
-	FAPostingGroupOnValidate_Depreciation_expense_acc interface {
-		OnValidate_Depreciation_expense_acc(rec *FAPostingGroup) error
-	}
-	FAPostingGroupOnValidate_Write_down_expense_acc interface {
-		OnValidate_Write_down_expense_acc(rec *FAPostingGroup) error
-	}
-	FAPostingGroupOnValidate_Appreciation_bal_account interface {
-		OnValidate_Appreciation_bal_account(rec *FAPostingGroup) error
-	}
-	FAPostingGroupOnValidate_Custom_1_expense_acc interface {
-		OnValidate_Custom_1_expense_acc(rec *FAPostingGroup) error
-	}
-	FAPostingGroupOnValidate_Custom_2_expense_acc interface {
-		OnValidate_Custom_2_expense_acc(rec *FAPostingGroup) error
-	}
-	FAPostingGroupOnValidate_Sales_bal_acc interface {
-		OnValidate_Sales_bal_acc(rec *FAPostingGroup) error
-	}
 )
 
 // fAPostingGroupLogic is the registered business logic of FA_Posting_Group, in
@@ -687,68 +429,9 @@ func fAPostingGroupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(FAPostingGroupOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(FAPostingGroupOnBeforeRename)
-	case "OnValidate_Code":
-		_, ok = logic.(FAPostingGroupOnValidate_Code)
-	case "OnValidate_Acquisition_cost_account":
-		_, ok = logic.(FAPostingGroupOnValidate_Acquisition_cost_account)
-	case "OnValidate_Accum_depreciation_account":
-		_, ok = logic.(FAPostingGroupOnValidate_Accum_depreciation_account)
-	case "OnValidate_Write_down_account":
-		_, ok = logic.(FAPostingGroupOnValidate_Write_down_account)
-	case "OnValidate_Appreciation_account":
-		_, ok = logic.(FAPostingGroupOnValidate_Appreciation_account)
-	case "OnValidate_Custom_1_account":
-		_, ok = logic.(FAPostingGroupOnValidate_Custom_1_account)
-	case "OnValidate_Custom_2_account":
-		_, ok = logic.(FAPostingGroupOnValidate_Custom_2_account)
-	case "OnValidate_Acq_cost_acc_on_disposal":
-		_, ok = logic.(FAPostingGroupOnValidate_Acq_cost_acc_on_disposal)
-	case "OnValidate_Accum_depr_acc_on_disposal":
-		_, ok = logic.(FAPostingGroupOnValidate_Accum_depr_acc_on_disposal)
-	case "OnValidate_Write_down_acc_on_disposal":
-		_, ok = logic.(FAPostingGroupOnValidate_Write_down_acc_on_disposal)
-	case "OnValidate_Appreciation_acc_on_disposal":
-		_, ok = logic.(FAPostingGroupOnValidate_Appreciation_acc_on_disposal)
-	case "OnValidate_Custom_1_account_on_disposal":
-		_, ok = logic.(FAPostingGroupOnValidate_Custom_1_account_on_disposal)
-	case "OnValidate_Custom_2_account_on_disposal":
-		_, ok = logic.(FAPostingGroupOnValidate_Custom_2_account_on_disposal)
-	case "OnValidate_Gains_acc_on_disposal":
-		_, ok = logic.(FAPostingGroupOnValidate_Gains_acc_on_disposal)
-	case "OnValidate_Losses_acc_on_disposal":
-		_, ok = logic.(FAPostingGroupOnValidate_Losses_acc_on_disposal)
-	case "OnValidate_Book_value_acc_on_disposal":
-		_, ok = logic.(FAPostingGroupOnValidate_Book_value_acc_on_disposal)
-	case "OnValidate_Sales_acc_on_disposal":
-		_, ok = logic.(FAPostingGroupOnValidate_Sales_acc_on_disposal)
-	case "OnValidate_Write_down_bal_acc_on_disp":
-		_, ok = logic.(FAPostingGroupOnValidate_Write_down_bal_acc_on_disp)
-	case "OnValidate_Apprec_bal_acc_on_disp":
-		_, ok = logic.(FAPostingGroupOnValidate_Apprec_bal_acc_on_disp)
-	case "OnValidate_Custom_1_bal_acc_on_disposal":
-		_, ok = logic.(FAPostingGroupOnValidate_Custom_1_bal_acc_on_disposal)
-	case "OnValidate_Custom_2_bal_acc_on_disposal":
-		_, ok = logic.(FAPostingGroupOnValidate_Custom_2_bal_acc_on_disposal)
-	case "OnValidate_Maintenance_expense_account":
-		_, ok = logic.(FAPostingGroupOnValidate_Maintenance_expense_account)
-	case "OnValidate_Maintenance_bal_acc":
-		_, ok = logic.(FAPostingGroupOnValidate_Maintenance_bal_acc)
-	case "OnValidate_Acquisition_cost_bal_acc":
-		_, ok = logic.(FAPostingGroupOnValidate_Acquisition_cost_bal_acc)
-	case "OnValidate_Depreciation_expense_acc":
-		_, ok = logic.(FAPostingGroupOnValidate_Depreciation_expense_acc)
-	case "OnValidate_Write_down_expense_acc":
-		_, ok = logic.(FAPostingGroupOnValidate_Write_down_expense_acc)
-	case "OnValidate_Appreciation_bal_account":
-		_, ok = logic.(FAPostingGroupOnValidate_Appreciation_bal_account)
-	case "OnValidate_Custom_1_expense_acc":
-		_, ok = logic.(FAPostingGroupOnValidate_Custom_1_expense_acc)
-	case "OnValidate_Custom_2_expense_acc":
-		_, ok = logic.(FAPostingGroupOnValidate_Custom_2_expense_acc)
-	case "OnValidate_Sales_bal_acc":
-		_, ok = logic.(FAPostingGroupOnValidate_Sales_bal_acc)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return fAPostingGroupFields.IsOnValidateTrigger(name, logic, (*FAPostingGroup)(nil))
 	}
 	return true, ok
 }
@@ -1198,37 +881,7 @@ func (t *FAPostingGroup) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *FAPostingGroup) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["code"] = t.Code
-	t.oldValues["acquisition_cost_account"] = t.Acquisition_cost_account
-	t.oldValues["accum_depreciation_account"] = t.Accum_depreciation_account
-	t.oldValues["write_down_account"] = t.Write_down_account
-	t.oldValues["appreciation_account"] = t.Appreciation_account
-	t.oldValues["custom_1_account"] = t.Custom_1_account
-	t.oldValues["custom_2_account"] = t.Custom_2_account
-	t.oldValues["acq_cost_acc_on_disposal"] = t.Acq_cost_acc_on_disposal
-	t.oldValues["accum_depr_acc_on_disposal"] = t.Accum_depr_acc_on_disposal
-	t.oldValues["write_down_acc_on_disposal"] = t.Write_down_acc_on_disposal
-	t.oldValues["appreciation_acc_on_disposal"] = t.Appreciation_acc_on_disposal
-	t.oldValues["custom_1_account_on_disposal"] = t.Custom_1_account_on_disposal
-	t.oldValues["custom_2_account_on_disposal"] = t.Custom_2_account_on_disposal
-	t.oldValues["gains_acc_on_disposal"] = t.Gains_acc_on_disposal
-	t.oldValues["losses_acc_on_disposal"] = t.Losses_acc_on_disposal
-	t.oldValues["book_value_acc_on_disposal"] = t.Book_value_acc_on_disposal
-	t.oldValues["sales_acc_on_disposal"] = t.Sales_acc_on_disposal
-	t.oldValues["write_down_bal_acc_on_disp"] = t.Write_down_bal_acc_on_disp
-	t.oldValues["apprec_bal_acc_on_disp"] = t.Apprec_bal_acc_on_disp
-	t.oldValues["custom_1_bal_acc_on_disposal"] = t.Custom_1_bal_acc_on_disposal
-	t.oldValues["custom_2_bal_acc_on_disposal"] = t.Custom_2_bal_acc_on_disposal
-	t.oldValues["maintenance_expense_account"] = t.Maintenance_expense_account
-	t.oldValues["maintenance_bal_acc"] = t.Maintenance_bal_acc
-	t.oldValues["acquisition_cost_bal_acc"] = t.Acquisition_cost_bal_acc
-	t.oldValues["depreciation_expense_acc"] = t.Depreciation_expense_acc
-	t.oldValues["write_down_expense_acc"] = t.Write_down_expense_acc
-	t.oldValues["appreciation_bal_account"] = t.Appreciation_bal_account
-	t.oldValues["custom_1_expense_acc"] = t.Custom_1_expense_acc
-	t.oldValues["custom_2_expense_acc"] = t.Custom_2_expense_acc
-	t.oldValues["sales_bal_acc"] = t.Sales_bal_acc
+	t.oldValues = fAPostingGroupFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1243,96 +896,7 @@ func (t *FAPostingGroup) OldValue(fieldName string) interface{} {
 func (t *FAPostingGroup) XRec() *FAPostingGroup {
 	x := &FAPostingGroup{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["code"].(types.Code); ok {
-		x.Code = v
-	}
-	if v, ok := t.oldValues["acquisition_cost_account"].(types.Code); ok {
-		x.Acquisition_cost_account = v
-	}
-	if v, ok := t.oldValues["accum_depreciation_account"].(types.Code); ok {
-		x.Accum_depreciation_account = v
-	}
-	if v, ok := t.oldValues["write_down_account"].(types.Code); ok {
-		x.Write_down_account = v
-	}
-	if v, ok := t.oldValues["appreciation_account"].(types.Code); ok {
-		x.Appreciation_account = v
-	}
-	if v, ok := t.oldValues["custom_1_account"].(types.Code); ok {
-		x.Custom_1_account = v
-	}
-	if v, ok := t.oldValues["custom_2_account"].(types.Code); ok {
-		x.Custom_2_account = v
-	}
-	if v, ok := t.oldValues["acq_cost_acc_on_disposal"].(types.Code); ok {
-		x.Acq_cost_acc_on_disposal = v
-	}
-	if v, ok := t.oldValues["accum_depr_acc_on_disposal"].(types.Code); ok {
-		x.Accum_depr_acc_on_disposal = v
-	}
-	if v, ok := t.oldValues["write_down_acc_on_disposal"].(types.Code); ok {
-		x.Write_down_acc_on_disposal = v
-	}
-	if v, ok := t.oldValues["appreciation_acc_on_disposal"].(types.Code); ok {
-		x.Appreciation_acc_on_disposal = v
-	}
-	if v, ok := t.oldValues["custom_1_account_on_disposal"].(types.Code); ok {
-		x.Custom_1_account_on_disposal = v
-	}
-	if v, ok := t.oldValues["custom_2_account_on_disposal"].(types.Code); ok {
-		x.Custom_2_account_on_disposal = v
-	}
-	if v, ok := t.oldValues["gains_acc_on_disposal"].(types.Code); ok {
-		x.Gains_acc_on_disposal = v
-	}
-	if v, ok := t.oldValues["losses_acc_on_disposal"].(types.Code); ok {
-		x.Losses_acc_on_disposal = v
-	}
-	if v, ok := t.oldValues["book_value_acc_on_disposal"].(types.Code); ok {
-		x.Book_value_acc_on_disposal = v
-	}
-	if v, ok := t.oldValues["sales_acc_on_disposal"].(types.Code); ok {
-		x.Sales_acc_on_disposal = v
-	}
-	if v, ok := t.oldValues["write_down_bal_acc_on_disp"].(types.Code); ok {
-		x.Write_down_bal_acc_on_disp = v
-	}
-	if v, ok := t.oldValues["apprec_bal_acc_on_disp"].(types.Code); ok {
-		x.Apprec_bal_acc_on_disp = v
-	}
-	if v, ok := t.oldValues["custom_1_bal_acc_on_disposal"].(types.Code); ok {
-		x.Custom_1_bal_acc_on_disposal = v
-	}
-	if v, ok := t.oldValues["custom_2_bal_acc_on_disposal"].(types.Code); ok {
-		x.Custom_2_bal_acc_on_disposal = v
-	}
-	if v, ok := t.oldValues["maintenance_expense_account"].(types.Code); ok {
-		x.Maintenance_expense_account = v
-	}
-	if v, ok := t.oldValues["maintenance_bal_acc"].(types.Code); ok {
-		x.Maintenance_bal_acc = v
-	}
-	if v, ok := t.oldValues["acquisition_cost_bal_acc"].(types.Code); ok {
-		x.Acquisition_cost_bal_acc = v
-	}
-	if v, ok := t.oldValues["depreciation_expense_acc"].(types.Code); ok {
-		x.Depreciation_expense_acc = v
-	}
-	if v, ok := t.oldValues["write_down_expense_acc"].(types.Code); ok {
-		x.Write_down_expense_acc = v
-	}
-	if v, ok := t.oldValues["appreciation_bal_account"].(types.Code); ok {
-		x.Appreciation_bal_account = v
-	}
-	if v, ok := t.oldValues["custom_1_expense_acc"].(types.Code); ok {
-		x.Custom_1_expense_acc = v
-	}
-	if v, ok := t.oldValues["custom_2_expense_acc"].(types.Code); ok {
-		x.Custom_2_expense_acc = v
-	}
-	if v, ok := t.oldValues["sales_bal_acc"].(types.Code); ok {
-		x.Sales_bal_acc = v
-	}
+	fAPostingGroupFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1917,141 +1481,7 @@ func (t *FAPostingGroup) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *FAPostingGroup) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Code.Equal(old)
-		}
-	case "acquisition_cost_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Acquisition_cost_account.Equal(old)
-		}
-	case "accum_depreciation_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Accum_depreciation_account.Equal(old)
-		}
-	case "write_down_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Write_down_account.Equal(old)
-		}
-	case "appreciation_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Appreciation_account.Equal(old)
-		}
-	case "custom_1_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Custom_1_account.Equal(old)
-		}
-	case "custom_2_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Custom_2_account.Equal(old)
-		}
-	case "acq_cost_acc_on_disposal":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Acq_cost_acc_on_disposal.Equal(old)
-		}
-	case "accum_depr_acc_on_disposal":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Accum_depr_acc_on_disposal.Equal(old)
-		}
-	case "write_down_acc_on_disposal":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Write_down_acc_on_disposal.Equal(old)
-		}
-	case "appreciation_acc_on_disposal":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Appreciation_acc_on_disposal.Equal(old)
-		}
-	case "custom_1_account_on_disposal":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Custom_1_account_on_disposal.Equal(old)
-		}
-	case "custom_2_account_on_disposal":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Custom_2_account_on_disposal.Equal(old)
-		}
-	case "gains_acc_on_disposal":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Gains_acc_on_disposal.Equal(old)
-		}
-	case "losses_acc_on_disposal":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Losses_acc_on_disposal.Equal(old)
-		}
-	case "book_value_acc_on_disposal":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Book_value_acc_on_disposal.Equal(old)
-		}
-	case "sales_acc_on_disposal":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Sales_acc_on_disposal.Equal(old)
-		}
-	case "write_down_bal_acc_on_disp":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Write_down_bal_acc_on_disp.Equal(old)
-		}
-	case "apprec_bal_acc_on_disp":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Apprec_bal_acc_on_disp.Equal(old)
-		}
-	case "custom_1_bal_acc_on_disposal":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Custom_1_bal_acc_on_disposal.Equal(old)
-		}
-	case "custom_2_bal_acc_on_disposal":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Custom_2_bal_acc_on_disposal.Equal(old)
-		}
-	case "maintenance_expense_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Maintenance_expense_account.Equal(old)
-		}
-	case "maintenance_bal_acc":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Maintenance_bal_acc.Equal(old)
-		}
-	case "acquisition_cost_bal_acc":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Acquisition_cost_bal_acc.Equal(old)
-		}
-	case "depreciation_expense_acc":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Depreciation_expense_acc.Equal(old)
-		}
-	case "write_down_expense_acc":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Write_down_expense_acc.Equal(old)
-		}
-	case "appreciation_bal_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Appreciation_bal_account.Equal(old)
-		}
-	case "custom_1_expense_acc":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Custom_1_expense_acc.Equal(old)
-		}
-	case "custom_2_expense_acc":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Custom_2_expense_acc.Equal(old)
-		}
-	case "sales_bal_acc":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Sales_bal_acc.Equal(old)
-		}
-	}
-
-	return false
+	return fAPostingGroupFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -3853,69 +3283,7 @@ func (t *FAPostingGroup) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *FAPostingGroup) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("code"):
-		return "code", true
-	case strings.ToLower("acquisition_cost_account"):
-		return "acquisition_cost_account", true
-	case strings.ToLower("accum_depreciation_account"):
-		return "accum_depreciation_account", true
-	case strings.ToLower("write_down_account"):
-		return "write_down_account", true
-	case strings.ToLower("appreciation_account"):
-		return "appreciation_account", true
-	case strings.ToLower("custom_1_account"):
-		return "custom_1_account", true
-	case strings.ToLower("custom_2_account"):
-		return "custom_2_account", true
-	case strings.ToLower("acq_cost_acc_on_disposal"):
-		return "acq_cost_acc_on_disposal", true
-	case strings.ToLower("accum_depr_acc_on_disposal"):
-		return "accum_depr_acc_on_disposal", true
-	case strings.ToLower("write_down_acc_on_disposal"):
-		return "write_down_acc_on_disposal", true
-	case strings.ToLower("appreciation_acc_on_disposal"):
-		return "appreciation_acc_on_disposal", true
-	case strings.ToLower("custom_1_account_on_disposal"):
-		return "custom_1_account_on_disposal", true
-	case strings.ToLower("custom_2_account_on_disposal"):
-		return "custom_2_account_on_disposal", true
-	case strings.ToLower("gains_acc_on_disposal"):
-		return "gains_acc_on_disposal", true
-	case strings.ToLower("losses_acc_on_disposal"):
-		return "losses_acc_on_disposal", true
-	case strings.ToLower("book_value_acc_on_disposal"):
-		return "book_value_acc_on_disposal", true
-	case strings.ToLower("sales_acc_on_disposal"):
-		return "sales_acc_on_disposal", true
-	case strings.ToLower("write_down_bal_acc_on_disp"):
-		return "write_down_bal_acc_on_disp", true
-	case strings.ToLower("apprec_bal_acc_on_disp"):
-		return "apprec_bal_acc_on_disp", true
-	case strings.ToLower("custom_1_bal_acc_on_disposal"):
-		return "custom_1_bal_acc_on_disposal", true
-	case strings.ToLower("custom_2_bal_acc_on_disposal"):
-		return "custom_2_bal_acc_on_disposal", true
-	case strings.ToLower("maintenance_expense_account"):
-		return "maintenance_expense_account", true
-	case strings.ToLower("maintenance_bal_acc"):
-		return "maintenance_bal_acc", true
-	case strings.ToLower("acquisition_cost_bal_acc"):
-		return "acquisition_cost_bal_acc", true
-	case strings.ToLower("depreciation_expense_acc"):
-		return "depreciation_expense_acc", true
-	case strings.ToLower("write_down_expense_acc"):
-		return "write_down_expense_acc", true
-	case strings.ToLower("appreciation_bal_account"):
-		return "appreciation_bal_account", true
-	case strings.ToLower("custom_1_expense_acc"):
-		return "custom_1_expense_acc", true
-	case strings.ToLower("custom_2_expense_acc"):
-		return "custom_2_expense_acc", true
-	case strings.ToLower("sales_bal_acc"):
-		return "sales_bal_acc", true
-	}
-	return "", false
+	return fAPostingGroupFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -5117,668 +4485,20 @@ func (t *FAPostingGroup) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *FAPostingGroup) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-		} else if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingGroupOnValidate_Code); ok {
-				if err := trg.OnValidate_Code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "acquisition_cost_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Acquisition_cost_account = v
-		} else if v, ok := value.(string); ok {
-			t.Acquisition_cost_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field acquisition_cost_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "acquisition_cost_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingGroupOnValidate_Acquisition_cost_account); ok {
-				if err := trg.OnValidate_Acquisition_cost_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "accum_depreciation_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Accum_depreciation_account = v
-		} else if v, ok := value.(string); ok {
-			t.Accum_depreciation_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field accum_depreciation_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "accum_depreciation_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingGroupOnValidate_Accum_depreciation_account); ok {
-				if err := trg.OnValidate_Accum_depreciation_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "write_down_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Write_down_account = v
-		} else if v, ok := value.(string); ok {
-			t.Write_down_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field write_down_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "write_down_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingGroupOnValidate_Write_down_account); ok {
-				if err := trg.OnValidate_Write_down_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "appreciation_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Appreciation_account = v
-		} else if v, ok := value.(string); ok {
-			t.Appreciation_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field appreciation_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "appreciation_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingGroupOnValidate_Appreciation_account); ok {
-				if err := trg.OnValidate_Appreciation_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "custom_1_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Custom_1_account = v
-		} else if v, ok := value.(string); ok {
-			t.Custom_1_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field custom_1_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "custom_1_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingGroupOnValidate_Custom_1_account); ok {
-				if err := trg.OnValidate_Custom_1_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "custom_2_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Custom_2_account = v
-		} else if v, ok := value.(string); ok {
-			t.Custom_2_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field custom_2_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "custom_2_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingGroupOnValidate_Custom_2_account); ok {
-				if err := trg.OnValidate_Custom_2_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "acq_cost_acc_on_disposal":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Acq_cost_acc_on_disposal = v
-		} else if v, ok := value.(string); ok {
-			t.Acq_cost_acc_on_disposal = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field acq_cost_acc_on_disposal")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "acq_cost_acc_on_disposal"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingGroupOnValidate_Acq_cost_acc_on_disposal); ok {
-				if err := trg.OnValidate_Acq_cost_acc_on_disposal(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "accum_depr_acc_on_disposal":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Accum_depr_acc_on_disposal = v
-		} else if v, ok := value.(string); ok {
-			t.Accum_depr_acc_on_disposal = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field accum_depr_acc_on_disposal")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "accum_depr_acc_on_disposal"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingGroupOnValidate_Accum_depr_acc_on_disposal); ok {
-				if err := trg.OnValidate_Accum_depr_acc_on_disposal(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "write_down_acc_on_disposal":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Write_down_acc_on_disposal = v
-		} else if v, ok := value.(string); ok {
-			t.Write_down_acc_on_disposal = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field write_down_acc_on_disposal")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "write_down_acc_on_disposal"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingGroupOnValidate_Write_down_acc_on_disposal); ok {
-				if err := trg.OnValidate_Write_down_acc_on_disposal(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "appreciation_acc_on_disposal":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Appreciation_acc_on_disposal = v
-		} else if v, ok := value.(string); ok {
-			t.Appreciation_acc_on_disposal = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field appreciation_acc_on_disposal")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "appreciation_acc_on_disposal"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingGroupOnValidate_Appreciation_acc_on_disposal); ok {
-				if err := trg.OnValidate_Appreciation_acc_on_disposal(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "custom_1_account_on_disposal":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Custom_1_account_on_disposal = v
-		} else if v, ok := value.(string); ok {
-			t.Custom_1_account_on_disposal = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field custom_1_account_on_disposal")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "custom_1_account_on_disposal"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingGroupOnValidate_Custom_1_account_on_disposal); ok {
-				if err := trg.OnValidate_Custom_1_account_on_disposal(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "custom_2_account_on_disposal":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Custom_2_account_on_disposal = v
-		} else if v, ok := value.(string); ok {
-			t.Custom_2_account_on_disposal = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field custom_2_account_on_disposal")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "custom_2_account_on_disposal"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingGroupOnValidate_Custom_2_account_on_disposal); ok {
-				if err := trg.OnValidate_Custom_2_account_on_disposal(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "gains_acc_on_disposal":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Gains_acc_on_disposal = v
-		} else if v, ok := value.(string); ok {
-			t.Gains_acc_on_disposal = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field gains_acc_on_disposal")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "gains_acc_on_disposal"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingGroupOnValidate_Gains_acc_on_disposal); ok {
-				if err := trg.OnValidate_Gains_acc_on_disposal(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "losses_acc_on_disposal":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Losses_acc_on_disposal = v
-		} else if v, ok := value.(string); ok {
-			t.Losses_acc_on_disposal = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field losses_acc_on_disposal")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "losses_acc_on_disposal"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingGroupOnValidate_Losses_acc_on_disposal); ok {
-				if err := trg.OnValidate_Losses_acc_on_disposal(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "book_value_acc_on_disposal":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Book_value_acc_on_disposal = v
-		} else if v, ok := value.(string); ok {
-			t.Book_value_acc_on_disposal = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field book_value_acc_on_disposal")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "book_value_acc_on_disposal"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingGroupOnValidate_Book_value_acc_on_disposal); ok {
-				if err := trg.OnValidate_Book_value_acc_on_disposal(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sales_acc_on_disposal":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Sales_acc_on_disposal = v
-		} else if v, ok := value.(string); ok {
-			t.Sales_acc_on_disposal = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field sales_acc_on_disposal")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "sales_acc_on_disposal"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingGroupOnValidate_Sales_acc_on_disposal); ok {
-				if err := trg.OnValidate_Sales_acc_on_disposal(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "write_down_bal_acc_on_disp":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Write_down_bal_acc_on_disp = v
-		} else if v, ok := value.(string); ok {
-			t.Write_down_bal_acc_on_disp = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field write_down_bal_acc_on_disp")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "write_down_bal_acc_on_disp"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingGroupOnValidate_Write_down_bal_acc_on_disp); ok {
-				if err := trg.OnValidate_Write_down_bal_acc_on_disp(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "apprec_bal_acc_on_disp":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Apprec_bal_acc_on_disp = v
-		} else if v, ok := value.(string); ok {
-			t.Apprec_bal_acc_on_disp = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field apprec_bal_acc_on_disp")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "apprec_bal_acc_on_disp"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingGroupOnValidate_Apprec_bal_acc_on_disp); ok {
-				if err := trg.OnValidate_Apprec_bal_acc_on_disp(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "custom_1_bal_acc_on_disposal":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Custom_1_bal_acc_on_disposal = v
-		} else if v, ok := value.(string); ok {
-			t.Custom_1_bal_acc_on_disposal = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field custom_1_bal_acc_on_disposal")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "custom_1_bal_acc_on_disposal"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingGroupOnValidate_Custom_1_bal_acc_on_disposal); ok {
-				if err := trg.OnValidate_Custom_1_bal_acc_on_disposal(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "custom_2_bal_acc_on_disposal":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Custom_2_bal_acc_on_disposal = v
-		} else if v, ok := value.(string); ok {
-			t.Custom_2_bal_acc_on_disposal = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field custom_2_bal_acc_on_disposal")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "custom_2_bal_acc_on_disposal"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingGroupOnValidate_Custom_2_bal_acc_on_disposal); ok {
-				if err := trg.OnValidate_Custom_2_bal_acc_on_disposal(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "maintenance_expense_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Maintenance_expense_account = v
-		} else if v, ok := value.(string); ok {
-			t.Maintenance_expense_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field maintenance_expense_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "maintenance_expense_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingGroupOnValidate_Maintenance_expense_account); ok {
-				if err := trg.OnValidate_Maintenance_expense_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "maintenance_bal_acc":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Maintenance_bal_acc = v
-		} else if v, ok := value.(string); ok {
-			t.Maintenance_bal_acc = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field maintenance_bal_acc")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "maintenance_bal_acc"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingGroupOnValidate_Maintenance_bal_acc); ok {
-				if err := trg.OnValidate_Maintenance_bal_acc(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "acquisition_cost_bal_acc":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Acquisition_cost_bal_acc = v
-		} else if v, ok := value.(string); ok {
-			t.Acquisition_cost_bal_acc = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field acquisition_cost_bal_acc")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "acquisition_cost_bal_acc"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingGroupOnValidate_Acquisition_cost_bal_acc); ok {
-				if err := trg.OnValidate_Acquisition_cost_bal_acc(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "depreciation_expense_acc":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Depreciation_expense_acc = v
-		} else if v, ok := value.(string); ok {
-			t.Depreciation_expense_acc = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field depreciation_expense_acc")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "depreciation_expense_acc"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingGroupOnValidate_Depreciation_expense_acc); ok {
-				if err := trg.OnValidate_Depreciation_expense_acc(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "write_down_expense_acc":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Write_down_expense_acc = v
-		} else if v, ok := value.(string); ok {
-			t.Write_down_expense_acc = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field write_down_expense_acc")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "write_down_expense_acc"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingGroupOnValidate_Write_down_expense_acc); ok {
-				if err := trg.OnValidate_Write_down_expense_acc(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "appreciation_bal_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Appreciation_bal_account = v
-		} else if v, ok := value.(string); ok {
-			t.Appreciation_bal_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field appreciation_bal_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "appreciation_bal_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingGroupOnValidate_Appreciation_bal_account); ok {
-				if err := trg.OnValidate_Appreciation_bal_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "custom_1_expense_acc":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Custom_1_expense_acc = v
-		} else if v, ok := value.(string); ok {
-			t.Custom_1_expense_acc = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field custom_1_expense_acc")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "custom_1_expense_acc"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingGroupOnValidate_Custom_1_expense_acc); ok {
-				if err := trg.OnValidate_Custom_1_expense_acc(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "custom_2_expense_acc":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Custom_2_expense_acc = v
-		} else if v, ok := value.(string); ok {
-			t.Custom_2_expense_acc = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field custom_2_expense_acc")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "custom_2_expense_acc"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingGroupOnValidate_Custom_2_expense_acc); ok {
-				if err := trg.OnValidate_Custom_2_expense_acc(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sales_bal_acc":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Sales_bal_acc = v
-		} else if v, ok := value.(string); ok {
-			t.Sales_bal_acc = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field sales_bal_acc")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "sales_bal_acc"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingGroupOnValidate_Sales_bal_acc); ok {
-				if err := trg.OnValidate_Sales_bal_acc(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := fAPostingGroupFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &fAPostingGroupFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -5787,376 +4507,18 @@ func (t *FAPostingGroup) ValidateField(fieldName string, value interface{}) erro
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *FAPostingGroup) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Code, true
-	case 2:
-		return t.Acquisition_cost_account, true
-	case 3:
-		return t.Accum_depreciation_account, true
-	case 4:
-		return t.Write_down_account, true
-	case 5:
-		return t.Appreciation_account, true
-	case 6:
-		return t.Custom_1_account, true
-	case 7:
-		return t.Custom_2_account, true
-	case 8:
-		return t.Acq_cost_acc_on_disposal, true
-	case 9:
-		return t.Accum_depr_acc_on_disposal, true
-	case 10:
-		return t.Write_down_acc_on_disposal, true
-	case 11:
-		return t.Appreciation_acc_on_disposal, true
-	case 12:
-		return t.Custom_1_account_on_disposal, true
-	case 13:
-		return t.Custom_2_account_on_disposal, true
-	case 14:
-		return t.Gains_acc_on_disposal, true
-	case 15:
-		return t.Losses_acc_on_disposal, true
-	case 16:
-		return t.Book_value_acc_on_disposal, true
-	case 17:
-		return t.Sales_acc_on_disposal, true
-	case 18:
-		return t.Write_down_bal_acc_on_disp, true
-	case 19:
-		return t.Apprec_bal_acc_on_disp, true
-	case 20:
-		return t.Custom_1_bal_acc_on_disposal, true
-	case 21:
-		return t.Custom_2_bal_acc_on_disposal, true
-	case 22:
-		return t.Maintenance_expense_account, true
-	case 23:
-		return t.Maintenance_bal_acc, true
-	case 24:
-		return t.Acquisition_cost_bal_acc, true
-	case 25:
-		return t.Depreciation_expense_acc, true
-	case 26:
-		return t.Write_down_expense_acc, true
-	case 27:
-		return t.Appreciation_bal_account, true
-	case 28:
-		return t.Custom_1_expense_acc, true
-	case 29:
-		return t.Custom_2_expense_acc, true
-	case 30:
-		return t.Sales_bal_acc, true
-	}
-	return nil, false
+	return fAPostingGroupFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *FAPostingGroup) flowFieldValue(no int) (any, bool) {
-	switch no {
-	case 31:
-		return t.Allocated_acquisition_cost_percent, true
-	case 32:
-		return t.Allocated_depreciation_percent, true
-	case 33:
-		return t.Allocated_write_down_percent, true
-	case 34:
-		return t.Allocated_appreciation_percent, true
-	case 35:
-		return t.Allocated_custom_1_percent, true
-	case 36:
-		return t.Allocated_custom_2_percent, true
-	case 37:
-		return t.Allocated_sales_price_percent, true
-	case 38:
-		return t.Allocated_maintenance_percent, true
-	case 39:
-		return t.Allocated_gain_percent, true
-	case 40:
-		return t.Allocated_loss_percent, true
-	case 41:
-		return t.Allocated_book_value_percent, true
-	}
-	return nil, false
+	return fAPostingGroupFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *FAPostingGroup) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Acquisition_cost_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Acquisition_cost_account = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Code); ok {
-			t.Accum_depreciation_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Accum_depreciation_account = types.NewCode(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Code); ok {
-			t.Write_down_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Write_down_account = types.NewCode(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Code); ok {
-			t.Appreciation_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Appreciation_account = types.NewCode(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Code); ok {
-			t.Custom_1_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Custom_1_account = types.NewCode(v)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Code); ok {
-			t.Custom_2_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Custom_2_account = types.NewCode(v)
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Code); ok {
-			t.Acq_cost_acc_on_disposal = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Acq_cost_acc_on_disposal = types.NewCode(v)
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.Code); ok {
-			t.Accum_depr_acc_on_disposal = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Accum_depr_acc_on_disposal = types.NewCode(v)
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Code); ok {
-			t.Write_down_acc_on_disposal = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Write_down_acc_on_disposal = types.NewCode(v)
-			return true
-		}
-	case 11:
-		if v, ok := value.(types.Code); ok {
-			t.Appreciation_acc_on_disposal = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Appreciation_acc_on_disposal = types.NewCode(v)
-			return true
-		}
-	case 12:
-		if v, ok := value.(types.Code); ok {
-			t.Custom_1_account_on_disposal = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Custom_1_account_on_disposal = types.NewCode(v)
-			return true
-		}
-	case 13:
-		if v, ok := value.(types.Code); ok {
-			t.Custom_2_account_on_disposal = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Custom_2_account_on_disposal = types.NewCode(v)
-			return true
-		}
-	case 14:
-		if v, ok := value.(types.Code); ok {
-			t.Gains_acc_on_disposal = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Gains_acc_on_disposal = types.NewCode(v)
-			return true
-		}
-	case 15:
-		if v, ok := value.(types.Code); ok {
-			t.Losses_acc_on_disposal = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Losses_acc_on_disposal = types.NewCode(v)
-			return true
-		}
-	case 16:
-		if v, ok := value.(types.Code); ok {
-			t.Book_value_acc_on_disposal = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Book_value_acc_on_disposal = types.NewCode(v)
-			return true
-		}
-	case 17:
-		if v, ok := value.(types.Code); ok {
-			t.Sales_acc_on_disposal = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Sales_acc_on_disposal = types.NewCode(v)
-			return true
-		}
-	case 18:
-		if v, ok := value.(types.Code); ok {
-			t.Write_down_bal_acc_on_disp = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Write_down_bal_acc_on_disp = types.NewCode(v)
-			return true
-		}
-	case 19:
-		if v, ok := value.(types.Code); ok {
-			t.Apprec_bal_acc_on_disp = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Apprec_bal_acc_on_disp = types.NewCode(v)
-			return true
-		}
-	case 20:
-		if v, ok := value.(types.Code); ok {
-			t.Custom_1_bal_acc_on_disposal = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Custom_1_bal_acc_on_disposal = types.NewCode(v)
-			return true
-		}
-	case 21:
-		if v, ok := value.(types.Code); ok {
-			t.Custom_2_bal_acc_on_disposal = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Custom_2_bal_acc_on_disposal = types.NewCode(v)
-			return true
-		}
-	case 22:
-		if v, ok := value.(types.Code); ok {
-			t.Maintenance_expense_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Maintenance_expense_account = types.NewCode(v)
-			return true
-		}
-	case 23:
-		if v, ok := value.(types.Code); ok {
-			t.Maintenance_bal_acc = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Maintenance_bal_acc = types.NewCode(v)
-			return true
-		}
-	case 24:
-		if v, ok := value.(types.Code); ok {
-			t.Acquisition_cost_bal_acc = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Acquisition_cost_bal_acc = types.NewCode(v)
-			return true
-		}
-	case 25:
-		if v, ok := value.(types.Code); ok {
-			t.Depreciation_expense_acc = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Depreciation_expense_acc = types.NewCode(v)
-			return true
-		}
-	case 26:
-		if v, ok := value.(types.Code); ok {
-			t.Write_down_expense_acc = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Write_down_expense_acc = types.NewCode(v)
-			return true
-		}
-	case 27:
-		if v, ok := value.(types.Code); ok {
-			t.Appreciation_bal_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Appreciation_bal_account = types.NewCode(v)
-			return true
-		}
-	case 28:
-		if v, ok := value.(types.Code); ok {
-			t.Custom_1_expense_acc = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Custom_1_expense_acc = types.NewCode(v)
-			return true
-		}
-	case 29:
-		if v, ok := value.(types.Code); ok {
-			t.Custom_2_expense_acc = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Custom_2_expense_acc = types.NewCode(v)
-			return true
-		}
-	case 30:
-		if v, ok := value.(types.Code); ok {
-			t.Sales_bal_acc = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Sales_bal_acc = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return fAPostingGroupFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -6608,69 +4970,7 @@ func (t *FAPostingGroup) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *FAPostingGroup) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "code":
-		return t.Code, true
-	case "acquisition_cost_account":
-		return t.Acquisition_cost_account, true
-	case "accum_depreciation_account":
-		return t.Accum_depreciation_account, true
-	case "write_down_account":
-		return t.Write_down_account, true
-	case "appreciation_account":
-		return t.Appreciation_account, true
-	case "custom_1_account":
-		return t.Custom_1_account, true
-	case "custom_2_account":
-		return t.Custom_2_account, true
-	case "acq_cost_acc_on_disposal":
-		return t.Acq_cost_acc_on_disposal, true
-	case "accum_depr_acc_on_disposal":
-		return t.Accum_depr_acc_on_disposal, true
-	case "write_down_acc_on_disposal":
-		return t.Write_down_acc_on_disposal, true
-	case "appreciation_acc_on_disposal":
-		return t.Appreciation_acc_on_disposal, true
-	case "custom_1_account_on_disposal":
-		return t.Custom_1_account_on_disposal, true
-	case "custom_2_account_on_disposal":
-		return t.Custom_2_account_on_disposal, true
-	case "gains_acc_on_disposal":
-		return t.Gains_acc_on_disposal, true
-	case "losses_acc_on_disposal":
-		return t.Losses_acc_on_disposal, true
-	case "book_value_acc_on_disposal":
-		return t.Book_value_acc_on_disposal, true
-	case "sales_acc_on_disposal":
-		return t.Sales_acc_on_disposal, true
-	case "write_down_bal_acc_on_disp":
-		return t.Write_down_bal_acc_on_disp, true
-	case "apprec_bal_acc_on_disp":
-		return t.Apprec_bal_acc_on_disp, true
-	case "custom_1_bal_acc_on_disposal":
-		return t.Custom_1_bal_acc_on_disposal, true
-	case "custom_2_bal_acc_on_disposal":
-		return t.Custom_2_bal_acc_on_disposal, true
-	case "maintenance_expense_account":
-		return t.Maintenance_expense_account, true
-	case "maintenance_bal_acc":
-		return t.Maintenance_bal_acc, true
-	case "acquisition_cost_bal_acc":
-		return t.Acquisition_cost_bal_acc, true
-	case "depreciation_expense_acc":
-		return t.Depreciation_expense_acc, true
-	case "write_down_expense_acc":
-		return t.Write_down_expense_acc, true
-	case "appreciation_bal_account":
-		return t.Appreciation_bal_account, true
-	case "custom_1_expense_acc":
-		return t.Custom_1_expense_acc, true
-	case "custom_2_expense_acc":
-		return t.Custom_2_expense_acc, true
-	case "sales_bal_acc":
-		return t.Sales_bal_acc, true
-	}
-	return nil, false
+	return fAPostingGroupFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -6785,214 +5085,12 @@ func (t *FAPostingGroup) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *FAPostingGroup) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"code":                         t.Code.String(),
-		"acquisition_cost_account":     t.Acquisition_cost_account.String(),
-		"accum_depreciation_account":   t.Accum_depreciation_account.String(),
-		"write_down_account":           t.Write_down_account.String(),
-		"appreciation_account":         t.Appreciation_account.String(),
-		"custom_1_account":             t.Custom_1_account.String(),
-		"custom_2_account":             t.Custom_2_account.String(),
-		"acq_cost_acc_on_disposal":     t.Acq_cost_acc_on_disposal.String(),
-		"accum_depr_acc_on_disposal":   t.Accum_depr_acc_on_disposal.String(),
-		"write_down_acc_on_disposal":   t.Write_down_acc_on_disposal.String(),
-		"appreciation_acc_on_disposal": t.Appreciation_acc_on_disposal.String(),
-		"custom_1_account_on_disposal": t.Custom_1_account_on_disposal.String(),
-		"custom_2_account_on_disposal": t.Custom_2_account_on_disposal.String(),
-		"gains_acc_on_disposal":        t.Gains_acc_on_disposal.String(),
-		"losses_acc_on_disposal":       t.Losses_acc_on_disposal.String(),
-		"book_value_acc_on_disposal":   t.Book_value_acc_on_disposal.String(),
-		"sales_acc_on_disposal":        t.Sales_acc_on_disposal.String(),
-		"write_down_bal_acc_on_disp":   t.Write_down_bal_acc_on_disp.String(),
-		"apprec_bal_acc_on_disp":       t.Apprec_bal_acc_on_disp.String(),
-		"custom_1_bal_acc_on_disposal": t.Custom_1_bal_acc_on_disposal.String(),
-		"custom_2_bal_acc_on_disposal": t.Custom_2_bal_acc_on_disposal.String(),
-		"maintenance_expense_account":  t.Maintenance_expense_account.String(),
-		"maintenance_bal_acc":          t.Maintenance_bal_acc.String(),
-		"acquisition_cost_bal_acc":     t.Acquisition_cost_bal_acc.String(),
-		"depreciation_expense_acc":     t.Depreciation_expense_acc.String(),
-		"write_down_expense_acc":       t.Write_down_expense_acc.String(),
-		"appreciation_bal_account":     t.Appreciation_bal_account.String(),
-		"custom_1_expense_acc":         t.Custom_1_expense_acc.String(),
-		"custom_2_expense_acc":         t.Custom_2_expense_acc.String(),
-		"sales_bal_acc":                t.Sales_bal_acc.String(),
-		// FlowField: allocated_acquisition_cost_percent
-		"allocated_acquisition_cost_percent": t.Allocated_acquisition_cost_percent.String(),
-		// FlowField: allocated_depreciation_percent
-		"allocated_depreciation_percent": t.Allocated_depreciation_percent.String(),
-		// FlowField: allocated_write_down_percent
-		"allocated_write_down_percent": t.Allocated_write_down_percent.String(),
-		// FlowField: allocated_appreciation_percent
-		"allocated_appreciation_percent": t.Allocated_appreciation_percent.String(),
-		// FlowField: allocated_custom_1_percent
-		"allocated_custom_1_percent": t.Allocated_custom_1_percent.String(),
-		// FlowField: allocated_custom_2_percent
-		"allocated_custom_2_percent": t.Allocated_custom_2_percent.String(),
-		// FlowField: allocated_sales_price_percent
-		"allocated_sales_price_percent": t.Allocated_sales_price_percent.String(),
-		// FlowField: allocated_maintenance_percent
-		"allocated_maintenance_percent": t.Allocated_maintenance_percent.String(),
-		// FlowField: allocated_gain_percent
-		"allocated_gain_percent": t.Allocated_gain_percent.String(),
-		// FlowField: allocated_loss_percent
-		"allocated_loss_percent": t.Allocated_loss_percent.String(),
-		// FlowField: allocated_book_value_percent
-		"allocated_book_value_percent": t.Allocated_book_value_percent.String(),
-	}
+	return fAPostingGroupFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *FAPostingGroup) FromMap(data map[string]interface{}) {
-	if v, ok := data["code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["acquisition_cost_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Acquisition_cost_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["accum_depreciation_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Accum_depreciation_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["write_down_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Write_down_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["appreciation_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Appreciation_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["custom_1_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Custom_1_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["custom_2_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Custom_2_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["acq_cost_acc_on_disposal"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Acq_cost_acc_on_disposal = types.NewCode(s)
-		}
-	}
-	if v, ok := data["accum_depr_acc_on_disposal"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Accum_depr_acc_on_disposal = types.NewCode(s)
-		}
-	}
-	if v, ok := data["write_down_acc_on_disposal"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Write_down_acc_on_disposal = types.NewCode(s)
-		}
-	}
-	if v, ok := data["appreciation_acc_on_disposal"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Appreciation_acc_on_disposal = types.NewCode(s)
-		}
-	}
-	if v, ok := data["custom_1_account_on_disposal"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Custom_1_account_on_disposal = types.NewCode(s)
-		}
-	}
-	if v, ok := data["custom_2_account_on_disposal"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Custom_2_account_on_disposal = types.NewCode(s)
-		}
-	}
-	if v, ok := data["gains_acc_on_disposal"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Gains_acc_on_disposal = types.NewCode(s)
-		}
-	}
-	if v, ok := data["losses_acc_on_disposal"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Losses_acc_on_disposal = types.NewCode(s)
-		}
-	}
-	if v, ok := data["book_value_acc_on_disposal"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Book_value_acc_on_disposal = types.NewCode(s)
-		}
-	}
-	if v, ok := data["sales_acc_on_disposal"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Sales_acc_on_disposal = types.NewCode(s)
-		}
-	}
-	if v, ok := data["write_down_bal_acc_on_disp"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Write_down_bal_acc_on_disp = types.NewCode(s)
-		}
-	}
-	if v, ok := data["apprec_bal_acc_on_disp"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Apprec_bal_acc_on_disp = types.NewCode(s)
-		}
-	}
-	if v, ok := data["custom_1_bal_acc_on_disposal"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Custom_1_bal_acc_on_disposal = types.NewCode(s)
-		}
-	}
-	if v, ok := data["custom_2_bal_acc_on_disposal"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Custom_2_bal_acc_on_disposal = types.NewCode(s)
-		}
-	}
-	if v, ok := data["maintenance_expense_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Maintenance_expense_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["maintenance_bal_acc"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Maintenance_bal_acc = types.NewCode(s)
-		}
-	}
-	if v, ok := data["acquisition_cost_bal_acc"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Acquisition_cost_bal_acc = types.NewCode(s)
-		}
-	}
-	if v, ok := data["depreciation_expense_acc"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Depreciation_expense_acc = types.NewCode(s)
-		}
-	}
-	if v, ok := data["write_down_expense_acc"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Write_down_expense_acc = types.NewCode(s)
-		}
-	}
-	if v, ok := data["appreciation_bal_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Appreciation_bal_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["custom_1_expense_acc"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Custom_1_expense_acc = types.NewCode(s)
-		}
-	}
-	if v, ok := data["custom_2_expense_acc"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Custom_2_expense_acc = types.NewCode(s)
-		}
-	}
-	if v, ok := data["sales_bal_acc"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Sales_bal_acc = types.NewCode(s)
-		}
-	}
+	fAPostingGroupFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -7013,429 +5111,718 @@ func (t *FAPostingGroup) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *FAPostingGroup) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "acquisition_cost_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "accum_depreciation_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "write_down_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "appreciation_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "custom_1_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "custom_2_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "acq_cost_acc_on_disposal",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "accum_depr_acc_on_disposal",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "write_down_acc_on_disposal",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "appreciation_acc_on_disposal",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "custom_1_account_on_disposal",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         13,
-			Name:       "custom_2_account_on_disposal",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         14,
-			Name:       "gains_acc_on_disposal",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         15,
-			Name:       "losses_acc_on_disposal",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         16,
-			Name:       "book_value_acc_on_disposal",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         17,
-			Name:       "sales_acc_on_disposal",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         18,
-			Name:       "write_down_bal_acc_on_disp",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         19,
-			Name:       "apprec_bal_acc_on_disp",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         20,
-			Name:       "custom_1_bal_acc_on_disposal",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         21,
-			Name:       "custom_2_bal_acc_on_disposal",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         22,
-			Name:       "maintenance_expense_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         23,
-			Name:       "maintenance_bal_acc",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         24,
-			Name:       "acquisition_cost_bal_acc",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         25,
-			Name:       "depreciation_expense_acc",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         26,
-			Name:       "write_down_expense_acc",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         27,
-			Name:       "appreciation_bal_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         28,
-			Name:       "custom_1_expense_acc",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         29,
-			Name:       "custom_2_expense_acc",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         30,
-			Name:       "sales_bal_acc",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            31,
-			Name:          "allocated_acquisition_cost_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            32,
-			Name:          "allocated_depreciation_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            33,
-			Name:          "allocated_write_down_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            34,
-			Name:          "allocated_appreciation_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            35,
-			Name:          "allocated_custom_1_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            36,
-			Name:          "allocated_custom_2_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            37,
-			Name:          "allocated_sales_price_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            38,
-			Name:          "allocated_maintenance_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            39,
-			Name:          "allocated_gain_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            40,
-			Name:          "allocated_loss_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            41,
-			Name:          "allocated_book_value_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
+	return fAPostingGroupFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in fAPostingGroupFields.Fields
+func (t *FAPostingGroup) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Code
+	case 1:
+		return &t.Acquisition_cost_account
+	case 2:
+		return &t.Accum_depreciation_account
+	case 3:
+		return &t.Write_down_account
+	case 4:
+		return &t.Appreciation_account
+	case 5:
+		return &t.Custom_1_account
+	case 6:
+		return &t.Custom_2_account
+	case 7:
+		return &t.Acq_cost_acc_on_disposal
+	case 8:
+		return &t.Accum_depr_acc_on_disposal
+	case 9:
+		return &t.Write_down_acc_on_disposal
+	case 10:
+		return &t.Appreciation_acc_on_disposal
+	case 11:
+		return &t.Custom_1_account_on_disposal
+	case 12:
+		return &t.Custom_2_account_on_disposal
+	case 13:
+		return &t.Gains_acc_on_disposal
+	case 14:
+		return &t.Losses_acc_on_disposal
+	case 15:
+		return &t.Book_value_acc_on_disposal
+	case 16:
+		return &t.Sales_acc_on_disposal
+	case 17:
+		return &t.Write_down_bal_acc_on_disp
+	case 18:
+		return &t.Apprec_bal_acc_on_disp
+	case 19:
+		return &t.Custom_1_bal_acc_on_disposal
+	case 20:
+		return &t.Custom_2_bal_acc_on_disposal
+	case 21:
+		return &t.Maintenance_expense_account
+	case 22:
+		return &t.Maintenance_bal_acc
+	case 23:
+		return &t.Acquisition_cost_bal_acc
+	case 24:
+		return &t.Depreciation_expense_acc
+	case 25:
+		return &t.Write_down_expense_acc
+	case 26:
+		return &t.Appreciation_bal_account
+	case 27:
+		return &t.Custom_1_expense_acc
+	case 28:
+		return &t.Custom_2_expense_acc
+	case 29:
+		return &t.Sales_bal_acc
+	case 30:
+		return &t.Allocated_acquisition_cost_percent
+	case 31:
+		return &t.Allocated_depreciation_percent
+	case 32:
+		return &t.Allocated_write_down_percent
+	case 33:
+		return &t.Allocated_appreciation_percent
+	case 34:
+		return &t.Allocated_custom_1_percent
+	case 35:
+		return &t.Allocated_custom_2_percent
+	case 36:
+		return &t.Allocated_sales_price_percent
+	case 37:
+		return &t.Allocated_maintenance_percent
+	case 38:
+		return &t.Allocated_gain_percent
+	case 39:
+		return &t.Allocated_loss_percent
+	case 40:
+		return &t.Allocated_book_value_percent
 	}
+	return nil
+}
+
+// fAPostingGroupFields describes the fields of FA_Posting_Group for the record functions
+// written once in foundation/tables
+var fAPostingGroupFields = &tables.TableFields{
+	Table: FAPostingGroupTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "acquisition_cost_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Acquisition_cost_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "accum_depreciation_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Accum_depreciation_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "write_down_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Write_down_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "appreciation_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Appreciation_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "custom_1_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Custom_1_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "custom_2_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Custom_2_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "acq_cost_acc_on_disposal",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Acq_cost_acc_on_disposal",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "accum_depr_acc_on_disposal",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Accum_depr_acc_on_disposal",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "write_down_acc_on_disposal",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Write_down_acc_on_disposal",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "appreciation_acc_on_disposal",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Appreciation_acc_on_disposal",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "custom_1_account_on_disposal",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Custom_1_account_on_disposal",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "custom_2_account_on_disposal",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Custom_2_account_on_disposal",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "gains_acc_on_disposal",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Gains_acc_on_disposal",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         15,
+				Name:       "losses_acc_on_disposal",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Losses_acc_on_disposal",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         16,
+				Name:       "book_value_acc_on_disposal",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Book_value_acc_on_disposal",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         17,
+				Name:       "sales_acc_on_disposal",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Sales_acc_on_disposal",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         18,
+				Name:       "write_down_bal_acc_on_disp",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Write_down_bal_acc_on_disp",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         19,
+				Name:       "apprec_bal_acc_on_disp",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Apprec_bal_acc_on_disp",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         20,
+				Name:       "custom_1_bal_acc_on_disposal",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Custom_1_bal_acc_on_disposal",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         21,
+				Name:       "custom_2_bal_acc_on_disposal",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Custom_2_bal_acc_on_disposal",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         22,
+				Name:       "maintenance_expense_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Maintenance_expense_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         23,
+				Name:       "maintenance_bal_acc",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Maintenance_bal_acc",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         24,
+				Name:       "acquisition_cost_bal_acc",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Acquisition_cost_bal_acc",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         25,
+				Name:       "depreciation_expense_acc",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Depreciation_expense_acc",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         26,
+				Name:       "write_down_expense_acc",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Write_down_expense_acc",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         27,
+				Name:       "appreciation_bal_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Appreciation_bal_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         28,
+				Name:       "custom_1_expense_acc",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Custom_1_expense_acc",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         29,
+				Name:       "custom_2_expense_acc",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Custom_2_expense_acc",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         30,
+				Name:       "sales_bal_acc",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Sales_bal_acc",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            31,
+				Name:          "allocated_acquisition_cost_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Allocated_acquisition_cost_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            32,
+				Name:          "allocated_depreciation_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Allocated_depreciation_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            33,
+				Name:          "allocated_write_down_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Allocated_write_down_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            34,
+				Name:          "allocated_appreciation_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Allocated_appreciation_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            35,
+				Name:          "allocated_custom_1_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Allocated_custom_1_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            36,
+				Name:          "allocated_custom_2_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Allocated_custom_2_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            37,
+				Name:          "allocated_sales_price_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Allocated_sales_price_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            38,
+				Name:          "allocated_maintenance_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Allocated_maintenance_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            39,
+				Name:          "allocated_gain_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Allocated_gain_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            40,
+				Name:          "allocated_loss_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Allocated_loss_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            41,
+				Name:          "allocated_book_value_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Allocated_book_value_percent",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

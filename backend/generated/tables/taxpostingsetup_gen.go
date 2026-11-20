@@ -225,64 +225,12 @@ var TaxPostingSetup_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *TaxPostingSetup) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "tax_bus_posting_group":
-		return 1
-	case "tax_prod_posting_group":
-		return 2
-	case "tax_calculation_type":
-		return 3
-	case "vat_percent":
-		return 4
-	case "unrealized_tax_type":
-		return 5
-	case "adjust_for_payment_discount":
-		return 6
-	case "sales_vat_account":
-		return 7
-	case "sales_vat_unreal_account":
-		return 8
-	case "purchase_vat_account":
-		return 9
-	case "purch_vat_unreal_account":
-		return 10
-	case "reverse_chrg_vat_acc":
-		return 11
-	case "reverse_chrg_vat_unreal_acc":
-		return 12
-	}
-	return 0
+	return taxPostingSetupFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *TaxPostingSetup) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "tax_bus_posting_group"
-	case 2:
-		return "tax_prod_posting_group"
-	case 3:
-		return "tax_calculation_type"
-	case 4:
-		return "vat_percent"
-	case 5:
-		return "unrealized_tax_type"
-	case 6:
-		return "adjust_for_payment_discount"
-	case 7:
-		return "sales_vat_account"
-	case 8:
-		return "sales_vat_unreal_account"
-	case 9:
-		return "purchase_vat_account"
-	case 10:
-		return "purch_vat_unreal_account"
-	case 11:
-		return "reverse_chrg_vat_acc"
-	case 12:
-		return "reverse_chrg_vat_unreal_acc"
-	}
-	return ""
+	return taxPostingSetupFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -394,42 +342,6 @@ type (
 	TaxPostingSetupOnBeforeRename interface {
 		OnBeforeRename(rec *TaxPostingSetup, handled *bool) error
 	}
-	TaxPostingSetupOnValidate_Tax_bus_posting_group interface {
-		OnValidate_Tax_bus_posting_group(rec *TaxPostingSetup) error
-	}
-	TaxPostingSetupOnValidate_Tax_prod_posting_group interface {
-		OnValidate_Tax_prod_posting_group(rec *TaxPostingSetup) error
-	}
-	TaxPostingSetupOnValidate_Tax_calculation_type interface {
-		OnValidate_Tax_calculation_type(rec *TaxPostingSetup) error
-	}
-	TaxPostingSetupOnValidate_Vat_percent interface {
-		OnValidate_Vat_percent(rec *TaxPostingSetup) error
-	}
-	TaxPostingSetupOnValidate_Unrealized_tax_type interface {
-		OnValidate_Unrealized_tax_type(rec *TaxPostingSetup) error
-	}
-	TaxPostingSetupOnValidate_Adjust_for_payment_discount interface {
-		OnValidate_Adjust_for_payment_discount(rec *TaxPostingSetup) error
-	}
-	TaxPostingSetupOnValidate_Sales_vat_account interface {
-		OnValidate_Sales_vat_account(rec *TaxPostingSetup) error
-	}
-	TaxPostingSetupOnValidate_Sales_vat_unreal_account interface {
-		OnValidate_Sales_vat_unreal_account(rec *TaxPostingSetup) error
-	}
-	TaxPostingSetupOnValidate_Purchase_vat_account interface {
-		OnValidate_Purchase_vat_account(rec *TaxPostingSetup) error
-	}
-	TaxPostingSetupOnValidate_Purch_vat_unreal_account interface {
-		OnValidate_Purch_vat_unreal_account(rec *TaxPostingSetup) error
-	}
-	TaxPostingSetupOnValidate_Reverse_chrg_vat_acc interface {
-		OnValidate_Reverse_chrg_vat_acc(rec *TaxPostingSetup) error
-	}
-	TaxPostingSetupOnValidate_Reverse_chrg_vat_unreal_acc interface {
-		OnValidate_Reverse_chrg_vat_unreal_acc(rec *TaxPostingSetup) error
-	}
 )
 
 // taxPostingSetupLogic is the registered business logic of Tax_Posting_Setup, in
@@ -472,32 +384,9 @@ func taxPostingSetupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(TaxPostingSetupOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(TaxPostingSetupOnBeforeRename)
-	case "OnValidate_Tax_bus_posting_group":
-		_, ok = logic.(TaxPostingSetupOnValidate_Tax_bus_posting_group)
-	case "OnValidate_Tax_prod_posting_group":
-		_, ok = logic.(TaxPostingSetupOnValidate_Tax_prod_posting_group)
-	case "OnValidate_Tax_calculation_type":
-		_, ok = logic.(TaxPostingSetupOnValidate_Tax_calculation_type)
-	case "OnValidate_Vat_percent":
-		_, ok = logic.(TaxPostingSetupOnValidate_Vat_percent)
-	case "OnValidate_Unrealized_tax_type":
-		_, ok = logic.(TaxPostingSetupOnValidate_Unrealized_tax_type)
-	case "OnValidate_Adjust_for_payment_discount":
-		_, ok = logic.(TaxPostingSetupOnValidate_Adjust_for_payment_discount)
-	case "OnValidate_Sales_vat_account":
-		_, ok = logic.(TaxPostingSetupOnValidate_Sales_vat_account)
-	case "OnValidate_Sales_vat_unreal_account":
-		_, ok = logic.(TaxPostingSetupOnValidate_Sales_vat_unreal_account)
-	case "OnValidate_Purchase_vat_account":
-		_, ok = logic.(TaxPostingSetupOnValidate_Purchase_vat_account)
-	case "OnValidate_Purch_vat_unreal_account":
-		_, ok = logic.(TaxPostingSetupOnValidate_Purch_vat_unreal_account)
-	case "OnValidate_Reverse_chrg_vat_acc":
-		_, ok = logic.(TaxPostingSetupOnValidate_Reverse_chrg_vat_acc)
-	case "OnValidate_Reverse_chrg_vat_unreal_acc":
-		_, ok = logic.(TaxPostingSetupOnValidate_Reverse_chrg_vat_unreal_acc)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return taxPostingSetupFields.IsOnValidateTrigger(name, logic, (*TaxPostingSetup)(nil))
 	}
 	return true, ok
 }
@@ -837,19 +726,7 @@ func (t *TaxPostingSetup) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *TaxPostingSetup) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["tax_bus_posting_group"] = t.Tax_bus_posting_group
-	t.oldValues["tax_prod_posting_group"] = t.Tax_prod_posting_group
-	t.oldValues["tax_calculation_type"] = t.Tax_calculation_type
-	t.oldValues["vat_percent"] = t.Vat_percent
-	t.oldValues["unrealized_tax_type"] = t.Unrealized_tax_type
-	t.oldValues["adjust_for_payment_discount"] = t.Adjust_for_payment_discount
-	t.oldValues["sales_vat_account"] = t.Sales_vat_account
-	t.oldValues["sales_vat_unreal_account"] = t.Sales_vat_unreal_account
-	t.oldValues["purchase_vat_account"] = t.Purchase_vat_account
-	t.oldValues["purch_vat_unreal_account"] = t.Purch_vat_unreal_account
-	t.oldValues["reverse_chrg_vat_acc"] = t.Reverse_chrg_vat_acc
-	t.oldValues["reverse_chrg_vat_unreal_acc"] = t.Reverse_chrg_vat_unreal_acc
+	t.oldValues = taxPostingSetupFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -864,42 +741,7 @@ func (t *TaxPostingSetup) OldValue(fieldName string) interface{} {
 func (t *TaxPostingSetup) XRec() *TaxPostingSetup {
 	x := &TaxPostingSetup{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["tax_bus_posting_group"].(types.Code); ok {
-		x.Tax_bus_posting_group = v
-	}
-	if v, ok := t.oldValues["tax_prod_posting_group"].(types.Code); ok {
-		x.Tax_prod_posting_group = v
-	}
-	if v, ok := t.oldValues["tax_calculation_type"].(TaxPostingSetupTax_calculation_type); ok {
-		x.Tax_calculation_type = v
-	}
-	if v, ok := t.oldValues["vat_percent"].(types.Decimal); ok {
-		x.Vat_percent = v
-	}
-	if v, ok := t.oldValues["unrealized_tax_type"].(TaxPostingSetupUnrealized_tax_type); ok {
-		x.Unrealized_tax_type = v
-	}
-	if v, ok := t.oldValues["adjust_for_payment_discount"].(bool); ok {
-		x.Adjust_for_payment_discount = v
-	}
-	if v, ok := t.oldValues["sales_vat_account"].(types.Code); ok {
-		x.Sales_vat_account = v
-	}
-	if v, ok := t.oldValues["sales_vat_unreal_account"].(types.Code); ok {
-		x.Sales_vat_unreal_account = v
-	}
-	if v, ok := t.oldValues["purchase_vat_account"].(types.Code); ok {
-		x.Purchase_vat_account = v
-	}
-	if v, ok := t.oldValues["purch_vat_unreal_account"].(types.Code); ok {
-		x.Purch_vat_unreal_account = v
-	}
-	if v, ok := t.oldValues["reverse_chrg_vat_acc"].(types.Code); ok {
-		x.Reverse_chrg_vat_acc = v
-	}
-	if v, ok := t.oldValues["reverse_chrg_vat_unreal_acc"].(types.Code); ok {
-		x.Reverse_chrg_vat_unreal_acc = v
-	}
+	taxPostingSetupFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1275,70 +1117,7 @@ func (t *TaxPostingSetup) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *TaxPostingSetup) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "tax_bus_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_bus_posting_group.Equal(old)
-		}
-	case "tax_prod_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_prod_posting_group.Equal(old)
-		}
-	case "tax_calculation_type":
-		if old, ok := oldValue.(TaxPostingSetupTax_calculation_type); ok {
-			return t.Tax_calculation_type != old
-		}
-	case "vat_percent":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Vat_percent.Equal(old)
-		}
-	case "unrealized_tax_type":
-		if old, ok := oldValue.(TaxPostingSetupUnrealized_tax_type); ok {
-			return t.Unrealized_tax_type != old
-		}
-	case "adjust_for_payment_discount":
-		if old, ok := oldValue.(bool); ok {
-			return t.Adjust_for_payment_discount != old
-		}
-		return true // Type mismatch, assume changed
-	case "sales_vat_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Sales_vat_account.Equal(old)
-		}
-	case "sales_vat_unreal_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Sales_vat_unreal_account.Equal(old)
-		}
-	case "purchase_vat_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Purchase_vat_account.Equal(old)
-		}
-	case "purch_vat_unreal_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Purch_vat_unreal_account.Equal(old)
-		}
-	case "reverse_chrg_vat_acc":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Reverse_chrg_vat_acc.Equal(old)
-		}
-	case "reverse_chrg_vat_unreal_acc":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Reverse_chrg_vat_unreal_acc.Equal(old)
-		}
-	}
-
-	return false
+	return taxPostingSetupFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1540,33 +1319,7 @@ func (t *TaxPostingSetup) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *TaxPostingSetup) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("tax_bus_posting_group"):
-		return "tax_bus_posting_group", true
-	case strings.ToLower("tax_prod_posting_group"):
-		return "tax_prod_posting_group", true
-	case strings.ToLower("tax_calculation_type"):
-		return "tax_calculation_type", true
-	case strings.ToLower("vat_percent"):
-		return "vat_percent", true
-	case strings.ToLower("unrealized_tax_type"):
-		return "unrealized_tax_type", true
-	case strings.ToLower("adjust_for_payment_discount"):
-		return "adjust_for_payment_discount", true
-	case strings.ToLower("sales_vat_account"):
-		return "sales_vat_account", true
-	case strings.ToLower("sales_vat_unreal_account"):
-		return "sales_vat_unreal_account", true
-	case strings.ToLower("purchase_vat_account"):
-		return "purchase_vat_account", true
-	case strings.ToLower("purch_vat_unreal_account"):
-		return "purch_vat_unreal_account", true
-	case strings.ToLower("reverse_chrg_vat_acc"):
-		return "reverse_chrg_vat_acc", true
-	case strings.ToLower("reverse_chrg_vat_unreal_acc"):
-		return "reverse_chrg_vat_unreal_acc", true
-	}
-	return "", false
+	return taxPostingSetupFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2509,333 +2262,20 @@ func (t *TaxPostingSetup) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *TaxPostingSetup) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "tax_bus_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_bus_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_bus_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_bus_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_bus_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxPostingSetupOnValidate_Tax_bus_posting_group); ok {
-				if err := trg.OnValidate_Tax_bus_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_prod_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_prod_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_prod_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_prod_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_prod_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxPostingSetupOnValidate_Tax_prod_posting_group); ok {
-				if err := trg.OnValidate_Tax_prod_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_calculation_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(TaxPostingSetupTax_calculation_type); ok {
-			t.Tax_calculation_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field tax_calculation_type (valid range: 0-%d)", v, 4-1)
-			}
-			t.Tax_calculation_type = TaxPostingSetupTax_calculation_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field tax_calculation_type (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Tax_calculation_type = TaxPostingSetupTax_calculation_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Tax_calculation_type = 0
-			} else {
-				options := []string{"Normal VAT", "Reverse Charge VAT", "Full VAT", "Sales Tax"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Tax_calculation_type = TaxPostingSetupTax_calculation_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field tax_calculation_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field tax_calculation_type (expected TaxPostingSetupTax_calculation_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxPostingSetupOnValidate_Tax_calculation_type); ok {
-				if err := trg.OnValidate_Tax_calculation_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "vat_percent":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Vat_percent = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Vat_percent, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field vat_percent: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Vat_percent = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Vat_percent = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Vat_percent = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field vat_percent (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxPostingSetupOnValidate_Vat_percent); ok {
-				if err := trg.OnValidate_Vat_percent(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unrealized_tax_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(TaxPostingSetupUnrealized_tax_type); ok {
-			t.Unrealized_tax_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 6 {
-				return fmt.Errorf("invalid option value %d for field unrealized_tax_type (valid range: 0-%d)", v, 6-1)
-			}
-			t.Unrealized_tax_type = TaxPostingSetupUnrealized_tax_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 6 {
-				return fmt.Errorf("invalid option value %d for field unrealized_tax_type (valid range: 0-%d)", intVal, 6-1)
-			}
-			t.Unrealized_tax_type = TaxPostingSetupUnrealized_tax_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Unrealized_tax_type = 0
-			} else {
-				options := []string{" ", "Percentage", "First", "Last", "First (Fully Paid)", "Last (Fully Paid)"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Unrealized_tax_type = TaxPostingSetupUnrealized_tax_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field unrealized_tax_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field unrealized_tax_type (expected TaxPostingSetupUnrealized_tax_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxPostingSetupOnValidate_Unrealized_tax_type); ok {
-				if err := trg.OnValidate_Unrealized_tax_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "adjust_for_payment_discount":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Adjust_for_payment_discount = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Adjust_for_payment_discount = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field adjust_for_payment_discount")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxPostingSetupOnValidate_Adjust_for_payment_discount); ok {
-				if err := trg.OnValidate_Adjust_for_payment_discount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sales_vat_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Sales_vat_account = v
-		} else if v, ok := value.(string); ok {
-			t.Sales_vat_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field sales_vat_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "sales_vat_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxPostingSetupOnValidate_Sales_vat_account); ok {
-				if err := trg.OnValidate_Sales_vat_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sales_vat_unreal_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Sales_vat_unreal_account = v
-		} else if v, ok := value.(string); ok {
-			t.Sales_vat_unreal_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field sales_vat_unreal_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "sales_vat_unreal_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxPostingSetupOnValidate_Sales_vat_unreal_account); ok {
-				if err := trg.OnValidate_Sales_vat_unreal_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "purchase_vat_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Purchase_vat_account = v
-		} else if v, ok := value.(string); ok {
-			t.Purchase_vat_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field purchase_vat_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "purchase_vat_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxPostingSetupOnValidate_Purchase_vat_account); ok {
-				if err := trg.OnValidate_Purchase_vat_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "purch_vat_unreal_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Purch_vat_unreal_account = v
-		} else if v, ok := value.(string); ok {
-			t.Purch_vat_unreal_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field purch_vat_unreal_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "purch_vat_unreal_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxPostingSetupOnValidate_Purch_vat_unreal_account); ok {
-				if err := trg.OnValidate_Purch_vat_unreal_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reverse_chrg_vat_acc":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Reverse_chrg_vat_acc = v
-		} else if v, ok := value.(string); ok {
-			t.Reverse_chrg_vat_acc = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field reverse_chrg_vat_acc")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "reverse_chrg_vat_acc"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxPostingSetupOnValidate_Reverse_chrg_vat_acc); ok {
-				if err := trg.OnValidate_Reverse_chrg_vat_acc(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reverse_chrg_vat_unreal_acc":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Reverse_chrg_vat_unreal_acc = v
-		} else if v, ok := value.(string); ok {
-			t.Reverse_chrg_vat_unreal_acc = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field reverse_chrg_vat_unreal_acc")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "reverse_chrg_vat_unreal_acc"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxPostingSetupOnValidate_Reverse_chrg_vat_unreal_acc); ok {
-				if err := trg.OnValidate_Reverse_chrg_vat_unreal_acc(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := taxPostingSetupFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &taxPostingSetupFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2844,140 +2284,18 @@ func (t *TaxPostingSetup) ValidateField(fieldName string, value interface{}) err
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *TaxPostingSetup) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Tax_bus_posting_group, true
-	case 2:
-		return t.Tax_prod_posting_group, true
-	case 3:
-		return t.Tax_calculation_type, true
-	case 4:
-		return t.Vat_percent, true
-	case 5:
-		return t.Unrealized_tax_type, true
-	case 6:
-		return t.Adjust_for_payment_discount, true
-	case 7:
-		return t.Sales_vat_account, true
-	case 8:
-		return t.Sales_vat_unreal_account, true
-	case 9:
-		return t.Purchase_vat_account, true
-	case 10:
-		return t.Purch_vat_unreal_account, true
-	case 11:
-		return t.Reverse_chrg_vat_acc, true
-	case 12:
-		return t.Reverse_chrg_vat_unreal_acc, true
-	}
-	return nil, false
+	return taxPostingSetupFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *TaxPostingSetup) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return taxPostingSetupFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *TaxPostingSetup) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_bus_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_bus_posting_group = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_prod_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_prod_posting_group = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Tax_calculation_type = TaxPostingSetupTax_calculation_type(i)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Decimal); ok {
-			t.Vat_percent = v
-			return true
-		}
-	case 5:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 6 {
-			t.Unrealized_tax_type = TaxPostingSetupUnrealized_tax_type(i)
-			return true
-		}
-	case 6:
-		if v, ok := value.(bool); ok {
-			t.Adjust_for_payment_discount = v
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Code); ok {
-			t.Sales_vat_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Sales_vat_account = types.NewCode(v)
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Code); ok {
-			t.Sales_vat_unreal_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Sales_vat_unreal_account = types.NewCode(v)
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.Code); ok {
-			t.Purchase_vat_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Purchase_vat_account = types.NewCode(v)
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Code); ok {
-			t.Purch_vat_unreal_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Purch_vat_unreal_account = types.NewCode(v)
-			return true
-		}
-	case 11:
-		if v, ok := value.(types.Code); ok {
-			t.Reverse_chrg_vat_acc = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Reverse_chrg_vat_acc = types.NewCode(v)
-			return true
-		}
-	case 12:
-		if v, ok := value.(types.Code); ok {
-			t.Reverse_chrg_vat_unreal_acc = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Reverse_chrg_vat_unreal_acc = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return taxPostingSetupFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3448,33 +2766,7 @@ func (t *TaxPostingSetup) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *TaxPostingSetup) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "tax_bus_posting_group":
-		return t.Tax_bus_posting_group, true
-	case "tax_prod_posting_group":
-		return t.Tax_prod_posting_group, true
-	case "tax_calculation_type":
-		return int(t.Tax_calculation_type), true
-	case "vat_percent":
-		return t.Vat_percent, true
-	case "unrealized_tax_type":
-		return int(t.Unrealized_tax_type), true
-	case "adjust_for_payment_discount":
-		return t.Adjust_for_payment_discount, true
-	case "sales_vat_account":
-		return t.Sales_vat_account, true
-	case "sales_vat_unreal_account":
-		return t.Sales_vat_unreal_account, true
-	case "purchase_vat_account":
-		return t.Purchase_vat_account, true
-	case "purch_vat_unreal_account":
-		return t.Purch_vat_unreal_account, true
-	case "reverse_chrg_vat_acc":
-		return t.Reverse_chrg_vat_acc, true
-	case "reverse_chrg_vat_unreal_acc":
-		return t.Reverse_chrg_vat_unreal_acc, true
-	}
-	return nil, false
+	return taxPostingSetupFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3574,115 +2866,12 @@ func (t *TaxPostingSetup) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *TaxPostingSetup) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"tax_bus_posting_group":       t.Tax_bus_posting_group.String(),
-		"tax_prod_posting_group":      t.Tax_prod_posting_group.String(),
-		"tax_calculation_type":        int(t.Tax_calculation_type),
-		"vat_percent":                 t.Vat_percent.String(),
-		"unrealized_tax_type":         int(t.Unrealized_tax_type),
-		"adjust_for_payment_discount": t.Adjust_for_payment_discount,
-		"sales_vat_account":           t.Sales_vat_account.String(),
-		"sales_vat_unreal_account":    t.Sales_vat_unreal_account.String(),
-		"purchase_vat_account":        t.Purchase_vat_account.String(),
-		"purch_vat_unreal_account":    t.Purch_vat_unreal_account.String(),
-		"reverse_chrg_vat_acc":        t.Reverse_chrg_vat_acc.String(),
-		"reverse_chrg_vat_unreal_acc": t.Reverse_chrg_vat_unreal_acc.String(),
-	}
+	return taxPostingSetupFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *TaxPostingSetup) FromMap(data map[string]interface{}) {
-	if v, ok := data["tax_bus_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_bus_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_prod_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_prod_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_calculation_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Tax_calculation_type = TaxPostingSetupTax_calculation_type(int(val))
-		case int:
-			t.Tax_calculation_type = TaxPostingSetupTax_calculation_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Normal VAT", "Reverse Charge VAT", "Full VAT", "Sales Tax"}
-			for i, opt := range options {
-				if opt == val {
-					t.Tax_calculation_type = TaxPostingSetupTax_calculation_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["vat_percent"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Vat_percent, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Vat_percent = types.NewDecimal(val)
-		case int:
-			t.Vat_percent = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Vat_percent = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["unrealized_tax_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Unrealized_tax_type = TaxPostingSetupUnrealized_tax_type(int(val))
-		case int:
-			t.Unrealized_tax_type = TaxPostingSetupUnrealized_tax_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Percentage", "First", "Last", "First (Fully Paid)", "Last (Fully Paid)"}
-			for i, opt := range options {
-				if opt == val {
-					t.Unrealized_tax_type = TaxPostingSetupUnrealized_tax_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["adjust_for_payment_discount"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Adjust_for_payment_discount = b
-		}
-	}
-	if v, ok := data["sales_vat_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Sales_vat_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["sales_vat_unreal_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Sales_vat_unreal_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["purchase_vat_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Purchase_vat_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["purch_vat_unreal_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Purch_vat_unreal_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["reverse_chrg_vat_acc"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Reverse_chrg_vat_acc = types.NewCode(s)
-		}
-	}
-	if v, ok := data["reverse_chrg_vat_unreal_acc"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Reverse_chrg_vat_unreal_acc = types.NewCode(s)
-		}
-	}
+	taxPostingSetupFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3703,129 +2892,225 @@ func (t *TaxPostingSetup) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *TaxPostingSetup) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "tax_bus_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "tax_prod_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "tax_calculation_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            4,
-			Name:          "vat_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         5,
-			Name:       "unrealized_tax_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "adjust_for_payment_discount",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "sales_vat_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "sales_vat_unreal_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "purchase_vat_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "purch_vat_unreal_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "reverse_chrg_vat_acc",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "reverse_chrg_vat_unreal_acc",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return taxPostingSetupFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in taxPostingSetupFields.Fields
+func (t *TaxPostingSetup) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Tax_bus_posting_group
+	case 1:
+		return &t.Tax_prod_posting_group
+	case 2:
+		return &t.Tax_calculation_type
+	case 3:
+		return &t.Vat_percent
+	case 4:
+		return &t.Unrealized_tax_type
+	case 5:
+		return &t.Adjust_for_payment_discount
+	case 6:
+		return &t.Sales_vat_account
+	case 7:
+		return &t.Sales_vat_unreal_account
+	case 8:
+		return &t.Purchase_vat_account
+	case 9:
+		return &t.Purch_vat_unreal_account
+	case 10:
+		return &t.Reverse_chrg_vat_acc
+	case 11:
+		return &t.Reverse_chrg_vat_unreal_acc
 	}
+	return nil
+}
+
+// taxPostingSetupFields describes the fields of Tax_Posting_Setup for the record functions
+// written once in foundation/tables
+var taxPostingSetupFields = &tables.TableFields{
+	Table: TaxPostingSetupTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "tax_bus_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_bus_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "tax_prod_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_prod_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "tax_calculation_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Tax_calculation_type",
+			Options: []string{"Normal VAT", "Reverse Charge VAT", "Full VAT", "Sales Tax"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            4,
+				Name:          "vat_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Vat_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "unrealized_tax_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Unrealized_tax_type",
+			Options: []string{" ", "Percentage", "First", "Last", "First (Fully Paid)", "Last (Fully Paid)"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "adjust_for_payment_discount",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Adjust_for_payment_discount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "sales_vat_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Sales_vat_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "sales_vat_unreal_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Sales_vat_unreal_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "purchase_vat_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Purchase_vat_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "purch_vat_unreal_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Purch_vat_unreal_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "reverse_chrg_vat_acc",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Reverse_chrg_vat_acc",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "reverse_chrg_vat_unreal_acc",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Reverse_chrg_vat_unreal_acc",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

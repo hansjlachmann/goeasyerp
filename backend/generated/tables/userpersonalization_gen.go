@@ -38,7 +38,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -361,84 +360,12 @@ var UserPersonalization_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *UserPersonalization) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "user_id":
-		return 1
-	case "light_theme":
-		return 2
-	case "dark_theme":
-		return 3
-	case "mode":
-		return 4
-	case "wallpaper":
-		return 5
-	case "wallpaper_opacity":
-		return 6
-	case "wallpaper_blur":
-		return 7
-	case "panel_opacity":
-		return 8
-	case "font":
-		return 9
-	case "font_size":
-		return 10
-	case "density":
-		return 11
-	case "updated_at":
-		return 12
-	case "date_format":
-		return 13
-	case "number_format":
-		return 14
-	case "work_date":
-		return 15
-	case "amount_font":
-		return 16
-	case "hide_tips":
-		return 17
-	}
-	return 0
+	return userPersonalizationFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *UserPersonalization) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "user_id"
-	case 2:
-		return "light_theme"
-	case 3:
-		return "dark_theme"
-	case 4:
-		return "mode"
-	case 5:
-		return "wallpaper"
-	case 6:
-		return "wallpaper_opacity"
-	case 7:
-		return "wallpaper_blur"
-	case 8:
-		return "panel_opacity"
-	case 9:
-		return "font"
-	case 10:
-		return "font_size"
-	case 11:
-		return "density"
-	case 12:
-		return "updated_at"
-	case 13:
-		return "date_format"
-	case 14:
-		return "number_format"
-	case 15:
-		return "work_date"
-	case 16:
-		return "amount_font"
-	case 17:
-		return "hide_tips"
-	}
-	return ""
+	return userPersonalizationFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -550,57 +477,6 @@ type (
 	UserPersonalizationOnBeforeRename interface {
 		OnBeforeRename(rec *UserPersonalization, handled *bool) error
 	}
-	UserPersonalizationOnValidate_User_id interface {
-		OnValidate_User_id(rec *UserPersonalization) error
-	}
-	UserPersonalizationOnValidate_Light_theme interface {
-		OnValidate_Light_theme(rec *UserPersonalization) error
-	}
-	UserPersonalizationOnValidate_Dark_theme interface {
-		OnValidate_Dark_theme(rec *UserPersonalization) error
-	}
-	UserPersonalizationOnValidate_Mode interface {
-		OnValidate_Mode(rec *UserPersonalization) error
-	}
-	UserPersonalizationOnValidate_Wallpaper interface {
-		OnValidate_Wallpaper(rec *UserPersonalization) error
-	}
-	UserPersonalizationOnValidate_Wallpaper_opacity interface {
-		OnValidate_Wallpaper_opacity(rec *UserPersonalization) error
-	}
-	UserPersonalizationOnValidate_Wallpaper_blur interface {
-		OnValidate_Wallpaper_blur(rec *UserPersonalization) error
-	}
-	UserPersonalizationOnValidate_Panel_opacity interface {
-		OnValidate_Panel_opacity(rec *UserPersonalization) error
-	}
-	UserPersonalizationOnValidate_Font interface {
-		OnValidate_Font(rec *UserPersonalization) error
-	}
-	UserPersonalizationOnValidate_Font_size interface {
-		OnValidate_Font_size(rec *UserPersonalization) error
-	}
-	UserPersonalizationOnValidate_Density interface {
-		OnValidate_Density(rec *UserPersonalization) error
-	}
-	UserPersonalizationOnValidate_Updated_at interface {
-		OnValidate_Updated_at(rec *UserPersonalization) error
-	}
-	UserPersonalizationOnValidate_Date_format interface {
-		OnValidate_Date_format(rec *UserPersonalization) error
-	}
-	UserPersonalizationOnValidate_Number_format interface {
-		OnValidate_Number_format(rec *UserPersonalization) error
-	}
-	UserPersonalizationOnValidate_Work_date interface {
-		OnValidate_Work_date(rec *UserPersonalization) error
-	}
-	UserPersonalizationOnValidate_Amount_font interface {
-		OnValidate_Amount_font(rec *UserPersonalization) error
-	}
-	UserPersonalizationOnValidate_Hide_tips interface {
-		OnValidate_Hide_tips(rec *UserPersonalization) error
-	}
 )
 
 // userPersonalizationLogic is the registered business logic of User_Personalization, in
@@ -643,42 +519,9 @@ func userPersonalizationTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(UserPersonalizationOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(UserPersonalizationOnBeforeRename)
-	case "OnValidate_User_id":
-		_, ok = logic.(UserPersonalizationOnValidate_User_id)
-	case "OnValidate_Light_theme":
-		_, ok = logic.(UserPersonalizationOnValidate_Light_theme)
-	case "OnValidate_Dark_theme":
-		_, ok = logic.(UserPersonalizationOnValidate_Dark_theme)
-	case "OnValidate_Mode":
-		_, ok = logic.(UserPersonalizationOnValidate_Mode)
-	case "OnValidate_Wallpaper":
-		_, ok = logic.(UserPersonalizationOnValidate_Wallpaper)
-	case "OnValidate_Wallpaper_opacity":
-		_, ok = logic.(UserPersonalizationOnValidate_Wallpaper_opacity)
-	case "OnValidate_Wallpaper_blur":
-		_, ok = logic.(UserPersonalizationOnValidate_Wallpaper_blur)
-	case "OnValidate_Panel_opacity":
-		_, ok = logic.(UserPersonalizationOnValidate_Panel_opacity)
-	case "OnValidate_Font":
-		_, ok = logic.(UserPersonalizationOnValidate_Font)
-	case "OnValidate_Font_size":
-		_, ok = logic.(UserPersonalizationOnValidate_Font_size)
-	case "OnValidate_Density":
-		_, ok = logic.(UserPersonalizationOnValidate_Density)
-	case "OnValidate_Updated_at":
-		_, ok = logic.(UserPersonalizationOnValidate_Updated_at)
-	case "OnValidate_Date_format":
-		_, ok = logic.(UserPersonalizationOnValidate_Date_format)
-	case "OnValidate_Number_format":
-		_, ok = logic.(UserPersonalizationOnValidate_Number_format)
-	case "OnValidate_Work_date":
-		_, ok = logic.(UserPersonalizationOnValidate_Work_date)
-	case "OnValidate_Amount_font":
-		_, ok = logic.(UserPersonalizationOnValidate_Amount_font)
-	case "OnValidate_Hide_tips":
-		_, ok = logic.(UserPersonalizationOnValidate_Hide_tips)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return userPersonalizationFields.IsOnValidateTrigger(name, logic, (*UserPersonalization)(nil))
 	}
 	return true, ok
 }
@@ -1008,24 +851,7 @@ func (t *UserPersonalization) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *UserPersonalization) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["user_id"] = t.User_id
-	t.oldValues["light_theme"] = t.Light_theme
-	t.oldValues["dark_theme"] = t.Dark_theme
-	t.oldValues["mode"] = t.Mode
-	t.oldValues["wallpaper"] = t.Wallpaper
-	t.oldValues["wallpaper_opacity"] = t.Wallpaper_opacity
-	t.oldValues["wallpaper_blur"] = t.Wallpaper_blur
-	t.oldValues["panel_opacity"] = t.Panel_opacity
-	t.oldValues["font"] = t.Font
-	t.oldValues["font_size"] = t.Font_size
-	t.oldValues["density"] = t.Density
-	t.oldValues["updated_at"] = t.Updated_at
-	t.oldValues["date_format"] = t.Date_format
-	t.oldValues["number_format"] = t.Number_format
-	t.oldValues["work_date"] = t.Work_date
-	t.oldValues["amount_font"] = t.Amount_font
-	t.oldValues["hide_tips"] = t.Hide_tips
+	t.oldValues = userPersonalizationFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1040,57 +866,7 @@ func (t *UserPersonalization) OldValue(fieldName string) interface{} {
 func (t *UserPersonalization) XRec() *UserPersonalization {
 	x := &UserPersonalization{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["user_id"].(types.Code); ok {
-		x.User_id = v
-	}
-	if v, ok := t.oldValues["light_theme"].(types.Code); ok {
-		x.Light_theme = v
-	}
-	if v, ok := t.oldValues["dark_theme"].(types.Code); ok {
-		x.Dark_theme = v
-	}
-	if v, ok := t.oldValues["mode"].(UserPersonalizationMode); ok {
-		x.Mode = v
-	}
-	if v, ok := t.oldValues["wallpaper"].(types.Text); ok {
-		x.Wallpaper = v
-	}
-	if v, ok := t.oldValues["wallpaper_opacity"].(int); ok {
-		x.Wallpaper_opacity = v
-	}
-	if v, ok := t.oldValues["wallpaper_blur"].(int); ok {
-		x.Wallpaper_blur = v
-	}
-	if v, ok := t.oldValues["panel_opacity"].(int); ok {
-		x.Panel_opacity = v
-	}
-	if v, ok := t.oldValues["font"].(UserPersonalizationFont); ok {
-		x.Font = v
-	}
-	if v, ok := t.oldValues["font_size"].(int); ok {
-		x.Font_size = v
-	}
-	if v, ok := t.oldValues["density"].(UserPersonalizationDensity); ok {
-		x.Density = v
-	}
-	if v, ok := t.oldValues["updated_at"].(types.DateTime); ok {
-		x.Updated_at = v
-	}
-	if v, ok := t.oldValues["date_format"].(UserPersonalizationDate_format); ok {
-		x.Date_format = v
-	}
-	if v, ok := t.oldValues["number_format"].(UserPersonalizationNumber_format); ok {
-		x.Number_format = v
-	}
-	if v, ok := t.oldValues["work_date"].(types.Date); ok {
-		x.Work_date = v
-	}
-	if v, ok := t.oldValues["amount_font"].(UserPersonalizationAmount_font); ok {
-		x.Amount_font = v
-	}
-	if v, ok := t.oldValues["hide_tips"].(bool); ok {
-		x.Hide_tips = v
-	}
+	userPersonalizationFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1510,94 +1286,7 @@ func (t *UserPersonalization) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *UserPersonalization) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "user_id":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.User_id.Equal(old)
-		}
-	case "light_theme":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Light_theme.Equal(old)
-		}
-	case "dark_theme":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dark_theme.Equal(old)
-		}
-	case "mode":
-		if old, ok := oldValue.(UserPersonalizationMode); ok {
-			return t.Mode != old
-		}
-	case "wallpaper":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Wallpaper.Equal(old)
-		}
-	case "wallpaper_opacity":
-		if old, ok := oldValue.(int); ok {
-			return t.Wallpaper_opacity != old
-		}
-		return true // Type mismatch, assume changed
-	case "wallpaper_blur":
-		if old, ok := oldValue.(int); ok {
-			return t.Wallpaper_blur != old
-		}
-		return true // Type mismatch, assume changed
-	case "panel_opacity":
-		if old, ok := oldValue.(int); ok {
-			return t.Panel_opacity != old
-		}
-		return true // Type mismatch, assume changed
-	case "font":
-		if old, ok := oldValue.(UserPersonalizationFont); ok {
-			return t.Font != old
-		}
-	case "font_size":
-		if old, ok := oldValue.(int); ok {
-			return t.Font_size != old
-		}
-		return true // Type mismatch, assume changed
-	case "density":
-		if old, ok := oldValue.(UserPersonalizationDensity); ok {
-			return t.Density != old
-		}
-	case "updated_at":
-		if old, ok := oldValue.(types.DateTime); ok {
-			return !t.Updated_at.Equal(old)
-		}
-	case "date_format":
-		if old, ok := oldValue.(UserPersonalizationDate_format); ok {
-			return t.Date_format != old
-		}
-	case "number_format":
-		if old, ok := oldValue.(UserPersonalizationNumber_format); ok {
-			return t.Number_format != old
-		}
-	case "work_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Work_date.Equal(old)
-		}
-	case "amount_font":
-		if old, ok := oldValue.(UserPersonalizationAmount_font); ok {
-			return t.Amount_font != old
-		}
-	case "hide_tips":
-		if old, ok := oldValue.(bool); ok {
-			return t.Hide_tips != old
-		}
-		return true // Type mismatch, assume changed
-	}
-
-	return false
+	return userPersonalizationFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1798,43 +1487,7 @@ func (t *UserPersonalization) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *UserPersonalization) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("user_id"):
-		return "user_id", true
-	case strings.ToLower("light_theme"):
-		return "light_theme", true
-	case strings.ToLower("dark_theme"):
-		return "dark_theme", true
-	case strings.ToLower("mode"):
-		return "mode", true
-	case strings.ToLower("wallpaper"):
-		return "wallpaper", true
-	case strings.ToLower("wallpaper_opacity"):
-		return "wallpaper_opacity", true
-	case strings.ToLower("wallpaper_blur"):
-		return "wallpaper_blur", true
-	case strings.ToLower("panel_opacity"):
-		return "panel_opacity", true
-	case strings.ToLower("font"):
-		return "font", true
-	case strings.ToLower("font_size"):
-		return "font_size", true
-	case strings.ToLower("density"):
-		return "density", true
-	case strings.ToLower("updated_at"):
-		return "updated_at", true
-	case strings.ToLower("date_format"):
-		return "date_format", true
-	case strings.ToLower("number_format"):
-		return "number_format", true
-	case strings.ToLower("work_date"):
-		return "work_date", true
-	case strings.ToLower("amount_font"):
-		return "amount_font", true
-	case strings.ToLower("hide_tips"):
-		return "hide_tips", true
-	}
-	return "", false
+	return userPersonalizationFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2810,557 +2463,20 @@ func (t *UserPersonalization) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *UserPersonalization) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "user_id":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-		} else if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field user_id")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "user_id"); err != nil {
+	i, err := userPersonalizationFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
+	}
+	f := &userPersonalizationFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
 			return err
 		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserPersonalizationOnValidate_User_id); ok {
-				if err := trg.OnValidate_User_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "light_theme":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Light_theme = v
-		} else if v, ok := value.(string); ok {
-			t.Light_theme = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field light_theme")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserPersonalizationOnValidate_Light_theme); ok {
-				if err := trg.OnValidate_Light_theme(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dark_theme":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dark_theme = v
-		} else if v, ok := value.(string); ok {
-			t.Dark_theme = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dark_theme")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserPersonalizationOnValidate_Dark_theme); ok {
-				if err := trg.OnValidate_Dark_theme(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "mode":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(UserPersonalizationMode); ok {
-			t.Mode = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 2 {
-				return fmt.Errorf("invalid option value %d for field mode (valid range: 0-%d)", v, 2-1)
-			}
-			t.Mode = UserPersonalizationMode(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 2 {
-				return fmt.Errorf("invalid option value %d for field mode (valid range: 0-%d)", intVal, 2-1)
-			}
-			t.Mode = UserPersonalizationMode(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Mode = 0
-			} else {
-				options := []string{"Dark", "Light"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Mode = UserPersonalizationMode(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field mode (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field mode (expected UserPersonalizationMode, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserPersonalizationOnValidate_Mode); ok {
-				if err := trg.OnValidate_Mode(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "wallpaper":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Wallpaper = v
-		} else if v, ok := value.(string); ok {
-			t.Wallpaper = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field wallpaper")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserPersonalizationOnValidate_Wallpaper); ok {
-				if err := trg.OnValidate_Wallpaper(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "wallpaper_opacity":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Wallpaper_opacity = v
-		case float64:
-			t.Wallpaper_opacity = int(v)
-		case string:
-			if v == "" {
-				t.Wallpaper_opacity = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Wallpaper_opacity = i
-			} else {
-				return fmt.Errorf("invalid integer value for field wallpaper_opacity: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field wallpaper_opacity")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserPersonalizationOnValidate_Wallpaper_opacity); ok {
-				if err := trg.OnValidate_Wallpaper_opacity(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "wallpaper_blur":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Wallpaper_blur = v
-		case float64:
-			t.Wallpaper_blur = int(v)
-		case string:
-			if v == "" {
-				t.Wallpaper_blur = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Wallpaper_blur = i
-			} else {
-				return fmt.Errorf("invalid integer value for field wallpaper_blur: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field wallpaper_blur")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserPersonalizationOnValidate_Wallpaper_blur); ok {
-				if err := trg.OnValidate_Wallpaper_blur(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "panel_opacity":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Panel_opacity = v
-		case float64:
-			t.Panel_opacity = int(v)
-		case string:
-			if v == "" {
-				t.Panel_opacity = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Panel_opacity = i
-			} else {
-				return fmt.Errorf("invalid integer value for field panel_opacity: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field panel_opacity")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserPersonalizationOnValidate_Panel_opacity); ok {
-				if err := trg.OnValidate_Panel_opacity(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "font":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(UserPersonalizationFont); ok {
-			t.Font = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 6 {
-				return fmt.Errorf("invalid option value %d for field font (valid range: 0-%d)", v, 6-1)
-			}
-			t.Font = UserPersonalizationFont(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 6 {
-				return fmt.Errorf("invalid option value %d for field font (valid range: 0-%d)", intVal, 6-1)
-			}
-			t.Font = UserPersonalizationFont(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Font = 0
-			} else {
-				options := []string{"Default", "System", "Inter", "IBM Plex Sans", "Serif", "Monospace"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Font = UserPersonalizationFont(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field font (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field font (expected UserPersonalizationFont, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserPersonalizationOnValidate_Font); ok {
-				if err := trg.OnValidate_Font(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "font_size":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Font_size = v
-		case float64:
-			t.Font_size = int(v)
-		case string:
-			if v == "" {
-				t.Font_size = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Font_size = i
-			} else {
-				return fmt.Errorf("invalid integer value for field font_size: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field font_size")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserPersonalizationOnValidate_Font_size); ok {
-				if err := trg.OnValidate_Font_size(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "density":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(UserPersonalizationDensity); ok {
-			t.Density = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 2 {
-				return fmt.Errorf("invalid option value %d for field density (valid range: 0-%d)", v, 2-1)
-			}
-			t.Density = UserPersonalizationDensity(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 2 {
-				return fmt.Errorf("invalid option value %d for field density (valid range: 0-%d)", intVal, 2-1)
-			}
-			t.Density = UserPersonalizationDensity(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Density = 0
-			} else {
-				options := []string{"Comfortable", "Compact"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Density = UserPersonalizationDensity(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field density (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field density (expected UserPersonalizationDensity, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserPersonalizationOnValidate_Density); ok {
-				if err := trg.OnValidate_Density(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "updated_at":
-		// Set field value
-		if v, ok := value.(types.DateTime); ok {
-			t.Updated_at = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Updated_at, err = types.NewDateTimeFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid datetime value for field updated_at: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Updated_at = types.NewDateTimeFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field updated_at (expected DateTime, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserPersonalizationOnValidate_Updated_at); ok {
-				if err := trg.OnValidate_Updated_at(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "date_format":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(UserPersonalizationDate_format); ok {
-			t.Date_format = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 6 {
-				return fmt.Errorf("invalid option value %d for field date_format (valid range: 0-%d)", v, 6-1)
-			}
-			t.Date_format = UserPersonalizationDate_format(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 6 {
-				return fmt.Errorf("invalid option value %d for field date_format (valid range: 0-%d)", intVal, 6-1)
-			}
-			t.Date_format = UserPersonalizationDate_format(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Date_format = 0
-			} else {
-				options := []string{"Language Default", "DD.MM.YY", "DD.MM.YYYY", "DD/MM/YYYY", "MM/DD/YYYY", "YYYY-MM-DD"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Date_format = UserPersonalizationDate_format(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field date_format (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field date_format (expected UserPersonalizationDate_format, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserPersonalizationOnValidate_Date_format); ok {
-				if err := trg.OnValidate_Date_format(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "number_format":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(UserPersonalizationNumber_format); ok {
-			t.Number_format = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 5 {
-				return fmt.Errorf("invalid option value %d for field number_format (valid range: 0-%d)", v, 5-1)
-			}
-			t.Number_format = UserPersonalizationNumber_format(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 5 {
-				return fmt.Errorf("invalid option value %d for field number_format (valid range: 0-%d)", intVal, 5-1)
-			}
-			t.Number_format = UserPersonalizationNumber_format(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Number_format = 0
-			} else {
-				options := []string{"Language Default", "Comma Thousands Point Decimals", "Point Thousands Comma Decimals", "Space Thousands Comma Decimals", "Point Decimals"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Number_format = UserPersonalizationNumber_format(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field number_format (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field number_format (expected UserPersonalizationNumber_format, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserPersonalizationOnValidate_Number_format); ok {
-				if err := trg.OnValidate_Number_format(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "work_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Work_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Work_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field work_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Work_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field work_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserPersonalizationOnValidate_Work_date); ok {
-				if err := trg.OnValidate_Work_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "amount_font":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(UserPersonalizationAmount_font); ok {
-			t.Amount_font = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 2 {
-				return fmt.Errorf("invalid option value %d for field amount_font (valid range: 0-%d)", v, 2-1)
-			}
-			t.Amount_font = UserPersonalizationAmount_font(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 2 {
-				return fmt.Errorf("invalid option value %d for field amount_font (valid range: 0-%d)", intVal, 2-1)
-			}
-			t.Amount_font = UserPersonalizationAmount_font(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Amount_font = 0
-			} else {
-				options := []string{"Text Font", "Monospace"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Amount_font = UserPersonalizationAmount_font(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field amount_font (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field amount_font (expected UserPersonalizationAmount_font, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserPersonalizationOnValidate_Amount_font); ok {
-				if err := trg.OnValidate_Amount_font(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "hide_tips":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Hide_tips = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Hide_tips = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field hide_tips")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserPersonalizationOnValidate_Hide_tips); ok {
-				if err := trg.OnValidate_Hide_tips(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -3369,159 +2485,18 @@ func (t *UserPersonalization) ValidateField(fieldName string, value interface{})
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *UserPersonalization) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.User_id, true
-	case 2:
-		return t.Light_theme, true
-	case 3:
-		return t.Dark_theme, true
-	case 4:
-		return t.Mode, true
-	case 5:
-		return t.Wallpaper, true
-	case 6:
-		return t.Wallpaper_opacity, true
-	case 7:
-		return t.Wallpaper_blur, true
-	case 8:
-		return t.Panel_opacity, true
-	case 9:
-		return t.Font, true
-	case 10:
-		return t.Font_size, true
-	case 11:
-		return t.Density, true
-	case 12:
-		return t.Updated_at, true
-	case 13:
-		return t.Date_format, true
-	case 14:
-		return t.Number_format, true
-	case 15:
-		return t.Work_date, true
-	case 16:
-		return t.Amount_font, true
-	case 17:
-		return t.Hide_tips, true
-	}
-	return nil, false
+	return userPersonalizationFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *UserPersonalization) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return userPersonalizationFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *UserPersonalization) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Light_theme = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Light_theme = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Code); ok {
-			t.Dark_theme = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dark_theme = types.NewCode(v)
-			return true
-		}
-	case 4:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 2 {
-			t.Mode = UserPersonalizationMode(i)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Text); ok {
-			t.Wallpaper = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Wallpaper = types.NewText(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(int); ok {
-			t.Wallpaper_opacity = v
-			return true
-		}
-	case 7:
-		if v, ok := value.(int); ok {
-			t.Wallpaper_blur = v
-			return true
-		}
-	case 8:
-		if v, ok := value.(int); ok {
-			t.Panel_opacity = v
-			return true
-		}
-	case 9:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 6 {
-			t.Font = UserPersonalizationFont(i)
-			return true
-		}
-	case 10:
-		if v, ok := value.(int); ok {
-			t.Font_size = v
-			return true
-		}
-	case 11:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 2 {
-			t.Density = UserPersonalizationDensity(i)
-			return true
-		}
-	case 12:
-		if v, ok := value.(types.DateTime); ok {
-			t.Updated_at = v
-			return true
-		}
-	case 13:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 6 {
-			t.Date_format = UserPersonalizationDate_format(i)
-			return true
-		}
-	case 14:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 5 {
-			t.Number_format = UserPersonalizationNumber_format(i)
-			return true
-		}
-	case 15:
-		if v, ok := value.(types.Date); ok {
-			t.Work_date = v
-			return true
-		}
-	case 16:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 2 {
-			t.Amount_font = UserPersonalizationAmount_font(i)
-			return true
-		}
-	case 17:
-		if v, ok := value.(bool); ok {
-			t.Hide_tips = v
-			return true
-		}
-	}
-	return false
+	return userPersonalizationFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -4015,43 +2990,7 @@ func (t *UserPersonalization) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *UserPersonalization) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "user_id":
-		return t.User_id, true
-	case "light_theme":
-		return t.Light_theme, true
-	case "dark_theme":
-		return t.Dark_theme, true
-	case "mode":
-		return int(t.Mode), true
-	case "wallpaper":
-		return t.Wallpaper, true
-	case "wallpaper_opacity":
-		return t.Wallpaper_opacity, true
-	case "wallpaper_blur":
-		return t.Wallpaper_blur, true
-	case "panel_opacity":
-		return t.Panel_opacity, true
-	case "font":
-		return int(t.Font), true
-	case "font_size":
-		return t.Font_size, true
-	case "density":
-		return int(t.Density), true
-	case "updated_at":
-		return t.Updated_at, true
-	case "date_format":
-		return int(t.Date_format), true
-	case "number_format":
-		return int(t.Number_format), true
-	case "work_date":
-		return t.Work_date, true
-	case "amount_font":
-		return int(t.Amount_font), true
-	case "hide_tips":
-		return t.Hide_tips, true
-	}
-	return nil, false
+	return userPersonalizationFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -4153,218 +3092,12 @@ func (t *UserPersonalization) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *UserPersonalization) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"user_id":           t.User_id.String(),
-		"light_theme":       t.Light_theme.String(),
-		"dark_theme":        t.Dark_theme.String(),
-		"mode":              int(t.Mode),
-		"wallpaper":         t.Wallpaper.String(),
-		"wallpaper_opacity": t.Wallpaper_opacity,
-		"wallpaper_blur":    t.Wallpaper_blur,
-		"panel_opacity":     t.Panel_opacity,
-		"font":              int(t.Font),
-		"font_size":         t.Font_size,
-		"density":           int(t.Density),
-		"updated_at":        t.Updated_at.String(),
-		"date_format":       int(t.Date_format),
-		"number_format":     int(t.Number_format),
-		"work_date":         t.Work_date.String(),
-		"amount_font":       int(t.Amount_font),
-		"hide_tips":         t.Hide_tips,
-	}
+	return userPersonalizationFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *UserPersonalization) FromMap(data map[string]interface{}) {
-	if v, ok := data["user_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.User_id = types.NewCode(s)
-		}
-	}
-	if v, ok := data["light_theme"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Light_theme = types.NewCode(s)
-		}
-	}
-	if v, ok := data["dark_theme"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dark_theme = types.NewCode(s)
-		}
-	}
-	if v, ok := data["mode"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Mode = UserPersonalizationMode(int(val))
-		case int:
-			t.Mode = UserPersonalizationMode(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Dark", "Light"}
-			for i, opt := range options {
-				if opt == val {
-					t.Mode = UserPersonalizationMode(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["wallpaper"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Wallpaper = types.NewText(s)
-		}
-	}
-	if v, ok := data["wallpaper_opacity"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Wallpaper_opacity = int(val)
-		case int:
-			t.Wallpaper_opacity = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Wallpaper_opacity = n
-			}
-		}
-	}
-	if v, ok := data["wallpaper_blur"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Wallpaper_blur = int(val)
-		case int:
-			t.Wallpaper_blur = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Wallpaper_blur = n
-			}
-		}
-	}
-	if v, ok := data["panel_opacity"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Panel_opacity = int(val)
-		case int:
-			t.Panel_opacity = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Panel_opacity = n
-			}
-		}
-	}
-	if v, ok := data["font"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Font = UserPersonalizationFont(int(val))
-		case int:
-			t.Font = UserPersonalizationFont(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Default", "System", "Inter", "IBM Plex Sans", "Serif", "Monospace"}
-			for i, opt := range options {
-				if opt == val {
-					t.Font = UserPersonalizationFont(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["font_size"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Font_size = int(val)
-		case int:
-			t.Font_size = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Font_size = n
-			}
-		}
-	}
-	if v, ok := data["density"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Density = UserPersonalizationDensity(int(val))
-		case int:
-			t.Density = UserPersonalizationDensity(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Comfortable", "Compact"}
-			for i, opt := range options {
-				if opt == val {
-					t.Density = UserPersonalizationDensity(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["updated_at"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Updated_at, _ = types.NewDateTimeFromString(s)
-		}
-	}
-	if v, ok := data["date_format"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Date_format = UserPersonalizationDate_format(int(val))
-		case int:
-			t.Date_format = UserPersonalizationDate_format(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Language Default", "DD.MM.YY", "DD.MM.YYYY", "DD/MM/YYYY", "MM/DD/YYYY", "YYYY-MM-DD"}
-			for i, opt := range options {
-				if opt == val {
-					t.Date_format = UserPersonalizationDate_format(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["number_format"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Number_format = UserPersonalizationNumber_format(int(val))
-		case int:
-			t.Number_format = UserPersonalizationNumber_format(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Language Default", "Comma Thousands Point Decimals", "Point Thousands Comma Decimals", "Space Thousands Comma Decimals", "Point Decimals"}
-			for i, opt := range options {
-				if opt == val {
-					t.Number_format = UserPersonalizationNumber_format(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["work_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Work_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["amount_font"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Amount_font = UserPersonalizationAmount_font(int(val))
-		case int:
-			t.Amount_font = UserPersonalizationAmount_font(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Text Font", "Monospace"}
-			for i, opt := range options {
-				if opt == val {
-					t.Amount_font = UserPersonalizationAmount_font(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["hide_tips"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Hide_tips = b
-		}
-	}
+	userPersonalizationFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -4385,178 +3118,301 @@ func (t *UserPersonalization) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *UserPersonalization) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "user_id",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "light_theme",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "dark_theme",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "mode",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "wallpaper",
-			Type:       tables.FieldTypeText,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "wallpaper_opacity",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "wallpaper_blur",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "panel_opacity",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "font",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "font_size",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "density",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "updated_at",
-			Type:       tables.FieldTypeDateTime,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         13,
-			Name:       "date_format",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         14,
-			Name:       "number_format",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         15,
-			Name:       "work_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         16,
-			Name:       "amount_font",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         17,
-			Name:       "hide_tips",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return userPersonalizationFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in userPersonalizationFields.Fields
+func (t *UserPersonalization) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.User_id
+	case 1:
+		return &t.Light_theme
+	case 2:
+		return &t.Dark_theme
+	case 3:
+		return &t.Mode
+	case 4:
+		return &t.Wallpaper
+	case 5:
+		return &t.Wallpaper_opacity
+	case 6:
+		return &t.Wallpaper_blur
+	case 7:
+		return &t.Panel_opacity
+	case 8:
+		return &t.Font
+	case 9:
+		return &t.Font_size
+	case 10:
+		return &t.Density
+	case 11:
+		return &t.Updated_at
+	case 12:
+		return &t.Date_format
+	case 13:
+		return &t.Number_format
+	case 14:
+		return &t.Work_date
+	case 15:
+		return &t.Amount_font
+	case 16:
+		return &t.Hide_tips
 	}
+	return nil
+}
+
+// userPersonalizationFields describes the fields of User_Personalization for the record functions
+// written once in foundation/tables
+var userPersonalizationFields = &tables.TableFields{
+	Table: UserPersonalizationTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "user_id",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_User_id",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "light_theme",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Light_theme",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "dark_theme",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Dark_theme",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "mode",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Mode",
+			Options: []string{"Dark", "Light"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "wallpaper",
+				Type:       tables.FieldTypeText,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Wallpaper",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "wallpaper_opacity",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Wallpaper_opacity",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "wallpaper_blur",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Wallpaper_blur",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "panel_opacity",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Panel_opacity",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "font",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Font",
+			Options: []string{"Default", "System", "Inter", "IBM Plex Sans", "Serif", "Monospace"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "font_size",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Font_size",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "density",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Density",
+			Options: []string{"Comfortable", "Compact"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "updated_at",
+				Type:       tables.FieldTypeDateTime,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDateTime,
+			Trigger: "OnValidate_Updated_at",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "date_format",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Date_format",
+			Options: []string{"Language Default", "DD.MM.YY", "DD.MM.YYYY", "DD/MM/YYYY", "MM/DD/YYYY", "YYYY-MM-DD"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "number_format",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Number_format",
+			Options: []string{"Language Default", "Comma Thousands Point Decimals", "Point Thousands Comma Decimals", "Space Thousands Comma Decimals", "Point Decimals"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         15,
+				Name:       "work_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Work_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         16,
+				Name:       "amount_font",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Amount_font",
+			Options: []string{"Text Font", "Monospace"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         17,
+				Name:       "hide_tips",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Hide_tips",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

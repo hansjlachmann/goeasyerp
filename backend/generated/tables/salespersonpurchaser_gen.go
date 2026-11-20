@@ -117,28 +117,12 @@ var SalespersonPurchaser_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *SalespersonPurchaser) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "code":
-		return 1
-	case "name":
-		return 2
-	case "commission_percent":
-		return 3
-	}
-	return 0
+	return salespersonPurchaserFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *SalespersonPurchaser) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "code"
-	case 2:
-		return "name"
-	case 3:
-		return "commission_percent"
-	}
-	return ""
+	return salespersonPurchaserFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -250,15 +234,6 @@ type (
 	SalespersonPurchaserOnBeforeRename interface {
 		OnBeforeRename(rec *SalespersonPurchaser, handled *bool) error
 	}
-	SalespersonPurchaserOnValidate_Code interface {
-		OnValidate_Code(rec *SalespersonPurchaser) error
-	}
-	SalespersonPurchaserOnValidate_Name interface {
-		OnValidate_Name(rec *SalespersonPurchaser) error
-	}
-	SalespersonPurchaserOnValidate_Commission_percent interface {
-		OnValidate_Commission_percent(rec *SalespersonPurchaser) error
-	}
 )
 
 // salespersonPurchaserLogic is the registered business logic of Salesperson_Purchaser, in
@@ -301,14 +276,9 @@ func salespersonPurchaserTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(SalespersonPurchaserOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(SalespersonPurchaserOnBeforeRename)
-	case "OnValidate_Code":
-		_, ok = logic.(SalespersonPurchaserOnValidate_Code)
-	case "OnValidate_Name":
-		_, ok = logic.(SalespersonPurchaserOnValidate_Name)
-	case "OnValidate_Commission_percent":
-		_, ok = logic.(SalespersonPurchaserOnValidate_Commission_percent)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return salespersonPurchaserFields.IsOnValidateTrigger(name, logic, (*SalespersonPurchaser)(nil))
 	}
 	return true, ok
 }
@@ -598,10 +568,7 @@ func (t *SalespersonPurchaser) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *SalespersonPurchaser) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["code"] = t.Code
-	t.oldValues["name"] = t.Name
-	t.oldValues["commission_percent"] = t.Commission_percent
+	t.oldValues = salespersonPurchaserFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -616,15 +583,7 @@ func (t *SalespersonPurchaser) OldValue(fieldName string) interface{} {
 func (t *SalespersonPurchaser) XRec() *SalespersonPurchaser {
 	x := &SalespersonPurchaser{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["code"].(types.Code); ok {
-		x.Code = v
-	}
-	if v, ok := t.oldValues["name"].(types.Text); ok {
-		x.Name = v
-	}
-	if v, ok := t.oldValues["commission_percent"].(types.Decimal); ok {
-		x.Commission_percent = v
-	}
+	salespersonPurchaserFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -912,33 +871,7 @@ func (t *SalespersonPurchaser) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *SalespersonPurchaser) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Code.Equal(old)
-		}
-	case "name":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Name.Equal(old)
-		}
-	case "commission_percent":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Commission_percent.Equal(old)
-		}
-	}
-
-	return false
+	return salespersonPurchaserFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1213,15 +1146,7 @@ func (t *SalespersonPurchaser) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *SalespersonPurchaser) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("code"):
-		return "code", true
-	case strings.ToLower("name"):
-		return "name", true
-	case strings.ToLower("commission_percent"):
-		return "commission_percent", true
-	}
-	return "", false
+	return salespersonPurchaserFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2045,76 +1970,20 @@ func (t *SalespersonPurchaser) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *SalespersonPurchaser) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-		} else if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalespersonPurchaserOnValidate_Code); ok {
-				if err := trg.OnValidate_Code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "name":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-		} else if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalespersonPurchaserOnValidate_Name); ok {
-				if err := trg.OnValidate_Name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "commission_percent":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Commission_percent = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Commission_percent, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field commission_percent: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Commission_percent = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Commission_percent = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Commission_percent = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field commission_percent (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SalespersonPurchaserOnValidate_Commission_percent); ok {
-				if err := trg.OnValidate_Commission_percent(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := salespersonPurchaserFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &salespersonPurchaserFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2123,53 +1992,18 @@ func (t *SalespersonPurchaser) ValidateField(fieldName string, value interface{}
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *SalespersonPurchaser) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Code, true
-	case 2:
-		return t.Name, true
-	case 3:
-		return t.Commission_percent, true
-	}
-	return nil, false
+	return salespersonPurchaserFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *SalespersonPurchaser) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return salespersonPurchaserFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *SalespersonPurchaser) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Decimal); ok {
-			t.Commission_percent = v
-			return true
-		}
-	}
-	return false
+	return salespersonPurchaserFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2639,15 +2473,7 @@ func (t *SalespersonPurchaser) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *SalespersonPurchaser) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "code":
-		return t.Code, true
-	case "name":
-		return t.Name, true
-	case "commission_percent":
-		return t.Commission_percent, true
-	}
-	return nil, false
+	return salespersonPurchaserFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2735,37 +2561,12 @@ func (t *SalespersonPurchaser) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *SalespersonPurchaser) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"code":               t.Code.String(),
-		"name":               t.Name.String(),
-		"commission_percent": t.Commission_percent.String(),
-	}
+	return salespersonPurchaserFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *SalespersonPurchaser) FromMap(data map[string]interface{}) {
-	if v, ok := data["code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Name = types.NewText(s)
-		}
-	}
-	if v, ok := data["commission_percent"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Commission_percent, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Commission_percent = types.NewDecimal(val)
-		case int:
-			t.Commission_percent = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Commission_percent = types.NewDecimalFromInt(val)
-		}
-	}
+	salespersonPurchaserFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2786,39 +2587,71 @@ func (t *SalespersonPurchaser) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *SalespersonPurchaser) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "name",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            3,
-			Name:          "commission_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
+	return salespersonPurchaserFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in salespersonPurchaserFields.Fields
+func (t *SalespersonPurchaser) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Code
+	case 1:
+		return &t.Name
+	case 2:
+		return &t.Commission_percent
 	}
+	return nil
+}
+
+// salespersonPurchaserFields describes the fields of Salesperson_Purchaser for the record functions
+// written once in foundation/tables
+var salespersonPurchaserFields = &tables.TableFields{
+	Table: SalespersonPurchaserTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "name",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            3,
+				Name:          "commission_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Commission_percent",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

@@ -34,7 +34,6 @@ import (
 	"fmt"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -162,72 +161,12 @@ var BusinessUnit_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *BusinessUnit) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "code":
-		return 1
-	case "consolidate":
-		return 2
-	case "consolidation_pct":
-		return 3
-	case "starting_date":
-		return 4
-	case "ending_date":
-		return 5
-	case "income_currency_factor":
-		return 6
-	case "balance_currency_factor":
-		return 7
-	case "exch_rate_loss_acc":
-		return 8
-	case "exch_rate_gains_acc":
-		return 9
-	case "residual_account":
-		return 10
-	case "last_balance_currency_factor":
-		return 11
-	case "name":
-		return 12
-	case "company_name":
-		return 13
-	case "currency_code":
-		return 14
-	}
-	return 0
+	return businessUnitFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *BusinessUnit) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "code"
-	case 2:
-		return "consolidate"
-	case 3:
-		return "consolidation_pct"
-	case 4:
-		return "starting_date"
-	case 5:
-		return "ending_date"
-	case 6:
-		return "income_currency_factor"
-	case 7:
-		return "balance_currency_factor"
-	case 8:
-		return "exch_rate_loss_acc"
-	case 9:
-		return "exch_rate_gains_acc"
-	case 10:
-		return "residual_account"
-	case 11:
-		return "last_balance_currency_factor"
-	case 12:
-		return "name"
-	case 13:
-		return "company_name"
-	case 14:
-		return "currency_code"
-	}
-	return ""
+	return businessUnitFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -331,20 +270,6 @@ type (
 	BusinessUnitOnBeforeRename interface {
 		OnBeforeRename(rec *BusinessUnit, handled *bool) error
 	}
-	BusinessUnitOnValidate_Code                         interface{ OnValidate_Code(rec *BusinessUnit) error }
-	BusinessUnitOnValidate_Consolidate                  interface{ OnValidate_Consolidate(rec *BusinessUnit) error }
-	BusinessUnitOnValidate_Consolidation_pct            interface{ OnValidate_Consolidation_pct(rec *BusinessUnit) error }
-	BusinessUnitOnValidate_Starting_date                interface{ OnValidate_Starting_date(rec *BusinessUnit) error }
-	BusinessUnitOnValidate_Ending_date                  interface{ OnValidate_Ending_date(rec *BusinessUnit) error }
-	BusinessUnitOnValidate_Income_currency_factor       interface{ OnValidate_Income_currency_factor(rec *BusinessUnit) error }
-	BusinessUnitOnValidate_Balance_currency_factor      interface{ OnValidate_Balance_currency_factor(rec *BusinessUnit) error }
-	BusinessUnitOnValidate_Exch_rate_loss_acc           interface{ OnValidate_Exch_rate_loss_acc(rec *BusinessUnit) error }
-	BusinessUnitOnValidate_Exch_rate_gains_acc          interface{ OnValidate_Exch_rate_gains_acc(rec *BusinessUnit) error }
-	BusinessUnitOnValidate_Residual_account             interface{ OnValidate_Residual_account(rec *BusinessUnit) error }
-	BusinessUnitOnValidate_Last_balance_currency_factor interface{ OnValidate_Last_balance_currency_factor(rec *BusinessUnit) error }
-	BusinessUnitOnValidate_Name                         interface{ OnValidate_Name(rec *BusinessUnit) error }
-	BusinessUnitOnValidate_Company_name                 interface{ OnValidate_Company_name(rec *BusinessUnit) error }
-	BusinessUnitOnValidate_Currency_code                interface{ OnValidate_Currency_code(rec *BusinessUnit) error }
 )
 
 // businessUnitLogic is the registered business logic of Business_Unit, in
@@ -387,36 +312,9 @@ func businessUnitTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(BusinessUnitOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(BusinessUnitOnBeforeRename)
-	case "OnValidate_Code":
-		_, ok = logic.(BusinessUnitOnValidate_Code)
-	case "OnValidate_Consolidate":
-		_, ok = logic.(BusinessUnitOnValidate_Consolidate)
-	case "OnValidate_Consolidation_pct":
-		_, ok = logic.(BusinessUnitOnValidate_Consolidation_pct)
-	case "OnValidate_Starting_date":
-		_, ok = logic.(BusinessUnitOnValidate_Starting_date)
-	case "OnValidate_Ending_date":
-		_, ok = logic.(BusinessUnitOnValidate_Ending_date)
-	case "OnValidate_Income_currency_factor":
-		_, ok = logic.(BusinessUnitOnValidate_Income_currency_factor)
-	case "OnValidate_Balance_currency_factor":
-		_, ok = logic.(BusinessUnitOnValidate_Balance_currency_factor)
-	case "OnValidate_Exch_rate_loss_acc":
-		_, ok = logic.(BusinessUnitOnValidate_Exch_rate_loss_acc)
-	case "OnValidate_Exch_rate_gains_acc":
-		_, ok = logic.(BusinessUnitOnValidate_Exch_rate_gains_acc)
-	case "OnValidate_Residual_account":
-		_, ok = logic.(BusinessUnitOnValidate_Residual_account)
-	case "OnValidate_Last_balance_currency_factor":
-		_, ok = logic.(BusinessUnitOnValidate_Last_balance_currency_factor)
-	case "OnValidate_Name":
-		_, ok = logic.(BusinessUnitOnValidate_Name)
-	case "OnValidate_Company_name":
-		_, ok = logic.(BusinessUnitOnValidate_Company_name)
-	case "OnValidate_Currency_code":
-		_, ok = logic.(BusinessUnitOnValidate_Currency_code)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return businessUnitFields.IsOnValidateTrigger(name, logic, (*BusinessUnit)(nil))
 	}
 	return true, ok
 }
@@ -763,21 +661,7 @@ func (t *BusinessUnit) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *BusinessUnit) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["code"] = t.Code
-	t.oldValues["consolidate"] = t.Consolidate
-	t.oldValues["consolidation_pct"] = t.Consolidation_pct
-	t.oldValues["starting_date"] = t.Starting_date
-	t.oldValues["ending_date"] = t.Ending_date
-	t.oldValues["income_currency_factor"] = t.Income_currency_factor
-	t.oldValues["balance_currency_factor"] = t.Balance_currency_factor
-	t.oldValues["exch_rate_loss_acc"] = t.Exch_rate_loss_acc
-	t.oldValues["exch_rate_gains_acc"] = t.Exch_rate_gains_acc
-	t.oldValues["residual_account"] = t.Residual_account
-	t.oldValues["last_balance_currency_factor"] = t.Last_balance_currency_factor
-	t.oldValues["name"] = t.Name
-	t.oldValues["company_name"] = t.Company_name
-	t.oldValues["currency_code"] = t.Currency_code
+	t.oldValues = businessUnitFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -792,48 +676,7 @@ func (t *BusinessUnit) OldValue(fieldName string) interface{} {
 func (t *BusinessUnit) XRec() *BusinessUnit {
 	x := &BusinessUnit{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["code"].(types.Code); ok {
-		x.Code = v
-	}
-	if v, ok := t.oldValues["consolidate"].(bool); ok {
-		x.Consolidate = v
-	}
-	if v, ok := t.oldValues["consolidation_pct"].(types.Decimal); ok {
-		x.Consolidation_pct = v
-	}
-	if v, ok := t.oldValues["starting_date"].(types.Date); ok {
-		x.Starting_date = v
-	}
-	if v, ok := t.oldValues["ending_date"].(types.Date); ok {
-		x.Ending_date = v
-	}
-	if v, ok := t.oldValues["income_currency_factor"].(types.Decimal); ok {
-		x.Income_currency_factor = v
-	}
-	if v, ok := t.oldValues["balance_currency_factor"].(types.Decimal); ok {
-		x.Balance_currency_factor = v
-	}
-	if v, ok := t.oldValues["exch_rate_loss_acc"].(types.Code); ok {
-		x.Exch_rate_loss_acc = v
-	}
-	if v, ok := t.oldValues["exch_rate_gains_acc"].(types.Code); ok {
-		x.Exch_rate_gains_acc = v
-	}
-	if v, ok := t.oldValues["residual_account"].(types.Code); ok {
-		x.Residual_account = v
-	}
-	if v, ok := t.oldValues["last_balance_currency_factor"].(types.Decimal); ok {
-		x.Last_balance_currency_factor = v
-	}
-	if v, ok := t.oldValues["name"].(types.Text); ok {
-		x.Name = v
-	}
-	if v, ok := t.oldValues["company_name"].(types.Text); ok {
-		x.Company_name = v
-	}
-	if v, ok := t.oldValues["currency_code"].(types.Code); ok {
-		x.Currency_code = v
-	}
+	businessUnitFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1242,78 +1085,7 @@ func (t *BusinessUnit) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *BusinessUnit) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Code.Equal(old)
-		}
-	case "consolidate":
-		if old, ok := oldValue.(bool); ok {
-			return t.Consolidate != old
-		}
-		return true // Type mismatch, assume changed
-	case "consolidation_pct":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Consolidation_pct.Equal(old)
-		}
-	case "starting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Starting_date.Equal(old)
-		}
-	case "ending_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Ending_date.Equal(old)
-		}
-	case "income_currency_factor":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Income_currency_factor.Equal(old)
-		}
-	case "balance_currency_factor":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Balance_currency_factor.Equal(old)
-		}
-	case "exch_rate_loss_acc":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Exch_rate_loss_acc.Equal(old)
-		}
-	case "exch_rate_gains_acc":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Exch_rate_gains_acc.Equal(old)
-		}
-	case "residual_account":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Residual_account.Equal(old)
-		}
-	case "last_balance_currency_factor":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Last_balance_currency_factor.Equal(old)
-		}
-	case "name":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Name.Equal(old)
-		}
-	case "company_name":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Company_name.Equal(old)
-		}
-	case "currency_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Currency_code.Equal(old)
-		}
-	}
-
-	return false
+	return businessUnitFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1554,37 +1326,7 @@ func (t *BusinessUnit) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *BusinessUnit) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("code"):
-		return "code", true
-	case strings.ToLower("consolidate"):
-		return "consolidate", true
-	case strings.ToLower("consolidation_pct"):
-		return "consolidation_pct", true
-	case strings.ToLower("starting_date"):
-		return "starting_date", true
-	case strings.ToLower("ending_date"):
-		return "ending_date", true
-	case strings.ToLower("income_currency_factor"):
-		return "income_currency_factor", true
-	case strings.ToLower("balance_currency_factor"):
-		return "balance_currency_factor", true
-	case strings.ToLower("exch_rate_loss_acc"):
-		return "exch_rate_loss_acc", true
-	case strings.ToLower("exch_rate_gains_acc"):
-		return "exch_rate_gains_acc", true
-	case strings.ToLower("residual_account"):
-		return "residual_account", true
-	case strings.ToLower("last_balance_currency_factor"):
-		return "last_balance_currency_factor", true
-	case strings.ToLower("name"):
-		return "name", true
-	case strings.ToLower("company_name"):
-		return "company_name", true
-	case strings.ToLower("currency_code"):
-		return "currency_code", true
-	}
-	return "", false
+	return businessUnitFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2563,337 +2305,20 @@ func (t *BusinessUnit) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *BusinessUnit) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-		} else if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(BusinessUnitOnValidate_Code); ok {
-				if err := trg.OnValidate_Code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "consolidate":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Consolidate = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Consolidate = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field consolidate")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(BusinessUnitOnValidate_Consolidate); ok {
-				if err := trg.OnValidate_Consolidate(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "consolidation_pct":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Consolidation_pct = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Consolidation_pct, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field consolidation_pct: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Consolidation_pct = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Consolidation_pct = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Consolidation_pct = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field consolidation_pct (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(BusinessUnitOnValidate_Consolidation_pct); ok {
-				if err := trg.OnValidate_Consolidation_pct(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "starting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Starting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Starting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field starting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Starting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field starting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(BusinessUnitOnValidate_Starting_date); ok {
-				if err := trg.OnValidate_Starting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "ending_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Ending_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Ending_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field ending_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Ending_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field ending_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(BusinessUnitOnValidate_Ending_date); ok {
-				if err := trg.OnValidate_Ending_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "income_currency_factor":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Income_currency_factor = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Income_currency_factor, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field income_currency_factor: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Income_currency_factor = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Income_currency_factor = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Income_currency_factor = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field income_currency_factor (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(BusinessUnitOnValidate_Income_currency_factor); ok {
-				if err := trg.OnValidate_Income_currency_factor(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "balance_currency_factor":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Balance_currency_factor = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Balance_currency_factor, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field balance_currency_factor: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Balance_currency_factor = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Balance_currency_factor = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Balance_currency_factor = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field balance_currency_factor (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(BusinessUnitOnValidate_Balance_currency_factor); ok {
-				if err := trg.OnValidate_Balance_currency_factor(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "exch_rate_loss_acc":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Exch_rate_loss_acc = v
-		} else if v, ok := value.(string); ok {
-			t.Exch_rate_loss_acc = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field exch_rate_loss_acc")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "exch_rate_loss_acc"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(BusinessUnitOnValidate_Exch_rate_loss_acc); ok {
-				if err := trg.OnValidate_Exch_rate_loss_acc(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "exch_rate_gains_acc":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Exch_rate_gains_acc = v
-		} else if v, ok := value.(string); ok {
-			t.Exch_rate_gains_acc = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field exch_rate_gains_acc")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "exch_rate_gains_acc"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(BusinessUnitOnValidate_Exch_rate_gains_acc); ok {
-				if err := trg.OnValidate_Exch_rate_gains_acc(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "residual_account":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Residual_account = v
-		} else if v, ok := value.(string); ok {
-			t.Residual_account = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field residual_account")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "residual_account"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(BusinessUnitOnValidate_Residual_account); ok {
-				if err := trg.OnValidate_Residual_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "last_balance_currency_factor":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Last_balance_currency_factor = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Last_balance_currency_factor, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field last_balance_currency_factor: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Last_balance_currency_factor = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Last_balance_currency_factor = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Last_balance_currency_factor = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field last_balance_currency_factor (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(BusinessUnitOnValidate_Last_balance_currency_factor); ok {
-				if err := trg.OnValidate_Last_balance_currency_factor(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "name":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-		} else if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(BusinessUnitOnValidate_Name); ok {
-				if err := trg.OnValidate_Name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "company_name":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Company_name = v
-		} else if v, ok := value.(string); ok {
-			t.Company_name = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field company_name")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "company_name"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(BusinessUnitOnValidate_Company_name); ok {
-				if err := trg.OnValidate_Company_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "currency_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Currency_code = v
-		} else if v, ok := value.(string); ok {
-			t.Currency_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field currency_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "currency_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(BusinessUnitOnValidate_Currency_code); ok {
-				if err := trg.OnValidate_Currency_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := businessUnitFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &businessUnitFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2902,150 +2327,18 @@ func (t *BusinessUnit) ValidateField(fieldName string, value interface{}) error 
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *BusinessUnit) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Code, true
-	case 2:
-		return t.Consolidate, true
-	case 3:
-		return t.Consolidation_pct, true
-	case 4:
-		return t.Starting_date, true
-	case 5:
-		return t.Ending_date, true
-	case 6:
-		return t.Income_currency_factor, true
-	case 7:
-		return t.Balance_currency_factor, true
-	case 8:
-		return t.Exch_rate_loss_acc, true
-	case 9:
-		return t.Exch_rate_gains_acc, true
-	case 10:
-		return t.Residual_account, true
-	case 11:
-		return t.Last_balance_currency_factor, true
-	case 12:
-		return t.Name, true
-	case 13:
-		return t.Company_name, true
-	case 14:
-		return t.Currency_code, true
-	}
-	return nil, false
+	return businessUnitFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *BusinessUnit) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return businessUnitFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *BusinessUnit) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(bool); ok {
-			t.Consolidate = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Decimal); ok {
-			t.Consolidation_pct = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Date); ok {
-			t.Starting_date = v
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Date); ok {
-			t.Ending_date = v
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Decimal); ok {
-			t.Income_currency_factor = v
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Decimal); ok {
-			t.Balance_currency_factor = v
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Code); ok {
-			t.Exch_rate_loss_acc = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Exch_rate_loss_acc = types.NewCode(v)
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.Code); ok {
-			t.Exch_rate_gains_acc = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Exch_rate_gains_acc = types.NewCode(v)
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Code); ok {
-			t.Residual_account = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Residual_account = types.NewCode(v)
-			return true
-		}
-	case 11:
-		if v, ok := value.(types.Decimal); ok {
-			t.Last_balance_currency_factor = v
-			return true
-		}
-	case 12:
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-			return true
-		}
-	case 13:
-		if v, ok := value.(types.Text); ok {
-			t.Company_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Company_name = types.NewText(v)
-			return true
-		}
-	case 14:
-		if v, ok := value.(types.Code); ok {
-			t.Currency_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Currency_code = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return businessUnitFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3539,37 +2832,7 @@ func (t *BusinessUnit) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *BusinessUnit) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "code":
-		return t.Code, true
-	case "consolidate":
-		return t.Consolidate, true
-	case "consolidation_pct":
-		return t.Consolidation_pct, true
-	case "starting_date":
-		return t.Starting_date, true
-	case "ending_date":
-		return t.Ending_date, true
-	case "income_currency_factor":
-		return t.Income_currency_factor, true
-	case "balance_currency_factor":
-		return t.Balance_currency_factor, true
-	case "exch_rate_loss_acc":
-		return t.Exch_rate_loss_acc, true
-	case "exch_rate_gains_acc":
-		return t.Exch_rate_gains_acc, true
-	case "residual_account":
-		return t.Residual_account, true
-	case "last_balance_currency_factor":
-		return t.Last_balance_currency_factor, true
-	case "name":
-		return t.Name, true
-	case "company_name":
-		return t.Company_name, true
-	case "currency_code":
-		return t.Currency_code, true
-	}
-	return nil, false
+	return businessUnitFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3668,124 +2931,12 @@ func (t *BusinessUnit) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *BusinessUnit) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"code":                         t.Code.String(),
-		"consolidate":                  t.Consolidate,
-		"consolidation_pct":            t.Consolidation_pct.String(),
-		"starting_date":                t.Starting_date.String(),
-		"ending_date":                  t.Ending_date.String(),
-		"income_currency_factor":       t.Income_currency_factor.String(),
-		"balance_currency_factor":      t.Balance_currency_factor.String(),
-		"exch_rate_loss_acc":           t.Exch_rate_loss_acc.String(),
-		"exch_rate_gains_acc":          t.Exch_rate_gains_acc.String(),
-		"residual_account":             t.Residual_account.String(),
-		"last_balance_currency_factor": t.Last_balance_currency_factor.String(),
-		"name":                         t.Name.String(),
-		"company_name":                 t.Company_name.String(),
-		"currency_code":                t.Currency_code.String(),
-	}
+	return businessUnitFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *BusinessUnit) FromMap(data map[string]interface{}) {
-	if v, ok := data["code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["consolidate"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Consolidate = b
-		}
-	}
-	if v, ok := data["consolidation_pct"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Consolidation_pct, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Consolidation_pct = types.NewDecimal(val)
-		case int:
-			t.Consolidation_pct = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Consolidation_pct = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["starting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Starting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["ending_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Ending_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["income_currency_factor"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Income_currency_factor, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Income_currency_factor = types.NewDecimal(val)
-		case int:
-			t.Income_currency_factor = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Income_currency_factor = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["balance_currency_factor"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Balance_currency_factor, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Balance_currency_factor = types.NewDecimal(val)
-		case int:
-			t.Balance_currency_factor = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Balance_currency_factor = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["exch_rate_loss_acc"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Exch_rate_loss_acc = types.NewCode(s)
-		}
-	}
-	if v, ok := data["exch_rate_gains_acc"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Exch_rate_gains_acc = types.NewCode(s)
-		}
-	}
-	if v, ok := data["residual_account"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Residual_account = types.NewCode(s)
-		}
-	}
-	if v, ok := data["last_balance_currency_factor"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Last_balance_currency_factor, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Last_balance_currency_factor = types.NewDecimal(val)
-		case int:
-			t.Last_balance_currency_factor = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Last_balance_currency_factor = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Name = types.NewText(s)
-		}
-	}
-	if v, ok := data["company_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Company_name = types.NewText(s)
-		}
-	}
-	if v, ok := data["currency_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Currency_code = types.NewCode(s)
-		}
-	}
+	businessUnitFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3806,155 +2957,258 @@ func (t *BusinessUnit) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *BusinessUnit) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "consolidate",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            3,
-			Name:          "consolidation_pct",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "1:1",
-		},
-		{
-			No:         4,
-			Name:       "starting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "ending_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            6,
-			Name:          "income_currency_factor",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "0:15",
-		},
-		{
-			No:            7,
-			Name:          "balance_currency_factor",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "0:15",
-		},
-		{
-			No:         8,
-			Name:       "exch_rate_loss_acc",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "exch_rate_gains_acc",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "residual_account",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            11,
-			Name:          "last_balance_currency_factor",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "0:15",
-		},
-		{
-			No:         12,
-			Name:       "name",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         13,
-			Name:       "company_name",
-			Type:       tables.FieldTypeText,
-			Length:     100,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         14,
-			Name:       "currency_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return businessUnitFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in businessUnitFields.Fields
+func (t *BusinessUnit) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Code
+	case 1:
+		return &t.Consolidate
+	case 2:
+		return &t.Consolidation_pct
+	case 3:
+		return &t.Starting_date
+	case 4:
+		return &t.Ending_date
+	case 5:
+		return &t.Income_currency_factor
+	case 6:
+		return &t.Balance_currency_factor
+	case 7:
+		return &t.Exch_rate_loss_acc
+	case 8:
+		return &t.Exch_rate_gains_acc
+	case 9:
+		return &t.Residual_account
+	case 10:
+		return &t.Last_balance_currency_factor
+	case 11:
+		return &t.Name
+	case 12:
+		return &t.Company_name
+	case 13:
+		return &t.Currency_code
 	}
+	return nil
+}
+
+// businessUnitFields describes the fields of Business_Unit for the record functions
+// written once in foundation/tables
+var businessUnitFields = &tables.TableFields{
+	Table: BusinessUnitTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "consolidate",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Consolidate",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            3,
+				Name:          "consolidation_pct",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "1:1",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Consolidation_pct",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "starting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Starting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "ending_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Ending_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            6,
+				Name:          "income_currency_factor",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "0:15",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Income_currency_factor",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            7,
+				Name:          "balance_currency_factor",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "0:15",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Balance_currency_factor",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "exch_rate_loss_acc",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Exch_rate_loss_acc",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "exch_rate_gains_acc",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Exch_rate_gains_acc",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "residual_account",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Residual_account",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            11,
+				Name:          "last_balance_currency_factor",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "0:15",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Last_balance_currency_factor",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "name",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "company_name",
+				Type:       tables.FieldTypeText,
+				Length:     100,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindText,
+			Trigger:  "OnValidate_Company_name",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "currency_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Currency_code",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

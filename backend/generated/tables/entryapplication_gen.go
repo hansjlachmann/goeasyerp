@@ -58,7 +58,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -289,164 +288,12 @@ var EntryApplication_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *EntryApplication) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "entry_no":
-		return 1
-	case "application_no":
-		return 2
-	case "account_type":
-		return 3
-	case "account_no":
-		return 4
-	case "ledger_entry_no":
-		return 5
-	case "applying_entry":
-		return 6
-	case "posting_date":
-		return 7
-	case "document_no":
-		return 8
-	case "amount_applied":
-		return 9
-	case "transaction_no":
-		return 10
-	case "user_id":
-		return 11
-	case "unapplied":
-		return 12
-	case "unapplied_transaction_no":
-		return 13
-	case "unapplied_date":
-		return 14
-	case "unapplied_by_user_id":
-		return 15
-	case "amount":
-		return 20
-	case "amount_lcy":
-		return 21
-	case "original_amount_lcy":
-		return 22
-	case "remaining_amount":
-		return 23
-	case "remaining_amt_lcy":
-		return 24
-	case "open":
-		return 25
-	case "debit_amount":
-		return 26
-	case "credit_amount":
-		return 27
-	case "debit_amount_lcy":
-		return 28
-	case "credit_amount_lcy":
-		return 29
-	case "closed_by_entry_no":
-		return 30
-	case "closed_at_date":
-		return 31
-	case "closed_by_amount":
-		return 32
-	case "closed_by_amount_lcy":
-		return 33
-	case "closed_by_currency_code":
-		return 34
-	case "closed_by_currency_amount":
-		return 35
-	case "pmt_disc_lcy":
-		return 36
-	case "rounding_amount":
-		return 37
-	case "rounding_amount_lcy":
-		return 38
-	case "rounding_currency":
-		return 39
-	case "applies_to_id":
-		return 40
-	case "calculate_interest":
-		return 41
-	}
-	return 0
+	return entryApplicationFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *EntryApplication) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "entry_no"
-	case 2:
-		return "application_no"
-	case 3:
-		return "account_type"
-	case 4:
-		return "account_no"
-	case 5:
-		return "ledger_entry_no"
-	case 6:
-		return "applying_entry"
-	case 7:
-		return "posting_date"
-	case 8:
-		return "document_no"
-	case 9:
-		return "amount_applied"
-	case 10:
-		return "transaction_no"
-	case 11:
-		return "user_id"
-	case 12:
-		return "unapplied"
-	case 13:
-		return "unapplied_transaction_no"
-	case 14:
-		return "unapplied_date"
-	case 15:
-		return "unapplied_by_user_id"
-	case 20:
-		return "amount"
-	case 21:
-		return "amount_lcy"
-	case 22:
-		return "original_amount_lcy"
-	case 23:
-		return "remaining_amount"
-	case 24:
-		return "remaining_amt_lcy"
-	case 25:
-		return "open"
-	case 26:
-		return "debit_amount"
-	case 27:
-		return "credit_amount"
-	case 28:
-		return "debit_amount_lcy"
-	case 29:
-		return "credit_amount_lcy"
-	case 30:
-		return "closed_by_entry_no"
-	case 31:
-		return "closed_at_date"
-	case 32:
-		return "closed_by_amount"
-	case 33:
-		return "closed_by_amount_lcy"
-	case 34:
-		return "closed_by_currency_code"
-	case 35:
-		return "closed_by_currency_amount"
-	case 36:
-		return "pmt_disc_lcy"
-	case 37:
-		return "rounding_amount"
-	case 38:
-		return "rounding_amount_lcy"
-	case 39:
-		return "rounding_currency"
-	case 40:
-		return "applies_to_id"
-	case 41:
-		return "calculate_interest"
-	}
-	return ""
+	return entryApplicationFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -558,117 +405,6 @@ type (
 	EntryApplicationOnBeforeRename interface {
 		OnBeforeRename(rec *EntryApplication, handled *bool) error
 	}
-	EntryApplicationOnValidate_Entry_no interface {
-		OnValidate_Entry_no(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Application_no interface {
-		OnValidate_Application_no(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Account_type interface {
-		OnValidate_Account_type(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Account_no interface {
-		OnValidate_Account_no(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Ledger_entry_no interface {
-		OnValidate_Ledger_entry_no(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Applying_entry interface {
-		OnValidate_Applying_entry(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Posting_date interface {
-		OnValidate_Posting_date(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Document_no interface {
-		OnValidate_Document_no(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Amount_applied interface {
-		OnValidate_Amount_applied(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Transaction_no interface {
-		OnValidate_Transaction_no(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_User_id interface {
-		OnValidate_User_id(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Unapplied interface {
-		OnValidate_Unapplied(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Unapplied_transaction_no interface {
-		OnValidate_Unapplied_transaction_no(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Unapplied_date interface {
-		OnValidate_Unapplied_date(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Unapplied_by_user_id interface {
-		OnValidate_Unapplied_by_user_id(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Amount interface {
-		OnValidate_Amount(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Amount_lcy interface {
-		OnValidate_Amount_lcy(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Original_amount_lcy interface {
-		OnValidate_Original_amount_lcy(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Remaining_amount interface {
-		OnValidate_Remaining_amount(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Remaining_amt_lcy interface {
-		OnValidate_Remaining_amt_lcy(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Open interface {
-		OnValidate_Open(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Debit_amount interface {
-		OnValidate_Debit_amount(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Credit_amount interface {
-		OnValidate_Credit_amount(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Debit_amount_lcy interface {
-		OnValidate_Debit_amount_lcy(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Credit_amount_lcy interface {
-		OnValidate_Credit_amount_lcy(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Closed_by_entry_no interface {
-		OnValidate_Closed_by_entry_no(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Closed_at_date interface {
-		OnValidate_Closed_at_date(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Closed_by_amount interface {
-		OnValidate_Closed_by_amount(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Closed_by_amount_lcy interface {
-		OnValidate_Closed_by_amount_lcy(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Closed_by_currency_code interface {
-		OnValidate_Closed_by_currency_code(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Closed_by_currency_amount interface {
-		OnValidate_Closed_by_currency_amount(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Pmt_disc_lcy interface {
-		OnValidate_Pmt_disc_lcy(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Rounding_amount interface {
-		OnValidate_Rounding_amount(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Rounding_amount_lcy interface {
-		OnValidate_Rounding_amount_lcy(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Rounding_currency interface {
-		OnValidate_Rounding_currency(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Applies_to_id interface {
-		OnValidate_Applies_to_id(rec *EntryApplication) error
-	}
-	EntryApplicationOnValidate_Calculate_interest interface {
-		OnValidate_Calculate_interest(rec *EntryApplication) error
-	}
 )
 
 // entryApplicationLogic is the registered business logic of Entry_Application, in
@@ -711,82 +447,9 @@ func entryApplicationTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(EntryApplicationOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(EntryApplicationOnBeforeRename)
-	case "OnValidate_Entry_no":
-		_, ok = logic.(EntryApplicationOnValidate_Entry_no)
-	case "OnValidate_Application_no":
-		_, ok = logic.(EntryApplicationOnValidate_Application_no)
-	case "OnValidate_Account_type":
-		_, ok = logic.(EntryApplicationOnValidate_Account_type)
-	case "OnValidate_Account_no":
-		_, ok = logic.(EntryApplicationOnValidate_Account_no)
-	case "OnValidate_Ledger_entry_no":
-		_, ok = logic.(EntryApplicationOnValidate_Ledger_entry_no)
-	case "OnValidate_Applying_entry":
-		_, ok = logic.(EntryApplicationOnValidate_Applying_entry)
-	case "OnValidate_Posting_date":
-		_, ok = logic.(EntryApplicationOnValidate_Posting_date)
-	case "OnValidate_Document_no":
-		_, ok = logic.(EntryApplicationOnValidate_Document_no)
-	case "OnValidate_Amount_applied":
-		_, ok = logic.(EntryApplicationOnValidate_Amount_applied)
-	case "OnValidate_Transaction_no":
-		_, ok = logic.(EntryApplicationOnValidate_Transaction_no)
-	case "OnValidate_User_id":
-		_, ok = logic.(EntryApplicationOnValidate_User_id)
-	case "OnValidate_Unapplied":
-		_, ok = logic.(EntryApplicationOnValidate_Unapplied)
-	case "OnValidate_Unapplied_transaction_no":
-		_, ok = logic.(EntryApplicationOnValidate_Unapplied_transaction_no)
-	case "OnValidate_Unapplied_date":
-		_, ok = logic.(EntryApplicationOnValidate_Unapplied_date)
-	case "OnValidate_Unapplied_by_user_id":
-		_, ok = logic.(EntryApplicationOnValidate_Unapplied_by_user_id)
-	case "OnValidate_Amount":
-		_, ok = logic.(EntryApplicationOnValidate_Amount)
-	case "OnValidate_Amount_lcy":
-		_, ok = logic.(EntryApplicationOnValidate_Amount_lcy)
-	case "OnValidate_Original_amount_lcy":
-		_, ok = logic.(EntryApplicationOnValidate_Original_amount_lcy)
-	case "OnValidate_Remaining_amount":
-		_, ok = logic.(EntryApplicationOnValidate_Remaining_amount)
-	case "OnValidate_Remaining_amt_lcy":
-		_, ok = logic.(EntryApplicationOnValidate_Remaining_amt_lcy)
-	case "OnValidate_Open":
-		_, ok = logic.(EntryApplicationOnValidate_Open)
-	case "OnValidate_Debit_amount":
-		_, ok = logic.(EntryApplicationOnValidate_Debit_amount)
-	case "OnValidate_Credit_amount":
-		_, ok = logic.(EntryApplicationOnValidate_Credit_amount)
-	case "OnValidate_Debit_amount_lcy":
-		_, ok = logic.(EntryApplicationOnValidate_Debit_amount_lcy)
-	case "OnValidate_Credit_amount_lcy":
-		_, ok = logic.(EntryApplicationOnValidate_Credit_amount_lcy)
-	case "OnValidate_Closed_by_entry_no":
-		_, ok = logic.(EntryApplicationOnValidate_Closed_by_entry_no)
-	case "OnValidate_Closed_at_date":
-		_, ok = logic.(EntryApplicationOnValidate_Closed_at_date)
-	case "OnValidate_Closed_by_amount":
-		_, ok = logic.(EntryApplicationOnValidate_Closed_by_amount)
-	case "OnValidate_Closed_by_amount_lcy":
-		_, ok = logic.(EntryApplicationOnValidate_Closed_by_amount_lcy)
-	case "OnValidate_Closed_by_currency_code":
-		_, ok = logic.(EntryApplicationOnValidate_Closed_by_currency_code)
-	case "OnValidate_Closed_by_currency_amount":
-		_, ok = logic.(EntryApplicationOnValidate_Closed_by_currency_amount)
-	case "OnValidate_Pmt_disc_lcy":
-		_, ok = logic.(EntryApplicationOnValidate_Pmt_disc_lcy)
-	case "OnValidate_Rounding_amount":
-		_, ok = logic.(EntryApplicationOnValidate_Rounding_amount)
-	case "OnValidate_Rounding_amount_lcy":
-		_, ok = logic.(EntryApplicationOnValidate_Rounding_amount_lcy)
-	case "OnValidate_Rounding_currency":
-		_, ok = logic.(EntryApplicationOnValidate_Rounding_currency)
-	case "OnValidate_Applies_to_id":
-		_, ok = logic.(EntryApplicationOnValidate_Applies_to_id)
-	case "OnValidate_Calculate_interest":
-		_, ok = logic.(EntryApplicationOnValidate_Calculate_interest)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return entryApplicationFields.IsOnValidateTrigger(name, logic, (*EntryApplication)(nil))
 	}
 	return true, ok
 }
@@ -1174,44 +837,7 @@ func (t *EntryApplication) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *EntryApplication) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["entry_no"] = t.Entry_no
-	t.oldValues["application_no"] = t.Application_no
-	t.oldValues["account_type"] = t.Account_type
-	t.oldValues["account_no"] = t.Account_no
-	t.oldValues["ledger_entry_no"] = t.Ledger_entry_no
-	t.oldValues["applying_entry"] = t.Applying_entry
-	t.oldValues["posting_date"] = t.Posting_date
-	t.oldValues["document_no"] = t.Document_no
-	t.oldValues["amount_applied"] = t.Amount_applied
-	t.oldValues["transaction_no"] = t.Transaction_no
-	t.oldValues["user_id"] = t.User_id
-	t.oldValues["unapplied"] = t.Unapplied
-	t.oldValues["unapplied_transaction_no"] = t.Unapplied_transaction_no
-	t.oldValues["unapplied_date"] = t.Unapplied_date
-	t.oldValues["unapplied_by_user_id"] = t.Unapplied_by_user_id
-	t.oldValues["amount"] = t.Amount
-	t.oldValues["amount_lcy"] = t.Amount_lcy
-	t.oldValues["original_amount_lcy"] = t.Original_amount_lcy
-	t.oldValues["remaining_amount"] = t.Remaining_amount
-	t.oldValues["remaining_amt_lcy"] = t.Remaining_amt_lcy
-	t.oldValues["open"] = t.Open
-	t.oldValues["debit_amount"] = t.Debit_amount
-	t.oldValues["credit_amount"] = t.Credit_amount
-	t.oldValues["debit_amount_lcy"] = t.Debit_amount_lcy
-	t.oldValues["credit_amount_lcy"] = t.Credit_amount_lcy
-	t.oldValues["closed_by_entry_no"] = t.Closed_by_entry_no
-	t.oldValues["closed_at_date"] = t.Closed_at_date
-	t.oldValues["closed_by_amount"] = t.Closed_by_amount
-	t.oldValues["closed_by_amount_lcy"] = t.Closed_by_amount_lcy
-	t.oldValues["closed_by_currency_code"] = t.Closed_by_currency_code
-	t.oldValues["closed_by_currency_amount"] = t.Closed_by_currency_amount
-	t.oldValues["pmt_disc_lcy"] = t.Pmt_disc_lcy
-	t.oldValues["rounding_amount"] = t.Rounding_amount
-	t.oldValues["rounding_amount_lcy"] = t.Rounding_amount_lcy
-	t.oldValues["rounding_currency"] = t.Rounding_currency
-	t.oldValues["applies_to_id"] = t.Applies_to_id
-	t.oldValues["calculate_interest"] = t.Calculate_interest
+	t.oldValues = entryApplicationFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1226,117 +852,7 @@ func (t *EntryApplication) OldValue(fieldName string) interface{} {
 func (t *EntryApplication) XRec() *EntryApplication {
 	x := &EntryApplication{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["entry_no"].(int); ok {
-		x.Entry_no = v
-	}
-	if v, ok := t.oldValues["application_no"].(int); ok {
-		x.Application_no = v
-	}
-	if v, ok := t.oldValues["account_type"].(EntryApplicationAccount_type); ok {
-		x.Account_type = v
-	}
-	if v, ok := t.oldValues["account_no"].(types.Code); ok {
-		x.Account_no = v
-	}
-	if v, ok := t.oldValues["ledger_entry_no"].(int); ok {
-		x.Ledger_entry_no = v
-	}
-	if v, ok := t.oldValues["applying_entry"].(bool); ok {
-		x.Applying_entry = v
-	}
-	if v, ok := t.oldValues["posting_date"].(types.Date); ok {
-		x.Posting_date = v
-	}
-	if v, ok := t.oldValues["document_no"].(types.Code); ok {
-		x.Document_no = v
-	}
-	if v, ok := t.oldValues["amount_applied"].(types.Decimal); ok {
-		x.Amount_applied = v
-	}
-	if v, ok := t.oldValues["transaction_no"].(int); ok {
-		x.Transaction_no = v
-	}
-	if v, ok := t.oldValues["user_id"].(types.Code); ok {
-		x.User_id = v
-	}
-	if v, ok := t.oldValues["unapplied"].(bool); ok {
-		x.Unapplied = v
-	}
-	if v, ok := t.oldValues["unapplied_transaction_no"].(int); ok {
-		x.Unapplied_transaction_no = v
-	}
-	if v, ok := t.oldValues["unapplied_date"].(types.Date); ok {
-		x.Unapplied_date = v
-	}
-	if v, ok := t.oldValues["unapplied_by_user_id"].(types.Code); ok {
-		x.Unapplied_by_user_id = v
-	}
-	if v, ok := t.oldValues["amount"].(types.Decimal); ok {
-		x.Amount = v
-	}
-	if v, ok := t.oldValues["amount_lcy"].(types.Decimal); ok {
-		x.Amount_lcy = v
-	}
-	if v, ok := t.oldValues["original_amount_lcy"].(types.Decimal); ok {
-		x.Original_amount_lcy = v
-	}
-	if v, ok := t.oldValues["remaining_amount"].(types.Decimal); ok {
-		x.Remaining_amount = v
-	}
-	if v, ok := t.oldValues["remaining_amt_lcy"].(types.Decimal); ok {
-		x.Remaining_amt_lcy = v
-	}
-	if v, ok := t.oldValues["open"].(bool); ok {
-		x.Open = v
-	}
-	if v, ok := t.oldValues["debit_amount"].(types.Decimal); ok {
-		x.Debit_amount = v
-	}
-	if v, ok := t.oldValues["credit_amount"].(types.Decimal); ok {
-		x.Credit_amount = v
-	}
-	if v, ok := t.oldValues["debit_amount_lcy"].(types.Decimal); ok {
-		x.Debit_amount_lcy = v
-	}
-	if v, ok := t.oldValues["credit_amount_lcy"].(types.Decimal); ok {
-		x.Credit_amount_lcy = v
-	}
-	if v, ok := t.oldValues["closed_by_entry_no"].(int); ok {
-		x.Closed_by_entry_no = v
-	}
-	if v, ok := t.oldValues["closed_at_date"].(types.Date); ok {
-		x.Closed_at_date = v
-	}
-	if v, ok := t.oldValues["closed_by_amount"].(types.Decimal); ok {
-		x.Closed_by_amount = v
-	}
-	if v, ok := t.oldValues["closed_by_amount_lcy"].(types.Decimal); ok {
-		x.Closed_by_amount_lcy = v
-	}
-	if v, ok := t.oldValues["closed_by_currency_code"].(types.Code); ok {
-		x.Closed_by_currency_code = v
-	}
-	if v, ok := t.oldValues["closed_by_currency_amount"].(types.Decimal); ok {
-		x.Closed_by_currency_amount = v
-	}
-	if v, ok := t.oldValues["pmt_disc_lcy"].(types.Decimal); ok {
-		x.Pmt_disc_lcy = v
-	}
-	if v, ok := t.oldValues["rounding_amount"].(types.Decimal); ok {
-		x.Rounding_amount = v
-	}
-	if v, ok := t.oldValues["rounding_amount_lcy"].(types.Decimal); ok {
-		x.Rounding_amount_lcy = v
-	}
-	if v, ok := t.oldValues["rounding_currency"].(types.Code); ok {
-		x.Rounding_currency = v
-	}
-	if v, ok := t.oldValues["applies_to_id"].(types.Code); ok {
-		x.Applies_to_id = v
-	}
-	if v, ok := t.oldValues["calculate_interest"].(bool); ok {
-		x.Calculate_interest = v
-	}
+	entryApplicationFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1986,179 +1502,7 @@ func (t *EntryApplication) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *EntryApplication) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "application_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Application_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "account_type":
-		if old, ok := oldValue.(EntryApplicationAccount_type); ok {
-			return t.Account_type != old
-		}
-	case "account_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Account_no.Equal(old)
-		}
-	case "ledger_entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Ledger_entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "applying_entry":
-		if old, ok := oldValue.(bool); ok {
-			return t.Applying_entry != old
-		}
-		return true // Type mismatch, assume changed
-	case "posting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Posting_date.Equal(old)
-		}
-	case "document_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Document_no.Equal(old)
-		}
-	case "amount_applied":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Amount_applied.Equal(old)
-		}
-	case "transaction_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Transaction_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "user_id":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.User_id.Equal(old)
-		}
-	case "unapplied":
-		if old, ok := oldValue.(bool); ok {
-			return t.Unapplied != old
-		}
-		return true // Type mismatch, assume changed
-	case "unapplied_transaction_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Unapplied_transaction_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "unapplied_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Unapplied_date.Equal(old)
-		}
-	case "unapplied_by_user_id":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Unapplied_by_user_id.Equal(old)
-		}
-	case "amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Amount.Equal(old)
-		}
-	case "amount_lcy":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Amount_lcy.Equal(old)
-		}
-	case "original_amount_lcy":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Original_amount_lcy.Equal(old)
-		}
-	case "remaining_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Remaining_amount.Equal(old)
-		}
-	case "remaining_amt_lcy":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Remaining_amt_lcy.Equal(old)
-		}
-	case "open":
-		if old, ok := oldValue.(bool); ok {
-			return t.Open != old
-		}
-		return true // Type mismatch, assume changed
-	case "debit_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Debit_amount.Equal(old)
-		}
-	case "credit_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Credit_amount.Equal(old)
-		}
-	case "debit_amount_lcy":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Debit_amount_lcy.Equal(old)
-		}
-	case "credit_amount_lcy":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Credit_amount_lcy.Equal(old)
-		}
-	case "closed_by_entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Closed_by_entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "closed_at_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Closed_at_date.Equal(old)
-		}
-	case "closed_by_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Closed_by_amount.Equal(old)
-		}
-	case "closed_by_amount_lcy":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Closed_by_amount_lcy.Equal(old)
-		}
-	case "closed_by_currency_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Closed_by_currency_code.Equal(old)
-		}
-	case "closed_by_currency_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Closed_by_currency_amount.Equal(old)
-		}
-	case "pmt_disc_lcy":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Pmt_disc_lcy.Equal(old)
-		}
-	case "rounding_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Rounding_amount.Equal(old)
-		}
-	case "rounding_amount_lcy":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Rounding_amount_lcy.Equal(old)
-		}
-	case "rounding_currency":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Rounding_currency.Equal(old)
-		}
-	case "applies_to_id":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Applies_to_id.Equal(old)
-		}
-	case "calculate_interest":
-		if old, ok := oldValue.(bool); ok {
-			return t.Calculate_interest != old
-		}
-		return true // Type mismatch, assume changed
-	}
-
-	return false
+	return entryApplicationFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -2359,83 +1703,7 @@ func (t *EntryApplication) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *EntryApplication) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("entry_no"):
-		return "entry_no", true
-	case strings.ToLower("application_no"):
-		return "application_no", true
-	case strings.ToLower("account_type"):
-		return "account_type", true
-	case strings.ToLower("account_no"):
-		return "account_no", true
-	case strings.ToLower("ledger_entry_no"):
-		return "ledger_entry_no", true
-	case strings.ToLower("applying_entry"):
-		return "applying_entry", true
-	case strings.ToLower("posting_date"):
-		return "posting_date", true
-	case strings.ToLower("document_no"):
-		return "document_no", true
-	case strings.ToLower("amount_applied"):
-		return "amount_applied", true
-	case strings.ToLower("transaction_no"):
-		return "transaction_no", true
-	case strings.ToLower("user_id"):
-		return "user_id", true
-	case strings.ToLower("unapplied"):
-		return "unapplied", true
-	case strings.ToLower("unapplied_transaction_no"):
-		return "unapplied_transaction_no", true
-	case strings.ToLower("unapplied_date"):
-		return "unapplied_date", true
-	case strings.ToLower("unapplied_by_user_id"):
-		return "unapplied_by_user_id", true
-	case strings.ToLower("amount"):
-		return "amount", true
-	case strings.ToLower("amount_lcy"):
-		return "amount_lcy", true
-	case strings.ToLower("original_amount_lcy"):
-		return "original_amount_lcy", true
-	case strings.ToLower("remaining_amount"):
-		return "remaining_amount", true
-	case strings.ToLower("remaining_amt_lcy"):
-		return "remaining_amt_lcy", true
-	case strings.ToLower("open"):
-		return "open", true
-	case strings.ToLower("debit_amount"):
-		return "debit_amount", true
-	case strings.ToLower("credit_amount"):
-		return "credit_amount", true
-	case strings.ToLower("debit_amount_lcy"):
-		return "debit_amount_lcy", true
-	case strings.ToLower("credit_amount_lcy"):
-		return "credit_amount_lcy", true
-	case strings.ToLower("closed_by_entry_no"):
-		return "closed_by_entry_no", true
-	case strings.ToLower("closed_at_date"):
-		return "closed_at_date", true
-	case strings.ToLower("closed_by_amount"):
-		return "closed_by_amount", true
-	case strings.ToLower("closed_by_amount_lcy"):
-		return "closed_by_amount_lcy", true
-	case strings.ToLower("closed_by_currency_code"):
-		return "closed_by_currency_code", true
-	case strings.ToLower("closed_by_currency_amount"):
-		return "closed_by_currency_amount", true
-	case strings.ToLower("pmt_disc_lcy"):
-		return "pmt_disc_lcy", true
-	case strings.ToLower("rounding_amount"):
-		return "rounding_amount", true
-	case strings.ToLower("rounding_amount_lcy"):
-		return "rounding_amount_lcy", true
-	case strings.ToLower("rounding_currency"):
-		return "rounding_currency", true
-	case strings.ToLower("applies_to_id"):
-		return "applies_to_id", true
-	case strings.ToLower("calculate_interest"):
-		return "calculate_interest", true
-	}
-	return "", false
+	return entryApplicationFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -3697,945 +2965,20 @@ func (t *EntryApplication) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *EntryApplication) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Entry_no = v
-		case float64:
-			t.Entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field entry_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Entry_no); ok {
-				if err := trg.OnValidate_Entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "application_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Application_no = v
-		case float64:
-			t.Application_no = int(v)
-		case string:
-			if v == "" {
-				t.Application_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Application_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field application_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field application_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Application_no); ok {
-				if err := trg.OnValidate_Application_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "account_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(EntryApplicationAccount_type); ok {
-			t.Account_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 2 {
-				return fmt.Errorf("invalid option value %d for field account_type (valid range: 0-%d)", v, 2-1)
-			}
-			t.Account_type = EntryApplicationAccount_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 2 {
-				return fmt.Errorf("invalid option value %d for field account_type (valid range: 0-%d)", intVal, 2-1)
-			}
-			t.Account_type = EntryApplicationAccount_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Account_type = 0
-			} else {
-				options := []string{"Customer", "Vendor"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Account_type = EntryApplicationAccount_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field account_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field account_type (expected EntryApplicationAccount_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Account_type); ok {
-				if err := trg.OnValidate_Account_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "account_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Account_no = v
-		} else if v, ok := value.(string); ok {
-			t.Account_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field account_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Account_no); ok {
-				if err := trg.OnValidate_Account_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "ledger_entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Ledger_entry_no = v
-		case float64:
-			t.Ledger_entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Ledger_entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Ledger_entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field ledger_entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field ledger_entry_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Ledger_entry_no); ok {
-				if err := trg.OnValidate_Ledger_entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "applying_entry":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Applying_entry = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Applying_entry = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field applying_entry")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Applying_entry); ok {
-				if err := trg.OnValidate_Applying_entry(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "posting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Posting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Posting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field posting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Posting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field posting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Posting_date); ok {
-				if err := trg.OnValidate_Posting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Document_no = v
-		} else if v, ok := value.(string); ok {
-			t.Document_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field document_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Document_no); ok {
-				if err := trg.OnValidate_Document_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "amount_applied":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount_applied = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Amount_applied, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field amount_applied: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Amount_applied = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Amount_applied = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Amount_applied = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field amount_applied (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Amount_applied); ok {
-				if err := trg.OnValidate_Amount_applied(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "transaction_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Transaction_no = v
-		case float64:
-			t.Transaction_no = int(v)
-		case string:
-			if v == "" {
-				t.Transaction_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Transaction_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field transaction_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field transaction_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Transaction_no); ok {
-				if err := trg.OnValidate_Transaction_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "user_id":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-		} else if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field user_id")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_User_id); ok {
-				if err := trg.OnValidate_User_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unapplied":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Unapplied = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Unapplied = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field unapplied")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Unapplied); ok {
-				if err := trg.OnValidate_Unapplied(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unapplied_transaction_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Unapplied_transaction_no = v
-		case float64:
-			t.Unapplied_transaction_no = int(v)
-		case string:
-			if v == "" {
-				t.Unapplied_transaction_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Unapplied_transaction_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field unapplied_transaction_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field unapplied_transaction_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Unapplied_transaction_no); ok {
-				if err := trg.OnValidate_Unapplied_transaction_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unapplied_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Unapplied_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Unapplied_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field unapplied_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Unapplied_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field unapplied_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Unapplied_date); ok {
-				if err := trg.OnValidate_Unapplied_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unapplied_by_user_id":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Unapplied_by_user_id = v
-		} else if v, ok := value.(string); ok {
-			t.Unapplied_by_user_id = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field unapplied_by_user_id")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Unapplied_by_user_id); ok {
-				if err := trg.OnValidate_Unapplied_by_user_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Amount); ok {
-				if err := trg.OnValidate_Amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "amount_lcy":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount_lcy = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Amount_lcy, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field amount_lcy: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Amount_lcy = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Amount_lcy = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Amount_lcy = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field amount_lcy (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Amount_lcy); ok {
-				if err := trg.OnValidate_Amount_lcy(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "original_amount_lcy":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Original_amount_lcy = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Original_amount_lcy, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field original_amount_lcy: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Original_amount_lcy = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Original_amount_lcy = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Original_amount_lcy = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field original_amount_lcy (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Original_amount_lcy); ok {
-				if err := trg.OnValidate_Original_amount_lcy(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "remaining_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Remaining_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Remaining_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field remaining_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Remaining_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Remaining_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Remaining_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field remaining_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Remaining_amount); ok {
-				if err := trg.OnValidate_Remaining_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "remaining_amt_lcy":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Remaining_amt_lcy = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Remaining_amt_lcy, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field remaining_amt_lcy: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Remaining_amt_lcy = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Remaining_amt_lcy = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Remaining_amt_lcy = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field remaining_amt_lcy (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Remaining_amt_lcy); ok {
-				if err := trg.OnValidate_Remaining_amt_lcy(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "open":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Open = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Open = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field open")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Open); ok {
-				if err := trg.OnValidate_Open(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "debit_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Debit_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Debit_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field debit_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Debit_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Debit_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Debit_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field debit_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Debit_amount); ok {
-				if err := trg.OnValidate_Debit_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "credit_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Credit_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Credit_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field credit_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Credit_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Credit_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Credit_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field credit_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Credit_amount); ok {
-				if err := trg.OnValidate_Credit_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "debit_amount_lcy":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Debit_amount_lcy = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Debit_amount_lcy, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field debit_amount_lcy: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Debit_amount_lcy = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Debit_amount_lcy = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Debit_amount_lcy = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field debit_amount_lcy (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Debit_amount_lcy); ok {
-				if err := trg.OnValidate_Debit_amount_lcy(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "credit_amount_lcy":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Credit_amount_lcy = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Credit_amount_lcy, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field credit_amount_lcy: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Credit_amount_lcy = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Credit_amount_lcy = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Credit_amount_lcy = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field credit_amount_lcy (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Credit_amount_lcy); ok {
-				if err := trg.OnValidate_Credit_amount_lcy(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "closed_by_entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Closed_by_entry_no = v
-		case float64:
-			t.Closed_by_entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Closed_by_entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Closed_by_entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field closed_by_entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field closed_by_entry_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Closed_by_entry_no); ok {
-				if err := trg.OnValidate_Closed_by_entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "closed_at_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Closed_at_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Closed_at_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field closed_at_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Closed_at_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field closed_at_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Closed_at_date); ok {
-				if err := trg.OnValidate_Closed_at_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "closed_by_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Closed_by_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Closed_by_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field closed_by_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Closed_by_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Closed_by_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Closed_by_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field closed_by_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Closed_by_amount); ok {
-				if err := trg.OnValidate_Closed_by_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "closed_by_amount_lcy":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Closed_by_amount_lcy = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Closed_by_amount_lcy, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field closed_by_amount_lcy: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Closed_by_amount_lcy = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Closed_by_amount_lcy = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Closed_by_amount_lcy = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field closed_by_amount_lcy (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Closed_by_amount_lcy); ok {
-				if err := trg.OnValidate_Closed_by_amount_lcy(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "closed_by_currency_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Closed_by_currency_code = v
-		} else if v, ok := value.(string); ok {
-			t.Closed_by_currency_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field closed_by_currency_code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Closed_by_currency_code); ok {
-				if err := trg.OnValidate_Closed_by_currency_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "closed_by_currency_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Closed_by_currency_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Closed_by_currency_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field closed_by_currency_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Closed_by_currency_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Closed_by_currency_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Closed_by_currency_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field closed_by_currency_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Closed_by_currency_amount); ok {
-				if err := trg.OnValidate_Closed_by_currency_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "pmt_disc_lcy":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Pmt_disc_lcy = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Pmt_disc_lcy, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field pmt_disc_lcy: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Pmt_disc_lcy = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Pmt_disc_lcy = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Pmt_disc_lcy = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field pmt_disc_lcy (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Pmt_disc_lcy); ok {
-				if err := trg.OnValidate_Pmt_disc_lcy(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "rounding_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Rounding_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Rounding_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field rounding_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Rounding_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Rounding_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Rounding_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field rounding_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Rounding_amount); ok {
-				if err := trg.OnValidate_Rounding_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "rounding_amount_lcy":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Rounding_amount_lcy = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Rounding_amount_lcy, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field rounding_amount_lcy: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Rounding_amount_lcy = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Rounding_amount_lcy = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Rounding_amount_lcy = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field rounding_amount_lcy (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Rounding_amount_lcy); ok {
-				if err := trg.OnValidate_Rounding_amount_lcy(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "rounding_currency":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Rounding_currency = v
-		} else if v, ok := value.(string); ok {
-			t.Rounding_currency = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field rounding_currency")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Rounding_currency); ok {
-				if err := trg.OnValidate_Rounding_currency(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "applies_to_id":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Applies_to_id = v
-		} else if v, ok := value.(string); ok {
-			t.Applies_to_id = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field applies_to_id")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Applies_to_id); ok {
-				if err := trg.OnValidate_Applies_to_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "calculate_interest":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Calculate_interest = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Calculate_interest = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field calculate_interest")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationOnValidate_Calculate_interest); ok {
-				if err := trg.OnValidate_Calculate_interest(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := entryApplicationFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &entryApplicationFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -4644,311 +2987,18 @@ func (t *EntryApplication) ValidateField(fieldName string, value interface{}) er
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *EntryApplication) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Entry_no, true
-	case 2:
-		return t.Application_no, true
-	case 3:
-		return t.Account_type, true
-	case 4:
-		return t.Account_no, true
-	case 5:
-		return t.Ledger_entry_no, true
-	case 6:
-		return t.Applying_entry, true
-	case 7:
-		return t.Posting_date, true
-	case 8:
-		return t.Document_no, true
-	case 9:
-		return t.Amount_applied, true
-	case 10:
-		return t.Transaction_no, true
-	case 11:
-		return t.User_id, true
-	case 12:
-		return t.Unapplied, true
-	case 13:
-		return t.Unapplied_transaction_no, true
-	case 14:
-		return t.Unapplied_date, true
-	case 15:
-		return t.Unapplied_by_user_id, true
-	case 20:
-		return t.Amount, true
-	case 21:
-		return t.Amount_lcy, true
-	case 22:
-		return t.Original_amount_lcy, true
-	case 23:
-		return t.Remaining_amount, true
-	case 24:
-		return t.Remaining_amt_lcy, true
-	case 25:
-		return t.Open, true
-	case 26:
-		return t.Debit_amount, true
-	case 27:
-		return t.Credit_amount, true
-	case 28:
-		return t.Debit_amount_lcy, true
-	case 29:
-		return t.Credit_amount_lcy, true
-	case 30:
-		return t.Closed_by_entry_no, true
-	case 31:
-		return t.Closed_at_date, true
-	case 32:
-		return t.Closed_by_amount, true
-	case 33:
-		return t.Closed_by_amount_lcy, true
-	case 34:
-		return t.Closed_by_currency_code, true
-	case 35:
-		return t.Closed_by_currency_amount, true
-	case 36:
-		return t.Pmt_disc_lcy, true
-	case 37:
-		return t.Rounding_amount, true
-	case 38:
-		return t.Rounding_amount_lcy, true
-	case 39:
-		return t.Rounding_currency, true
-	case 40:
-		return t.Applies_to_id, true
-	case 41:
-		return t.Calculate_interest, true
-	}
-	return nil, false
+	return entryApplicationFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *EntryApplication) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return entryApplicationFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *EntryApplication) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(int); ok {
-			t.Entry_no = v
-			return true
-		}
-	case 2:
-		if v, ok := value.(int); ok {
-			t.Application_no = v
-			return true
-		}
-	case 3:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 2 {
-			t.Account_type = EntryApplicationAccount_type(i)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Code); ok {
-			t.Account_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Account_no = types.NewCode(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(int); ok {
-			t.Ledger_entry_no = v
-			return true
-		}
-	case 6:
-		if v, ok := value.(bool); ok {
-			t.Applying_entry = v
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Date); ok {
-			t.Posting_date = v
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Code); ok {
-			t.Document_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Document_no = types.NewCode(v)
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount_applied = v
-			return true
-		}
-	case 10:
-		if v, ok := value.(int); ok {
-			t.Transaction_no = v
-			return true
-		}
-	case 11:
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-			return true
-		}
-	case 12:
-		if v, ok := value.(bool); ok {
-			t.Unapplied = v
-			return true
-		}
-	case 13:
-		if v, ok := value.(int); ok {
-			t.Unapplied_transaction_no = v
-			return true
-		}
-	case 14:
-		if v, ok := value.(types.Date); ok {
-			t.Unapplied_date = v
-			return true
-		}
-	case 15:
-		if v, ok := value.(types.Code); ok {
-			t.Unapplied_by_user_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Unapplied_by_user_id = types.NewCode(v)
-			return true
-		}
-	case 20:
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount = v
-			return true
-		}
-	case 21:
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount_lcy = v
-			return true
-		}
-	case 22:
-		if v, ok := value.(types.Decimal); ok {
-			t.Original_amount_lcy = v
-			return true
-		}
-	case 23:
-		if v, ok := value.(types.Decimal); ok {
-			t.Remaining_amount = v
-			return true
-		}
-	case 24:
-		if v, ok := value.(types.Decimal); ok {
-			t.Remaining_amt_lcy = v
-			return true
-		}
-	case 25:
-		if v, ok := value.(bool); ok {
-			t.Open = v
-			return true
-		}
-	case 26:
-		if v, ok := value.(types.Decimal); ok {
-			t.Debit_amount = v
-			return true
-		}
-	case 27:
-		if v, ok := value.(types.Decimal); ok {
-			t.Credit_amount = v
-			return true
-		}
-	case 28:
-		if v, ok := value.(types.Decimal); ok {
-			t.Debit_amount_lcy = v
-			return true
-		}
-	case 29:
-		if v, ok := value.(types.Decimal); ok {
-			t.Credit_amount_lcy = v
-			return true
-		}
-	case 30:
-		if v, ok := value.(int); ok {
-			t.Closed_by_entry_no = v
-			return true
-		}
-	case 31:
-		if v, ok := value.(types.Date); ok {
-			t.Closed_at_date = v
-			return true
-		}
-	case 32:
-		if v, ok := value.(types.Decimal); ok {
-			t.Closed_by_amount = v
-			return true
-		}
-	case 33:
-		if v, ok := value.(types.Decimal); ok {
-			t.Closed_by_amount_lcy = v
-			return true
-		}
-	case 34:
-		if v, ok := value.(types.Code); ok {
-			t.Closed_by_currency_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Closed_by_currency_code = types.NewCode(v)
-			return true
-		}
-	case 35:
-		if v, ok := value.(types.Decimal); ok {
-			t.Closed_by_currency_amount = v
-			return true
-		}
-	case 36:
-		if v, ok := value.(types.Decimal); ok {
-			t.Pmt_disc_lcy = v
-			return true
-		}
-	case 37:
-		if v, ok := value.(types.Decimal); ok {
-			t.Rounding_amount = v
-			return true
-		}
-	case 38:
-		if v, ok := value.(types.Decimal); ok {
-			t.Rounding_amount_lcy = v
-			return true
-		}
-	case 39:
-		if v, ok := value.(types.Code); ok {
-			t.Rounding_currency = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Rounding_currency = types.NewCode(v)
-			return true
-		}
-	case 40:
-		if v, ok := value.(types.Code); ok {
-			t.Applies_to_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Applies_to_id = types.NewCode(v)
-			return true
-		}
-	case 41:
-		if v, ok := value.(bool); ok {
-			t.Calculate_interest = v
-			return true
-		}
-	}
-	return false
+	return entryApplicationFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -5586,83 +3636,7 @@ func (t *EntryApplication) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *EntryApplication) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "entry_no":
-		return t.Entry_no, true
-	case "application_no":
-		return t.Application_no, true
-	case "account_type":
-		return int(t.Account_type), true
-	case "account_no":
-		return t.Account_no, true
-	case "ledger_entry_no":
-		return t.Ledger_entry_no, true
-	case "applying_entry":
-		return t.Applying_entry, true
-	case "posting_date":
-		return t.Posting_date, true
-	case "document_no":
-		return t.Document_no, true
-	case "amount_applied":
-		return t.Amount_applied, true
-	case "transaction_no":
-		return t.Transaction_no, true
-	case "user_id":
-		return t.User_id, true
-	case "unapplied":
-		return t.Unapplied, true
-	case "unapplied_transaction_no":
-		return t.Unapplied_transaction_no, true
-	case "unapplied_date":
-		return t.Unapplied_date, true
-	case "unapplied_by_user_id":
-		return t.Unapplied_by_user_id, true
-	case "amount":
-		return t.Amount, true
-	case "amount_lcy":
-		return t.Amount_lcy, true
-	case "original_amount_lcy":
-		return t.Original_amount_lcy, true
-	case "remaining_amount":
-		return t.Remaining_amount, true
-	case "remaining_amt_lcy":
-		return t.Remaining_amt_lcy, true
-	case "open":
-		return t.Open, true
-	case "debit_amount":
-		return t.Debit_amount, true
-	case "credit_amount":
-		return t.Credit_amount, true
-	case "debit_amount_lcy":
-		return t.Debit_amount_lcy, true
-	case "credit_amount_lcy":
-		return t.Credit_amount_lcy, true
-	case "closed_by_entry_no":
-		return t.Closed_by_entry_no, true
-	case "closed_at_date":
-		return t.Closed_at_date, true
-	case "closed_by_amount":
-		return t.Closed_by_amount, true
-	case "closed_by_amount_lcy":
-		return t.Closed_by_amount_lcy, true
-	case "closed_by_currency_code":
-		return t.Closed_by_currency_code, true
-	case "closed_by_currency_amount":
-		return t.Closed_by_currency_amount, true
-	case "pmt_disc_lcy":
-		return t.Pmt_disc_lcy, true
-	case "rounding_amount":
-		return t.Rounding_amount, true
-	case "rounding_amount_lcy":
-		return t.Rounding_amount_lcy, true
-	case "rounding_currency":
-		return t.Rounding_currency, true
-	case "applies_to_id":
-		return t.Applies_to_id, true
-	case "calculate_interest":
-		return t.Calculate_interest, true
-	}
-	return nil, false
+	return entryApplicationFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -5784,406 +3758,12 @@ func (t *EntryApplication) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *EntryApplication) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"entry_no":                  t.Entry_no,
-		"application_no":            t.Application_no,
-		"account_type":              int(t.Account_type),
-		"account_no":                t.Account_no.String(),
-		"ledger_entry_no":           t.Ledger_entry_no,
-		"applying_entry":            t.Applying_entry,
-		"posting_date":              t.Posting_date.String(),
-		"document_no":               t.Document_no.String(),
-		"amount_applied":            t.Amount_applied.String(),
-		"transaction_no":            t.Transaction_no,
-		"user_id":                   t.User_id.String(),
-		"unapplied":                 t.Unapplied,
-		"unapplied_transaction_no":  t.Unapplied_transaction_no,
-		"unapplied_date":            t.Unapplied_date.String(),
-		"unapplied_by_user_id":      t.Unapplied_by_user_id.String(),
-		"amount":                    t.Amount.String(),
-		"amount_lcy":                t.Amount_lcy.String(),
-		"original_amount_lcy":       t.Original_amount_lcy.String(),
-		"remaining_amount":          t.Remaining_amount.String(),
-		"remaining_amt_lcy":         t.Remaining_amt_lcy.String(),
-		"open":                      t.Open,
-		"debit_amount":              t.Debit_amount.String(),
-		"credit_amount":             t.Credit_amount.String(),
-		"debit_amount_lcy":          t.Debit_amount_lcy.String(),
-		"credit_amount_lcy":         t.Credit_amount_lcy.String(),
-		"closed_by_entry_no":        t.Closed_by_entry_no,
-		"closed_at_date":            t.Closed_at_date.String(),
-		"closed_by_amount":          t.Closed_by_amount.String(),
-		"closed_by_amount_lcy":      t.Closed_by_amount_lcy.String(),
-		"closed_by_currency_code":   t.Closed_by_currency_code.String(),
-		"closed_by_currency_amount": t.Closed_by_currency_amount.String(),
-		"pmt_disc_lcy":              t.Pmt_disc_lcy.String(),
-		"rounding_amount":           t.Rounding_amount.String(),
-		"rounding_amount_lcy":       t.Rounding_amount_lcy.String(),
-		"rounding_currency":         t.Rounding_currency.String(),
-		"applies_to_id":             t.Applies_to_id.String(),
-		"calculate_interest":        t.Calculate_interest,
-	}
+	return entryApplicationFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *EntryApplication) FromMap(data map[string]interface{}) {
-	if v, ok := data["entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Entry_no = int(val)
-		case int:
-			t.Entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Entry_no = n
-			}
-		}
-	}
-	if v, ok := data["application_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Application_no = int(val)
-		case int:
-			t.Application_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Application_no = n
-			}
-		}
-	}
-	if v, ok := data["account_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Account_type = EntryApplicationAccount_type(int(val))
-		case int:
-			t.Account_type = EntryApplicationAccount_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Customer", "Vendor"}
-			for i, opt := range options {
-				if opt == val {
-					t.Account_type = EntryApplicationAccount_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["account_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Account_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["ledger_entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Ledger_entry_no = int(val)
-		case int:
-			t.Ledger_entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Ledger_entry_no = n
-			}
-		}
-	}
-	if v, ok := data["applying_entry"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Applying_entry = b
-		}
-	}
-	if v, ok := data["posting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Posting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["document_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Document_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["amount_applied"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Amount_applied, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Amount_applied = types.NewDecimal(val)
-		case int:
-			t.Amount_applied = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Amount_applied = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["transaction_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Transaction_no = int(val)
-		case int:
-			t.Transaction_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Transaction_no = n
-			}
-		}
-	}
-	if v, ok := data["user_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.User_id = types.NewCode(s)
-		}
-	}
-	if v, ok := data["unapplied"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Unapplied = b
-		}
-	}
-	if v, ok := data["unapplied_transaction_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Unapplied_transaction_no = int(val)
-		case int:
-			t.Unapplied_transaction_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Unapplied_transaction_no = n
-			}
-		}
-	}
-	if v, ok := data["unapplied_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Unapplied_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["unapplied_by_user_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Unapplied_by_user_id = types.NewCode(s)
-		}
-	}
-	if v, ok := data["amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Amount = types.NewDecimal(val)
-		case int:
-			t.Amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["amount_lcy"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Amount_lcy, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Amount_lcy = types.NewDecimal(val)
-		case int:
-			t.Amount_lcy = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Amount_lcy = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["original_amount_lcy"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Original_amount_lcy, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Original_amount_lcy = types.NewDecimal(val)
-		case int:
-			t.Original_amount_lcy = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Original_amount_lcy = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["remaining_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Remaining_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Remaining_amount = types.NewDecimal(val)
-		case int:
-			t.Remaining_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Remaining_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["remaining_amt_lcy"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Remaining_amt_lcy, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Remaining_amt_lcy = types.NewDecimal(val)
-		case int:
-			t.Remaining_amt_lcy = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Remaining_amt_lcy = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["open"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Open = b
-		}
-	}
-	if v, ok := data["debit_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Debit_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Debit_amount = types.NewDecimal(val)
-		case int:
-			t.Debit_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Debit_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["credit_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Credit_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Credit_amount = types.NewDecimal(val)
-		case int:
-			t.Credit_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Credit_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["debit_amount_lcy"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Debit_amount_lcy, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Debit_amount_lcy = types.NewDecimal(val)
-		case int:
-			t.Debit_amount_lcy = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Debit_amount_lcy = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["credit_amount_lcy"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Credit_amount_lcy, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Credit_amount_lcy = types.NewDecimal(val)
-		case int:
-			t.Credit_amount_lcy = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Credit_amount_lcy = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["closed_by_entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Closed_by_entry_no = int(val)
-		case int:
-			t.Closed_by_entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Closed_by_entry_no = n
-			}
-		}
-	}
-	if v, ok := data["closed_at_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Closed_at_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["closed_by_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Closed_by_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Closed_by_amount = types.NewDecimal(val)
-		case int:
-			t.Closed_by_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Closed_by_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["closed_by_amount_lcy"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Closed_by_amount_lcy, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Closed_by_amount_lcy = types.NewDecimal(val)
-		case int:
-			t.Closed_by_amount_lcy = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Closed_by_amount_lcy = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["closed_by_currency_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Closed_by_currency_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["closed_by_currency_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Closed_by_currency_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Closed_by_currency_amount = types.NewDecimal(val)
-		case int:
-			t.Closed_by_currency_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Closed_by_currency_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["pmt_disc_lcy"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Pmt_disc_lcy, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Pmt_disc_lcy = types.NewDecimal(val)
-		case int:
-			t.Pmt_disc_lcy = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Pmt_disc_lcy = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["rounding_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Rounding_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Rounding_amount = types.NewDecimal(val)
-		case int:
-			t.Rounding_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Rounding_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["rounding_amount_lcy"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Rounding_amount_lcy, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Rounding_amount_lcy = types.NewDecimal(val)
-		case int:
-			t.Rounding_amount_lcy = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Rounding_amount_lcy = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["rounding_currency"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Rounding_currency = types.NewCode(s)
-		}
-	}
-	if v, ok := data["applies_to_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Applies_to_id = types.NewCode(s)
-		}
-	}
-	if v, ok := data["calculate_interest"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Calculate_interest = b
-		}
-	}
+	entryApplicationFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -6204,394 +3784,631 @@ func (t *EntryApplication) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *EntryApplication) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "application_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "account_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "account_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "ledger_entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "applying_entry",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "posting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "document_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            9,
-			Name:          "amount_applied",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         10,
-			Name:       "transaction_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "user_id",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "unapplied",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         13,
-			Name:       "unapplied_transaction_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         14,
-			Name:       "unapplied_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         15,
-			Name:       "unapplied_by_user_id",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            20,
-			Name:          "amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            21,
-			Name:          "amount_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            22,
-			Name:          "original_amount_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            23,
-			Name:          "remaining_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            24,
-			Name:          "remaining_amt_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         25,
-			Name:       "open",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            26,
-			Name:          "debit_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            27,
-			Name:          "credit_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            28,
-			Name:          "debit_amount_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            29,
-			Name:          "credit_amount_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         30,
-			Name:       "closed_by_entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         31,
-			Name:       "closed_at_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            32,
-			Name:          "closed_by_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            33,
-			Name:          "closed_by_amount_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         34,
-			Name:       "closed_by_currency_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            35,
-			Name:          "closed_by_currency_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            36,
-			Name:          "pmt_disc_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            37,
-			Name:          "rounding_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            38,
-			Name:          "rounding_amount_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         39,
-			Name:       "rounding_currency",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         40,
-			Name:       "applies_to_id",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         41,
-			Name:       "calculate_interest",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return entryApplicationFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in entryApplicationFields.Fields
+func (t *EntryApplication) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Entry_no
+	case 1:
+		return &t.Application_no
+	case 2:
+		return &t.Account_type
+	case 3:
+		return &t.Account_no
+	case 4:
+		return &t.Ledger_entry_no
+	case 5:
+		return &t.Applying_entry
+	case 6:
+		return &t.Posting_date
+	case 7:
+		return &t.Document_no
+	case 8:
+		return &t.Amount_applied
+	case 9:
+		return &t.Transaction_no
+	case 10:
+		return &t.User_id
+	case 11:
+		return &t.Unapplied
+	case 12:
+		return &t.Unapplied_transaction_no
+	case 13:
+		return &t.Unapplied_date
+	case 14:
+		return &t.Unapplied_by_user_id
+	case 15:
+		return &t.Amount
+	case 16:
+		return &t.Amount_lcy
+	case 17:
+		return &t.Original_amount_lcy
+	case 18:
+		return &t.Remaining_amount
+	case 19:
+		return &t.Remaining_amt_lcy
+	case 20:
+		return &t.Open
+	case 21:
+		return &t.Debit_amount
+	case 22:
+		return &t.Credit_amount
+	case 23:
+		return &t.Debit_amount_lcy
+	case 24:
+		return &t.Credit_amount_lcy
+	case 25:
+		return &t.Closed_by_entry_no
+	case 26:
+		return &t.Closed_at_date
+	case 27:
+		return &t.Closed_by_amount
+	case 28:
+		return &t.Closed_by_amount_lcy
+	case 29:
+		return &t.Closed_by_currency_code
+	case 30:
+		return &t.Closed_by_currency_amount
+	case 31:
+		return &t.Pmt_disc_lcy
+	case 32:
+		return &t.Rounding_amount
+	case 33:
+		return &t.Rounding_amount_lcy
+	case 34:
+		return &t.Rounding_currency
+	case 35:
+		return &t.Applies_to_id
+	case 36:
+		return &t.Calculate_interest
 	}
+	return nil
+}
+
+// entryApplicationFields describes the fields of Entry_Application for the record functions
+// written once in foundation/tables
+var entryApplicationFields = &tables.TableFields{
+	Table: EntryApplicationTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Entry_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "application_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Application_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "account_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Account_type",
+			Options: []string{"Customer", "Vendor"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "account_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Account_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "ledger_entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Ledger_entry_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "applying_entry",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Applying_entry",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "posting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Posting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "document_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Document_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            9,
+				Name:          "amount_applied",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Amount_applied",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "transaction_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Transaction_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "user_id",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_User_id",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "unapplied",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Unapplied",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "unapplied_transaction_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Unapplied_transaction_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "unapplied_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Unapplied_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         15,
+				Name:       "unapplied_by_user_id",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Unapplied_by_user_id",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            20,
+				Name:          "amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            21,
+				Name:          "amount_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Amount_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            22,
+				Name:          "original_amount_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Original_amount_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            23,
+				Name:          "remaining_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Remaining_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            24,
+				Name:          "remaining_amt_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Remaining_amt_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         25,
+				Name:       "open",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Open",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            26,
+				Name:          "debit_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Debit_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            27,
+				Name:          "credit_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Credit_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            28,
+				Name:          "debit_amount_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Debit_amount_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            29,
+				Name:          "credit_amount_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Credit_amount_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         30,
+				Name:       "closed_by_entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Closed_by_entry_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         31,
+				Name:       "closed_at_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Closed_at_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            32,
+				Name:          "closed_by_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Closed_by_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            33,
+				Name:          "closed_by_amount_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Closed_by_amount_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         34,
+				Name:       "closed_by_currency_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Closed_by_currency_code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            35,
+				Name:          "closed_by_currency_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Closed_by_currency_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            36,
+				Name:          "pmt_disc_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Pmt_disc_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            37,
+				Name:          "rounding_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Rounding_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            38,
+				Name:          "rounding_amount_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Rounding_amount_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         39,
+				Name:       "rounding_currency",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Rounding_currency",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         40,
+				Name:       "applies_to_id",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Applies_to_id",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         41,
+				Name:       "calculate_interest",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Calculate_interest",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

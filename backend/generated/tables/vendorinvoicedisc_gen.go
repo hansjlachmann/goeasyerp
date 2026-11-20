@@ -125,36 +125,12 @@ var VendorInvoiceDisc_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *VendorInvoiceDisc) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "code":
-		return 1
-	case "minimum_amount":
-		return 2
-	case "discount_percent":
-		return 3
-	case "service_charge":
-		return 4
-	case "currency_code":
-		return 5
-	}
-	return 0
+	return vendorInvoiceDiscFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *VendorInvoiceDisc) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "code"
-	case 2:
-		return "minimum_amount"
-	case 3:
-		return "discount_percent"
-	case 4:
-		return "service_charge"
-	case 5:
-		return "currency_code"
-	}
-	return ""
+	return vendorInvoiceDiscFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -266,21 +242,6 @@ type (
 	VendorInvoiceDiscOnBeforeRename interface {
 		OnBeforeRename(rec *VendorInvoiceDisc, handled *bool) error
 	}
-	VendorInvoiceDiscOnValidate_Code interface {
-		OnValidate_Code(rec *VendorInvoiceDisc) error
-	}
-	VendorInvoiceDiscOnValidate_Minimum_amount interface {
-		OnValidate_Minimum_amount(rec *VendorInvoiceDisc) error
-	}
-	VendorInvoiceDiscOnValidate_Discount_percent interface {
-		OnValidate_Discount_percent(rec *VendorInvoiceDisc) error
-	}
-	VendorInvoiceDiscOnValidate_Service_charge interface {
-		OnValidate_Service_charge(rec *VendorInvoiceDisc) error
-	}
-	VendorInvoiceDiscOnValidate_Currency_code interface {
-		OnValidate_Currency_code(rec *VendorInvoiceDisc) error
-	}
 )
 
 // vendorInvoiceDiscLogic is the registered business logic of Vendor_Invoice_Disc, in
@@ -323,18 +284,9 @@ func vendorInvoiceDiscTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(VendorInvoiceDiscOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(VendorInvoiceDiscOnBeforeRename)
-	case "OnValidate_Code":
-		_, ok = logic.(VendorInvoiceDiscOnValidate_Code)
-	case "OnValidate_Minimum_amount":
-		_, ok = logic.(VendorInvoiceDiscOnValidate_Minimum_amount)
-	case "OnValidate_Discount_percent":
-		_, ok = logic.(VendorInvoiceDiscOnValidate_Discount_percent)
-	case "OnValidate_Service_charge":
-		_, ok = logic.(VendorInvoiceDiscOnValidate_Service_charge)
-	case "OnValidate_Currency_code":
-		_, ok = logic.(VendorInvoiceDiscOnValidate_Currency_code)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return vendorInvoiceDiscFields.IsOnValidateTrigger(name, logic, (*VendorInvoiceDisc)(nil))
 	}
 	return true, ok
 }
@@ -639,12 +591,7 @@ func (t *VendorInvoiceDisc) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *VendorInvoiceDisc) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["code"] = t.Code
-	t.oldValues["minimum_amount"] = t.Minimum_amount
-	t.oldValues["discount_percent"] = t.Discount_percent
-	t.oldValues["service_charge"] = t.Service_charge
-	t.oldValues["currency_code"] = t.Currency_code
+	t.oldValues = vendorInvoiceDiscFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -659,21 +606,7 @@ func (t *VendorInvoiceDisc) OldValue(fieldName string) interface{} {
 func (t *VendorInvoiceDisc) XRec() *VendorInvoiceDisc {
 	x := &VendorInvoiceDisc{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["code"].(types.Code); ok {
-		x.Code = v
-	}
-	if v, ok := t.oldValues["minimum_amount"].(types.Decimal); ok {
-		x.Minimum_amount = v
-	}
-	if v, ok := t.oldValues["discount_percent"].(types.Decimal); ok {
-		x.Discount_percent = v
-	}
-	if v, ok := t.oldValues["service_charge"].(types.Decimal); ok {
-		x.Service_charge = v
-	}
-	if v, ok := t.oldValues["currency_code"].(types.Code); ok {
-		x.Currency_code = v
-	}
+	vendorInvoiceDiscFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -993,41 +926,7 @@ func (t *VendorInvoiceDisc) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *VendorInvoiceDisc) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Code.Equal(old)
-		}
-	case "minimum_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Minimum_amount.Equal(old)
-		}
-	case "discount_percent":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Discount_percent.Equal(old)
-		}
-	case "service_charge":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Service_charge.Equal(old)
-		}
-	case "currency_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Currency_code.Equal(old)
-		}
-	}
-
-	return false
+	return vendorInvoiceDiscFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1230,19 +1129,7 @@ func (t *VendorInvoiceDisc) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *VendorInvoiceDisc) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("code"):
-		return "code", true
-	case strings.ToLower("minimum_amount"):
-		return "minimum_amount", true
-	case strings.ToLower("discount_percent"):
-		return "discount_percent", true
-	case strings.ToLower("service_charge"):
-		return "service_charge", true
-	case strings.ToLower("currency_code"):
-		return "currency_code", true
-	}
-	return "", false
+	return vendorInvoiceDiscFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2096,136 +1983,20 @@ func (t *VendorInvoiceDisc) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *VendorInvoiceDisc) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-		} else if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(VendorInvoiceDiscOnValidate_Code); ok {
-				if err := trg.OnValidate_Code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "minimum_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Minimum_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Minimum_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field minimum_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Minimum_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Minimum_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Minimum_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field minimum_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(VendorInvoiceDiscOnValidate_Minimum_amount); ok {
-				if err := trg.OnValidate_Minimum_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "discount_percent":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Discount_percent = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Discount_percent, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field discount_percent: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Discount_percent = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Discount_percent = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Discount_percent = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field discount_percent (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(VendorInvoiceDiscOnValidate_Discount_percent); ok {
-				if err := trg.OnValidate_Discount_percent(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "service_charge":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Service_charge = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Service_charge, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field service_charge: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Service_charge = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Service_charge = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Service_charge = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field service_charge (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(VendorInvoiceDiscOnValidate_Service_charge); ok {
-				if err := trg.OnValidate_Service_charge(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "currency_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Currency_code = v
-		} else if v, ok := value.(string); ok {
-			t.Currency_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field currency_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "currency_code"); err != nil {
+	i, err := vendorInvoiceDiscFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
+	}
+	f := &vendorInvoiceDiscFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
 			return err
 		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(VendorInvoiceDiscOnValidate_Currency_code); ok {
-				if err := trg.OnValidate_Currency_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2234,67 +2005,18 @@ func (t *VendorInvoiceDisc) ValidateField(fieldName string, value interface{}) e
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *VendorInvoiceDisc) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Code, true
-	case 2:
-		return t.Minimum_amount, true
-	case 3:
-		return t.Discount_percent, true
-	case 4:
-		return t.Service_charge, true
-	case 5:
-		return t.Currency_code, true
-	}
-	return nil, false
+	return vendorInvoiceDiscFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *VendorInvoiceDisc) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return vendorInvoiceDiscFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *VendorInvoiceDisc) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Decimal); ok {
-			t.Minimum_amount = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Decimal); ok {
-			t.Discount_percent = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Decimal); ok {
-			t.Service_charge = v
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Code); ok {
-			t.Currency_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Currency_code = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return vendorInvoiceDiscFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2782,19 +2504,7 @@ func (t *VendorInvoiceDisc) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *VendorInvoiceDisc) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "code":
-		return t.Code, true
-	case "minimum_amount":
-		return t.Minimum_amount, true
-	case "discount_percent":
-		return t.Discount_percent, true
-	case "service_charge":
-		return t.Service_charge, true
-	case "currency_code":
-		return t.Currency_code, true
-	}
-	return nil, false
+	return vendorInvoiceDiscFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2890,63 +2600,12 @@ func (t *VendorInvoiceDisc) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *VendorInvoiceDisc) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"code":             t.Code.String(),
-		"minimum_amount":   t.Minimum_amount.String(),
-		"discount_percent": t.Discount_percent.String(),
-		"service_charge":   t.Service_charge.String(),
-		"currency_code":    t.Currency_code.String(),
-	}
+	return vendorInvoiceDiscFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *VendorInvoiceDisc) FromMap(data map[string]interface{}) {
-	if v, ok := data["code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["minimum_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Minimum_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Minimum_amount = types.NewDecimal(val)
-		case int:
-			t.Minimum_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Minimum_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["discount_percent"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Discount_percent, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Discount_percent = types.NewDecimal(val)
-		case int:
-			t.Discount_percent = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Discount_percent = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["service_charge"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Service_charge, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Service_charge = types.NewDecimal(val)
-		case int:
-			t.Service_charge = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Service_charge = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["currency_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Currency_code = types.NewCode(s)
-		}
-	}
+	vendorInvoiceDiscFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2967,61 +2626,106 @@ func (t *VendorInvoiceDisc) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *VendorInvoiceDisc) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "code",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:            2,
-			Name:          "minimum_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      false,
-			PrimaryKey:    true,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            3,
-			Name:          "discount_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            4,
-			Name:          "service_charge",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         5,
-			Name:       "currency_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
+	return vendorInvoiceDiscFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in vendorInvoiceDiscFields.Fields
+func (t *VendorInvoiceDisc) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Code
+	case 1:
+		return &t.Minimum_amount
+	case 2:
+		return &t.Discount_percent
+	case 3:
+		return &t.Service_charge
+	case 4:
+		return &t.Currency_code
 	}
+	return nil
+}
+
+// vendorInvoiceDiscFields describes the fields of Vendor_Invoice_Disc for the record functions
+// written once in foundation/tables
+var vendorInvoiceDiscFields = &tables.TableFields{
+	Table: VendorInvoiceDiscTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "code",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            2,
+				Name:          "minimum_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      false,
+				PrimaryKey:    true,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Minimum_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            3,
+				Name:          "discount_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Discount_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            4,
+				Name:          "service_charge",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Service_charge",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "currency_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Currency_code",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

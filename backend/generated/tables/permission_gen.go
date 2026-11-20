@@ -178,52 +178,12 @@ var Permission_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *Permission) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "role_id":
-		return 1
-	case "table_name":
-		return 2
-	case "can_read":
-		return 3
-	case "can_insert":
-		return 4
-	case "can_modify":
-		return 5
-	case "can_delete":
-		return 6
-	case "object_type":
-		return 7
-	case "object_id":
-		return 8
-	case "can_execute":
-		return 9
-	}
-	return 0
+	return permissionFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *Permission) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "role_id"
-	case 2:
-		return "table_name"
-	case 3:
-		return "can_read"
-	case 4:
-		return "can_insert"
-	case 5:
-		return "can_modify"
-	case 6:
-		return "can_delete"
-	case 7:
-		return "object_type"
-	case 8:
-		return "object_id"
-	case 9:
-		return "can_execute"
-	}
-	return ""
+	return permissionFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -327,15 +287,6 @@ type (
 	PermissionOnBeforeRename interface {
 		OnBeforeRename(rec *Permission, handled *bool) error
 	}
-	PermissionOnValidate_Role_id     interface{ OnValidate_Role_id(rec *Permission) error }
-	PermissionOnValidate_Table_name  interface{ OnValidate_Table_name(rec *Permission) error }
-	PermissionOnValidate_Can_read    interface{ OnValidate_Can_read(rec *Permission) error }
-	PermissionOnValidate_Can_insert  interface{ OnValidate_Can_insert(rec *Permission) error }
-	PermissionOnValidate_Can_modify  interface{ OnValidate_Can_modify(rec *Permission) error }
-	PermissionOnValidate_Can_delete  interface{ OnValidate_Can_delete(rec *Permission) error }
-	PermissionOnValidate_Object_type interface{ OnValidate_Object_type(rec *Permission) error }
-	PermissionOnValidate_Object_id   interface{ OnValidate_Object_id(rec *Permission) error }
-	PermissionOnValidate_Can_execute interface{ OnValidate_Can_execute(rec *Permission) error }
 )
 
 // permissionLogic is the registered business logic of Permission, in
@@ -378,26 +329,9 @@ func permissionTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(PermissionOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(PermissionOnBeforeRename)
-	case "OnValidate_Role_id":
-		_, ok = logic.(PermissionOnValidate_Role_id)
-	case "OnValidate_Table_name":
-		_, ok = logic.(PermissionOnValidate_Table_name)
-	case "OnValidate_Can_read":
-		_, ok = logic.(PermissionOnValidate_Can_read)
-	case "OnValidate_Can_insert":
-		_, ok = logic.(PermissionOnValidate_Can_insert)
-	case "OnValidate_Can_modify":
-		_, ok = logic.(PermissionOnValidate_Can_modify)
-	case "OnValidate_Can_delete":
-		_, ok = logic.(PermissionOnValidate_Can_delete)
-	case "OnValidate_Object_type":
-		_, ok = logic.(PermissionOnValidate_Object_type)
-	case "OnValidate_Object_id":
-		_, ok = logic.(PermissionOnValidate_Object_id)
-	case "OnValidate_Can_execute":
-		_, ok = logic.(PermissionOnValidate_Can_execute)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return permissionFields.IsOnValidateTrigger(name, logic, (*Permission)(nil))
 	}
 	return true, ok
 }
@@ -710,16 +644,7 @@ func (t *Permission) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *Permission) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["role_id"] = t.Role_id
-	t.oldValues["table_name"] = t.Table_name
-	t.oldValues["can_read"] = t.Can_read
-	t.oldValues["can_insert"] = t.Can_insert
-	t.oldValues["can_modify"] = t.Can_modify
-	t.oldValues["can_delete"] = t.Can_delete
-	t.oldValues["object_type"] = t.Object_type
-	t.oldValues["object_id"] = t.Object_id
-	t.oldValues["can_execute"] = t.Can_execute
+	t.oldValues = permissionFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -734,33 +659,7 @@ func (t *Permission) OldValue(fieldName string) interface{} {
 func (t *Permission) XRec() *Permission {
 	x := &Permission{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["role_id"].(types.Code); ok {
-		x.Role_id = v
-	}
-	if v, ok := t.oldValues["table_name"].(types.Code); ok {
-		x.Table_name = v
-	}
-	if v, ok := t.oldValues["can_read"].(bool); ok {
-		x.Can_read = v
-	}
-	if v, ok := t.oldValues["can_insert"].(bool); ok {
-		x.Can_insert = v
-	}
-	if v, ok := t.oldValues["can_modify"].(bool); ok {
-		x.Can_modify = v
-	}
-	if v, ok := t.oldValues["can_delete"].(bool); ok {
-		x.Can_delete = v
-	}
-	if v, ok := t.oldValues["object_type"].(PermissionObject_type); ok {
-		x.Object_type = v
-	}
-	if v, ok := t.oldValues["object_id"].(int); ok {
-		x.Object_id = v
-	}
-	if v, ok := t.oldValues["can_execute"].(bool); ok {
-		x.Can_execute = v
-	}
+	permissionFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1103,63 +1002,7 @@ func (t *Permission) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *Permission) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "role_id":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Role_id.Equal(old)
-		}
-	case "table_name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Table_name.Equal(old)
-		}
-	case "can_read":
-		if old, ok := oldValue.(bool); ok {
-			return t.Can_read != old
-		}
-		return true // Type mismatch, assume changed
-	case "can_insert":
-		if old, ok := oldValue.(bool); ok {
-			return t.Can_insert != old
-		}
-		return true // Type mismatch, assume changed
-	case "can_modify":
-		if old, ok := oldValue.(bool); ok {
-			return t.Can_modify != old
-		}
-		return true // Type mismatch, assume changed
-	case "can_delete":
-		if old, ok := oldValue.(bool); ok {
-			return t.Can_delete != old
-		}
-		return true // Type mismatch, assume changed
-	case "object_type":
-		if old, ok := oldValue.(PermissionObject_type); ok {
-			return t.Object_type != old
-		}
-	case "object_id":
-		if old, ok := oldValue.(int); ok {
-			return t.Object_id != old
-		}
-		return true // Type mismatch, assume changed
-	case "can_execute":
-		if old, ok := oldValue.(bool); ok {
-			return t.Can_execute != old
-		}
-		return true // Type mismatch, assume changed
-	}
-
-	return false
+	return permissionFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1361,27 +1204,7 @@ func (t *Permission) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *Permission) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("role_id"):
-		return "role_id", true
-	case strings.ToLower("table_name"):
-		return "table_name", true
-	case strings.ToLower("can_read"):
-		return "can_read", true
-	case strings.ToLower("can_insert"):
-		return "can_insert", true
-	case strings.ToLower("can_modify"):
-		return "can_modify", true
-	case strings.ToLower("can_delete"):
-		return "can_delete", true
-	case strings.ToLower("object_type"):
-		return "object_type", true
-	case strings.ToLower("object_id"):
-		return "object_id", true
-	case strings.ToLower("can_execute"):
-		return "can_execute", true
-	}
-	return "", false
+	return permissionFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2283,227 +2106,20 @@ func (t *Permission) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *Permission) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "role_id":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Role_id = v
-		} else if v, ok := value.(string); ok {
-			t.Role_id = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field role_id")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "role_id"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PermissionOnValidate_Role_id); ok {
-				if err := trg.OnValidate_Role_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "table_name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Table_name = v
-		} else if v, ok := value.(string); ok {
-			t.Table_name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field table_name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PermissionOnValidate_Table_name); ok {
-				if err := trg.OnValidate_Table_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "can_read":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Can_read = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Can_read = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field can_read")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PermissionOnValidate_Can_read); ok {
-				if err := trg.OnValidate_Can_read(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "can_insert":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Can_insert = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Can_insert = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field can_insert")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PermissionOnValidate_Can_insert); ok {
-				if err := trg.OnValidate_Can_insert(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "can_modify":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Can_modify = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Can_modify = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field can_modify")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PermissionOnValidate_Can_modify); ok {
-				if err := trg.OnValidate_Can_modify(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "can_delete":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Can_delete = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Can_delete = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field can_delete")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PermissionOnValidate_Can_delete); ok {
-				if err := trg.OnValidate_Can_delete(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "object_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(PermissionObject_type); ok {
-			t.Object_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field object_type (valid range: 0-%d)", v, 3-1)
-			}
-			t.Object_type = PermissionObject_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field object_type (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Object_type = PermissionObject_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Object_type = 0
-			} else {
-				options := []string{"Table Data", "Report", "Codeunit"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Object_type = PermissionObject_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field object_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field object_type (expected PermissionObject_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PermissionOnValidate_Object_type); ok {
-				if err := trg.OnValidate_Object_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "object_id":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Object_id = v
-		case float64:
-			t.Object_id = int(v)
-		case string:
-			if v == "" {
-				t.Object_id = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Object_id = i
-			} else {
-				return fmt.Errorf("invalid integer value for field object_id: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field object_id")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "object_id"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PermissionOnValidate_Object_id); ok {
-				if err := trg.OnValidate_Object_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "can_execute":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Can_execute = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Can_execute = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field can_execute")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PermissionOnValidate_Can_execute); ok {
-				if err := trg.OnValidate_Can_execute(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := permissionFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &permissionFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2512,95 +2128,18 @@ func (t *Permission) ValidateField(fieldName string, value interface{}) error {
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *Permission) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Role_id, true
-	case 2:
-		return t.Table_name, true
-	case 3:
-		return t.Can_read, true
-	case 4:
-		return t.Can_insert, true
-	case 5:
-		return t.Can_modify, true
-	case 6:
-		return t.Can_delete, true
-	case 7:
-		return t.Object_type, true
-	case 8:
-		return t.Object_id, true
-	case 9:
-		return t.Can_execute, true
-	}
-	return nil, false
+	return permissionFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *Permission) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return permissionFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *Permission) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Role_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Role_id = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Table_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Table_name = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(bool); ok {
-			t.Can_read = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(bool); ok {
-			t.Can_insert = v
-			return true
-		}
-	case 5:
-		if v, ok := value.(bool); ok {
-			t.Can_modify = v
-			return true
-		}
-	case 6:
-		if v, ok := value.(bool); ok {
-			t.Can_delete = v
-			return true
-		}
-	case 7:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Object_type = PermissionObject_type(i)
-			return true
-		}
-	case 8:
-		if v, ok := value.(int); ok {
-			t.Object_id = v
-			return true
-		}
-	case 9:
-		if v, ok := value.(bool); ok {
-			t.Can_execute = v
-			return true
-		}
-	}
-	return false
+	return permissionFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3071,27 +2610,7 @@ func (t *Permission) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *Permission) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "role_id":
-		return t.Role_id, true
-	case "table_name":
-		return t.Table_name, true
-	case "can_read":
-		return t.Can_read, true
-	case "can_insert":
-		return t.Can_insert, true
-	case "can_modify":
-		return t.Can_modify, true
-	case "can_delete":
-		return t.Can_delete, true
-	case "object_type":
-		return int(t.Object_type), true
-	case "object_id":
-		return t.Object_id, true
-	case "can_execute":
-		return t.Can_execute, true
-	}
-	return nil, false
+	return permissionFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3188,86 +2707,12 @@ func (t *Permission) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *Permission) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"role_id":     t.Role_id.String(),
-		"table_name":  t.Table_name.String(),
-		"can_read":    t.Can_read,
-		"can_insert":  t.Can_insert,
-		"can_modify":  t.Can_modify,
-		"can_delete":  t.Can_delete,
-		"object_type": int(t.Object_type),
-		"object_id":   t.Object_id,
-		"can_execute": t.Can_execute,
-	}
+	return permissionFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *Permission) FromMap(data map[string]interface{}) {
-	if v, ok := data["role_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Role_id = types.NewCode(s)
-		}
-	}
-	if v, ok := data["table_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Table_name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["can_read"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Can_read = b
-		}
-	}
-	if v, ok := data["can_insert"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Can_insert = b
-		}
-	}
-	if v, ok := data["can_modify"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Can_modify = b
-		}
-	}
-	if v, ok := data["can_delete"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Can_delete = b
-		}
-	}
-	if v, ok := data["object_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Object_type = PermissionObject_type(int(val))
-		case int:
-			t.Object_type = PermissionObject_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Table Data", "Report", "Codeunit"}
-			for i, opt := range options {
-				if opt == val {
-					t.Object_type = PermissionObject_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["object_id"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Object_id = int(val)
-		case int:
-			t.Object_id = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Object_id = n
-			}
-		}
-	}
-	if v, ok := data["can_execute"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Can_execute = b
-		}
-	}
+	permissionFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3288,98 +2733,169 @@ func (t *Permission) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *Permission) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "role_id",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "table_name",
-			Type:       tables.FieldTypeCode,
-			Length:     100,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "can_read",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "can_insert",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "can_modify",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "can_delete",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "object_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "object_id",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "can_execute",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return permissionFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in permissionFields.Fields
+func (t *Permission) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Role_id
+	case 1:
+		return &t.Table_name
+	case 2:
+		return &t.Can_read
+	case 3:
+		return &t.Can_insert
+	case 4:
+		return &t.Can_modify
+	case 5:
+		return &t.Can_delete
+	case 6:
+		return &t.Object_type
+	case 7:
+		return &t.Object_id
+	case 8:
+		return &t.Can_execute
 	}
+	return nil
+}
+
+// permissionFields describes the fields of Permission for the record functions
+// written once in foundation/tables
+var permissionFields = &tables.TableFields{
+	Table: PermissionTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "role_id",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Role_id",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "table_name",
+				Type:       tables.FieldTypeCode,
+				Length:     100,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Table_name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "can_read",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Can_read",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "can_insert",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Can_insert",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "can_modify",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Can_modify",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "can_delete",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Can_delete",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "object_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Object_type",
+			Options: []string{"Table Data", "Report", "Codeunit"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "object_id",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindInt,
+			Trigger:  "OnValidate_Object_id",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "can_execute",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Can_execute",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

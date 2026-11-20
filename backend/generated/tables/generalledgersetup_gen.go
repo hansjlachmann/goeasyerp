@@ -47,7 +47,6 @@ import (
 	"fmt"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -357,144 +356,12 @@ var GeneralLedgerSetup_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *GeneralLedgerSetup) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "primary_key":
-		return 1
-	case "allow_posting_from":
-		return 2
-	case "allow_posting_to":
-		return 3
-	case "register_time":
-		return 4
-	case "pmt_disc_excl_tax":
-		return 28
-	case "cust_balances_due":
-		return 44
-	case "vendor_balances_due":
-		return 45
-	case "unrealized_tax":
-		return 48
-	case "adjust_for_payment_disc":
-		return 49
-	case "mark_cr_memos_as_corrections":
-		return 56
-	case "local_address_format":
-		return 57
-	case "inv_rounding_precision_lcy":
-		return 58
-	case "inv_rounding_type_lcy":
-		return 59
-	case "local_cont_addr_format":
-		return 60
-	case "recalculate_sales_tax":
-		return 64
-	case "summarize_gl_entries":
-		return 65
-	case "amount_decimal_places":
-		return 66
-	case "unit_amount_decimal_places":
-		return 67
-	case "additional_reporting_currency":
-		return 68
-	case "vat_tolerance_percent":
-		return 69
-	case "emu_currency":
-		return 70
-	case "lcy_code":
-		return 71
-	case "tax_exchange_rate_adjustment":
-		return 72
-	case "amount_rounding_precision":
-		return 73
-	case "unit_amount_rounding_precision":
-		return 74
-	case "appln_rounding_precision":
-		return 75
-	case "bank_account_nos":
-		return 63
-	case "dimension_1":
-		return 900
-	case "dimension_2":
-		return 901
-	case "date_filter":
-		return 41
-	case "dimension_1_filter":
-		return 42
-	case "dimension_2_filter":
-		return 43
-	}
-	return 0
+	return generalLedgerSetupFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *GeneralLedgerSetup) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "primary_key"
-	case 2:
-		return "allow_posting_from"
-	case 3:
-		return "allow_posting_to"
-	case 4:
-		return "register_time"
-	case 28:
-		return "pmt_disc_excl_tax"
-	case 44:
-		return "cust_balances_due"
-	case 45:
-		return "vendor_balances_due"
-	case 48:
-		return "unrealized_tax"
-	case 49:
-		return "adjust_for_payment_disc"
-	case 56:
-		return "mark_cr_memos_as_corrections"
-	case 57:
-		return "local_address_format"
-	case 58:
-		return "inv_rounding_precision_lcy"
-	case 59:
-		return "inv_rounding_type_lcy"
-	case 60:
-		return "local_cont_addr_format"
-	case 64:
-		return "recalculate_sales_tax"
-	case 65:
-		return "summarize_gl_entries"
-	case 66:
-		return "amount_decimal_places"
-	case 67:
-		return "unit_amount_decimal_places"
-	case 68:
-		return "additional_reporting_currency"
-	case 69:
-		return "vat_tolerance_percent"
-	case 70:
-		return "emu_currency"
-	case 71:
-		return "lcy_code"
-	case 72:
-		return "tax_exchange_rate_adjustment"
-	case 73:
-		return "amount_rounding_precision"
-	case 74:
-		return "unit_amount_rounding_precision"
-	case 75:
-		return "appln_rounding_precision"
-	case 63:
-		return "bank_account_nos"
-	case 900:
-		return "dimension_1"
-	case 901:
-		return "dimension_2"
-	case 41:
-		return "date_filter"
-	case 42:
-		return "dimension_1_filter"
-	case 43:
-		return "dimension_2_filter"
-	}
-	return ""
+	return generalLedgerSetupFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -606,87 +473,6 @@ type (
 	GeneralLedgerSetupOnBeforeRename interface {
 		OnBeforeRename(rec *GeneralLedgerSetup, handled *bool) error
 	}
-	GeneralLedgerSetupOnValidate_Primary_key interface {
-		OnValidate_Primary_key(rec *GeneralLedgerSetup) error
-	}
-	GeneralLedgerSetupOnValidate_Allow_posting_from interface {
-		OnValidate_Allow_posting_from(rec *GeneralLedgerSetup) error
-	}
-	GeneralLedgerSetupOnValidate_Allow_posting_to interface {
-		OnValidate_Allow_posting_to(rec *GeneralLedgerSetup) error
-	}
-	GeneralLedgerSetupOnValidate_Register_time interface {
-		OnValidate_Register_time(rec *GeneralLedgerSetup) error
-	}
-	GeneralLedgerSetupOnValidate_Pmt_disc_excl_tax interface {
-		OnValidate_Pmt_disc_excl_tax(rec *GeneralLedgerSetup) error
-	}
-	GeneralLedgerSetupOnValidate_Unrealized_tax interface {
-		OnValidate_Unrealized_tax(rec *GeneralLedgerSetup) error
-	}
-	GeneralLedgerSetupOnValidate_Adjust_for_payment_disc interface {
-		OnValidate_Adjust_for_payment_disc(rec *GeneralLedgerSetup) error
-	}
-	GeneralLedgerSetupOnValidate_Mark_cr_memos_as_corrections interface {
-		OnValidate_Mark_cr_memos_as_corrections(rec *GeneralLedgerSetup) error
-	}
-	GeneralLedgerSetupOnValidate_Local_address_format interface {
-		OnValidate_Local_address_format(rec *GeneralLedgerSetup) error
-	}
-	GeneralLedgerSetupOnValidate_Inv_rounding_precision_lcy interface {
-		OnValidate_Inv_rounding_precision_lcy(rec *GeneralLedgerSetup) error
-	}
-	GeneralLedgerSetupOnValidate_Inv_rounding_type_lcy interface {
-		OnValidate_Inv_rounding_type_lcy(rec *GeneralLedgerSetup) error
-	}
-	GeneralLedgerSetupOnValidate_Local_cont_addr_format interface {
-		OnValidate_Local_cont_addr_format(rec *GeneralLedgerSetup) error
-	}
-	GeneralLedgerSetupOnValidate_Recalculate_sales_tax interface {
-		OnValidate_Recalculate_sales_tax(rec *GeneralLedgerSetup) error
-	}
-	GeneralLedgerSetupOnValidate_Summarize_gl_entries interface {
-		OnValidate_Summarize_gl_entries(rec *GeneralLedgerSetup) error
-	}
-	GeneralLedgerSetupOnValidate_Amount_decimal_places interface {
-		OnValidate_Amount_decimal_places(rec *GeneralLedgerSetup) error
-	}
-	GeneralLedgerSetupOnValidate_Unit_amount_decimal_places interface {
-		OnValidate_Unit_amount_decimal_places(rec *GeneralLedgerSetup) error
-	}
-	GeneralLedgerSetupOnValidate_Additional_reporting_currency interface {
-		OnValidate_Additional_reporting_currency(rec *GeneralLedgerSetup) error
-	}
-	GeneralLedgerSetupOnValidate_Vat_tolerance_percent interface {
-		OnValidate_Vat_tolerance_percent(rec *GeneralLedgerSetup) error
-	}
-	GeneralLedgerSetupOnValidate_Emu_currency interface {
-		OnValidate_Emu_currency(rec *GeneralLedgerSetup) error
-	}
-	GeneralLedgerSetupOnValidate_Lcy_code interface {
-		OnValidate_Lcy_code(rec *GeneralLedgerSetup) error
-	}
-	GeneralLedgerSetupOnValidate_Tax_exchange_rate_adjustment interface {
-		OnValidate_Tax_exchange_rate_adjustment(rec *GeneralLedgerSetup) error
-	}
-	GeneralLedgerSetupOnValidate_Amount_rounding_precision interface {
-		OnValidate_Amount_rounding_precision(rec *GeneralLedgerSetup) error
-	}
-	GeneralLedgerSetupOnValidate_Unit_amount_rounding_precision interface {
-		OnValidate_Unit_amount_rounding_precision(rec *GeneralLedgerSetup) error
-	}
-	GeneralLedgerSetupOnValidate_Appln_rounding_precision interface {
-		OnValidate_Appln_rounding_precision(rec *GeneralLedgerSetup) error
-	}
-	GeneralLedgerSetupOnValidate_Bank_account_nos interface {
-		OnValidate_Bank_account_nos(rec *GeneralLedgerSetup) error
-	}
-	GeneralLedgerSetupOnValidate_Dimension_1 interface {
-		OnValidate_Dimension_1(rec *GeneralLedgerSetup) error
-	}
-	GeneralLedgerSetupOnValidate_Dimension_2 interface {
-		OnValidate_Dimension_2(rec *GeneralLedgerSetup) error
-	}
 )
 
 // generalLedgerSetupLogic is the registered business logic of General_Ledger_Setup, in
@@ -729,62 +515,9 @@ func generalLedgerSetupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(GeneralLedgerSetupOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(GeneralLedgerSetupOnBeforeRename)
-	case "OnValidate_Primary_key":
-		_, ok = logic.(GeneralLedgerSetupOnValidate_Primary_key)
-	case "OnValidate_Allow_posting_from":
-		_, ok = logic.(GeneralLedgerSetupOnValidate_Allow_posting_from)
-	case "OnValidate_Allow_posting_to":
-		_, ok = logic.(GeneralLedgerSetupOnValidate_Allow_posting_to)
-	case "OnValidate_Register_time":
-		_, ok = logic.(GeneralLedgerSetupOnValidate_Register_time)
-	case "OnValidate_Pmt_disc_excl_tax":
-		_, ok = logic.(GeneralLedgerSetupOnValidate_Pmt_disc_excl_tax)
-	case "OnValidate_Unrealized_tax":
-		_, ok = logic.(GeneralLedgerSetupOnValidate_Unrealized_tax)
-	case "OnValidate_Adjust_for_payment_disc":
-		_, ok = logic.(GeneralLedgerSetupOnValidate_Adjust_for_payment_disc)
-	case "OnValidate_Mark_cr_memos_as_corrections":
-		_, ok = logic.(GeneralLedgerSetupOnValidate_Mark_cr_memos_as_corrections)
-	case "OnValidate_Local_address_format":
-		_, ok = logic.(GeneralLedgerSetupOnValidate_Local_address_format)
-	case "OnValidate_Inv_rounding_precision_lcy":
-		_, ok = logic.(GeneralLedgerSetupOnValidate_Inv_rounding_precision_lcy)
-	case "OnValidate_Inv_rounding_type_lcy":
-		_, ok = logic.(GeneralLedgerSetupOnValidate_Inv_rounding_type_lcy)
-	case "OnValidate_Local_cont_addr_format":
-		_, ok = logic.(GeneralLedgerSetupOnValidate_Local_cont_addr_format)
-	case "OnValidate_Recalculate_sales_tax":
-		_, ok = logic.(GeneralLedgerSetupOnValidate_Recalculate_sales_tax)
-	case "OnValidate_Summarize_gl_entries":
-		_, ok = logic.(GeneralLedgerSetupOnValidate_Summarize_gl_entries)
-	case "OnValidate_Amount_decimal_places":
-		_, ok = logic.(GeneralLedgerSetupOnValidate_Amount_decimal_places)
-	case "OnValidate_Unit_amount_decimal_places":
-		_, ok = logic.(GeneralLedgerSetupOnValidate_Unit_amount_decimal_places)
-	case "OnValidate_Additional_reporting_currency":
-		_, ok = logic.(GeneralLedgerSetupOnValidate_Additional_reporting_currency)
-	case "OnValidate_Vat_tolerance_percent":
-		_, ok = logic.(GeneralLedgerSetupOnValidate_Vat_tolerance_percent)
-	case "OnValidate_Emu_currency":
-		_, ok = logic.(GeneralLedgerSetupOnValidate_Emu_currency)
-	case "OnValidate_Lcy_code":
-		_, ok = logic.(GeneralLedgerSetupOnValidate_Lcy_code)
-	case "OnValidate_Tax_exchange_rate_adjustment":
-		_, ok = logic.(GeneralLedgerSetupOnValidate_Tax_exchange_rate_adjustment)
-	case "OnValidate_Amount_rounding_precision":
-		_, ok = logic.(GeneralLedgerSetupOnValidate_Amount_rounding_precision)
-	case "OnValidate_Unit_amount_rounding_precision":
-		_, ok = logic.(GeneralLedgerSetupOnValidate_Unit_amount_rounding_precision)
-	case "OnValidate_Appln_rounding_precision":
-		_, ok = logic.(GeneralLedgerSetupOnValidate_Appln_rounding_precision)
-	case "OnValidate_Bank_account_nos":
-		_, ok = logic.(GeneralLedgerSetupOnValidate_Bank_account_nos)
-	case "OnValidate_Dimension_1":
-		_, ok = logic.(GeneralLedgerSetupOnValidate_Dimension_1)
-	case "OnValidate_Dimension_2":
-		_, ok = logic.(GeneralLedgerSetupOnValidate_Dimension_2)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return generalLedgerSetupFields.IsOnValidateTrigger(name, logic, (*GeneralLedgerSetup)(nil))
 	}
 	return true, ok
 }
@@ -1174,34 +907,7 @@ func (t *GeneralLedgerSetup) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *GeneralLedgerSetup) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["primary_key"] = t.Primary_key
-	t.oldValues["allow_posting_from"] = t.Allow_posting_from
-	t.oldValues["allow_posting_to"] = t.Allow_posting_to
-	t.oldValues["register_time"] = t.Register_time
-	t.oldValues["pmt_disc_excl_tax"] = t.Pmt_disc_excl_tax
-	t.oldValues["unrealized_tax"] = t.Unrealized_tax
-	t.oldValues["adjust_for_payment_disc"] = t.Adjust_for_payment_disc
-	t.oldValues["mark_cr_memos_as_corrections"] = t.Mark_cr_memos_as_corrections
-	t.oldValues["local_address_format"] = t.Local_address_format
-	t.oldValues["inv_rounding_precision_lcy"] = t.Inv_rounding_precision_lcy
-	t.oldValues["inv_rounding_type_lcy"] = t.Inv_rounding_type_lcy
-	t.oldValues["local_cont_addr_format"] = t.Local_cont_addr_format
-	t.oldValues["recalculate_sales_tax"] = t.Recalculate_sales_tax
-	t.oldValues["summarize_gl_entries"] = t.Summarize_gl_entries
-	t.oldValues["amount_decimal_places"] = t.Amount_decimal_places
-	t.oldValues["unit_amount_decimal_places"] = t.Unit_amount_decimal_places
-	t.oldValues["additional_reporting_currency"] = t.Additional_reporting_currency
-	t.oldValues["vat_tolerance_percent"] = t.Vat_tolerance_percent
-	t.oldValues["emu_currency"] = t.Emu_currency
-	t.oldValues["lcy_code"] = t.Lcy_code
-	t.oldValues["tax_exchange_rate_adjustment"] = t.Tax_exchange_rate_adjustment
-	t.oldValues["amount_rounding_precision"] = t.Amount_rounding_precision
-	t.oldValues["unit_amount_rounding_precision"] = t.Unit_amount_rounding_precision
-	t.oldValues["appln_rounding_precision"] = t.Appln_rounding_precision
-	t.oldValues["bank_account_nos"] = t.Bank_account_nos
-	t.oldValues["dimension_1"] = t.Dimension_1
-	t.oldValues["dimension_2"] = t.Dimension_2
+	t.oldValues = generalLedgerSetupFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1216,87 +922,7 @@ func (t *GeneralLedgerSetup) OldValue(fieldName string) interface{} {
 func (t *GeneralLedgerSetup) XRec() *GeneralLedgerSetup {
 	x := &GeneralLedgerSetup{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["primary_key"].(types.Code); ok {
-		x.Primary_key = v
-	}
-	if v, ok := t.oldValues["allow_posting_from"].(types.Date); ok {
-		x.Allow_posting_from = v
-	}
-	if v, ok := t.oldValues["allow_posting_to"].(types.Date); ok {
-		x.Allow_posting_to = v
-	}
-	if v, ok := t.oldValues["register_time"].(bool); ok {
-		x.Register_time = v
-	}
-	if v, ok := t.oldValues["pmt_disc_excl_tax"].(bool); ok {
-		x.Pmt_disc_excl_tax = v
-	}
-	if v, ok := t.oldValues["unrealized_tax"].(bool); ok {
-		x.Unrealized_tax = v
-	}
-	if v, ok := t.oldValues["adjust_for_payment_disc"].(bool); ok {
-		x.Adjust_for_payment_disc = v
-	}
-	if v, ok := t.oldValues["mark_cr_memos_as_corrections"].(bool); ok {
-		x.Mark_cr_memos_as_corrections = v
-	}
-	if v, ok := t.oldValues["local_address_format"].(GeneralLedgerSetupLocal_address_format); ok {
-		x.Local_address_format = v
-	}
-	if v, ok := t.oldValues["inv_rounding_precision_lcy"].(types.Decimal); ok {
-		x.Inv_rounding_precision_lcy = v
-	}
-	if v, ok := t.oldValues["inv_rounding_type_lcy"].(GeneralLedgerSetupInv_rounding_type_lcy); ok {
-		x.Inv_rounding_type_lcy = v
-	}
-	if v, ok := t.oldValues["local_cont_addr_format"].(GeneralLedgerSetupLocal_cont_addr_format); ok {
-		x.Local_cont_addr_format = v
-	}
-	if v, ok := t.oldValues["recalculate_sales_tax"].(bool); ok {
-		x.Recalculate_sales_tax = v
-	}
-	if v, ok := t.oldValues["summarize_gl_entries"].(bool); ok {
-		x.Summarize_gl_entries = v
-	}
-	if v, ok := t.oldValues["amount_decimal_places"].(types.Text); ok {
-		x.Amount_decimal_places = v
-	}
-	if v, ok := t.oldValues["unit_amount_decimal_places"].(types.Text); ok {
-		x.Unit_amount_decimal_places = v
-	}
-	if v, ok := t.oldValues["additional_reporting_currency"].(types.Code); ok {
-		x.Additional_reporting_currency = v
-	}
-	if v, ok := t.oldValues["vat_tolerance_percent"].(types.Decimal); ok {
-		x.Vat_tolerance_percent = v
-	}
-	if v, ok := t.oldValues["emu_currency"].(bool); ok {
-		x.Emu_currency = v
-	}
-	if v, ok := t.oldValues["lcy_code"].(types.Code); ok {
-		x.Lcy_code = v
-	}
-	if v, ok := t.oldValues["tax_exchange_rate_adjustment"].(GeneralLedgerSetupTax_exchange_rate_adjustment); ok {
-		x.Tax_exchange_rate_adjustment = v
-	}
-	if v, ok := t.oldValues["amount_rounding_precision"].(types.Decimal); ok {
-		x.Amount_rounding_precision = v
-	}
-	if v, ok := t.oldValues["unit_amount_rounding_precision"].(types.Decimal); ok {
-		x.Unit_amount_rounding_precision = v
-	}
-	if v, ok := t.oldValues["appln_rounding_precision"].(types.Decimal); ok {
-		x.Appln_rounding_precision = v
-	}
-	if v, ok := t.oldValues["bank_account_nos"].(types.Code); ok {
-		x.Bank_account_nos = v
-	}
-	if v, ok := t.oldValues["dimension_1"].(types.Text); ok {
-		x.Dimension_1 = v
-	}
-	if v, ok := t.oldValues["dimension_2"].(types.Text); ok {
-		x.Dimension_2 = v
-	}
+	generalLedgerSetupFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1826,137 +1452,7 @@ func (t *GeneralLedgerSetup) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *GeneralLedgerSetup) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "primary_key":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Primary_key.Equal(old)
-		}
-	case "allow_posting_from":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Allow_posting_from.Equal(old)
-		}
-	case "allow_posting_to":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Allow_posting_to.Equal(old)
-		}
-	case "register_time":
-		if old, ok := oldValue.(bool); ok {
-			return t.Register_time != old
-		}
-		return true // Type mismatch, assume changed
-	case "pmt_disc_excl_tax":
-		if old, ok := oldValue.(bool); ok {
-			return t.Pmt_disc_excl_tax != old
-		}
-		return true // Type mismatch, assume changed
-	case "unrealized_tax":
-		if old, ok := oldValue.(bool); ok {
-			return t.Unrealized_tax != old
-		}
-		return true // Type mismatch, assume changed
-	case "adjust_for_payment_disc":
-		if old, ok := oldValue.(bool); ok {
-			return t.Adjust_for_payment_disc != old
-		}
-		return true // Type mismatch, assume changed
-	case "mark_cr_memos_as_corrections":
-		if old, ok := oldValue.(bool); ok {
-			return t.Mark_cr_memos_as_corrections != old
-		}
-		return true // Type mismatch, assume changed
-	case "local_address_format":
-		if old, ok := oldValue.(GeneralLedgerSetupLocal_address_format); ok {
-			return t.Local_address_format != old
-		}
-	case "inv_rounding_precision_lcy":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Inv_rounding_precision_lcy.Equal(old)
-		}
-	case "inv_rounding_type_lcy":
-		if old, ok := oldValue.(GeneralLedgerSetupInv_rounding_type_lcy); ok {
-			return t.Inv_rounding_type_lcy != old
-		}
-	case "local_cont_addr_format":
-		if old, ok := oldValue.(GeneralLedgerSetupLocal_cont_addr_format); ok {
-			return t.Local_cont_addr_format != old
-		}
-	case "recalculate_sales_tax":
-		if old, ok := oldValue.(bool); ok {
-			return t.Recalculate_sales_tax != old
-		}
-		return true // Type mismatch, assume changed
-	case "summarize_gl_entries":
-		if old, ok := oldValue.(bool); ok {
-			return t.Summarize_gl_entries != old
-		}
-		return true // Type mismatch, assume changed
-	case "amount_decimal_places":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Amount_decimal_places.Equal(old)
-		}
-	case "unit_amount_decimal_places":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Unit_amount_decimal_places.Equal(old)
-		}
-	case "additional_reporting_currency":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Additional_reporting_currency.Equal(old)
-		}
-	case "vat_tolerance_percent":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Vat_tolerance_percent.Equal(old)
-		}
-	case "emu_currency":
-		if old, ok := oldValue.(bool); ok {
-			return t.Emu_currency != old
-		}
-		return true // Type mismatch, assume changed
-	case "lcy_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Lcy_code.Equal(old)
-		}
-	case "tax_exchange_rate_adjustment":
-		if old, ok := oldValue.(GeneralLedgerSetupTax_exchange_rate_adjustment); ok {
-			return t.Tax_exchange_rate_adjustment != old
-		}
-	case "amount_rounding_precision":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Amount_rounding_precision.Equal(old)
-		}
-	case "unit_amount_rounding_precision":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Unit_amount_rounding_precision.Equal(old)
-		}
-	case "appln_rounding_precision":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Appln_rounding_precision.Equal(old)
-		}
-	case "bank_account_nos":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Bank_account_nos.Equal(old)
-		}
-	case "dimension_1":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Dimension_1.Equal(old)
-		}
-	case "dimension_2":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Dimension_2.Equal(old)
-		}
-	}
-
-	return false
+	return generalLedgerSetupFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -2475,63 +1971,7 @@ func (t *GeneralLedgerSetup) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *GeneralLedgerSetup) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("primary_key"):
-		return "primary_key", true
-	case strings.ToLower("allow_posting_from"):
-		return "allow_posting_from", true
-	case strings.ToLower("allow_posting_to"):
-		return "allow_posting_to", true
-	case strings.ToLower("register_time"):
-		return "register_time", true
-	case strings.ToLower("pmt_disc_excl_tax"):
-		return "pmt_disc_excl_tax", true
-	case strings.ToLower("unrealized_tax"):
-		return "unrealized_tax", true
-	case strings.ToLower("adjust_for_payment_disc"):
-		return "adjust_for_payment_disc", true
-	case strings.ToLower("mark_cr_memos_as_corrections"):
-		return "mark_cr_memos_as_corrections", true
-	case strings.ToLower("local_address_format"):
-		return "local_address_format", true
-	case strings.ToLower("inv_rounding_precision_lcy"):
-		return "inv_rounding_precision_lcy", true
-	case strings.ToLower("inv_rounding_type_lcy"):
-		return "inv_rounding_type_lcy", true
-	case strings.ToLower("local_cont_addr_format"):
-		return "local_cont_addr_format", true
-	case strings.ToLower("recalculate_sales_tax"):
-		return "recalculate_sales_tax", true
-	case strings.ToLower("summarize_gl_entries"):
-		return "summarize_gl_entries", true
-	case strings.ToLower("amount_decimal_places"):
-		return "amount_decimal_places", true
-	case strings.ToLower("unit_amount_decimal_places"):
-		return "unit_amount_decimal_places", true
-	case strings.ToLower("additional_reporting_currency"):
-		return "additional_reporting_currency", true
-	case strings.ToLower("vat_tolerance_percent"):
-		return "vat_tolerance_percent", true
-	case strings.ToLower("emu_currency"):
-		return "emu_currency", true
-	case strings.ToLower("lcy_code"):
-		return "lcy_code", true
-	case strings.ToLower("tax_exchange_rate_adjustment"):
-		return "tax_exchange_rate_adjustment", true
-	case strings.ToLower("amount_rounding_precision"):
-		return "amount_rounding_precision", true
-	case strings.ToLower("unit_amount_rounding_precision"):
-		return "unit_amount_rounding_precision", true
-	case strings.ToLower("appln_rounding_precision"):
-		return "appln_rounding_precision", true
-	case strings.ToLower("bank_account_nos"):
-		return "bank_account_nos", true
-	case strings.ToLower("dimension_1"):
-		return "dimension_1", true
-	case strings.ToLower("dimension_2"):
-		return "dimension_2", true
-	}
-	return "", false
+	return generalLedgerSetupFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -3715,700 +3155,20 @@ func (t *GeneralLedgerSetup) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *GeneralLedgerSetup) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "primary_key":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Primary_key = v
-		} else if v, ok := value.(string); ok {
-			t.Primary_key = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field primary_key")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralLedgerSetupOnValidate_Primary_key); ok {
-				if err := trg.OnValidate_Primary_key(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "allow_posting_from":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Allow_posting_from = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Allow_posting_from, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field allow_posting_from: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Allow_posting_from = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field allow_posting_from (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralLedgerSetupOnValidate_Allow_posting_from); ok {
-				if err := trg.OnValidate_Allow_posting_from(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "allow_posting_to":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Allow_posting_to = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Allow_posting_to, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field allow_posting_to: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Allow_posting_to = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field allow_posting_to (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralLedgerSetupOnValidate_Allow_posting_to); ok {
-				if err := trg.OnValidate_Allow_posting_to(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "register_time":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Register_time = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Register_time = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field register_time")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralLedgerSetupOnValidate_Register_time); ok {
-				if err := trg.OnValidate_Register_time(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "pmt_disc_excl_tax":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Pmt_disc_excl_tax = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Pmt_disc_excl_tax = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field pmt_disc_excl_tax")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralLedgerSetupOnValidate_Pmt_disc_excl_tax); ok {
-				if err := trg.OnValidate_Pmt_disc_excl_tax(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unrealized_tax":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Unrealized_tax = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Unrealized_tax = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field unrealized_tax")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralLedgerSetupOnValidate_Unrealized_tax); ok {
-				if err := trg.OnValidate_Unrealized_tax(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "adjust_for_payment_disc":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Adjust_for_payment_disc = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Adjust_for_payment_disc = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field adjust_for_payment_disc")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralLedgerSetupOnValidate_Adjust_for_payment_disc); ok {
-				if err := trg.OnValidate_Adjust_for_payment_disc(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "mark_cr_memos_as_corrections":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Mark_cr_memos_as_corrections = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Mark_cr_memos_as_corrections = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field mark_cr_memos_as_corrections")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralLedgerSetupOnValidate_Mark_cr_memos_as_corrections); ok {
-				if err := trg.OnValidate_Mark_cr_memos_as_corrections(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "local_address_format":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(GeneralLedgerSetupLocal_address_format); ok {
-			t.Local_address_format = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field local_address_format (valid range: 0-%d)", v, 4-1)
-			}
-			t.Local_address_format = GeneralLedgerSetupLocal_address_format(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field local_address_format (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Local_address_format = GeneralLedgerSetupLocal_address_format(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Local_address_format = 0
-			} else {
-				options := []string{"Post Code+City", "City+Post Code", "City+State+Post Code", "Blank Line+Post Code+City"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Local_address_format = GeneralLedgerSetupLocal_address_format(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field local_address_format (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field local_address_format (expected GeneralLedgerSetupLocal_address_format, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralLedgerSetupOnValidate_Local_address_format); ok {
-				if err := trg.OnValidate_Local_address_format(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "inv_rounding_precision_lcy":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Inv_rounding_precision_lcy = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Inv_rounding_precision_lcy, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field inv_rounding_precision_lcy: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Inv_rounding_precision_lcy = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Inv_rounding_precision_lcy = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Inv_rounding_precision_lcy = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field inv_rounding_precision_lcy (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralLedgerSetupOnValidate_Inv_rounding_precision_lcy); ok {
-				if err := trg.OnValidate_Inv_rounding_precision_lcy(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "inv_rounding_type_lcy":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(GeneralLedgerSetupInv_rounding_type_lcy); ok {
-			t.Inv_rounding_type_lcy = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field inv_rounding_type_lcy (valid range: 0-%d)", v, 3-1)
-			}
-			t.Inv_rounding_type_lcy = GeneralLedgerSetupInv_rounding_type_lcy(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field inv_rounding_type_lcy (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Inv_rounding_type_lcy = GeneralLedgerSetupInv_rounding_type_lcy(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Inv_rounding_type_lcy = 0
-			} else {
-				options := []string{"Nearest", "Up", "Down"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Inv_rounding_type_lcy = GeneralLedgerSetupInv_rounding_type_lcy(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field inv_rounding_type_lcy (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field inv_rounding_type_lcy (expected GeneralLedgerSetupInv_rounding_type_lcy, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralLedgerSetupOnValidate_Inv_rounding_type_lcy); ok {
-				if err := trg.OnValidate_Inv_rounding_type_lcy(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "local_cont_addr_format":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(GeneralLedgerSetupLocal_cont_addr_format); ok {
-			t.Local_cont_addr_format = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field local_cont_addr_format (valid range: 0-%d)", v, 3-1)
-			}
-			t.Local_cont_addr_format = GeneralLedgerSetupLocal_cont_addr_format(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field local_cont_addr_format (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Local_cont_addr_format = GeneralLedgerSetupLocal_cont_addr_format(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Local_cont_addr_format = 0
-			} else {
-				options := []string{"First", "After Company Name", "Last"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Local_cont_addr_format = GeneralLedgerSetupLocal_cont_addr_format(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field local_cont_addr_format (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field local_cont_addr_format (expected GeneralLedgerSetupLocal_cont_addr_format, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralLedgerSetupOnValidate_Local_cont_addr_format); ok {
-				if err := trg.OnValidate_Local_cont_addr_format(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "recalculate_sales_tax":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Recalculate_sales_tax = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Recalculate_sales_tax = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field recalculate_sales_tax")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralLedgerSetupOnValidate_Recalculate_sales_tax); ok {
-				if err := trg.OnValidate_Recalculate_sales_tax(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "summarize_gl_entries":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Summarize_gl_entries = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Summarize_gl_entries = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field summarize_gl_entries")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralLedgerSetupOnValidate_Summarize_gl_entries); ok {
-				if err := trg.OnValidate_Summarize_gl_entries(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "amount_decimal_places":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Amount_decimal_places = v
-		} else if v, ok := value.(string); ok {
-			t.Amount_decimal_places = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field amount_decimal_places")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralLedgerSetupOnValidate_Amount_decimal_places); ok {
-				if err := trg.OnValidate_Amount_decimal_places(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unit_amount_decimal_places":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Unit_amount_decimal_places = v
-		} else if v, ok := value.(string); ok {
-			t.Unit_amount_decimal_places = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field unit_amount_decimal_places")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralLedgerSetupOnValidate_Unit_amount_decimal_places); ok {
-				if err := trg.OnValidate_Unit_amount_decimal_places(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "additional_reporting_currency":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Additional_reporting_currency = v
-		} else if v, ok := value.(string); ok {
-			t.Additional_reporting_currency = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field additional_reporting_currency")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "additional_reporting_currency"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralLedgerSetupOnValidate_Additional_reporting_currency); ok {
-				if err := trg.OnValidate_Additional_reporting_currency(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "vat_tolerance_percent":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Vat_tolerance_percent = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Vat_tolerance_percent, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field vat_tolerance_percent: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Vat_tolerance_percent = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Vat_tolerance_percent = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Vat_tolerance_percent = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field vat_tolerance_percent (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralLedgerSetupOnValidate_Vat_tolerance_percent); ok {
-				if err := trg.OnValidate_Vat_tolerance_percent(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "emu_currency":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Emu_currency = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Emu_currency = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field emu_currency")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralLedgerSetupOnValidate_Emu_currency); ok {
-				if err := trg.OnValidate_Emu_currency(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "lcy_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Lcy_code = v
-		} else if v, ok := value.(string); ok {
-			t.Lcy_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field lcy_code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralLedgerSetupOnValidate_Lcy_code); ok {
-				if err := trg.OnValidate_Lcy_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_exchange_rate_adjustment":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(GeneralLedgerSetupTax_exchange_rate_adjustment); ok {
-			t.Tax_exchange_rate_adjustment = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field tax_exchange_rate_adjustment (valid range: 0-%d)", v, 3-1)
-			}
-			t.Tax_exchange_rate_adjustment = GeneralLedgerSetupTax_exchange_rate_adjustment(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field tax_exchange_rate_adjustment (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Tax_exchange_rate_adjustment = GeneralLedgerSetupTax_exchange_rate_adjustment(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Tax_exchange_rate_adjustment = 0
-			} else {
-				options := []string{"No Adjustment", "Adjust Amount", "Adjust Additional-Currency Amount"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Tax_exchange_rate_adjustment = GeneralLedgerSetupTax_exchange_rate_adjustment(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field tax_exchange_rate_adjustment (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field tax_exchange_rate_adjustment (expected GeneralLedgerSetupTax_exchange_rate_adjustment, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralLedgerSetupOnValidate_Tax_exchange_rate_adjustment); ok {
-				if err := trg.OnValidate_Tax_exchange_rate_adjustment(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "amount_rounding_precision":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount_rounding_precision = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Amount_rounding_precision, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field amount_rounding_precision: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Amount_rounding_precision = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Amount_rounding_precision = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Amount_rounding_precision = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field amount_rounding_precision (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralLedgerSetupOnValidate_Amount_rounding_precision); ok {
-				if err := trg.OnValidate_Amount_rounding_precision(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unit_amount_rounding_precision":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Unit_amount_rounding_precision = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Unit_amount_rounding_precision, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field unit_amount_rounding_precision: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Unit_amount_rounding_precision = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Unit_amount_rounding_precision = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Unit_amount_rounding_precision = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field unit_amount_rounding_precision (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralLedgerSetupOnValidate_Unit_amount_rounding_precision); ok {
-				if err := trg.OnValidate_Unit_amount_rounding_precision(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "appln_rounding_precision":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Appln_rounding_precision = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Appln_rounding_precision, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field appln_rounding_precision: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Appln_rounding_precision = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Appln_rounding_precision = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Appln_rounding_precision = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field appln_rounding_precision (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralLedgerSetupOnValidate_Appln_rounding_precision); ok {
-				if err := trg.OnValidate_Appln_rounding_precision(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bank_account_nos":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Bank_account_nos = v
-		} else if v, ok := value.(string); ok {
-			t.Bank_account_nos = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field bank_account_nos")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "bank_account_nos"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralLedgerSetupOnValidate_Bank_account_nos); ok {
-				if err := trg.OnValidate_Bank_account_nos(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_1":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Dimension_1 = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_1 = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_1")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralLedgerSetupOnValidate_Dimension_1); ok {
-				if err := trg.OnValidate_Dimension_1(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_2":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Dimension_2 = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_2 = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_2")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GeneralLedgerSetupOnValidate_Dimension_2); ok {
-				if err := trg.OnValidate_Dimension_2(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := generalLedgerSetupFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &generalLedgerSetupFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -4417,249 +3177,18 @@ func (t *GeneralLedgerSetup) ValidateField(fieldName string, value interface{}) 
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *GeneralLedgerSetup) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Primary_key, true
-	case 2:
-		return t.Allow_posting_from, true
-	case 3:
-		return t.Allow_posting_to, true
-	case 4:
-		return t.Register_time, true
-	case 28:
-		return t.Pmt_disc_excl_tax, true
-	case 48:
-		return t.Unrealized_tax, true
-	case 49:
-		return t.Adjust_for_payment_disc, true
-	case 56:
-		return t.Mark_cr_memos_as_corrections, true
-	case 57:
-		return t.Local_address_format, true
-	case 58:
-		return t.Inv_rounding_precision_lcy, true
-	case 59:
-		return t.Inv_rounding_type_lcy, true
-	case 60:
-		return t.Local_cont_addr_format, true
-	case 64:
-		return t.Recalculate_sales_tax, true
-	case 65:
-		return t.Summarize_gl_entries, true
-	case 66:
-		return t.Amount_decimal_places, true
-	case 67:
-		return t.Unit_amount_decimal_places, true
-	case 68:
-		return t.Additional_reporting_currency, true
-	case 69:
-		return t.Vat_tolerance_percent, true
-	case 70:
-		return t.Emu_currency, true
-	case 71:
-		return t.Lcy_code, true
-	case 72:
-		return t.Tax_exchange_rate_adjustment, true
-	case 73:
-		return t.Amount_rounding_precision, true
-	case 74:
-		return t.Unit_amount_rounding_precision, true
-	case 75:
-		return t.Appln_rounding_precision, true
-	case 63:
-		return t.Bank_account_nos, true
-	case 900:
-		return t.Dimension_1, true
-	case 901:
-		return t.Dimension_2, true
-	}
-	return nil, false
+	return generalLedgerSetupFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *GeneralLedgerSetup) flowFieldValue(no int) (any, bool) {
-	switch no {
-	case 44:
-		return t.Cust_balances_due, true
-	case 45:
-		return t.Vendor_balances_due, true
-	}
-	return nil, false
+	return generalLedgerSetupFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *GeneralLedgerSetup) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Primary_key = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Primary_key = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Date); ok {
-			t.Allow_posting_from = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Date); ok {
-			t.Allow_posting_to = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(bool); ok {
-			t.Register_time = v
-			return true
-		}
-	case 28:
-		if v, ok := value.(bool); ok {
-			t.Pmt_disc_excl_tax = v
-			return true
-		}
-	case 48:
-		if v, ok := value.(bool); ok {
-			t.Unrealized_tax = v
-			return true
-		}
-	case 49:
-		if v, ok := value.(bool); ok {
-			t.Adjust_for_payment_disc = v
-			return true
-		}
-	case 56:
-		if v, ok := value.(bool); ok {
-			t.Mark_cr_memos_as_corrections = v
-			return true
-		}
-	case 57:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Local_address_format = GeneralLedgerSetupLocal_address_format(i)
-			return true
-		}
-	case 58:
-		if v, ok := value.(types.Decimal); ok {
-			t.Inv_rounding_precision_lcy = v
-			return true
-		}
-	case 59:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Inv_rounding_type_lcy = GeneralLedgerSetupInv_rounding_type_lcy(i)
-			return true
-		}
-	case 60:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Local_cont_addr_format = GeneralLedgerSetupLocal_cont_addr_format(i)
-			return true
-		}
-	case 64:
-		if v, ok := value.(bool); ok {
-			t.Recalculate_sales_tax = v
-			return true
-		}
-	case 65:
-		if v, ok := value.(bool); ok {
-			t.Summarize_gl_entries = v
-			return true
-		}
-	case 66:
-		if v, ok := value.(types.Text); ok {
-			t.Amount_decimal_places = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Amount_decimal_places = types.NewText(v)
-			return true
-		}
-	case 67:
-		if v, ok := value.(types.Text); ok {
-			t.Unit_amount_decimal_places = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Unit_amount_decimal_places = types.NewText(v)
-			return true
-		}
-	case 68:
-		if v, ok := value.(types.Code); ok {
-			t.Additional_reporting_currency = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Additional_reporting_currency = types.NewCode(v)
-			return true
-		}
-	case 69:
-		if v, ok := value.(types.Decimal); ok {
-			t.Vat_tolerance_percent = v
-			return true
-		}
-	case 70:
-		if v, ok := value.(bool); ok {
-			t.Emu_currency = v
-			return true
-		}
-	case 71:
-		if v, ok := value.(types.Code); ok {
-			t.Lcy_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Lcy_code = types.NewCode(v)
-			return true
-		}
-	case 72:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Tax_exchange_rate_adjustment = GeneralLedgerSetupTax_exchange_rate_adjustment(i)
-			return true
-		}
-	case 73:
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount_rounding_precision = v
-			return true
-		}
-	case 74:
-		if v, ok := value.(types.Decimal); ok {
-			t.Unit_amount_rounding_precision = v
-			return true
-		}
-	case 75:
-		if v, ok := value.(types.Decimal); ok {
-			t.Appln_rounding_precision = v
-			return true
-		}
-	case 63:
-		if v, ok := value.(types.Code); ok {
-			t.Bank_account_nos = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Bank_account_nos = types.NewCode(v)
-			return true
-		}
-	case 900:
-		if v, ok := value.(types.Text); ok {
-			t.Dimension_1 = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_1 = types.NewText(v)
-			return true
-		}
-	case 901:
-		if v, ok := value.(types.Text); ok {
-			t.Dimension_2 = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_2 = types.NewText(v)
-			return true
-		}
-	}
-	return false
+	return generalLedgerSetupFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -5164,63 +3693,7 @@ func (t *GeneralLedgerSetup) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *GeneralLedgerSetup) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "primary_key":
-		return t.Primary_key, true
-	case "allow_posting_from":
-		return t.Allow_posting_from, true
-	case "allow_posting_to":
-		return t.Allow_posting_to, true
-	case "register_time":
-		return t.Register_time, true
-	case "pmt_disc_excl_tax":
-		return t.Pmt_disc_excl_tax, true
-	case "unrealized_tax":
-		return t.Unrealized_tax, true
-	case "adjust_for_payment_disc":
-		return t.Adjust_for_payment_disc, true
-	case "mark_cr_memos_as_corrections":
-		return t.Mark_cr_memos_as_corrections, true
-	case "local_address_format":
-		return int(t.Local_address_format), true
-	case "inv_rounding_precision_lcy":
-		return t.Inv_rounding_precision_lcy, true
-	case "inv_rounding_type_lcy":
-		return int(t.Inv_rounding_type_lcy), true
-	case "local_cont_addr_format":
-		return int(t.Local_cont_addr_format), true
-	case "recalculate_sales_tax":
-		return t.Recalculate_sales_tax, true
-	case "summarize_gl_entries":
-		return t.Summarize_gl_entries, true
-	case "amount_decimal_places":
-		return t.Amount_decimal_places, true
-	case "unit_amount_decimal_places":
-		return t.Unit_amount_decimal_places, true
-	case "additional_reporting_currency":
-		return t.Additional_reporting_currency, true
-	case "vat_tolerance_percent":
-		return t.Vat_tolerance_percent, true
-	case "emu_currency":
-		return t.Emu_currency, true
-	case "lcy_code":
-		return t.Lcy_code, true
-	case "tax_exchange_rate_adjustment":
-		return int(t.Tax_exchange_rate_adjustment), true
-	case "amount_rounding_precision":
-		return t.Amount_rounding_precision, true
-	case "unit_amount_rounding_precision":
-		return t.Unit_amount_rounding_precision, true
-	case "appln_rounding_precision":
-		return t.Appln_rounding_precision, true
-	case "bank_account_nos":
-		return t.Bank_account_nos, true
-	case "dimension_1":
-		return t.Dimension_1, true
-	case "dimension_2":
-		return t.Dimension_2, true
-	}
-	return nil, false
+	return generalLedgerSetupFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -5332,261 +3805,12 @@ func (t *GeneralLedgerSetup) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *GeneralLedgerSetup) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"primary_key":        t.Primary_key.String(),
-		"allow_posting_from": t.Allow_posting_from.String(),
-		"allow_posting_to":   t.Allow_posting_to.String(),
-		"register_time":      t.Register_time,
-		"pmt_disc_excl_tax":  t.Pmt_disc_excl_tax,
-		// FlowField: cust_balances_due
-		"cust_balances_due": t.Cust_balances_due.String(),
-		// FlowField: vendor_balances_due
-		"vendor_balances_due":            t.Vendor_balances_due.String(),
-		"unrealized_tax":                 t.Unrealized_tax,
-		"adjust_for_payment_disc":        t.Adjust_for_payment_disc,
-		"mark_cr_memos_as_corrections":   t.Mark_cr_memos_as_corrections,
-		"local_address_format":           int(t.Local_address_format),
-		"inv_rounding_precision_lcy":     t.Inv_rounding_precision_lcy.String(),
-		"inv_rounding_type_lcy":          int(t.Inv_rounding_type_lcy),
-		"local_cont_addr_format":         int(t.Local_cont_addr_format),
-		"recalculate_sales_tax":          t.Recalculate_sales_tax,
-		"summarize_gl_entries":           t.Summarize_gl_entries,
-		"amount_decimal_places":          t.Amount_decimal_places.String(),
-		"unit_amount_decimal_places":     t.Unit_amount_decimal_places.String(),
-		"additional_reporting_currency":  t.Additional_reporting_currency.String(),
-		"vat_tolerance_percent":          t.Vat_tolerance_percent.String(),
-		"emu_currency":                   t.Emu_currency,
-		"lcy_code":                       t.Lcy_code.String(),
-		"tax_exchange_rate_adjustment":   int(t.Tax_exchange_rate_adjustment),
-		"amount_rounding_precision":      t.Amount_rounding_precision.String(),
-		"unit_amount_rounding_precision": t.Unit_amount_rounding_precision.String(),
-		"appln_rounding_precision":       t.Appln_rounding_precision.String(),
-		"bank_account_nos":               t.Bank_account_nos.String(),
-		"dimension_1":                    t.Dimension_1.String(),
-		"dimension_2":                    t.Dimension_2.String(),
-	}
+	return generalLedgerSetupFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *GeneralLedgerSetup) FromMap(data map[string]interface{}) {
-	if v, ok := data["primary_key"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Primary_key = types.NewCode(s)
-		}
-	}
-	if v, ok := data["allow_posting_from"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Allow_posting_from, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["allow_posting_to"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Allow_posting_to, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["register_time"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Register_time = b
-		}
-	}
-	if v, ok := data["pmt_disc_excl_tax"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Pmt_disc_excl_tax = b
-		}
-	}
-	if v, ok := data["unrealized_tax"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Unrealized_tax = b
-		}
-	}
-	if v, ok := data["adjust_for_payment_disc"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Adjust_for_payment_disc = b
-		}
-	}
-	if v, ok := data["mark_cr_memos_as_corrections"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Mark_cr_memos_as_corrections = b
-		}
-	}
-	if v, ok := data["local_address_format"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Local_address_format = GeneralLedgerSetupLocal_address_format(int(val))
-		case int:
-			t.Local_address_format = GeneralLedgerSetupLocal_address_format(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Post Code+City", "City+Post Code", "City+State+Post Code", "Blank Line+Post Code+City"}
-			for i, opt := range options {
-				if opt == val {
-					t.Local_address_format = GeneralLedgerSetupLocal_address_format(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["inv_rounding_precision_lcy"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Inv_rounding_precision_lcy, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Inv_rounding_precision_lcy = types.NewDecimal(val)
-		case int:
-			t.Inv_rounding_precision_lcy = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Inv_rounding_precision_lcy = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["inv_rounding_type_lcy"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Inv_rounding_type_lcy = GeneralLedgerSetupInv_rounding_type_lcy(int(val))
-		case int:
-			t.Inv_rounding_type_lcy = GeneralLedgerSetupInv_rounding_type_lcy(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Nearest", "Up", "Down"}
-			for i, opt := range options {
-				if opt == val {
-					t.Inv_rounding_type_lcy = GeneralLedgerSetupInv_rounding_type_lcy(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["local_cont_addr_format"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Local_cont_addr_format = GeneralLedgerSetupLocal_cont_addr_format(int(val))
-		case int:
-			t.Local_cont_addr_format = GeneralLedgerSetupLocal_cont_addr_format(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"First", "After Company Name", "Last"}
-			for i, opt := range options {
-				if opt == val {
-					t.Local_cont_addr_format = GeneralLedgerSetupLocal_cont_addr_format(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["recalculate_sales_tax"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Recalculate_sales_tax = b
-		}
-	}
-	if v, ok := data["summarize_gl_entries"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Summarize_gl_entries = b
-		}
-	}
-	if v, ok := data["amount_decimal_places"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Amount_decimal_places = types.NewText(s)
-		}
-	}
-	if v, ok := data["unit_amount_decimal_places"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Unit_amount_decimal_places = types.NewText(s)
-		}
-	}
-	if v, ok := data["additional_reporting_currency"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Additional_reporting_currency = types.NewCode(s)
-		}
-	}
-	if v, ok := data["vat_tolerance_percent"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Vat_tolerance_percent, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Vat_tolerance_percent = types.NewDecimal(val)
-		case int:
-			t.Vat_tolerance_percent = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Vat_tolerance_percent = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["emu_currency"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Emu_currency = b
-		}
-	}
-	if v, ok := data["lcy_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Lcy_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_exchange_rate_adjustment"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Tax_exchange_rate_adjustment = GeneralLedgerSetupTax_exchange_rate_adjustment(int(val))
-		case int:
-			t.Tax_exchange_rate_adjustment = GeneralLedgerSetupTax_exchange_rate_adjustment(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"No Adjustment", "Adjust Amount", "Adjust Additional-Currency Amount"}
-			for i, opt := range options {
-				if opt == val {
-					t.Tax_exchange_rate_adjustment = GeneralLedgerSetupTax_exchange_rate_adjustment(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["amount_rounding_precision"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Amount_rounding_precision, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Amount_rounding_precision = types.NewDecimal(val)
-		case int:
-			t.Amount_rounding_precision = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Amount_rounding_precision = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["unit_amount_rounding_precision"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Unit_amount_rounding_precision, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Unit_amount_rounding_precision = types.NewDecimal(val)
-		case int:
-			t.Unit_amount_rounding_precision = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Unit_amount_rounding_precision = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["appln_rounding_precision"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Appln_rounding_precision, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Appln_rounding_precision = types.NewDecimal(val)
-		case int:
-			t.Appln_rounding_precision = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Appln_rounding_precision = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["bank_account_nos"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Bank_account_nos = types.NewCode(s)
-		}
-	}
-	if v, ok := data["dimension_1"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_1 = types.NewText(s)
-		}
-	}
-	if v, ok := data["dimension_2"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_2 = types.NewText(s)
-		}
-	}
+	generalLedgerSetupFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -5607,306 +3831,505 @@ func (t *GeneralLedgerSetup) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *GeneralLedgerSetup) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "primary_key",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "allow_posting_from",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "allow_posting_to",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "register_time",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         28,
-			Name:       "pmt_disc_excl_tax",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            44,
-			Name:          "cust_balances_due",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            45,
-			Name:          "vendor_balances_due",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         48,
-			Name:       "unrealized_tax",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         49,
-			Name:       "adjust_for_payment_disc",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         56,
-			Name:       "mark_cr_memos_as_corrections",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         57,
-			Name:       "local_address_format",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            58,
-			Name:          "inv_rounding_precision_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         59,
-			Name:       "inv_rounding_type_lcy",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         60,
-			Name:       "local_cont_addr_format",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         64,
-			Name:       "recalculate_sales_tax",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         65,
-			Name:       "summarize_gl_entries",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         66,
-			Name:       "amount_decimal_places",
-			Type:       tables.FieldTypeText,
-			Length:     5,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         67,
-			Name:       "unit_amount_decimal_places",
-			Type:       tables.FieldTypeText,
-			Length:     5,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         68,
-			Name:       "additional_reporting_currency",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:            69,
-			Name:          "vat_tolerance_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         70,
-			Name:       "emu_currency",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         71,
-			Name:       "lcy_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         72,
-			Name:       "tax_exchange_rate_adjustment",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            73,
-			Name:          "amount_rounding_precision",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            74,
-			Name:          "unit_amount_rounding_precision",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            75,
-			Name:          "appln_rounding_precision",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         63,
-			Name:       "bank_account_nos",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         900,
-			Name:       "dimension_1",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         901,
-			Name:       "dimension_2",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return generalLedgerSetupFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in generalLedgerSetupFields.Fields
+func (t *GeneralLedgerSetup) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Primary_key
+	case 1:
+		return &t.Allow_posting_from
+	case 2:
+		return &t.Allow_posting_to
+	case 3:
+		return &t.Register_time
+	case 4:
+		return &t.Pmt_disc_excl_tax
+	case 5:
+		return &t.Cust_balances_due
+	case 6:
+		return &t.Vendor_balances_due
+	case 7:
+		return &t.Unrealized_tax
+	case 8:
+		return &t.Adjust_for_payment_disc
+	case 9:
+		return &t.Mark_cr_memos_as_corrections
+	case 10:
+		return &t.Local_address_format
+	case 11:
+		return &t.Inv_rounding_precision_lcy
+	case 12:
+		return &t.Inv_rounding_type_lcy
+	case 13:
+		return &t.Local_cont_addr_format
+	case 14:
+		return &t.Recalculate_sales_tax
+	case 15:
+		return &t.Summarize_gl_entries
+	case 16:
+		return &t.Amount_decimal_places
+	case 17:
+		return &t.Unit_amount_decimal_places
+	case 18:
+		return &t.Additional_reporting_currency
+	case 19:
+		return &t.Vat_tolerance_percent
+	case 20:
+		return &t.Emu_currency
+	case 21:
+		return &t.Lcy_code
+	case 22:
+		return &t.Tax_exchange_rate_adjustment
+	case 23:
+		return &t.Amount_rounding_precision
+	case 24:
+		return &t.Unit_amount_rounding_precision
+	case 25:
+		return &t.Appln_rounding_precision
+	case 26:
+		return &t.Bank_account_nos
+	case 27:
+		return &t.Dimension_1
+	case 28:
+		return &t.Dimension_2
 	}
+	return nil
+}
+
+// generalLedgerSetupFields describes the fields of General_Ledger_Setup for the record functions
+// written once in foundation/tables
+var generalLedgerSetupFields = &tables.TableFields{
+	Table: GeneralLedgerSetupTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "primary_key",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Primary_key",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "allow_posting_from",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Allow_posting_from",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "allow_posting_to",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Allow_posting_to",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "register_time",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Register_time",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         28,
+				Name:       "pmt_disc_excl_tax",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Pmt_disc_excl_tax",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            44,
+				Name:          "cust_balances_due",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Cust_balances_due",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            45,
+				Name:          "vendor_balances_due",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Vendor_balances_due",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         48,
+				Name:       "unrealized_tax",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Unrealized_tax",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         49,
+				Name:       "adjust_for_payment_disc",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Adjust_for_payment_disc",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         56,
+				Name:       "mark_cr_memos_as_corrections",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Mark_cr_memos_as_corrections",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         57,
+				Name:       "local_address_format",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Local_address_format",
+			Options: []string{"Post Code+City", "City+Post Code", "City+State+Post Code", "Blank Line+Post Code+City"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            58,
+				Name:          "inv_rounding_precision_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Inv_rounding_precision_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         59,
+				Name:       "inv_rounding_type_lcy",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Inv_rounding_type_lcy",
+			Options: []string{"Nearest", "Up", "Down"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         60,
+				Name:       "local_cont_addr_format",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Local_cont_addr_format",
+			Options: []string{"First", "After Company Name", "Last"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         64,
+				Name:       "recalculate_sales_tax",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Recalculate_sales_tax",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         65,
+				Name:       "summarize_gl_entries",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Summarize_gl_entries",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         66,
+				Name:       "amount_decimal_places",
+				Type:       tables.FieldTypeText,
+				Length:     5,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Amount_decimal_places",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         67,
+				Name:       "unit_amount_decimal_places",
+				Type:       tables.FieldTypeText,
+				Length:     5,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Unit_amount_decimal_places",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         68,
+				Name:       "additional_reporting_currency",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Additional_reporting_currency",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            69,
+				Name:          "vat_tolerance_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Vat_tolerance_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         70,
+				Name:       "emu_currency",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Emu_currency",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         71,
+				Name:       "lcy_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Lcy_code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         72,
+				Name:       "tax_exchange_rate_adjustment",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Tax_exchange_rate_adjustment",
+			Options: []string{"No Adjustment", "Adjust Amount", "Adjust Additional-Currency Amount"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            73,
+				Name:          "amount_rounding_precision",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Amount_rounding_precision",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            74,
+				Name:          "unit_amount_rounding_precision",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Unit_amount_rounding_precision",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            75,
+				Name:          "appln_rounding_precision",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Appln_rounding_precision",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         63,
+				Name:       "bank_account_nos",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Bank_account_nos",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         900,
+				Name:       "dimension_1",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Dimension_1",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         901,
+				Name:       "dimension_2",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Dimension_2",
+		},
+	},
+	FlowFilters: []tables.FieldInfo{
+		{No: 41, Name: "date_filter"},
+		{No: 42, Name: "dimension_1_filter"},
+		{No: 43, Name: "dimension_2_filter"},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

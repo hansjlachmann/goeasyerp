@@ -137,48 +137,12 @@ var FAJournalSetup_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *FAJournalSetup) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "depreciation_book_code":
-		return 1
-	case "user_id":
-		return 2
-	case "fa_jnl_template_name":
-		return 3
-	case "fa_jnl_batch_name":
-		return 4
-	case "gen_jnl_template_name":
-		return 5
-	case "gen_jnl_batch_name":
-		return 6
-	case "insurance_jnl_template_name":
-		return 7
-	case "insurance_jnl_batch_name":
-		return 8
-	}
-	return 0
+	return fAJournalSetupFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *FAJournalSetup) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "depreciation_book_code"
-	case 2:
-		return "user_id"
-	case 3:
-		return "fa_jnl_template_name"
-	case 4:
-		return "fa_jnl_batch_name"
-	case 5:
-		return "gen_jnl_template_name"
-	case 6:
-		return "gen_jnl_batch_name"
-	case 7:
-		return "insurance_jnl_template_name"
-	case 8:
-		return "insurance_jnl_batch_name"
-	}
-	return ""
+	return fAJournalSetupFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -290,30 +254,6 @@ type (
 	FAJournalSetupOnBeforeRename interface {
 		OnBeforeRename(rec *FAJournalSetup, handled *bool) error
 	}
-	FAJournalSetupOnValidate_Depreciation_book_code interface {
-		OnValidate_Depreciation_book_code(rec *FAJournalSetup) error
-	}
-	FAJournalSetupOnValidate_User_id interface {
-		OnValidate_User_id(rec *FAJournalSetup) error
-	}
-	FAJournalSetupOnValidate_Fa_jnl_template_name interface {
-		OnValidate_Fa_jnl_template_name(rec *FAJournalSetup) error
-	}
-	FAJournalSetupOnValidate_Fa_jnl_batch_name interface {
-		OnValidate_Fa_jnl_batch_name(rec *FAJournalSetup) error
-	}
-	FAJournalSetupOnValidate_Gen_jnl_template_name interface {
-		OnValidate_Gen_jnl_template_name(rec *FAJournalSetup) error
-	}
-	FAJournalSetupOnValidate_Gen_jnl_batch_name interface {
-		OnValidate_Gen_jnl_batch_name(rec *FAJournalSetup) error
-	}
-	FAJournalSetupOnValidate_Insurance_jnl_template_name interface {
-		OnValidate_Insurance_jnl_template_name(rec *FAJournalSetup) error
-	}
-	FAJournalSetupOnValidate_Insurance_jnl_batch_name interface {
-		OnValidate_Insurance_jnl_batch_name(rec *FAJournalSetup) error
-	}
 )
 
 // fAJournalSetupLogic is the registered business logic of FA_Journal_Setup, in
@@ -356,24 +296,9 @@ func fAJournalSetupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(FAJournalSetupOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(FAJournalSetupOnBeforeRename)
-	case "OnValidate_Depreciation_book_code":
-		_, ok = logic.(FAJournalSetupOnValidate_Depreciation_book_code)
-	case "OnValidate_User_id":
-		_, ok = logic.(FAJournalSetupOnValidate_User_id)
-	case "OnValidate_Fa_jnl_template_name":
-		_, ok = logic.(FAJournalSetupOnValidate_Fa_jnl_template_name)
-	case "OnValidate_Fa_jnl_batch_name":
-		_, ok = logic.(FAJournalSetupOnValidate_Fa_jnl_batch_name)
-	case "OnValidate_Gen_jnl_template_name":
-		_, ok = logic.(FAJournalSetupOnValidate_Gen_jnl_template_name)
-	case "OnValidate_Gen_jnl_batch_name":
-		_, ok = logic.(FAJournalSetupOnValidate_Gen_jnl_batch_name)
-	case "OnValidate_Insurance_jnl_template_name":
-		_, ok = logic.(FAJournalSetupOnValidate_Insurance_jnl_template_name)
-	case "OnValidate_Insurance_jnl_batch_name":
-		_, ok = logic.(FAJournalSetupOnValidate_Insurance_jnl_batch_name)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return fAJournalSetupFields.IsOnValidateTrigger(name, logic, (*FAJournalSetup)(nil))
 	}
 	return true, ok
 }
@@ -693,15 +618,7 @@ func (t *FAJournalSetup) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *FAJournalSetup) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["depreciation_book_code"] = t.Depreciation_book_code
-	t.oldValues["user_id"] = t.User_id
-	t.oldValues["fa_jnl_template_name"] = t.Fa_jnl_template_name
-	t.oldValues["fa_jnl_batch_name"] = t.Fa_jnl_batch_name
-	t.oldValues["gen_jnl_template_name"] = t.Gen_jnl_template_name
-	t.oldValues["gen_jnl_batch_name"] = t.Gen_jnl_batch_name
-	t.oldValues["insurance_jnl_template_name"] = t.Insurance_jnl_template_name
-	t.oldValues["insurance_jnl_batch_name"] = t.Insurance_jnl_batch_name
+	t.oldValues = fAJournalSetupFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -716,30 +633,7 @@ func (t *FAJournalSetup) OldValue(fieldName string) interface{} {
 func (t *FAJournalSetup) XRec() *FAJournalSetup {
 	x := &FAJournalSetup{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["depreciation_book_code"].(types.Code); ok {
-		x.Depreciation_book_code = v
-	}
-	if v, ok := t.oldValues["user_id"].(types.Code); ok {
-		x.User_id = v
-	}
-	if v, ok := t.oldValues["fa_jnl_template_name"].(types.Code); ok {
-		x.Fa_jnl_template_name = v
-	}
-	if v, ok := t.oldValues["fa_jnl_batch_name"].(types.Code); ok {
-		x.Fa_jnl_batch_name = v
-	}
-	if v, ok := t.oldValues["gen_jnl_template_name"].(types.Code); ok {
-		x.Gen_jnl_template_name = v
-	}
-	if v, ok := t.oldValues["gen_jnl_batch_name"].(types.Code); ok {
-		x.Gen_jnl_batch_name = v
-	}
-	if v, ok := t.oldValues["insurance_jnl_template_name"].(types.Code); ok {
-		x.Insurance_jnl_template_name = v
-	}
-	if v, ok := t.oldValues["insurance_jnl_batch_name"].(types.Code); ok {
-		x.Insurance_jnl_batch_name = v
-	}
+	fAJournalSetupFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1071,53 +965,7 @@ func (t *FAJournalSetup) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *FAJournalSetup) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "depreciation_book_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Depreciation_book_code.Equal(old)
-		}
-	case "user_id":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.User_id.Equal(old)
-		}
-	case "fa_jnl_template_name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Fa_jnl_template_name.Equal(old)
-		}
-	case "fa_jnl_batch_name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Fa_jnl_batch_name.Equal(old)
-		}
-	case "gen_jnl_template_name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Gen_jnl_template_name.Equal(old)
-		}
-	case "gen_jnl_batch_name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Gen_jnl_batch_name.Equal(old)
-		}
-	case "insurance_jnl_template_name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Insurance_jnl_template_name.Equal(old)
-		}
-	case "insurance_jnl_batch_name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Insurance_jnl_batch_name.Equal(old)
-		}
-	}
-
-	return false
+	return fAJournalSetupFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1319,25 +1167,7 @@ func (t *FAJournalSetup) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *FAJournalSetup) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("depreciation_book_code"):
-		return "depreciation_book_code", true
-	case strings.ToLower("user_id"):
-		return "user_id", true
-	case strings.ToLower("fa_jnl_template_name"):
-		return "fa_jnl_template_name", true
-	case strings.ToLower("fa_jnl_batch_name"):
-		return "fa_jnl_batch_name", true
-	case strings.ToLower("gen_jnl_template_name"):
-		return "gen_jnl_template_name", true
-	case strings.ToLower("gen_jnl_batch_name"):
-		return "gen_jnl_batch_name", true
-	case strings.ToLower("insurance_jnl_template_name"):
-		return "insurance_jnl_template_name", true
-	case strings.ToLower("insurance_jnl_batch_name"):
-		return "insurance_jnl_batch_name", true
-	}
-	return "", false
+	return fAJournalSetupFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2224,188 +2054,20 @@ func (t *FAJournalSetup) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *FAJournalSetup) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "depreciation_book_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Depreciation_book_code = v
-		} else if v, ok := value.(string); ok {
-			t.Depreciation_book_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field depreciation_book_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "depreciation_book_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalSetupOnValidate_Depreciation_book_code); ok {
-				if err := trg.OnValidate_Depreciation_book_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "user_id":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-		} else if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field user_id")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "user_id"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalSetupOnValidate_User_id); ok {
-				if err := trg.OnValidate_User_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_jnl_template_name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Fa_jnl_template_name = v
-		} else if v, ok := value.(string); ok {
-			t.Fa_jnl_template_name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_jnl_template_name")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fa_jnl_template_name"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalSetupOnValidate_Fa_jnl_template_name); ok {
-				if err := trg.OnValidate_Fa_jnl_template_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_jnl_batch_name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Fa_jnl_batch_name = v
-		} else if v, ok := value.(string); ok {
-			t.Fa_jnl_batch_name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_jnl_batch_name")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fa_jnl_batch_name"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalSetupOnValidate_Fa_jnl_batch_name); ok {
-				if err := trg.OnValidate_Fa_jnl_batch_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "gen_jnl_template_name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Gen_jnl_template_name = v
-		} else if v, ok := value.(string); ok {
-			t.Gen_jnl_template_name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field gen_jnl_template_name")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "gen_jnl_template_name"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalSetupOnValidate_Gen_jnl_template_name); ok {
-				if err := trg.OnValidate_Gen_jnl_template_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "gen_jnl_batch_name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Gen_jnl_batch_name = v
-		} else if v, ok := value.(string); ok {
-			t.Gen_jnl_batch_name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field gen_jnl_batch_name")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "gen_jnl_batch_name"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalSetupOnValidate_Gen_jnl_batch_name); ok {
-				if err := trg.OnValidate_Gen_jnl_batch_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "insurance_jnl_template_name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Insurance_jnl_template_name = v
-		} else if v, ok := value.(string); ok {
-			t.Insurance_jnl_template_name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field insurance_jnl_template_name")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "insurance_jnl_template_name"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalSetupOnValidate_Insurance_jnl_template_name); ok {
-				if err := trg.OnValidate_Insurance_jnl_template_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "insurance_jnl_batch_name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Insurance_jnl_batch_name = v
-		} else if v, ok := value.(string); ok {
-			t.Insurance_jnl_batch_name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field insurance_jnl_batch_name")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "insurance_jnl_batch_name"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAJournalSetupOnValidate_Insurance_jnl_batch_name); ok {
-				if err := trg.OnValidate_Insurance_jnl_batch_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := fAJournalSetupFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &fAJournalSetupFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2414,112 +2076,18 @@ func (t *FAJournalSetup) ValidateField(fieldName string, value interface{}) erro
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *FAJournalSetup) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Depreciation_book_code, true
-	case 2:
-		return t.User_id, true
-	case 3:
-		return t.Fa_jnl_template_name, true
-	case 4:
-		return t.Fa_jnl_batch_name, true
-	case 5:
-		return t.Gen_jnl_template_name, true
-	case 6:
-		return t.Gen_jnl_batch_name, true
-	case 7:
-		return t.Insurance_jnl_template_name, true
-	case 8:
-		return t.Insurance_jnl_batch_name, true
-	}
-	return nil, false
+	return fAJournalSetupFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *FAJournalSetup) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return fAJournalSetupFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *FAJournalSetup) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Depreciation_book_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Depreciation_book_code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Code); ok {
-			t.Fa_jnl_template_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Fa_jnl_template_name = types.NewCode(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Code); ok {
-			t.Fa_jnl_batch_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Fa_jnl_batch_name = types.NewCode(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Code); ok {
-			t.Gen_jnl_template_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Gen_jnl_template_name = types.NewCode(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Code); ok {
-			t.Gen_jnl_batch_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Gen_jnl_batch_name = types.NewCode(v)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Code); ok {
-			t.Insurance_jnl_template_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Insurance_jnl_template_name = types.NewCode(v)
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Code); ok {
-			t.Insurance_jnl_batch_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Insurance_jnl_batch_name = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return fAJournalSetupFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2969,25 +2537,7 @@ func (t *FAJournalSetup) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *FAJournalSetup) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "depreciation_book_code":
-		return t.Depreciation_book_code, true
-	case "user_id":
-		return t.User_id, true
-	case "fa_jnl_template_name":
-		return t.Fa_jnl_template_name, true
-	case "fa_jnl_batch_name":
-		return t.Fa_jnl_batch_name, true
-	case "gen_jnl_template_name":
-		return t.Gen_jnl_template_name, true
-	case "gen_jnl_batch_name":
-		return t.Gen_jnl_batch_name, true
-	case "insurance_jnl_template_name":
-		return t.Insurance_jnl_template_name, true
-	case "insurance_jnl_batch_name":
-		return t.Insurance_jnl_batch_name, true
-	}
-	return nil, false
+	return fAJournalSetupFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3083,60 +2633,12 @@ func (t *FAJournalSetup) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *FAJournalSetup) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"depreciation_book_code":      t.Depreciation_book_code.String(),
-		"user_id":                     t.User_id.String(),
-		"fa_jnl_template_name":        t.Fa_jnl_template_name.String(),
-		"fa_jnl_batch_name":           t.Fa_jnl_batch_name.String(),
-		"gen_jnl_template_name":       t.Gen_jnl_template_name.String(),
-		"gen_jnl_batch_name":          t.Gen_jnl_batch_name.String(),
-		"insurance_jnl_template_name": t.Insurance_jnl_template_name.String(),
-		"insurance_jnl_batch_name":    t.Insurance_jnl_batch_name.String(),
-	}
+	return fAJournalSetupFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *FAJournalSetup) FromMap(data map[string]interface{}) {
-	if v, ok := data["depreciation_book_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Depreciation_book_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["user_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.User_id = types.NewCode(s)
-		}
-	}
-	if v, ok := data["fa_jnl_template_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fa_jnl_template_name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["fa_jnl_batch_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fa_jnl_batch_name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["gen_jnl_template_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Gen_jnl_template_name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["gen_jnl_batch_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Gen_jnl_batch_name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["insurance_jnl_template_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Insurance_jnl_template_name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["insurance_jnl_batch_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Insurance_jnl_batch_name = types.NewCode(s)
-		}
-	}
+	fAJournalSetupFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3157,88 +2659,158 @@ func (t *FAJournalSetup) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *FAJournalSetup) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "depreciation_book_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "user_id",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "fa_jnl_template_name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "fa_jnl_batch_name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "gen_jnl_template_name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "gen_jnl_batch_name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "insurance_jnl_template_name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "insurance_jnl_batch_name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return fAJournalSetupFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in fAJournalSetupFields.Fields
+func (t *FAJournalSetup) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Depreciation_book_code
+	case 1:
+		return &t.User_id
+	case 2:
+		return &t.Fa_jnl_template_name
+	case 3:
+		return &t.Fa_jnl_batch_name
+	case 4:
+		return &t.Gen_jnl_template_name
+	case 5:
+		return &t.Gen_jnl_batch_name
+	case 6:
+		return &t.Insurance_jnl_template_name
+	case 7:
+		return &t.Insurance_jnl_batch_name
 	}
+	return nil
+}
+
+// fAJournalSetupFields describes the fields of FA_Journal_Setup for the record functions
+// written once in foundation/tables
+var fAJournalSetupFields = &tables.TableFields{
+	Table: FAJournalSetupTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "depreciation_book_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Depreciation_book_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "user_id",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_User_id",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "fa_jnl_template_name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Fa_jnl_template_name",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "fa_jnl_batch_name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Fa_jnl_batch_name",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "gen_jnl_template_name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Gen_jnl_template_name",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "gen_jnl_batch_name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Gen_jnl_batch_name",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "insurance_jnl_template_name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Insurance_jnl_template_name",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "insurance_jnl_batch_name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Insurance_jnl_batch_name",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

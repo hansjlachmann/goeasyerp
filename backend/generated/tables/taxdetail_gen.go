@@ -173,48 +173,12 @@ var TaxDetail_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *TaxDetail) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "tax_jurisdiction_code":
-		return 1
-	case "tax_group_code":
-		return 2
-	case "tax_type":
-		return 3
-	case "maximum_amount_qty":
-		return 4
-	case "tax_below_maximum":
-		return 5
-	case "tax_above_maximum":
-		return 6
-	case "effective_date":
-		return 7
-	case "calculate_tax_on_tax":
-		return 8
-	}
-	return 0
+	return taxDetailFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *TaxDetail) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "tax_jurisdiction_code"
-	case 2:
-		return "tax_group_code"
-	case 3:
-		return "tax_type"
-	case 4:
-		return "maximum_amount_qty"
-	case 5:
-		return "tax_below_maximum"
-	case 6:
-		return "tax_above_maximum"
-	case 7:
-		return "effective_date"
-	case 8:
-		return "calculate_tax_on_tax"
-	}
-	return ""
+	return taxDetailFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -318,14 +282,6 @@ type (
 	TaxDetailOnBeforeRename interface {
 		OnBeforeRename(rec *TaxDetail, handled *bool) error
 	}
-	TaxDetailOnValidate_Tax_jurisdiction_code interface{ OnValidate_Tax_jurisdiction_code(rec *TaxDetail) error }
-	TaxDetailOnValidate_Tax_group_code        interface{ OnValidate_Tax_group_code(rec *TaxDetail) error }
-	TaxDetailOnValidate_Tax_type              interface{ OnValidate_Tax_type(rec *TaxDetail) error }
-	TaxDetailOnValidate_Maximum_amount_qty    interface{ OnValidate_Maximum_amount_qty(rec *TaxDetail) error }
-	TaxDetailOnValidate_Tax_below_maximum     interface{ OnValidate_Tax_below_maximum(rec *TaxDetail) error }
-	TaxDetailOnValidate_Tax_above_maximum     interface{ OnValidate_Tax_above_maximum(rec *TaxDetail) error }
-	TaxDetailOnValidate_Effective_date        interface{ OnValidate_Effective_date(rec *TaxDetail) error }
-	TaxDetailOnValidate_Calculate_tax_on_tax  interface{ OnValidate_Calculate_tax_on_tax(rec *TaxDetail) error }
 )
 
 // taxDetailLogic is the registered business logic of Tax_Detail, in
@@ -368,24 +324,9 @@ func taxDetailTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(TaxDetailOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(TaxDetailOnBeforeRename)
-	case "OnValidate_Tax_jurisdiction_code":
-		_, ok = logic.(TaxDetailOnValidate_Tax_jurisdiction_code)
-	case "OnValidate_Tax_group_code":
-		_, ok = logic.(TaxDetailOnValidate_Tax_group_code)
-	case "OnValidate_Tax_type":
-		_, ok = logic.(TaxDetailOnValidate_Tax_type)
-	case "OnValidate_Maximum_amount_qty":
-		_, ok = logic.(TaxDetailOnValidate_Maximum_amount_qty)
-	case "OnValidate_Tax_below_maximum":
-		_, ok = logic.(TaxDetailOnValidate_Tax_below_maximum)
-	case "OnValidate_Tax_above_maximum":
-		_, ok = logic.(TaxDetailOnValidate_Tax_above_maximum)
-	case "OnValidate_Effective_date":
-		_, ok = logic.(TaxDetailOnValidate_Effective_date)
-	case "OnValidate_Calculate_tax_on_tax":
-		_, ok = logic.(TaxDetailOnValidate_Calculate_tax_on_tax)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return taxDetailFields.IsOnValidateTrigger(name, logic, (*TaxDetail)(nil))
 	}
 	return true, ok
 }
@@ -702,15 +643,7 @@ func (t *TaxDetail) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *TaxDetail) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["tax_jurisdiction_code"] = t.Tax_jurisdiction_code
-	t.oldValues["tax_group_code"] = t.Tax_group_code
-	t.oldValues["tax_type"] = t.Tax_type
-	t.oldValues["maximum_amount_qty"] = t.Maximum_amount_qty
-	t.oldValues["tax_below_maximum"] = t.Tax_below_maximum
-	t.oldValues["tax_above_maximum"] = t.Tax_above_maximum
-	t.oldValues["effective_date"] = t.Effective_date
-	t.oldValues["calculate_tax_on_tax"] = t.Calculate_tax_on_tax
+	t.oldValues = taxDetailFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -725,30 +658,7 @@ func (t *TaxDetail) OldValue(fieldName string) interface{} {
 func (t *TaxDetail) XRec() *TaxDetail {
 	x := &TaxDetail{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["tax_jurisdiction_code"].(types.Code); ok {
-		x.Tax_jurisdiction_code = v
-	}
-	if v, ok := t.oldValues["tax_group_code"].(types.Code); ok {
-		x.Tax_group_code = v
-	}
-	if v, ok := t.oldValues["tax_type"].(TaxDetailTax_type); ok {
-		x.Tax_type = v
-	}
-	if v, ok := t.oldValues["maximum_amount_qty"].(types.Decimal); ok {
-		x.Maximum_amount_qty = v
-	}
-	if v, ok := t.oldValues["tax_below_maximum"].(types.Decimal); ok {
-		x.Tax_below_maximum = v
-	}
-	if v, ok := t.oldValues["tax_above_maximum"].(types.Decimal); ok {
-		x.Tax_above_maximum = v
-	}
-	if v, ok := t.oldValues["effective_date"].(types.Date); ok {
-		x.Effective_date = v
-	}
-	if v, ok := t.oldValues["calculate_tax_on_tax"].(bool); ok {
-		x.Calculate_tax_on_tax = v
-	}
+	taxDetailFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1120,54 +1030,7 @@ func (t *TaxDetail) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *TaxDetail) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "tax_jurisdiction_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_jurisdiction_code.Equal(old)
-		}
-	case "tax_group_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_group_code.Equal(old)
-		}
-	case "tax_type":
-		if old, ok := oldValue.(TaxDetailTax_type); ok {
-			return t.Tax_type != old
-		}
-	case "maximum_amount_qty":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Maximum_amount_qty.Equal(old)
-		}
-	case "tax_below_maximum":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Tax_below_maximum.Equal(old)
-		}
-	case "tax_above_maximum":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Tax_above_maximum.Equal(old)
-		}
-	case "effective_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Effective_date.Equal(old)
-		}
-	case "calculate_tax_on_tax":
-		if old, ok := oldValue.(bool); ok {
-			return t.Calculate_tax_on_tax != old
-		}
-		return true // Type mismatch, assume changed
-	}
-
-	return false
+	return taxDetailFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1371,25 +1234,7 @@ func (t *TaxDetail) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *TaxDetail) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("tax_jurisdiction_code"):
-		return "tax_jurisdiction_code", true
-	case strings.ToLower("tax_group_code"):
-		return "tax_group_code", true
-	case strings.ToLower("tax_type"):
-		return "tax_type", true
-	case strings.ToLower("maximum_amount_qty"):
-		return "maximum_amount_qty", true
-	case strings.ToLower("tax_below_maximum"):
-		return "tax_below_maximum", true
-	case strings.ToLower("tax_above_maximum"):
-		return "tax_above_maximum", true
-	case strings.ToLower("effective_date"):
-		return "effective_date", true
-	case strings.ToLower("calculate_tax_on_tax"):
-		return "calculate_tax_on_tax", true
-	}
-	return "", false
+	return taxDetailFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2288,232 +2133,20 @@ func (t *TaxDetail) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *TaxDetail) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "tax_jurisdiction_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_jurisdiction_code = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_jurisdiction_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_jurisdiction_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_jurisdiction_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxDetailOnValidate_Tax_jurisdiction_code); ok {
-				if err := trg.OnValidate_Tax_jurisdiction_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_group_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_group_code = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_group_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_group_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_group_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxDetailOnValidate_Tax_group_code); ok {
-				if err := trg.OnValidate_Tax_group_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(TaxDetailTax_type); ok {
-			t.Tax_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 2 {
-				return fmt.Errorf("invalid option value %d for field tax_type (valid range: 0-%d)", v, 2-1)
-			}
-			t.Tax_type = TaxDetailTax_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 2 {
-				return fmt.Errorf("invalid option value %d for field tax_type (valid range: 0-%d)", intVal, 2-1)
-			}
-			t.Tax_type = TaxDetailTax_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Tax_type = 0
-			} else {
-				options := []string{"Sales Tax", "Excise Tax"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Tax_type = TaxDetailTax_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field tax_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field tax_type (expected TaxDetailTax_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxDetailOnValidate_Tax_type); ok {
-				if err := trg.OnValidate_Tax_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "maximum_amount_qty":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Maximum_amount_qty = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Maximum_amount_qty, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field maximum_amount_qty: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Maximum_amount_qty = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Maximum_amount_qty = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Maximum_amount_qty = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field maximum_amount_qty (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxDetailOnValidate_Maximum_amount_qty); ok {
-				if err := trg.OnValidate_Maximum_amount_qty(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_below_maximum":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Tax_below_maximum = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Tax_below_maximum, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field tax_below_maximum: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Tax_below_maximum = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Tax_below_maximum = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Tax_below_maximum = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_below_maximum (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxDetailOnValidate_Tax_below_maximum); ok {
-				if err := trg.OnValidate_Tax_below_maximum(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_above_maximum":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Tax_above_maximum = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Tax_above_maximum, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field tax_above_maximum: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Tax_above_maximum = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Tax_above_maximum = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Tax_above_maximum = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_above_maximum (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxDetailOnValidate_Tax_above_maximum); ok {
-				if err := trg.OnValidate_Tax_above_maximum(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "effective_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Effective_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Effective_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field effective_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Effective_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field effective_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxDetailOnValidate_Effective_date); ok {
-				if err := trg.OnValidate_Effective_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "calculate_tax_on_tax":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Calculate_tax_on_tax = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Calculate_tax_on_tax = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field calculate_tax_on_tax")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxDetailOnValidate_Calculate_tax_on_tax); ok {
-				if err := trg.OnValidate_Calculate_tax_on_tax(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := taxDetailFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &taxDetailFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2522,88 +2155,18 @@ func (t *TaxDetail) ValidateField(fieldName string, value interface{}) error {
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *TaxDetail) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Tax_jurisdiction_code, true
-	case 2:
-		return t.Tax_group_code, true
-	case 3:
-		return t.Tax_type, true
-	case 4:
-		return t.Maximum_amount_qty, true
-	case 5:
-		return t.Tax_below_maximum, true
-	case 6:
-		return t.Tax_above_maximum, true
-	case 7:
-		return t.Effective_date, true
-	case 8:
-		return t.Calculate_tax_on_tax, true
-	}
-	return nil, false
+	return taxDetailFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *TaxDetail) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return taxDetailFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *TaxDetail) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_jurisdiction_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_jurisdiction_code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_group_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_group_code = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 2 {
-			t.Tax_type = TaxDetailTax_type(i)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Decimal); ok {
-			t.Maximum_amount_qty = v
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Decimal); ok {
-			t.Tax_below_maximum = v
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Decimal); ok {
-			t.Tax_above_maximum = v
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Date); ok {
-			t.Effective_date = v
-			return true
-		}
-	case 8:
-		if v, ok := value.(bool); ok {
-			t.Calculate_tax_on_tax = v
-			return true
-		}
-	}
-	return false
+	return taxDetailFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3092,25 +2655,7 @@ func (t *TaxDetail) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *TaxDetail) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "tax_jurisdiction_code":
-		return t.Tax_jurisdiction_code, true
-	case "tax_group_code":
-		return t.Tax_group_code, true
-	case "tax_type":
-		return int(t.Tax_type), true
-	case "maximum_amount_qty":
-		return t.Maximum_amount_qty, true
-	case "tax_below_maximum":
-		return t.Tax_below_maximum, true
-	case "tax_above_maximum":
-		return t.Tax_above_maximum, true
-	case "effective_date":
-		return t.Effective_date, true
-	case "calculate_tax_on_tax":
-		return t.Calculate_tax_on_tax, true
-	}
-	return nil, false
+	return taxDetailFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3212,93 +2757,12 @@ func (t *TaxDetail) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *TaxDetail) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"tax_jurisdiction_code": t.Tax_jurisdiction_code.String(),
-		"tax_group_code":        t.Tax_group_code.String(),
-		"tax_type":              int(t.Tax_type),
-		"maximum_amount_qty":    t.Maximum_amount_qty.String(),
-		"tax_below_maximum":     t.Tax_below_maximum.String(),
-		"tax_above_maximum":     t.Tax_above_maximum.String(),
-		"effective_date":        t.Effective_date.String(),
-		"calculate_tax_on_tax":  t.Calculate_tax_on_tax,
-	}
+	return taxDetailFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *TaxDetail) FromMap(data map[string]interface{}) {
-	if v, ok := data["tax_jurisdiction_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_jurisdiction_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_group_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_group_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Tax_type = TaxDetailTax_type(int(val))
-		case int:
-			t.Tax_type = TaxDetailTax_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Sales Tax", "Excise Tax"}
-			for i, opt := range options {
-				if opt == val {
-					t.Tax_type = TaxDetailTax_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["maximum_amount_qty"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Maximum_amount_qty, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Maximum_amount_qty = types.NewDecimal(val)
-		case int:
-			t.Maximum_amount_qty = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Maximum_amount_qty = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["tax_below_maximum"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Tax_below_maximum, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Tax_below_maximum = types.NewDecimal(val)
-		case int:
-			t.Tax_below_maximum = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Tax_below_maximum = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["tax_above_maximum"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Tax_above_maximum, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Tax_above_maximum = types.NewDecimal(val)
-		case int:
-			t.Tax_above_maximum = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Tax_above_maximum = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["effective_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Effective_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["calculate_tax_on_tax"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Calculate_tax_on_tax = b
-		}
-	}
+	taxDetailFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3319,92 +2783,157 @@ func (t *TaxDetail) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *TaxDetail) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "tax_jurisdiction_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "tax_group_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "tax_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:            4,
-			Name:          "maximum_amount_qty",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            5,
-			Name:          "tax_below_maximum",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:5",
-		},
-		{
-			No:            6,
-			Name:          "tax_above_maximum",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:5",
-		},
-		{
-			No:         7,
-			Name:       "effective_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "calculate_tax_on_tax",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
+	return taxDetailFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in taxDetailFields.Fields
+func (t *TaxDetail) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Tax_jurisdiction_code
+	case 1:
+		return &t.Tax_group_code
+	case 2:
+		return &t.Tax_type
+	case 3:
+		return &t.Maximum_amount_qty
+	case 4:
+		return &t.Tax_below_maximum
+	case 5:
+		return &t.Tax_above_maximum
+	case 6:
+		return &t.Effective_date
+	case 7:
+		return &t.Calculate_tax_on_tax
 	}
+	return nil
+}
+
+// taxDetailFields describes the fields of Tax_Detail for the record functions
+// written once in foundation/tables
+var taxDetailFields = &tables.TableFields{
+	Table: TaxDetailTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "tax_jurisdiction_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_jurisdiction_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "tax_group_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_group_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "tax_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Tax_type",
+			Options: []string{"Sales Tax", "Excise Tax"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            4,
+				Name:          "maximum_amount_qty",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Maximum_amount_qty",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            5,
+				Name:          "tax_below_maximum",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Tax_below_maximum",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            6,
+				Name:          "tax_above_maximum",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Tax_above_maximum",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "effective_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Effective_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "calculate_tax_on_tax",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Calculate_tax_on_tax",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

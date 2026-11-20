@@ -268,112 +268,12 @@ var GenJnlAllocation_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *GenJnlAllocation) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "journal_template_name":
-		return 1
-	case "journal_batch_name":
-		return 2
-	case "journal_line_no":
-		return 3
-	case "line_no":
-		return 4
-	case "account_no":
-		return 5
-	case "dimension_1_code":
-		return 6
-	case "dimension_2_code":
-		return 7
-	case "allocation_quantity":
-		return 8
-	case "allocation_percent":
-		return 9
-	case "amount":
-		return 10
-	case "gen_posting_type":
-		return 11
-	case "gen_bus_posting_group":
-		return 12
-	case "gen_prod_posting_group":
-		return 13
-	case "tax_calculation_type":
-		return 14
-	case "tax_amount":
-		return 15
-	case "tax_percent":
-		return 16
-	case "account_name":
-		return 17
-	case "tax_area_code":
-		return 18
-	case "tax_liable":
-		return 19
-	case "tax_group_code":
-		return 20
-	case "use_tax":
-		return 21
-	case "tax_bus_posting_group":
-		return 22
-	case "tax_prod_posting_group":
-		return 23
-	case "additional_currency_amount":
-		return 24
-	}
-	return 0
+	return genJnlAllocationFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *GenJnlAllocation) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "journal_template_name"
-	case 2:
-		return "journal_batch_name"
-	case 3:
-		return "journal_line_no"
-	case 4:
-		return "line_no"
-	case 5:
-		return "account_no"
-	case 6:
-		return "dimension_1_code"
-	case 7:
-		return "dimension_2_code"
-	case 8:
-		return "allocation_quantity"
-	case 9:
-		return "allocation_percent"
-	case 10:
-		return "amount"
-	case 11:
-		return "gen_posting_type"
-	case 12:
-		return "gen_bus_posting_group"
-	case 13:
-		return "gen_prod_posting_group"
-	case 14:
-		return "tax_calculation_type"
-	case 15:
-		return "tax_amount"
-	case 16:
-		return "tax_percent"
-	case 17:
-		return "account_name"
-	case 18:
-		return "tax_area_code"
-	case 19:
-		return "tax_liable"
-	case 20:
-		return "tax_group_code"
-	case 21:
-		return "use_tax"
-	case 22:
-		return "tax_bus_posting_group"
-	case 23:
-		return "tax_prod_posting_group"
-	case 24:
-		return "additional_currency_amount"
-	}
-	return ""
+	return genJnlAllocationFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -485,75 +385,6 @@ type (
 	GenJnlAllocationOnBeforeRename interface {
 		OnBeforeRename(rec *GenJnlAllocation, handled *bool) error
 	}
-	GenJnlAllocationOnValidate_Journal_template_name interface {
-		OnValidate_Journal_template_name(rec *GenJnlAllocation) error
-	}
-	GenJnlAllocationOnValidate_Journal_batch_name interface {
-		OnValidate_Journal_batch_name(rec *GenJnlAllocation) error
-	}
-	GenJnlAllocationOnValidate_Journal_line_no interface {
-		OnValidate_Journal_line_no(rec *GenJnlAllocation) error
-	}
-	GenJnlAllocationOnValidate_Line_no interface {
-		OnValidate_Line_no(rec *GenJnlAllocation) error
-	}
-	GenJnlAllocationOnValidate_Account_no interface {
-		OnValidate_Account_no(rec *GenJnlAllocation) error
-	}
-	GenJnlAllocationOnValidate_Dimension_1_code interface {
-		OnValidate_Dimension_1_code(rec *GenJnlAllocation) error
-	}
-	GenJnlAllocationOnValidate_Dimension_2_code interface {
-		OnValidate_Dimension_2_code(rec *GenJnlAllocation) error
-	}
-	GenJnlAllocationOnValidate_Allocation_quantity interface {
-		OnValidate_Allocation_quantity(rec *GenJnlAllocation) error
-	}
-	GenJnlAllocationOnValidate_Allocation_percent interface {
-		OnValidate_Allocation_percent(rec *GenJnlAllocation) error
-	}
-	GenJnlAllocationOnValidate_Amount interface {
-		OnValidate_Amount(rec *GenJnlAllocation) error
-	}
-	GenJnlAllocationOnValidate_Gen_posting_type interface {
-		OnValidate_Gen_posting_type(rec *GenJnlAllocation) error
-	}
-	GenJnlAllocationOnValidate_Gen_bus_posting_group interface {
-		OnValidate_Gen_bus_posting_group(rec *GenJnlAllocation) error
-	}
-	GenJnlAllocationOnValidate_Gen_prod_posting_group interface {
-		OnValidate_Gen_prod_posting_group(rec *GenJnlAllocation) error
-	}
-	GenJnlAllocationOnValidate_Tax_calculation_type interface {
-		OnValidate_Tax_calculation_type(rec *GenJnlAllocation) error
-	}
-	GenJnlAllocationOnValidate_Tax_amount interface {
-		OnValidate_Tax_amount(rec *GenJnlAllocation) error
-	}
-	GenJnlAllocationOnValidate_Tax_percent interface {
-		OnValidate_Tax_percent(rec *GenJnlAllocation) error
-	}
-	GenJnlAllocationOnValidate_Tax_area_code interface {
-		OnValidate_Tax_area_code(rec *GenJnlAllocation) error
-	}
-	GenJnlAllocationOnValidate_Tax_liable interface {
-		OnValidate_Tax_liable(rec *GenJnlAllocation) error
-	}
-	GenJnlAllocationOnValidate_Tax_group_code interface {
-		OnValidate_Tax_group_code(rec *GenJnlAllocation) error
-	}
-	GenJnlAllocationOnValidate_Use_tax interface {
-		OnValidate_Use_tax(rec *GenJnlAllocation) error
-	}
-	GenJnlAllocationOnValidate_Tax_bus_posting_group interface {
-		OnValidate_Tax_bus_posting_group(rec *GenJnlAllocation) error
-	}
-	GenJnlAllocationOnValidate_Tax_prod_posting_group interface {
-		OnValidate_Tax_prod_posting_group(rec *GenJnlAllocation) error
-	}
-	GenJnlAllocationOnValidate_Additional_currency_amount interface {
-		OnValidate_Additional_currency_amount(rec *GenJnlAllocation) error
-	}
 )
 
 // genJnlAllocationLogic is the registered business logic of Gen_Jnl_Allocation, in
@@ -596,54 +427,9 @@ func genJnlAllocationTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(GenJnlAllocationOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(GenJnlAllocationOnBeforeRename)
-	case "OnValidate_Journal_template_name":
-		_, ok = logic.(GenJnlAllocationOnValidate_Journal_template_name)
-	case "OnValidate_Journal_batch_name":
-		_, ok = logic.(GenJnlAllocationOnValidate_Journal_batch_name)
-	case "OnValidate_Journal_line_no":
-		_, ok = logic.(GenJnlAllocationOnValidate_Journal_line_no)
-	case "OnValidate_Line_no":
-		_, ok = logic.(GenJnlAllocationOnValidate_Line_no)
-	case "OnValidate_Account_no":
-		_, ok = logic.(GenJnlAllocationOnValidate_Account_no)
-	case "OnValidate_Dimension_1_code":
-		_, ok = logic.(GenJnlAllocationOnValidate_Dimension_1_code)
-	case "OnValidate_Dimension_2_code":
-		_, ok = logic.(GenJnlAllocationOnValidate_Dimension_2_code)
-	case "OnValidate_Allocation_quantity":
-		_, ok = logic.(GenJnlAllocationOnValidate_Allocation_quantity)
-	case "OnValidate_Allocation_percent":
-		_, ok = logic.(GenJnlAllocationOnValidate_Allocation_percent)
-	case "OnValidate_Amount":
-		_, ok = logic.(GenJnlAllocationOnValidate_Amount)
-	case "OnValidate_Gen_posting_type":
-		_, ok = logic.(GenJnlAllocationOnValidate_Gen_posting_type)
-	case "OnValidate_Gen_bus_posting_group":
-		_, ok = logic.(GenJnlAllocationOnValidate_Gen_bus_posting_group)
-	case "OnValidate_Gen_prod_posting_group":
-		_, ok = logic.(GenJnlAllocationOnValidate_Gen_prod_posting_group)
-	case "OnValidate_Tax_calculation_type":
-		_, ok = logic.(GenJnlAllocationOnValidate_Tax_calculation_type)
-	case "OnValidate_Tax_amount":
-		_, ok = logic.(GenJnlAllocationOnValidate_Tax_amount)
-	case "OnValidate_Tax_percent":
-		_, ok = logic.(GenJnlAllocationOnValidate_Tax_percent)
-	case "OnValidate_Tax_area_code":
-		_, ok = logic.(GenJnlAllocationOnValidate_Tax_area_code)
-	case "OnValidate_Tax_liable":
-		_, ok = logic.(GenJnlAllocationOnValidate_Tax_liable)
-	case "OnValidate_Tax_group_code":
-		_, ok = logic.(GenJnlAllocationOnValidate_Tax_group_code)
-	case "OnValidate_Use_tax":
-		_, ok = logic.(GenJnlAllocationOnValidate_Use_tax)
-	case "OnValidate_Tax_bus_posting_group":
-		_, ok = logic.(GenJnlAllocationOnValidate_Tax_bus_posting_group)
-	case "OnValidate_Tax_prod_posting_group":
-		_, ok = logic.(GenJnlAllocationOnValidate_Tax_prod_posting_group)
-	case "OnValidate_Additional_currency_amount":
-		_, ok = logic.(GenJnlAllocationOnValidate_Additional_currency_amount)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return genJnlAllocationFields.IsOnValidateTrigger(name, logic, (*GenJnlAllocation)(nil))
 	}
 	return true, ok
 }
@@ -1025,30 +811,7 @@ func (t *GenJnlAllocation) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *GenJnlAllocation) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["journal_template_name"] = t.Journal_template_name
-	t.oldValues["journal_batch_name"] = t.Journal_batch_name
-	t.oldValues["journal_line_no"] = t.Journal_line_no
-	t.oldValues["line_no"] = t.Line_no
-	t.oldValues["account_no"] = t.Account_no
-	t.oldValues["dimension_1_code"] = t.Dimension_1_code
-	t.oldValues["dimension_2_code"] = t.Dimension_2_code
-	t.oldValues["allocation_quantity"] = t.Allocation_quantity
-	t.oldValues["allocation_percent"] = t.Allocation_percent
-	t.oldValues["amount"] = t.Amount
-	t.oldValues["gen_posting_type"] = t.Gen_posting_type
-	t.oldValues["gen_bus_posting_group"] = t.Gen_bus_posting_group
-	t.oldValues["gen_prod_posting_group"] = t.Gen_prod_posting_group
-	t.oldValues["tax_calculation_type"] = t.Tax_calculation_type
-	t.oldValues["tax_amount"] = t.Tax_amount
-	t.oldValues["tax_percent"] = t.Tax_percent
-	t.oldValues["tax_area_code"] = t.Tax_area_code
-	t.oldValues["tax_liable"] = t.Tax_liable
-	t.oldValues["tax_group_code"] = t.Tax_group_code
-	t.oldValues["use_tax"] = t.Use_tax
-	t.oldValues["tax_bus_posting_group"] = t.Tax_bus_posting_group
-	t.oldValues["tax_prod_posting_group"] = t.Tax_prod_posting_group
-	t.oldValues["additional_currency_amount"] = t.Additional_currency_amount
+	t.oldValues = genJnlAllocationFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1063,75 +826,7 @@ func (t *GenJnlAllocation) OldValue(fieldName string) interface{} {
 func (t *GenJnlAllocation) XRec() *GenJnlAllocation {
 	x := &GenJnlAllocation{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["journal_template_name"].(types.Code); ok {
-		x.Journal_template_name = v
-	}
-	if v, ok := t.oldValues["journal_batch_name"].(types.Code); ok {
-		x.Journal_batch_name = v
-	}
-	if v, ok := t.oldValues["journal_line_no"].(int); ok {
-		x.Journal_line_no = v
-	}
-	if v, ok := t.oldValues["line_no"].(int); ok {
-		x.Line_no = v
-	}
-	if v, ok := t.oldValues["account_no"].(types.Code); ok {
-		x.Account_no = v
-	}
-	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
-		x.Dimension_1_code = v
-	}
-	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
-		x.Dimension_2_code = v
-	}
-	if v, ok := t.oldValues["allocation_quantity"].(types.Decimal); ok {
-		x.Allocation_quantity = v
-	}
-	if v, ok := t.oldValues["allocation_percent"].(types.Decimal); ok {
-		x.Allocation_percent = v
-	}
-	if v, ok := t.oldValues["amount"].(types.Decimal); ok {
-		x.Amount = v
-	}
-	if v, ok := t.oldValues["gen_posting_type"].(GenJnlAllocationGen_posting_type); ok {
-		x.Gen_posting_type = v
-	}
-	if v, ok := t.oldValues["gen_bus_posting_group"].(types.Code); ok {
-		x.Gen_bus_posting_group = v
-	}
-	if v, ok := t.oldValues["gen_prod_posting_group"].(types.Code); ok {
-		x.Gen_prod_posting_group = v
-	}
-	if v, ok := t.oldValues["tax_calculation_type"].(GenJnlAllocationTax_calculation_type); ok {
-		x.Tax_calculation_type = v
-	}
-	if v, ok := t.oldValues["tax_amount"].(types.Decimal); ok {
-		x.Tax_amount = v
-	}
-	if v, ok := t.oldValues["tax_percent"].(types.Decimal); ok {
-		x.Tax_percent = v
-	}
-	if v, ok := t.oldValues["tax_area_code"].(types.Code); ok {
-		x.Tax_area_code = v
-	}
-	if v, ok := t.oldValues["tax_liable"].(bool); ok {
-		x.Tax_liable = v
-	}
-	if v, ok := t.oldValues["tax_group_code"].(types.Code); ok {
-		x.Tax_group_code = v
-	}
-	if v, ok := t.oldValues["use_tax"].(bool); ok {
-		x.Use_tax = v
-	}
-	if v, ok := t.oldValues["tax_bus_posting_group"].(types.Code); ok {
-		x.Tax_bus_posting_group = v
-	}
-	if v, ok := t.oldValues["tax_prod_posting_group"].(types.Code); ok {
-		x.Tax_prod_posting_group = v
-	}
-	if v, ok := t.oldValues["additional_currency_amount"].(types.Decimal); ok {
-		x.Additional_currency_amount = v
-	}
+	genJnlAllocationFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1670,117 +1365,7 @@ func (t *GenJnlAllocation) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *GenJnlAllocation) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "journal_template_name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Journal_template_name.Equal(old)
-		}
-	case "journal_batch_name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Journal_batch_name.Equal(old)
-		}
-	case "journal_line_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Journal_line_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "line_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Line_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "account_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Account_no.Equal(old)
-		}
-	case "dimension_1_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_1_code.Equal(old)
-		}
-	case "dimension_2_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_2_code.Equal(old)
-		}
-	case "allocation_quantity":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Allocation_quantity.Equal(old)
-		}
-	case "allocation_percent":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Allocation_percent.Equal(old)
-		}
-	case "amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Amount.Equal(old)
-		}
-	case "gen_posting_type":
-		if old, ok := oldValue.(GenJnlAllocationGen_posting_type); ok {
-			return t.Gen_posting_type != old
-		}
-	case "gen_bus_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Gen_bus_posting_group.Equal(old)
-		}
-	case "gen_prod_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Gen_prod_posting_group.Equal(old)
-		}
-	case "tax_calculation_type":
-		if old, ok := oldValue.(GenJnlAllocationTax_calculation_type); ok {
-			return t.Tax_calculation_type != old
-		}
-	case "tax_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Tax_amount.Equal(old)
-		}
-	case "tax_percent":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Tax_percent.Equal(old)
-		}
-	case "tax_area_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_area_code.Equal(old)
-		}
-	case "tax_liable":
-		if old, ok := oldValue.(bool); ok {
-			return t.Tax_liable != old
-		}
-		return true // Type mismatch, assume changed
-	case "tax_group_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_group_code.Equal(old)
-		}
-	case "use_tax":
-		if old, ok := oldValue.(bool); ok {
-			return t.Use_tax != old
-		}
-		return true // Type mismatch, assume changed
-	case "tax_bus_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_bus_posting_group.Equal(old)
-		}
-	case "tax_prod_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_prod_posting_group.Equal(old)
-		}
-	case "additional_currency_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Additional_currency_amount.Equal(old)
-		}
-	}
-
-	return false
+	return genJnlAllocationFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -2058,55 +1643,7 @@ func (t *GenJnlAllocation) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *GenJnlAllocation) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("journal_template_name"):
-		return "journal_template_name", true
-	case strings.ToLower("journal_batch_name"):
-		return "journal_batch_name", true
-	case strings.ToLower("journal_line_no"):
-		return "journal_line_no", true
-	case strings.ToLower("line_no"):
-		return "line_no", true
-	case strings.ToLower("account_no"):
-		return "account_no", true
-	case strings.ToLower("dimension_1_code"):
-		return "dimension_1_code", true
-	case strings.ToLower("dimension_2_code"):
-		return "dimension_2_code", true
-	case strings.ToLower("allocation_quantity"):
-		return "allocation_quantity", true
-	case strings.ToLower("allocation_percent"):
-		return "allocation_percent", true
-	case strings.ToLower("amount"):
-		return "amount", true
-	case strings.ToLower("gen_posting_type"):
-		return "gen_posting_type", true
-	case strings.ToLower("gen_bus_posting_group"):
-		return "gen_bus_posting_group", true
-	case strings.ToLower("gen_prod_posting_group"):
-		return "gen_prod_posting_group", true
-	case strings.ToLower("tax_calculation_type"):
-		return "tax_calculation_type", true
-	case strings.ToLower("tax_amount"):
-		return "tax_amount", true
-	case strings.ToLower("tax_percent"):
-		return "tax_percent", true
-	case strings.ToLower("tax_area_code"):
-		return "tax_area_code", true
-	case strings.ToLower("tax_liable"):
-		return "tax_liable", true
-	case strings.ToLower("tax_group_code"):
-		return "tax_group_code", true
-	case strings.ToLower("use_tax"):
-		return "use_tax", true
-	case strings.ToLower("tax_bus_posting_group"):
-		return "tax_bus_posting_group", true
-	case strings.ToLower("tax_prod_posting_group"):
-		return "tax_prod_posting_group", true
-	case strings.ToLower("additional_currency_amount"):
-		return "additional_currency_amount", true
-	}
-	return "", false
+	return genJnlAllocationFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -3189,612 +2726,20 @@ func (t *GenJnlAllocation) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *GenJnlAllocation) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "journal_template_name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Journal_template_name = v
-		} else if v, ok := value.(string); ok {
-			t.Journal_template_name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field journal_template_name")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "journal_template_name"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJnlAllocationOnValidate_Journal_template_name); ok {
-				if err := trg.OnValidate_Journal_template_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "journal_batch_name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Journal_batch_name = v
-		} else if v, ok := value.(string); ok {
-			t.Journal_batch_name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field journal_batch_name")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "journal_batch_name"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJnlAllocationOnValidate_Journal_batch_name); ok {
-				if err := trg.OnValidate_Journal_batch_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "journal_line_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Journal_line_no = v
-		case float64:
-			t.Journal_line_no = int(v)
-		case string:
-			if v == "" {
-				t.Journal_line_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Journal_line_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field journal_line_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field journal_line_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJnlAllocationOnValidate_Journal_line_no); ok {
-				if err := trg.OnValidate_Journal_line_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "line_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Line_no = v
-		case float64:
-			t.Line_no = int(v)
-		case string:
-			if v == "" {
-				t.Line_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Line_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field line_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field line_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJnlAllocationOnValidate_Line_no); ok {
-				if err := trg.OnValidate_Line_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "account_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Account_no = v
-		} else if v, ok := value.(string); ok {
-			t.Account_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field account_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "account_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJnlAllocationOnValidate_Account_no); ok {
-				if err := trg.OnValidate_Account_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_1_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_1_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJnlAllocationOnValidate_Dimension_1_code); ok {
-				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_2_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_2_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJnlAllocationOnValidate_Dimension_2_code); ok {
-				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "allocation_quantity":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Allocation_quantity = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Allocation_quantity, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field allocation_quantity: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Allocation_quantity = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Allocation_quantity = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Allocation_quantity = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field allocation_quantity (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJnlAllocationOnValidate_Allocation_quantity); ok {
-				if err := trg.OnValidate_Allocation_quantity(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "allocation_percent":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Allocation_percent = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Allocation_percent, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field allocation_percent: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Allocation_percent = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Allocation_percent = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Allocation_percent = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field allocation_percent (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJnlAllocationOnValidate_Allocation_percent); ok {
-				if err := trg.OnValidate_Allocation_percent(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJnlAllocationOnValidate_Amount); ok {
-				if err := trg.OnValidate_Amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "gen_posting_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(GenJnlAllocationGen_posting_type); ok {
-			t.Gen_posting_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field gen_posting_type (valid range: 0-%d)", v, 3-1)
-			}
-			t.Gen_posting_type = GenJnlAllocationGen_posting_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field gen_posting_type (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Gen_posting_type = GenJnlAllocationGen_posting_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Gen_posting_type = 0
-			} else {
-				options := []string{" ", "Purchase", "Sale"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Gen_posting_type = GenJnlAllocationGen_posting_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field gen_posting_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field gen_posting_type (expected GenJnlAllocationGen_posting_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJnlAllocationOnValidate_Gen_posting_type); ok {
-				if err := trg.OnValidate_Gen_posting_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "gen_bus_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Gen_bus_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Gen_bus_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field gen_bus_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "gen_bus_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJnlAllocationOnValidate_Gen_bus_posting_group); ok {
-				if err := trg.OnValidate_Gen_bus_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "gen_prod_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Gen_prod_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Gen_prod_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field gen_prod_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "gen_prod_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJnlAllocationOnValidate_Gen_prod_posting_group); ok {
-				if err := trg.OnValidate_Gen_prod_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_calculation_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(GenJnlAllocationTax_calculation_type); ok {
-			t.Tax_calculation_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field tax_calculation_type (valid range: 0-%d)", v, 4-1)
-			}
-			t.Tax_calculation_type = GenJnlAllocationTax_calculation_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field tax_calculation_type (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Tax_calculation_type = GenJnlAllocationTax_calculation_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Tax_calculation_type = 0
-			} else {
-				options := []string{"Normal VAT", "Reverse Charge VAT", "Full VAT", "Sales Tax"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Tax_calculation_type = GenJnlAllocationTax_calculation_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field tax_calculation_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field tax_calculation_type (expected GenJnlAllocationTax_calculation_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJnlAllocationOnValidate_Tax_calculation_type); ok {
-				if err := trg.OnValidate_Tax_calculation_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Tax_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Tax_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field tax_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Tax_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Tax_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Tax_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJnlAllocationOnValidate_Tax_amount); ok {
-				if err := trg.OnValidate_Tax_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_percent":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Tax_percent = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Tax_percent, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field tax_percent: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Tax_percent = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Tax_percent = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Tax_percent = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_percent (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJnlAllocationOnValidate_Tax_percent); ok {
-				if err := trg.OnValidate_Tax_percent(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_area_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_area_code = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_area_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_area_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_area_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJnlAllocationOnValidate_Tax_area_code); ok {
-				if err := trg.OnValidate_Tax_area_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_liable":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Tax_liable = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Tax_liable = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field tax_liable")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJnlAllocationOnValidate_Tax_liable); ok {
-				if err := trg.OnValidate_Tax_liable(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_group_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_group_code = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_group_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_group_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_group_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJnlAllocationOnValidate_Tax_group_code); ok {
-				if err := trg.OnValidate_Tax_group_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "use_tax":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Use_tax = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Use_tax = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field use_tax")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJnlAllocationOnValidate_Use_tax); ok {
-				if err := trg.OnValidate_Use_tax(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_bus_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_bus_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_bus_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_bus_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_bus_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJnlAllocationOnValidate_Tax_bus_posting_group); ok {
-				if err := trg.OnValidate_Tax_bus_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_prod_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_prod_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_prod_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_prod_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_prod_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJnlAllocationOnValidate_Tax_prod_posting_group); ok {
-				if err := trg.OnValidate_Tax_prod_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "additional_currency_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Additional_currency_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Additional_currency_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field additional_currency_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Additional_currency_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Additional_currency_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Additional_currency_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field additional_currency_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GenJnlAllocationOnValidate_Additional_currency_amount); ok {
-				if err := trg.OnValidate_Additional_currency_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := genJnlAllocationFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &genJnlAllocationFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -3803,231 +2748,18 @@ func (t *GenJnlAllocation) ValidateField(fieldName string, value interface{}) er
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *GenJnlAllocation) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Journal_template_name, true
-	case 2:
-		return t.Journal_batch_name, true
-	case 3:
-		return t.Journal_line_no, true
-	case 4:
-		return t.Line_no, true
-	case 5:
-		return t.Account_no, true
-	case 6:
-		return t.Dimension_1_code, true
-	case 7:
-		return t.Dimension_2_code, true
-	case 8:
-		return t.Allocation_quantity, true
-	case 9:
-		return t.Allocation_percent, true
-	case 10:
-		return t.Amount, true
-	case 11:
-		return t.Gen_posting_type, true
-	case 12:
-		return t.Gen_bus_posting_group, true
-	case 13:
-		return t.Gen_prod_posting_group, true
-	case 14:
-		return t.Tax_calculation_type, true
-	case 15:
-		return t.Tax_amount, true
-	case 16:
-		return t.Tax_percent, true
-	case 18:
-		return t.Tax_area_code, true
-	case 19:
-		return t.Tax_liable, true
-	case 20:
-		return t.Tax_group_code, true
-	case 21:
-		return t.Use_tax, true
-	case 22:
-		return t.Tax_bus_posting_group, true
-	case 23:
-		return t.Tax_prod_posting_group, true
-	case 24:
-		return t.Additional_currency_amount, true
-	}
-	return nil, false
+	return genJnlAllocationFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *GenJnlAllocation) flowFieldValue(no int) (any, bool) {
-	switch no {
-	case 17:
-		return t.Account_name, true
-	}
-	return nil, false
+	return genJnlAllocationFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *GenJnlAllocation) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Journal_template_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Journal_template_name = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Journal_batch_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Journal_batch_name = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(int); ok {
-			t.Journal_line_no = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(int); ok {
-			t.Line_no = v
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Code); ok {
-			t.Account_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Account_no = types.NewCode(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Decimal); ok {
-			t.Allocation_quantity = v
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.Decimal); ok {
-			t.Allocation_percent = v
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount = v
-			return true
-		}
-	case 11:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Gen_posting_type = GenJnlAllocationGen_posting_type(i)
-			return true
-		}
-	case 12:
-		if v, ok := value.(types.Code); ok {
-			t.Gen_bus_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Gen_bus_posting_group = types.NewCode(v)
-			return true
-		}
-	case 13:
-		if v, ok := value.(types.Code); ok {
-			t.Gen_prod_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Gen_prod_posting_group = types.NewCode(v)
-			return true
-		}
-	case 14:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Tax_calculation_type = GenJnlAllocationTax_calculation_type(i)
-			return true
-		}
-	case 15:
-		if v, ok := value.(types.Decimal); ok {
-			t.Tax_amount = v
-			return true
-		}
-	case 16:
-		if v, ok := value.(types.Decimal); ok {
-			t.Tax_percent = v
-			return true
-		}
-	case 18:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_area_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_area_code = types.NewCode(v)
-			return true
-		}
-	case 19:
-		if v, ok := value.(bool); ok {
-			t.Tax_liable = v
-			return true
-		}
-	case 20:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_group_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_group_code = types.NewCode(v)
-			return true
-		}
-	case 21:
-		if v, ok := value.(bool); ok {
-			t.Use_tax = v
-			return true
-		}
-	case 22:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_bus_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_bus_posting_group = types.NewCode(v)
-			return true
-		}
-	case 23:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_prod_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_prod_posting_group = types.NewCode(v)
-			return true
-		}
-	case 24:
-		if v, ok := value.(types.Decimal); ok {
-			t.Additional_currency_amount = v
-			return true
-		}
-	}
-	return false
+	return genJnlAllocationFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -4556,55 +3288,7 @@ func (t *GenJnlAllocation) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *GenJnlAllocation) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "journal_template_name":
-		return t.Journal_template_name, true
-	case "journal_batch_name":
-		return t.Journal_batch_name, true
-	case "journal_line_no":
-		return t.Journal_line_no, true
-	case "line_no":
-		return t.Line_no, true
-	case "account_no":
-		return t.Account_no, true
-	case "dimension_1_code":
-		return t.Dimension_1_code, true
-	case "dimension_2_code":
-		return t.Dimension_2_code, true
-	case "allocation_quantity":
-		return t.Allocation_quantity, true
-	case "allocation_percent":
-		return t.Allocation_percent, true
-	case "amount":
-		return t.Amount, true
-	case "gen_posting_type":
-		return int(t.Gen_posting_type), true
-	case "gen_bus_posting_group":
-		return t.Gen_bus_posting_group, true
-	case "gen_prod_posting_group":
-		return t.Gen_prod_posting_group, true
-	case "tax_calculation_type":
-		return int(t.Tax_calculation_type), true
-	case "tax_amount":
-		return t.Tax_amount, true
-	case "tax_percent":
-		return t.Tax_percent, true
-	case "tax_area_code":
-		return t.Tax_area_code, true
-	case "tax_liable":
-		return t.Tax_liable, true
-	case "tax_group_code":
-		return t.Tax_group_code, true
-	case "use_tax":
-		return t.Use_tax, true
-	case "tax_bus_posting_group":
-		return t.Tax_bus_posting_group, true
-	case "tax_prod_posting_group":
-		return t.Tax_prod_posting_group, true
-	case "additional_currency_amount":
-		return t.Additional_currency_amount, true
-	}
-	return nil, false
+	return genJnlAllocationFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -4721,234 +3405,12 @@ func (t *GenJnlAllocation) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *GenJnlAllocation) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"journal_template_name":  t.Journal_template_name.String(),
-		"journal_batch_name":     t.Journal_batch_name.String(),
-		"journal_line_no":        t.Journal_line_no,
-		"line_no":                t.Line_no,
-		"account_no":             t.Account_no.String(),
-		"dimension_1_code":       t.Dimension_1_code.String(),
-		"dimension_2_code":       t.Dimension_2_code.String(),
-		"allocation_quantity":    t.Allocation_quantity.String(),
-		"allocation_percent":     t.Allocation_percent.String(),
-		"amount":                 t.Amount.String(),
-		"gen_posting_type":       int(t.Gen_posting_type),
-		"gen_bus_posting_group":  t.Gen_bus_posting_group.String(),
-		"gen_prod_posting_group": t.Gen_prod_posting_group.String(),
-		"tax_calculation_type":   int(t.Tax_calculation_type),
-		"tax_amount":             t.Tax_amount.String(),
-		"tax_percent":            t.Tax_percent.String(),
-		// FlowField: account_name
-		"account_name":               t.Account_name,
-		"tax_area_code":              t.Tax_area_code.String(),
-		"tax_liable":                 t.Tax_liable,
-		"tax_group_code":             t.Tax_group_code.String(),
-		"use_tax":                    t.Use_tax,
-		"tax_bus_posting_group":      t.Tax_bus_posting_group.String(),
-		"tax_prod_posting_group":     t.Tax_prod_posting_group.String(),
-		"additional_currency_amount": t.Additional_currency_amount.String(),
-	}
+	return genJnlAllocationFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *GenJnlAllocation) FromMap(data map[string]interface{}) {
-	if v, ok := data["journal_template_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Journal_template_name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["journal_batch_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Journal_batch_name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["journal_line_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Journal_line_no = int(val)
-		case int:
-			t.Journal_line_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Journal_line_no = n
-			}
-		}
-	}
-	if v, ok := data["line_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Line_no = int(val)
-		case int:
-			t.Line_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Line_no = n
-			}
-		}
-	}
-	if v, ok := data["account_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Account_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["dimension_1_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_1_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["dimension_2_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_2_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["allocation_quantity"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Allocation_quantity, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Allocation_quantity = types.NewDecimal(val)
-		case int:
-			t.Allocation_quantity = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Allocation_quantity = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["allocation_percent"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Allocation_percent, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Allocation_percent = types.NewDecimal(val)
-		case int:
-			t.Allocation_percent = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Allocation_percent = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Amount = types.NewDecimal(val)
-		case int:
-			t.Amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["gen_posting_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Gen_posting_type = GenJnlAllocationGen_posting_type(int(val))
-		case int:
-			t.Gen_posting_type = GenJnlAllocationGen_posting_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Purchase", "Sale"}
-			for i, opt := range options {
-				if opt == val {
-					t.Gen_posting_type = GenJnlAllocationGen_posting_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["gen_bus_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Gen_bus_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["gen_prod_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Gen_prod_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_calculation_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Tax_calculation_type = GenJnlAllocationTax_calculation_type(int(val))
-		case int:
-			t.Tax_calculation_type = GenJnlAllocationTax_calculation_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Normal VAT", "Reverse Charge VAT", "Full VAT", "Sales Tax"}
-			for i, opt := range options {
-				if opt == val {
-					t.Tax_calculation_type = GenJnlAllocationTax_calculation_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["tax_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Tax_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Tax_amount = types.NewDecimal(val)
-		case int:
-			t.Tax_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Tax_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["tax_percent"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Tax_percent, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Tax_percent = types.NewDecimal(val)
-		case int:
-			t.Tax_percent = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Tax_percent = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["tax_area_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_area_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_liable"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Tax_liable = b
-		}
-	}
-	if v, ok := data["tax_group_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_group_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["use_tax"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Use_tax = b
-		}
-	}
-	if v, ok := data["tax_bus_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_bus_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_prod_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_prod_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["additional_currency_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Additional_currency_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Additional_currency_amount = types.NewDecimal(val)
-		case int:
-			t.Additional_currency_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Additional_currency_amount = types.NewDecimalFromInt(val)
-		}
-	}
+	genJnlAllocationFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -4969,258 +3431,429 @@ func (t *GenJnlAllocation) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *GenJnlAllocation) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "journal_template_name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "journal_batch_name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "journal_line_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "line_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "account_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "dimension_1_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "dimension_2_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            8,
-			Name:          "allocation_quantity",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            9,
-			Name:          "allocation_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            10,
-			Name:          "amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         11,
-			Name:       "gen_posting_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "gen_bus_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         13,
-			Name:       "gen_prod_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         14,
-			Name:       "tax_calculation_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:            15,
-			Name:          "tax_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            16,
-			Name:          "tax_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         17,
-			Name:       "account_name",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  true,
-		},
-		{
-			No:         18,
-			Name:       "tax_area_code",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         19,
-			Name:       "tax_liable",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         20,
-			Name:       "tax_group_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         21,
-			Name:       "use_tax",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         22,
-			Name:       "tax_bus_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         23,
-			Name:       "tax_prod_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            24,
-			Name:          "additional_currency_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "2:2",
-		},
+	return genJnlAllocationFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in genJnlAllocationFields.Fields
+func (t *GenJnlAllocation) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Journal_template_name
+	case 1:
+		return &t.Journal_batch_name
+	case 2:
+		return &t.Journal_line_no
+	case 3:
+		return &t.Line_no
+	case 4:
+		return &t.Account_no
+	case 5:
+		return &t.Dimension_1_code
+	case 6:
+		return &t.Dimension_2_code
+	case 7:
+		return &t.Allocation_quantity
+	case 8:
+		return &t.Allocation_percent
+	case 9:
+		return &t.Amount
+	case 10:
+		return &t.Gen_posting_type
+	case 11:
+		return &t.Gen_bus_posting_group
+	case 12:
+		return &t.Gen_prod_posting_group
+	case 13:
+		return &t.Tax_calculation_type
+	case 14:
+		return &t.Tax_amount
+	case 15:
+		return &t.Tax_percent
+	case 16:
+		return &t.Account_name
+	case 17:
+		return &t.Tax_area_code
+	case 18:
+		return &t.Tax_liable
+	case 19:
+		return &t.Tax_group_code
+	case 20:
+		return &t.Use_tax
+	case 21:
+		return &t.Tax_bus_posting_group
+	case 22:
+		return &t.Tax_prod_posting_group
+	case 23:
+		return &t.Additional_currency_amount
 	}
+	return nil
+}
+
+// genJnlAllocationFields describes the fields of Gen_Jnl_Allocation for the record functions
+// written once in foundation/tables
+var genJnlAllocationFields = &tables.TableFields{
+	Table: GenJnlAllocationTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "journal_template_name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Journal_template_name",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "journal_batch_name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Journal_batch_name",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "journal_line_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Journal_line_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "line_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Line_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "account_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Account_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "dimension_1_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_1_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "dimension_2_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_2_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            8,
+				Name:          "allocation_quantity",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Allocation_quantity",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            9,
+				Name:          "allocation_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Allocation_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            10,
+				Name:          "amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "gen_posting_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Gen_posting_type",
+			Options: []string{" ", "Purchase", "Sale"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "gen_bus_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Gen_bus_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "gen_prod_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Gen_prod_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "tax_calculation_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Tax_calculation_type",
+			Options: []string{"Normal VAT", "Reverse Charge VAT", "Full VAT", "Sales Tax"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            15,
+				Name:          "tax_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Tax_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            16,
+				Name:          "tax_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Tax_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         17,
+				Name:       "account_name",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  true,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Account_name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         18,
+				Name:       "tax_area_code",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_area_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         19,
+				Name:       "tax_liable",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Tax_liable",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         20,
+				Name:       "tax_group_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_group_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         21,
+				Name:       "use_tax",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Use_tax",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         22,
+				Name:       "tax_bus_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_bus_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         23,
+				Name:       "tax_prod_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_prod_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            24,
+				Name:          "additional_currency_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Additional_currency_amount",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

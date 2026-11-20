@@ -117,28 +117,12 @@ var CurrencyForFinChargeTerms_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *CurrencyForFinChargeTerms) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "fin_charge_terms_code":
-		return 1
-	case "currency_code":
-		return 2
-	case "additional_fee":
-		return 4
-	}
-	return 0
+	return currencyForFinChargeTermsFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *CurrencyForFinChargeTerms) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "fin_charge_terms_code"
-	case 2:
-		return "currency_code"
-	case 4:
-		return "additional_fee"
-	}
-	return ""
+	return currencyForFinChargeTermsFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -250,15 +234,6 @@ type (
 	CurrencyForFinChargeTermsOnBeforeRename interface {
 		OnBeforeRename(rec *CurrencyForFinChargeTerms, handled *bool) error
 	}
-	CurrencyForFinChargeTermsOnValidate_Fin_charge_terms_code interface {
-		OnValidate_Fin_charge_terms_code(rec *CurrencyForFinChargeTerms) error
-	}
-	CurrencyForFinChargeTermsOnValidate_Currency_code interface {
-		OnValidate_Currency_code(rec *CurrencyForFinChargeTerms) error
-	}
-	CurrencyForFinChargeTermsOnValidate_Additional_fee interface {
-		OnValidate_Additional_fee(rec *CurrencyForFinChargeTerms) error
-	}
 )
 
 // currencyForFinChargeTermsLogic is the registered business logic of Currency_for_Fin_Charge_Terms, in
@@ -301,14 +276,9 @@ func currencyForFinChargeTermsTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(CurrencyForFinChargeTermsOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(CurrencyForFinChargeTermsOnBeforeRename)
-	case "OnValidate_Fin_charge_terms_code":
-		_, ok = logic.(CurrencyForFinChargeTermsOnValidate_Fin_charge_terms_code)
-	case "OnValidate_Currency_code":
-		_, ok = logic.(CurrencyForFinChargeTermsOnValidate_Currency_code)
-	case "OnValidate_Additional_fee":
-		_, ok = logic.(CurrencyForFinChargeTermsOnValidate_Additional_fee)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return currencyForFinChargeTermsFields.IsOnValidateTrigger(name, logic, (*CurrencyForFinChargeTerms)(nil))
 	}
 	return true, ok
 }
@@ -606,10 +576,7 @@ func (t *CurrencyForFinChargeTerms) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *CurrencyForFinChargeTerms) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["fin_charge_terms_code"] = t.Fin_charge_terms_code
-	t.oldValues["currency_code"] = t.Currency_code
-	t.oldValues["additional_fee"] = t.Additional_fee
+	t.oldValues = currencyForFinChargeTermsFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -624,15 +591,7 @@ func (t *CurrencyForFinChargeTerms) OldValue(fieldName string) interface{} {
 func (t *CurrencyForFinChargeTerms) XRec() *CurrencyForFinChargeTerms {
 	x := &CurrencyForFinChargeTerms{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["fin_charge_terms_code"].(types.Code); ok {
-		x.Fin_charge_terms_code = v
-	}
-	if v, ok := t.oldValues["currency_code"].(types.Code); ok {
-		x.Currency_code = v
-	}
-	if v, ok := t.oldValues["additional_fee"].(types.Decimal); ok {
-		x.Additional_fee = v
-	}
+	currencyForFinChargeTermsFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -909,33 +868,7 @@ func (t *CurrencyForFinChargeTerms) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *CurrencyForFinChargeTerms) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "fin_charge_terms_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Fin_charge_terms_code.Equal(old)
-		}
-	case "currency_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Currency_code.Equal(old)
-		}
-	case "additional_fee":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Additional_fee.Equal(old)
-		}
-	}
-
-	return false
+	return currencyForFinChargeTermsFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1137,15 +1070,7 @@ func (t *CurrencyForFinChargeTerms) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *CurrencyForFinChargeTerms) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("fin_charge_terms_code"):
-		return "fin_charge_terms_code", true
-	case strings.ToLower("currency_code"):
-		return "currency_code", true
-	case strings.ToLower("additional_fee"):
-		return "additional_fee", true
-	}
-	return "", false
+	return currencyForFinChargeTermsFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -1969,84 +1894,20 @@ func (t *CurrencyForFinChargeTerms) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *CurrencyForFinChargeTerms) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "fin_charge_terms_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Fin_charge_terms_code = v
-		} else if v, ok := value.(string); ok {
-			t.Fin_charge_terms_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field fin_charge_terms_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fin_charge_terms_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyForFinChargeTermsOnValidate_Fin_charge_terms_code); ok {
-				if err := trg.OnValidate_Fin_charge_terms_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "currency_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Currency_code = v
-		} else if v, ok := value.(string); ok {
-			t.Currency_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field currency_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "currency_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyForFinChargeTermsOnValidate_Currency_code); ok {
-				if err := trg.OnValidate_Currency_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "additional_fee":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Additional_fee = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Additional_fee, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field additional_fee: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Additional_fee = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Additional_fee = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Additional_fee = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field additional_fee (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CurrencyForFinChargeTermsOnValidate_Additional_fee); ok {
-				if err := trg.OnValidate_Additional_fee(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := currencyForFinChargeTermsFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &currencyForFinChargeTermsFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2055,53 +1916,18 @@ func (t *CurrencyForFinChargeTerms) ValidateField(fieldName string, value interf
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *CurrencyForFinChargeTerms) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Fin_charge_terms_code, true
-	case 2:
-		return t.Currency_code, true
-	case 4:
-		return t.Additional_fee, true
-	}
-	return nil, false
+	return currencyForFinChargeTermsFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *CurrencyForFinChargeTerms) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return currencyForFinChargeTermsFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *CurrencyForFinChargeTerms) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Fin_charge_terms_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Fin_charge_terms_code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Currency_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Currency_code = types.NewCode(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Decimal); ok {
-			t.Additional_fee = v
-			return true
-		}
-	}
-	return false
+	return currencyForFinChargeTermsFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2572,15 +2398,7 @@ func (t *CurrencyForFinChargeTerms) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *CurrencyForFinChargeTerms) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "fin_charge_terms_code":
-		return t.Fin_charge_terms_code, true
-	case "currency_code":
-		return t.Currency_code, true
-	case "additional_fee":
-		return t.Additional_fee, true
-	}
-	return nil, false
+	return currencyForFinChargeTermsFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2671,37 +2489,12 @@ func (t *CurrencyForFinChargeTerms) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *CurrencyForFinChargeTerms) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"fin_charge_terms_code": t.Fin_charge_terms_code.String(),
-		"currency_code":         t.Currency_code.String(),
-		"additional_fee":        t.Additional_fee.String(),
-	}
+	return currencyForFinChargeTermsFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *CurrencyForFinChargeTerms) FromMap(data map[string]interface{}) {
-	if v, ok := data["fin_charge_terms_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fin_charge_terms_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["currency_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Currency_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["additional_fee"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Additional_fee, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Additional_fee = types.NewDecimal(val)
-		case int:
-			t.Additional_fee = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Additional_fee = types.NewDecimalFromInt(val)
-		}
-	}
+	currencyForFinChargeTermsFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2722,40 +2515,74 @@ func (t *CurrencyForFinChargeTerms) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *CurrencyForFinChargeTerms) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "fin_charge_terms_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         2,
-			Name:       "currency_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:            4,
-			Name:          "additional_fee",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
+	return currencyForFinChargeTermsFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in currencyForFinChargeTermsFields.Fields
+func (t *CurrencyForFinChargeTerms) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Fin_charge_terms_code
+	case 1:
+		return &t.Currency_code
+	case 2:
+		return &t.Additional_fee
 	}
+	return nil
+}
+
+// currencyForFinChargeTermsFields describes the fields of Currency_for_Fin_Charge_Terms for the record functions
+// written once in foundation/tables
+var currencyForFinChargeTermsFields = &tables.TableFields{
+	Table: CurrencyForFinChargeTermsTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "fin_charge_terms_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Fin_charge_terms_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "currency_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Currency_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            4,
+				Name:          "additional_fee",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Additional_fee",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

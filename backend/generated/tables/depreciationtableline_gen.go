@@ -122,32 +122,12 @@ var DepreciationTableLine_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *DepreciationTableLine) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "depreciation_table_code":
-		return 1
-	case "period_no":
-		return 2
-	case "period_depreciation_percent":
-		return 3
-	case "no_of_units_in_period":
-		return 4
-	}
-	return 0
+	return depreciationTableLineFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *DepreciationTableLine) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "depreciation_table_code"
-	case 2:
-		return "period_no"
-	case 3:
-		return "period_depreciation_percent"
-	case 4:
-		return "no_of_units_in_period"
-	}
-	return ""
+	return depreciationTableLineFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -259,18 +239,6 @@ type (
 	DepreciationTableLineOnBeforeRename interface {
 		OnBeforeRename(rec *DepreciationTableLine, handled *bool) error
 	}
-	DepreciationTableLineOnValidate_Depreciation_table_code interface {
-		OnValidate_Depreciation_table_code(rec *DepreciationTableLine) error
-	}
-	DepreciationTableLineOnValidate_Period_no interface {
-		OnValidate_Period_no(rec *DepreciationTableLine) error
-	}
-	DepreciationTableLineOnValidate_Period_depreciation_percent interface {
-		OnValidate_Period_depreciation_percent(rec *DepreciationTableLine) error
-	}
-	DepreciationTableLineOnValidate_No_of_units_in_period interface {
-		OnValidate_No_of_units_in_period(rec *DepreciationTableLine) error
-	}
 )
 
 // depreciationTableLineLogic is the registered business logic of Depreciation_Table_Line, in
@@ -313,16 +281,9 @@ func depreciationTableLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(DepreciationTableLineOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(DepreciationTableLineOnBeforeRename)
-	case "OnValidate_Depreciation_table_code":
-		_, ok = logic.(DepreciationTableLineOnValidate_Depreciation_table_code)
-	case "OnValidate_Period_no":
-		_, ok = logic.(DepreciationTableLineOnValidate_Period_no)
-	case "OnValidate_Period_depreciation_percent":
-		_, ok = logic.(DepreciationTableLineOnValidate_Period_depreciation_percent)
-	case "OnValidate_No_of_units_in_period":
-		_, ok = logic.(DepreciationTableLineOnValidate_No_of_units_in_period)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return depreciationTableLineFields.IsOnValidateTrigger(name, logic, (*DepreciationTableLine)(nil))
 	}
 	return true, ok
 }
@@ -622,11 +583,7 @@ func (t *DepreciationTableLine) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *DepreciationTableLine) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["depreciation_table_code"] = t.Depreciation_table_code
-	t.oldValues["period_no"] = t.Period_no
-	t.oldValues["period_depreciation_percent"] = t.Period_depreciation_percent
-	t.oldValues["no_of_units_in_period"] = t.No_of_units_in_period
+	t.oldValues = depreciationTableLineFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -641,18 +598,7 @@ func (t *DepreciationTableLine) OldValue(fieldName string) interface{} {
 func (t *DepreciationTableLine) XRec() *DepreciationTableLine {
 	x := &DepreciationTableLine{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["depreciation_table_code"].(types.Code); ok {
-		x.Depreciation_table_code = v
-	}
-	if v, ok := t.oldValues["period_no"].(int); ok {
-		x.Period_no = v
-	}
-	if v, ok := t.oldValues["period_depreciation_percent"].(types.Decimal); ok {
-		x.Period_depreciation_percent = v
-	}
-	if v, ok := t.oldValues["no_of_units_in_period"].(types.Decimal); ok {
-		x.No_of_units_in_period = v
-	}
+	depreciationTableLineFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -945,38 +891,7 @@ func (t *DepreciationTableLine) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *DepreciationTableLine) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "depreciation_table_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Depreciation_table_code.Equal(old)
-		}
-	case "period_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Period_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "period_depreciation_percent":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Period_depreciation_percent.Equal(old)
-		}
-	case "no_of_units_in_period":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.No_of_units_in_period.Equal(old)
-		}
-	}
-
-	return false
+	return depreciationTableLineFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1178,17 +1093,7 @@ func (t *DepreciationTableLine) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *DepreciationTableLine) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("depreciation_table_code"):
-		return "depreciation_table_code", true
-	case strings.ToLower("period_no"):
-		return "period_no", true
-	case strings.ToLower("period_depreciation_percent"):
-		return "period_depreciation_percent", true
-	case strings.ToLower("no_of_units_in_period"):
-		return "no_of_units_in_period", true
-	}
-	return "", false
+	return depreciationTableLineFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2019,117 +1924,20 @@ func (t *DepreciationTableLine) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *DepreciationTableLine) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "depreciation_table_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Depreciation_table_code = v
-		} else if v, ok := value.(string); ok {
-			t.Depreciation_table_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field depreciation_table_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "depreciation_table_code"); err != nil {
+	i, err := depreciationTableLineFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
+	}
+	f := &depreciationTableLineFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
 			return err
 		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationTableLineOnValidate_Depreciation_table_code); ok {
-				if err := trg.OnValidate_Depreciation_table_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "period_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Period_no = v
-		case float64:
-			t.Period_no = int(v)
-		case string:
-			if v == "" {
-				t.Period_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Period_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field period_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field period_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationTableLineOnValidate_Period_no); ok {
-				if err := trg.OnValidate_Period_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "period_depreciation_percent":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Period_depreciation_percent = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Period_depreciation_percent, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field period_depreciation_percent: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Period_depreciation_percent = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Period_depreciation_percent = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Period_depreciation_percent = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field period_depreciation_percent (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationTableLineOnValidate_Period_depreciation_percent); ok {
-				if err := trg.OnValidate_Period_depreciation_percent(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no_of_units_in_period":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.No_of_units_in_period = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.No_of_units_in_period, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field no_of_units_in_period: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.No_of_units_in_period = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.No_of_units_in_period = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.No_of_units_in_period = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field no_of_units_in_period (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationTableLineOnValidate_No_of_units_in_period); ok {
-				if err := trg.OnValidate_No_of_units_in_period(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2138,56 +1946,18 @@ func (t *DepreciationTableLine) ValidateField(fieldName string, value interface{
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *DepreciationTableLine) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Depreciation_table_code, true
-	case 2:
-		return t.Period_no, true
-	case 3:
-		return t.Period_depreciation_percent, true
-	case 4:
-		return t.No_of_units_in_period, true
-	}
-	return nil, false
+	return depreciationTableLineFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *DepreciationTableLine) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return depreciationTableLineFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *DepreciationTableLine) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Depreciation_table_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Depreciation_table_code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(int); ok {
-			t.Period_no = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Decimal); ok {
-			t.Period_depreciation_percent = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Decimal); ok {
-			t.No_of_units_in_period = v
-			return true
-		}
-	}
-	return false
+	return depreciationTableLineFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2674,17 +2444,7 @@ func (t *DepreciationTableLine) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *DepreciationTableLine) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "depreciation_table_code":
-		return t.Depreciation_table_code, true
-	case "period_no":
-		return t.Period_no, true
-	case "period_depreciation_percent":
-		return t.Period_depreciation_percent, true
-	case "no_of_units_in_period":
-		return t.No_of_units_in_period, true
-	}
-	return nil, false
+	return depreciationTableLineFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2776,58 +2536,12 @@ func (t *DepreciationTableLine) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *DepreciationTableLine) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"depreciation_table_code":     t.Depreciation_table_code.String(),
-		"period_no":                   t.Period_no,
-		"period_depreciation_percent": t.Period_depreciation_percent.String(),
-		"no_of_units_in_period":       t.No_of_units_in_period.String(),
-	}
+	return depreciationTableLineFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *DepreciationTableLine) FromMap(data map[string]interface{}) {
-	if v, ok := data["depreciation_table_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Depreciation_table_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["period_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Period_no = int(val)
-		case int:
-			t.Period_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Period_no = n
-			}
-		}
-	}
-	if v, ok := data["period_depreciation_percent"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Period_depreciation_percent, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Period_depreciation_percent = types.NewDecimal(val)
-		case int:
-			t.Period_depreciation_percent = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Period_depreciation_percent = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["no_of_units_in_period"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.No_of_units_in_period, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.No_of_units_in_period = types.NewDecimal(val)
-		case int:
-			t.No_of_units_in_period = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.No_of_units_in_period = types.NewDecimalFromInt(val)
-		}
-	}
+	depreciationTableLineFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2848,50 +2562,89 @@ func (t *DepreciationTableLine) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *DepreciationTableLine) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "depreciation_table_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "period_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:            3,
-			Name:          "period_depreciation_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:8",
-		},
-		{
-			No:            4,
-			Name:          "no_of_units_in_period",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
+	return depreciationTableLineFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in depreciationTableLineFields.Fields
+func (t *DepreciationTableLine) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Depreciation_table_code
+	case 1:
+		return &t.Period_no
+	case 2:
+		return &t.Period_depreciation_percent
+	case 3:
+		return &t.No_of_units_in_period
 	}
+	return nil
+}
+
+// depreciationTableLineFields describes the fields of Depreciation_Table_Line for the record functions
+// written once in foundation/tables
+var depreciationTableLineFields = &tables.TableFields{
+	Table: DepreciationTableLineTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "depreciation_table_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Depreciation_table_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "period_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Period_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            3,
+				Name:          "period_depreciation_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:8",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Period_depreciation_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            4,
+				Name:          "no_of_units_in_period",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_No_of_units_in_period",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

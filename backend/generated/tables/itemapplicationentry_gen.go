@@ -44,7 +44,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -239,108 +238,12 @@ var ItemApplicationEntry_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *ItemApplicationEntry) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "entry_no":
-		return 1
-	case "item_ledger_entry_no":
-		return 2
-	case "applied_to_entry_no":
-		return 3
-	case "applied_from_entry_no":
-		return 4
-	case "new_entry_no":
-		return 5
-	case "fixed_applied_to_entry_no":
-		return 6
-	case "fixed_application":
-		return 7
-	case "creation_date":
-		return 8
-	case "valid":
-		return 9
-	case "valuated":
-		return 10
-	case "quantity":
-		return 11
-	case "reserved_quantity":
-		return 12
-	case "remaining_quantity":
-		return 13
-	case "open":
-		return 14
-	case "positive":
-		return 15
-	case "adjusted_cost":
-		return 16
-	case "cost_is_adjusted":
-		return 17
-	case "document_no":
-		return 18
-	case "entry_type":
-		return 19
-	case "item_no":
-		return 20
-	case "posting_date":
-		return 21
-	case "location_code":
-		return 22
-	case "transfered_from_entry_no":
-		return 23
-	}
-	return 0
+	return itemApplicationEntryFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *ItemApplicationEntry) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "entry_no"
-	case 2:
-		return "item_ledger_entry_no"
-	case 3:
-		return "applied_to_entry_no"
-	case 4:
-		return "applied_from_entry_no"
-	case 5:
-		return "new_entry_no"
-	case 6:
-		return "fixed_applied_to_entry_no"
-	case 7:
-		return "fixed_application"
-	case 8:
-		return "creation_date"
-	case 9:
-		return "valid"
-	case 10:
-		return "valuated"
-	case 11:
-		return "quantity"
-	case 12:
-		return "reserved_quantity"
-	case 13:
-		return "remaining_quantity"
-	case 14:
-		return "open"
-	case 15:
-		return "positive"
-	case 16:
-		return "adjusted_cost"
-	case 17:
-		return "cost_is_adjusted"
-	case 18:
-		return "document_no"
-	case 19:
-		return "entry_type"
-	case 20:
-		return "item_no"
-	case 21:
-		return "posting_date"
-	case 22:
-		return "location_code"
-	case 23:
-		return "transfered_from_entry_no"
-	}
-	return ""
+	return itemApplicationEntryFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -452,75 +355,6 @@ type (
 	ItemApplicationEntryOnBeforeRename interface {
 		OnBeforeRename(rec *ItemApplicationEntry, handled *bool) error
 	}
-	ItemApplicationEntryOnValidate_Entry_no interface {
-		OnValidate_Entry_no(rec *ItemApplicationEntry) error
-	}
-	ItemApplicationEntryOnValidate_Item_ledger_entry_no interface {
-		OnValidate_Item_ledger_entry_no(rec *ItemApplicationEntry) error
-	}
-	ItemApplicationEntryOnValidate_Applied_to_entry_no interface {
-		OnValidate_Applied_to_entry_no(rec *ItemApplicationEntry) error
-	}
-	ItemApplicationEntryOnValidate_Applied_from_entry_no interface {
-		OnValidate_Applied_from_entry_no(rec *ItemApplicationEntry) error
-	}
-	ItemApplicationEntryOnValidate_New_entry_no interface {
-		OnValidate_New_entry_no(rec *ItemApplicationEntry) error
-	}
-	ItemApplicationEntryOnValidate_Fixed_applied_to_entry_no interface {
-		OnValidate_Fixed_applied_to_entry_no(rec *ItemApplicationEntry) error
-	}
-	ItemApplicationEntryOnValidate_Fixed_application interface {
-		OnValidate_Fixed_application(rec *ItemApplicationEntry) error
-	}
-	ItemApplicationEntryOnValidate_Creation_date interface {
-		OnValidate_Creation_date(rec *ItemApplicationEntry) error
-	}
-	ItemApplicationEntryOnValidate_Valid interface {
-		OnValidate_Valid(rec *ItemApplicationEntry) error
-	}
-	ItemApplicationEntryOnValidate_Valuated interface {
-		OnValidate_Valuated(rec *ItemApplicationEntry) error
-	}
-	ItemApplicationEntryOnValidate_Quantity interface {
-		OnValidate_Quantity(rec *ItemApplicationEntry) error
-	}
-	ItemApplicationEntryOnValidate_Reserved_quantity interface {
-		OnValidate_Reserved_quantity(rec *ItemApplicationEntry) error
-	}
-	ItemApplicationEntryOnValidate_Remaining_quantity interface {
-		OnValidate_Remaining_quantity(rec *ItemApplicationEntry) error
-	}
-	ItemApplicationEntryOnValidate_Open interface {
-		OnValidate_Open(rec *ItemApplicationEntry) error
-	}
-	ItemApplicationEntryOnValidate_Positive interface {
-		OnValidate_Positive(rec *ItemApplicationEntry) error
-	}
-	ItemApplicationEntryOnValidate_Adjusted_cost interface {
-		OnValidate_Adjusted_cost(rec *ItemApplicationEntry) error
-	}
-	ItemApplicationEntryOnValidate_Cost_is_adjusted interface {
-		OnValidate_Cost_is_adjusted(rec *ItemApplicationEntry) error
-	}
-	ItemApplicationEntryOnValidate_Document_no interface {
-		OnValidate_Document_no(rec *ItemApplicationEntry) error
-	}
-	ItemApplicationEntryOnValidate_Entry_type interface {
-		OnValidate_Entry_type(rec *ItemApplicationEntry) error
-	}
-	ItemApplicationEntryOnValidate_Item_no interface {
-		OnValidate_Item_no(rec *ItemApplicationEntry) error
-	}
-	ItemApplicationEntryOnValidate_Posting_date interface {
-		OnValidate_Posting_date(rec *ItemApplicationEntry) error
-	}
-	ItemApplicationEntryOnValidate_Location_code interface {
-		OnValidate_Location_code(rec *ItemApplicationEntry) error
-	}
-	ItemApplicationEntryOnValidate_Transfered_from_entry_no interface {
-		OnValidate_Transfered_from_entry_no(rec *ItemApplicationEntry) error
-	}
 )
 
 // itemApplicationEntryLogic is the registered business logic of Item_Application_Entry, in
@@ -563,54 +397,9 @@ func itemApplicationEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ItemApplicationEntryOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(ItemApplicationEntryOnBeforeRename)
-	case "OnValidate_Entry_no":
-		_, ok = logic.(ItemApplicationEntryOnValidate_Entry_no)
-	case "OnValidate_Item_ledger_entry_no":
-		_, ok = logic.(ItemApplicationEntryOnValidate_Item_ledger_entry_no)
-	case "OnValidate_Applied_to_entry_no":
-		_, ok = logic.(ItemApplicationEntryOnValidate_Applied_to_entry_no)
-	case "OnValidate_Applied_from_entry_no":
-		_, ok = logic.(ItemApplicationEntryOnValidate_Applied_from_entry_no)
-	case "OnValidate_New_entry_no":
-		_, ok = logic.(ItemApplicationEntryOnValidate_New_entry_no)
-	case "OnValidate_Fixed_applied_to_entry_no":
-		_, ok = logic.(ItemApplicationEntryOnValidate_Fixed_applied_to_entry_no)
-	case "OnValidate_Fixed_application":
-		_, ok = logic.(ItemApplicationEntryOnValidate_Fixed_application)
-	case "OnValidate_Creation_date":
-		_, ok = logic.(ItemApplicationEntryOnValidate_Creation_date)
-	case "OnValidate_Valid":
-		_, ok = logic.(ItemApplicationEntryOnValidate_Valid)
-	case "OnValidate_Valuated":
-		_, ok = logic.(ItemApplicationEntryOnValidate_Valuated)
-	case "OnValidate_Quantity":
-		_, ok = logic.(ItemApplicationEntryOnValidate_Quantity)
-	case "OnValidate_Reserved_quantity":
-		_, ok = logic.(ItemApplicationEntryOnValidate_Reserved_quantity)
-	case "OnValidate_Remaining_quantity":
-		_, ok = logic.(ItemApplicationEntryOnValidate_Remaining_quantity)
-	case "OnValidate_Open":
-		_, ok = logic.(ItemApplicationEntryOnValidate_Open)
-	case "OnValidate_Positive":
-		_, ok = logic.(ItemApplicationEntryOnValidate_Positive)
-	case "OnValidate_Adjusted_cost":
-		_, ok = logic.(ItemApplicationEntryOnValidate_Adjusted_cost)
-	case "OnValidate_Cost_is_adjusted":
-		_, ok = logic.(ItemApplicationEntryOnValidate_Cost_is_adjusted)
-	case "OnValidate_Document_no":
-		_, ok = logic.(ItemApplicationEntryOnValidate_Document_no)
-	case "OnValidate_Entry_type":
-		_, ok = logic.(ItemApplicationEntryOnValidate_Entry_type)
-	case "OnValidate_Item_no":
-		_, ok = logic.(ItemApplicationEntryOnValidate_Item_no)
-	case "OnValidate_Posting_date":
-		_, ok = logic.(ItemApplicationEntryOnValidate_Posting_date)
-	case "OnValidate_Location_code":
-		_, ok = logic.(ItemApplicationEntryOnValidate_Location_code)
-	case "OnValidate_Transfered_from_entry_no":
-		_, ok = logic.(ItemApplicationEntryOnValidate_Transfered_from_entry_no)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return itemApplicationEntryFields.IsOnValidateTrigger(name, logic, (*ItemApplicationEntry)(nil))
 	}
 	return true, ok
 }
@@ -964,30 +753,7 @@ func (t *ItemApplicationEntry) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *ItemApplicationEntry) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["entry_no"] = t.Entry_no
-	t.oldValues["item_ledger_entry_no"] = t.Item_ledger_entry_no
-	t.oldValues["applied_to_entry_no"] = t.Applied_to_entry_no
-	t.oldValues["applied_from_entry_no"] = t.Applied_from_entry_no
-	t.oldValues["new_entry_no"] = t.New_entry_no
-	t.oldValues["fixed_applied_to_entry_no"] = t.Fixed_applied_to_entry_no
-	t.oldValues["fixed_application"] = t.Fixed_application
-	t.oldValues["creation_date"] = t.Creation_date
-	t.oldValues["valid"] = t.Valid
-	t.oldValues["valuated"] = t.Valuated
-	t.oldValues["quantity"] = t.Quantity
-	t.oldValues["reserved_quantity"] = t.Reserved_quantity
-	t.oldValues["remaining_quantity"] = t.Remaining_quantity
-	t.oldValues["open"] = t.Open
-	t.oldValues["positive"] = t.Positive
-	t.oldValues["adjusted_cost"] = t.Adjusted_cost
-	t.oldValues["cost_is_adjusted"] = t.Cost_is_adjusted
-	t.oldValues["document_no"] = t.Document_no
-	t.oldValues["entry_type"] = t.Entry_type
-	t.oldValues["item_no"] = t.Item_no
-	t.oldValues["posting_date"] = t.Posting_date
-	t.oldValues["location_code"] = t.Location_code
-	t.oldValues["transfered_from_entry_no"] = t.Transfered_from_entry_no
+	t.oldValues = itemApplicationEntryFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1002,75 +768,7 @@ func (t *ItemApplicationEntry) OldValue(fieldName string) interface{} {
 func (t *ItemApplicationEntry) XRec() *ItemApplicationEntry {
 	x := &ItemApplicationEntry{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["entry_no"].(int); ok {
-		x.Entry_no = v
-	}
-	if v, ok := t.oldValues["item_ledger_entry_no"].(int); ok {
-		x.Item_ledger_entry_no = v
-	}
-	if v, ok := t.oldValues["applied_to_entry_no"].(int); ok {
-		x.Applied_to_entry_no = v
-	}
-	if v, ok := t.oldValues["applied_from_entry_no"].(int); ok {
-		x.Applied_from_entry_no = v
-	}
-	if v, ok := t.oldValues["new_entry_no"].(int); ok {
-		x.New_entry_no = v
-	}
-	if v, ok := t.oldValues["fixed_applied_to_entry_no"].(int); ok {
-		x.Fixed_applied_to_entry_no = v
-	}
-	if v, ok := t.oldValues["fixed_application"].(bool); ok {
-		x.Fixed_application = v
-	}
-	if v, ok := t.oldValues["creation_date"].(types.Date); ok {
-		x.Creation_date = v
-	}
-	if v, ok := t.oldValues["valid"].(bool); ok {
-		x.Valid = v
-	}
-	if v, ok := t.oldValues["valuated"].(bool); ok {
-		x.Valuated = v
-	}
-	if v, ok := t.oldValues["quantity"].(types.Decimal); ok {
-		x.Quantity = v
-	}
-	if v, ok := t.oldValues["reserved_quantity"].(types.Decimal); ok {
-		x.Reserved_quantity = v
-	}
-	if v, ok := t.oldValues["remaining_quantity"].(types.Decimal); ok {
-		x.Remaining_quantity = v
-	}
-	if v, ok := t.oldValues["open"].(bool); ok {
-		x.Open = v
-	}
-	if v, ok := t.oldValues["positive"].(bool); ok {
-		x.Positive = v
-	}
-	if v, ok := t.oldValues["adjusted_cost"].(types.Decimal); ok {
-		x.Adjusted_cost = v
-	}
-	if v, ok := t.oldValues["cost_is_adjusted"].(bool); ok {
-		x.Cost_is_adjusted = v
-	}
-	if v, ok := t.oldValues["document_no"].(types.Code); ok {
-		x.Document_no = v
-	}
-	if v, ok := t.oldValues["entry_type"].(ItemApplicationEntryEntry_type); ok {
-		x.Entry_type = v
-	}
-	if v, ok := t.oldValues["item_no"].(types.Code); ok {
-		x.Item_no = v
-	}
-	if v, ok := t.oldValues["posting_date"].(types.Date); ok {
-		x.Posting_date = v
-	}
-	if v, ok := t.oldValues["location_code"].(types.Code); ok {
-		x.Location_code = v
-	}
-	if v, ok := t.oldValues["transfered_from_entry_no"].(int); ok {
-		x.Transfered_from_entry_no = v
-	}
+	itemApplicationEntryFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1566,126 +1264,7 @@ func (t *ItemApplicationEntry) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *ItemApplicationEntry) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "item_ledger_entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Item_ledger_entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "applied_to_entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Applied_to_entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "applied_from_entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Applied_from_entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "new_entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.New_entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "fixed_applied_to_entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Fixed_applied_to_entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "fixed_application":
-		if old, ok := oldValue.(bool); ok {
-			return t.Fixed_application != old
-		}
-		return true // Type mismatch, assume changed
-	case "creation_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Creation_date.Equal(old)
-		}
-	case "valid":
-		if old, ok := oldValue.(bool); ok {
-			return t.Valid != old
-		}
-		return true // Type mismatch, assume changed
-	case "valuated":
-		if old, ok := oldValue.(bool); ok {
-			return t.Valuated != old
-		}
-		return true // Type mismatch, assume changed
-	case "quantity":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Quantity.Equal(old)
-		}
-	case "reserved_quantity":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Reserved_quantity.Equal(old)
-		}
-	case "remaining_quantity":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Remaining_quantity.Equal(old)
-		}
-	case "open":
-		if old, ok := oldValue.(bool); ok {
-			return t.Open != old
-		}
-		return true // Type mismatch, assume changed
-	case "positive":
-		if old, ok := oldValue.(bool); ok {
-			return t.Positive != old
-		}
-		return true // Type mismatch, assume changed
-	case "adjusted_cost":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Adjusted_cost.Equal(old)
-		}
-	case "cost_is_adjusted":
-		if old, ok := oldValue.(bool); ok {
-			return t.Cost_is_adjusted != old
-		}
-		return true // Type mismatch, assume changed
-	case "document_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Document_no.Equal(old)
-		}
-	case "entry_type":
-		if old, ok := oldValue.(ItemApplicationEntryEntry_type); ok {
-			return t.Entry_type != old
-		}
-	case "item_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Item_no.Equal(old)
-		}
-	case "posting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Posting_date.Equal(old)
-		}
-	case "location_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Location_code.Equal(old)
-		}
-	case "transfered_from_entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Transfered_from_entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	}
-
-	return false
+	return itemApplicationEntryFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1886,55 +1465,7 @@ func (t *ItemApplicationEntry) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *ItemApplicationEntry) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("entry_no"):
-		return "entry_no", true
-	case strings.ToLower("item_ledger_entry_no"):
-		return "item_ledger_entry_no", true
-	case strings.ToLower("applied_to_entry_no"):
-		return "applied_to_entry_no", true
-	case strings.ToLower("applied_from_entry_no"):
-		return "applied_from_entry_no", true
-	case strings.ToLower("new_entry_no"):
-		return "new_entry_no", true
-	case strings.ToLower("fixed_applied_to_entry_no"):
-		return "fixed_applied_to_entry_no", true
-	case strings.ToLower("fixed_application"):
-		return "fixed_application", true
-	case strings.ToLower("creation_date"):
-		return "creation_date", true
-	case strings.ToLower("valid"):
-		return "valid", true
-	case strings.ToLower("valuated"):
-		return "valuated", true
-	case strings.ToLower("quantity"):
-		return "quantity", true
-	case strings.ToLower("reserved_quantity"):
-		return "reserved_quantity", true
-	case strings.ToLower("remaining_quantity"):
-		return "remaining_quantity", true
-	case strings.ToLower("open"):
-		return "open", true
-	case strings.ToLower("positive"):
-		return "positive", true
-	case strings.ToLower("adjusted_cost"):
-		return "adjusted_cost", true
-	case strings.ToLower("cost_is_adjusted"):
-		return "cost_is_adjusted", true
-	case strings.ToLower("document_no"):
-		return "document_no", true
-	case strings.ToLower("entry_type"):
-		return "entry_type", true
-	case strings.ToLower("item_no"):
-		return "item_no", true
-	case strings.ToLower("posting_date"):
-		return "posting_date", true
-	case strings.ToLower("location_code"):
-		return "location_code", true
-	case strings.ToLower("transfered_from_entry_no"):
-		return "transfered_from_entry_no", true
-	}
-	return "", false
+	return itemApplicationEntryFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2984,586 +2515,20 @@ func (t *ItemApplicationEntry) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *ItemApplicationEntry) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Entry_no = v
-		case float64:
-			t.Entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field entry_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemApplicationEntryOnValidate_Entry_no); ok {
-				if err := trg.OnValidate_Entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "item_ledger_entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Item_ledger_entry_no = v
-		case float64:
-			t.Item_ledger_entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Item_ledger_entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Item_ledger_entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field item_ledger_entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field item_ledger_entry_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemApplicationEntryOnValidate_Item_ledger_entry_no); ok {
-				if err := trg.OnValidate_Item_ledger_entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "applied_to_entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Applied_to_entry_no = v
-		case float64:
-			t.Applied_to_entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Applied_to_entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Applied_to_entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field applied_to_entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field applied_to_entry_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemApplicationEntryOnValidate_Applied_to_entry_no); ok {
-				if err := trg.OnValidate_Applied_to_entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "applied_from_entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Applied_from_entry_no = v
-		case float64:
-			t.Applied_from_entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Applied_from_entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Applied_from_entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field applied_from_entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field applied_from_entry_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemApplicationEntryOnValidate_Applied_from_entry_no); ok {
-				if err := trg.OnValidate_Applied_from_entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "new_entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.New_entry_no = v
-		case float64:
-			t.New_entry_no = int(v)
-		case string:
-			if v == "" {
-				t.New_entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.New_entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field new_entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field new_entry_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemApplicationEntryOnValidate_New_entry_no); ok {
-				if err := trg.OnValidate_New_entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fixed_applied_to_entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Fixed_applied_to_entry_no = v
-		case float64:
-			t.Fixed_applied_to_entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Fixed_applied_to_entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Fixed_applied_to_entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field fixed_applied_to_entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field fixed_applied_to_entry_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemApplicationEntryOnValidate_Fixed_applied_to_entry_no); ok {
-				if err := trg.OnValidate_Fixed_applied_to_entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fixed_application":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Fixed_application = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Fixed_application = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field fixed_application")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemApplicationEntryOnValidate_Fixed_application); ok {
-				if err := trg.OnValidate_Fixed_application(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "creation_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Creation_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Creation_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field creation_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Creation_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field creation_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemApplicationEntryOnValidate_Creation_date); ok {
-				if err := trg.OnValidate_Creation_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "valid":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Valid = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Valid = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field valid")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemApplicationEntryOnValidate_Valid); ok {
-				if err := trg.OnValidate_Valid(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "valuated":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Valuated = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Valuated = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field valuated")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemApplicationEntryOnValidate_Valuated); ok {
-				if err := trg.OnValidate_Valuated(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "quantity":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Quantity, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field quantity: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Quantity = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Quantity = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Quantity = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field quantity (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemApplicationEntryOnValidate_Quantity); ok {
-				if err := trg.OnValidate_Quantity(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reserved_quantity":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Reserved_quantity = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Reserved_quantity, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field reserved_quantity: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Reserved_quantity = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Reserved_quantity = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Reserved_quantity = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field reserved_quantity (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemApplicationEntryOnValidate_Reserved_quantity); ok {
-				if err := trg.OnValidate_Reserved_quantity(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "remaining_quantity":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Remaining_quantity = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Remaining_quantity, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field remaining_quantity: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Remaining_quantity = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Remaining_quantity = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Remaining_quantity = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field remaining_quantity (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemApplicationEntryOnValidate_Remaining_quantity); ok {
-				if err := trg.OnValidate_Remaining_quantity(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "open":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Open = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Open = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field open")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemApplicationEntryOnValidate_Open); ok {
-				if err := trg.OnValidate_Open(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "positive":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Positive = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Positive = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field positive")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemApplicationEntryOnValidate_Positive); ok {
-				if err := trg.OnValidate_Positive(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "adjusted_cost":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Adjusted_cost = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Adjusted_cost, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field adjusted_cost: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Adjusted_cost = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Adjusted_cost = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Adjusted_cost = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field adjusted_cost (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemApplicationEntryOnValidate_Adjusted_cost); ok {
-				if err := trg.OnValidate_Adjusted_cost(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "cost_is_adjusted":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Cost_is_adjusted = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Cost_is_adjusted = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field cost_is_adjusted")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemApplicationEntryOnValidate_Cost_is_adjusted); ok {
-				if err := trg.OnValidate_Cost_is_adjusted(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Document_no = v
-		} else if v, ok := value.(string); ok {
-			t.Document_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field document_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemApplicationEntryOnValidate_Document_no); ok {
-				if err := trg.OnValidate_Document_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "entry_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ItemApplicationEntryEntry_type); ok {
-			t.Entry_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 5 {
-				return fmt.Errorf("invalid option value %d for field entry_type (valid range: 0-%d)", v, 5-1)
-			}
-			t.Entry_type = ItemApplicationEntryEntry_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 5 {
-				return fmt.Errorf("invalid option value %d for field entry_type (valid range: 0-%d)", intVal, 5-1)
-			}
-			t.Entry_type = ItemApplicationEntryEntry_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Entry_type = 0
-			} else {
-				options := []string{"Purchase", "Sale", "Positive Adjmt.", "Negative Adjmt.", "Transfer"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Entry_type = ItemApplicationEntryEntry_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field entry_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field entry_type (expected ItemApplicationEntryEntry_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemApplicationEntryOnValidate_Entry_type); ok {
-				if err := trg.OnValidate_Entry_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "item_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Item_no = v
-		} else if v, ok := value.(string); ok {
-			t.Item_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field item_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "item_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemApplicationEntryOnValidate_Item_no); ok {
-				if err := trg.OnValidate_Item_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "posting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Posting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Posting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field posting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Posting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field posting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemApplicationEntryOnValidate_Posting_date); ok {
-				if err := trg.OnValidate_Posting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "location_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Location_code = v
-		} else if v, ok := value.(string); ok {
-			t.Location_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field location_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "location_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemApplicationEntryOnValidate_Location_code); ok {
-				if err := trg.OnValidate_Location_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "transfered_from_entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Transfered_from_entry_no = v
-		case float64:
-			t.Transfered_from_entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Transfered_from_entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Transfered_from_entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field transfered_from_entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field transfered_from_entry_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemApplicationEntryOnValidate_Transfered_from_entry_no); ok {
-				if err := trg.OnValidate_Transfered_from_entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := itemApplicationEntryFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &itemApplicationEntryFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -3572,197 +2537,18 @@ func (t *ItemApplicationEntry) ValidateField(fieldName string, value interface{}
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *ItemApplicationEntry) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Entry_no, true
-	case 2:
-		return t.Item_ledger_entry_no, true
-	case 3:
-		return t.Applied_to_entry_no, true
-	case 4:
-		return t.Applied_from_entry_no, true
-	case 5:
-		return t.New_entry_no, true
-	case 6:
-		return t.Fixed_applied_to_entry_no, true
-	case 7:
-		return t.Fixed_application, true
-	case 8:
-		return t.Creation_date, true
-	case 9:
-		return t.Valid, true
-	case 10:
-		return t.Valuated, true
-	case 11:
-		return t.Quantity, true
-	case 12:
-		return t.Reserved_quantity, true
-	case 13:
-		return t.Remaining_quantity, true
-	case 14:
-		return t.Open, true
-	case 15:
-		return t.Positive, true
-	case 16:
-		return t.Adjusted_cost, true
-	case 17:
-		return t.Cost_is_adjusted, true
-	case 18:
-		return t.Document_no, true
-	case 19:
-		return t.Entry_type, true
-	case 20:
-		return t.Item_no, true
-	case 21:
-		return t.Posting_date, true
-	case 22:
-		return t.Location_code, true
-	case 23:
-		return t.Transfered_from_entry_no, true
-	}
-	return nil, false
+	return itemApplicationEntryFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *ItemApplicationEntry) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return itemApplicationEntryFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *ItemApplicationEntry) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(int); ok {
-			t.Entry_no = v
-			return true
-		}
-	case 2:
-		if v, ok := value.(int); ok {
-			t.Item_ledger_entry_no = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(int); ok {
-			t.Applied_to_entry_no = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(int); ok {
-			t.Applied_from_entry_no = v
-			return true
-		}
-	case 5:
-		if v, ok := value.(int); ok {
-			t.New_entry_no = v
-			return true
-		}
-	case 6:
-		if v, ok := value.(int); ok {
-			t.Fixed_applied_to_entry_no = v
-			return true
-		}
-	case 7:
-		if v, ok := value.(bool); ok {
-			t.Fixed_application = v
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Date); ok {
-			t.Creation_date = v
-			return true
-		}
-	case 9:
-		if v, ok := value.(bool); ok {
-			t.Valid = v
-			return true
-		}
-	case 10:
-		if v, ok := value.(bool); ok {
-			t.Valuated = v
-			return true
-		}
-	case 11:
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity = v
-			return true
-		}
-	case 12:
-		if v, ok := value.(types.Decimal); ok {
-			t.Reserved_quantity = v
-			return true
-		}
-	case 13:
-		if v, ok := value.(types.Decimal); ok {
-			t.Remaining_quantity = v
-			return true
-		}
-	case 14:
-		if v, ok := value.(bool); ok {
-			t.Open = v
-			return true
-		}
-	case 15:
-		if v, ok := value.(bool); ok {
-			t.Positive = v
-			return true
-		}
-	case 16:
-		if v, ok := value.(types.Decimal); ok {
-			t.Adjusted_cost = v
-			return true
-		}
-	case 17:
-		if v, ok := value.(bool); ok {
-			t.Cost_is_adjusted = v
-			return true
-		}
-	case 18:
-		if v, ok := value.(types.Code); ok {
-			t.Document_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Document_no = types.NewCode(v)
-			return true
-		}
-	case 19:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 5 {
-			t.Entry_type = ItemApplicationEntryEntry_type(i)
-			return true
-		}
-	case 20:
-		if v, ok := value.(types.Code); ok {
-			t.Item_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Item_no = types.NewCode(v)
-			return true
-		}
-	case 21:
-		if v, ok := value.(types.Date); ok {
-			t.Posting_date = v
-			return true
-		}
-	case 22:
-		if v, ok := value.(types.Code); ok {
-			t.Location_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Location_code = types.NewCode(v)
-			return true
-		}
-	case 23:
-		if v, ok := value.(int); ok {
-			t.Transfered_from_entry_no = v
-			return true
-		}
-	}
-	return false
+	return itemApplicationEntryFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -4312,55 +3098,7 @@ func (t *ItemApplicationEntry) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *ItemApplicationEntry) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "entry_no":
-		return t.Entry_no, true
-	case "item_ledger_entry_no":
-		return t.Item_ledger_entry_no, true
-	case "applied_to_entry_no":
-		return t.Applied_to_entry_no, true
-	case "applied_from_entry_no":
-		return t.Applied_from_entry_no, true
-	case "new_entry_no":
-		return t.New_entry_no, true
-	case "fixed_applied_to_entry_no":
-		return t.Fixed_applied_to_entry_no, true
-	case "fixed_application":
-		return t.Fixed_application, true
-	case "creation_date":
-		return t.Creation_date, true
-	case "valid":
-		return t.Valid, true
-	case "valuated":
-		return t.Valuated, true
-	case "quantity":
-		return t.Quantity, true
-	case "reserved_quantity":
-		return t.Reserved_quantity, true
-	case "remaining_quantity":
-		return t.Remaining_quantity, true
-	case "open":
-		return t.Open, true
-	case "positive":
-		return t.Positive, true
-	case "adjusted_cost":
-		return t.Adjusted_cost, true
-	case "cost_is_adjusted":
-		return t.Cost_is_adjusted, true
-	case "document_no":
-		return t.Document_no, true
-	case "entry_type":
-		return int(t.Entry_type), true
-	case "item_no":
-		return t.Item_no, true
-	case "posting_date":
-		return t.Posting_date, true
-	case "location_code":
-		return t.Location_code, true
-	case "transfered_from_entry_no":
-		return t.Transfered_from_entry_no, true
-	}
-	return nil, false
+	return itemApplicationEntryFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -4468,246 +3206,12 @@ func (t *ItemApplicationEntry) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *ItemApplicationEntry) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"entry_no":                  t.Entry_no,
-		"item_ledger_entry_no":      t.Item_ledger_entry_no,
-		"applied_to_entry_no":       t.Applied_to_entry_no,
-		"applied_from_entry_no":     t.Applied_from_entry_no,
-		"new_entry_no":              t.New_entry_no,
-		"fixed_applied_to_entry_no": t.Fixed_applied_to_entry_no,
-		"fixed_application":         t.Fixed_application,
-		"creation_date":             t.Creation_date.String(),
-		"valid":                     t.Valid,
-		"valuated":                  t.Valuated,
-		"quantity":                  t.Quantity.String(),
-		"reserved_quantity":         t.Reserved_quantity.String(),
-		"remaining_quantity":        t.Remaining_quantity.String(),
-		"open":                      t.Open,
-		"positive":                  t.Positive,
-		"adjusted_cost":             t.Adjusted_cost.String(),
-		"cost_is_adjusted":          t.Cost_is_adjusted,
-		"document_no":               t.Document_no.String(),
-		"entry_type":                int(t.Entry_type),
-		"item_no":                   t.Item_no.String(),
-		"posting_date":              t.Posting_date.String(),
-		"location_code":             t.Location_code.String(),
-		"transfered_from_entry_no":  t.Transfered_from_entry_no,
-	}
+	return itemApplicationEntryFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *ItemApplicationEntry) FromMap(data map[string]interface{}) {
-	if v, ok := data["entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Entry_no = int(val)
-		case int:
-			t.Entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Entry_no = n
-			}
-		}
-	}
-	if v, ok := data["item_ledger_entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Item_ledger_entry_no = int(val)
-		case int:
-			t.Item_ledger_entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Item_ledger_entry_no = n
-			}
-		}
-	}
-	if v, ok := data["applied_to_entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Applied_to_entry_no = int(val)
-		case int:
-			t.Applied_to_entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Applied_to_entry_no = n
-			}
-		}
-	}
-	if v, ok := data["applied_from_entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Applied_from_entry_no = int(val)
-		case int:
-			t.Applied_from_entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Applied_from_entry_no = n
-			}
-		}
-	}
-	if v, ok := data["new_entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.New_entry_no = int(val)
-		case int:
-			t.New_entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.New_entry_no = n
-			}
-		}
-	}
-	if v, ok := data["fixed_applied_to_entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Fixed_applied_to_entry_no = int(val)
-		case int:
-			t.Fixed_applied_to_entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Fixed_applied_to_entry_no = n
-			}
-		}
-	}
-	if v, ok := data["fixed_application"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Fixed_application = b
-		}
-	}
-	if v, ok := data["creation_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Creation_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["valid"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Valid = b
-		}
-	}
-	if v, ok := data["valuated"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Valuated = b
-		}
-	}
-	if v, ok := data["quantity"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Quantity, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Quantity = types.NewDecimal(val)
-		case int:
-			t.Quantity = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Quantity = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["reserved_quantity"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Reserved_quantity, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Reserved_quantity = types.NewDecimal(val)
-		case int:
-			t.Reserved_quantity = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Reserved_quantity = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["remaining_quantity"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Remaining_quantity, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Remaining_quantity = types.NewDecimal(val)
-		case int:
-			t.Remaining_quantity = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Remaining_quantity = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["open"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Open = b
-		}
-	}
-	if v, ok := data["positive"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Positive = b
-		}
-	}
-	if v, ok := data["adjusted_cost"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Adjusted_cost, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Adjusted_cost = types.NewDecimal(val)
-		case int:
-			t.Adjusted_cost = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Adjusted_cost = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["cost_is_adjusted"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Cost_is_adjusted = b
-		}
-	}
-	if v, ok := data["document_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Document_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["entry_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Entry_type = ItemApplicationEntryEntry_type(int(val))
-		case int:
-			t.Entry_type = ItemApplicationEntryEntry_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Purchase", "Sale", "Positive Adjmt.", "Negative Adjmt.", "Transfer"}
-			for i, opt := range options {
-				if opt == val {
-					t.Entry_type = ItemApplicationEntryEntry_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["item_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Item_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["posting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Posting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["location_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Location_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["transfered_from_entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Transfered_from_entry_no = int(val)
-		case int:
-			t.Transfered_from_entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Transfered_from_entry_no = n
-			}
-		}
-	}
+	itemApplicationEntryFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -4728,242 +3232,397 @@ func (t *ItemApplicationEntry) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *ItemApplicationEntry) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "item_ledger_entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "applied_to_entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "applied_from_entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "new_entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "fixed_applied_to_entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "fixed_application",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "creation_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "valid",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "valuated",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            11,
-			Name:          "quantity",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            12,
-			Name:          "reserved_quantity",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            13,
-			Name:          "remaining_quantity",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         14,
-			Name:       "open",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         15,
-			Name:       "positive",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            16,
-			Name:          "adjusted_cost",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         17,
-			Name:       "cost_is_adjusted",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         18,
-			Name:       "document_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         19,
-			Name:       "entry_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         20,
-			Name:       "item_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         21,
-			Name:       "posting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         22,
-			Name:       "location_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         23,
-			Name:       "transfered_from_entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return itemApplicationEntryFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in itemApplicationEntryFields.Fields
+func (t *ItemApplicationEntry) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Entry_no
+	case 1:
+		return &t.Item_ledger_entry_no
+	case 2:
+		return &t.Applied_to_entry_no
+	case 3:
+		return &t.Applied_from_entry_no
+	case 4:
+		return &t.New_entry_no
+	case 5:
+		return &t.Fixed_applied_to_entry_no
+	case 6:
+		return &t.Fixed_application
+	case 7:
+		return &t.Creation_date
+	case 8:
+		return &t.Valid
+	case 9:
+		return &t.Valuated
+	case 10:
+		return &t.Quantity
+	case 11:
+		return &t.Reserved_quantity
+	case 12:
+		return &t.Remaining_quantity
+	case 13:
+		return &t.Open
+	case 14:
+		return &t.Positive
+	case 15:
+		return &t.Adjusted_cost
+	case 16:
+		return &t.Cost_is_adjusted
+	case 17:
+		return &t.Document_no
+	case 18:
+		return &t.Entry_type
+	case 19:
+		return &t.Item_no
+	case 20:
+		return &t.Posting_date
+	case 21:
+		return &t.Location_code
+	case 22:
+		return &t.Transfered_from_entry_no
 	}
+	return nil
+}
+
+// itemApplicationEntryFields describes the fields of Item_Application_Entry for the record functions
+// written once in foundation/tables
+var itemApplicationEntryFields = &tables.TableFields{
+	Table: ItemApplicationEntryTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Entry_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "item_ledger_entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Item_ledger_entry_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "applied_to_entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Applied_to_entry_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "applied_from_entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Applied_from_entry_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "new_entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_New_entry_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "fixed_applied_to_entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Fixed_applied_to_entry_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "fixed_application",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Fixed_application",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "creation_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Creation_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "valid",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Valid",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "valuated",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Valuated",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            11,
+				Name:          "quantity",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Quantity",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            12,
+				Name:          "reserved_quantity",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Reserved_quantity",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            13,
+				Name:          "remaining_quantity",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Remaining_quantity",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "open",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Open",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         15,
+				Name:       "positive",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Positive",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            16,
+				Name:          "adjusted_cost",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Adjusted_cost",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         17,
+				Name:       "cost_is_adjusted",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Cost_is_adjusted",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         18,
+				Name:       "document_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Document_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         19,
+				Name:       "entry_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Entry_type",
+			Options: []string{"Purchase", "Sale", "Positive Adjmt.", "Negative Adjmt.", "Transfer"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         20,
+				Name:       "item_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Item_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         21,
+				Name:       "posting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Posting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         22,
+				Name:       "location_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Location_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         23,
+				Name:       "transfered_from_entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Transfered_from_entry_no",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

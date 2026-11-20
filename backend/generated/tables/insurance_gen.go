@@ -38,7 +38,6 @@ import (
 	"fmt"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -191,100 +190,12 @@ var Insurance_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *Insurance) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "no":
-		return 1
-	case "effective_date":
-		return 2
-	case "policy_no":
-		return 4
-	case "annual_premium":
-		return 6
-	case "policy_coverage":
-		return 7
-	case "total_value_insured":
-		return 10
-	case "comment":
-		return 11
-	case "insurance_type":
-		return 12
-	case "last_date_modified":
-		return 13
-	case "insurance_vendor_no":
-		return 14
-	case "fa_class_code":
-		return 15
-	case "fa_subclass_code":
-		return 16
-	case "fa_location_code":
-		return 17
-	case "dimension_1_code":
-		return 18
-	case "dimension_2_code":
-		return 19
-	case "location_code":
-		return 20
-	case "blocked":
-		return 32
-	case "description":
-		return 33
-	case "search_description":
-		return 34
-	case "no_series":
-		return 36
-	case "date_filter":
-		return 35
-	}
-	return 0
+	return insuranceFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *Insurance) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "no"
-	case 2:
-		return "effective_date"
-	case 4:
-		return "policy_no"
-	case 6:
-		return "annual_premium"
-	case 7:
-		return "policy_coverage"
-	case 10:
-		return "total_value_insured"
-	case 11:
-		return "comment"
-	case 12:
-		return "insurance_type"
-	case 13:
-		return "last_date_modified"
-	case 14:
-		return "insurance_vendor_no"
-	case 15:
-		return "fa_class_code"
-	case 16:
-		return "fa_subclass_code"
-	case 17:
-		return "fa_location_code"
-	case 18:
-		return "dimension_1_code"
-	case 19:
-		return "dimension_2_code"
-	case 20:
-		return "location_code"
-	case 32:
-		return "blocked"
-	case 33:
-		return "description"
-	case 34:
-		return "search_description"
-	case 36:
-		return "no_series"
-	case 35:
-		return "date_filter"
-	}
-	return ""
+	return insuranceFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -388,24 +299,6 @@ type (
 	InsuranceOnBeforeRename interface {
 		OnBeforeRename(rec *Insurance, handled *bool) error
 	}
-	InsuranceOnValidate_No                  interface{ OnValidate_No(rec *Insurance) error }
-	InsuranceOnValidate_Effective_date      interface{ OnValidate_Effective_date(rec *Insurance) error }
-	InsuranceOnValidate_Policy_no           interface{ OnValidate_Policy_no(rec *Insurance) error }
-	InsuranceOnValidate_Annual_premium      interface{ OnValidate_Annual_premium(rec *Insurance) error }
-	InsuranceOnValidate_Policy_coverage     interface{ OnValidate_Policy_coverage(rec *Insurance) error }
-	InsuranceOnValidate_Insurance_type      interface{ OnValidate_Insurance_type(rec *Insurance) error }
-	InsuranceOnValidate_Last_date_modified  interface{ OnValidate_Last_date_modified(rec *Insurance) error }
-	InsuranceOnValidate_Insurance_vendor_no interface{ OnValidate_Insurance_vendor_no(rec *Insurance) error }
-	InsuranceOnValidate_Fa_class_code       interface{ OnValidate_Fa_class_code(rec *Insurance) error }
-	InsuranceOnValidate_Fa_subclass_code    interface{ OnValidate_Fa_subclass_code(rec *Insurance) error }
-	InsuranceOnValidate_Fa_location_code    interface{ OnValidate_Fa_location_code(rec *Insurance) error }
-	InsuranceOnValidate_Dimension_1_code    interface{ OnValidate_Dimension_1_code(rec *Insurance) error }
-	InsuranceOnValidate_Dimension_2_code    interface{ OnValidate_Dimension_2_code(rec *Insurance) error }
-	InsuranceOnValidate_Location_code       interface{ OnValidate_Location_code(rec *Insurance) error }
-	InsuranceOnValidate_Blocked             interface{ OnValidate_Blocked(rec *Insurance) error }
-	InsuranceOnValidate_Description         interface{ OnValidate_Description(rec *Insurance) error }
-	InsuranceOnValidate_Search_description  interface{ OnValidate_Search_description(rec *Insurance) error }
-	InsuranceOnValidate_No_series           interface{ OnValidate_No_series(rec *Insurance) error }
 )
 
 // insuranceLogic is the registered business logic of Insurance, in
@@ -448,44 +341,9 @@ func insuranceTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(InsuranceOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(InsuranceOnBeforeRename)
-	case "OnValidate_No":
-		_, ok = logic.(InsuranceOnValidate_No)
-	case "OnValidate_Effective_date":
-		_, ok = logic.(InsuranceOnValidate_Effective_date)
-	case "OnValidate_Policy_no":
-		_, ok = logic.(InsuranceOnValidate_Policy_no)
-	case "OnValidate_Annual_premium":
-		_, ok = logic.(InsuranceOnValidate_Annual_premium)
-	case "OnValidate_Policy_coverage":
-		_, ok = logic.(InsuranceOnValidate_Policy_coverage)
-	case "OnValidate_Insurance_type":
-		_, ok = logic.(InsuranceOnValidate_Insurance_type)
-	case "OnValidate_Last_date_modified":
-		_, ok = logic.(InsuranceOnValidate_Last_date_modified)
-	case "OnValidate_Insurance_vendor_no":
-		_, ok = logic.(InsuranceOnValidate_Insurance_vendor_no)
-	case "OnValidate_Fa_class_code":
-		_, ok = logic.(InsuranceOnValidate_Fa_class_code)
-	case "OnValidate_Fa_subclass_code":
-		_, ok = logic.(InsuranceOnValidate_Fa_subclass_code)
-	case "OnValidate_Fa_location_code":
-		_, ok = logic.(InsuranceOnValidate_Fa_location_code)
-	case "OnValidate_Dimension_1_code":
-		_, ok = logic.(InsuranceOnValidate_Dimension_1_code)
-	case "OnValidate_Dimension_2_code":
-		_, ok = logic.(InsuranceOnValidate_Dimension_2_code)
-	case "OnValidate_Location_code":
-		_, ok = logic.(InsuranceOnValidate_Location_code)
-	case "OnValidate_Blocked":
-		_, ok = logic.(InsuranceOnValidate_Blocked)
-	case "OnValidate_Description":
-		_, ok = logic.(InsuranceOnValidate_Description)
-	case "OnValidate_Search_description":
-		_, ok = logic.(InsuranceOnValidate_Search_description)
-	case "OnValidate_No_series":
-		_, ok = logic.(InsuranceOnValidate_No_series)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return insuranceFields.IsOnValidateTrigger(name, logic, (*Insurance)(nil))
 	}
 	return true, ok
 }
@@ -854,25 +712,7 @@ func (t *Insurance) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *Insurance) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["no"] = t.No
-	t.oldValues["effective_date"] = t.Effective_date
-	t.oldValues["policy_no"] = t.Policy_no
-	t.oldValues["annual_premium"] = t.Annual_premium
-	t.oldValues["policy_coverage"] = t.Policy_coverage
-	t.oldValues["insurance_type"] = t.Insurance_type
-	t.oldValues["last_date_modified"] = t.Last_date_modified
-	t.oldValues["insurance_vendor_no"] = t.Insurance_vendor_no
-	t.oldValues["fa_class_code"] = t.Fa_class_code
-	t.oldValues["fa_subclass_code"] = t.Fa_subclass_code
-	t.oldValues["fa_location_code"] = t.Fa_location_code
-	t.oldValues["dimension_1_code"] = t.Dimension_1_code
-	t.oldValues["dimension_2_code"] = t.Dimension_2_code
-	t.oldValues["location_code"] = t.Location_code
-	t.oldValues["blocked"] = t.Blocked
-	t.oldValues["description"] = t.Description
-	t.oldValues["search_description"] = t.Search_description
-	t.oldValues["no_series"] = t.No_series
+	t.oldValues = insuranceFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -887,60 +727,7 @@ func (t *Insurance) OldValue(fieldName string) interface{} {
 func (t *Insurance) XRec() *Insurance {
 	x := &Insurance{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["no"].(types.Code); ok {
-		x.No = v
-	}
-	if v, ok := t.oldValues["effective_date"].(types.Date); ok {
-		x.Effective_date = v
-	}
-	if v, ok := t.oldValues["policy_no"].(types.Text); ok {
-		x.Policy_no = v
-	}
-	if v, ok := t.oldValues["annual_premium"].(types.Decimal); ok {
-		x.Annual_premium = v
-	}
-	if v, ok := t.oldValues["policy_coverage"].(types.Decimal); ok {
-		x.Policy_coverage = v
-	}
-	if v, ok := t.oldValues["insurance_type"].(types.Code); ok {
-		x.Insurance_type = v
-	}
-	if v, ok := t.oldValues["last_date_modified"].(types.Date); ok {
-		x.Last_date_modified = v
-	}
-	if v, ok := t.oldValues["insurance_vendor_no"].(types.Code); ok {
-		x.Insurance_vendor_no = v
-	}
-	if v, ok := t.oldValues["fa_class_code"].(types.Code); ok {
-		x.Fa_class_code = v
-	}
-	if v, ok := t.oldValues["fa_subclass_code"].(types.Code); ok {
-		x.Fa_subclass_code = v
-	}
-	if v, ok := t.oldValues["fa_location_code"].(types.Code); ok {
-		x.Fa_location_code = v
-	}
-	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
-		x.Dimension_1_code = v
-	}
-	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
-		x.Dimension_2_code = v
-	}
-	if v, ok := t.oldValues["location_code"].(types.Code); ok {
-		x.Location_code = v
-	}
-	if v, ok := t.oldValues["blocked"].(bool); ok {
-		x.Blocked = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["search_description"].(types.Code); ok {
-		x.Search_description = v
-	}
-	if v, ok := t.oldValues["no_series"].(types.Code); ok {
-		x.No_series = v
-	}
+	insuranceFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1393,94 +1180,7 @@ func (t *Insurance) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *Insurance) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No.Equal(old)
-		}
-	case "effective_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Effective_date.Equal(old)
-		}
-	case "policy_no":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Policy_no.Equal(old)
-		}
-	case "annual_premium":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Annual_premium.Equal(old)
-		}
-	case "policy_coverage":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Policy_coverage.Equal(old)
-		}
-	case "insurance_type":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Insurance_type.Equal(old)
-		}
-	case "last_date_modified":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Last_date_modified.Equal(old)
-		}
-	case "insurance_vendor_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Insurance_vendor_no.Equal(old)
-		}
-	case "fa_class_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Fa_class_code.Equal(old)
-		}
-	case "fa_subclass_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Fa_subclass_code.Equal(old)
-		}
-	case "fa_location_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Fa_location_code.Equal(old)
-		}
-	case "dimension_1_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_1_code.Equal(old)
-		}
-	case "dimension_2_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_2_code.Equal(old)
-		}
-	case "location_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Location_code.Equal(old)
-		}
-	case "blocked":
-		if old, ok := oldValue.(bool); ok {
-			return t.Blocked != old
-		}
-		return true // Type mismatch, assume changed
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "search_description":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Search_description.Equal(old)
-		}
-	case "no_series":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No_series.Equal(old)
-		}
-	}
-
-	return false
+	return insuranceFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -2071,45 +1771,7 @@ func (t *Insurance) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *Insurance) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("no"):
-		return "no", true
-	case strings.ToLower("effective_date"):
-		return "effective_date", true
-	case strings.ToLower("policy_no"):
-		return "policy_no", true
-	case strings.ToLower("annual_premium"):
-		return "annual_premium", true
-	case strings.ToLower("policy_coverage"):
-		return "policy_coverage", true
-	case strings.ToLower("insurance_type"):
-		return "insurance_type", true
-	case strings.ToLower("last_date_modified"):
-		return "last_date_modified", true
-	case strings.ToLower("insurance_vendor_no"):
-		return "insurance_vendor_no", true
-	case strings.ToLower("fa_class_code"):
-		return "fa_class_code", true
-	case strings.ToLower("fa_subclass_code"):
-		return "fa_subclass_code", true
-	case strings.ToLower("fa_location_code"):
-		return "fa_location_code", true
-	case strings.ToLower("dimension_1_code"):
-		return "dimension_1_code", true
-	case strings.ToLower("dimension_2_code"):
-		return "dimension_2_code", true
-	case strings.ToLower("location_code"):
-		return "location_code", true
-	case strings.ToLower("blocked"):
-		return "blocked", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("search_description"):
-		return "search_description", true
-	case strings.ToLower("no_series"):
-		return "no_series", true
-	}
-	return "", false
+	return insuranceFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -3156,405 +2818,20 @@ func (t *Insurance) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *Insurance) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-		} else if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsuranceOnValidate_No); ok {
-				if err := trg.OnValidate_No(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "effective_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Effective_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Effective_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field effective_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Effective_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field effective_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsuranceOnValidate_Effective_date); ok {
-				if err := trg.OnValidate_Effective_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "policy_no":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Policy_no = v
-		} else if v, ok := value.(string); ok {
-			t.Policy_no = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field policy_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsuranceOnValidate_Policy_no); ok {
-				if err := trg.OnValidate_Policy_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "annual_premium":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Annual_premium = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Annual_premium, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field annual_premium: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Annual_premium = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Annual_premium = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Annual_premium = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field annual_premium (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsuranceOnValidate_Annual_premium); ok {
-				if err := trg.OnValidate_Annual_premium(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "policy_coverage":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Policy_coverage = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Policy_coverage, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field policy_coverage: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Policy_coverage = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Policy_coverage = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Policy_coverage = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field policy_coverage (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsuranceOnValidate_Policy_coverage); ok {
-				if err := trg.OnValidate_Policy_coverage(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "insurance_type":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Insurance_type = v
-		} else if v, ok := value.(string); ok {
-			t.Insurance_type = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field insurance_type")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "insurance_type"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsuranceOnValidate_Insurance_type); ok {
-				if err := trg.OnValidate_Insurance_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "last_date_modified":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Last_date_modified = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Last_date_modified, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field last_date_modified: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Last_date_modified = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field last_date_modified (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsuranceOnValidate_Last_date_modified); ok {
-				if err := trg.OnValidate_Last_date_modified(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "insurance_vendor_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Insurance_vendor_no = v
-		} else if v, ok := value.(string); ok {
-			t.Insurance_vendor_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field insurance_vendor_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "insurance_vendor_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsuranceOnValidate_Insurance_vendor_no); ok {
-				if err := trg.OnValidate_Insurance_vendor_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_class_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Fa_class_code = v
-		} else if v, ok := value.(string); ok {
-			t.Fa_class_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_class_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fa_class_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsuranceOnValidate_Fa_class_code); ok {
-				if err := trg.OnValidate_Fa_class_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_subclass_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Fa_subclass_code = v
-		} else if v, ok := value.(string); ok {
-			t.Fa_subclass_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_subclass_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fa_subclass_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsuranceOnValidate_Fa_subclass_code); ok {
-				if err := trg.OnValidate_Fa_subclass_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_location_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Fa_location_code = v
-		} else if v, ok := value.(string); ok {
-			t.Fa_location_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_location_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fa_location_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsuranceOnValidate_Fa_location_code); ok {
-				if err := trg.OnValidate_Fa_location_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_1_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_1_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsuranceOnValidate_Dimension_1_code); ok {
-				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_2_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_2_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsuranceOnValidate_Dimension_2_code); ok {
-				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "location_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Location_code = v
-		} else if v, ok := value.(string); ok {
-			t.Location_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field location_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "location_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsuranceOnValidate_Location_code); ok {
-				if err := trg.OnValidate_Location_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "blocked":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Blocked = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Blocked = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field blocked")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsuranceOnValidate_Blocked); ok {
-				if err := trg.OnValidate_Blocked(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsuranceOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "search_description":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Search_description = v
-		} else if v, ok := value.(string); ok {
-			t.Search_description = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field search_description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsuranceOnValidate_Search_description); ok {
-				if err := trg.OnValidate_Search_description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no_series":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No_series = v
-		} else if v, ok := value.(string); ok {
-			t.No_series = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no_series")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "no_series"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(InsuranceOnValidate_No_series); ok {
-				if err := trg.OnValidate_No_series(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := insuranceFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &insuranceFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -3563,206 +2840,18 @@ func (t *Insurance) ValidateField(fieldName string, value interface{}) error {
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *Insurance) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.No, true
-	case 2:
-		return t.Effective_date, true
-	case 4:
-		return t.Policy_no, true
-	case 6:
-		return t.Annual_premium, true
-	case 7:
-		return t.Policy_coverage, true
-	case 12:
-		return t.Insurance_type, true
-	case 13:
-		return t.Last_date_modified, true
-	case 14:
-		return t.Insurance_vendor_no, true
-	case 15:
-		return t.Fa_class_code, true
-	case 16:
-		return t.Fa_subclass_code, true
-	case 17:
-		return t.Fa_location_code, true
-	case 18:
-		return t.Dimension_1_code, true
-	case 19:
-		return t.Dimension_2_code, true
-	case 20:
-		return t.Location_code, true
-	case 32:
-		return t.Blocked, true
-	case 33:
-		return t.Description, true
-	case 34:
-		return t.Search_description, true
-	case 36:
-		return t.No_series, true
-	}
-	return nil, false
+	return insuranceFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *Insurance) flowFieldValue(no int) (any, bool) {
-	switch no {
-	case 10:
-		return t.Total_value_insured, true
-	case 11:
-		return t.Comment, true
-	}
-	return nil, false
+	return insuranceFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *Insurance) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Date); ok {
-			t.Effective_date = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Text); ok {
-			t.Policy_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Policy_no = types.NewText(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Decimal); ok {
-			t.Annual_premium = v
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Decimal); ok {
-			t.Policy_coverage = v
-			return true
-		}
-	case 12:
-		if v, ok := value.(types.Code); ok {
-			t.Insurance_type = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Insurance_type = types.NewCode(v)
-			return true
-		}
-	case 13:
-		if v, ok := value.(types.Date); ok {
-			t.Last_date_modified = v
-			return true
-		}
-	case 14:
-		if v, ok := value.(types.Code); ok {
-			t.Insurance_vendor_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Insurance_vendor_no = types.NewCode(v)
-			return true
-		}
-	case 15:
-		if v, ok := value.(types.Code); ok {
-			t.Fa_class_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Fa_class_code = types.NewCode(v)
-			return true
-		}
-	case 16:
-		if v, ok := value.(types.Code); ok {
-			t.Fa_subclass_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Fa_subclass_code = types.NewCode(v)
-			return true
-		}
-	case 17:
-		if v, ok := value.(types.Code); ok {
-			t.Fa_location_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Fa_location_code = types.NewCode(v)
-			return true
-		}
-	case 18:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-			return true
-		}
-	case 19:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-			return true
-		}
-	case 20:
-		if v, ok := value.(types.Code); ok {
-			t.Location_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Location_code = types.NewCode(v)
-			return true
-		}
-	case 32:
-		if v, ok := value.(bool); ok {
-			t.Blocked = v
-			return true
-		}
-	case 33:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 34:
-		if v, ok := value.(types.Code); ok {
-			t.Search_description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Search_description = types.NewCode(v)
-			return true
-		}
-	case 36:
-		if v, ok := value.(types.Code); ok {
-			t.No_series = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No_series = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return insuranceFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -4243,45 +3332,7 @@ func (t *Insurance) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *Insurance) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "no":
-		return t.No, true
-	case "effective_date":
-		return t.Effective_date, true
-	case "policy_no":
-		return t.Policy_no, true
-	case "annual_premium":
-		return t.Annual_premium, true
-	case "policy_coverage":
-		return t.Policy_coverage, true
-	case "insurance_type":
-		return t.Insurance_type, true
-	case "last_date_modified":
-		return t.Last_date_modified, true
-	case "insurance_vendor_no":
-		return t.Insurance_vendor_no, true
-	case "fa_class_code":
-		return t.Fa_class_code, true
-	case "fa_subclass_code":
-		return t.Fa_subclass_code, true
-	case "fa_location_code":
-		return t.Fa_location_code, true
-	case "dimension_1_code":
-		return t.Dimension_1_code, true
-	case "dimension_2_code":
-		return t.Dimension_2_code, true
-	case "location_code":
-		return t.Location_code, true
-	case "blocked":
-		return t.Blocked, true
-	case "description":
-		return t.Description, true
-	case "search_description":
-		return t.Search_description, true
-	case "no_series":
-		return t.No_series, true
-	}
-	return nil, false
+	return insuranceFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -4384,138 +3435,12 @@ func (t *Insurance) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *Insurance) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"no":              t.No.String(),
-		"effective_date":  t.Effective_date.String(),
-		"policy_no":       t.Policy_no.String(),
-		"annual_premium":  t.Annual_premium.String(),
-		"policy_coverage": t.Policy_coverage.String(),
-		// FlowField: total_value_insured
-		"total_value_insured": t.Total_value_insured.String(),
-		// FlowField: comment
-		"comment":             t.Comment,
-		"insurance_type":      t.Insurance_type.String(),
-		"last_date_modified":  t.Last_date_modified.String(),
-		"insurance_vendor_no": t.Insurance_vendor_no.String(),
-		"fa_class_code":       t.Fa_class_code.String(),
-		"fa_subclass_code":    t.Fa_subclass_code.String(),
-		"fa_location_code":    t.Fa_location_code.String(),
-		"dimension_1_code":    t.Dimension_1_code.String(),
-		"dimension_2_code":    t.Dimension_2_code.String(),
-		"location_code":       t.Location_code.String(),
-		"blocked":             t.Blocked,
-		"description":         t.Description.String(),
-		"search_description":  t.Search_description.String(),
-		"no_series":           t.No_series.String(),
-	}
+	return insuranceFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *Insurance) FromMap(data map[string]interface{}) {
-	if v, ok := data["no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No = types.NewCode(s)
-		}
-	}
-	if v, ok := data["effective_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Effective_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["policy_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Policy_no = types.NewText(s)
-		}
-	}
-	if v, ok := data["annual_premium"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Annual_premium, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Annual_premium = types.NewDecimal(val)
-		case int:
-			t.Annual_premium = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Annual_premium = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["policy_coverage"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Policy_coverage, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Policy_coverage = types.NewDecimal(val)
-		case int:
-			t.Policy_coverage = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Policy_coverage = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["insurance_type"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Insurance_type = types.NewCode(s)
-		}
-	}
-	if v, ok := data["last_date_modified"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Last_date_modified, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["insurance_vendor_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Insurance_vendor_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["fa_class_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fa_class_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["fa_subclass_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fa_subclass_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["fa_location_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fa_location_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["dimension_1_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_1_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["dimension_2_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_2_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["location_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Location_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["blocked"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Blocked = b
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["search_description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Search_description = types.NewCode(s)
-		}
-	}
-	if v, ok := data["no_series"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No_series = types.NewCode(s)
-		}
-	}
+	insuranceFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -4536,213 +3461,359 @@ func (t *Insurance) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *Insurance) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "effective_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "policy_no",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            6,
-			Name:          "annual_premium",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            7,
-			Name:          "policy_coverage",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            10,
-			Name:          "total_value_insured",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         11,
-			Name:       "comment",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  true,
-		},
-		{
-			No:         12,
-			Name:       "insurance_type",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         13,
-			Name:       "last_date_modified",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         14,
-			Name:       "insurance_vendor_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         15,
-			Name:       "fa_class_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         16,
-			Name:       "fa_subclass_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         17,
-			Name:       "fa_location_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         18,
-			Name:       "dimension_1_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         19,
-			Name:       "dimension_2_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         20,
-			Name:       "location_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         32,
-			Name:       "blocked",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         33,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         34,
-			Name:       "search_description",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         36,
-			Name:       "no_series",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
+	return insuranceFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in insuranceFields.Fields
+func (t *Insurance) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.No
+	case 1:
+		return &t.Effective_date
+	case 2:
+		return &t.Policy_no
+	case 3:
+		return &t.Annual_premium
+	case 4:
+		return &t.Policy_coverage
+	case 5:
+		return &t.Total_value_insured
+	case 6:
+		return &t.Comment
+	case 7:
+		return &t.Insurance_type
+	case 8:
+		return &t.Last_date_modified
+	case 9:
+		return &t.Insurance_vendor_no
+	case 10:
+		return &t.Fa_class_code
+	case 11:
+		return &t.Fa_subclass_code
+	case 12:
+		return &t.Fa_location_code
+	case 13:
+		return &t.Dimension_1_code
+	case 14:
+		return &t.Dimension_2_code
+	case 15:
+		return &t.Location_code
+	case 16:
+		return &t.Blocked
+	case 17:
+		return &t.Description
+	case 18:
+		return &t.Search_description
+	case 19:
+		return &t.No_series
 	}
+	return nil
+}
+
+// insuranceFields describes the fields of Insurance for the record functions
+// written once in foundation/tables
+var insuranceFields = &tables.TableFields{
+	Table: InsuranceTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_No",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "effective_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Effective_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "policy_no",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Policy_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            6,
+				Name:          "annual_premium",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Annual_premium",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            7,
+				Name:          "policy_coverage",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Policy_coverage",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            10,
+				Name:          "total_value_insured",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Total_value_insured",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "comment",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  true,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Comment",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "insurance_type",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Insurance_type",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "last_date_modified",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Last_date_modified",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "insurance_vendor_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Insurance_vendor_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         15,
+				Name:       "fa_class_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Fa_class_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         16,
+				Name:       "fa_subclass_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Fa_subclass_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         17,
+				Name:       "fa_location_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Fa_location_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         18,
+				Name:       "dimension_1_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_1_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         19,
+				Name:       "dimension_2_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_2_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         20,
+				Name:       "location_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Location_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         32,
+				Name:       "blocked",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Blocked",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         33,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         34,
+				Name:       "search_description",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Search_description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         36,
+				Name:       "no_series",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_No_series",
+			Relation: true,
+		},
+	},
+	FlowFilters: []tables.FieldInfo{
+		{No: 35, Name: "date_filter"},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

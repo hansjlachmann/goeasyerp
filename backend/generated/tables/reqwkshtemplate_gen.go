@@ -126,36 +126,12 @@ var ReqWkshTemplate_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *ReqWkshTemplate) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "name":
-		return 1
-	case "description":
-		return 2
-	case "page_id":
-		return 6
-	case "recurring":
-		return 12
-	case "page_name":
-		return 16
-	}
-	return 0
+	return reqWkshTemplateFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *ReqWkshTemplate) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "name"
-	case 2:
-		return "description"
-	case 6:
-		return "page_id"
-	case 12:
-		return "recurring"
-	case 16:
-		return "page_name"
-	}
-	return ""
+	return reqWkshTemplateFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -267,18 +243,6 @@ type (
 	ReqWkshTemplateOnBeforeRename interface {
 		OnBeforeRename(rec *ReqWkshTemplate, handled *bool) error
 	}
-	ReqWkshTemplateOnValidate_Name interface {
-		OnValidate_Name(rec *ReqWkshTemplate) error
-	}
-	ReqWkshTemplateOnValidate_Description interface {
-		OnValidate_Description(rec *ReqWkshTemplate) error
-	}
-	ReqWkshTemplateOnValidate_Page_id interface {
-		OnValidate_Page_id(rec *ReqWkshTemplate) error
-	}
-	ReqWkshTemplateOnValidate_Recurring interface {
-		OnValidate_Recurring(rec *ReqWkshTemplate) error
-	}
 )
 
 // reqWkshTemplateLogic is the registered business logic of Req_Wksh_Template, in
@@ -321,16 +285,9 @@ func reqWkshTemplateTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ReqWkshTemplateOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(ReqWkshTemplateOnBeforeRename)
-	case "OnValidate_Name":
-		_, ok = logic.(ReqWkshTemplateOnValidate_Name)
-	case "OnValidate_Description":
-		_, ok = logic.(ReqWkshTemplateOnValidate_Description)
-	case "OnValidate_Page_id":
-		_, ok = logic.(ReqWkshTemplateOnValidate_Page_id)
-	case "OnValidate_Recurring":
-		_, ok = logic.(ReqWkshTemplateOnValidate_Recurring)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return reqWkshTemplateFields.IsOnValidateTrigger(name, logic, (*ReqWkshTemplate)(nil))
 	}
 	return true, ok
 }
@@ -624,11 +581,7 @@ func (t *ReqWkshTemplate) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *ReqWkshTemplate) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["name"] = t.Name
-	t.oldValues["description"] = t.Description
-	t.oldValues["page_id"] = t.Page_id
-	t.oldValues["recurring"] = t.Recurring
+	t.oldValues = reqWkshTemplateFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -643,18 +596,7 @@ func (t *ReqWkshTemplate) OldValue(fieldName string) interface{} {
 func (t *ReqWkshTemplate) XRec() *ReqWkshTemplate {
 	x := &ReqWkshTemplate{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["name"].(types.Code); ok {
-		x.Name = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["page_id"].(int); ok {
-		x.Page_id = v
-	}
-	if v, ok := t.oldValues["recurring"].(bool); ok {
-		x.Recurring = v
-	}
+	reqWkshTemplateFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -953,39 +895,7 @@ func (t *ReqWkshTemplate) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *ReqWkshTemplate) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Name.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "page_id":
-		if old, ok := oldValue.(int); ok {
-			return t.Page_id != old
-		}
-		return true // Type mismatch, assume changed
-	case "recurring":
-		if old, ok := oldValue.(bool); ok {
-			return t.Recurring != old
-		}
-		return true // Type mismatch, assume changed
-	}
-
-	return false
+	return reqWkshTemplateFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1304,17 +1214,7 @@ func (t *ReqWkshTemplate) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *ReqWkshTemplate) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("name"):
-		return "name", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("page_id"):
-		return "page_id", true
-	case strings.ToLower("recurring"):
-		return "recurring", true
-	}
-	return "", false
+	return reqWkshTemplateFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2144,98 +2044,20 @@ func (t *ReqWkshTemplate) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *ReqWkshTemplate) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Name = v
-		} else if v, ok := value.(string); ok {
-			t.Name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReqWkshTemplateOnValidate_Name); ok {
-				if err := trg.OnValidate_Name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReqWkshTemplateOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "page_id":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Page_id = v
-		case float64:
-			t.Page_id = int(v)
-		case string:
-			if v == "" {
-				t.Page_id = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Page_id = i
-			} else {
-				return fmt.Errorf("invalid integer value for field page_id: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field page_id")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "page_id"); err != nil {
+	i, err := reqWkshTemplateFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
+	}
+	f := &reqWkshTemplateFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
 			return err
 		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReqWkshTemplateOnValidate_Page_id); ok {
-				if err := trg.OnValidate_Page_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "recurring":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Recurring = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Recurring = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field recurring")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReqWkshTemplateOnValidate_Recurring); ok {
-				if err := trg.OnValidate_Recurring(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2244,62 +2066,18 @@ func (t *ReqWkshTemplate) ValidateField(fieldName string, value interface{}) err
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *ReqWkshTemplate) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Name, true
-	case 2:
-		return t.Description, true
-	case 6:
-		return t.Page_id, true
-	case 12:
-		return t.Recurring, true
-	}
-	return nil, false
+	return reqWkshTemplateFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *ReqWkshTemplate) flowFieldValue(no int) (any, bool) {
-	switch no {
-	case 16:
-		return t.Page_name, true
-	}
-	return nil, false
+	return reqWkshTemplateFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *ReqWkshTemplate) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Name = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(int); ok {
-			t.Page_id = v
-			return true
-		}
-	case 12:
-		if v, ok := value.(bool); ok {
-			t.Recurring = v
-			return true
-		}
-	}
-	return false
+	return reqWkshTemplateFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2769,17 +2547,7 @@ func (t *ReqWkshTemplate) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *ReqWkshTemplate) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "name":
-		return t.Name, true
-	case "description":
-		return t.Description, true
-	case "page_id":
-		return t.Page_id, true
-	case "recurring":
-		return t.Recurring, true
-	}
-	return nil, false
+	return reqWkshTemplateFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2868,46 +2636,12 @@ func (t *ReqWkshTemplate) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *ReqWkshTemplate) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"name":        t.Name.String(),
-		"description": t.Description.String(),
-		"page_id":     t.Page_id,
-		"recurring":   t.Recurring,
-		// FlowField: page_name
-		"page_name": t.Page_name,
-	}
+	return reqWkshTemplateFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *ReqWkshTemplate) FromMap(data map[string]interface{}) {
-	if v, ok := data["name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["page_id"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Page_id = int(val)
-		case int:
-			t.Page_id = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Page_id = n
-			}
-		}
-	}
-	if v, ok := data["recurring"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Recurring = b
-		}
-	}
+	reqWkshTemplateFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2928,58 +2662,103 @@ func (t *ReqWkshTemplate) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *ReqWkshTemplate) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     80,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "page_id",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "recurring",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         16,
-			Name:       "page_name",
-			Type:       tables.FieldTypeText,
-			Length:     80,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  true,
-		},
+	return reqWkshTemplateFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in reqWkshTemplateFields.Fields
+func (t *ReqWkshTemplate) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Name
+	case 1:
+		return &t.Description
+	case 2:
+		return &t.Page_id
+	case 3:
+		return &t.Recurring
+	case 4:
+		return &t.Page_name
 	}
+	return nil
+}
+
+// reqWkshTemplateFields describes the fields of Req_Wksh_Template for the record functions
+// written once in foundation/tables
+var reqWkshTemplateFields = &tables.TableFields{
+	Table: ReqWkshTemplateTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     80,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "page_id",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindInt,
+			Trigger:  "OnValidate_Page_id",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "recurring",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Recurring",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         16,
+				Name:       "page_name",
+				Type:       tables.FieldTypeText,
+				Length:     80,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  true,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Page_name",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

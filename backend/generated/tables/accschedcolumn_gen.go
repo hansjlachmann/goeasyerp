@@ -320,72 +320,12 @@ var AccSchedColumn_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *AccSchedColumn) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "column_layout_name":
-		return 1
-	case "line_no":
-		return 2
-	case "column_no":
-		return 3
-	case "column_header":
-		return 4
-	case "column_type":
-		return 5
-	case "ledger_entry_type":
-		return 6
-	case "amount_type":
-		return 7
-	case "formula":
-		return 8
-	case "comparison_period_formula":
-		return 9
-	case "show_opposite_sign":
-		return 10
-	case "show":
-		return 11
-	case "rounding_factor":
-		return 12
-	case "dimension_1_filter":
-		return 900
-	case "dimension_2_filter":
-		return 901
-	}
-	return 0
+	return accSchedColumnFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *AccSchedColumn) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "column_layout_name"
-	case 2:
-		return "line_no"
-	case 3:
-		return "column_no"
-	case 4:
-		return "column_header"
-	case 5:
-		return "column_type"
-	case 6:
-		return "ledger_entry_type"
-	case 7:
-		return "amount_type"
-	case 8:
-		return "formula"
-	case 9:
-		return "comparison_period_formula"
-	case 10:
-		return "show_opposite_sign"
-	case 11:
-		return "show"
-	case 12:
-		return "rounding_factor"
-	case 900:
-		return "dimension_1_filter"
-	case 901:
-		return "dimension_2_filter"
-	}
-	return ""
+	return accSchedColumnFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -497,48 +437,6 @@ type (
 	AccSchedColumnOnBeforeRename interface {
 		OnBeforeRename(rec *AccSchedColumn, handled *bool) error
 	}
-	AccSchedColumnOnValidate_Column_layout_name interface {
-		OnValidate_Column_layout_name(rec *AccSchedColumn) error
-	}
-	AccSchedColumnOnValidate_Line_no interface {
-		OnValidate_Line_no(rec *AccSchedColumn) error
-	}
-	AccSchedColumnOnValidate_Column_no interface {
-		OnValidate_Column_no(rec *AccSchedColumn) error
-	}
-	AccSchedColumnOnValidate_Column_header interface {
-		OnValidate_Column_header(rec *AccSchedColumn) error
-	}
-	AccSchedColumnOnValidate_Column_type interface {
-		OnValidate_Column_type(rec *AccSchedColumn) error
-	}
-	AccSchedColumnOnValidate_Ledger_entry_type interface {
-		OnValidate_Ledger_entry_type(rec *AccSchedColumn) error
-	}
-	AccSchedColumnOnValidate_Amount_type interface {
-		OnValidate_Amount_type(rec *AccSchedColumn) error
-	}
-	AccSchedColumnOnValidate_Formula interface {
-		OnValidate_Formula(rec *AccSchedColumn) error
-	}
-	AccSchedColumnOnValidate_Comparison_period_formula interface {
-		OnValidate_Comparison_period_formula(rec *AccSchedColumn) error
-	}
-	AccSchedColumnOnValidate_Show_opposite_sign interface {
-		OnValidate_Show_opposite_sign(rec *AccSchedColumn) error
-	}
-	AccSchedColumnOnValidate_Show interface {
-		OnValidate_Show(rec *AccSchedColumn) error
-	}
-	AccSchedColumnOnValidate_Rounding_factor interface {
-		OnValidate_Rounding_factor(rec *AccSchedColumn) error
-	}
-	AccSchedColumnOnValidate_Dimension_1_filter interface {
-		OnValidate_Dimension_1_filter(rec *AccSchedColumn) error
-	}
-	AccSchedColumnOnValidate_Dimension_2_filter interface {
-		OnValidate_Dimension_2_filter(rec *AccSchedColumn) error
-	}
 )
 
 // accSchedColumnLogic is the registered business logic of Acc_Sched_Column, in
@@ -581,36 +479,9 @@ func accSchedColumnTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(AccSchedColumnOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(AccSchedColumnOnBeforeRename)
-	case "OnValidate_Column_layout_name":
-		_, ok = logic.(AccSchedColumnOnValidate_Column_layout_name)
-	case "OnValidate_Line_no":
-		_, ok = logic.(AccSchedColumnOnValidate_Line_no)
-	case "OnValidate_Column_no":
-		_, ok = logic.(AccSchedColumnOnValidate_Column_no)
-	case "OnValidate_Column_header":
-		_, ok = logic.(AccSchedColumnOnValidate_Column_header)
-	case "OnValidate_Column_type":
-		_, ok = logic.(AccSchedColumnOnValidate_Column_type)
-	case "OnValidate_Ledger_entry_type":
-		_, ok = logic.(AccSchedColumnOnValidate_Ledger_entry_type)
-	case "OnValidate_Amount_type":
-		_, ok = logic.(AccSchedColumnOnValidate_Amount_type)
-	case "OnValidate_Formula":
-		_, ok = logic.(AccSchedColumnOnValidate_Formula)
-	case "OnValidate_Comparison_period_formula":
-		_, ok = logic.(AccSchedColumnOnValidate_Comparison_period_formula)
-	case "OnValidate_Show_opposite_sign":
-		_, ok = logic.(AccSchedColumnOnValidate_Show_opposite_sign)
-	case "OnValidate_Show":
-		_, ok = logic.(AccSchedColumnOnValidate_Show)
-	case "OnValidate_Rounding_factor":
-		_, ok = logic.(AccSchedColumnOnValidate_Rounding_factor)
-	case "OnValidate_Dimension_1_filter":
-		_, ok = logic.(AccSchedColumnOnValidate_Dimension_1_filter)
-	case "OnValidate_Dimension_2_filter":
-		_, ok = logic.(AccSchedColumnOnValidate_Dimension_2_filter)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return accSchedColumnFields.IsOnValidateTrigger(name, logic, (*AccSchedColumn)(nil))
 	}
 	return true, ok
 }
@@ -949,21 +820,7 @@ func (t *AccSchedColumn) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *AccSchedColumn) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["column_layout_name"] = t.Column_layout_name
-	t.oldValues["line_no"] = t.Line_no
-	t.oldValues["column_no"] = t.Column_no
-	t.oldValues["column_header"] = t.Column_header
-	t.oldValues["column_type"] = t.Column_type
-	t.oldValues["ledger_entry_type"] = t.Ledger_entry_type
-	t.oldValues["amount_type"] = t.Amount_type
-	t.oldValues["formula"] = t.Formula
-	t.oldValues["comparison_period_formula"] = t.Comparison_period_formula
-	t.oldValues["show_opposite_sign"] = t.Show_opposite_sign
-	t.oldValues["show"] = t.Show
-	t.oldValues["rounding_factor"] = t.Rounding_factor
-	t.oldValues["dimension_1_filter"] = t.Dimension_1_filter
-	t.oldValues["dimension_2_filter"] = t.Dimension_2_filter
+	t.oldValues = accSchedColumnFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -978,48 +835,7 @@ func (t *AccSchedColumn) OldValue(fieldName string) interface{} {
 func (t *AccSchedColumn) XRec() *AccSchedColumn {
 	x := &AccSchedColumn{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["column_layout_name"].(types.Code); ok {
-		x.Column_layout_name = v
-	}
-	if v, ok := t.oldValues["line_no"].(int); ok {
-		x.Line_no = v
-	}
-	if v, ok := t.oldValues["column_no"].(types.Code); ok {
-		x.Column_no = v
-	}
-	if v, ok := t.oldValues["column_header"].(types.Text); ok {
-		x.Column_header = v
-	}
-	if v, ok := t.oldValues["column_type"].(AccSchedColumnColumn_type); ok {
-		x.Column_type = v
-	}
-	if v, ok := t.oldValues["ledger_entry_type"].(AccSchedColumnLedger_entry_type); ok {
-		x.Ledger_entry_type = v
-	}
-	if v, ok := t.oldValues["amount_type"].(AccSchedColumnAmount_type); ok {
-		x.Amount_type = v
-	}
-	if v, ok := t.oldValues["formula"].(types.Code); ok {
-		x.Formula = v
-	}
-	if v, ok := t.oldValues["comparison_period_formula"].(types.Code); ok {
-		x.Comparison_period_formula = v
-	}
-	if v, ok := t.oldValues["show_opposite_sign"].(bool); ok {
-		x.Show_opposite_sign = v
-	}
-	if v, ok := t.oldValues["show"].(AccSchedColumnShow); ok {
-		x.Show = v
-	}
-	if v, ok := t.oldValues["rounding_factor"].(AccSchedColumnRounding_factor); ok {
-		x.Rounding_factor = v
-	}
-	if v, ok := t.oldValues["dimension_1_filter"].(types.Text); ok {
-		x.Dimension_1_filter = v
-	}
-	if v, ok := t.oldValues["dimension_2_filter"].(types.Text); ok {
-		x.Dimension_2_filter = v
-	}
+	accSchedColumnFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1422,79 +1238,7 @@ func (t *AccSchedColumn) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *AccSchedColumn) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "column_layout_name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Column_layout_name.Equal(old)
-		}
-	case "line_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Line_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "column_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Column_no.Equal(old)
-		}
-	case "column_header":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Column_header.Equal(old)
-		}
-	case "column_type":
-		if old, ok := oldValue.(AccSchedColumnColumn_type); ok {
-			return t.Column_type != old
-		}
-	case "ledger_entry_type":
-		if old, ok := oldValue.(AccSchedColumnLedger_entry_type); ok {
-			return t.Ledger_entry_type != old
-		}
-	case "amount_type":
-		if old, ok := oldValue.(AccSchedColumnAmount_type); ok {
-			return t.Amount_type != old
-		}
-	case "formula":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Formula.Equal(old)
-		}
-	case "comparison_period_formula":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Comparison_period_formula.Equal(old)
-		}
-	case "show_opposite_sign":
-		if old, ok := oldValue.(bool); ok {
-			return t.Show_opposite_sign != old
-		}
-		return true // Type mismatch, assume changed
-	case "show":
-		if old, ok := oldValue.(AccSchedColumnShow); ok {
-			return t.Show != old
-		}
-	case "rounding_factor":
-		if old, ok := oldValue.(AccSchedColumnRounding_factor); ok {
-			return t.Rounding_factor != old
-		}
-	case "dimension_1_filter":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Dimension_1_filter.Equal(old)
-		}
-	case "dimension_2_filter":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Dimension_2_filter.Equal(old)
-		}
-	}
-
-	return false
+	return accSchedColumnFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1696,37 +1440,7 @@ func (t *AccSchedColumn) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *AccSchedColumn) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("column_layout_name"):
-		return "column_layout_name", true
-	case strings.ToLower("line_no"):
-		return "line_no", true
-	case strings.ToLower("column_no"):
-		return "column_no", true
-	case strings.ToLower("column_header"):
-		return "column_header", true
-	case strings.ToLower("column_type"):
-		return "column_type", true
-	case strings.ToLower("ledger_entry_type"):
-		return "ledger_entry_type", true
-	case strings.ToLower("amount_type"):
-		return "amount_type", true
-	case strings.ToLower("formula"):
-		return "formula", true
-	case strings.ToLower("comparison_period_formula"):
-		return "comparison_period_formula", true
-	case strings.ToLower("show_opposite_sign"):
-		return "show_opposite_sign", true
-	case strings.ToLower("show"):
-		return "show", true
-	case strings.ToLower("rounding_factor"):
-		return "rounding_factor", true
-	case strings.ToLower("dimension_1_filter"):
-		return "dimension_1_filter", true
-	case strings.ToLower("dimension_2_filter"):
-		return "dimension_2_filter", true
-	}
-	return "", false
+	return accSchedColumnFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2685,441 +2399,20 @@ func (t *AccSchedColumn) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *AccSchedColumn) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "column_layout_name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Column_layout_name = v
-		} else if v, ok := value.(string); ok {
-			t.Column_layout_name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field column_layout_name")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "column_layout_name"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccSchedColumnOnValidate_Column_layout_name); ok {
-				if err := trg.OnValidate_Column_layout_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "line_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Line_no = v
-		case float64:
-			t.Line_no = int(v)
-		case string:
-			if v == "" {
-				t.Line_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Line_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field line_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field line_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccSchedColumnOnValidate_Line_no); ok {
-				if err := trg.OnValidate_Line_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "column_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Column_no = v
-		} else if v, ok := value.(string); ok {
-			t.Column_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field column_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccSchedColumnOnValidate_Column_no); ok {
-				if err := trg.OnValidate_Column_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "column_header":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Column_header = v
-		} else if v, ok := value.(string); ok {
-			t.Column_header = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field column_header")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccSchedColumnOnValidate_Column_header); ok {
-				if err := trg.OnValidate_Column_header(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "column_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(AccSchedColumnColumn_type); ok {
-			t.Column_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 7 {
-				return fmt.Errorf("invalid option value %d for field column_type (valid range: 0-%d)", v, 7-1)
-			}
-			t.Column_type = AccSchedColumnColumn_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 7 {
-				return fmt.Errorf("invalid option value %d for field column_type (valid range: 0-%d)", intVal, 7-1)
-			}
-			t.Column_type = AccSchedColumnColumn_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Column_type = 0
-			} else {
-				options := []string{"Formula", "Net Change", "Balance at Date", "Beginning Balance", "Year to Date", "Rest of Fiscal Year", "Entire Fiscal Year"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Column_type = AccSchedColumnColumn_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field column_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field column_type (expected AccSchedColumnColumn_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccSchedColumnOnValidate_Column_type); ok {
-				if err := trg.OnValidate_Column_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "ledger_entry_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(AccSchedColumnLedger_entry_type); ok {
-			t.Ledger_entry_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 2 {
-				return fmt.Errorf("invalid option value %d for field ledger_entry_type (valid range: 0-%d)", v, 2-1)
-			}
-			t.Ledger_entry_type = AccSchedColumnLedger_entry_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 2 {
-				return fmt.Errorf("invalid option value %d for field ledger_entry_type (valid range: 0-%d)", intVal, 2-1)
-			}
-			t.Ledger_entry_type = AccSchedColumnLedger_entry_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Ledger_entry_type = 0
-			} else {
-				options := []string{"G/L Entries", "G/L Budget Entries"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Ledger_entry_type = AccSchedColumnLedger_entry_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field ledger_entry_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field ledger_entry_type (expected AccSchedColumnLedger_entry_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccSchedColumnOnValidate_Ledger_entry_type); ok {
-				if err := trg.OnValidate_Ledger_entry_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "amount_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(AccSchedColumnAmount_type); ok {
-			t.Amount_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field amount_type (valid range: 0-%d)", v, 3-1)
-			}
-			t.Amount_type = AccSchedColumnAmount_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field amount_type (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Amount_type = AccSchedColumnAmount_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Amount_type = 0
-			} else {
-				options := []string{"Net Amount", "Debit Amount", "Credit Amount"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Amount_type = AccSchedColumnAmount_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field amount_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field amount_type (expected AccSchedColumnAmount_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccSchedColumnOnValidate_Amount_type); ok {
-				if err := trg.OnValidate_Amount_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "formula":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Formula = v
-		} else if v, ok := value.(string); ok {
-			t.Formula = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field formula")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccSchedColumnOnValidate_Formula); ok {
-				if err := trg.OnValidate_Formula(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "comparison_period_formula":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Comparison_period_formula = v
-		} else if v, ok := value.(string); ok {
-			t.Comparison_period_formula = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field comparison_period_formula")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccSchedColumnOnValidate_Comparison_period_formula); ok {
-				if err := trg.OnValidate_Comparison_period_formula(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "show_opposite_sign":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Show_opposite_sign = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Show_opposite_sign = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field show_opposite_sign")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccSchedColumnOnValidate_Show_opposite_sign); ok {
-				if err := trg.OnValidate_Show_opposite_sign(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "show":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(AccSchedColumnShow); ok {
-			t.Show = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field show (valid range: 0-%d)", v, 4-1)
-			}
-			t.Show = AccSchedColumnShow(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field show (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Show = AccSchedColumnShow(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Show = 0
-			} else {
-				options := []string{"Always", "Never", "When Positive", "When Negative"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Show = AccSchedColumnShow(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field show (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field show (expected AccSchedColumnShow, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccSchedColumnOnValidate_Show); ok {
-				if err := trg.OnValidate_Show(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "rounding_factor":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(AccSchedColumnRounding_factor); ok {
-			t.Rounding_factor = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field rounding_factor (valid range: 0-%d)", v, 4-1)
-			}
-			t.Rounding_factor = AccSchedColumnRounding_factor(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field rounding_factor (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Rounding_factor = AccSchedColumnRounding_factor(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Rounding_factor = 0
-			} else {
-				options := []string{"None", "1", "1000", "1000000"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Rounding_factor = AccSchedColumnRounding_factor(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field rounding_factor (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field rounding_factor (expected AccSchedColumnRounding_factor, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccSchedColumnOnValidate_Rounding_factor); ok {
-				if err := trg.OnValidate_Rounding_factor(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_1_filter":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Dimension_1_filter = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_1_filter = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_1_filter")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_filter"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccSchedColumnOnValidate_Dimension_1_filter); ok {
-				if err := trg.OnValidate_Dimension_1_filter(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_2_filter":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Dimension_2_filter = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_2_filter = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_2_filter")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_filter"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccSchedColumnOnValidate_Dimension_2_filter); ok {
-				if err := trg.OnValidate_Dimension_2_filter(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := accSchedColumnFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &accSchedColumnFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -3128,150 +2421,18 @@ func (t *AccSchedColumn) ValidateField(fieldName string, value interface{}) erro
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *AccSchedColumn) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Column_layout_name, true
-	case 2:
-		return t.Line_no, true
-	case 3:
-		return t.Column_no, true
-	case 4:
-		return t.Column_header, true
-	case 5:
-		return t.Column_type, true
-	case 6:
-		return t.Ledger_entry_type, true
-	case 7:
-		return t.Amount_type, true
-	case 8:
-		return t.Formula, true
-	case 9:
-		return t.Comparison_period_formula, true
-	case 10:
-		return t.Show_opposite_sign, true
-	case 11:
-		return t.Show, true
-	case 12:
-		return t.Rounding_factor, true
-	case 900:
-		return t.Dimension_1_filter, true
-	case 901:
-		return t.Dimension_2_filter, true
-	}
-	return nil, false
+	return accSchedColumnFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *AccSchedColumn) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return accSchedColumnFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *AccSchedColumn) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Column_layout_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Column_layout_name = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(int); ok {
-			t.Line_no = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Code); ok {
-			t.Column_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Column_no = types.NewCode(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Text); ok {
-			t.Column_header = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Column_header = types.NewText(v)
-			return true
-		}
-	case 5:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 7 {
-			t.Column_type = AccSchedColumnColumn_type(i)
-			return true
-		}
-	case 6:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 2 {
-			t.Ledger_entry_type = AccSchedColumnLedger_entry_type(i)
-			return true
-		}
-	case 7:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Amount_type = AccSchedColumnAmount_type(i)
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Code); ok {
-			t.Formula = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Formula = types.NewCode(v)
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.Code); ok {
-			t.Comparison_period_formula = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Comparison_period_formula = types.NewCode(v)
-			return true
-		}
-	case 10:
-		if v, ok := value.(bool); ok {
-			t.Show_opposite_sign = v
-			return true
-		}
-	case 11:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Show = AccSchedColumnShow(i)
-			return true
-		}
-	case 12:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Rounding_factor = AccSchedColumnRounding_factor(i)
-			return true
-		}
-	case 900:
-		if v, ok := value.(types.Text); ok {
-			t.Dimension_1_filter = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_1_filter = types.NewText(v)
-			return true
-		}
-	case 901:
-		if v, ok := value.(types.Text); ok {
-			t.Dimension_2_filter = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_2_filter = types.NewText(v)
-			return true
-		}
-	}
-	return false
+	return accSchedColumnFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3742,37 +2903,7 @@ func (t *AccSchedColumn) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *AccSchedColumn) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "column_layout_name":
-		return t.Column_layout_name, true
-	case "line_no":
-		return t.Line_no, true
-	case "column_no":
-		return t.Column_no, true
-	case "column_header":
-		return t.Column_header, true
-	case "column_type":
-		return int(t.Column_type), true
-	case "ledger_entry_type":
-		return int(t.Ledger_entry_type), true
-	case "amount_type":
-		return int(t.Amount_type), true
-	case "formula":
-		return t.Formula, true
-	case "comparison_period_formula":
-		return t.Comparison_period_formula, true
-	case "show_opposite_sign":
-		return t.Show_opposite_sign, true
-	case "show":
-		return int(t.Show), true
-	case "rounding_factor":
-		return int(t.Rounding_factor), true
-	case "dimension_1_filter":
-		return t.Dimension_1_filter, true
-	case "dimension_2_filter":
-		return t.Dimension_2_filter, true
-	}
-	return nil, false
+	return accSchedColumnFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3874,164 +3005,12 @@ func (t *AccSchedColumn) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *AccSchedColumn) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"column_layout_name":        t.Column_layout_name.String(),
-		"line_no":                   t.Line_no,
-		"column_no":                 t.Column_no.String(),
-		"column_header":             t.Column_header.String(),
-		"column_type":               int(t.Column_type),
-		"ledger_entry_type":         int(t.Ledger_entry_type),
-		"amount_type":               int(t.Amount_type),
-		"formula":                   t.Formula.String(),
-		"comparison_period_formula": t.Comparison_period_formula.String(),
-		"show_opposite_sign":        t.Show_opposite_sign,
-		"show":                      int(t.Show),
-		"rounding_factor":           int(t.Rounding_factor),
-		"dimension_1_filter":        t.Dimension_1_filter.String(),
-		"dimension_2_filter":        t.Dimension_2_filter.String(),
-	}
+	return accSchedColumnFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *AccSchedColumn) FromMap(data map[string]interface{}) {
-	if v, ok := data["column_layout_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Column_layout_name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["line_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Line_no = int(val)
-		case int:
-			t.Line_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Line_no = n
-			}
-		}
-	}
-	if v, ok := data["column_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Column_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["column_header"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Column_header = types.NewText(s)
-		}
-	}
-	if v, ok := data["column_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Column_type = AccSchedColumnColumn_type(int(val))
-		case int:
-			t.Column_type = AccSchedColumnColumn_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Formula", "Net Change", "Balance at Date", "Beginning Balance", "Year to Date", "Rest of Fiscal Year", "Entire Fiscal Year"}
-			for i, opt := range options {
-				if opt == val {
-					t.Column_type = AccSchedColumnColumn_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["ledger_entry_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Ledger_entry_type = AccSchedColumnLedger_entry_type(int(val))
-		case int:
-			t.Ledger_entry_type = AccSchedColumnLedger_entry_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"G/L Entries", "G/L Budget Entries"}
-			for i, opt := range options {
-				if opt == val {
-					t.Ledger_entry_type = AccSchedColumnLedger_entry_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["amount_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Amount_type = AccSchedColumnAmount_type(int(val))
-		case int:
-			t.Amount_type = AccSchedColumnAmount_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Net Amount", "Debit Amount", "Credit Amount"}
-			for i, opt := range options {
-				if opt == val {
-					t.Amount_type = AccSchedColumnAmount_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["formula"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Formula = types.NewCode(s)
-		}
-	}
-	if v, ok := data["comparison_period_formula"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Comparison_period_formula = types.NewCode(s)
-		}
-	}
-	if v, ok := data["show_opposite_sign"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Show_opposite_sign = b
-		}
-	}
-	if v, ok := data["show"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Show = AccSchedColumnShow(int(val))
-		case int:
-			t.Show = AccSchedColumnShow(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Always", "Never", "When Positive", "When Negative"}
-			for i, opt := range options {
-				if opt == val {
-					t.Show = AccSchedColumnShow(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["rounding_factor"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Rounding_factor = AccSchedColumnRounding_factor(int(val))
-		case int:
-			t.Rounding_factor = AccSchedColumnRounding_factor(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"None", "1", "1000", "1000000"}
-			for i, opt := range options {
-				if opt == val {
-					t.Rounding_factor = AccSchedColumnRounding_factor(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["dimension_1_filter"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_1_filter = types.NewText(s)
-		}
-	}
-	if v, ok := data["dimension_2_filter"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_2_filter = types.NewText(s)
-		}
-	}
+	accSchedColumnFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -4052,148 +3031,254 @@ func (t *AccSchedColumn) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *AccSchedColumn) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "column_layout_name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "line_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "column_no",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "column_header",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "column_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "ledger_entry_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "amount_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "formula",
-			Type:       tables.FieldTypeCode,
-			Length:     80,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "comparison_period_formula",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "show_opposite_sign",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "show",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "rounding_factor",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         900,
-			Name:       "dimension_1_filter",
-			Type:       tables.FieldTypeText,
-			Length:     80,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         901,
-			Name:       "dimension_2_filter",
-			Type:       tables.FieldTypeText,
-			Length:     80,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return accSchedColumnFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in accSchedColumnFields.Fields
+func (t *AccSchedColumn) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Column_layout_name
+	case 1:
+		return &t.Line_no
+	case 2:
+		return &t.Column_no
+	case 3:
+		return &t.Column_header
+	case 4:
+		return &t.Column_type
+	case 5:
+		return &t.Ledger_entry_type
+	case 6:
+		return &t.Amount_type
+	case 7:
+		return &t.Formula
+	case 8:
+		return &t.Comparison_period_formula
+	case 9:
+		return &t.Show_opposite_sign
+	case 10:
+		return &t.Show
+	case 11:
+		return &t.Rounding_factor
+	case 12:
+		return &t.Dimension_1_filter
+	case 13:
+		return &t.Dimension_2_filter
 	}
+	return nil
+}
+
+// accSchedColumnFields describes the fields of Acc_Sched_Column for the record functions
+// written once in foundation/tables
+var accSchedColumnFields = &tables.TableFields{
+	Table: AccSchedColumnTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "column_layout_name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Column_layout_name",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "line_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Line_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "column_no",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Column_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "column_header",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Column_header",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "column_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Column_type",
+			Options: []string{"Formula", "Net Change", "Balance at Date", "Beginning Balance", "Year to Date", "Rest of Fiscal Year", "Entire Fiscal Year"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "ledger_entry_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Ledger_entry_type",
+			Options: []string{"G/L Entries", "G/L Budget Entries"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "amount_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Amount_type",
+			Options: []string{"Net Amount", "Debit Amount", "Credit Amount"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "formula",
+				Type:       tables.FieldTypeCode,
+				Length:     80,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Formula",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "comparison_period_formula",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Comparison_period_formula",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "show_opposite_sign",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Show_opposite_sign",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "show",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Show",
+			Options: []string{"Always", "Never", "When Positive", "When Negative"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "rounding_factor",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Rounding_factor",
+			Options: []string{"None", "1", "1000", "1000000"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         900,
+				Name:       "dimension_1_filter",
+				Type:       tables.FieldTypeText,
+				Length:     80,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindText,
+			Trigger:  "OnValidate_Dimension_1_filter",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         901,
+				Name:       "dimension_2_filter",
+				Type:       tables.FieldTypeText,
+				Length:     80,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindText,
+			Trigger:  "OnValidate_Dimension_2_filter",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

@@ -51,7 +51,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -267,136 +266,12 @@ var PhysInventoryLedgerEntry_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *PhysInventoryLedgerEntry) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "entry_no":
-		return 1
-	case "item_no":
-		return 2
-	case "posting_date":
-		return 3
-	case "entry_type":
-		return 4
-	case "document_no":
-		return 6
-	case "description":
-		return 7
-	case "location_code":
-		return 8
-	case "inventory_posting_group":
-		return 9
-	case "quantity":
-		return 12
-	case "unit_amount":
-		return 15
-	case "unit_cost":
-		return 16
-	case "amount":
-		return 17
-	case "salespers_purch_code":
-		return 22
-	case "user_id":
-		return 24
-	case "source_code":
-		return 25
-	case "dimension_1_code":
-		return 33
-	case "dimension_2_code":
-		return 34
-	case "journal_batch_name":
-		return 45
-	case "reason_code":
-		return 46
-	case "qty_calculated":
-		return 54
-	case "qty_phys_inventory":
-		return 55
-	case "last_item_ledger_entry_no":
-		return 56
-	case "document_date":
-		return 60
-	case "external_document_no":
-		return 61
-	case "no_series":
-		return 64
-	case "variant_code":
-		return 5402
-	case "unit_of_measure_code":
-		return 5407
-	case "serial_no":
-		return 40
-	case "lot_no":
-		return 5400
-	case "bin_code":
-		return 5403
-	}
-	return 0
+	return physInventoryLedgerEntryFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *PhysInventoryLedgerEntry) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "entry_no"
-	case 2:
-		return "item_no"
-	case 3:
-		return "posting_date"
-	case 4:
-		return "entry_type"
-	case 6:
-		return "document_no"
-	case 7:
-		return "description"
-	case 8:
-		return "location_code"
-	case 9:
-		return "inventory_posting_group"
-	case 12:
-		return "quantity"
-	case 15:
-		return "unit_amount"
-	case 16:
-		return "unit_cost"
-	case 17:
-		return "amount"
-	case 22:
-		return "salespers_purch_code"
-	case 24:
-		return "user_id"
-	case 25:
-		return "source_code"
-	case 33:
-		return "dimension_1_code"
-	case 34:
-		return "dimension_2_code"
-	case 45:
-		return "journal_batch_name"
-	case 46:
-		return "reason_code"
-	case 54:
-		return "qty_calculated"
-	case 55:
-		return "qty_phys_inventory"
-	case 56:
-		return "last_item_ledger_entry_no"
-	case 60:
-		return "document_date"
-	case 61:
-		return "external_document_no"
-	case 64:
-		return "no_series"
-	case 5402:
-		return "variant_code"
-	case 5407:
-		return "unit_of_measure_code"
-	case 40:
-		return "serial_no"
-	case 5400:
-		return "lot_no"
-	case 5403:
-		return "bin_code"
-	}
-	return ""
+	return physInventoryLedgerEntryFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -508,96 +383,6 @@ type (
 	PhysInventoryLedgerEntryOnBeforeRename interface {
 		OnBeforeRename(rec *PhysInventoryLedgerEntry, handled *bool) error
 	}
-	PhysInventoryLedgerEntryOnValidate_Entry_no interface {
-		OnValidate_Entry_no(rec *PhysInventoryLedgerEntry) error
-	}
-	PhysInventoryLedgerEntryOnValidate_Item_no interface {
-		OnValidate_Item_no(rec *PhysInventoryLedgerEntry) error
-	}
-	PhysInventoryLedgerEntryOnValidate_Posting_date interface {
-		OnValidate_Posting_date(rec *PhysInventoryLedgerEntry) error
-	}
-	PhysInventoryLedgerEntryOnValidate_Entry_type interface {
-		OnValidate_Entry_type(rec *PhysInventoryLedgerEntry) error
-	}
-	PhysInventoryLedgerEntryOnValidate_Document_no interface {
-		OnValidate_Document_no(rec *PhysInventoryLedgerEntry) error
-	}
-	PhysInventoryLedgerEntryOnValidate_Description interface {
-		OnValidate_Description(rec *PhysInventoryLedgerEntry) error
-	}
-	PhysInventoryLedgerEntryOnValidate_Location_code interface {
-		OnValidate_Location_code(rec *PhysInventoryLedgerEntry) error
-	}
-	PhysInventoryLedgerEntryOnValidate_Inventory_posting_group interface {
-		OnValidate_Inventory_posting_group(rec *PhysInventoryLedgerEntry) error
-	}
-	PhysInventoryLedgerEntryOnValidate_Quantity interface {
-		OnValidate_Quantity(rec *PhysInventoryLedgerEntry) error
-	}
-	PhysInventoryLedgerEntryOnValidate_Unit_amount interface {
-		OnValidate_Unit_amount(rec *PhysInventoryLedgerEntry) error
-	}
-	PhysInventoryLedgerEntryOnValidate_Unit_cost interface {
-		OnValidate_Unit_cost(rec *PhysInventoryLedgerEntry) error
-	}
-	PhysInventoryLedgerEntryOnValidate_Amount interface {
-		OnValidate_Amount(rec *PhysInventoryLedgerEntry) error
-	}
-	PhysInventoryLedgerEntryOnValidate_Salespers_purch_code interface {
-		OnValidate_Salespers_purch_code(rec *PhysInventoryLedgerEntry) error
-	}
-	PhysInventoryLedgerEntryOnValidate_User_id interface {
-		OnValidate_User_id(rec *PhysInventoryLedgerEntry) error
-	}
-	PhysInventoryLedgerEntryOnValidate_Source_code interface {
-		OnValidate_Source_code(rec *PhysInventoryLedgerEntry) error
-	}
-	PhysInventoryLedgerEntryOnValidate_Dimension_1_code interface {
-		OnValidate_Dimension_1_code(rec *PhysInventoryLedgerEntry) error
-	}
-	PhysInventoryLedgerEntryOnValidate_Dimension_2_code interface {
-		OnValidate_Dimension_2_code(rec *PhysInventoryLedgerEntry) error
-	}
-	PhysInventoryLedgerEntryOnValidate_Journal_batch_name interface {
-		OnValidate_Journal_batch_name(rec *PhysInventoryLedgerEntry) error
-	}
-	PhysInventoryLedgerEntryOnValidate_Reason_code interface {
-		OnValidate_Reason_code(rec *PhysInventoryLedgerEntry) error
-	}
-	PhysInventoryLedgerEntryOnValidate_Qty_calculated interface {
-		OnValidate_Qty_calculated(rec *PhysInventoryLedgerEntry) error
-	}
-	PhysInventoryLedgerEntryOnValidate_Qty_phys_inventory interface {
-		OnValidate_Qty_phys_inventory(rec *PhysInventoryLedgerEntry) error
-	}
-	PhysInventoryLedgerEntryOnValidate_Last_item_ledger_entry_no interface {
-		OnValidate_Last_item_ledger_entry_no(rec *PhysInventoryLedgerEntry) error
-	}
-	PhysInventoryLedgerEntryOnValidate_Document_date interface {
-		OnValidate_Document_date(rec *PhysInventoryLedgerEntry) error
-	}
-	PhysInventoryLedgerEntryOnValidate_External_document_no interface {
-		OnValidate_External_document_no(rec *PhysInventoryLedgerEntry) error
-	}
-	PhysInventoryLedgerEntryOnValidate_No_series interface {
-		OnValidate_No_series(rec *PhysInventoryLedgerEntry) error
-	}
-	PhysInventoryLedgerEntryOnValidate_Variant_code interface {
-		OnValidate_Variant_code(rec *PhysInventoryLedgerEntry) error
-	}
-	PhysInventoryLedgerEntryOnValidate_Unit_of_measure_code interface {
-		OnValidate_Unit_of_measure_code(rec *PhysInventoryLedgerEntry) error
-	}
-	PhysInventoryLedgerEntryOnValidate_Serial_no interface {
-		OnValidate_Serial_no(rec *PhysInventoryLedgerEntry) error
-	}
-	PhysInventoryLedgerEntryOnValidate_Lot_no interface {
-		OnValidate_Lot_no(rec *PhysInventoryLedgerEntry) error
-	}
-	PhysInventoryLedgerEntryOnValidate_Bin_code interface {
-		OnValidate_Bin_code(rec *PhysInventoryLedgerEntry) error
-	}
 )
 
 // physInventoryLedgerEntryLogic is the registered business logic of Phys_Inventory_Ledger_Entry, in
@@ -640,68 +425,9 @@ func physInventoryLedgerEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(PhysInventoryLedgerEntryOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(PhysInventoryLedgerEntryOnBeforeRename)
-	case "OnValidate_Entry_no":
-		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_Entry_no)
-	case "OnValidate_Item_no":
-		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_Item_no)
-	case "OnValidate_Posting_date":
-		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_Posting_date)
-	case "OnValidate_Entry_type":
-		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_Entry_type)
-	case "OnValidate_Document_no":
-		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_Document_no)
-	case "OnValidate_Description":
-		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_Description)
-	case "OnValidate_Location_code":
-		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_Location_code)
-	case "OnValidate_Inventory_posting_group":
-		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_Inventory_posting_group)
-	case "OnValidate_Quantity":
-		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_Quantity)
-	case "OnValidate_Unit_amount":
-		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_Unit_amount)
-	case "OnValidate_Unit_cost":
-		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_Unit_cost)
-	case "OnValidate_Amount":
-		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_Amount)
-	case "OnValidate_Salespers_purch_code":
-		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_Salespers_purch_code)
-	case "OnValidate_User_id":
-		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_User_id)
-	case "OnValidate_Source_code":
-		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_Source_code)
-	case "OnValidate_Dimension_1_code":
-		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_Dimension_1_code)
-	case "OnValidate_Dimension_2_code":
-		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_Dimension_2_code)
-	case "OnValidate_Journal_batch_name":
-		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_Journal_batch_name)
-	case "OnValidate_Reason_code":
-		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_Reason_code)
-	case "OnValidate_Qty_calculated":
-		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_Qty_calculated)
-	case "OnValidate_Qty_phys_inventory":
-		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_Qty_phys_inventory)
-	case "OnValidate_Last_item_ledger_entry_no":
-		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_Last_item_ledger_entry_no)
-	case "OnValidate_Document_date":
-		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_Document_date)
-	case "OnValidate_External_document_no":
-		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_External_document_no)
-	case "OnValidate_No_series":
-		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_No_series)
-	case "OnValidate_Variant_code":
-		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_Variant_code)
-	case "OnValidate_Unit_of_measure_code":
-		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_Unit_of_measure_code)
-	case "OnValidate_Serial_no":
-		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_Serial_no)
-	case "OnValidate_Lot_no":
-		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_Lot_no)
-	case "OnValidate_Bin_code":
-		_, ok = logic.(PhysInventoryLedgerEntryOnValidate_Bin_code)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return physInventoryLedgerEntryFields.IsOnValidateTrigger(name, logic, (*PhysInventoryLedgerEntry)(nil))
 	}
 	return true, ok
 }
@@ -1123,37 +849,7 @@ func (t *PhysInventoryLedgerEntry) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *PhysInventoryLedgerEntry) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["entry_no"] = t.Entry_no
-	t.oldValues["item_no"] = t.Item_no
-	t.oldValues["posting_date"] = t.Posting_date
-	t.oldValues["entry_type"] = t.Entry_type
-	t.oldValues["document_no"] = t.Document_no
-	t.oldValues["description"] = t.Description
-	t.oldValues["location_code"] = t.Location_code
-	t.oldValues["inventory_posting_group"] = t.Inventory_posting_group
-	t.oldValues["quantity"] = t.Quantity
-	t.oldValues["unit_amount"] = t.Unit_amount
-	t.oldValues["unit_cost"] = t.Unit_cost
-	t.oldValues["amount"] = t.Amount
-	t.oldValues["salespers_purch_code"] = t.Salespers_purch_code
-	t.oldValues["user_id"] = t.User_id
-	t.oldValues["source_code"] = t.Source_code
-	t.oldValues["dimension_1_code"] = t.Dimension_1_code
-	t.oldValues["dimension_2_code"] = t.Dimension_2_code
-	t.oldValues["journal_batch_name"] = t.Journal_batch_name
-	t.oldValues["reason_code"] = t.Reason_code
-	t.oldValues["qty_calculated"] = t.Qty_calculated
-	t.oldValues["qty_phys_inventory"] = t.Qty_phys_inventory
-	t.oldValues["last_item_ledger_entry_no"] = t.Last_item_ledger_entry_no
-	t.oldValues["document_date"] = t.Document_date
-	t.oldValues["external_document_no"] = t.External_document_no
-	t.oldValues["no_series"] = t.No_series
-	t.oldValues["variant_code"] = t.Variant_code
-	t.oldValues["unit_of_measure_code"] = t.Unit_of_measure_code
-	t.oldValues["serial_no"] = t.Serial_no
-	t.oldValues["lot_no"] = t.Lot_no
-	t.oldValues["bin_code"] = t.Bin_code
+	t.oldValues = physInventoryLedgerEntryFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1168,96 +864,7 @@ func (t *PhysInventoryLedgerEntry) OldValue(fieldName string) interface{} {
 func (t *PhysInventoryLedgerEntry) XRec() *PhysInventoryLedgerEntry {
 	x := &PhysInventoryLedgerEntry{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["entry_no"].(int); ok {
-		x.Entry_no = v
-	}
-	if v, ok := t.oldValues["item_no"].(types.Code); ok {
-		x.Item_no = v
-	}
-	if v, ok := t.oldValues["posting_date"].(types.Date); ok {
-		x.Posting_date = v
-	}
-	if v, ok := t.oldValues["entry_type"].(PhysInventoryLedgerEntryEntry_type); ok {
-		x.Entry_type = v
-	}
-	if v, ok := t.oldValues["document_no"].(types.Code); ok {
-		x.Document_no = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["location_code"].(types.Code); ok {
-		x.Location_code = v
-	}
-	if v, ok := t.oldValues["inventory_posting_group"].(types.Code); ok {
-		x.Inventory_posting_group = v
-	}
-	if v, ok := t.oldValues["quantity"].(types.Decimal); ok {
-		x.Quantity = v
-	}
-	if v, ok := t.oldValues["unit_amount"].(types.Decimal); ok {
-		x.Unit_amount = v
-	}
-	if v, ok := t.oldValues["unit_cost"].(types.Decimal); ok {
-		x.Unit_cost = v
-	}
-	if v, ok := t.oldValues["amount"].(types.Decimal); ok {
-		x.Amount = v
-	}
-	if v, ok := t.oldValues["salespers_purch_code"].(types.Code); ok {
-		x.Salespers_purch_code = v
-	}
-	if v, ok := t.oldValues["user_id"].(types.Code); ok {
-		x.User_id = v
-	}
-	if v, ok := t.oldValues["source_code"].(types.Code); ok {
-		x.Source_code = v
-	}
-	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
-		x.Dimension_1_code = v
-	}
-	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
-		x.Dimension_2_code = v
-	}
-	if v, ok := t.oldValues["journal_batch_name"].(types.Code); ok {
-		x.Journal_batch_name = v
-	}
-	if v, ok := t.oldValues["reason_code"].(types.Code); ok {
-		x.Reason_code = v
-	}
-	if v, ok := t.oldValues["qty_calculated"].(types.Decimal); ok {
-		x.Qty_calculated = v
-	}
-	if v, ok := t.oldValues["qty_phys_inventory"].(types.Decimal); ok {
-		x.Qty_phys_inventory = v
-	}
-	if v, ok := t.oldValues["last_item_ledger_entry_no"].(int); ok {
-		x.Last_item_ledger_entry_no = v
-	}
-	if v, ok := t.oldValues["document_date"].(types.Date); ok {
-		x.Document_date = v
-	}
-	if v, ok := t.oldValues["external_document_no"].(types.Code); ok {
-		x.External_document_no = v
-	}
-	if v, ok := t.oldValues["no_series"].(types.Code); ok {
-		x.No_series = v
-	}
-	if v, ok := t.oldValues["variant_code"].(types.Code); ok {
-		x.Variant_code = v
-	}
-	if v, ok := t.oldValues["unit_of_measure_code"].(types.Code); ok {
-		x.Unit_of_measure_code = v
-	}
-	if v, ok := t.oldValues["serial_no"].(types.Code); ok {
-		x.Serial_no = v
-	}
-	if v, ok := t.oldValues["lot_no"].(types.Code); ok {
-		x.Lot_no = v
-	}
-	if v, ok := t.oldValues["bin_code"].(types.Code); ok {
-		x.Bin_code = v
-	}
+	physInventoryLedgerEntryFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1830,143 +1437,7 @@ func (t *PhysInventoryLedgerEntry) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *PhysInventoryLedgerEntry) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "item_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Item_no.Equal(old)
-		}
-	case "posting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Posting_date.Equal(old)
-		}
-	case "entry_type":
-		if old, ok := oldValue.(PhysInventoryLedgerEntryEntry_type); ok {
-			return t.Entry_type != old
-		}
-	case "document_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Document_no.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "location_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Location_code.Equal(old)
-		}
-	case "inventory_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Inventory_posting_group.Equal(old)
-		}
-	case "quantity":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Quantity.Equal(old)
-		}
-	case "unit_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Unit_amount.Equal(old)
-		}
-	case "unit_cost":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Unit_cost.Equal(old)
-		}
-	case "amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Amount.Equal(old)
-		}
-	case "salespers_purch_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Salespers_purch_code.Equal(old)
-		}
-	case "user_id":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.User_id.Equal(old)
-		}
-	case "source_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Source_code.Equal(old)
-		}
-	case "dimension_1_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_1_code.Equal(old)
-		}
-	case "dimension_2_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_2_code.Equal(old)
-		}
-	case "journal_batch_name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Journal_batch_name.Equal(old)
-		}
-	case "reason_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Reason_code.Equal(old)
-		}
-	case "qty_calculated":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Qty_calculated.Equal(old)
-		}
-	case "qty_phys_inventory":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Qty_phys_inventory.Equal(old)
-		}
-	case "last_item_ledger_entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Last_item_ledger_entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "document_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Document_date.Equal(old)
-		}
-	case "external_document_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.External_document_no.Equal(old)
-		}
-	case "no_series":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No_series.Equal(old)
-		}
-	case "variant_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Variant_code.Equal(old)
-		}
-	case "unit_of_measure_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Unit_of_measure_code.Equal(old)
-		}
-	case "serial_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Serial_no.Equal(old)
-		}
-	case "lot_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Lot_no.Equal(old)
-		}
-	case "bin_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Bin_code.Equal(old)
-		}
-	}
-
-	return false
+	return physInventoryLedgerEntryFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -2167,69 +1638,7 @@ func (t *PhysInventoryLedgerEntry) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *PhysInventoryLedgerEntry) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("entry_no"):
-		return "entry_no", true
-	case strings.ToLower("item_no"):
-		return "item_no", true
-	case strings.ToLower("posting_date"):
-		return "posting_date", true
-	case strings.ToLower("entry_type"):
-		return "entry_type", true
-	case strings.ToLower("document_no"):
-		return "document_no", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("location_code"):
-		return "location_code", true
-	case strings.ToLower("inventory_posting_group"):
-		return "inventory_posting_group", true
-	case strings.ToLower("quantity"):
-		return "quantity", true
-	case strings.ToLower("unit_amount"):
-		return "unit_amount", true
-	case strings.ToLower("unit_cost"):
-		return "unit_cost", true
-	case strings.ToLower("amount"):
-		return "amount", true
-	case strings.ToLower("salespers_purch_code"):
-		return "salespers_purch_code", true
-	case strings.ToLower("user_id"):
-		return "user_id", true
-	case strings.ToLower("source_code"):
-		return "source_code", true
-	case strings.ToLower("dimension_1_code"):
-		return "dimension_1_code", true
-	case strings.ToLower("dimension_2_code"):
-		return "dimension_2_code", true
-	case strings.ToLower("journal_batch_name"):
-		return "journal_batch_name", true
-	case strings.ToLower("reason_code"):
-		return "reason_code", true
-	case strings.ToLower("qty_calculated"):
-		return "qty_calculated", true
-	case strings.ToLower("qty_phys_inventory"):
-		return "qty_phys_inventory", true
-	case strings.ToLower("last_item_ledger_entry_no"):
-		return "last_item_ledger_entry_no", true
-	case strings.ToLower("document_date"):
-		return "document_date", true
-	case strings.ToLower("external_document_no"):
-		return "external_document_no", true
-	case strings.ToLower("no_series"):
-		return "no_series", true
-	case strings.ToLower("variant_code"):
-		return "variant_code", true
-	case strings.ToLower("unit_of_measure_code"):
-		return "unit_of_measure_code", true
-	case strings.ToLower("serial_no"):
-		return "serial_no", true
-	case strings.ToLower("lot_no"):
-		return "lot_no", true
-	case strings.ToLower("bin_code"):
-		return "bin_code", true
-	}
-	return "", false
+	return physInventoryLedgerEntryFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -3402,721 +2811,20 @@ func (t *PhysInventoryLedgerEntry) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *PhysInventoryLedgerEntry) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Entry_no = v
-		case float64:
-			t.Entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field entry_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_Entry_no); ok {
-				if err := trg.OnValidate_Entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "item_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Item_no = v
-		} else if v, ok := value.(string); ok {
-			t.Item_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field item_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "item_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_Item_no); ok {
-				if err := trg.OnValidate_Item_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "posting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Posting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Posting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field posting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Posting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field posting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_Posting_date); ok {
-				if err := trg.OnValidate_Posting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "entry_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(PhysInventoryLedgerEntryEntry_type); ok {
-			t.Entry_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 5 {
-				return fmt.Errorf("invalid option value %d for field entry_type (valid range: 0-%d)", v, 5-1)
-			}
-			t.Entry_type = PhysInventoryLedgerEntryEntry_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 5 {
-				return fmt.Errorf("invalid option value %d for field entry_type (valid range: 0-%d)", intVal, 5-1)
-			}
-			t.Entry_type = PhysInventoryLedgerEntryEntry_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Entry_type = 0
-			} else {
-				options := []string{"Purchase", "Sale", "Positive Adjmt.", "Negative Adjmt.", "Transfer"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Entry_type = PhysInventoryLedgerEntryEntry_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field entry_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field entry_type (expected PhysInventoryLedgerEntryEntry_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_Entry_type); ok {
-				if err := trg.OnValidate_Entry_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Document_no = v
-		} else if v, ok := value.(string); ok {
-			t.Document_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field document_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_Document_no); ok {
-				if err := trg.OnValidate_Document_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "location_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Location_code = v
-		} else if v, ok := value.(string); ok {
-			t.Location_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field location_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "location_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_Location_code); ok {
-				if err := trg.OnValidate_Location_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "inventory_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Inventory_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Inventory_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field inventory_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "inventory_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_Inventory_posting_group); ok {
-				if err := trg.OnValidate_Inventory_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "quantity":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Quantity, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field quantity: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Quantity = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Quantity = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Quantity = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field quantity (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_Quantity); ok {
-				if err := trg.OnValidate_Quantity(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unit_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Unit_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Unit_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field unit_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Unit_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Unit_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Unit_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field unit_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_Unit_amount); ok {
-				if err := trg.OnValidate_Unit_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unit_cost":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Unit_cost = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Unit_cost, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field unit_cost: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Unit_cost = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Unit_cost = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Unit_cost = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field unit_cost (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_Unit_cost); ok {
-				if err := trg.OnValidate_Unit_cost(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_Amount); ok {
-				if err := trg.OnValidate_Amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "salespers_purch_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Salespers_purch_code = v
-		} else if v, ok := value.(string); ok {
-			t.Salespers_purch_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field salespers_purch_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "salespers_purch_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_Salespers_purch_code); ok {
-				if err := trg.OnValidate_Salespers_purch_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "user_id":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-		} else if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field user_id")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "user_id"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_User_id); ok {
-				if err := trg.OnValidate_User_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "source_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Source_code = v
-		} else if v, ok := value.(string); ok {
-			t.Source_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field source_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "source_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_Source_code); ok {
-				if err := trg.OnValidate_Source_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_1_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_1_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_Dimension_1_code); ok {
-				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_2_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_2_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_Dimension_2_code); ok {
-				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "journal_batch_name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Journal_batch_name = v
-		} else if v, ok := value.(string); ok {
-			t.Journal_batch_name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field journal_batch_name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_Journal_batch_name); ok {
-				if err := trg.OnValidate_Journal_batch_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reason_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Reason_code = v
-		} else if v, ok := value.(string); ok {
-			t.Reason_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field reason_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "reason_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_Reason_code); ok {
-				if err := trg.OnValidate_Reason_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "qty_calculated":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Qty_calculated = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Qty_calculated, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field qty_calculated: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Qty_calculated = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Qty_calculated = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Qty_calculated = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field qty_calculated (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_Qty_calculated); ok {
-				if err := trg.OnValidate_Qty_calculated(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "qty_phys_inventory":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Qty_phys_inventory = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Qty_phys_inventory, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field qty_phys_inventory: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Qty_phys_inventory = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Qty_phys_inventory = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Qty_phys_inventory = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field qty_phys_inventory (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_Qty_phys_inventory); ok {
-				if err := trg.OnValidate_Qty_phys_inventory(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "last_item_ledger_entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Last_item_ledger_entry_no = v
-		case float64:
-			t.Last_item_ledger_entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Last_item_ledger_entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Last_item_ledger_entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field last_item_ledger_entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field last_item_ledger_entry_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_Last_item_ledger_entry_no); ok {
-				if err := trg.OnValidate_Last_item_ledger_entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Document_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Document_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field document_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Document_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field document_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_Document_date); ok {
-				if err := trg.OnValidate_Document_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "external_document_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.External_document_no = v
-		} else if v, ok := value.(string); ok {
-			t.External_document_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field external_document_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_External_document_no); ok {
-				if err := trg.OnValidate_External_document_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no_series":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No_series = v
-		} else if v, ok := value.(string); ok {
-			t.No_series = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no_series")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "no_series"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_No_series); ok {
-				if err := trg.OnValidate_No_series(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "variant_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Variant_code = v
-		} else if v, ok := value.(string); ok {
-			t.Variant_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field variant_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "variant_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_Variant_code); ok {
-				if err := trg.OnValidate_Variant_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unit_of_measure_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Unit_of_measure_code = v
-		} else if v, ok := value.(string); ok {
-			t.Unit_of_measure_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field unit_of_measure_code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_Unit_of_measure_code); ok {
-				if err := trg.OnValidate_Unit_of_measure_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "serial_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Serial_no = v
-		} else if v, ok := value.(string); ok {
-			t.Serial_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field serial_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_Serial_no); ok {
-				if err := trg.OnValidate_Serial_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "lot_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Lot_no = v
-		} else if v, ok := value.(string); ok {
-			t.Lot_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field lot_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_Lot_no); ok {
-				if err := trg.OnValidate_Lot_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bin_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Bin_code = v
-		} else if v, ok := value.(string); ok {
-			t.Bin_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field bin_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "bin_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PhysInventoryLedgerEntryOnValidate_Bin_code); ok {
-				if err := trg.OnValidate_Bin_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := physInventoryLedgerEntryFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &physInventoryLedgerEntryFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -4125,310 +2833,18 @@ func (t *PhysInventoryLedgerEntry) ValidateField(fieldName string, value interfa
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *PhysInventoryLedgerEntry) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Entry_no, true
-	case 2:
-		return t.Item_no, true
-	case 3:
-		return t.Posting_date, true
-	case 4:
-		return t.Entry_type, true
-	case 6:
-		return t.Document_no, true
-	case 7:
-		return t.Description, true
-	case 8:
-		return t.Location_code, true
-	case 9:
-		return t.Inventory_posting_group, true
-	case 12:
-		return t.Quantity, true
-	case 15:
-		return t.Unit_amount, true
-	case 16:
-		return t.Unit_cost, true
-	case 17:
-		return t.Amount, true
-	case 22:
-		return t.Salespers_purch_code, true
-	case 24:
-		return t.User_id, true
-	case 25:
-		return t.Source_code, true
-	case 33:
-		return t.Dimension_1_code, true
-	case 34:
-		return t.Dimension_2_code, true
-	case 45:
-		return t.Journal_batch_name, true
-	case 46:
-		return t.Reason_code, true
-	case 54:
-		return t.Qty_calculated, true
-	case 55:
-		return t.Qty_phys_inventory, true
-	case 56:
-		return t.Last_item_ledger_entry_no, true
-	case 60:
-		return t.Document_date, true
-	case 61:
-		return t.External_document_no, true
-	case 64:
-		return t.No_series, true
-	case 5402:
-		return t.Variant_code, true
-	case 5407:
-		return t.Unit_of_measure_code, true
-	case 40:
-		return t.Serial_no, true
-	case 5400:
-		return t.Lot_no, true
-	case 5403:
-		return t.Bin_code, true
-	}
-	return nil, false
+	return physInventoryLedgerEntryFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *PhysInventoryLedgerEntry) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return physInventoryLedgerEntryFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *PhysInventoryLedgerEntry) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(int); ok {
-			t.Entry_no = v
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Item_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Item_no = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Date); ok {
-			t.Posting_date = v
-			return true
-		}
-	case 4:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 5 {
-			t.Entry_type = PhysInventoryLedgerEntryEntry_type(i)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Code); ok {
-			t.Document_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Document_no = types.NewCode(v)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Code); ok {
-			t.Location_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Location_code = types.NewCode(v)
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.Code); ok {
-			t.Inventory_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Inventory_posting_group = types.NewCode(v)
-			return true
-		}
-	case 12:
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity = v
-			return true
-		}
-	case 15:
-		if v, ok := value.(types.Decimal); ok {
-			t.Unit_amount = v
-			return true
-		}
-	case 16:
-		if v, ok := value.(types.Decimal); ok {
-			t.Unit_cost = v
-			return true
-		}
-	case 17:
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount = v
-			return true
-		}
-	case 22:
-		if v, ok := value.(types.Code); ok {
-			t.Salespers_purch_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Salespers_purch_code = types.NewCode(v)
-			return true
-		}
-	case 24:
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-			return true
-		}
-	case 25:
-		if v, ok := value.(types.Code); ok {
-			t.Source_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Source_code = types.NewCode(v)
-			return true
-		}
-	case 33:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-			return true
-		}
-	case 34:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-			return true
-		}
-	case 45:
-		if v, ok := value.(types.Code); ok {
-			t.Journal_batch_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Journal_batch_name = types.NewCode(v)
-			return true
-		}
-	case 46:
-		if v, ok := value.(types.Code); ok {
-			t.Reason_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Reason_code = types.NewCode(v)
-			return true
-		}
-	case 54:
-		if v, ok := value.(types.Decimal); ok {
-			t.Qty_calculated = v
-			return true
-		}
-	case 55:
-		if v, ok := value.(types.Decimal); ok {
-			t.Qty_phys_inventory = v
-			return true
-		}
-	case 56:
-		if v, ok := value.(int); ok {
-			t.Last_item_ledger_entry_no = v
-			return true
-		}
-	case 60:
-		if v, ok := value.(types.Date); ok {
-			t.Document_date = v
-			return true
-		}
-	case 61:
-		if v, ok := value.(types.Code); ok {
-			t.External_document_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.External_document_no = types.NewCode(v)
-			return true
-		}
-	case 64:
-		if v, ok := value.(types.Code); ok {
-			t.No_series = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No_series = types.NewCode(v)
-			return true
-		}
-	case 5402:
-		if v, ok := value.(types.Code); ok {
-			t.Variant_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Variant_code = types.NewCode(v)
-			return true
-		}
-	case 5407:
-		if v, ok := value.(types.Code); ok {
-			t.Unit_of_measure_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Unit_of_measure_code = types.NewCode(v)
-			return true
-		}
-	case 40:
-		if v, ok := value.(types.Code); ok {
-			t.Serial_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Serial_no = types.NewCode(v)
-			return true
-		}
-	case 5400:
-		if v, ok := value.(types.Code); ok {
-			t.Lot_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Lot_no = types.NewCode(v)
-			return true
-		}
-	case 5403:
-		if v, ok := value.(types.Code); ok {
-			t.Bin_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Bin_code = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return physInventoryLedgerEntryFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -4954,69 +3370,7 @@ func (t *PhysInventoryLedgerEntry) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *PhysInventoryLedgerEntry) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "entry_no":
-		return t.Entry_no, true
-	case "item_no":
-		return t.Item_no, true
-	case "posting_date":
-		return t.Posting_date, true
-	case "entry_type":
-		return int(t.Entry_type), true
-	case "document_no":
-		return t.Document_no, true
-	case "description":
-		return t.Description, true
-	case "location_code":
-		return t.Location_code, true
-	case "inventory_posting_group":
-		return t.Inventory_posting_group, true
-	case "quantity":
-		return t.Quantity, true
-	case "unit_amount":
-		return t.Unit_amount, true
-	case "unit_cost":
-		return t.Unit_cost, true
-	case "amount":
-		return t.Amount, true
-	case "salespers_purch_code":
-		return t.Salespers_purch_code, true
-	case "user_id":
-		return t.User_id, true
-	case "source_code":
-		return t.Source_code, true
-	case "dimension_1_code":
-		return t.Dimension_1_code, true
-	case "dimension_2_code":
-		return t.Dimension_2_code, true
-	case "journal_batch_name":
-		return t.Journal_batch_name, true
-	case "reason_code":
-		return t.Reason_code, true
-	case "qty_calculated":
-		return t.Qty_calculated, true
-	case "qty_phys_inventory":
-		return t.Qty_phys_inventory, true
-	case "last_item_ledger_entry_no":
-		return t.Last_item_ledger_entry_no, true
-	case "document_date":
-		return t.Document_date, true
-	case "external_document_no":
-		return t.External_document_no, true
-	case "no_series":
-		return t.No_series, true
-	case "variant_code":
-		return t.Variant_code, true
-	case "unit_of_measure_code":
-		return t.Unit_of_measure_code, true
-	case "serial_no":
-		return t.Serial_no, true
-	case "lot_no":
-		return t.Lot_no, true
-	case "bin_code":
-		return t.Bin_code, true
-	}
-	return nil, false
+	return physInventoryLedgerEntryFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -5131,262 +3485,12 @@ func (t *PhysInventoryLedgerEntry) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *PhysInventoryLedgerEntry) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"entry_no":                  t.Entry_no,
-		"item_no":                   t.Item_no.String(),
-		"posting_date":              t.Posting_date.String(),
-		"entry_type":                int(t.Entry_type),
-		"document_no":               t.Document_no.String(),
-		"description":               t.Description.String(),
-		"location_code":             t.Location_code.String(),
-		"inventory_posting_group":   t.Inventory_posting_group.String(),
-		"quantity":                  t.Quantity.String(),
-		"unit_amount":               t.Unit_amount.String(),
-		"unit_cost":                 t.Unit_cost.String(),
-		"amount":                    t.Amount.String(),
-		"salespers_purch_code":      t.Salespers_purch_code.String(),
-		"user_id":                   t.User_id.String(),
-		"source_code":               t.Source_code.String(),
-		"dimension_1_code":          t.Dimension_1_code.String(),
-		"dimension_2_code":          t.Dimension_2_code.String(),
-		"journal_batch_name":        t.Journal_batch_name.String(),
-		"reason_code":               t.Reason_code.String(),
-		"qty_calculated":            t.Qty_calculated.String(),
-		"qty_phys_inventory":        t.Qty_phys_inventory.String(),
-		"last_item_ledger_entry_no": t.Last_item_ledger_entry_no,
-		"document_date":             t.Document_date.String(),
-		"external_document_no":      t.External_document_no.String(),
-		"no_series":                 t.No_series.String(),
-		"variant_code":              t.Variant_code.String(),
-		"unit_of_measure_code":      t.Unit_of_measure_code.String(),
-		"serial_no":                 t.Serial_no.String(),
-		"lot_no":                    t.Lot_no.String(),
-		"bin_code":                  t.Bin_code.String(),
-	}
+	return physInventoryLedgerEntryFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *PhysInventoryLedgerEntry) FromMap(data map[string]interface{}) {
-	if v, ok := data["entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Entry_no = int(val)
-		case int:
-			t.Entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Entry_no = n
-			}
-		}
-	}
-	if v, ok := data["item_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Item_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["posting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Posting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["entry_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Entry_type = PhysInventoryLedgerEntryEntry_type(int(val))
-		case int:
-			t.Entry_type = PhysInventoryLedgerEntryEntry_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Purchase", "Sale", "Positive Adjmt.", "Negative Adjmt.", "Transfer"}
-			for i, opt := range options {
-				if opt == val {
-					t.Entry_type = PhysInventoryLedgerEntryEntry_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["document_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Document_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["location_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Location_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["inventory_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Inventory_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["quantity"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Quantity, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Quantity = types.NewDecimal(val)
-		case int:
-			t.Quantity = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Quantity = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["unit_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Unit_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Unit_amount = types.NewDecimal(val)
-		case int:
-			t.Unit_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Unit_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["unit_cost"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Unit_cost, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Unit_cost = types.NewDecimal(val)
-		case int:
-			t.Unit_cost = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Unit_cost = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Amount = types.NewDecimal(val)
-		case int:
-			t.Amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["salespers_purch_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Salespers_purch_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["user_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.User_id = types.NewCode(s)
-		}
-	}
-	if v, ok := data["source_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Source_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["dimension_1_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_1_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["dimension_2_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_2_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["journal_batch_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Journal_batch_name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["reason_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Reason_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["qty_calculated"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Qty_calculated, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Qty_calculated = types.NewDecimal(val)
-		case int:
-			t.Qty_calculated = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Qty_calculated = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["qty_phys_inventory"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Qty_phys_inventory, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Qty_phys_inventory = types.NewDecimal(val)
-		case int:
-			t.Qty_phys_inventory = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Qty_phys_inventory = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["last_item_ledger_entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Last_item_ledger_entry_no = int(val)
-		case int:
-			t.Last_item_ledger_entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Last_item_ledger_entry_no = n
-			}
-		}
-	}
-	if v, ok := data["document_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Document_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["external_document_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.External_document_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["no_series"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No_series = types.NewCode(s)
-		}
-	}
-	if v, ok := data["variant_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Variant_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["unit_of_measure_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Unit_of_measure_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["serial_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Serial_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["lot_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Lot_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["bin_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Bin_code = types.NewCode(s)
-		}
-	}
+	physInventoryLedgerEntryFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -5407,314 +3511,521 @@ func (t *PhysInventoryLedgerEntry) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *PhysInventoryLedgerEntry) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "item_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "posting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "entry_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "document_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "location_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "inventory_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            12,
-			Name:          "quantity",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            15,
-			Name:          "unit_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:5",
-		},
-		{
-			No:            16,
-			Name:          "unit_cost",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:5",
-		},
-		{
-			No:            17,
-			Name:          "amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         22,
-			Name:       "salespers_purch_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         24,
-			Name:       "user_id",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         25,
-			Name:       "source_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         33,
-			Name:       "dimension_1_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         34,
-			Name:       "dimension_2_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         45,
-			Name:       "journal_batch_name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         46,
-			Name:       "reason_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            54,
-			Name:          "qty_calculated",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            55,
-			Name:          "qty_phys_inventory",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         56,
-			Name:       "last_item_ledger_entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         60,
-			Name:       "document_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         61,
-			Name:       "external_document_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         64,
-			Name:       "no_series",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5402,
-			Name:       "variant_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5407,
-			Name:       "unit_of_measure_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         40,
-			Name:       "serial_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5400,
-			Name:       "lot_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5403,
-			Name:       "bin_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return physInventoryLedgerEntryFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in physInventoryLedgerEntryFields.Fields
+func (t *PhysInventoryLedgerEntry) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Entry_no
+	case 1:
+		return &t.Item_no
+	case 2:
+		return &t.Posting_date
+	case 3:
+		return &t.Entry_type
+	case 4:
+		return &t.Document_no
+	case 5:
+		return &t.Description
+	case 6:
+		return &t.Location_code
+	case 7:
+		return &t.Inventory_posting_group
+	case 8:
+		return &t.Quantity
+	case 9:
+		return &t.Unit_amount
+	case 10:
+		return &t.Unit_cost
+	case 11:
+		return &t.Amount
+	case 12:
+		return &t.Salespers_purch_code
+	case 13:
+		return &t.User_id
+	case 14:
+		return &t.Source_code
+	case 15:
+		return &t.Dimension_1_code
+	case 16:
+		return &t.Dimension_2_code
+	case 17:
+		return &t.Journal_batch_name
+	case 18:
+		return &t.Reason_code
+	case 19:
+		return &t.Qty_calculated
+	case 20:
+		return &t.Qty_phys_inventory
+	case 21:
+		return &t.Last_item_ledger_entry_no
+	case 22:
+		return &t.Document_date
+	case 23:
+		return &t.External_document_no
+	case 24:
+		return &t.No_series
+	case 25:
+		return &t.Variant_code
+	case 26:
+		return &t.Unit_of_measure_code
+	case 27:
+		return &t.Serial_no
+	case 28:
+		return &t.Lot_no
+	case 29:
+		return &t.Bin_code
 	}
+	return nil
+}
+
+// physInventoryLedgerEntryFields describes the fields of Phys_Inventory_Ledger_Entry for the record functions
+// written once in foundation/tables
+var physInventoryLedgerEntryFields = &tables.TableFields{
+	Table: PhysInventoryLedgerEntryTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Entry_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "item_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Item_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "posting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Posting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "entry_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Entry_type",
+			Options: []string{"Purchase", "Sale", "Positive Adjmt.", "Negative Adjmt.", "Transfer"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "document_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Document_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "location_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Location_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "inventory_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Inventory_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            12,
+				Name:          "quantity",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Quantity",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            15,
+				Name:          "unit_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Unit_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            16,
+				Name:          "unit_cost",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Unit_cost",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            17,
+				Name:          "amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         22,
+				Name:       "salespers_purch_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Salespers_purch_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         24,
+				Name:       "user_id",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_User_id",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         25,
+				Name:       "source_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Source_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         33,
+				Name:       "dimension_1_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_1_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         34,
+				Name:       "dimension_2_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_2_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         45,
+				Name:       "journal_batch_name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Journal_batch_name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         46,
+				Name:       "reason_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Reason_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            54,
+				Name:          "qty_calculated",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Qty_calculated",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            55,
+				Name:          "qty_phys_inventory",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Qty_phys_inventory",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         56,
+				Name:       "last_item_ledger_entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Last_item_ledger_entry_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         60,
+				Name:       "document_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Document_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         61,
+				Name:       "external_document_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_External_document_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         64,
+				Name:       "no_series",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_No_series",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5402,
+				Name:       "variant_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Variant_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5407,
+				Name:       "unit_of_measure_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Unit_of_measure_code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         40,
+				Name:       "serial_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Serial_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5400,
+				Name:       "lot_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Lot_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5403,
+				Name:       "bin_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Bin_code",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

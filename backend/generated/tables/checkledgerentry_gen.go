@@ -43,7 +43,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -433,104 +432,12 @@ var CheckLedgerEntry_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *CheckLedgerEntry) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "entry_no":
-		return 1
-	case "bank_account_no":
-		return 2
-	case "bank_account_ledger_entry_no":
-		return 3
-	case "posting_date":
-		return 4
-	case "document_type":
-		return 5
-	case "document_no":
-		return 6
-	case "description":
-		return 7
-	case "amount":
-		return 8
-	case "check_date":
-		return 9
-	case "check_no":
-		return 10
-	case "check_type":
-		return 11
-	case "bank_payment_type":
-		return 12
-	case "entry_status":
-		return 13
-	case "original_entry_status":
-		return 14
-	case "bal_account_type":
-		return 15
-	case "bal_account_no":
-		return 16
-	case "open":
-		return 17
-	case "statement_status":
-		return 18
-	case "statement_no":
-		return 19
-	case "statement_line_no":
-		return 20
-	case "user_id":
-		return 21
-	case "external_document_no":
-		return 22
-	}
-	return 0
+	return checkLedgerEntryFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *CheckLedgerEntry) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "entry_no"
-	case 2:
-		return "bank_account_no"
-	case 3:
-		return "bank_account_ledger_entry_no"
-	case 4:
-		return "posting_date"
-	case 5:
-		return "document_type"
-	case 6:
-		return "document_no"
-	case 7:
-		return "description"
-	case 8:
-		return "amount"
-	case 9:
-		return "check_date"
-	case 10:
-		return "check_no"
-	case 11:
-		return "check_type"
-	case 12:
-		return "bank_payment_type"
-	case 13:
-		return "entry_status"
-	case 14:
-		return "original_entry_status"
-	case 15:
-		return "bal_account_type"
-	case 16:
-		return "bal_account_no"
-	case 17:
-		return "open"
-	case 18:
-		return "statement_status"
-	case 19:
-		return "statement_no"
-	case 20:
-		return "statement_line_no"
-	case 21:
-		return "user_id"
-	case 22:
-		return "external_document_no"
-	}
-	return ""
+	return checkLedgerEntryFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -642,72 +549,6 @@ type (
 	CheckLedgerEntryOnBeforeRename interface {
 		OnBeforeRename(rec *CheckLedgerEntry, handled *bool) error
 	}
-	CheckLedgerEntryOnValidate_Entry_no interface {
-		OnValidate_Entry_no(rec *CheckLedgerEntry) error
-	}
-	CheckLedgerEntryOnValidate_Bank_account_no interface {
-		OnValidate_Bank_account_no(rec *CheckLedgerEntry) error
-	}
-	CheckLedgerEntryOnValidate_Bank_account_ledger_entry_no interface {
-		OnValidate_Bank_account_ledger_entry_no(rec *CheckLedgerEntry) error
-	}
-	CheckLedgerEntryOnValidate_Posting_date interface {
-		OnValidate_Posting_date(rec *CheckLedgerEntry) error
-	}
-	CheckLedgerEntryOnValidate_Document_type interface {
-		OnValidate_Document_type(rec *CheckLedgerEntry) error
-	}
-	CheckLedgerEntryOnValidate_Document_no interface {
-		OnValidate_Document_no(rec *CheckLedgerEntry) error
-	}
-	CheckLedgerEntryOnValidate_Description interface {
-		OnValidate_Description(rec *CheckLedgerEntry) error
-	}
-	CheckLedgerEntryOnValidate_Amount interface {
-		OnValidate_Amount(rec *CheckLedgerEntry) error
-	}
-	CheckLedgerEntryOnValidate_Check_date interface {
-		OnValidate_Check_date(rec *CheckLedgerEntry) error
-	}
-	CheckLedgerEntryOnValidate_Check_no interface {
-		OnValidate_Check_no(rec *CheckLedgerEntry) error
-	}
-	CheckLedgerEntryOnValidate_Check_type interface {
-		OnValidate_Check_type(rec *CheckLedgerEntry) error
-	}
-	CheckLedgerEntryOnValidate_Bank_payment_type interface {
-		OnValidate_Bank_payment_type(rec *CheckLedgerEntry) error
-	}
-	CheckLedgerEntryOnValidate_Entry_status interface {
-		OnValidate_Entry_status(rec *CheckLedgerEntry) error
-	}
-	CheckLedgerEntryOnValidate_Original_entry_status interface {
-		OnValidate_Original_entry_status(rec *CheckLedgerEntry) error
-	}
-	CheckLedgerEntryOnValidate_Bal_account_type interface {
-		OnValidate_Bal_account_type(rec *CheckLedgerEntry) error
-	}
-	CheckLedgerEntryOnValidate_Bal_account_no interface {
-		OnValidate_Bal_account_no(rec *CheckLedgerEntry) error
-	}
-	CheckLedgerEntryOnValidate_Open interface {
-		OnValidate_Open(rec *CheckLedgerEntry) error
-	}
-	CheckLedgerEntryOnValidate_Statement_status interface {
-		OnValidate_Statement_status(rec *CheckLedgerEntry) error
-	}
-	CheckLedgerEntryOnValidate_Statement_no interface {
-		OnValidate_Statement_no(rec *CheckLedgerEntry) error
-	}
-	CheckLedgerEntryOnValidate_Statement_line_no interface {
-		OnValidate_Statement_line_no(rec *CheckLedgerEntry) error
-	}
-	CheckLedgerEntryOnValidate_User_id interface {
-		OnValidate_User_id(rec *CheckLedgerEntry) error
-	}
-	CheckLedgerEntryOnValidate_External_document_no interface {
-		OnValidate_External_document_no(rec *CheckLedgerEntry) error
-	}
 )
 
 // checkLedgerEntryLogic is the registered business logic of Check_Ledger_Entry, in
@@ -750,52 +591,9 @@ func checkLedgerEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(CheckLedgerEntryOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(CheckLedgerEntryOnBeforeRename)
-	case "OnValidate_Entry_no":
-		_, ok = logic.(CheckLedgerEntryOnValidate_Entry_no)
-	case "OnValidate_Bank_account_no":
-		_, ok = logic.(CheckLedgerEntryOnValidate_Bank_account_no)
-	case "OnValidate_Bank_account_ledger_entry_no":
-		_, ok = logic.(CheckLedgerEntryOnValidate_Bank_account_ledger_entry_no)
-	case "OnValidate_Posting_date":
-		_, ok = logic.(CheckLedgerEntryOnValidate_Posting_date)
-	case "OnValidate_Document_type":
-		_, ok = logic.(CheckLedgerEntryOnValidate_Document_type)
-	case "OnValidate_Document_no":
-		_, ok = logic.(CheckLedgerEntryOnValidate_Document_no)
-	case "OnValidate_Description":
-		_, ok = logic.(CheckLedgerEntryOnValidate_Description)
-	case "OnValidate_Amount":
-		_, ok = logic.(CheckLedgerEntryOnValidate_Amount)
-	case "OnValidate_Check_date":
-		_, ok = logic.(CheckLedgerEntryOnValidate_Check_date)
-	case "OnValidate_Check_no":
-		_, ok = logic.(CheckLedgerEntryOnValidate_Check_no)
-	case "OnValidate_Check_type":
-		_, ok = logic.(CheckLedgerEntryOnValidate_Check_type)
-	case "OnValidate_Bank_payment_type":
-		_, ok = logic.(CheckLedgerEntryOnValidate_Bank_payment_type)
-	case "OnValidate_Entry_status":
-		_, ok = logic.(CheckLedgerEntryOnValidate_Entry_status)
-	case "OnValidate_Original_entry_status":
-		_, ok = logic.(CheckLedgerEntryOnValidate_Original_entry_status)
-	case "OnValidate_Bal_account_type":
-		_, ok = logic.(CheckLedgerEntryOnValidate_Bal_account_type)
-	case "OnValidate_Bal_account_no":
-		_, ok = logic.(CheckLedgerEntryOnValidate_Bal_account_no)
-	case "OnValidate_Open":
-		_, ok = logic.(CheckLedgerEntryOnValidate_Open)
-	case "OnValidate_Statement_status":
-		_, ok = logic.(CheckLedgerEntryOnValidate_Statement_status)
-	case "OnValidate_Statement_no":
-		_, ok = logic.(CheckLedgerEntryOnValidate_Statement_no)
-	case "OnValidate_Statement_line_no":
-		_, ok = logic.(CheckLedgerEntryOnValidate_Statement_line_no)
-	case "OnValidate_User_id":
-		_, ok = logic.(CheckLedgerEntryOnValidate_User_id)
-	case "OnValidate_External_document_no":
-		_, ok = logic.(CheckLedgerEntryOnValidate_External_document_no)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return checkLedgerEntryFields.IsOnValidateTrigger(name, logic, (*CheckLedgerEntry)(nil))
 	}
 	return true, ok
 }
@@ -1174,29 +972,7 @@ func (t *CheckLedgerEntry) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *CheckLedgerEntry) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["entry_no"] = t.Entry_no
-	t.oldValues["bank_account_no"] = t.Bank_account_no
-	t.oldValues["bank_account_ledger_entry_no"] = t.Bank_account_ledger_entry_no
-	t.oldValues["posting_date"] = t.Posting_date
-	t.oldValues["document_type"] = t.Document_type
-	t.oldValues["document_no"] = t.Document_no
-	t.oldValues["description"] = t.Description
-	t.oldValues["amount"] = t.Amount
-	t.oldValues["check_date"] = t.Check_date
-	t.oldValues["check_no"] = t.Check_no
-	t.oldValues["check_type"] = t.Check_type
-	t.oldValues["bank_payment_type"] = t.Bank_payment_type
-	t.oldValues["entry_status"] = t.Entry_status
-	t.oldValues["original_entry_status"] = t.Original_entry_status
-	t.oldValues["bal_account_type"] = t.Bal_account_type
-	t.oldValues["bal_account_no"] = t.Bal_account_no
-	t.oldValues["open"] = t.Open
-	t.oldValues["statement_status"] = t.Statement_status
-	t.oldValues["statement_no"] = t.Statement_no
-	t.oldValues["statement_line_no"] = t.Statement_line_no
-	t.oldValues["user_id"] = t.User_id
-	t.oldValues["external_document_no"] = t.External_document_no
+	t.oldValues = checkLedgerEntryFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1211,72 +987,7 @@ func (t *CheckLedgerEntry) OldValue(fieldName string) interface{} {
 func (t *CheckLedgerEntry) XRec() *CheckLedgerEntry {
 	x := &CheckLedgerEntry{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["entry_no"].(int); ok {
-		x.Entry_no = v
-	}
-	if v, ok := t.oldValues["bank_account_no"].(types.Code); ok {
-		x.Bank_account_no = v
-	}
-	if v, ok := t.oldValues["bank_account_ledger_entry_no"].(int); ok {
-		x.Bank_account_ledger_entry_no = v
-	}
-	if v, ok := t.oldValues["posting_date"].(types.Date); ok {
-		x.Posting_date = v
-	}
-	if v, ok := t.oldValues["document_type"].(CheckLedgerEntryDocument_type); ok {
-		x.Document_type = v
-	}
-	if v, ok := t.oldValues["document_no"].(types.Code); ok {
-		x.Document_no = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["amount"].(types.Decimal); ok {
-		x.Amount = v
-	}
-	if v, ok := t.oldValues["check_date"].(types.Date); ok {
-		x.Check_date = v
-	}
-	if v, ok := t.oldValues["check_no"].(types.Code); ok {
-		x.Check_no = v
-	}
-	if v, ok := t.oldValues["check_type"].(CheckLedgerEntryCheck_type); ok {
-		x.Check_type = v
-	}
-	if v, ok := t.oldValues["bank_payment_type"].(CheckLedgerEntryBank_payment_type); ok {
-		x.Bank_payment_type = v
-	}
-	if v, ok := t.oldValues["entry_status"].(CheckLedgerEntryEntry_status); ok {
-		x.Entry_status = v
-	}
-	if v, ok := t.oldValues["original_entry_status"].(CheckLedgerEntryOriginal_entry_status); ok {
-		x.Original_entry_status = v
-	}
-	if v, ok := t.oldValues["bal_account_type"].(CheckLedgerEntryBal_account_type); ok {
-		x.Bal_account_type = v
-	}
-	if v, ok := t.oldValues["bal_account_no"].(types.Code); ok {
-		x.Bal_account_no = v
-	}
-	if v, ok := t.oldValues["open"].(bool); ok {
-		x.Open = v
-	}
-	if v, ok := t.oldValues["statement_status"].(CheckLedgerEntryStatement_status); ok {
-		x.Statement_status = v
-	}
-	if v, ok := t.oldValues["statement_no"].(types.Code); ok {
-		x.Statement_no = v
-	}
-	if v, ok := t.oldValues["statement_line_no"].(int); ok {
-		x.Statement_line_no = v
-	}
-	if v, ok := t.oldValues["user_id"].(types.Code); ok {
-		x.User_id = v
-	}
-	if v, ok := t.oldValues["external_document_no"].(types.Code); ok {
-		x.External_document_no = v
-	}
+	checkLedgerEntryFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1761,113 +1472,7 @@ func (t *CheckLedgerEntry) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *CheckLedgerEntry) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "bank_account_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Bank_account_no.Equal(old)
-		}
-	case "bank_account_ledger_entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Bank_account_ledger_entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "posting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Posting_date.Equal(old)
-		}
-	case "document_type":
-		if old, ok := oldValue.(CheckLedgerEntryDocument_type); ok {
-			return t.Document_type != old
-		}
-	case "document_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Document_no.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Amount.Equal(old)
-		}
-	case "check_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Check_date.Equal(old)
-		}
-	case "check_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Check_no.Equal(old)
-		}
-	case "check_type":
-		if old, ok := oldValue.(CheckLedgerEntryCheck_type); ok {
-			return t.Check_type != old
-		}
-	case "bank_payment_type":
-		if old, ok := oldValue.(CheckLedgerEntryBank_payment_type); ok {
-			return t.Bank_payment_type != old
-		}
-	case "entry_status":
-		if old, ok := oldValue.(CheckLedgerEntryEntry_status); ok {
-			return t.Entry_status != old
-		}
-	case "original_entry_status":
-		if old, ok := oldValue.(CheckLedgerEntryOriginal_entry_status); ok {
-			return t.Original_entry_status != old
-		}
-	case "bal_account_type":
-		if old, ok := oldValue.(CheckLedgerEntryBal_account_type); ok {
-			return t.Bal_account_type != old
-		}
-	case "bal_account_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Bal_account_no.Equal(old)
-		}
-	case "open":
-		if old, ok := oldValue.(bool); ok {
-			return t.Open != old
-		}
-		return true // Type mismatch, assume changed
-	case "statement_status":
-		if old, ok := oldValue.(CheckLedgerEntryStatement_status); ok {
-			return t.Statement_status != old
-		}
-	case "statement_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Statement_no.Equal(old)
-		}
-	case "statement_line_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Statement_line_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "user_id":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.User_id.Equal(old)
-		}
-	case "external_document_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.External_document_no.Equal(old)
-		}
-	}
-
-	return false
+	return checkLedgerEntryFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -2068,53 +1673,7 @@ func (t *CheckLedgerEntry) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *CheckLedgerEntry) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("entry_no"):
-		return "entry_no", true
-	case strings.ToLower("bank_account_no"):
-		return "bank_account_no", true
-	case strings.ToLower("bank_account_ledger_entry_no"):
-		return "bank_account_ledger_entry_no", true
-	case strings.ToLower("posting_date"):
-		return "posting_date", true
-	case strings.ToLower("document_type"):
-		return "document_type", true
-	case strings.ToLower("document_no"):
-		return "document_no", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("amount"):
-		return "amount", true
-	case strings.ToLower("check_date"):
-		return "check_date", true
-	case strings.ToLower("check_no"):
-		return "check_no", true
-	case strings.ToLower("check_type"):
-		return "check_type", true
-	case strings.ToLower("bank_payment_type"):
-		return "bank_payment_type", true
-	case strings.ToLower("entry_status"):
-		return "entry_status", true
-	case strings.ToLower("original_entry_status"):
-		return "original_entry_status", true
-	case strings.ToLower("bal_account_type"):
-		return "bal_account_type", true
-	case strings.ToLower("bal_account_no"):
-		return "bal_account_no", true
-	case strings.ToLower("open"):
-		return "open", true
-	case strings.ToLower("statement_status"):
-		return "statement_status", true
-	case strings.ToLower("statement_no"):
-		return "statement_no", true
-	case strings.ToLower("statement_line_no"):
-		return "statement_line_no", true
-	case strings.ToLower("user_id"):
-		return "user_id", true
-	case strings.ToLower("external_document_no"):
-		return "external_document_no", true
-	}
-	return "", false
+	return checkLedgerEntryFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -3167,691 +2726,20 @@ func (t *CheckLedgerEntry) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *CheckLedgerEntry) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Entry_no = v
-		case float64:
-			t.Entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field entry_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CheckLedgerEntryOnValidate_Entry_no); ok {
-				if err := trg.OnValidate_Entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bank_account_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Bank_account_no = v
-		} else if v, ok := value.(string); ok {
-			t.Bank_account_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field bank_account_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "bank_account_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CheckLedgerEntryOnValidate_Bank_account_no); ok {
-				if err := trg.OnValidate_Bank_account_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bank_account_ledger_entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Bank_account_ledger_entry_no = v
-		case float64:
-			t.Bank_account_ledger_entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Bank_account_ledger_entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Bank_account_ledger_entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field bank_account_ledger_entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field bank_account_ledger_entry_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "bank_account_ledger_entry_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CheckLedgerEntryOnValidate_Bank_account_ledger_entry_no); ok {
-				if err := trg.OnValidate_Bank_account_ledger_entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "posting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Posting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Posting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field posting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Posting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field posting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CheckLedgerEntryOnValidate_Posting_date); ok {
-				if err := trg.OnValidate_Posting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(CheckLedgerEntryDocument_type); ok {
-			t.Document_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 6 {
-				return fmt.Errorf("invalid option value %d for field document_type (valid range: 0-%d)", v, 6-1)
-			}
-			t.Document_type = CheckLedgerEntryDocument_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 6 {
-				return fmt.Errorf("invalid option value %d for field document_type (valid range: 0-%d)", intVal, 6-1)
-			}
-			t.Document_type = CheckLedgerEntryDocument_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Document_type = 0
-			} else {
-				options := []string{" ", "Payment", "Invoice", "Credit Memo", "Finance Charge Memo", "Reminder"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Document_type = CheckLedgerEntryDocument_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field document_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field document_type (expected CheckLedgerEntryDocument_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CheckLedgerEntryOnValidate_Document_type); ok {
-				if err := trg.OnValidate_Document_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Document_no = v
-		} else if v, ok := value.(string); ok {
-			t.Document_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field document_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CheckLedgerEntryOnValidate_Document_no); ok {
-				if err := trg.OnValidate_Document_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CheckLedgerEntryOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CheckLedgerEntryOnValidate_Amount); ok {
-				if err := trg.OnValidate_Amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "check_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Check_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Check_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field check_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Check_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field check_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CheckLedgerEntryOnValidate_Check_date); ok {
-				if err := trg.OnValidate_Check_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "check_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Check_no = v
-		} else if v, ok := value.(string); ok {
-			t.Check_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field check_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CheckLedgerEntryOnValidate_Check_no); ok {
-				if err := trg.OnValidate_Check_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "check_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(CheckLedgerEntryCheck_type); ok {
-			t.Check_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 2 {
-				return fmt.Errorf("invalid option value %d for field check_type (valid range: 0-%d)", v, 2-1)
-			}
-			t.Check_type = CheckLedgerEntryCheck_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 2 {
-				return fmt.Errorf("invalid option value %d for field check_type (valid range: 0-%d)", intVal, 2-1)
-			}
-			t.Check_type = CheckLedgerEntryCheck_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Check_type = 0
-			} else {
-				options := []string{"Total Check", "Partial Check"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Check_type = CheckLedgerEntryCheck_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field check_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field check_type (expected CheckLedgerEntryCheck_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CheckLedgerEntryOnValidate_Check_type); ok {
-				if err := trg.OnValidate_Check_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bank_payment_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(CheckLedgerEntryBank_payment_type); ok {
-			t.Bank_payment_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field bank_payment_type (valid range: 0-%d)", v, 4-1)
-			}
-			t.Bank_payment_type = CheckLedgerEntryBank_payment_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field bank_payment_type (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Bank_payment_type = CheckLedgerEntryBank_payment_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Bank_payment_type = 0
-			} else {
-				options := []string{" ", "Computer Check", "Manual Check", "Electronic Payment"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Bank_payment_type = CheckLedgerEntryBank_payment_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field bank_payment_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field bank_payment_type (expected CheckLedgerEntryBank_payment_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CheckLedgerEntryOnValidate_Bank_payment_type); ok {
-				if err := trg.OnValidate_Bank_payment_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "entry_status":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(CheckLedgerEntryEntry_status); ok {
-			t.Entry_status = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 8 {
-				return fmt.Errorf("invalid option value %d for field entry_status (valid range: 0-%d)", v, 8-1)
-			}
-			t.Entry_status = CheckLedgerEntryEntry_status(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 8 {
-				return fmt.Errorf("invalid option value %d for field entry_status (valid range: 0-%d)", intVal, 8-1)
-			}
-			t.Entry_status = CheckLedgerEntryEntry_status(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Entry_status = 0
-			} else {
-				options := []string{" ", "Printed", "Voided", "Posted", "Financially Voided", "Test Print", "Exported", "Transmitted"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Entry_status = CheckLedgerEntryEntry_status(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field entry_status (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field entry_status (expected CheckLedgerEntryEntry_status, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CheckLedgerEntryOnValidate_Entry_status); ok {
-				if err := trg.OnValidate_Entry_status(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "original_entry_status":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(CheckLedgerEntryOriginal_entry_status); ok {
-			t.Original_entry_status = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 8 {
-				return fmt.Errorf("invalid option value %d for field original_entry_status (valid range: 0-%d)", v, 8-1)
-			}
-			t.Original_entry_status = CheckLedgerEntryOriginal_entry_status(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 8 {
-				return fmt.Errorf("invalid option value %d for field original_entry_status (valid range: 0-%d)", intVal, 8-1)
-			}
-			t.Original_entry_status = CheckLedgerEntryOriginal_entry_status(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Original_entry_status = 0
-			} else {
-				options := []string{" ", "Printed", "Voided", "Posted", "Financially Voided", "Test Print", "Exported", "Transmitted"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Original_entry_status = CheckLedgerEntryOriginal_entry_status(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field original_entry_status (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field original_entry_status (expected CheckLedgerEntryOriginal_entry_status, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CheckLedgerEntryOnValidate_Original_entry_status); ok {
-				if err := trg.OnValidate_Original_entry_status(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bal_account_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(CheckLedgerEntryBal_account_type); ok {
-			t.Bal_account_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 6 {
-				return fmt.Errorf("invalid option value %d for field bal_account_type (valid range: 0-%d)", v, 6-1)
-			}
-			t.Bal_account_type = CheckLedgerEntryBal_account_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 6 {
-				return fmt.Errorf("invalid option value %d for field bal_account_type (valid range: 0-%d)", intVal, 6-1)
-			}
-			t.Bal_account_type = CheckLedgerEntryBal_account_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Bal_account_type = 0
-			} else {
-				options := []string{"G/L Account", "Customer", "Vendor", "Bank Account", "Fixed Asset", "Employee"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Bal_account_type = CheckLedgerEntryBal_account_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field bal_account_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field bal_account_type (expected CheckLedgerEntryBal_account_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CheckLedgerEntryOnValidate_Bal_account_type); ok {
-				if err := trg.OnValidate_Bal_account_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bal_account_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Bal_account_no = v
-		} else if v, ok := value.(string); ok {
-			t.Bal_account_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field bal_account_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "bal_account_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CheckLedgerEntryOnValidate_Bal_account_no); ok {
-				if err := trg.OnValidate_Bal_account_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "open":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Open = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Open = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field open")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CheckLedgerEntryOnValidate_Open); ok {
-				if err := trg.OnValidate_Open(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "statement_status":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(CheckLedgerEntryStatement_status); ok {
-			t.Statement_status = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field statement_status (valid range: 0-%d)", v, 4-1)
-			}
-			t.Statement_status = CheckLedgerEntryStatement_status(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field statement_status (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Statement_status = CheckLedgerEntryStatement_status(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Statement_status = 0
-			} else {
-				options := []string{"Open", "Bank Acc. Entry Applied", "Check Entry Applied", "Closed"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Statement_status = CheckLedgerEntryStatement_status(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field statement_status (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field statement_status (expected CheckLedgerEntryStatement_status, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CheckLedgerEntryOnValidate_Statement_status); ok {
-				if err := trg.OnValidate_Statement_status(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "statement_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Statement_no = v
-		} else if v, ok := value.(string); ok {
-			t.Statement_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field statement_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CheckLedgerEntryOnValidate_Statement_no); ok {
-				if err := trg.OnValidate_Statement_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "statement_line_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Statement_line_no = v
-		case float64:
-			t.Statement_line_no = int(v)
-		case string:
-			if v == "" {
-				t.Statement_line_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Statement_line_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field statement_line_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field statement_line_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CheckLedgerEntryOnValidate_Statement_line_no); ok {
-				if err := trg.OnValidate_Statement_line_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "user_id":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-		} else if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field user_id")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "user_id"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CheckLedgerEntryOnValidate_User_id); ok {
-				if err := trg.OnValidate_User_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "external_document_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.External_document_no = v
-		} else if v, ok := value.(string); ok {
-			t.External_document_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field external_document_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CheckLedgerEntryOnValidate_External_document_no); ok {
-				if err := trg.OnValidate_External_document_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := checkLedgerEntryFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &checkLedgerEntryFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -3860,210 +2748,18 @@ func (t *CheckLedgerEntry) ValidateField(fieldName string, value interface{}) er
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *CheckLedgerEntry) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Entry_no, true
-	case 2:
-		return t.Bank_account_no, true
-	case 3:
-		return t.Bank_account_ledger_entry_no, true
-	case 4:
-		return t.Posting_date, true
-	case 5:
-		return t.Document_type, true
-	case 6:
-		return t.Document_no, true
-	case 7:
-		return t.Description, true
-	case 8:
-		return t.Amount, true
-	case 9:
-		return t.Check_date, true
-	case 10:
-		return t.Check_no, true
-	case 11:
-		return t.Check_type, true
-	case 12:
-		return t.Bank_payment_type, true
-	case 13:
-		return t.Entry_status, true
-	case 14:
-		return t.Original_entry_status, true
-	case 15:
-		return t.Bal_account_type, true
-	case 16:
-		return t.Bal_account_no, true
-	case 17:
-		return t.Open, true
-	case 18:
-		return t.Statement_status, true
-	case 19:
-		return t.Statement_no, true
-	case 20:
-		return t.Statement_line_no, true
-	case 21:
-		return t.User_id, true
-	case 22:
-		return t.External_document_no, true
-	}
-	return nil, false
+	return checkLedgerEntryFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *CheckLedgerEntry) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return checkLedgerEntryFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *CheckLedgerEntry) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(int); ok {
-			t.Entry_no = v
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Bank_account_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Bank_account_no = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(int); ok {
-			t.Bank_account_ledger_entry_no = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Date); ok {
-			t.Posting_date = v
-			return true
-		}
-	case 5:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 6 {
-			t.Document_type = CheckLedgerEntryDocument_type(i)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Code); ok {
-			t.Document_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Document_no = types.NewCode(v)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount = v
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.Date); ok {
-			t.Check_date = v
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Code); ok {
-			t.Check_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Check_no = types.NewCode(v)
-			return true
-		}
-	case 11:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 2 {
-			t.Check_type = CheckLedgerEntryCheck_type(i)
-			return true
-		}
-	case 12:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Bank_payment_type = CheckLedgerEntryBank_payment_type(i)
-			return true
-		}
-	case 13:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 8 {
-			t.Entry_status = CheckLedgerEntryEntry_status(i)
-			return true
-		}
-	case 14:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 8 {
-			t.Original_entry_status = CheckLedgerEntryOriginal_entry_status(i)
-			return true
-		}
-	case 15:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 6 {
-			t.Bal_account_type = CheckLedgerEntryBal_account_type(i)
-			return true
-		}
-	case 16:
-		if v, ok := value.(types.Code); ok {
-			t.Bal_account_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Bal_account_no = types.NewCode(v)
-			return true
-		}
-	case 17:
-		if v, ok := value.(bool); ok {
-			t.Open = v
-			return true
-		}
-	case 18:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Statement_status = CheckLedgerEntryStatement_status(i)
-			return true
-		}
-	case 19:
-		if v, ok := value.(types.Code); ok {
-			t.Statement_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Statement_no = types.NewCode(v)
-			return true
-		}
-	case 20:
-		if v, ok := value.(int); ok {
-			t.Statement_line_no = v
-			return true
-		}
-	case 21:
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-			return true
-		}
-	case 22:
-		if v, ok := value.(types.Code); ok {
-			t.External_document_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.External_document_no = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return checkLedgerEntryFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -4557,53 +3253,7 @@ func (t *CheckLedgerEntry) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *CheckLedgerEntry) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "entry_no":
-		return t.Entry_no, true
-	case "bank_account_no":
-		return t.Bank_account_no, true
-	case "bank_account_ledger_entry_no":
-		return t.Bank_account_ledger_entry_no, true
-	case "posting_date":
-		return t.Posting_date, true
-	case "document_type":
-		return int(t.Document_type), true
-	case "document_no":
-		return t.Document_no, true
-	case "description":
-		return t.Description, true
-	case "amount":
-		return t.Amount, true
-	case "check_date":
-		return t.Check_date, true
-	case "check_no":
-		return t.Check_no, true
-	case "check_type":
-		return int(t.Check_type), true
-	case "bank_payment_type":
-		return int(t.Bank_payment_type), true
-	case "entry_status":
-		return int(t.Entry_status), true
-	case "original_entry_status":
-		return int(t.Original_entry_status), true
-	case "bal_account_type":
-		return int(t.Bal_account_type), true
-	case "bal_account_no":
-		return t.Bal_account_no, true
-	case "open":
-		return t.Open, true
-	case "statement_status":
-		return int(t.Statement_status), true
-	case "statement_no":
-		return t.Statement_no, true
-	case "statement_line_no":
-		return t.Statement_line_no, true
-	case "user_id":
-		return t.User_id, true
-	case "external_document_no":
-		return t.External_document_no, true
-	}
-	return nil, false
+	return checkLedgerEntryFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -4710,259 +3360,12 @@ func (t *CheckLedgerEntry) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *CheckLedgerEntry) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"entry_no":                     t.Entry_no,
-		"bank_account_no":              t.Bank_account_no.String(),
-		"bank_account_ledger_entry_no": t.Bank_account_ledger_entry_no,
-		"posting_date":                 t.Posting_date.String(),
-		"document_type":                int(t.Document_type),
-		"document_no":                  t.Document_no.String(),
-		"description":                  t.Description.String(),
-		"amount":                       t.Amount.String(),
-		"check_date":                   t.Check_date.String(),
-		"check_no":                     t.Check_no.String(),
-		"check_type":                   int(t.Check_type),
-		"bank_payment_type":            int(t.Bank_payment_type),
-		"entry_status":                 int(t.Entry_status),
-		"original_entry_status":        int(t.Original_entry_status),
-		"bal_account_type":             int(t.Bal_account_type),
-		"bal_account_no":               t.Bal_account_no.String(),
-		"open":                         t.Open,
-		"statement_status":             int(t.Statement_status),
-		"statement_no":                 t.Statement_no.String(),
-		"statement_line_no":            t.Statement_line_no,
-		"user_id":                      t.User_id.String(),
-		"external_document_no":         t.External_document_no.String(),
-	}
+	return checkLedgerEntryFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *CheckLedgerEntry) FromMap(data map[string]interface{}) {
-	if v, ok := data["entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Entry_no = int(val)
-		case int:
-			t.Entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Entry_no = n
-			}
-		}
-	}
-	if v, ok := data["bank_account_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Bank_account_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["bank_account_ledger_entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Bank_account_ledger_entry_no = int(val)
-		case int:
-			t.Bank_account_ledger_entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Bank_account_ledger_entry_no = n
-			}
-		}
-	}
-	if v, ok := data["posting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Posting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["document_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Document_type = CheckLedgerEntryDocument_type(int(val))
-		case int:
-			t.Document_type = CheckLedgerEntryDocument_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Payment", "Invoice", "Credit Memo", "Finance Charge Memo", "Reminder"}
-			for i, opt := range options {
-				if opt == val {
-					t.Document_type = CheckLedgerEntryDocument_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["document_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Document_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Amount = types.NewDecimal(val)
-		case int:
-			t.Amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["check_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Check_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["check_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Check_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["check_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Check_type = CheckLedgerEntryCheck_type(int(val))
-		case int:
-			t.Check_type = CheckLedgerEntryCheck_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Total Check", "Partial Check"}
-			for i, opt := range options {
-				if opt == val {
-					t.Check_type = CheckLedgerEntryCheck_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["bank_payment_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Bank_payment_type = CheckLedgerEntryBank_payment_type(int(val))
-		case int:
-			t.Bank_payment_type = CheckLedgerEntryBank_payment_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Computer Check", "Manual Check", "Electronic Payment"}
-			for i, opt := range options {
-				if opt == val {
-					t.Bank_payment_type = CheckLedgerEntryBank_payment_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["entry_status"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Entry_status = CheckLedgerEntryEntry_status(int(val))
-		case int:
-			t.Entry_status = CheckLedgerEntryEntry_status(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Printed", "Voided", "Posted", "Financially Voided", "Test Print", "Exported", "Transmitted"}
-			for i, opt := range options {
-				if opt == val {
-					t.Entry_status = CheckLedgerEntryEntry_status(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["original_entry_status"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Original_entry_status = CheckLedgerEntryOriginal_entry_status(int(val))
-		case int:
-			t.Original_entry_status = CheckLedgerEntryOriginal_entry_status(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Printed", "Voided", "Posted", "Financially Voided", "Test Print", "Exported", "Transmitted"}
-			for i, opt := range options {
-				if opt == val {
-					t.Original_entry_status = CheckLedgerEntryOriginal_entry_status(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["bal_account_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Bal_account_type = CheckLedgerEntryBal_account_type(int(val))
-		case int:
-			t.Bal_account_type = CheckLedgerEntryBal_account_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"G/L Account", "Customer", "Vendor", "Bank Account", "Fixed Asset", "Employee"}
-			for i, opt := range options {
-				if opt == val {
-					t.Bal_account_type = CheckLedgerEntryBal_account_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["bal_account_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Bal_account_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["open"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Open = b
-		}
-	}
-	if v, ok := data["statement_status"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Statement_status = CheckLedgerEntryStatement_status(int(val))
-		case int:
-			t.Statement_status = CheckLedgerEntryStatement_status(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Open", "Bank Acc. Entry Applied", "Check Entry Applied", "Closed"}
-			for i, opt := range options {
-				if opt == val {
-					t.Statement_status = CheckLedgerEntryStatement_status(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["statement_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Statement_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["statement_line_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Statement_line_no = int(val)
-		case int:
-			t.Statement_line_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Statement_line_no = n
-			}
-		}
-	}
-	if v, ok := data["user_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.User_id = types.NewCode(s)
-		}
-	}
-	if v, ok := data["external_document_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.External_document_no = types.NewCode(s)
-		}
-	}
+	checkLedgerEntryFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -4983,229 +3386,386 @@ func (t *CheckLedgerEntry) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *CheckLedgerEntry) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "bank_account_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "bank_account_ledger_entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "posting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "document_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "document_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     100,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            8,
-			Name:          "amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         9,
-			Name:       "check_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "check_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "check_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "bank_payment_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         13,
-			Name:       "entry_status",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         14,
-			Name:       "original_entry_status",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         15,
-			Name:       "bal_account_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         16,
-			Name:       "bal_account_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         17,
-			Name:       "open",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         18,
-			Name:       "statement_status",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         19,
-			Name:       "statement_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         20,
-			Name:       "statement_line_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         21,
-			Name:       "user_id",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         22,
-			Name:       "external_document_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return checkLedgerEntryFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in checkLedgerEntryFields.Fields
+func (t *CheckLedgerEntry) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Entry_no
+	case 1:
+		return &t.Bank_account_no
+	case 2:
+		return &t.Bank_account_ledger_entry_no
+	case 3:
+		return &t.Posting_date
+	case 4:
+		return &t.Document_type
+	case 5:
+		return &t.Document_no
+	case 6:
+		return &t.Description
+	case 7:
+		return &t.Amount
+	case 8:
+		return &t.Check_date
+	case 9:
+		return &t.Check_no
+	case 10:
+		return &t.Check_type
+	case 11:
+		return &t.Bank_payment_type
+	case 12:
+		return &t.Entry_status
+	case 13:
+		return &t.Original_entry_status
+	case 14:
+		return &t.Bal_account_type
+	case 15:
+		return &t.Bal_account_no
+	case 16:
+		return &t.Open
+	case 17:
+		return &t.Statement_status
+	case 18:
+		return &t.Statement_no
+	case 19:
+		return &t.Statement_line_no
+	case 20:
+		return &t.User_id
+	case 21:
+		return &t.External_document_no
 	}
+	return nil
+}
+
+// checkLedgerEntryFields describes the fields of Check_Ledger_Entry for the record functions
+// written once in foundation/tables
+var checkLedgerEntryFields = &tables.TableFields{
+	Table: CheckLedgerEntryTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Entry_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "bank_account_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Bank_account_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "bank_account_ledger_entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindInt,
+			Trigger:  "OnValidate_Bank_account_ledger_entry_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "posting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Posting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "document_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Document_type",
+			Options: []string{" ", "Payment", "Invoice", "Credit Memo", "Finance Charge Memo", "Reminder"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "document_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Document_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     100,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            8,
+				Name:          "amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "check_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Check_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "check_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Check_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "check_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Check_type",
+			Options: []string{"Total Check", "Partial Check"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "bank_payment_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Bank_payment_type",
+			Options: []string{" ", "Computer Check", "Manual Check", "Electronic Payment"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "entry_status",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Entry_status",
+			Options: []string{" ", "Printed", "Voided", "Posted", "Financially Voided", "Test Print", "Exported", "Transmitted"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "original_entry_status",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Original_entry_status",
+			Options: []string{" ", "Printed", "Voided", "Posted", "Financially Voided", "Test Print", "Exported", "Transmitted"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         15,
+				Name:       "bal_account_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Bal_account_type",
+			Options: []string{"G/L Account", "Customer", "Vendor", "Bank Account", "Fixed Asset", "Employee"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         16,
+				Name:       "bal_account_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Bal_account_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         17,
+				Name:       "open",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Open",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         18,
+				Name:       "statement_status",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Statement_status",
+			Options: []string{"Open", "Bank Acc. Entry Applied", "Check Entry Applied", "Closed"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         19,
+				Name:       "statement_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Statement_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         20,
+				Name:       "statement_line_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Statement_line_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         21,
+				Name:       "user_id",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_User_id",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         22,
+				Name:       "external_document_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_External_document_no",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

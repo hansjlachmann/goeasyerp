@@ -113,24 +113,12 @@ var PostCode_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *PostCode) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "code":
-		return 1
-	case "city":
-		return 2
-	}
-	return 0
+	return postCodeFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *PostCode) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "code"
-	case 2:
-		return "city"
-	}
-	return ""
+	return postCodeFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -234,8 +222,6 @@ type (
 	PostCodeOnBeforeRename interface {
 		OnBeforeRename(rec *PostCode, handled *bool) error
 	}
-	PostCodeOnValidate_Code interface{ OnValidate_Code(rec *PostCode) error }
-	PostCodeOnValidate_City interface{ OnValidate_City(rec *PostCode) error }
 )
 
 // postCodeLogic is the registered business logic of Post_Code, in
@@ -278,12 +264,9 @@ func postCodeTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(PostCodeOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(PostCodeOnBeforeRename)
-	case "OnValidate_Code":
-		_, ok = logic.(PostCodeOnValidate_Code)
-	case "OnValidate_City":
-		_, ok = logic.(PostCodeOnValidate_City)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return postCodeFields.IsOnValidateTrigger(name, logic, (*PostCode)(nil))
 	}
 	return true, ok
 }
@@ -571,9 +554,7 @@ func (t *PostCode) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *PostCode) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["code"] = t.Code
-	t.oldValues["city"] = t.City
+	t.oldValues = postCodeFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -588,12 +569,7 @@ func (t *PostCode) OldValue(fieldName string) interface{} {
 func (t *PostCode) XRec() *PostCode {
 	x := &PostCode{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["code"].(types.Code); ok {
-		x.Code = v
-	}
-	if v, ok := t.oldValues["city"].(types.Text); ok {
-		x.City = v
-	}
+	postCodeFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -870,29 +846,7 @@ func (t *PostCode) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *PostCode) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Code.Equal(old)
-		}
-	case "city":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.City.Equal(old)
-		}
-	}
-
-	return false
+	return postCodeFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1133,13 +1087,7 @@ func (t *PostCode) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *PostCode) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("code"):
-		return "code", true
-	case strings.ToLower("city"):
-		return "city", true
-	}
-	return "", false
+	return postCodeFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -1948,48 +1896,20 @@ func (t *PostCode) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *PostCode) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-		} else if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PostCodeOnValidate_Code); ok {
-				if err := trg.OnValidate_Code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "city":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.City = v
-		} else if v, ok := value.(string); ok {
-			t.City = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field city")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PostCodeOnValidate_City); ok {
-				if err := trg.OnValidate_City(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := postCodeFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &postCodeFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -1998,46 +1918,18 @@ func (t *PostCode) ValidateField(fieldName string, value interface{}) error {
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *PostCode) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Code, true
-	case 2:
-		return t.City, true
-	}
-	return nil, false
+	return postCodeFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *PostCode) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return postCodeFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *PostCode) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Text); ok {
-			t.City = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.City = types.NewText(v)
-			return true
-		}
-	}
-	return false
+	return postCodeFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2486,13 +2378,7 @@ func (t *PostCode) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *PostCode) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "code":
-		return t.Code, true
-	case "city":
-		return t.City, true
-	}
-	return nil, false
+	return postCodeFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2579,24 +2465,12 @@ func (t *PostCode) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *PostCode) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"code": t.Code.String(),
-		"city": t.City.String(),
-	}
+	return postCodeFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *PostCode) FromMap(data map[string]interface{}) {
-	if v, ok := data["code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["city"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.City = types.NewText(s)
-		}
-	}
+	postCodeFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2617,28 +2491,54 @@ func (t *PostCode) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *PostCode) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "code",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "city",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return postCodeFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in postCodeFields.Fields
+func (t *PostCode) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Code
+	case 1:
+		return &t.City
 	}
+	return nil
+}
+
+// postCodeFields describes the fields of Post_Code for the record functions
+// written once in foundation/tables
+var postCodeFields = &tables.TableFields{
+	Table: PostCodeTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "code",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "city",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_City",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

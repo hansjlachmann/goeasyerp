@@ -195,40 +195,12 @@ var CountryRegion_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *CountryRegion) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "code":
-		return 1
-	case "name":
-		return 2
-	case "eu_country_code":
-		return 6
-	case "intrastat_code":
-		return 7
-	case "address_format":
-		return 8
-	case "contact_address_format":
-		return 9
-	}
-	return 0
+	return countryRegionFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *CountryRegion) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "code"
-	case 2:
-		return "name"
-	case 6:
-		return "eu_country_code"
-	case 7:
-		return "intrastat_code"
-	case 8:
-		return "address_format"
-	case 9:
-		return "contact_address_format"
-	}
-	return ""
+	return countryRegionFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -340,24 +312,6 @@ type (
 	CountryRegionOnBeforeRename interface {
 		OnBeforeRename(rec *CountryRegion, handled *bool) error
 	}
-	CountryRegionOnValidate_Code interface {
-		OnValidate_Code(rec *CountryRegion) error
-	}
-	CountryRegionOnValidate_Name interface {
-		OnValidate_Name(rec *CountryRegion) error
-	}
-	CountryRegionOnValidate_Eu_country_code interface {
-		OnValidate_Eu_country_code(rec *CountryRegion) error
-	}
-	CountryRegionOnValidate_Intrastat_code interface {
-		OnValidate_Intrastat_code(rec *CountryRegion) error
-	}
-	CountryRegionOnValidate_Address_format interface {
-		OnValidate_Address_format(rec *CountryRegion) error
-	}
-	CountryRegionOnValidate_Contact_address_format interface {
-		OnValidate_Contact_address_format(rec *CountryRegion) error
-	}
 )
 
 // countryRegionLogic is the registered business logic of Country_Region, in
@@ -400,20 +354,9 @@ func countryRegionTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(CountryRegionOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(CountryRegionOnBeforeRename)
-	case "OnValidate_Code":
-		_, ok = logic.(CountryRegionOnValidate_Code)
-	case "OnValidate_Name":
-		_, ok = logic.(CountryRegionOnValidate_Name)
-	case "OnValidate_Eu_country_code":
-		_, ok = logic.(CountryRegionOnValidate_Eu_country_code)
-	case "OnValidate_Intrastat_code":
-		_, ok = logic.(CountryRegionOnValidate_Intrastat_code)
-	case "OnValidate_Address_format":
-		_, ok = logic.(CountryRegionOnValidate_Address_format)
-	case "OnValidate_Contact_address_format":
-		_, ok = logic.(CountryRegionOnValidate_Contact_address_format)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return countryRegionFields.IsOnValidateTrigger(name, logic, (*CountryRegion)(nil))
 	}
 	return true, ok
 }
@@ -735,13 +678,7 @@ func (t *CountryRegion) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *CountryRegion) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["code"] = t.Code
-	t.oldValues["name"] = t.Name
-	t.oldValues["eu_country_code"] = t.Eu_country_code
-	t.oldValues["intrastat_code"] = t.Intrastat_code
-	t.oldValues["address_format"] = t.Address_format
-	t.oldValues["contact_address_format"] = t.Contact_address_format
+	t.oldValues = countryRegionFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -756,24 +693,7 @@ func (t *CountryRegion) OldValue(fieldName string) interface{} {
 func (t *CountryRegion) XRec() *CountryRegion {
 	x := &CountryRegion{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["code"].(types.Code); ok {
-		x.Code = v
-	}
-	if v, ok := t.oldValues["name"].(types.Text); ok {
-		x.Name = v
-	}
-	if v, ok := t.oldValues["eu_country_code"].(types.Code); ok {
-		x.Eu_country_code = v
-	}
-	if v, ok := t.oldValues["intrastat_code"].(types.Code); ok {
-		x.Intrastat_code = v
-	}
-	if v, ok := t.oldValues["address_format"].(CountryRegionAddress_format); ok {
-		x.Address_format = v
-	}
-	if v, ok := t.oldValues["contact_address_format"].(CountryRegionContact_address_format); ok {
-		x.Contact_address_format = v
-	}
+	countryRegionFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1094,45 +1014,7 @@ func (t *CountryRegion) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *CountryRegion) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Code.Equal(old)
-		}
-	case "name":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Name.Equal(old)
-		}
-	case "eu_country_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Eu_country_code.Equal(old)
-		}
-	case "intrastat_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Intrastat_code.Equal(old)
-		}
-	case "address_format":
-		if old, ok := oldValue.(CountryRegionAddress_format); ok {
-			return t.Address_format != old
-		}
-	case "contact_address_format":
-		if old, ok := oldValue.(CountryRegionContact_address_format); ok {
-			return t.Contact_address_format != old
-		}
-	}
-
-	return false
+	return countryRegionFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1436,21 +1318,7 @@ func (t *CountryRegion) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *CountryRegion) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("code"):
-		return "code", true
-	case strings.ToLower("name"):
-		return "name", true
-	case strings.ToLower("eu_country_code"):
-		return "eu_country_code", true
-	case strings.ToLower("intrastat_code"):
-		return "intrastat_code", true
-	case strings.ToLower("address_format"):
-		return "address_format", true
-	case strings.ToLower("contact_address_format"):
-		return "contact_address_format", true
-	}
-	return "", false
+	return countryRegionFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2311,182 +2179,20 @@ func (t *CountryRegion) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *CountryRegion) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-		} else if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CountryRegionOnValidate_Code); ok {
-				if err := trg.OnValidate_Code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "name":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-		} else if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CountryRegionOnValidate_Name); ok {
-				if err := trg.OnValidate_Name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "eu_country_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Eu_country_code = v
-		} else if v, ok := value.(string); ok {
-			t.Eu_country_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field eu_country_code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CountryRegionOnValidate_Eu_country_code); ok {
-				if err := trg.OnValidate_Eu_country_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "intrastat_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Intrastat_code = v
-		} else if v, ok := value.(string); ok {
-			t.Intrastat_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field intrastat_code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CountryRegionOnValidate_Intrastat_code); ok {
-				if err := trg.OnValidate_Intrastat_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "address_format":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(CountryRegionAddress_format); ok {
-			t.Address_format = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field address_format (valid range: 0-%d)", v, 4-1)
-			}
-			t.Address_format = CountryRegionAddress_format(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field address_format (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Address_format = CountryRegionAddress_format(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Address_format = 0
-			} else {
-				options := []string{"Post Code+City", "City+Post Code", "City+State+Post Code", "Blank Line+Post Code+City"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Address_format = CountryRegionAddress_format(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field address_format (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field address_format (expected CountryRegionAddress_format, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CountryRegionOnValidate_Address_format); ok {
-				if err := trg.OnValidate_Address_format(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "contact_address_format":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(CountryRegionContact_address_format); ok {
-			t.Contact_address_format = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field contact_address_format (valid range: 0-%d)", v, 3-1)
-			}
-			t.Contact_address_format = CountryRegionContact_address_format(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field contact_address_format (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Contact_address_format = CountryRegionContact_address_format(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Contact_address_format = 0
-			} else {
-				options := []string{"First", "After Company Name", "Last"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Contact_address_format = CountryRegionContact_address_format(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field contact_address_format (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field contact_address_format (expected CountryRegionContact_address_format, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CountryRegionOnValidate_Contact_address_format); ok {
-				if err := trg.OnValidate_Contact_address_format(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := countryRegionFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &countryRegionFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2495,82 +2201,18 @@ func (t *CountryRegion) ValidateField(fieldName string, value interface{}) error
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *CountryRegion) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Code, true
-	case 2:
-		return t.Name, true
-	case 6:
-		return t.Eu_country_code, true
-	case 7:
-		return t.Intrastat_code, true
-	case 8:
-		return t.Address_format, true
-	case 9:
-		return t.Contact_address_format, true
-	}
-	return nil, false
+	return countryRegionFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *CountryRegion) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return countryRegionFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *CountryRegion) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Code); ok {
-			t.Eu_country_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Eu_country_code = types.NewCode(v)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Code); ok {
-			t.Intrastat_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Intrastat_code = types.NewCode(v)
-			return true
-		}
-	case 8:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Address_format = CountryRegionAddress_format(i)
-			return true
-		}
-	case 9:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Contact_address_format = CountryRegionContact_address_format(i)
-			return true
-		}
-	}
-	return false
+	return countryRegionFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3019,21 +2661,7 @@ func (t *CountryRegion) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *CountryRegion) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "code":
-		return t.Code, true
-	case "name":
-		return t.Name, true
-	case "eu_country_code":
-		return t.Eu_country_code, true
-	case "intrastat_code":
-		return t.Intrastat_code, true
-	case "address_format":
-		return int(t.Address_format), true
-	case "contact_address_format":
-		return int(t.Contact_address_format), true
-	}
-	return nil, false
+	return countryRegionFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3124,72 +2752,12 @@ func (t *CountryRegion) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *CountryRegion) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"code":                   t.Code.String(),
-		"name":                   t.Name.String(),
-		"eu_country_code":        t.Eu_country_code.String(),
-		"intrastat_code":         t.Intrastat_code.String(),
-		"address_format":         int(t.Address_format),
-		"contact_address_format": int(t.Contact_address_format),
-	}
+	return countryRegionFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *CountryRegion) FromMap(data map[string]interface{}) {
-	if v, ok := data["code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Name = types.NewText(s)
-		}
-	}
-	if v, ok := data["eu_country_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Eu_country_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["intrastat_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Intrastat_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["address_format"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Address_format = CountryRegionAddress_format(int(val))
-		case int:
-			t.Address_format = CountryRegionAddress_format(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Post Code+City", "City+Post Code", "City+State+Post Code", "Blank Line+Post Code+City"}
-			for i, opt := range options {
-				if opt == val {
-					t.Address_format = CountryRegionAddress_format(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["contact_address_format"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Contact_address_format = CountryRegionContact_address_format(int(val))
-		case int:
-			t.Contact_address_format = CountryRegionContact_address_format(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"First", "After Company Name", "Last"}
-			for i, opt := range options {
-				if opt == val {
-					t.Contact_address_format = CountryRegionContact_address_format(i)
-					break
-				}
-			}
-		}
-	}
+	countryRegionFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3210,68 +2778,120 @@ func (t *CountryRegion) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *CountryRegion) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "name",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "eu_country_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "intrastat_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "address_format",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "contact_address_format",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return countryRegionFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in countryRegionFields.Fields
+func (t *CountryRegion) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Code
+	case 1:
+		return &t.Name
+	case 2:
+		return &t.Eu_country_code
+	case 3:
+		return &t.Intrastat_code
+	case 4:
+		return &t.Address_format
+	case 5:
+		return &t.Contact_address_format
 	}
+	return nil
+}
+
+// countryRegionFields describes the fields of Country_Region for the record functions
+// written once in foundation/tables
+var countryRegionFields = &tables.TableFields{
+	Table: CountryRegionTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "name",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "eu_country_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Eu_country_code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "intrastat_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Intrastat_code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "address_format",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Address_format",
+			Options: []string{"Post Code+City", "City+Post Code", "City+State+Post Code", "Blank Line+Post Code+City"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "contact_address_format",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Contact_address_format",
+			Options: []string{"First", "After Company Name", "Last"},
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

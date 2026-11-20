@@ -168,36 +168,12 @@ var Object_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *Object) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "type":
-		return 1
-	case "id":
-		return 3
-	case "name":
-		return 4
-	case "runnable":
-		return 5
-	case "caption":
-		return 7
-	}
-	return 0
+	return objectFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *Object) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "type"
-	case 3:
-		return "id"
-	case 4:
-		return "name"
-	case 5:
-		return "runnable"
-	case 7:
-		return "caption"
-	}
-	return ""
+	return objectFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -301,10 +277,6 @@ type (
 	ObjectOnBeforeRename interface {
 		OnBeforeRename(rec *Object, handled *bool) error
 	}
-	ObjectOnValidate_Type     interface{ OnValidate_Type(rec *Object) error }
-	ObjectOnValidate_Id       interface{ OnValidate_Id(rec *Object) error }
-	ObjectOnValidate_Name     interface{ OnValidate_Name(rec *Object) error }
-	ObjectOnValidate_Runnable interface{ OnValidate_Runnable(rec *Object) error }
 )
 
 // objectLogic is the registered business logic of Object, in
@@ -347,16 +319,9 @@ func objectTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ObjectOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(ObjectOnBeforeRename)
-	case "OnValidate_Type":
-		_, ok = logic.(ObjectOnValidate_Type)
-	case "OnValidate_Id":
-		_, ok = logic.(ObjectOnValidate_Id)
-	case "OnValidate_Name":
-		_, ok = logic.(ObjectOnValidate_Name)
-	case "OnValidate_Runnable":
-		_, ok = logic.(ObjectOnValidate_Runnable)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return objectFields.IsOnValidateTrigger(name, logic, (*Object)(nil))
 	}
 	return true, ok
 }
@@ -652,11 +617,7 @@ func (t *Object) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *Object) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["type"] = t.Type
-	t.oldValues["id"] = t.Id
-	t.oldValues["name"] = t.Name
-	t.oldValues["runnable"] = t.Runnable
+	t.oldValues = objectFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -671,18 +632,7 @@ func (t *Object) OldValue(fieldName string) interface{} {
 func (t *Object) XRec() *Object {
 	x := &Object{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["type"].(ObjectType); ok {
-		x.Type = v
-	}
-	if v, ok := t.oldValues["id"].(int); ok {
-		x.Id = v
-	}
-	if v, ok := t.oldValues["name"].(types.Text); ok {
-		x.Name = v
-	}
-	if v, ok := t.oldValues["runnable"].(bool); ok {
-		x.Runnable = v
-	}
+	objectFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1003,39 +953,7 @@ func (t *Object) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *Object) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "type":
-		if old, ok := oldValue.(ObjectType); ok {
-			return t.Type != old
-		}
-	case "id":
-		if old, ok := oldValue.(int); ok {
-			return t.Id != old
-		}
-		return true // Type mismatch, assume changed
-	case "name":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Name.Equal(old)
-		}
-	case "runnable":
-		if old, ok := oldValue.(bool); ok {
-			return t.Runnable != old
-		}
-		return true // Type mismatch, assume changed
-	}
-
-	return false
+	return objectFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1368,17 +1286,7 @@ func (t *Object) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *Object) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("type"):
-		return "type", true
-	case strings.ToLower("id"):
-		return "id", true
-	case strings.ToLower("name"):
-		return "name", true
-	case strings.ToLower("runnable"):
-		return "runnable", true
-	}
-	return "", false
+	return objectFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2208,125 +2116,20 @@ func (t *Object) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *Object) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ObjectType); ok {
-			t.Type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 6 {
-				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", v, 6-1)
-			}
-			t.Type = ObjectType(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 6 {
-				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", intVal, 6-1)
-			}
-			t.Type = ObjectType(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Type = 0
-			} else {
-				options := []string{"TableData", "Table", "Page", "Report", "Dataport", "Codeunit"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Type = ObjectType(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field type (expected ObjectType, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ObjectOnValidate_Type); ok {
-				if err := trg.OnValidate_Type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "id":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Id = v
-		case float64:
-			t.Id = int(v)
-		case string:
-			if v == "" {
-				t.Id = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Id = i
-			} else {
-				return fmt.Errorf("invalid integer value for field id: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field id")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ObjectOnValidate_Id); ok {
-				if err := trg.OnValidate_Id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "name":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-		} else if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ObjectOnValidate_Name); ok {
-				if err := trg.OnValidate_Name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "runnable":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Runnable = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Runnable = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field runnable")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ObjectOnValidate_Runnable); ok {
-				if err := trg.OnValidate_Runnable(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := objectFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &objectFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2335,58 +2138,18 @@ func (t *Object) ValidateField(fieldName string, value interface{}) error {
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *Object) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Type, true
-	case 3:
-		return t.Id, true
-	case 4:
-		return t.Name, true
-	case 5:
-		return t.Runnable, true
-	}
-	return nil, false
+	return objectFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *Object) flowFieldValue(no int) (any, bool) {
-	switch no {
-	case 7:
-		return t.Caption, true
-	}
-	return nil, false
+	return objectFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *Object) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 6 {
-			t.Type = ObjectType(i)
-			return true
-		}
-	case 3:
-		if v, ok := value.(int); ok {
-			t.Id = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(bool); ok {
-			t.Runnable = v
-			return true
-		}
-	}
-	return false
+	return objectFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2857,17 +2620,7 @@ func (t *Object) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *Object) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "type":
-		return int(t.Type), true
-	case "id":
-		return t.Id, true
-	case "name":
-		return t.Name, true
-	case "runnable":
-		return t.Runnable, true
-	}
-	return nil, false
+	return objectFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2959,58 +2712,12 @@ func (t *Object) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *Object) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"type":     int(t.Type),
-		"id":       t.Id,
-		"name":     t.Name.String(),
-		"runnable": t.Runnable,
-		// FlowField: caption
-		"caption": t.Caption,
-	}
+	return objectFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *Object) FromMap(data map[string]interface{}) {
-	if v, ok := data["type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Type = ObjectType(int(val))
-		case int:
-			t.Type = ObjectType(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"TableData", "Table", "Page", "Report", "Dataport", "Codeunit"}
-			for i, opt := range options {
-				if opt == val {
-					t.Type = ObjectType(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["id"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Id = int(val)
-		case int:
-			t.Id = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Id = n
-			}
-		}
-	}
-	if v, ok := data["name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Name = types.NewText(s)
-		}
-	}
-	if v, ok := data["runnable"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Runnable = b
-		}
-	}
+	objectFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3031,58 +2738,103 @@ func (t *Object) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *Object) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "id",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "name",
-			Type:       tables.FieldTypeText,
-			Length:     80,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "runnable",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "caption",
-			Type:       tables.FieldTypeText,
-			Length:     80,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  true,
-		},
+	return objectFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in objectFields.Fields
+func (t *Object) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Type
+	case 1:
+		return &t.Id
+	case 2:
+		return &t.Name
+	case 3:
+		return &t.Runnable
+	case 4:
+		return &t.Caption
 	}
+	return nil
+}
+
+// objectFields describes the fields of Object for the record functions
+// written once in foundation/tables
+var objectFields = &tables.TableFields{
+	Table: ObjectTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Type",
+			Options: []string{"TableData", "Table", "Page", "Report", "Dataport", "Codeunit"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "id",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Id",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "name",
+				Type:       tables.FieldTypeText,
+				Length:     80,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "runnable",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Runnable",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "caption",
+				Type:       tables.FieldTypeText,
+				Length:     80,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  true,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Caption",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

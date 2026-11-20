@@ -277,188 +277,12 @@ var SourceCodeSetup_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *SourceCodeSetup) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "primary_key":
-		return 1
-	case "sales":
-		return 2
-	case "purchases":
-		return 3
-	case "exchange_rate_adjmt":
-		return 5
-	case "close_income_statement":
-		return 8
-	case "consolidation":
-		return 9
-	case "adjust_add_reporting_currency":
-		return 41
-	case "general_journal":
-		return 10
-	case "sales_journal":
-		return 11
-	case "purchase_journal":
-		return 12
-	case "cash_receipt_journal":
-		return 13
-	case "payment_journal":
-		return 14
-	case "sales_entry_application":
-		return 21
-	case "purchase_entry_application":
-		return 22
-	case "tax_settlement":
-		return 23
-	case "financially_voided_check":
-		return 37
-	case "finance_charge_memo":
-		return 38
-	case "reminder":
-		return 39
-	case "inventory_post_cost":
-		return 4
-	case "item_journal":
-		return 16
-	case "bom_journal":
-		return 17
-	case "resource_journal":
-		return 19
-	case "post_recognition":
-		return 6
-	case "post_value":
-		return 7
-	case "project_journal":
-		return 20
-	case "compress_project_ledger":
-		return 32
-	case "item_transfer_journal":
-		return 33
-	case "phys_inventory_journal":
-		return 34
-	case "fixed_asset_journal":
-		return 5600
-	case "fixed_asset_g_l_journal":
-		return 5601
-	case "insurance_journal":
-		return 5602
-	case "compress_g_l":
-		return 24
-	case "compress_tax_entries":
-		return 25
-	case "compress_cust_ledger":
-		return 26
-	case "compress_vend_ledger":
-		return 27
-	case "compress_item_ledger":
-		return 28
-	case "compress_bom_ledger":
-		return 29
-	case "compress_res_ledger":
-		return 31
-	case "compress_bank_acc_ledger":
-		return 35
-	case "compress_check_ledger":
-		return 36
-	case "compress_fa_ledger":
-		return 5603
-	case "compress_maintenance_ledger":
-		return 5604
-	case "compress_insurance_ledger":
-		return 5605
-	}
-	return 0
+	return sourceCodeSetupFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *SourceCodeSetup) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "primary_key"
-	case 2:
-		return "sales"
-	case 3:
-		return "purchases"
-	case 5:
-		return "exchange_rate_adjmt"
-	case 8:
-		return "close_income_statement"
-	case 9:
-		return "consolidation"
-	case 41:
-		return "adjust_add_reporting_currency"
-	case 10:
-		return "general_journal"
-	case 11:
-		return "sales_journal"
-	case 12:
-		return "purchase_journal"
-	case 13:
-		return "cash_receipt_journal"
-	case 14:
-		return "payment_journal"
-	case 21:
-		return "sales_entry_application"
-	case 22:
-		return "purchase_entry_application"
-	case 23:
-		return "tax_settlement"
-	case 37:
-		return "financially_voided_check"
-	case 38:
-		return "finance_charge_memo"
-	case 39:
-		return "reminder"
-	case 4:
-		return "inventory_post_cost"
-	case 16:
-		return "item_journal"
-	case 17:
-		return "bom_journal"
-	case 19:
-		return "resource_journal"
-	case 6:
-		return "post_recognition"
-	case 7:
-		return "post_value"
-	case 20:
-		return "project_journal"
-	case 32:
-		return "compress_project_ledger"
-	case 33:
-		return "item_transfer_journal"
-	case 34:
-		return "phys_inventory_journal"
-	case 5600:
-		return "fixed_asset_journal"
-	case 5601:
-		return "fixed_asset_g_l_journal"
-	case 5602:
-		return "insurance_journal"
-	case 24:
-		return "compress_g_l"
-	case 25:
-		return "compress_tax_entries"
-	case 26:
-		return "compress_cust_ledger"
-	case 27:
-		return "compress_vend_ledger"
-	case 28:
-		return "compress_item_ledger"
-	case 29:
-		return "compress_bom_ledger"
-	case 31:
-		return "compress_res_ledger"
-	case 35:
-		return "compress_bank_acc_ledger"
-	case 36:
-		return "compress_check_ledger"
-	case 5603:
-		return "compress_fa_ledger"
-	case 5604:
-		return "compress_maintenance_ledger"
-	case 5605:
-		return "compress_insurance_ledger"
-	}
-	return ""
+	return sourceCodeSetupFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -570,135 +394,6 @@ type (
 	SourceCodeSetupOnBeforeRename interface {
 		OnBeforeRename(rec *SourceCodeSetup, handled *bool) error
 	}
-	SourceCodeSetupOnValidate_Primary_key interface {
-		OnValidate_Primary_key(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Sales interface {
-		OnValidate_Sales(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Purchases interface {
-		OnValidate_Purchases(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Exchange_rate_adjmt interface {
-		OnValidate_Exchange_rate_adjmt(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Close_income_statement interface {
-		OnValidate_Close_income_statement(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Consolidation interface {
-		OnValidate_Consolidation(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Adjust_add_reporting_currency interface {
-		OnValidate_Adjust_add_reporting_currency(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_General_journal interface {
-		OnValidate_General_journal(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Sales_journal interface {
-		OnValidate_Sales_journal(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Purchase_journal interface {
-		OnValidate_Purchase_journal(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Cash_receipt_journal interface {
-		OnValidate_Cash_receipt_journal(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Payment_journal interface {
-		OnValidate_Payment_journal(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Sales_entry_application interface {
-		OnValidate_Sales_entry_application(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Purchase_entry_application interface {
-		OnValidate_Purchase_entry_application(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Tax_settlement interface {
-		OnValidate_Tax_settlement(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Financially_voided_check interface {
-		OnValidate_Financially_voided_check(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Finance_charge_memo interface {
-		OnValidate_Finance_charge_memo(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Reminder interface {
-		OnValidate_Reminder(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Inventory_post_cost interface {
-		OnValidate_Inventory_post_cost(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Item_journal interface {
-		OnValidate_Item_journal(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Bom_journal interface {
-		OnValidate_Bom_journal(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Resource_journal interface {
-		OnValidate_Resource_journal(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Post_recognition interface {
-		OnValidate_Post_recognition(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Post_value interface {
-		OnValidate_Post_value(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Project_journal interface {
-		OnValidate_Project_journal(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Compress_project_ledger interface {
-		OnValidate_Compress_project_ledger(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Item_transfer_journal interface {
-		OnValidate_Item_transfer_journal(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Phys_inventory_journal interface {
-		OnValidate_Phys_inventory_journal(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Fixed_asset_journal interface {
-		OnValidate_Fixed_asset_journal(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Fixed_asset_g_l_journal interface {
-		OnValidate_Fixed_asset_g_l_journal(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Insurance_journal interface {
-		OnValidate_Insurance_journal(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Compress_g_l interface {
-		OnValidate_Compress_g_l(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Compress_tax_entries interface {
-		OnValidate_Compress_tax_entries(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Compress_cust_ledger interface {
-		OnValidate_Compress_cust_ledger(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Compress_vend_ledger interface {
-		OnValidate_Compress_vend_ledger(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Compress_item_ledger interface {
-		OnValidate_Compress_item_ledger(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Compress_bom_ledger interface {
-		OnValidate_Compress_bom_ledger(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Compress_res_ledger interface {
-		OnValidate_Compress_res_ledger(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Compress_bank_acc_ledger interface {
-		OnValidate_Compress_bank_acc_ledger(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Compress_check_ledger interface {
-		OnValidate_Compress_check_ledger(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Compress_fa_ledger interface {
-		OnValidate_Compress_fa_ledger(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Compress_maintenance_ledger interface {
-		OnValidate_Compress_maintenance_ledger(rec *SourceCodeSetup) error
-	}
-	SourceCodeSetupOnValidate_Compress_insurance_ledger interface {
-		OnValidate_Compress_insurance_ledger(rec *SourceCodeSetup) error
-	}
 )
 
 // sourceCodeSetupLogic is the registered business logic of Source_Code_Setup, in
@@ -741,94 +436,9 @@ func sourceCodeSetupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(SourceCodeSetupOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(SourceCodeSetupOnBeforeRename)
-	case "OnValidate_Primary_key":
-		_, ok = logic.(SourceCodeSetupOnValidate_Primary_key)
-	case "OnValidate_Sales":
-		_, ok = logic.(SourceCodeSetupOnValidate_Sales)
-	case "OnValidate_Purchases":
-		_, ok = logic.(SourceCodeSetupOnValidate_Purchases)
-	case "OnValidate_Exchange_rate_adjmt":
-		_, ok = logic.(SourceCodeSetupOnValidate_Exchange_rate_adjmt)
-	case "OnValidate_Close_income_statement":
-		_, ok = logic.(SourceCodeSetupOnValidate_Close_income_statement)
-	case "OnValidate_Consolidation":
-		_, ok = logic.(SourceCodeSetupOnValidate_Consolidation)
-	case "OnValidate_Adjust_add_reporting_currency":
-		_, ok = logic.(SourceCodeSetupOnValidate_Adjust_add_reporting_currency)
-	case "OnValidate_General_journal":
-		_, ok = logic.(SourceCodeSetupOnValidate_General_journal)
-	case "OnValidate_Sales_journal":
-		_, ok = logic.(SourceCodeSetupOnValidate_Sales_journal)
-	case "OnValidate_Purchase_journal":
-		_, ok = logic.(SourceCodeSetupOnValidate_Purchase_journal)
-	case "OnValidate_Cash_receipt_journal":
-		_, ok = logic.(SourceCodeSetupOnValidate_Cash_receipt_journal)
-	case "OnValidate_Payment_journal":
-		_, ok = logic.(SourceCodeSetupOnValidate_Payment_journal)
-	case "OnValidate_Sales_entry_application":
-		_, ok = logic.(SourceCodeSetupOnValidate_Sales_entry_application)
-	case "OnValidate_Purchase_entry_application":
-		_, ok = logic.(SourceCodeSetupOnValidate_Purchase_entry_application)
-	case "OnValidate_Tax_settlement":
-		_, ok = logic.(SourceCodeSetupOnValidate_Tax_settlement)
-	case "OnValidate_Financially_voided_check":
-		_, ok = logic.(SourceCodeSetupOnValidate_Financially_voided_check)
-	case "OnValidate_Finance_charge_memo":
-		_, ok = logic.(SourceCodeSetupOnValidate_Finance_charge_memo)
-	case "OnValidate_Reminder":
-		_, ok = logic.(SourceCodeSetupOnValidate_Reminder)
-	case "OnValidate_Inventory_post_cost":
-		_, ok = logic.(SourceCodeSetupOnValidate_Inventory_post_cost)
-	case "OnValidate_Item_journal":
-		_, ok = logic.(SourceCodeSetupOnValidate_Item_journal)
-	case "OnValidate_Bom_journal":
-		_, ok = logic.(SourceCodeSetupOnValidate_Bom_journal)
-	case "OnValidate_Resource_journal":
-		_, ok = logic.(SourceCodeSetupOnValidate_Resource_journal)
-	case "OnValidate_Post_recognition":
-		_, ok = logic.(SourceCodeSetupOnValidate_Post_recognition)
-	case "OnValidate_Post_value":
-		_, ok = logic.(SourceCodeSetupOnValidate_Post_value)
-	case "OnValidate_Project_journal":
-		_, ok = logic.(SourceCodeSetupOnValidate_Project_journal)
-	case "OnValidate_Compress_project_ledger":
-		_, ok = logic.(SourceCodeSetupOnValidate_Compress_project_ledger)
-	case "OnValidate_Item_transfer_journal":
-		_, ok = logic.(SourceCodeSetupOnValidate_Item_transfer_journal)
-	case "OnValidate_Phys_inventory_journal":
-		_, ok = logic.(SourceCodeSetupOnValidate_Phys_inventory_journal)
-	case "OnValidate_Fixed_asset_journal":
-		_, ok = logic.(SourceCodeSetupOnValidate_Fixed_asset_journal)
-	case "OnValidate_Fixed_asset_g_l_journal":
-		_, ok = logic.(SourceCodeSetupOnValidate_Fixed_asset_g_l_journal)
-	case "OnValidate_Insurance_journal":
-		_, ok = logic.(SourceCodeSetupOnValidate_Insurance_journal)
-	case "OnValidate_Compress_g_l":
-		_, ok = logic.(SourceCodeSetupOnValidate_Compress_g_l)
-	case "OnValidate_Compress_tax_entries":
-		_, ok = logic.(SourceCodeSetupOnValidate_Compress_tax_entries)
-	case "OnValidate_Compress_cust_ledger":
-		_, ok = logic.(SourceCodeSetupOnValidate_Compress_cust_ledger)
-	case "OnValidate_Compress_vend_ledger":
-		_, ok = logic.(SourceCodeSetupOnValidate_Compress_vend_ledger)
-	case "OnValidate_Compress_item_ledger":
-		_, ok = logic.(SourceCodeSetupOnValidate_Compress_item_ledger)
-	case "OnValidate_Compress_bom_ledger":
-		_, ok = logic.(SourceCodeSetupOnValidate_Compress_bom_ledger)
-	case "OnValidate_Compress_res_ledger":
-		_, ok = logic.(SourceCodeSetupOnValidate_Compress_res_ledger)
-	case "OnValidate_Compress_bank_acc_ledger":
-		_, ok = logic.(SourceCodeSetupOnValidate_Compress_bank_acc_ledger)
-	case "OnValidate_Compress_check_ledger":
-		_, ok = logic.(SourceCodeSetupOnValidate_Compress_check_ledger)
-	case "OnValidate_Compress_fa_ledger":
-		_, ok = logic.(SourceCodeSetupOnValidate_Compress_fa_ledger)
-	case "OnValidate_Compress_maintenance_ledger":
-		_, ok = logic.(SourceCodeSetupOnValidate_Compress_maintenance_ledger)
-	case "OnValidate_Compress_insurance_ledger":
-		_, ok = logic.(SourceCodeSetupOnValidate_Compress_insurance_ledger)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return sourceCodeSetupFields.IsOnValidateTrigger(name, logic, (*SourceCodeSetup)(nil))
 	}
 	return true, ok
 }
@@ -1330,50 +940,7 @@ func (t *SourceCodeSetup) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *SourceCodeSetup) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["primary_key"] = t.Primary_key
-	t.oldValues["sales"] = t.Sales
-	t.oldValues["purchases"] = t.Purchases
-	t.oldValues["exchange_rate_adjmt"] = t.Exchange_rate_adjmt
-	t.oldValues["close_income_statement"] = t.Close_income_statement
-	t.oldValues["consolidation"] = t.Consolidation
-	t.oldValues["adjust_add_reporting_currency"] = t.Adjust_add_reporting_currency
-	t.oldValues["general_journal"] = t.General_journal
-	t.oldValues["sales_journal"] = t.Sales_journal
-	t.oldValues["purchase_journal"] = t.Purchase_journal
-	t.oldValues["cash_receipt_journal"] = t.Cash_receipt_journal
-	t.oldValues["payment_journal"] = t.Payment_journal
-	t.oldValues["sales_entry_application"] = t.Sales_entry_application
-	t.oldValues["purchase_entry_application"] = t.Purchase_entry_application
-	t.oldValues["tax_settlement"] = t.Tax_settlement
-	t.oldValues["financially_voided_check"] = t.Financially_voided_check
-	t.oldValues["finance_charge_memo"] = t.Finance_charge_memo
-	t.oldValues["reminder"] = t.Reminder
-	t.oldValues["inventory_post_cost"] = t.Inventory_post_cost
-	t.oldValues["item_journal"] = t.Item_journal
-	t.oldValues["bom_journal"] = t.Bom_journal
-	t.oldValues["resource_journal"] = t.Resource_journal
-	t.oldValues["post_recognition"] = t.Post_recognition
-	t.oldValues["post_value"] = t.Post_value
-	t.oldValues["project_journal"] = t.Project_journal
-	t.oldValues["compress_project_ledger"] = t.Compress_project_ledger
-	t.oldValues["item_transfer_journal"] = t.Item_transfer_journal
-	t.oldValues["phys_inventory_journal"] = t.Phys_inventory_journal
-	t.oldValues["fixed_asset_journal"] = t.Fixed_asset_journal
-	t.oldValues["fixed_asset_g_l_journal"] = t.Fixed_asset_g_l_journal
-	t.oldValues["insurance_journal"] = t.Insurance_journal
-	t.oldValues["compress_g_l"] = t.Compress_g_l
-	t.oldValues["compress_tax_entries"] = t.Compress_tax_entries
-	t.oldValues["compress_cust_ledger"] = t.Compress_cust_ledger
-	t.oldValues["compress_vend_ledger"] = t.Compress_vend_ledger
-	t.oldValues["compress_item_ledger"] = t.Compress_item_ledger
-	t.oldValues["compress_bom_ledger"] = t.Compress_bom_ledger
-	t.oldValues["compress_res_ledger"] = t.Compress_res_ledger
-	t.oldValues["compress_bank_acc_ledger"] = t.Compress_bank_acc_ledger
-	t.oldValues["compress_check_ledger"] = t.Compress_check_ledger
-	t.oldValues["compress_fa_ledger"] = t.Compress_fa_ledger
-	t.oldValues["compress_maintenance_ledger"] = t.Compress_maintenance_ledger
-	t.oldValues["compress_insurance_ledger"] = t.Compress_insurance_ledger
+	t.oldValues = sourceCodeSetupFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1388,135 +955,7 @@ func (t *SourceCodeSetup) OldValue(fieldName string) interface{} {
 func (t *SourceCodeSetup) XRec() *SourceCodeSetup {
 	x := &SourceCodeSetup{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["primary_key"].(types.Code); ok {
-		x.Primary_key = v
-	}
-	if v, ok := t.oldValues["sales"].(types.Code); ok {
-		x.Sales = v
-	}
-	if v, ok := t.oldValues["purchases"].(types.Code); ok {
-		x.Purchases = v
-	}
-	if v, ok := t.oldValues["exchange_rate_adjmt"].(types.Code); ok {
-		x.Exchange_rate_adjmt = v
-	}
-	if v, ok := t.oldValues["close_income_statement"].(types.Code); ok {
-		x.Close_income_statement = v
-	}
-	if v, ok := t.oldValues["consolidation"].(types.Code); ok {
-		x.Consolidation = v
-	}
-	if v, ok := t.oldValues["adjust_add_reporting_currency"].(types.Code); ok {
-		x.Adjust_add_reporting_currency = v
-	}
-	if v, ok := t.oldValues["general_journal"].(types.Code); ok {
-		x.General_journal = v
-	}
-	if v, ok := t.oldValues["sales_journal"].(types.Code); ok {
-		x.Sales_journal = v
-	}
-	if v, ok := t.oldValues["purchase_journal"].(types.Code); ok {
-		x.Purchase_journal = v
-	}
-	if v, ok := t.oldValues["cash_receipt_journal"].(types.Code); ok {
-		x.Cash_receipt_journal = v
-	}
-	if v, ok := t.oldValues["payment_journal"].(types.Code); ok {
-		x.Payment_journal = v
-	}
-	if v, ok := t.oldValues["sales_entry_application"].(types.Code); ok {
-		x.Sales_entry_application = v
-	}
-	if v, ok := t.oldValues["purchase_entry_application"].(types.Code); ok {
-		x.Purchase_entry_application = v
-	}
-	if v, ok := t.oldValues["tax_settlement"].(types.Code); ok {
-		x.Tax_settlement = v
-	}
-	if v, ok := t.oldValues["financially_voided_check"].(types.Code); ok {
-		x.Financially_voided_check = v
-	}
-	if v, ok := t.oldValues["finance_charge_memo"].(types.Code); ok {
-		x.Finance_charge_memo = v
-	}
-	if v, ok := t.oldValues["reminder"].(types.Code); ok {
-		x.Reminder = v
-	}
-	if v, ok := t.oldValues["inventory_post_cost"].(types.Code); ok {
-		x.Inventory_post_cost = v
-	}
-	if v, ok := t.oldValues["item_journal"].(types.Code); ok {
-		x.Item_journal = v
-	}
-	if v, ok := t.oldValues["bom_journal"].(types.Code); ok {
-		x.Bom_journal = v
-	}
-	if v, ok := t.oldValues["resource_journal"].(types.Code); ok {
-		x.Resource_journal = v
-	}
-	if v, ok := t.oldValues["post_recognition"].(types.Code); ok {
-		x.Post_recognition = v
-	}
-	if v, ok := t.oldValues["post_value"].(types.Code); ok {
-		x.Post_value = v
-	}
-	if v, ok := t.oldValues["project_journal"].(types.Code); ok {
-		x.Project_journal = v
-	}
-	if v, ok := t.oldValues["compress_project_ledger"].(types.Code); ok {
-		x.Compress_project_ledger = v
-	}
-	if v, ok := t.oldValues["item_transfer_journal"].(types.Code); ok {
-		x.Item_transfer_journal = v
-	}
-	if v, ok := t.oldValues["phys_inventory_journal"].(types.Code); ok {
-		x.Phys_inventory_journal = v
-	}
-	if v, ok := t.oldValues["fixed_asset_journal"].(types.Code); ok {
-		x.Fixed_asset_journal = v
-	}
-	if v, ok := t.oldValues["fixed_asset_g_l_journal"].(types.Code); ok {
-		x.Fixed_asset_g_l_journal = v
-	}
-	if v, ok := t.oldValues["insurance_journal"].(types.Code); ok {
-		x.Insurance_journal = v
-	}
-	if v, ok := t.oldValues["compress_g_l"].(types.Code); ok {
-		x.Compress_g_l = v
-	}
-	if v, ok := t.oldValues["compress_tax_entries"].(types.Code); ok {
-		x.Compress_tax_entries = v
-	}
-	if v, ok := t.oldValues["compress_cust_ledger"].(types.Code); ok {
-		x.Compress_cust_ledger = v
-	}
-	if v, ok := t.oldValues["compress_vend_ledger"].(types.Code); ok {
-		x.Compress_vend_ledger = v
-	}
-	if v, ok := t.oldValues["compress_item_ledger"].(types.Code); ok {
-		x.Compress_item_ledger = v
-	}
-	if v, ok := t.oldValues["compress_bom_ledger"].(types.Code); ok {
-		x.Compress_bom_ledger = v
-	}
-	if v, ok := t.oldValues["compress_res_ledger"].(types.Code); ok {
-		x.Compress_res_ledger = v
-	}
-	if v, ok := t.oldValues["compress_bank_acc_ledger"].(types.Code); ok {
-		x.Compress_bank_acc_ledger = v
-	}
-	if v, ok := t.oldValues["compress_check_ledger"].(types.Code); ok {
-		x.Compress_check_ledger = v
-	}
-	if v, ok := t.oldValues["compress_fa_ledger"].(types.Code); ok {
-		x.Compress_fa_ledger = v
-	}
-	if v, ok := t.oldValues["compress_maintenance_ledger"].(types.Code); ok {
-		x.Compress_maintenance_ledger = v
-	}
-	if v, ok := t.oldValues["compress_insurance_ledger"].(types.Code); ok {
-		x.Compress_insurance_ledger = v
-	}
+	sourceCodeSetupFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -2222,193 +1661,7 @@ func (t *SourceCodeSetup) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *SourceCodeSetup) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "primary_key":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Primary_key.Equal(old)
-		}
-	case "sales":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Sales.Equal(old)
-		}
-	case "purchases":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Purchases.Equal(old)
-		}
-	case "exchange_rate_adjmt":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Exchange_rate_adjmt.Equal(old)
-		}
-	case "close_income_statement":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Close_income_statement.Equal(old)
-		}
-	case "consolidation":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Consolidation.Equal(old)
-		}
-	case "adjust_add_reporting_currency":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Adjust_add_reporting_currency.Equal(old)
-		}
-	case "general_journal":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.General_journal.Equal(old)
-		}
-	case "sales_journal":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Sales_journal.Equal(old)
-		}
-	case "purchase_journal":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Purchase_journal.Equal(old)
-		}
-	case "cash_receipt_journal":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Cash_receipt_journal.Equal(old)
-		}
-	case "payment_journal":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Payment_journal.Equal(old)
-		}
-	case "sales_entry_application":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Sales_entry_application.Equal(old)
-		}
-	case "purchase_entry_application":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Purchase_entry_application.Equal(old)
-		}
-	case "tax_settlement":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_settlement.Equal(old)
-		}
-	case "financially_voided_check":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Financially_voided_check.Equal(old)
-		}
-	case "finance_charge_memo":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Finance_charge_memo.Equal(old)
-		}
-	case "reminder":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Reminder.Equal(old)
-		}
-	case "inventory_post_cost":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Inventory_post_cost.Equal(old)
-		}
-	case "item_journal":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Item_journal.Equal(old)
-		}
-	case "bom_journal":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Bom_journal.Equal(old)
-		}
-	case "resource_journal":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Resource_journal.Equal(old)
-		}
-	case "post_recognition":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Post_recognition.Equal(old)
-		}
-	case "post_value":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Post_value.Equal(old)
-		}
-	case "project_journal":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_journal.Equal(old)
-		}
-	case "compress_project_ledger":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Compress_project_ledger.Equal(old)
-		}
-	case "item_transfer_journal":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Item_transfer_journal.Equal(old)
-		}
-	case "phys_inventory_journal":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Phys_inventory_journal.Equal(old)
-		}
-	case "fixed_asset_journal":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Fixed_asset_journal.Equal(old)
-		}
-	case "fixed_asset_g_l_journal":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Fixed_asset_g_l_journal.Equal(old)
-		}
-	case "insurance_journal":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Insurance_journal.Equal(old)
-		}
-	case "compress_g_l":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Compress_g_l.Equal(old)
-		}
-	case "compress_tax_entries":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Compress_tax_entries.Equal(old)
-		}
-	case "compress_cust_ledger":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Compress_cust_ledger.Equal(old)
-		}
-	case "compress_vend_ledger":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Compress_vend_ledger.Equal(old)
-		}
-	case "compress_item_ledger":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Compress_item_ledger.Equal(old)
-		}
-	case "compress_bom_ledger":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Compress_bom_ledger.Equal(old)
-		}
-	case "compress_res_ledger":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Compress_res_ledger.Equal(old)
-		}
-	case "compress_bank_acc_ledger":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Compress_bank_acc_ledger.Equal(old)
-		}
-	case "compress_check_ledger":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Compress_check_ledger.Equal(old)
-		}
-	case "compress_fa_ledger":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Compress_fa_ledger.Equal(old)
-		}
-	case "compress_maintenance_ledger":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Compress_maintenance_ledger.Equal(old)
-		}
-	case "compress_insurance_ledger":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Compress_insurance_ledger.Equal(old)
-		}
-	}
-
-	return false
+	return sourceCodeSetupFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -2609,95 +1862,7 @@ func (t *SourceCodeSetup) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *SourceCodeSetup) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("primary_key"):
-		return "primary_key", true
-	case strings.ToLower("sales"):
-		return "sales", true
-	case strings.ToLower("purchases"):
-		return "purchases", true
-	case strings.ToLower("exchange_rate_adjmt"):
-		return "exchange_rate_adjmt", true
-	case strings.ToLower("close_income_statement"):
-		return "close_income_statement", true
-	case strings.ToLower("consolidation"):
-		return "consolidation", true
-	case strings.ToLower("adjust_add_reporting_currency"):
-		return "adjust_add_reporting_currency", true
-	case strings.ToLower("general_journal"):
-		return "general_journal", true
-	case strings.ToLower("sales_journal"):
-		return "sales_journal", true
-	case strings.ToLower("purchase_journal"):
-		return "purchase_journal", true
-	case strings.ToLower("cash_receipt_journal"):
-		return "cash_receipt_journal", true
-	case strings.ToLower("payment_journal"):
-		return "payment_journal", true
-	case strings.ToLower("sales_entry_application"):
-		return "sales_entry_application", true
-	case strings.ToLower("purchase_entry_application"):
-		return "purchase_entry_application", true
-	case strings.ToLower("tax_settlement"):
-		return "tax_settlement", true
-	case strings.ToLower("financially_voided_check"):
-		return "financially_voided_check", true
-	case strings.ToLower("finance_charge_memo"):
-		return "finance_charge_memo", true
-	case strings.ToLower("reminder"):
-		return "reminder", true
-	case strings.ToLower("inventory_post_cost"):
-		return "inventory_post_cost", true
-	case strings.ToLower("item_journal"):
-		return "item_journal", true
-	case strings.ToLower("bom_journal"):
-		return "bom_journal", true
-	case strings.ToLower("resource_journal"):
-		return "resource_journal", true
-	case strings.ToLower("post_recognition"):
-		return "post_recognition", true
-	case strings.ToLower("post_value"):
-		return "post_value", true
-	case strings.ToLower("project_journal"):
-		return "project_journal", true
-	case strings.ToLower("compress_project_ledger"):
-		return "compress_project_ledger", true
-	case strings.ToLower("item_transfer_journal"):
-		return "item_transfer_journal", true
-	case strings.ToLower("phys_inventory_journal"):
-		return "phys_inventory_journal", true
-	case strings.ToLower("fixed_asset_journal"):
-		return "fixed_asset_journal", true
-	case strings.ToLower("fixed_asset_g_l_journal"):
-		return "fixed_asset_g_l_journal", true
-	case strings.ToLower("insurance_journal"):
-		return "insurance_journal", true
-	case strings.ToLower("compress_g_l"):
-		return "compress_g_l", true
-	case strings.ToLower("compress_tax_entries"):
-		return "compress_tax_entries", true
-	case strings.ToLower("compress_cust_ledger"):
-		return "compress_cust_ledger", true
-	case strings.ToLower("compress_vend_ledger"):
-		return "compress_vend_ledger", true
-	case strings.ToLower("compress_item_ledger"):
-		return "compress_item_ledger", true
-	case strings.ToLower("compress_bom_ledger"):
-		return "compress_bom_ledger", true
-	case strings.ToLower("compress_res_ledger"):
-		return "compress_res_ledger", true
-	case strings.ToLower("compress_bank_acc_ledger"):
-		return "compress_bank_acc_ledger", true
-	case strings.ToLower("compress_check_ledger"):
-		return "compress_check_ledger", true
-	case strings.ToLower("compress_fa_ledger"):
-		return "compress_fa_ledger", true
-	case strings.ToLower("compress_maintenance_ledger"):
-		return "compress_maintenance_ledger", true
-	case strings.ToLower("compress_insurance_ledger"):
-		return "compress_insurance_ledger", true
-	}
-	return "", false
+	return sourceCodeSetupFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -4039,954 +3204,20 @@ func (t *SourceCodeSetup) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *SourceCodeSetup) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "primary_key":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Primary_key = v
-		} else if v, ok := value.(string); ok {
-			t.Primary_key = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field primary_key")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Primary_key); ok {
-				if err := trg.OnValidate_Primary_key(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sales":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Sales = v
-		} else if v, ok := value.(string); ok {
-			t.Sales = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field sales")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "sales"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Sales); ok {
-				if err := trg.OnValidate_Sales(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "purchases":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Purchases = v
-		} else if v, ok := value.(string); ok {
-			t.Purchases = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field purchases")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "purchases"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Purchases); ok {
-				if err := trg.OnValidate_Purchases(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "exchange_rate_adjmt":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Exchange_rate_adjmt = v
-		} else if v, ok := value.(string); ok {
-			t.Exchange_rate_adjmt = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field exchange_rate_adjmt")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "exchange_rate_adjmt"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Exchange_rate_adjmt); ok {
-				if err := trg.OnValidate_Exchange_rate_adjmt(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "close_income_statement":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Close_income_statement = v
-		} else if v, ok := value.(string); ok {
-			t.Close_income_statement = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field close_income_statement")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "close_income_statement"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Close_income_statement); ok {
-				if err := trg.OnValidate_Close_income_statement(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "consolidation":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Consolidation = v
-		} else if v, ok := value.(string); ok {
-			t.Consolidation = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field consolidation")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "consolidation"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Consolidation); ok {
-				if err := trg.OnValidate_Consolidation(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "adjust_add_reporting_currency":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Adjust_add_reporting_currency = v
-		} else if v, ok := value.(string); ok {
-			t.Adjust_add_reporting_currency = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field adjust_add_reporting_currency")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "adjust_add_reporting_currency"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Adjust_add_reporting_currency); ok {
-				if err := trg.OnValidate_Adjust_add_reporting_currency(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "general_journal":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.General_journal = v
-		} else if v, ok := value.(string); ok {
-			t.General_journal = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field general_journal")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "general_journal"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_General_journal); ok {
-				if err := trg.OnValidate_General_journal(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sales_journal":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Sales_journal = v
-		} else if v, ok := value.(string); ok {
-			t.Sales_journal = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field sales_journal")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "sales_journal"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Sales_journal); ok {
-				if err := trg.OnValidate_Sales_journal(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "purchase_journal":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Purchase_journal = v
-		} else if v, ok := value.(string); ok {
-			t.Purchase_journal = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field purchase_journal")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "purchase_journal"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Purchase_journal); ok {
-				if err := trg.OnValidate_Purchase_journal(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "cash_receipt_journal":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Cash_receipt_journal = v
-		} else if v, ok := value.(string); ok {
-			t.Cash_receipt_journal = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field cash_receipt_journal")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "cash_receipt_journal"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Cash_receipt_journal); ok {
-				if err := trg.OnValidate_Cash_receipt_journal(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "payment_journal":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Payment_journal = v
-		} else if v, ok := value.(string); ok {
-			t.Payment_journal = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field payment_journal")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "payment_journal"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Payment_journal); ok {
-				if err := trg.OnValidate_Payment_journal(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sales_entry_application":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Sales_entry_application = v
-		} else if v, ok := value.(string); ok {
-			t.Sales_entry_application = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field sales_entry_application")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "sales_entry_application"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Sales_entry_application); ok {
-				if err := trg.OnValidate_Sales_entry_application(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "purchase_entry_application":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Purchase_entry_application = v
-		} else if v, ok := value.(string); ok {
-			t.Purchase_entry_application = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field purchase_entry_application")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "purchase_entry_application"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Purchase_entry_application); ok {
-				if err := trg.OnValidate_Purchase_entry_application(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_settlement":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_settlement = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_settlement = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_settlement")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_settlement"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Tax_settlement); ok {
-				if err := trg.OnValidate_Tax_settlement(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "financially_voided_check":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Financially_voided_check = v
-		} else if v, ok := value.(string); ok {
-			t.Financially_voided_check = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field financially_voided_check")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "financially_voided_check"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Financially_voided_check); ok {
-				if err := trg.OnValidate_Financially_voided_check(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "finance_charge_memo":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Finance_charge_memo = v
-		} else if v, ok := value.(string); ok {
-			t.Finance_charge_memo = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field finance_charge_memo")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "finance_charge_memo"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Finance_charge_memo); ok {
-				if err := trg.OnValidate_Finance_charge_memo(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reminder":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Reminder = v
-		} else if v, ok := value.(string); ok {
-			t.Reminder = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field reminder")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "reminder"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Reminder); ok {
-				if err := trg.OnValidate_Reminder(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "inventory_post_cost":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Inventory_post_cost = v
-		} else if v, ok := value.(string); ok {
-			t.Inventory_post_cost = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field inventory_post_cost")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "inventory_post_cost"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Inventory_post_cost); ok {
-				if err := trg.OnValidate_Inventory_post_cost(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "item_journal":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Item_journal = v
-		} else if v, ok := value.(string); ok {
-			t.Item_journal = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field item_journal")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "item_journal"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Item_journal); ok {
-				if err := trg.OnValidate_Item_journal(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bom_journal":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Bom_journal = v
-		} else if v, ok := value.(string); ok {
-			t.Bom_journal = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field bom_journal")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "bom_journal"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Bom_journal); ok {
-				if err := trg.OnValidate_Bom_journal(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "resource_journal":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Resource_journal = v
-		} else if v, ok := value.(string); ok {
-			t.Resource_journal = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field resource_journal")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "resource_journal"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Resource_journal); ok {
-				if err := trg.OnValidate_Resource_journal(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "post_recognition":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Post_recognition = v
-		} else if v, ok := value.(string); ok {
-			t.Post_recognition = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field post_recognition")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "post_recognition"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Post_recognition); ok {
-				if err := trg.OnValidate_Post_recognition(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "post_value":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Post_value = v
-		} else if v, ok := value.(string); ok {
-			t.Post_value = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field post_value")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "post_value"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Post_value); ok {
-				if err := trg.OnValidate_Post_value(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "project_journal":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Project_journal = v
-		} else if v, ok := value.(string); ok {
-			t.Project_journal = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field project_journal")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_journal"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Project_journal); ok {
-				if err := trg.OnValidate_Project_journal(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "compress_project_ledger":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Compress_project_ledger = v
-		} else if v, ok := value.(string); ok {
-			t.Compress_project_ledger = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field compress_project_ledger")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "compress_project_ledger"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Compress_project_ledger); ok {
-				if err := trg.OnValidate_Compress_project_ledger(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "item_transfer_journal":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Item_transfer_journal = v
-		} else if v, ok := value.(string); ok {
-			t.Item_transfer_journal = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field item_transfer_journal")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "item_transfer_journal"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Item_transfer_journal); ok {
-				if err := trg.OnValidate_Item_transfer_journal(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "phys_inventory_journal":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Phys_inventory_journal = v
-		} else if v, ok := value.(string); ok {
-			t.Phys_inventory_journal = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field phys_inventory_journal")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "phys_inventory_journal"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Phys_inventory_journal); ok {
-				if err := trg.OnValidate_Phys_inventory_journal(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fixed_asset_journal":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Fixed_asset_journal = v
-		} else if v, ok := value.(string); ok {
-			t.Fixed_asset_journal = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field fixed_asset_journal")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fixed_asset_journal"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Fixed_asset_journal); ok {
-				if err := trg.OnValidate_Fixed_asset_journal(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fixed_asset_g_l_journal":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Fixed_asset_g_l_journal = v
-		} else if v, ok := value.(string); ok {
-			t.Fixed_asset_g_l_journal = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field fixed_asset_g_l_journal")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fixed_asset_g_l_journal"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Fixed_asset_g_l_journal); ok {
-				if err := trg.OnValidate_Fixed_asset_g_l_journal(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "insurance_journal":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Insurance_journal = v
-		} else if v, ok := value.(string); ok {
-			t.Insurance_journal = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field insurance_journal")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "insurance_journal"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Insurance_journal); ok {
-				if err := trg.OnValidate_Insurance_journal(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "compress_g_l":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Compress_g_l = v
-		} else if v, ok := value.(string); ok {
-			t.Compress_g_l = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field compress_g_l")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "compress_g_l"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Compress_g_l); ok {
-				if err := trg.OnValidate_Compress_g_l(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "compress_tax_entries":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Compress_tax_entries = v
-		} else if v, ok := value.(string); ok {
-			t.Compress_tax_entries = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field compress_tax_entries")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "compress_tax_entries"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Compress_tax_entries); ok {
-				if err := trg.OnValidate_Compress_tax_entries(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "compress_cust_ledger":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Compress_cust_ledger = v
-		} else if v, ok := value.(string); ok {
-			t.Compress_cust_ledger = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field compress_cust_ledger")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "compress_cust_ledger"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Compress_cust_ledger); ok {
-				if err := trg.OnValidate_Compress_cust_ledger(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "compress_vend_ledger":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Compress_vend_ledger = v
-		} else if v, ok := value.(string); ok {
-			t.Compress_vend_ledger = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field compress_vend_ledger")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "compress_vend_ledger"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Compress_vend_ledger); ok {
-				if err := trg.OnValidate_Compress_vend_ledger(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "compress_item_ledger":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Compress_item_ledger = v
-		} else if v, ok := value.(string); ok {
-			t.Compress_item_ledger = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field compress_item_ledger")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "compress_item_ledger"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Compress_item_ledger); ok {
-				if err := trg.OnValidate_Compress_item_ledger(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "compress_bom_ledger":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Compress_bom_ledger = v
-		} else if v, ok := value.(string); ok {
-			t.Compress_bom_ledger = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field compress_bom_ledger")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "compress_bom_ledger"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Compress_bom_ledger); ok {
-				if err := trg.OnValidate_Compress_bom_ledger(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "compress_res_ledger":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Compress_res_ledger = v
-		} else if v, ok := value.(string); ok {
-			t.Compress_res_ledger = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field compress_res_ledger")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "compress_res_ledger"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Compress_res_ledger); ok {
-				if err := trg.OnValidate_Compress_res_ledger(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "compress_bank_acc_ledger":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Compress_bank_acc_ledger = v
-		} else if v, ok := value.(string); ok {
-			t.Compress_bank_acc_ledger = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field compress_bank_acc_ledger")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "compress_bank_acc_ledger"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Compress_bank_acc_ledger); ok {
-				if err := trg.OnValidate_Compress_bank_acc_ledger(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "compress_check_ledger":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Compress_check_ledger = v
-		} else if v, ok := value.(string); ok {
-			t.Compress_check_ledger = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field compress_check_ledger")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "compress_check_ledger"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Compress_check_ledger); ok {
-				if err := trg.OnValidate_Compress_check_ledger(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "compress_fa_ledger":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Compress_fa_ledger = v
-		} else if v, ok := value.(string); ok {
-			t.Compress_fa_ledger = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field compress_fa_ledger")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "compress_fa_ledger"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Compress_fa_ledger); ok {
-				if err := trg.OnValidate_Compress_fa_ledger(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "compress_maintenance_ledger":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Compress_maintenance_ledger = v
-		} else if v, ok := value.(string); ok {
-			t.Compress_maintenance_ledger = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field compress_maintenance_ledger")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "compress_maintenance_ledger"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Compress_maintenance_ledger); ok {
-				if err := trg.OnValidate_Compress_maintenance_ledger(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "compress_insurance_ledger":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Compress_insurance_ledger = v
-		} else if v, ok := value.(string); ok {
-			t.Compress_insurance_ledger = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field compress_insurance_ledger")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "compress_insurance_ledger"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SourceCodeSetupOnValidate_Compress_insurance_ledger); ok {
-				if err := trg.OnValidate_Compress_insurance_ledger(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := sourceCodeSetupFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &sourceCodeSetupFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -4995,497 +3226,18 @@ func (t *SourceCodeSetup) ValidateField(fieldName string, value interface{}) err
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *SourceCodeSetup) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Primary_key, true
-	case 2:
-		return t.Sales, true
-	case 3:
-		return t.Purchases, true
-	case 5:
-		return t.Exchange_rate_adjmt, true
-	case 8:
-		return t.Close_income_statement, true
-	case 9:
-		return t.Consolidation, true
-	case 41:
-		return t.Adjust_add_reporting_currency, true
-	case 10:
-		return t.General_journal, true
-	case 11:
-		return t.Sales_journal, true
-	case 12:
-		return t.Purchase_journal, true
-	case 13:
-		return t.Cash_receipt_journal, true
-	case 14:
-		return t.Payment_journal, true
-	case 21:
-		return t.Sales_entry_application, true
-	case 22:
-		return t.Purchase_entry_application, true
-	case 23:
-		return t.Tax_settlement, true
-	case 37:
-		return t.Financially_voided_check, true
-	case 38:
-		return t.Finance_charge_memo, true
-	case 39:
-		return t.Reminder, true
-	case 4:
-		return t.Inventory_post_cost, true
-	case 16:
-		return t.Item_journal, true
-	case 17:
-		return t.Bom_journal, true
-	case 19:
-		return t.Resource_journal, true
-	case 6:
-		return t.Post_recognition, true
-	case 7:
-		return t.Post_value, true
-	case 20:
-		return t.Project_journal, true
-	case 32:
-		return t.Compress_project_ledger, true
-	case 33:
-		return t.Item_transfer_journal, true
-	case 34:
-		return t.Phys_inventory_journal, true
-	case 5600:
-		return t.Fixed_asset_journal, true
-	case 5601:
-		return t.Fixed_asset_g_l_journal, true
-	case 5602:
-		return t.Insurance_journal, true
-	case 24:
-		return t.Compress_g_l, true
-	case 25:
-		return t.Compress_tax_entries, true
-	case 26:
-		return t.Compress_cust_ledger, true
-	case 27:
-		return t.Compress_vend_ledger, true
-	case 28:
-		return t.Compress_item_ledger, true
-	case 29:
-		return t.Compress_bom_ledger, true
-	case 31:
-		return t.Compress_res_ledger, true
-	case 35:
-		return t.Compress_bank_acc_ledger, true
-	case 36:
-		return t.Compress_check_ledger, true
-	case 5603:
-		return t.Compress_fa_ledger, true
-	case 5604:
-		return t.Compress_maintenance_ledger, true
-	case 5605:
-		return t.Compress_insurance_ledger, true
-	}
-	return nil, false
+	return sourceCodeSetupFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *SourceCodeSetup) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return sourceCodeSetupFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *SourceCodeSetup) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Primary_key = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Primary_key = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Sales = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Sales = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Code); ok {
-			t.Purchases = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Purchases = types.NewCode(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Code); ok {
-			t.Exchange_rate_adjmt = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Exchange_rate_adjmt = types.NewCode(v)
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Code); ok {
-			t.Close_income_statement = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Close_income_statement = types.NewCode(v)
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.Code); ok {
-			t.Consolidation = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Consolidation = types.NewCode(v)
-			return true
-		}
-	case 41:
-		if v, ok := value.(types.Code); ok {
-			t.Adjust_add_reporting_currency = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Adjust_add_reporting_currency = types.NewCode(v)
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Code); ok {
-			t.General_journal = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.General_journal = types.NewCode(v)
-			return true
-		}
-	case 11:
-		if v, ok := value.(types.Code); ok {
-			t.Sales_journal = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Sales_journal = types.NewCode(v)
-			return true
-		}
-	case 12:
-		if v, ok := value.(types.Code); ok {
-			t.Purchase_journal = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Purchase_journal = types.NewCode(v)
-			return true
-		}
-	case 13:
-		if v, ok := value.(types.Code); ok {
-			t.Cash_receipt_journal = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Cash_receipt_journal = types.NewCode(v)
-			return true
-		}
-	case 14:
-		if v, ok := value.(types.Code); ok {
-			t.Payment_journal = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Payment_journal = types.NewCode(v)
-			return true
-		}
-	case 21:
-		if v, ok := value.(types.Code); ok {
-			t.Sales_entry_application = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Sales_entry_application = types.NewCode(v)
-			return true
-		}
-	case 22:
-		if v, ok := value.(types.Code); ok {
-			t.Purchase_entry_application = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Purchase_entry_application = types.NewCode(v)
-			return true
-		}
-	case 23:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_settlement = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_settlement = types.NewCode(v)
-			return true
-		}
-	case 37:
-		if v, ok := value.(types.Code); ok {
-			t.Financially_voided_check = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Financially_voided_check = types.NewCode(v)
-			return true
-		}
-	case 38:
-		if v, ok := value.(types.Code); ok {
-			t.Finance_charge_memo = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Finance_charge_memo = types.NewCode(v)
-			return true
-		}
-	case 39:
-		if v, ok := value.(types.Code); ok {
-			t.Reminder = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Reminder = types.NewCode(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Code); ok {
-			t.Inventory_post_cost = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Inventory_post_cost = types.NewCode(v)
-			return true
-		}
-	case 16:
-		if v, ok := value.(types.Code); ok {
-			t.Item_journal = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Item_journal = types.NewCode(v)
-			return true
-		}
-	case 17:
-		if v, ok := value.(types.Code); ok {
-			t.Bom_journal = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Bom_journal = types.NewCode(v)
-			return true
-		}
-	case 19:
-		if v, ok := value.(types.Code); ok {
-			t.Resource_journal = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Resource_journal = types.NewCode(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Code); ok {
-			t.Post_recognition = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Post_recognition = types.NewCode(v)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Code); ok {
-			t.Post_value = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Post_value = types.NewCode(v)
-			return true
-		}
-	case 20:
-		if v, ok := value.(types.Code); ok {
-			t.Project_journal = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Project_journal = types.NewCode(v)
-			return true
-		}
-	case 32:
-		if v, ok := value.(types.Code); ok {
-			t.Compress_project_ledger = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Compress_project_ledger = types.NewCode(v)
-			return true
-		}
-	case 33:
-		if v, ok := value.(types.Code); ok {
-			t.Item_transfer_journal = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Item_transfer_journal = types.NewCode(v)
-			return true
-		}
-	case 34:
-		if v, ok := value.(types.Code); ok {
-			t.Phys_inventory_journal = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Phys_inventory_journal = types.NewCode(v)
-			return true
-		}
-	case 5600:
-		if v, ok := value.(types.Code); ok {
-			t.Fixed_asset_journal = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Fixed_asset_journal = types.NewCode(v)
-			return true
-		}
-	case 5601:
-		if v, ok := value.(types.Code); ok {
-			t.Fixed_asset_g_l_journal = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Fixed_asset_g_l_journal = types.NewCode(v)
-			return true
-		}
-	case 5602:
-		if v, ok := value.(types.Code); ok {
-			t.Insurance_journal = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Insurance_journal = types.NewCode(v)
-			return true
-		}
-	case 24:
-		if v, ok := value.(types.Code); ok {
-			t.Compress_g_l = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Compress_g_l = types.NewCode(v)
-			return true
-		}
-	case 25:
-		if v, ok := value.(types.Code); ok {
-			t.Compress_tax_entries = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Compress_tax_entries = types.NewCode(v)
-			return true
-		}
-	case 26:
-		if v, ok := value.(types.Code); ok {
-			t.Compress_cust_ledger = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Compress_cust_ledger = types.NewCode(v)
-			return true
-		}
-	case 27:
-		if v, ok := value.(types.Code); ok {
-			t.Compress_vend_ledger = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Compress_vend_ledger = types.NewCode(v)
-			return true
-		}
-	case 28:
-		if v, ok := value.(types.Code); ok {
-			t.Compress_item_ledger = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Compress_item_ledger = types.NewCode(v)
-			return true
-		}
-	case 29:
-		if v, ok := value.(types.Code); ok {
-			t.Compress_bom_ledger = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Compress_bom_ledger = types.NewCode(v)
-			return true
-		}
-	case 31:
-		if v, ok := value.(types.Code); ok {
-			t.Compress_res_ledger = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Compress_res_ledger = types.NewCode(v)
-			return true
-		}
-	case 35:
-		if v, ok := value.(types.Code); ok {
-			t.Compress_bank_acc_ledger = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Compress_bank_acc_ledger = types.NewCode(v)
-			return true
-		}
-	case 36:
-		if v, ok := value.(types.Code); ok {
-			t.Compress_check_ledger = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Compress_check_ledger = types.NewCode(v)
-			return true
-		}
-	case 5603:
-		if v, ok := value.(types.Code); ok {
-			t.Compress_fa_ledger = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Compress_fa_ledger = types.NewCode(v)
-			return true
-		}
-	case 5604:
-		if v, ok := value.(types.Code); ok {
-			t.Compress_maintenance_ledger = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Compress_maintenance_ledger = types.NewCode(v)
-			return true
-		}
-	case 5605:
-		if v, ok := value.(types.Code); ok {
-			t.Compress_insurance_ledger = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Compress_insurance_ledger = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return sourceCodeSetupFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -5934,95 +3686,7 @@ func (t *SourceCodeSetup) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *SourceCodeSetup) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "primary_key":
-		return t.Primary_key, true
-	case "sales":
-		return t.Sales, true
-	case "purchases":
-		return t.Purchases, true
-	case "exchange_rate_adjmt":
-		return t.Exchange_rate_adjmt, true
-	case "close_income_statement":
-		return t.Close_income_statement, true
-	case "consolidation":
-		return t.Consolidation, true
-	case "adjust_add_reporting_currency":
-		return t.Adjust_add_reporting_currency, true
-	case "general_journal":
-		return t.General_journal, true
-	case "sales_journal":
-		return t.Sales_journal, true
-	case "purchase_journal":
-		return t.Purchase_journal, true
-	case "cash_receipt_journal":
-		return t.Cash_receipt_journal, true
-	case "payment_journal":
-		return t.Payment_journal, true
-	case "sales_entry_application":
-		return t.Sales_entry_application, true
-	case "purchase_entry_application":
-		return t.Purchase_entry_application, true
-	case "tax_settlement":
-		return t.Tax_settlement, true
-	case "financially_voided_check":
-		return t.Financially_voided_check, true
-	case "finance_charge_memo":
-		return t.Finance_charge_memo, true
-	case "reminder":
-		return t.Reminder, true
-	case "inventory_post_cost":
-		return t.Inventory_post_cost, true
-	case "item_journal":
-		return t.Item_journal, true
-	case "bom_journal":
-		return t.Bom_journal, true
-	case "resource_journal":
-		return t.Resource_journal, true
-	case "post_recognition":
-		return t.Post_recognition, true
-	case "post_value":
-		return t.Post_value, true
-	case "project_journal":
-		return t.Project_journal, true
-	case "compress_project_ledger":
-		return t.Compress_project_ledger, true
-	case "item_transfer_journal":
-		return t.Item_transfer_journal, true
-	case "phys_inventory_journal":
-		return t.Phys_inventory_journal, true
-	case "fixed_asset_journal":
-		return t.Fixed_asset_journal, true
-	case "fixed_asset_g_l_journal":
-		return t.Fixed_asset_g_l_journal, true
-	case "insurance_journal":
-		return t.Insurance_journal, true
-	case "compress_g_l":
-		return t.Compress_g_l, true
-	case "compress_tax_entries":
-		return t.Compress_tax_entries, true
-	case "compress_cust_ledger":
-		return t.Compress_cust_ledger, true
-	case "compress_vend_ledger":
-		return t.Compress_vend_ledger, true
-	case "compress_item_ledger":
-		return t.Compress_item_ledger, true
-	case "compress_bom_ledger":
-		return t.Compress_bom_ledger, true
-	case "compress_res_ledger":
-		return t.Compress_res_ledger, true
-	case "compress_bank_acc_ledger":
-		return t.Compress_bank_acc_ledger, true
-	case "compress_check_ledger":
-		return t.Compress_check_ledger, true
-	case "compress_fa_ledger":
-		return t.Compress_fa_ledger, true
-	case "compress_maintenance_ledger":
-		return t.Compress_maintenance_ledger, true
-	case "compress_insurance_ledger":
-		return t.Compress_insurance_ledger, true
-	}
-	return nil, false
+	return sourceCodeSetupFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -6150,270 +3814,12 @@ func (t *SourceCodeSetup) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *SourceCodeSetup) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"primary_key":                   t.Primary_key.String(),
-		"sales":                         t.Sales.String(),
-		"purchases":                     t.Purchases.String(),
-		"exchange_rate_adjmt":           t.Exchange_rate_adjmt.String(),
-		"close_income_statement":        t.Close_income_statement.String(),
-		"consolidation":                 t.Consolidation.String(),
-		"adjust_add_reporting_currency": t.Adjust_add_reporting_currency.String(),
-		"general_journal":               t.General_journal.String(),
-		"sales_journal":                 t.Sales_journal.String(),
-		"purchase_journal":              t.Purchase_journal.String(),
-		"cash_receipt_journal":          t.Cash_receipt_journal.String(),
-		"payment_journal":               t.Payment_journal.String(),
-		"sales_entry_application":       t.Sales_entry_application.String(),
-		"purchase_entry_application":    t.Purchase_entry_application.String(),
-		"tax_settlement":                t.Tax_settlement.String(),
-		"financially_voided_check":      t.Financially_voided_check.String(),
-		"finance_charge_memo":           t.Finance_charge_memo.String(),
-		"reminder":                      t.Reminder.String(),
-		"inventory_post_cost":           t.Inventory_post_cost.String(),
-		"item_journal":                  t.Item_journal.String(),
-		"bom_journal":                   t.Bom_journal.String(),
-		"resource_journal":              t.Resource_journal.String(),
-		"post_recognition":              t.Post_recognition.String(),
-		"post_value":                    t.Post_value.String(),
-		"project_journal":               t.Project_journal.String(),
-		"compress_project_ledger":       t.Compress_project_ledger.String(),
-		"item_transfer_journal":         t.Item_transfer_journal.String(),
-		"phys_inventory_journal":        t.Phys_inventory_journal.String(),
-		"fixed_asset_journal":           t.Fixed_asset_journal.String(),
-		"fixed_asset_g_l_journal":       t.Fixed_asset_g_l_journal.String(),
-		"insurance_journal":             t.Insurance_journal.String(),
-		"compress_g_l":                  t.Compress_g_l.String(),
-		"compress_tax_entries":          t.Compress_tax_entries.String(),
-		"compress_cust_ledger":          t.Compress_cust_ledger.String(),
-		"compress_vend_ledger":          t.Compress_vend_ledger.String(),
-		"compress_item_ledger":          t.Compress_item_ledger.String(),
-		"compress_bom_ledger":           t.Compress_bom_ledger.String(),
-		"compress_res_ledger":           t.Compress_res_ledger.String(),
-		"compress_bank_acc_ledger":      t.Compress_bank_acc_ledger.String(),
-		"compress_check_ledger":         t.Compress_check_ledger.String(),
-		"compress_fa_ledger":            t.Compress_fa_ledger.String(),
-		"compress_maintenance_ledger":   t.Compress_maintenance_ledger.String(),
-		"compress_insurance_ledger":     t.Compress_insurance_ledger.String(),
-	}
+	return sourceCodeSetupFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *SourceCodeSetup) FromMap(data map[string]interface{}) {
-	if v, ok := data["primary_key"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Primary_key = types.NewCode(s)
-		}
-	}
-	if v, ok := data["sales"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Sales = types.NewCode(s)
-		}
-	}
-	if v, ok := data["purchases"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Purchases = types.NewCode(s)
-		}
-	}
-	if v, ok := data["exchange_rate_adjmt"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Exchange_rate_adjmt = types.NewCode(s)
-		}
-	}
-	if v, ok := data["close_income_statement"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Close_income_statement = types.NewCode(s)
-		}
-	}
-	if v, ok := data["consolidation"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Consolidation = types.NewCode(s)
-		}
-	}
-	if v, ok := data["adjust_add_reporting_currency"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Adjust_add_reporting_currency = types.NewCode(s)
-		}
-	}
-	if v, ok := data["general_journal"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.General_journal = types.NewCode(s)
-		}
-	}
-	if v, ok := data["sales_journal"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Sales_journal = types.NewCode(s)
-		}
-	}
-	if v, ok := data["purchase_journal"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Purchase_journal = types.NewCode(s)
-		}
-	}
-	if v, ok := data["cash_receipt_journal"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Cash_receipt_journal = types.NewCode(s)
-		}
-	}
-	if v, ok := data["payment_journal"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Payment_journal = types.NewCode(s)
-		}
-	}
-	if v, ok := data["sales_entry_application"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Sales_entry_application = types.NewCode(s)
-		}
-	}
-	if v, ok := data["purchase_entry_application"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Purchase_entry_application = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_settlement"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_settlement = types.NewCode(s)
-		}
-	}
-	if v, ok := data["financially_voided_check"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Financially_voided_check = types.NewCode(s)
-		}
-	}
-	if v, ok := data["finance_charge_memo"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Finance_charge_memo = types.NewCode(s)
-		}
-	}
-	if v, ok := data["reminder"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Reminder = types.NewCode(s)
-		}
-	}
-	if v, ok := data["inventory_post_cost"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Inventory_post_cost = types.NewCode(s)
-		}
-	}
-	if v, ok := data["item_journal"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Item_journal = types.NewCode(s)
-		}
-	}
-	if v, ok := data["bom_journal"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Bom_journal = types.NewCode(s)
-		}
-	}
-	if v, ok := data["resource_journal"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Resource_journal = types.NewCode(s)
-		}
-	}
-	if v, ok := data["post_recognition"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Post_recognition = types.NewCode(s)
-		}
-	}
-	if v, ok := data["post_value"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Post_value = types.NewCode(s)
-		}
-	}
-	if v, ok := data["project_journal"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Project_journal = types.NewCode(s)
-		}
-	}
-	if v, ok := data["compress_project_ledger"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Compress_project_ledger = types.NewCode(s)
-		}
-	}
-	if v, ok := data["item_transfer_journal"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Item_transfer_journal = types.NewCode(s)
-		}
-	}
-	if v, ok := data["phys_inventory_journal"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Phys_inventory_journal = types.NewCode(s)
-		}
-	}
-	if v, ok := data["fixed_asset_journal"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fixed_asset_journal = types.NewCode(s)
-		}
-	}
-	if v, ok := data["fixed_asset_g_l_journal"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fixed_asset_g_l_journal = types.NewCode(s)
-		}
-	}
-	if v, ok := data["insurance_journal"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Insurance_journal = types.NewCode(s)
-		}
-	}
-	if v, ok := data["compress_g_l"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Compress_g_l = types.NewCode(s)
-		}
-	}
-	if v, ok := data["compress_tax_entries"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Compress_tax_entries = types.NewCode(s)
-		}
-	}
-	if v, ok := data["compress_cust_ledger"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Compress_cust_ledger = types.NewCode(s)
-		}
-	}
-	if v, ok := data["compress_vend_ledger"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Compress_vend_ledger = types.NewCode(s)
-		}
-	}
-	if v, ok := data["compress_item_ledger"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Compress_item_ledger = types.NewCode(s)
-		}
-	}
-	if v, ok := data["compress_bom_ledger"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Compress_bom_ledger = types.NewCode(s)
-		}
-	}
-	if v, ok := data["compress_res_ledger"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Compress_res_ledger = types.NewCode(s)
-		}
-	}
-	if v, ok := data["compress_bank_acc_ledger"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Compress_bank_acc_ledger = types.NewCode(s)
-		}
-	}
-	if v, ok := data["compress_check_ledger"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Compress_check_ledger = types.NewCode(s)
-		}
-	}
-	if v, ok := data["compress_fa_ledger"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Compress_fa_ledger = types.NewCode(s)
-		}
-	}
-	if v, ok := data["compress_maintenance_ledger"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Compress_maintenance_ledger = types.NewCode(s)
-		}
-	}
-	if v, ok := data["compress_insurance_ledger"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Compress_insurance_ledger = types.NewCode(s)
-		}
-	}
+	sourceCodeSetupFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -6434,438 +3840,752 @@ func (t *SourceCodeSetup) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *SourceCodeSetup) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "primary_key",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "sales",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "purchases",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "exchange_rate_adjmt",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "close_income_statement",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "consolidation",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         41,
-			Name:       "adjust_add_reporting_currency",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "general_journal",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "sales_journal",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "purchase_journal",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         13,
-			Name:       "cash_receipt_journal",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         14,
-			Name:       "payment_journal",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         21,
-			Name:       "sales_entry_application",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         22,
-			Name:       "purchase_entry_application",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         23,
-			Name:       "tax_settlement",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         37,
-			Name:       "financially_voided_check",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         38,
-			Name:       "finance_charge_memo",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         39,
-			Name:       "reminder",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "inventory_post_cost",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         16,
-			Name:       "item_journal",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         17,
-			Name:       "bom_journal",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         19,
-			Name:       "resource_journal",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "post_recognition",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "post_value",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         20,
-			Name:       "project_journal",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         32,
-			Name:       "compress_project_ledger",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         33,
-			Name:       "item_transfer_journal",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         34,
-			Name:       "phys_inventory_journal",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5600,
-			Name:       "fixed_asset_journal",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5601,
-			Name:       "fixed_asset_g_l_journal",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5602,
-			Name:       "insurance_journal",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         24,
-			Name:       "compress_g_l",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         25,
-			Name:       "compress_tax_entries",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         26,
-			Name:       "compress_cust_ledger",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         27,
-			Name:       "compress_vend_ledger",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         28,
-			Name:       "compress_item_ledger",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         29,
-			Name:       "compress_bom_ledger",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         31,
-			Name:       "compress_res_ledger",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         35,
-			Name:       "compress_bank_acc_ledger",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         36,
-			Name:       "compress_check_ledger",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5603,
-			Name:       "compress_fa_ledger",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5604,
-			Name:       "compress_maintenance_ledger",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5605,
-			Name:       "compress_insurance_ledger",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return sourceCodeSetupFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in sourceCodeSetupFields.Fields
+func (t *SourceCodeSetup) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Primary_key
+	case 1:
+		return &t.Sales
+	case 2:
+		return &t.Purchases
+	case 3:
+		return &t.Exchange_rate_adjmt
+	case 4:
+		return &t.Close_income_statement
+	case 5:
+		return &t.Consolidation
+	case 6:
+		return &t.Adjust_add_reporting_currency
+	case 7:
+		return &t.General_journal
+	case 8:
+		return &t.Sales_journal
+	case 9:
+		return &t.Purchase_journal
+	case 10:
+		return &t.Cash_receipt_journal
+	case 11:
+		return &t.Payment_journal
+	case 12:
+		return &t.Sales_entry_application
+	case 13:
+		return &t.Purchase_entry_application
+	case 14:
+		return &t.Tax_settlement
+	case 15:
+		return &t.Financially_voided_check
+	case 16:
+		return &t.Finance_charge_memo
+	case 17:
+		return &t.Reminder
+	case 18:
+		return &t.Inventory_post_cost
+	case 19:
+		return &t.Item_journal
+	case 20:
+		return &t.Bom_journal
+	case 21:
+		return &t.Resource_journal
+	case 22:
+		return &t.Post_recognition
+	case 23:
+		return &t.Post_value
+	case 24:
+		return &t.Project_journal
+	case 25:
+		return &t.Compress_project_ledger
+	case 26:
+		return &t.Item_transfer_journal
+	case 27:
+		return &t.Phys_inventory_journal
+	case 28:
+		return &t.Fixed_asset_journal
+	case 29:
+		return &t.Fixed_asset_g_l_journal
+	case 30:
+		return &t.Insurance_journal
+	case 31:
+		return &t.Compress_g_l
+	case 32:
+		return &t.Compress_tax_entries
+	case 33:
+		return &t.Compress_cust_ledger
+	case 34:
+		return &t.Compress_vend_ledger
+	case 35:
+		return &t.Compress_item_ledger
+	case 36:
+		return &t.Compress_bom_ledger
+	case 37:
+		return &t.Compress_res_ledger
+	case 38:
+		return &t.Compress_bank_acc_ledger
+	case 39:
+		return &t.Compress_check_ledger
+	case 40:
+		return &t.Compress_fa_ledger
+	case 41:
+		return &t.Compress_maintenance_ledger
+	case 42:
+		return &t.Compress_insurance_ledger
 	}
+	return nil
+}
+
+// sourceCodeSetupFields describes the fields of Source_Code_Setup for the record functions
+// written once in foundation/tables
+var sourceCodeSetupFields = &tables.TableFields{
+	Table: SourceCodeSetupTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "primary_key",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Primary_key",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "sales",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Sales",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "purchases",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Purchases",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "exchange_rate_adjmt",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Exchange_rate_adjmt",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "close_income_statement",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Close_income_statement",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "consolidation",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Consolidation",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         41,
+				Name:       "adjust_add_reporting_currency",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Adjust_add_reporting_currency",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "general_journal",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_General_journal",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "sales_journal",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Sales_journal",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "purchase_journal",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Purchase_journal",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "cash_receipt_journal",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Cash_receipt_journal",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "payment_journal",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Payment_journal",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         21,
+				Name:       "sales_entry_application",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Sales_entry_application",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         22,
+				Name:       "purchase_entry_application",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Purchase_entry_application",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         23,
+				Name:       "tax_settlement",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_settlement",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         37,
+				Name:       "financially_voided_check",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Financially_voided_check",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         38,
+				Name:       "finance_charge_memo",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Finance_charge_memo",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         39,
+				Name:       "reminder",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Reminder",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "inventory_post_cost",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Inventory_post_cost",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         16,
+				Name:       "item_journal",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Item_journal",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         17,
+				Name:       "bom_journal",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Bom_journal",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         19,
+				Name:       "resource_journal",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Resource_journal",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "post_recognition",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Post_recognition",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "post_value",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Post_value",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         20,
+				Name:       "project_journal",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Project_journal",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         32,
+				Name:       "compress_project_ledger",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Compress_project_ledger",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         33,
+				Name:       "item_transfer_journal",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Item_transfer_journal",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         34,
+				Name:       "phys_inventory_journal",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Phys_inventory_journal",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5600,
+				Name:       "fixed_asset_journal",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Fixed_asset_journal",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5601,
+				Name:       "fixed_asset_g_l_journal",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Fixed_asset_g_l_journal",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5602,
+				Name:       "insurance_journal",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Insurance_journal",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         24,
+				Name:       "compress_g_l",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Compress_g_l",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         25,
+				Name:       "compress_tax_entries",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Compress_tax_entries",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         26,
+				Name:       "compress_cust_ledger",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Compress_cust_ledger",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         27,
+				Name:       "compress_vend_ledger",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Compress_vend_ledger",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         28,
+				Name:       "compress_item_ledger",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Compress_item_ledger",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         29,
+				Name:       "compress_bom_ledger",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Compress_bom_ledger",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         31,
+				Name:       "compress_res_ledger",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Compress_res_ledger",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         35,
+				Name:       "compress_bank_acc_ledger",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Compress_bank_acc_ledger",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         36,
+				Name:       "compress_check_ledger",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Compress_check_ledger",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5603,
+				Name:       "compress_fa_ledger",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Compress_fa_ledger",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5604,
+				Name:       "compress_maintenance_ledger",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Compress_maintenance_ledger",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5605,
+				Name:       "compress_insurance_ledger",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Compress_insurance_ledger",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

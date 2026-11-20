@@ -204,72 +204,12 @@ var TaxJurisdiction_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *TaxJurisdiction) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "code":
-		return 1
-	case "description":
-		return 2
-	case "tax_account_sales":
-		return 3
-	case "tax_account_purchases":
-		return 4
-	case "report_to_jurisdiction":
-		return 5
-	case "unreal_tax_acc_sales":
-		return 8
-	case "unreal_tax_acc_purchases":
-		return 9
-	case "reverse_charge_purchases":
-		return 10
-	case "unreal_rev_charge_purch":
-		return 11
-	case "unrealized_tax_type":
-		return 12
-	case "calculate_tax_on_tax":
-		return 13
-	case "adjust_for_payment_discount":
-		return 14
-	case "date_filter":
-		return 6
-	case "tax_group_filter":
-		return 7
-	}
-	return 0
+	return taxJurisdictionFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *TaxJurisdiction) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "code"
-	case 2:
-		return "description"
-	case 3:
-		return "tax_account_sales"
-	case 4:
-		return "tax_account_purchases"
-	case 5:
-		return "report_to_jurisdiction"
-	case 8:
-		return "unreal_tax_acc_sales"
-	case 9:
-		return "unreal_tax_acc_purchases"
-	case 10:
-		return "reverse_charge_purchases"
-	case 11:
-		return "unreal_rev_charge_purch"
-	case 12:
-		return "unrealized_tax_type"
-	case 13:
-		return "calculate_tax_on_tax"
-	case 14:
-		return "adjust_for_payment_discount"
-	case 6:
-		return "date_filter"
-	case 7:
-		return "tax_group_filter"
-	}
-	return ""
+	return taxJurisdictionFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -381,42 +321,6 @@ type (
 	TaxJurisdictionOnBeforeRename interface {
 		OnBeforeRename(rec *TaxJurisdiction, handled *bool) error
 	}
-	TaxJurisdictionOnValidate_Code interface {
-		OnValidate_Code(rec *TaxJurisdiction) error
-	}
-	TaxJurisdictionOnValidate_Description interface {
-		OnValidate_Description(rec *TaxJurisdiction) error
-	}
-	TaxJurisdictionOnValidate_Tax_account_sales interface {
-		OnValidate_Tax_account_sales(rec *TaxJurisdiction) error
-	}
-	TaxJurisdictionOnValidate_Tax_account_purchases interface {
-		OnValidate_Tax_account_purchases(rec *TaxJurisdiction) error
-	}
-	TaxJurisdictionOnValidate_Report_to_jurisdiction interface {
-		OnValidate_Report_to_jurisdiction(rec *TaxJurisdiction) error
-	}
-	TaxJurisdictionOnValidate_Unreal_tax_acc_sales interface {
-		OnValidate_Unreal_tax_acc_sales(rec *TaxJurisdiction) error
-	}
-	TaxJurisdictionOnValidate_Unreal_tax_acc_purchases interface {
-		OnValidate_Unreal_tax_acc_purchases(rec *TaxJurisdiction) error
-	}
-	TaxJurisdictionOnValidate_Reverse_charge_purchases interface {
-		OnValidate_Reverse_charge_purchases(rec *TaxJurisdiction) error
-	}
-	TaxJurisdictionOnValidate_Unreal_rev_charge_purch interface {
-		OnValidate_Unreal_rev_charge_purch(rec *TaxJurisdiction) error
-	}
-	TaxJurisdictionOnValidate_Unrealized_tax_type interface {
-		OnValidate_Unrealized_tax_type(rec *TaxJurisdiction) error
-	}
-	TaxJurisdictionOnValidate_Calculate_tax_on_tax interface {
-		OnValidate_Calculate_tax_on_tax(rec *TaxJurisdiction) error
-	}
-	TaxJurisdictionOnValidate_Adjust_for_payment_discount interface {
-		OnValidate_Adjust_for_payment_discount(rec *TaxJurisdiction) error
-	}
 )
 
 // taxJurisdictionLogic is the registered business logic of Tax_Jurisdiction, in
@@ -459,32 +363,9 @@ func taxJurisdictionTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(TaxJurisdictionOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(TaxJurisdictionOnBeforeRename)
-	case "OnValidate_Code":
-		_, ok = logic.(TaxJurisdictionOnValidate_Code)
-	case "OnValidate_Description":
-		_, ok = logic.(TaxJurisdictionOnValidate_Description)
-	case "OnValidate_Tax_account_sales":
-		_, ok = logic.(TaxJurisdictionOnValidate_Tax_account_sales)
-	case "OnValidate_Tax_account_purchases":
-		_, ok = logic.(TaxJurisdictionOnValidate_Tax_account_purchases)
-	case "OnValidate_Report_to_jurisdiction":
-		_, ok = logic.(TaxJurisdictionOnValidate_Report_to_jurisdiction)
-	case "OnValidate_Unreal_tax_acc_sales":
-		_, ok = logic.(TaxJurisdictionOnValidate_Unreal_tax_acc_sales)
-	case "OnValidate_Unreal_tax_acc_purchases":
-		_, ok = logic.(TaxJurisdictionOnValidate_Unreal_tax_acc_purchases)
-	case "OnValidate_Reverse_charge_purchases":
-		_, ok = logic.(TaxJurisdictionOnValidate_Reverse_charge_purchases)
-	case "OnValidate_Unreal_rev_charge_purch":
-		_, ok = logic.(TaxJurisdictionOnValidate_Unreal_rev_charge_purch)
-	case "OnValidate_Unrealized_tax_type":
-		_, ok = logic.(TaxJurisdictionOnValidate_Unrealized_tax_type)
-	case "OnValidate_Calculate_tax_on_tax":
-		_, ok = logic.(TaxJurisdictionOnValidate_Calculate_tax_on_tax)
-	case "OnValidate_Adjust_for_payment_discount":
-		_, ok = logic.(TaxJurisdictionOnValidate_Adjust_for_payment_discount)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return taxJurisdictionFields.IsOnValidateTrigger(name, logic, (*TaxJurisdiction)(nil))
 	}
 	return true, ok
 }
@@ -825,19 +706,7 @@ func (t *TaxJurisdiction) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *TaxJurisdiction) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["code"] = t.Code
-	t.oldValues["description"] = t.Description
-	t.oldValues["tax_account_sales"] = t.Tax_account_sales
-	t.oldValues["tax_account_purchases"] = t.Tax_account_purchases
-	t.oldValues["report_to_jurisdiction"] = t.Report_to_jurisdiction
-	t.oldValues["unreal_tax_acc_sales"] = t.Unreal_tax_acc_sales
-	t.oldValues["unreal_tax_acc_purchases"] = t.Unreal_tax_acc_purchases
-	t.oldValues["reverse_charge_purchases"] = t.Reverse_charge_purchases
-	t.oldValues["unreal_rev_charge_purch"] = t.Unreal_rev_charge_purch
-	t.oldValues["unrealized_tax_type"] = t.Unrealized_tax_type
-	t.oldValues["calculate_tax_on_tax"] = t.Calculate_tax_on_tax
-	t.oldValues["adjust_for_payment_discount"] = t.Adjust_for_payment_discount
+	t.oldValues = taxJurisdictionFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -852,42 +721,7 @@ func (t *TaxJurisdiction) OldValue(fieldName string) interface{} {
 func (t *TaxJurisdiction) XRec() *TaxJurisdiction {
 	x := &TaxJurisdiction{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["code"].(types.Code); ok {
-		x.Code = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["tax_account_sales"].(types.Code); ok {
-		x.Tax_account_sales = v
-	}
-	if v, ok := t.oldValues["tax_account_purchases"].(types.Code); ok {
-		x.Tax_account_purchases = v
-	}
-	if v, ok := t.oldValues["report_to_jurisdiction"].(types.Code); ok {
-		x.Report_to_jurisdiction = v
-	}
-	if v, ok := t.oldValues["unreal_tax_acc_sales"].(types.Code); ok {
-		x.Unreal_tax_acc_sales = v
-	}
-	if v, ok := t.oldValues["unreal_tax_acc_purchases"].(types.Code); ok {
-		x.Unreal_tax_acc_purchases = v
-	}
-	if v, ok := t.oldValues["reverse_charge_purchases"].(types.Code); ok {
-		x.Reverse_charge_purchases = v
-	}
-	if v, ok := t.oldValues["unreal_rev_charge_purch"].(types.Code); ok {
-		x.Unreal_rev_charge_purch = v
-	}
-	if v, ok := t.oldValues["unrealized_tax_type"].(TaxJurisdictionUnrealized_tax_type); ok {
-		x.Unrealized_tax_type = v
-	}
-	if v, ok := t.oldValues["calculate_tax_on_tax"].(bool); ok {
-		x.Calculate_tax_on_tax = v
-	}
-	if v, ok := t.oldValues["adjust_for_payment_discount"].(bool); ok {
-		x.Adjust_for_payment_discount = v
-	}
+	taxJurisdictionFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1274,71 +1108,7 @@ func (t *TaxJurisdiction) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *TaxJurisdiction) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Code.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "tax_account_sales":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_account_sales.Equal(old)
-		}
-	case "tax_account_purchases":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_account_purchases.Equal(old)
-		}
-	case "report_to_jurisdiction":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Report_to_jurisdiction.Equal(old)
-		}
-	case "unreal_tax_acc_sales":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Unreal_tax_acc_sales.Equal(old)
-		}
-	case "unreal_tax_acc_purchases":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Unreal_tax_acc_purchases.Equal(old)
-		}
-	case "reverse_charge_purchases":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Reverse_charge_purchases.Equal(old)
-		}
-	case "unreal_rev_charge_purch":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Unreal_rev_charge_purch.Equal(old)
-		}
-	case "unrealized_tax_type":
-		if old, ok := oldValue.(TaxJurisdictionUnrealized_tax_type); ok {
-			return t.Unrealized_tax_type != old
-		}
-	case "calculate_tax_on_tax":
-		if old, ok := oldValue.(bool); ok {
-			return t.Calculate_tax_on_tax != old
-		}
-		return true // Type mismatch, assume changed
-	case "adjust_for_payment_discount":
-		if old, ok := oldValue.(bool); ok {
-			return t.Adjust_for_payment_discount != old
-		}
-		return true // Type mismatch, assume changed
-	}
-
-	return false
+	return taxJurisdictionFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1600,33 +1370,7 @@ func (t *TaxJurisdiction) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *TaxJurisdiction) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("code"):
-		return "code", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("tax_account_sales"):
-		return "tax_account_sales", true
-	case strings.ToLower("tax_account_purchases"):
-		return "tax_account_purchases", true
-	case strings.ToLower("report_to_jurisdiction"):
-		return "report_to_jurisdiction", true
-	case strings.ToLower("unreal_tax_acc_sales"):
-		return "unreal_tax_acc_sales", true
-	case strings.ToLower("unreal_tax_acc_purchases"):
-		return "unreal_tax_acc_purchases", true
-	case strings.ToLower("reverse_charge_purchases"):
-		return "reverse_charge_purchases", true
-	case strings.ToLower("unreal_rev_charge_purch"):
-		return "unreal_rev_charge_purch", true
-	case strings.ToLower("unrealized_tax_type"):
-		return "unrealized_tax_type", true
-	case strings.ToLower("calculate_tax_on_tax"):
-		return "calculate_tax_on_tax", true
-	case strings.ToLower("adjust_for_payment_discount"):
-		return "adjust_for_payment_discount", true
-	}
-	return "", false
+	return taxJurisdictionFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2569,289 +2313,20 @@ func (t *TaxJurisdiction) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *TaxJurisdiction) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-		} else if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxJurisdictionOnValidate_Code); ok {
-				if err := trg.OnValidate_Code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxJurisdictionOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_account_sales":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_account_sales = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_account_sales = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_account_sales")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_account_sales"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxJurisdictionOnValidate_Tax_account_sales); ok {
-				if err := trg.OnValidate_Tax_account_sales(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_account_purchases":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_account_purchases = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_account_purchases = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_account_purchases")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_account_purchases"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxJurisdictionOnValidate_Tax_account_purchases); ok {
-				if err := trg.OnValidate_Tax_account_purchases(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "report_to_jurisdiction":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Report_to_jurisdiction = v
-		} else if v, ok := value.(string); ok {
-			t.Report_to_jurisdiction = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field report_to_jurisdiction")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "report_to_jurisdiction"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxJurisdictionOnValidate_Report_to_jurisdiction); ok {
-				if err := trg.OnValidate_Report_to_jurisdiction(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unreal_tax_acc_sales":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Unreal_tax_acc_sales = v
-		} else if v, ok := value.(string); ok {
-			t.Unreal_tax_acc_sales = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field unreal_tax_acc_sales")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "unreal_tax_acc_sales"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxJurisdictionOnValidate_Unreal_tax_acc_sales); ok {
-				if err := trg.OnValidate_Unreal_tax_acc_sales(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unreal_tax_acc_purchases":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Unreal_tax_acc_purchases = v
-		} else if v, ok := value.(string); ok {
-			t.Unreal_tax_acc_purchases = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field unreal_tax_acc_purchases")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "unreal_tax_acc_purchases"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxJurisdictionOnValidate_Unreal_tax_acc_purchases); ok {
-				if err := trg.OnValidate_Unreal_tax_acc_purchases(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reverse_charge_purchases":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Reverse_charge_purchases = v
-		} else if v, ok := value.(string); ok {
-			t.Reverse_charge_purchases = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field reverse_charge_purchases")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "reverse_charge_purchases"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxJurisdictionOnValidate_Reverse_charge_purchases); ok {
-				if err := trg.OnValidate_Reverse_charge_purchases(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unreal_rev_charge_purch":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Unreal_rev_charge_purch = v
-		} else if v, ok := value.(string); ok {
-			t.Unreal_rev_charge_purch = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field unreal_rev_charge_purch")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "unreal_rev_charge_purch"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxJurisdictionOnValidate_Unreal_rev_charge_purch); ok {
-				if err := trg.OnValidate_Unreal_rev_charge_purch(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unrealized_tax_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(TaxJurisdictionUnrealized_tax_type); ok {
-			t.Unrealized_tax_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 6 {
-				return fmt.Errorf("invalid option value %d for field unrealized_tax_type (valid range: 0-%d)", v, 6-1)
-			}
-			t.Unrealized_tax_type = TaxJurisdictionUnrealized_tax_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 6 {
-				return fmt.Errorf("invalid option value %d for field unrealized_tax_type (valid range: 0-%d)", intVal, 6-1)
-			}
-			t.Unrealized_tax_type = TaxJurisdictionUnrealized_tax_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Unrealized_tax_type = 0
-			} else {
-				options := []string{" ", "Percentage", "First", "Last", "First (Fully Paid)", "Last (Fully Paid)"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Unrealized_tax_type = TaxJurisdictionUnrealized_tax_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field unrealized_tax_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field unrealized_tax_type (expected TaxJurisdictionUnrealized_tax_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxJurisdictionOnValidate_Unrealized_tax_type); ok {
-				if err := trg.OnValidate_Unrealized_tax_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "calculate_tax_on_tax":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Calculate_tax_on_tax = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Calculate_tax_on_tax = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field calculate_tax_on_tax")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxJurisdictionOnValidate_Calculate_tax_on_tax); ok {
-				if err := trg.OnValidate_Calculate_tax_on_tax(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "adjust_for_payment_discount":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Adjust_for_payment_discount = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Adjust_for_payment_discount = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field adjust_for_payment_discount")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxJurisdictionOnValidate_Adjust_for_payment_discount); ok {
-				if err := trg.OnValidate_Adjust_for_payment_discount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := taxJurisdictionFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &taxJurisdictionFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2860,144 +2335,18 @@ func (t *TaxJurisdiction) ValidateField(fieldName string, value interface{}) err
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *TaxJurisdiction) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Code, true
-	case 2:
-		return t.Description, true
-	case 3:
-		return t.Tax_account_sales, true
-	case 4:
-		return t.Tax_account_purchases, true
-	case 5:
-		return t.Report_to_jurisdiction, true
-	case 8:
-		return t.Unreal_tax_acc_sales, true
-	case 9:
-		return t.Unreal_tax_acc_purchases, true
-	case 10:
-		return t.Reverse_charge_purchases, true
-	case 11:
-		return t.Unreal_rev_charge_purch, true
-	case 12:
-		return t.Unrealized_tax_type, true
-	case 13:
-		return t.Calculate_tax_on_tax, true
-	case 14:
-		return t.Adjust_for_payment_discount, true
-	}
-	return nil, false
+	return taxJurisdictionFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *TaxJurisdiction) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return taxJurisdictionFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *TaxJurisdiction) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_account_sales = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_account_sales = types.NewCode(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_account_purchases = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_account_purchases = types.NewCode(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Code); ok {
-			t.Report_to_jurisdiction = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Report_to_jurisdiction = types.NewCode(v)
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Code); ok {
-			t.Unreal_tax_acc_sales = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Unreal_tax_acc_sales = types.NewCode(v)
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.Code); ok {
-			t.Unreal_tax_acc_purchases = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Unreal_tax_acc_purchases = types.NewCode(v)
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Code); ok {
-			t.Reverse_charge_purchases = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Reverse_charge_purchases = types.NewCode(v)
-			return true
-		}
-	case 11:
-		if v, ok := value.(types.Code); ok {
-			t.Unreal_rev_charge_purch = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Unreal_rev_charge_purch = types.NewCode(v)
-			return true
-		}
-	case 12:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 6 {
-			t.Unrealized_tax_type = TaxJurisdictionUnrealized_tax_type(i)
-			return true
-		}
-	case 13:
-		if v, ok := value.(bool); ok {
-			t.Calculate_tax_on_tax = v
-			return true
-		}
-	case 14:
-		if v, ok := value.(bool); ok {
-			t.Adjust_for_payment_discount = v
-			return true
-		}
-	}
-	return false
+	return taxJurisdictionFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3446,33 +2795,7 @@ func (t *TaxJurisdiction) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *TaxJurisdiction) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "code":
-		return t.Code, true
-	case "description":
-		return t.Description, true
-	case "tax_account_sales":
-		return t.Tax_account_sales, true
-	case "tax_account_purchases":
-		return t.Tax_account_purchases, true
-	case "report_to_jurisdiction":
-		return t.Report_to_jurisdiction, true
-	case "unreal_tax_acc_sales":
-		return t.Unreal_tax_acc_sales, true
-	case "unreal_tax_acc_purchases":
-		return t.Unreal_tax_acc_purchases, true
-	case "reverse_charge_purchases":
-		return t.Reverse_charge_purchases, true
-	case "unreal_rev_charge_purch":
-		return t.Unreal_rev_charge_purch, true
-	case "unrealized_tax_type":
-		return int(t.Unrealized_tax_type), true
-	case "calculate_tax_on_tax":
-		return t.Calculate_tax_on_tax, true
-	case "adjust_for_payment_discount":
-		return t.Adjust_for_payment_discount, true
-	}
-	return nil, false
+	return taxJurisdictionFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3569,96 +2892,12 @@ func (t *TaxJurisdiction) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *TaxJurisdiction) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"code":                        t.Code.String(),
-		"description":                 t.Description.String(),
-		"tax_account_sales":           t.Tax_account_sales.String(),
-		"tax_account_purchases":       t.Tax_account_purchases.String(),
-		"report_to_jurisdiction":      t.Report_to_jurisdiction.String(),
-		"unreal_tax_acc_sales":        t.Unreal_tax_acc_sales.String(),
-		"unreal_tax_acc_purchases":    t.Unreal_tax_acc_purchases.String(),
-		"reverse_charge_purchases":    t.Reverse_charge_purchases.String(),
-		"unreal_rev_charge_purch":     t.Unreal_rev_charge_purch.String(),
-		"unrealized_tax_type":         int(t.Unrealized_tax_type),
-		"calculate_tax_on_tax":        t.Calculate_tax_on_tax,
-		"adjust_for_payment_discount": t.Adjust_for_payment_discount,
-	}
+	return taxJurisdictionFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *TaxJurisdiction) FromMap(data map[string]interface{}) {
-	if v, ok := data["code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["tax_account_sales"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_account_sales = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_account_purchases"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_account_purchases = types.NewCode(s)
-		}
-	}
-	if v, ok := data["report_to_jurisdiction"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Report_to_jurisdiction = types.NewCode(s)
-		}
-	}
-	if v, ok := data["unreal_tax_acc_sales"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Unreal_tax_acc_sales = types.NewCode(s)
-		}
-	}
-	if v, ok := data["unreal_tax_acc_purchases"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Unreal_tax_acc_purchases = types.NewCode(s)
-		}
-	}
-	if v, ok := data["reverse_charge_purchases"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Reverse_charge_purchases = types.NewCode(s)
-		}
-	}
-	if v, ok := data["unreal_rev_charge_purch"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Unreal_rev_charge_purch = types.NewCode(s)
-		}
-	}
-	if v, ok := data["unrealized_tax_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Unrealized_tax_type = TaxJurisdictionUnrealized_tax_type(int(val))
-		case int:
-			t.Unrealized_tax_type = TaxJurisdictionUnrealized_tax_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Percentage", "First", "Last", "First (Fully Paid)", "Last (Fully Paid)"}
-			for i, opt := range options {
-				if opt == val {
-					t.Unrealized_tax_type = TaxJurisdictionUnrealized_tax_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["calculate_tax_on_tax"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Calculate_tax_on_tax = b
-		}
-	}
-	if v, ok := data["adjust_for_payment_discount"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Adjust_for_payment_discount = b
-		}
-	}
+	taxJurisdictionFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3679,128 +2918,226 @@ func (t *TaxJurisdiction) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *TaxJurisdiction) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "tax_account_sales",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "tax_account_purchases",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "report_to_jurisdiction",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "unreal_tax_acc_sales",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "unreal_tax_acc_purchases",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "reverse_charge_purchases",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "unreal_rev_charge_purch",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "unrealized_tax_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         13,
-			Name:       "calculate_tax_on_tax",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         14,
-			Name:       "adjust_for_payment_discount",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return taxJurisdictionFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in taxJurisdictionFields.Fields
+func (t *TaxJurisdiction) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Code
+	case 1:
+		return &t.Description
+	case 2:
+		return &t.Tax_account_sales
+	case 3:
+		return &t.Tax_account_purchases
+	case 4:
+		return &t.Report_to_jurisdiction
+	case 5:
+		return &t.Unreal_tax_acc_sales
+	case 6:
+		return &t.Unreal_tax_acc_purchases
+	case 7:
+		return &t.Reverse_charge_purchases
+	case 8:
+		return &t.Unreal_rev_charge_purch
+	case 9:
+		return &t.Unrealized_tax_type
+	case 10:
+		return &t.Calculate_tax_on_tax
+	case 11:
+		return &t.Adjust_for_payment_discount
 	}
+	return nil
+}
+
+// taxJurisdictionFields describes the fields of Tax_Jurisdiction for the record functions
+// written once in foundation/tables
+var taxJurisdictionFields = &tables.TableFields{
+	Table: TaxJurisdictionTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "tax_account_sales",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_account_sales",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "tax_account_purchases",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_account_purchases",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "report_to_jurisdiction",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Report_to_jurisdiction",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "unreal_tax_acc_sales",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Unreal_tax_acc_sales",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "unreal_tax_acc_purchases",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Unreal_tax_acc_purchases",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "reverse_charge_purchases",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Reverse_charge_purchases",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "unreal_rev_charge_purch",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Unreal_rev_charge_purch",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "unrealized_tax_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Unrealized_tax_type",
+			Options: []string{" ", "Percentage", "First", "Last", "First (Fully Paid)", "Last (Fully Paid)"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "calculate_tax_on_tax",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Calculate_tax_on_tax",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "adjust_for_payment_discount",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Adjust_for_payment_discount",
+		},
+	},
+	FlowFilters: []tables.FieldInfo{
+		{No: 6, Name: "date_filter"},
+		{No: 7, Name: "tax_group_filter"},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

@@ -65,7 +65,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -411,192 +410,12 @@ var TaxEntry_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *TaxEntry) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "entry_no":
-		return 1
-	case "gen_bus_posting_group":
-		return 2
-	case "gen_prod_posting_group":
-		return 3
-	case "posting_date":
-		return 4
-	case "document_no":
-		return 5
-	case "document_type":
-		return 6
-	case "type":
-		return 7
-	case "base":
-		return 8
-	case "amount":
-		return 9
-	case "tax_calculation_type":
-		return 10
-	case "sell_to_buy_from_no":
-		return 12
-	case "eu_3_party_trade":
-		return 13
-	case "user_id":
-		return 14
-	case "source_code":
-		return 15
-	case "reason_code":
-		return 16
-	case "closed_by_entry_no":
-		return 17
-	case "closed":
-		return 18
-	case "country_code":
-		return 19
-	case "internal_ref_no":
-		return 20
-	case "transaction_no":
-		return 21
-	case "unrealized_amount":
-		return 22
-	case "unrealized_base":
-		return 23
-	case "remaining_unrealized_amount":
-		return 24
-	case "remaining_unrealized_base":
-		return 25
-	case "additional_currency_amount":
-		return 43
-	case "additional_currency_base":
-		return 44
-	case "add_currency_unrealized_amt":
-		return 45
-	case "add_currency_unrealized_base":
-		return 46
-	case "add_curr_rem_unreal_amount":
-		return 49
-	case "add_curr_rem_unreal_base":
-		return 50
-	case "external_document_no":
-		return 26
-	case "no_series":
-		return 28
-	case "tax_area_code":
-		return 29
-	case "tax_liable":
-		return 30
-	case "tax_group_code":
-		return 31
-	case "use_tax":
-		return 32
-	case "tax_jurisdiction_code":
-		return 33
-	case "tax_group_used":
-		return 34
-	case "tax_type":
-		return 35
-	case "tax_on_tax":
-		return 36
-	case "sales_tax_connection_no":
-		return 37
-	case "unrealized_tax_entry_no":
-		return 38
-	case "tax_bus_posting_group":
-		return 39
-	case "tax_prod_posting_group":
-		return 40
-	}
-	return 0
+	return taxEntryFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *TaxEntry) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "entry_no"
-	case 2:
-		return "gen_bus_posting_group"
-	case 3:
-		return "gen_prod_posting_group"
-	case 4:
-		return "posting_date"
-	case 5:
-		return "document_no"
-	case 6:
-		return "document_type"
-	case 7:
-		return "type"
-	case 8:
-		return "base"
-	case 9:
-		return "amount"
-	case 10:
-		return "tax_calculation_type"
-	case 12:
-		return "sell_to_buy_from_no"
-	case 13:
-		return "eu_3_party_trade"
-	case 14:
-		return "user_id"
-	case 15:
-		return "source_code"
-	case 16:
-		return "reason_code"
-	case 17:
-		return "closed_by_entry_no"
-	case 18:
-		return "closed"
-	case 19:
-		return "country_code"
-	case 20:
-		return "internal_ref_no"
-	case 21:
-		return "transaction_no"
-	case 22:
-		return "unrealized_amount"
-	case 23:
-		return "unrealized_base"
-	case 24:
-		return "remaining_unrealized_amount"
-	case 25:
-		return "remaining_unrealized_base"
-	case 43:
-		return "additional_currency_amount"
-	case 44:
-		return "additional_currency_base"
-	case 45:
-		return "add_currency_unrealized_amt"
-	case 46:
-		return "add_currency_unrealized_base"
-	case 49:
-		return "add_curr_rem_unreal_amount"
-	case 50:
-		return "add_curr_rem_unreal_base"
-	case 26:
-		return "external_document_no"
-	case 28:
-		return "no_series"
-	case 29:
-		return "tax_area_code"
-	case 30:
-		return "tax_liable"
-	case 31:
-		return "tax_group_code"
-	case 32:
-		return "use_tax"
-	case 33:
-		return "tax_jurisdiction_code"
-	case 34:
-		return "tax_group_used"
-	case 35:
-		return "tax_type"
-	case 36:
-		return "tax_on_tax"
-	case 37:
-		return "sales_tax_connection_no"
-	case 38:
-		return "unrealized_tax_entry_no"
-	case 39:
-		return "tax_bus_posting_group"
-	case 40:
-		return "tax_prod_posting_group"
-	}
-	return ""
+	return taxEntryFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -700,50 +519,6 @@ type (
 	TaxEntryOnBeforeRename interface {
 		OnBeforeRename(rec *TaxEntry, handled *bool) error
 	}
-	TaxEntryOnValidate_Entry_no                     interface{ OnValidate_Entry_no(rec *TaxEntry) error }
-	TaxEntryOnValidate_Gen_bus_posting_group        interface{ OnValidate_Gen_bus_posting_group(rec *TaxEntry) error }
-	TaxEntryOnValidate_Gen_prod_posting_group       interface{ OnValidate_Gen_prod_posting_group(rec *TaxEntry) error }
-	TaxEntryOnValidate_Posting_date                 interface{ OnValidate_Posting_date(rec *TaxEntry) error }
-	TaxEntryOnValidate_Document_no                  interface{ OnValidate_Document_no(rec *TaxEntry) error }
-	TaxEntryOnValidate_Document_type                interface{ OnValidate_Document_type(rec *TaxEntry) error }
-	TaxEntryOnValidate_Type                         interface{ OnValidate_Type(rec *TaxEntry) error }
-	TaxEntryOnValidate_Base                         interface{ OnValidate_Base(rec *TaxEntry) error }
-	TaxEntryOnValidate_Amount                       interface{ OnValidate_Amount(rec *TaxEntry) error }
-	TaxEntryOnValidate_Tax_calculation_type         interface{ OnValidate_Tax_calculation_type(rec *TaxEntry) error }
-	TaxEntryOnValidate_Sell_to_buy_from_no          interface{ OnValidate_Sell_to_buy_from_no(rec *TaxEntry) error }
-	TaxEntryOnValidate_Eu_3_party_trade             interface{ OnValidate_Eu_3_party_trade(rec *TaxEntry) error }
-	TaxEntryOnValidate_User_id                      interface{ OnValidate_User_id(rec *TaxEntry) error }
-	TaxEntryOnValidate_Source_code                  interface{ OnValidate_Source_code(rec *TaxEntry) error }
-	TaxEntryOnValidate_Reason_code                  interface{ OnValidate_Reason_code(rec *TaxEntry) error }
-	TaxEntryOnValidate_Closed_by_entry_no           interface{ OnValidate_Closed_by_entry_no(rec *TaxEntry) error }
-	TaxEntryOnValidate_Closed                       interface{ OnValidate_Closed(rec *TaxEntry) error }
-	TaxEntryOnValidate_Country_code                 interface{ OnValidate_Country_code(rec *TaxEntry) error }
-	TaxEntryOnValidate_Internal_ref_no              interface{ OnValidate_Internal_ref_no(rec *TaxEntry) error }
-	TaxEntryOnValidate_Transaction_no               interface{ OnValidate_Transaction_no(rec *TaxEntry) error }
-	TaxEntryOnValidate_Unrealized_amount            interface{ OnValidate_Unrealized_amount(rec *TaxEntry) error }
-	TaxEntryOnValidate_Unrealized_base              interface{ OnValidate_Unrealized_base(rec *TaxEntry) error }
-	TaxEntryOnValidate_Remaining_unrealized_amount  interface{ OnValidate_Remaining_unrealized_amount(rec *TaxEntry) error }
-	TaxEntryOnValidate_Remaining_unrealized_base    interface{ OnValidate_Remaining_unrealized_base(rec *TaxEntry) error }
-	TaxEntryOnValidate_Additional_currency_amount   interface{ OnValidate_Additional_currency_amount(rec *TaxEntry) error }
-	TaxEntryOnValidate_Additional_currency_base     interface{ OnValidate_Additional_currency_base(rec *TaxEntry) error }
-	TaxEntryOnValidate_Add_currency_unrealized_amt  interface{ OnValidate_Add_currency_unrealized_amt(rec *TaxEntry) error }
-	TaxEntryOnValidate_Add_currency_unrealized_base interface{ OnValidate_Add_currency_unrealized_base(rec *TaxEntry) error }
-	TaxEntryOnValidate_Add_curr_rem_unreal_amount   interface{ OnValidate_Add_curr_rem_unreal_amount(rec *TaxEntry) error }
-	TaxEntryOnValidate_Add_curr_rem_unreal_base     interface{ OnValidate_Add_curr_rem_unreal_base(rec *TaxEntry) error }
-	TaxEntryOnValidate_External_document_no         interface{ OnValidate_External_document_no(rec *TaxEntry) error }
-	TaxEntryOnValidate_No_series                    interface{ OnValidate_No_series(rec *TaxEntry) error }
-	TaxEntryOnValidate_Tax_area_code                interface{ OnValidate_Tax_area_code(rec *TaxEntry) error }
-	TaxEntryOnValidate_Tax_liable                   interface{ OnValidate_Tax_liable(rec *TaxEntry) error }
-	TaxEntryOnValidate_Tax_group_code               interface{ OnValidate_Tax_group_code(rec *TaxEntry) error }
-	TaxEntryOnValidate_Use_tax                      interface{ OnValidate_Use_tax(rec *TaxEntry) error }
-	TaxEntryOnValidate_Tax_jurisdiction_code        interface{ OnValidate_Tax_jurisdiction_code(rec *TaxEntry) error }
-	TaxEntryOnValidate_Tax_group_used               interface{ OnValidate_Tax_group_used(rec *TaxEntry) error }
-	TaxEntryOnValidate_Tax_type                     interface{ OnValidate_Tax_type(rec *TaxEntry) error }
-	TaxEntryOnValidate_Tax_on_tax                   interface{ OnValidate_Tax_on_tax(rec *TaxEntry) error }
-	TaxEntryOnValidate_Sales_tax_connection_no      interface{ OnValidate_Sales_tax_connection_no(rec *TaxEntry) error }
-	TaxEntryOnValidate_Unrealized_tax_entry_no      interface{ OnValidate_Unrealized_tax_entry_no(rec *TaxEntry) error }
-	TaxEntryOnValidate_Tax_bus_posting_group        interface{ OnValidate_Tax_bus_posting_group(rec *TaxEntry) error }
-	TaxEntryOnValidate_Tax_prod_posting_group       interface{ OnValidate_Tax_prod_posting_group(rec *TaxEntry) error }
 )
 
 // taxEntryLogic is the registered business logic of Tax_Entry, in
@@ -786,96 +561,9 @@ func taxEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(TaxEntryOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(TaxEntryOnBeforeRename)
-	case "OnValidate_Entry_no":
-		_, ok = logic.(TaxEntryOnValidate_Entry_no)
-	case "OnValidate_Gen_bus_posting_group":
-		_, ok = logic.(TaxEntryOnValidate_Gen_bus_posting_group)
-	case "OnValidate_Gen_prod_posting_group":
-		_, ok = logic.(TaxEntryOnValidate_Gen_prod_posting_group)
-	case "OnValidate_Posting_date":
-		_, ok = logic.(TaxEntryOnValidate_Posting_date)
-	case "OnValidate_Document_no":
-		_, ok = logic.(TaxEntryOnValidate_Document_no)
-	case "OnValidate_Document_type":
-		_, ok = logic.(TaxEntryOnValidate_Document_type)
-	case "OnValidate_Type":
-		_, ok = logic.(TaxEntryOnValidate_Type)
-	case "OnValidate_Base":
-		_, ok = logic.(TaxEntryOnValidate_Base)
-	case "OnValidate_Amount":
-		_, ok = logic.(TaxEntryOnValidate_Amount)
-	case "OnValidate_Tax_calculation_type":
-		_, ok = logic.(TaxEntryOnValidate_Tax_calculation_type)
-	case "OnValidate_Sell_to_buy_from_no":
-		_, ok = logic.(TaxEntryOnValidate_Sell_to_buy_from_no)
-	case "OnValidate_Eu_3_party_trade":
-		_, ok = logic.(TaxEntryOnValidate_Eu_3_party_trade)
-	case "OnValidate_User_id":
-		_, ok = logic.(TaxEntryOnValidate_User_id)
-	case "OnValidate_Source_code":
-		_, ok = logic.(TaxEntryOnValidate_Source_code)
-	case "OnValidate_Reason_code":
-		_, ok = logic.(TaxEntryOnValidate_Reason_code)
-	case "OnValidate_Closed_by_entry_no":
-		_, ok = logic.(TaxEntryOnValidate_Closed_by_entry_no)
-	case "OnValidate_Closed":
-		_, ok = logic.(TaxEntryOnValidate_Closed)
-	case "OnValidate_Country_code":
-		_, ok = logic.(TaxEntryOnValidate_Country_code)
-	case "OnValidate_Internal_ref_no":
-		_, ok = logic.(TaxEntryOnValidate_Internal_ref_no)
-	case "OnValidate_Transaction_no":
-		_, ok = logic.(TaxEntryOnValidate_Transaction_no)
-	case "OnValidate_Unrealized_amount":
-		_, ok = logic.(TaxEntryOnValidate_Unrealized_amount)
-	case "OnValidate_Unrealized_base":
-		_, ok = logic.(TaxEntryOnValidate_Unrealized_base)
-	case "OnValidate_Remaining_unrealized_amount":
-		_, ok = logic.(TaxEntryOnValidate_Remaining_unrealized_amount)
-	case "OnValidate_Remaining_unrealized_base":
-		_, ok = logic.(TaxEntryOnValidate_Remaining_unrealized_base)
-	case "OnValidate_Additional_currency_amount":
-		_, ok = logic.(TaxEntryOnValidate_Additional_currency_amount)
-	case "OnValidate_Additional_currency_base":
-		_, ok = logic.(TaxEntryOnValidate_Additional_currency_base)
-	case "OnValidate_Add_currency_unrealized_amt":
-		_, ok = logic.(TaxEntryOnValidate_Add_currency_unrealized_amt)
-	case "OnValidate_Add_currency_unrealized_base":
-		_, ok = logic.(TaxEntryOnValidate_Add_currency_unrealized_base)
-	case "OnValidate_Add_curr_rem_unreal_amount":
-		_, ok = logic.(TaxEntryOnValidate_Add_curr_rem_unreal_amount)
-	case "OnValidate_Add_curr_rem_unreal_base":
-		_, ok = logic.(TaxEntryOnValidate_Add_curr_rem_unreal_base)
-	case "OnValidate_External_document_no":
-		_, ok = logic.(TaxEntryOnValidate_External_document_no)
-	case "OnValidate_No_series":
-		_, ok = logic.(TaxEntryOnValidate_No_series)
-	case "OnValidate_Tax_area_code":
-		_, ok = logic.(TaxEntryOnValidate_Tax_area_code)
-	case "OnValidate_Tax_liable":
-		_, ok = logic.(TaxEntryOnValidate_Tax_liable)
-	case "OnValidate_Tax_group_code":
-		_, ok = logic.(TaxEntryOnValidate_Tax_group_code)
-	case "OnValidate_Use_tax":
-		_, ok = logic.(TaxEntryOnValidate_Use_tax)
-	case "OnValidate_Tax_jurisdiction_code":
-		_, ok = logic.(TaxEntryOnValidate_Tax_jurisdiction_code)
-	case "OnValidate_Tax_group_used":
-		_, ok = logic.(TaxEntryOnValidate_Tax_group_used)
-	case "OnValidate_Tax_type":
-		_, ok = logic.(TaxEntryOnValidate_Tax_type)
-	case "OnValidate_Tax_on_tax":
-		_, ok = logic.(TaxEntryOnValidate_Tax_on_tax)
-	case "OnValidate_Sales_tax_connection_no":
-		_, ok = logic.(TaxEntryOnValidate_Sales_tax_connection_no)
-	case "OnValidate_Unrealized_tax_entry_no":
-		_, ok = logic.(TaxEntryOnValidate_Unrealized_tax_entry_no)
-	case "OnValidate_Tax_bus_posting_group":
-		_, ok = logic.(TaxEntryOnValidate_Tax_bus_posting_group)
-	case "OnValidate_Tax_prod_posting_group":
-		_, ok = logic.(TaxEntryOnValidate_Tax_prod_posting_group)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return taxEntryFields.IsOnValidateTrigger(name, logic, (*TaxEntry)(nil))
 	}
 	return true, ok
 }
@@ -1319,51 +1007,7 @@ func (t *TaxEntry) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *TaxEntry) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["entry_no"] = t.Entry_no
-	t.oldValues["gen_bus_posting_group"] = t.Gen_bus_posting_group
-	t.oldValues["gen_prod_posting_group"] = t.Gen_prod_posting_group
-	t.oldValues["posting_date"] = t.Posting_date
-	t.oldValues["document_no"] = t.Document_no
-	t.oldValues["document_type"] = t.Document_type
-	t.oldValues["type"] = t.Type
-	t.oldValues["base"] = t.Base
-	t.oldValues["amount"] = t.Amount
-	t.oldValues["tax_calculation_type"] = t.Tax_calculation_type
-	t.oldValues["sell_to_buy_from_no"] = t.Sell_to_buy_from_no
-	t.oldValues["eu_3_party_trade"] = t.Eu_3_party_trade
-	t.oldValues["user_id"] = t.User_id
-	t.oldValues["source_code"] = t.Source_code
-	t.oldValues["reason_code"] = t.Reason_code
-	t.oldValues["closed_by_entry_no"] = t.Closed_by_entry_no
-	t.oldValues["closed"] = t.Closed
-	t.oldValues["country_code"] = t.Country_code
-	t.oldValues["internal_ref_no"] = t.Internal_ref_no
-	t.oldValues["transaction_no"] = t.Transaction_no
-	t.oldValues["unrealized_amount"] = t.Unrealized_amount
-	t.oldValues["unrealized_base"] = t.Unrealized_base
-	t.oldValues["remaining_unrealized_amount"] = t.Remaining_unrealized_amount
-	t.oldValues["remaining_unrealized_base"] = t.Remaining_unrealized_base
-	t.oldValues["additional_currency_amount"] = t.Additional_currency_amount
-	t.oldValues["additional_currency_base"] = t.Additional_currency_base
-	t.oldValues["add_currency_unrealized_amt"] = t.Add_currency_unrealized_amt
-	t.oldValues["add_currency_unrealized_base"] = t.Add_currency_unrealized_base
-	t.oldValues["add_curr_rem_unreal_amount"] = t.Add_curr_rem_unreal_amount
-	t.oldValues["add_curr_rem_unreal_base"] = t.Add_curr_rem_unreal_base
-	t.oldValues["external_document_no"] = t.External_document_no
-	t.oldValues["no_series"] = t.No_series
-	t.oldValues["tax_area_code"] = t.Tax_area_code
-	t.oldValues["tax_liable"] = t.Tax_liable
-	t.oldValues["tax_group_code"] = t.Tax_group_code
-	t.oldValues["use_tax"] = t.Use_tax
-	t.oldValues["tax_jurisdiction_code"] = t.Tax_jurisdiction_code
-	t.oldValues["tax_group_used"] = t.Tax_group_used
-	t.oldValues["tax_type"] = t.Tax_type
-	t.oldValues["tax_on_tax"] = t.Tax_on_tax
-	t.oldValues["sales_tax_connection_no"] = t.Sales_tax_connection_no
-	t.oldValues["unrealized_tax_entry_no"] = t.Unrealized_tax_entry_no
-	t.oldValues["tax_bus_posting_group"] = t.Tax_bus_posting_group
-	t.oldValues["tax_prod_posting_group"] = t.Tax_prod_posting_group
+	t.oldValues = taxEntryFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1378,138 +1022,7 @@ func (t *TaxEntry) OldValue(fieldName string) interface{} {
 func (t *TaxEntry) XRec() *TaxEntry {
 	x := &TaxEntry{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["entry_no"].(int); ok {
-		x.Entry_no = v
-	}
-	if v, ok := t.oldValues["gen_bus_posting_group"].(types.Code); ok {
-		x.Gen_bus_posting_group = v
-	}
-	if v, ok := t.oldValues["gen_prod_posting_group"].(types.Code); ok {
-		x.Gen_prod_posting_group = v
-	}
-	if v, ok := t.oldValues["posting_date"].(types.Date); ok {
-		x.Posting_date = v
-	}
-	if v, ok := t.oldValues["document_no"].(types.Code); ok {
-		x.Document_no = v
-	}
-	if v, ok := t.oldValues["document_type"].(TaxEntryDocument_type); ok {
-		x.Document_type = v
-	}
-	if v, ok := t.oldValues["type"].(TaxEntryType); ok {
-		x.Type = v
-	}
-	if v, ok := t.oldValues["base"].(types.Decimal); ok {
-		x.Base = v
-	}
-	if v, ok := t.oldValues["amount"].(types.Decimal); ok {
-		x.Amount = v
-	}
-	if v, ok := t.oldValues["tax_calculation_type"].(TaxEntryTax_calculation_type); ok {
-		x.Tax_calculation_type = v
-	}
-	if v, ok := t.oldValues["sell_to_buy_from_no"].(types.Code); ok {
-		x.Sell_to_buy_from_no = v
-	}
-	if v, ok := t.oldValues["eu_3_party_trade"].(bool); ok {
-		x.Eu_3_party_trade = v
-	}
-	if v, ok := t.oldValues["user_id"].(types.Code); ok {
-		x.User_id = v
-	}
-	if v, ok := t.oldValues["source_code"].(types.Code); ok {
-		x.Source_code = v
-	}
-	if v, ok := t.oldValues["reason_code"].(types.Code); ok {
-		x.Reason_code = v
-	}
-	if v, ok := t.oldValues["closed_by_entry_no"].(int); ok {
-		x.Closed_by_entry_no = v
-	}
-	if v, ok := t.oldValues["closed"].(bool); ok {
-		x.Closed = v
-	}
-	if v, ok := t.oldValues["country_code"].(types.Code); ok {
-		x.Country_code = v
-	}
-	if v, ok := t.oldValues["internal_ref_no"].(types.Text); ok {
-		x.Internal_ref_no = v
-	}
-	if v, ok := t.oldValues["transaction_no"].(int); ok {
-		x.Transaction_no = v
-	}
-	if v, ok := t.oldValues["unrealized_amount"].(types.Decimal); ok {
-		x.Unrealized_amount = v
-	}
-	if v, ok := t.oldValues["unrealized_base"].(types.Decimal); ok {
-		x.Unrealized_base = v
-	}
-	if v, ok := t.oldValues["remaining_unrealized_amount"].(types.Decimal); ok {
-		x.Remaining_unrealized_amount = v
-	}
-	if v, ok := t.oldValues["remaining_unrealized_base"].(types.Decimal); ok {
-		x.Remaining_unrealized_base = v
-	}
-	if v, ok := t.oldValues["additional_currency_amount"].(types.Decimal); ok {
-		x.Additional_currency_amount = v
-	}
-	if v, ok := t.oldValues["additional_currency_base"].(types.Decimal); ok {
-		x.Additional_currency_base = v
-	}
-	if v, ok := t.oldValues["add_currency_unrealized_amt"].(types.Decimal); ok {
-		x.Add_currency_unrealized_amt = v
-	}
-	if v, ok := t.oldValues["add_currency_unrealized_base"].(types.Decimal); ok {
-		x.Add_currency_unrealized_base = v
-	}
-	if v, ok := t.oldValues["add_curr_rem_unreal_amount"].(types.Decimal); ok {
-		x.Add_curr_rem_unreal_amount = v
-	}
-	if v, ok := t.oldValues["add_curr_rem_unreal_base"].(types.Decimal); ok {
-		x.Add_curr_rem_unreal_base = v
-	}
-	if v, ok := t.oldValues["external_document_no"].(types.Code); ok {
-		x.External_document_no = v
-	}
-	if v, ok := t.oldValues["no_series"].(types.Code); ok {
-		x.No_series = v
-	}
-	if v, ok := t.oldValues["tax_area_code"].(types.Code); ok {
-		x.Tax_area_code = v
-	}
-	if v, ok := t.oldValues["tax_liable"].(bool); ok {
-		x.Tax_liable = v
-	}
-	if v, ok := t.oldValues["tax_group_code"].(types.Code); ok {
-		x.Tax_group_code = v
-	}
-	if v, ok := t.oldValues["use_tax"].(bool); ok {
-		x.Use_tax = v
-	}
-	if v, ok := t.oldValues["tax_jurisdiction_code"].(types.Code); ok {
-		x.Tax_jurisdiction_code = v
-	}
-	if v, ok := t.oldValues["tax_group_used"].(types.Code); ok {
-		x.Tax_group_used = v
-	}
-	if v, ok := t.oldValues["tax_type"].(TaxEntryTax_type); ok {
-		x.Tax_type = v
-	}
-	if v, ok := t.oldValues["tax_on_tax"].(bool); ok {
-		x.Tax_on_tax = v
-	}
-	if v, ok := t.oldValues["sales_tax_connection_no"].(int); ok {
-		x.Sales_tax_connection_no = v
-	}
-	if v, ok := t.oldValues["unrealized_tax_entry_no"].(int); ok {
-		x.Unrealized_tax_entry_no = v
-	}
-	if v, ok := t.oldValues["tax_bus_posting_group"].(types.Code); ok {
-		x.Tax_bus_posting_group = v
-	}
-	if v, ok := t.oldValues["tax_prod_posting_group"].(types.Code); ok {
-		x.Tax_prod_posting_group = v
-	}
+	taxEntryFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -2236,207 +1749,7 @@ func (t *TaxEntry) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *TaxEntry) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "gen_bus_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Gen_bus_posting_group.Equal(old)
-		}
-	case "gen_prod_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Gen_prod_posting_group.Equal(old)
-		}
-	case "posting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Posting_date.Equal(old)
-		}
-	case "document_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Document_no.Equal(old)
-		}
-	case "document_type":
-		if old, ok := oldValue.(TaxEntryDocument_type); ok {
-			return t.Document_type != old
-		}
-	case "type":
-		if old, ok := oldValue.(TaxEntryType); ok {
-			return t.Type != old
-		}
-	case "base":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Base.Equal(old)
-		}
-	case "amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Amount.Equal(old)
-		}
-	case "tax_calculation_type":
-		if old, ok := oldValue.(TaxEntryTax_calculation_type); ok {
-			return t.Tax_calculation_type != old
-		}
-	case "sell_to_buy_from_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Sell_to_buy_from_no.Equal(old)
-		}
-	case "eu_3_party_trade":
-		if old, ok := oldValue.(bool); ok {
-			return t.Eu_3_party_trade != old
-		}
-		return true // Type mismatch, assume changed
-	case "user_id":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.User_id.Equal(old)
-		}
-	case "source_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Source_code.Equal(old)
-		}
-	case "reason_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Reason_code.Equal(old)
-		}
-	case "closed_by_entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Closed_by_entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "closed":
-		if old, ok := oldValue.(bool); ok {
-			return t.Closed != old
-		}
-		return true // Type mismatch, assume changed
-	case "country_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Country_code.Equal(old)
-		}
-	case "internal_ref_no":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Internal_ref_no.Equal(old)
-		}
-	case "transaction_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Transaction_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "unrealized_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Unrealized_amount.Equal(old)
-		}
-	case "unrealized_base":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Unrealized_base.Equal(old)
-		}
-	case "remaining_unrealized_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Remaining_unrealized_amount.Equal(old)
-		}
-	case "remaining_unrealized_base":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Remaining_unrealized_base.Equal(old)
-		}
-	case "additional_currency_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Additional_currency_amount.Equal(old)
-		}
-	case "additional_currency_base":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Additional_currency_base.Equal(old)
-		}
-	case "add_currency_unrealized_amt":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Add_currency_unrealized_amt.Equal(old)
-		}
-	case "add_currency_unrealized_base":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Add_currency_unrealized_base.Equal(old)
-		}
-	case "add_curr_rem_unreal_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Add_curr_rem_unreal_amount.Equal(old)
-		}
-	case "add_curr_rem_unreal_base":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Add_curr_rem_unreal_base.Equal(old)
-		}
-	case "external_document_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.External_document_no.Equal(old)
-		}
-	case "no_series":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No_series.Equal(old)
-		}
-	case "tax_area_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_area_code.Equal(old)
-		}
-	case "tax_liable":
-		if old, ok := oldValue.(bool); ok {
-			return t.Tax_liable != old
-		}
-		return true // Type mismatch, assume changed
-	case "tax_group_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_group_code.Equal(old)
-		}
-	case "use_tax":
-		if old, ok := oldValue.(bool); ok {
-			return t.Use_tax != old
-		}
-		return true // Type mismatch, assume changed
-	case "tax_jurisdiction_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_jurisdiction_code.Equal(old)
-		}
-	case "tax_group_used":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_group_used.Equal(old)
-		}
-	case "tax_type":
-		if old, ok := oldValue.(TaxEntryTax_type); ok {
-			return t.Tax_type != old
-		}
-	case "tax_on_tax":
-		if old, ok := oldValue.(bool); ok {
-			return t.Tax_on_tax != old
-		}
-		return true // Type mismatch, assume changed
-	case "sales_tax_connection_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Sales_tax_connection_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "unrealized_tax_entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Unrealized_tax_entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "tax_bus_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_bus_posting_group.Equal(old)
-		}
-	case "tax_prod_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_prod_posting_group.Equal(old)
-		}
-	}
-
-	return false
+	return taxEntryFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -2637,97 +1950,7 @@ func (t *TaxEntry) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *TaxEntry) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("entry_no"):
-		return "entry_no", true
-	case strings.ToLower("gen_bus_posting_group"):
-		return "gen_bus_posting_group", true
-	case strings.ToLower("gen_prod_posting_group"):
-		return "gen_prod_posting_group", true
-	case strings.ToLower("posting_date"):
-		return "posting_date", true
-	case strings.ToLower("document_no"):
-		return "document_no", true
-	case strings.ToLower("document_type"):
-		return "document_type", true
-	case strings.ToLower("type"):
-		return "type", true
-	case strings.ToLower("base"):
-		return "base", true
-	case strings.ToLower("amount"):
-		return "amount", true
-	case strings.ToLower("tax_calculation_type"):
-		return "tax_calculation_type", true
-	case strings.ToLower("sell_to_buy_from_no"):
-		return "sell_to_buy_from_no", true
-	case strings.ToLower("eu_3_party_trade"):
-		return "eu_3_party_trade", true
-	case strings.ToLower("user_id"):
-		return "user_id", true
-	case strings.ToLower("source_code"):
-		return "source_code", true
-	case strings.ToLower("reason_code"):
-		return "reason_code", true
-	case strings.ToLower("closed_by_entry_no"):
-		return "closed_by_entry_no", true
-	case strings.ToLower("closed"):
-		return "closed", true
-	case strings.ToLower("country_code"):
-		return "country_code", true
-	case strings.ToLower("internal_ref_no"):
-		return "internal_ref_no", true
-	case strings.ToLower("transaction_no"):
-		return "transaction_no", true
-	case strings.ToLower("unrealized_amount"):
-		return "unrealized_amount", true
-	case strings.ToLower("unrealized_base"):
-		return "unrealized_base", true
-	case strings.ToLower("remaining_unrealized_amount"):
-		return "remaining_unrealized_amount", true
-	case strings.ToLower("remaining_unrealized_base"):
-		return "remaining_unrealized_base", true
-	case strings.ToLower("additional_currency_amount"):
-		return "additional_currency_amount", true
-	case strings.ToLower("additional_currency_base"):
-		return "additional_currency_base", true
-	case strings.ToLower("add_currency_unrealized_amt"):
-		return "add_currency_unrealized_amt", true
-	case strings.ToLower("add_currency_unrealized_base"):
-		return "add_currency_unrealized_base", true
-	case strings.ToLower("add_curr_rem_unreal_amount"):
-		return "add_curr_rem_unreal_amount", true
-	case strings.ToLower("add_curr_rem_unreal_base"):
-		return "add_curr_rem_unreal_base", true
-	case strings.ToLower("external_document_no"):
-		return "external_document_no", true
-	case strings.ToLower("no_series"):
-		return "no_series", true
-	case strings.ToLower("tax_area_code"):
-		return "tax_area_code", true
-	case strings.ToLower("tax_liable"):
-		return "tax_liable", true
-	case strings.ToLower("tax_group_code"):
-		return "tax_group_code", true
-	case strings.ToLower("use_tax"):
-		return "use_tax", true
-	case strings.ToLower("tax_jurisdiction_code"):
-		return "tax_jurisdiction_code", true
-	case strings.ToLower("tax_group_used"):
-		return "tax_group_used", true
-	case strings.ToLower("tax_type"):
-		return "tax_type", true
-	case strings.ToLower("tax_on_tax"):
-		return "tax_on_tax", true
-	case strings.ToLower("sales_tax_connection_no"):
-		return "sales_tax_connection_no", true
-	case strings.ToLower("unrealized_tax_entry_no"):
-		return "unrealized_tax_entry_no", true
-	case strings.ToLower("tax_bus_posting_group"):
-		return "tax_bus_posting_group", true
-	case strings.ToLower("tax_prod_posting_group"):
-		return "tax_prod_posting_group", true
-	}
-	return "", false
+	return taxEntryFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -4078,1156 +3301,20 @@ func (t *TaxEntry) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *TaxEntry) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Entry_no = v
-		case float64:
-			t.Entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field entry_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Entry_no); ok {
-				if err := trg.OnValidate_Entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "gen_bus_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Gen_bus_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Gen_bus_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field gen_bus_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "gen_bus_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Gen_bus_posting_group); ok {
-				if err := trg.OnValidate_Gen_bus_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "gen_prod_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Gen_prod_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Gen_prod_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field gen_prod_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "gen_prod_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Gen_prod_posting_group); ok {
-				if err := trg.OnValidate_Gen_prod_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "posting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Posting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Posting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field posting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Posting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field posting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Posting_date); ok {
-				if err := trg.OnValidate_Posting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Document_no = v
-		} else if v, ok := value.(string); ok {
-			t.Document_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field document_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Document_no); ok {
-				if err := trg.OnValidate_Document_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(TaxEntryDocument_type); ok {
-			t.Document_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 6 {
-				return fmt.Errorf("invalid option value %d for field document_type (valid range: 0-%d)", v, 6-1)
-			}
-			t.Document_type = TaxEntryDocument_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 6 {
-				return fmt.Errorf("invalid option value %d for field document_type (valid range: 0-%d)", intVal, 6-1)
-			}
-			t.Document_type = TaxEntryDocument_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Document_type = 0
-			} else {
-				options := []string{" ", "Payment", "Invoice", "Credit Memo", "Finance Charge Memo", "Reminder"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Document_type = TaxEntryDocument_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field document_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field document_type (expected TaxEntryDocument_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Document_type); ok {
-				if err := trg.OnValidate_Document_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(TaxEntryType); ok {
-			t.Type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", v, 4-1)
-			}
-			t.Type = TaxEntryType(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Type = TaxEntryType(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Type = 0
-			} else {
-				options := []string{" ", "Purchase", "Sale", "Settlement"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Type = TaxEntryType(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field type (expected TaxEntryType, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Type); ok {
-				if err := trg.OnValidate_Type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "base":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Base = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Base, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field base: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Base = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Base = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Base = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field base (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Base); ok {
-				if err := trg.OnValidate_Base(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Amount); ok {
-				if err := trg.OnValidate_Amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_calculation_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(TaxEntryTax_calculation_type); ok {
-			t.Tax_calculation_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field tax_calculation_type (valid range: 0-%d)", v, 4-1)
-			}
-			t.Tax_calculation_type = TaxEntryTax_calculation_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field tax_calculation_type (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Tax_calculation_type = TaxEntryTax_calculation_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Tax_calculation_type = 0
-			} else {
-				options := []string{"Normal VAT", "Reverse Charge VAT", "Full VAT", "Sales Tax"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Tax_calculation_type = TaxEntryTax_calculation_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field tax_calculation_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field tax_calculation_type (expected TaxEntryTax_calculation_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Tax_calculation_type); ok {
-				if err := trg.OnValidate_Tax_calculation_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sell_to_buy_from_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Sell_to_buy_from_no = v
-		} else if v, ok := value.(string); ok {
-			t.Sell_to_buy_from_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field sell_to_buy_from_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Sell_to_buy_from_no); ok {
-				if err := trg.OnValidate_Sell_to_buy_from_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "eu_3_party_trade":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Eu_3_party_trade = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Eu_3_party_trade = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field eu_3_party_trade")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Eu_3_party_trade); ok {
-				if err := trg.OnValidate_Eu_3_party_trade(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "user_id":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-		} else if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field user_id")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "user_id"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_User_id); ok {
-				if err := trg.OnValidate_User_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "source_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Source_code = v
-		} else if v, ok := value.(string); ok {
-			t.Source_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field source_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "source_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Source_code); ok {
-				if err := trg.OnValidate_Source_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reason_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Reason_code = v
-		} else if v, ok := value.(string); ok {
-			t.Reason_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field reason_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "reason_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Reason_code); ok {
-				if err := trg.OnValidate_Reason_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "closed_by_entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Closed_by_entry_no = v
-		case float64:
-			t.Closed_by_entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Closed_by_entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Closed_by_entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field closed_by_entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field closed_by_entry_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Closed_by_entry_no); ok {
-				if err := trg.OnValidate_Closed_by_entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "closed":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Closed = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Closed = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field closed")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Closed); ok {
-				if err := trg.OnValidate_Closed(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "country_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Country_code = v
-		} else if v, ok := value.(string); ok {
-			t.Country_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field country_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "country_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Country_code); ok {
-				if err := trg.OnValidate_Country_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "internal_ref_no":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Internal_ref_no = v
-		} else if v, ok := value.(string); ok {
-			t.Internal_ref_no = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field internal_ref_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Internal_ref_no); ok {
-				if err := trg.OnValidate_Internal_ref_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "transaction_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Transaction_no = v
-		case float64:
-			t.Transaction_no = int(v)
-		case string:
-			if v == "" {
-				t.Transaction_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Transaction_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field transaction_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field transaction_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Transaction_no); ok {
-				if err := trg.OnValidate_Transaction_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unrealized_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Unrealized_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Unrealized_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field unrealized_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Unrealized_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Unrealized_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Unrealized_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field unrealized_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Unrealized_amount); ok {
-				if err := trg.OnValidate_Unrealized_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unrealized_base":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Unrealized_base = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Unrealized_base, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field unrealized_base: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Unrealized_base = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Unrealized_base = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Unrealized_base = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field unrealized_base (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Unrealized_base); ok {
-				if err := trg.OnValidate_Unrealized_base(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "remaining_unrealized_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Remaining_unrealized_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Remaining_unrealized_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field remaining_unrealized_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Remaining_unrealized_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Remaining_unrealized_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Remaining_unrealized_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field remaining_unrealized_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Remaining_unrealized_amount); ok {
-				if err := trg.OnValidate_Remaining_unrealized_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "remaining_unrealized_base":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Remaining_unrealized_base = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Remaining_unrealized_base, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field remaining_unrealized_base: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Remaining_unrealized_base = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Remaining_unrealized_base = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Remaining_unrealized_base = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field remaining_unrealized_base (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Remaining_unrealized_base); ok {
-				if err := trg.OnValidate_Remaining_unrealized_base(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "additional_currency_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Additional_currency_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Additional_currency_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field additional_currency_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Additional_currency_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Additional_currency_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Additional_currency_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field additional_currency_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Additional_currency_amount); ok {
-				if err := trg.OnValidate_Additional_currency_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "additional_currency_base":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Additional_currency_base = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Additional_currency_base, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field additional_currency_base: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Additional_currency_base = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Additional_currency_base = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Additional_currency_base = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field additional_currency_base (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Additional_currency_base); ok {
-				if err := trg.OnValidate_Additional_currency_base(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "add_currency_unrealized_amt":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Add_currency_unrealized_amt = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Add_currency_unrealized_amt, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field add_currency_unrealized_amt: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Add_currency_unrealized_amt = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Add_currency_unrealized_amt = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Add_currency_unrealized_amt = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field add_currency_unrealized_amt (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Add_currency_unrealized_amt); ok {
-				if err := trg.OnValidate_Add_currency_unrealized_amt(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "add_currency_unrealized_base":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Add_currency_unrealized_base = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Add_currency_unrealized_base, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field add_currency_unrealized_base: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Add_currency_unrealized_base = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Add_currency_unrealized_base = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Add_currency_unrealized_base = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field add_currency_unrealized_base (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Add_currency_unrealized_base); ok {
-				if err := trg.OnValidate_Add_currency_unrealized_base(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "add_curr_rem_unreal_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Add_curr_rem_unreal_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Add_curr_rem_unreal_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field add_curr_rem_unreal_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Add_curr_rem_unreal_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Add_curr_rem_unreal_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Add_curr_rem_unreal_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field add_curr_rem_unreal_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Add_curr_rem_unreal_amount); ok {
-				if err := trg.OnValidate_Add_curr_rem_unreal_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "add_curr_rem_unreal_base":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Add_curr_rem_unreal_base = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Add_curr_rem_unreal_base, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field add_curr_rem_unreal_base: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Add_curr_rem_unreal_base = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Add_curr_rem_unreal_base = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Add_curr_rem_unreal_base = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field add_curr_rem_unreal_base (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Add_curr_rem_unreal_base); ok {
-				if err := trg.OnValidate_Add_curr_rem_unreal_base(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "external_document_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.External_document_no = v
-		} else if v, ok := value.(string); ok {
-			t.External_document_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field external_document_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_External_document_no); ok {
-				if err := trg.OnValidate_External_document_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no_series":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No_series = v
-		} else if v, ok := value.(string); ok {
-			t.No_series = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no_series")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "no_series"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_No_series); ok {
-				if err := trg.OnValidate_No_series(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_area_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_area_code = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_area_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_area_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_area_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Tax_area_code); ok {
-				if err := trg.OnValidate_Tax_area_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_liable":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Tax_liable = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Tax_liable = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field tax_liable")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Tax_liable); ok {
-				if err := trg.OnValidate_Tax_liable(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_group_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_group_code = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_group_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_group_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_group_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Tax_group_code); ok {
-				if err := trg.OnValidate_Tax_group_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "use_tax":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Use_tax = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Use_tax = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field use_tax")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Use_tax); ok {
-				if err := trg.OnValidate_Use_tax(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_jurisdiction_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_jurisdiction_code = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_jurisdiction_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_jurisdiction_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_jurisdiction_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Tax_jurisdiction_code); ok {
-				if err := trg.OnValidate_Tax_jurisdiction_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_group_used":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_group_used = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_group_used = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_group_used")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_group_used"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Tax_group_used); ok {
-				if err := trg.OnValidate_Tax_group_used(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(TaxEntryTax_type); ok {
-			t.Tax_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 2 {
-				return fmt.Errorf("invalid option value %d for field tax_type (valid range: 0-%d)", v, 2-1)
-			}
-			t.Tax_type = TaxEntryTax_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 2 {
-				return fmt.Errorf("invalid option value %d for field tax_type (valid range: 0-%d)", intVal, 2-1)
-			}
-			t.Tax_type = TaxEntryTax_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Tax_type = 0
-			} else {
-				options := []string{"Sales Tax", "Excise Tax"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Tax_type = TaxEntryTax_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field tax_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field tax_type (expected TaxEntryTax_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Tax_type); ok {
-				if err := trg.OnValidate_Tax_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_on_tax":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Tax_on_tax = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Tax_on_tax = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field tax_on_tax")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Tax_on_tax); ok {
-				if err := trg.OnValidate_Tax_on_tax(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sales_tax_connection_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Sales_tax_connection_no = v
-		case float64:
-			t.Sales_tax_connection_no = int(v)
-		case string:
-			if v == "" {
-				t.Sales_tax_connection_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Sales_tax_connection_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field sales_tax_connection_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field sales_tax_connection_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Sales_tax_connection_no); ok {
-				if err := trg.OnValidate_Sales_tax_connection_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unrealized_tax_entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Unrealized_tax_entry_no = v
-		case float64:
-			t.Unrealized_tax_entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Unrealized_tax_entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Unrealized_tax_entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field unrealized_tax_entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field unrealized_tax_entry_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Unrealized_tax_entry_no); ok {
-				if err := trg.OnValidate_Unrealized_tax_entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_bus_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_bus_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_bus_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_bus_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_bus_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Tax_bus_posting_group); ok {
-				if err := trg.OnValidate_Tax_bus_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_prod_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_prod_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_prod_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_prod_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_prod_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxEntryOnValidate_Tax_prod_posting_group); ok {
-				if err := trg.OnValidate_Tax_prod_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := taxEntryFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &taxEntryFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -5236,400 +3323,18 @@ func (t *TaxEntry) ValidateField(fieldName string, value interface{}) error {
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *TaxEntry) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Entry_no, true
-	case 2:
-		return t.Gen_bus_posting_group, true
-	case 3:
-		return t.Gen_prod_posting_group, true
-	case 4:
-		return t.Posting_date, true
-	case 5:
-		return t.Document_no, true
-	case 6:
-		return t.Document_type, true
-	case 7:
-		return t.Type, true
-	case 8:
-		return t.Base, true
-	case 9:
-		return t.Amount, true
-	case 10:
-		return t.Tax_calculation_type, true
-	case 12:
-		return t.Sell_to_buy_from_no, true
-	case 13:
-		return t.Eu_3_party_trade, true
-	case 14:
-		return t.User_id, true
-	case 15:
-		return t.Source_code, true
-	case 16:
-		return t.Reason_code, true
-	case 17:
-		return t.Closed_by_entry_no, true
-	case 18:
-		return t.Closed, true
-	case 19:
-		return t.Country_code, true
-	case 20:
-		return t.Internal_ref_no, true
-	case 21:
-		return t.Transaction_no, true
-	case 22:
-		return t.Unrealized_amount, true
-	case 23:
-		return t.Unrealized_base, true
-	case 24:
-		return t.Remaining_unrealized_amount, true
-	case 25:
-		return t.Remaining_unrealized_base, true
-	case 43:
-		return t.Additional_currency_amount, true
-	case 44:
-		return t.Additional_currency_base, true
-	case 45:
-		return t.Add_currency_unrealized_amt, true
-	case 46:
-		return t.Add_currency_unrealized_base, true
-	case 49:
-		return t.Add_curr_rem_unreal_amount, true
-	case 50:
-		return t.Add_curr_rem_unreal_base, true
-	case 26:
-		return t.External_document_no, true
-	case 28:
-		return t.No_series, true
-	case 29:
-		return t.Tax_area_code, true
-	case 30:
-		return t.Tax_liable, true
-	case 31:
-		return t.Tax_group_code, true
-	case 32:
-		return t.Use_tax, true
-	case 33:
-		return t.Tax_jurisdiction_code, true
-	case 34:
-		return t.Tax_group_used, true
-	case 35:
-		return t.Tax_type, true
-	case 36:
-		return t.Tax_on_tax, true
-	case 37:
-		return t.Sales_tax_connection_no, true
-	case 38:
-		return t.Unrealized_tax_entry_no, true
-	case 39:
-		return t.Tax_bus_posting_group, true
-	case 40:
-		return t.Tax_prod_posting_group, true
-	}
-	return nil, false
+	return taxEntryFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *TaxEntry) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return taxEntryFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *TaxEntry) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(int); ok {
-			t.Entry_no = v
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Gen_bus_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Gen_bus_posting_group = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Code); ok {
-			t.Gen_prod_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Gen_prod_posting_group = types.NewCode(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Date); ok {
-			t.Posting_date = v
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Code); ok {
-			t.Document_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Document_no = types.NewCode(v)
-			return true
-		}
-	case 6:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 6 {
-			t.Document_type = TaxEntryDocument_type(i)
-			return true
-		}
-	case 7:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Type = TaxEntryType(i)
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Decimal); ok {
-			t.Base = v
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount = v
-			return true
-		}
-	case 10:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Tax_calculation_type = TaxEntryTax_calculation_type(i)
-			return true
-		}
-	case 12:
-		if v, ok := value.(types.Code); ok {
-			t.Sell_to_buy_from_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Sell_to_buy_from_no = types.NewCode(v)
-			return true
-		}
-	case 13:
-		if v, ok := value.(bool); ok {
-			t.Eu_3_party_trade = v
-			return true
-		}
-	case 14:
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-			return true
-		}
-	case 15:
-		if v, ok := value.(types.Code); ok {
-			t.Source_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Source_code = types.NewCode(v)
-			return true
-		}
-	case 16:
-		if v, ok := value.(types.Code); ok {
-			t.Reason_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Reason_code = types.NewCode(v)
-			return true
-		}
-	case 17:
-		if v, ok := value.(int); ok {
-			t.Closed_by_entry_no = v
-			return true
-		}
-	case 18:
-		if v, ok := value.(bool); ok {
-			t.Closed = v
-			return true
-		}
-	case 19:
-		if v, ok := value.(types.Code); ok {
-			t.Country_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Country_code = types.NewCode(v)
-			return true
-		}
-	case 20:
-		if v, ok := value.(types.Text); ok {
-			t.Internal_ref_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Internal_ref_no = types.NewText(v)
-			return true
-		}
-	case 21:
-		if v, ok := value.(int); ok {
-			t.Transaction_no = v
-			return true
-		}
-	case 22:
-		if v, ok := value.(types.Decimal); ok {
-			t.Unrealized_amount = v
-			return true
-		}
-	case 23:
-		if v, ok := value.(types.Decimal); ok {
-			t.Unrealized_base = v
-			return true
-		}
-	case 24:
-		if v, ok := value.(types.Decimal); ok {
-			t.Remaining_unrealized_amount = v
-			return true
-		}
-	case 25:
-		if v, ok := value.(types.Decimal); ok {
-			t.Remaining_unrealized_base = v
-			return true
-		}
-	case 43:
-		if v, ok := value.(types.Decimal); ok {
-			t.Additional_currency_amount = v
-			return true
-		}
-	case 44:
-		if v, ok := value.(types.Decimal); ok {
-			t.Additional_currency_base = v
-			return true
-		}
-	case 45:
-		if v, ok := value.(types.Decimal); ok {
-			t.Add_currency_unrealized_amt = v
-			return true
-		}
-	case 46:
-		if v, ok := value.(types.Decimal); ok {
-			t.Add_currency_unrealized_base = v
-			return true
-		}
-	case 49:
-		if v, ok := value.(types.Decimal); ok {
-			t.Add_curr_rem_unreal_amount = v
-			return true
-		}
-	case 50:
-		if v, ok := value.(types.Decimal); ok {
-			t.Add_curr_rem_unreal_base = v
-			return true
-		}
-	case 26:
-		if v, ok := value.(types.Code); ok {
-			t.External_document_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.External_document_no = types.NewCode(v)
-			return true
-		}
-	case 28:
-		if v, ok := value.(types.Code); ok {
-			t.No_series = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No_series = types.NewCode(v)
-			return true
-		}
-	case 29:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_area_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_area_code = types.NewCode(v)
-			return true
-		}
-	case 30:
-		if v, ok := value.(bool); ok {
-			t.Tax_liable = v
-			return true
-		}
-	case 31:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_group_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_group_code = types.NewCode(v)
-			return true
-		}
-	case 32:
-		if v, ok := value.(bool); ok {
-			t.Use_tax = v
-			return true
-		}
-	case 33:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_jurisdiction_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_jurisdiction_code = types.NewCode(v)
-			return true
-		}
-	case 34:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_group_used = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_group_used = types.NewCode(v)
-			return true
-		}
-	case 35:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 2 {
-			t.Tax_type = TaxEntryTax_type(i)
-			return true
-		}
-	case 36:
-		if v, ok := value.(bool); ok {
-			t.Tax_on_tax = v
-			return true
-		}
-	case 37:
-		if v, ok := value.(int); ok {
-			t.Sales_tax_connection_no = v
-			return true
-		}
-	case 38:
-		if v, ok := value.(int); ok {
-			t.Unrealized_tax_entry_no = v
-			return true
-		}
-	case 39:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_bus_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_bus_posting_group = types.NewCode(v)
-			return true
-		}
-	case 40:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_prod_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_prod_posting_group = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return taxEntryFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -6227,97 +3932,7 @@ func (t *TaxEntry) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *TaxEntry) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "entry_no":
-		return t.Entry_no, true
-	case "gen_bus_posting_group":
-		return t.Gen_bus_posting_group, true
-	case "gen_prod_posting_group":
-		return t.Gen_prod_posting_group, true
-	case "posting_date":
-		return t.Posting_date, true
-	case "document_no":
-		return t.Document_no, true
-	case "document_type":
-		return int(t.Document_type), true
-	case "type":
-		return int(t.Type), true
-	case "base":
-		return t.Base, true
-	case "amount":
-		return t.Amount, true
-	case "tax_calculation_type":
-		return int(t.Tax_calculation_type), true
-	case "sell_to_buy_from_no":
-		return t.Sell_to_buy_from_no, true
-	case "eu_3_party_trade":
-		return t.Eu_3_party_trade, true
-	case "user_id":
-		return t.User_id, true
-	case "source_code":
-		return t.Source_code, true
-	case "reason_code":
-		return t.Reason_code, true
-	case "closed_by_entry_no":
-		return t.Closed_by_entry_no, true
-	case "closed":
-		return t.Closed, true
-	case "country_code":
-		return t.Country_code, true
-	case "internal_ref_no":
-		return t.Internal_ref_no, true
-	case "transaction_no":
-		return t.Transaction_no, true
-	case "unrealized_amount":
-		return t.Unrealized_amount, true
-	case "unrealized_base":
-		return t.Unrealized_base, true
-	case "remaining_unrealized_amount":
-		return t.Remaining_unrealized_amount, true
-	case "remaining_unrealized_base":
-		return t.Remaining_unrealized_base, true
-	case "additional_currency_amount":
-		return t.Additional_currency_amount, true
-	case "additional_currency_base":
-		return t.Additional_currency_base, true
-	case "add_currency_unrealized_amt":
-		return t.Add_currency_unrealized_amt, true
-	case "add_currency_unrealized_base":
-		return t.Add_currency_unrealized_base, true
-	case "add_curr_rem_unreal_amount":
-		return t.Add_curr_rem_unreal_amount, true
-	case "add_curr_rem_unreal_base":
-		return t.Add_curr_rem_unreal_base, true
-	case "external_document_no":
-		return t.External_document_no, true
-	case "no_series":
-		return t.No_series, true
-	case "tax_area_code":
-		return t.Tax_area_code, true
-	case "tax_liable":
-		return t.Tax_liable, true
-	case "tax_group_code":
-		return t.Tax_group_code, true
-	case "use_tax":
-		return t.Use_tax, true
-	case "tax_jurisdiction_code":
-		return t.Tax_jurisdiction_code, true
-	case "tax_group_used":
-		return t.Tax_group_used, true
-	case "tax_type":
-		return int(t.Tax_type), true
-	case "tax_on_tax":
-		return t.Tax_on_tax, true
-	case "sales_tax_connection_no":
-		return t.Sales_tax_connection_no, true
-	case "unrealized_tax_entry_no":
-		return t.Unrealized_tax_entry_no, true
-	case "tax_bus_posting_group":
-		return t.Tax_bus_posting_group, true
-	case "tax_prod_posting_group":
-		return t.Tax_prod_posting_group, true
-	}
-	return nil, false
+	return taxEntryFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -6446,448 +4061,12 @@ func (t *TaxEntry) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *TaxEntry) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"entry_no":                     t.Entry_no,
-		"gen_bus_posting_group":        t.Gen_bus_posting_group.String(),
-		"gen_prod_posting_group":       t.Gen_prod_posting_group.String(),
-		"posting_date":                 t.Posting_date.String(),
-		"document_no":                  t.Document_no.String(),
-		"document_type":                int(t.Document_type),
-		"type":                         int(t.Type),
-		"base":                         t.Base.String(),
-		"amount":                       t.Amount.String(),
-		"tax_calculation_type":         int(t.Tax_calculation_type),
-		"sell_to_buy_from_no":          t.Sell_to_buy_from_no.String(),
-		"eu_3_party_trade":             t.Eu_3_party_trade,
-		"user_id":                      t.User_id.String(),
-		"source_code":                  t.Source_code.String(),
-		"reason_code":                  t.Reason_code.String(),
-		"closed_by_entry_no":           t.Closed_by_entry_no,
-		"closed":                       t.Closed,
-		"country_code":                 t.Country_code.String(),
-		"internal_ref_no":              t.Internal_ref_no.String(),
-		"transaction_no":               t.Transaction_no,
-		"unrealized_amount":            t.Unrealized_amount.String(),
-		"unrealized_base":              t.Unrealized_base.String(),
-		"remaining_unrealized_amount":  t.Remaining_unrealized_amount.String(),
-		"remaining_unrealized_base":    t.Remaining_unrealized_base.String(),
-		"additional_currency_amount":   t.Additional_currency_amount.String(),
-		"additional_currency_base":     t.Additional_currency_base.String(),
-		"add_currency_unrealized_amt":  t.Add_currency_unrealized_amt.String(),
-		"add_currency_unrealized_base": t.Add_currency_unrealized_base.String(),
-		"add_curr_rem_unreal_amount":   t.Add_curr_rem_unreal_amount.String(),
-		"add_curr_rem_unreal_base":     t.Add_curr_rem_unreal_base.String(),
-		"external_document_no":         t.External_document_no.String(),
-		"no_series":                    t.No_series.String(),
-		"tax_area_code":                t.Tax_area_code.String(),
-		"tax_liable":                   t.Tax_liable,
-		"tax_group_code":               t.Tax_group_code.String(),
-		"use_tax":                      t.Use_tax,
-		"tax_jurisdiction_code":        t.Tax_jurisdiction_code.String(),
-		"tax_group_used":               t.Tax_group_used.String(),
-		"tax_type":                     int(t.Tax_type),
-		"tax_on_tax":                   t.Tax_on_tax,
-		"sales_tax_connection_no":      t.Sales_tax_connection_no,
-		"unrealized_tax_entry_no":      t.Unrealized_tax_entry_no,
-		"tax_bus_posting_group":        t.Tax_bus_posting_group.String(),
-		"tax_prod_posting_group":       t.Tax_prod_posting_group.String(),
-	}
+	return taxEntryFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *TaxEntry) FromMap(data map[string]interface{}) {
-	if v, ok := data["entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Entry_no = int(val)
-		case int:
-			t.Entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Entry_no = n
-			}
-		}
-	}
-	if v, ok := data["gen_bus_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Gen_bus_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["gen_prod_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Gen_prod_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["posting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Posting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["document_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Document_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["document_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Document_type = TaxEntryDocument_type(int(val))
-		case int:
-			t.Document_type = TaxEntryDocument_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Payment", "Invoice", "Credit Memo", "Finance Charge Memo", "Reminder"}
-			for i, opt := range options {
-				if opt == val {
-					t.Document_type = TaxEntryDocument_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Type = TaxEntryType(int(val))
-		case int:
-			t.Type = TaxEntryType(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Purchase", "Sale", "Settlement"}
-			for i, opt := range options {
-				if opt == val {
-					t.Type = TaxEntryType(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["base"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Base, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Base = types.NewDecimal(val)
-		case int:
-			t.Base = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Base = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Amount = types.NewDecimal(val)
-		case int:
-			t.Amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["tax_calculation_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Tax_calculation_type = TaxEntryTax_calculation_type(int(val))
-		case int:
-			t.Tax_calculation_type = TaxEntryTax_calculation_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Normal VAT", "Reverse Charge VAT", "Full VAT", "Sales Tax"}
-			for i, opt := range options {
-				if opt == val {
-					t.Tax_calculation_type = TaxEntryTax_calculation_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["sell_to_buy_from_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Sell_to_buy_from_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["eu_3_party_trade"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Eu_3_party_trade = b
-		}
-	}
-	if v, ok := data["user_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.User_id = types.NewCode(s)
-		}
-	}
-	if v, ok := data["source_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Source_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["reason_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Reason_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["closed_by_entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Closed_by_entry_no = int(val)
-		case int:
-			t.Closed_by_entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Closed_by_entry_no = n
-			}
-		}
-	}
-	if v, ok := data["closed"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Closed = b
-		}
-	}
-	if v, ok := data["country_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Country_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["internal_ref_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Internal_ref_no = types.NewText(s)
-		}
-	}
-	if v, ok := data["transaction_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Transaction_no = int(val)
-		case int:
-			t.Transaction_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Transaction_no = n
-			}
-		}
-	}
-	if v, ok := data["unrealized_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Unrealized_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Unrealized_amount = types.NewDecimal(val)
-		case int:
-			t.Unrealized_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Unrealized_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["unrealized_base"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Unrealized_base, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Unrealized_base = types.NewDecimal(val)
-		case int:
-			t.Unrealized_base = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Unrealized_base = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["remaining_unrealized_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Remaining_unrealized_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Remaining_unrealized_amount = types.NewDecimal(val)
-		case int:
-			t.Remaining_unrealized_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Remaining_unrealized_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["remaining_unrealized_base"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Remaining_unrealized_base, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Remaining_unrealized_base = types.NewDecimal(val)
-		case int:
-			t.Remaining_unrealized_base = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Remaining_unrealized_base = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["additional_currency_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Additional_currency_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Additional_currency_amount = types.NewDecimal(val)
-		case int:
-			t.Additional_currency_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Additional_currency_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["additional_currency_base"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Additional_currency_base, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Additional_currency_base = types.NewDecimal(val)
-		case int:
-			t.Additional_currency_base = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Additional_currency_base = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["add_currency_unrealized_amt"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Add_currency_unrealized_amt, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Add_currency_unrealized_amt = types.NewDecimal(val)
-		case int:
-			t.Add_currency_unrealized_amt = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Add_currency_unrealized_amt = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["add_currency_unrealized_base"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Add_currency_unrealized_base, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Add_currency_unrealized_base = types.NewDecimal(val)
-		case int:
-			t.Add_currency_unrealized_base = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Add_currency_unrealized_base = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["add_curr_rem_unreal_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Add_curr_rem_unreal_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Add_curr_rem_unreal_amount = types.NewDecimal(val)
-		case int:
-			t.Add_curr_rem_unreal_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Add_curr_rem_unreal_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["add_curr_rem_unreal_base"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Add_curr_rem_unreal_base, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Add_curr_rem_unreal_base = types.NewDecimal(val)
-		case int:
-			t.Add_curr_rem_unreal_base = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Add_curr_rem_unreal_base = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["external_document_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.External_document_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["no_series"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No_series = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_area_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_area_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_liable"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Tax_liable = b
-		}
-	}
-	if v, ok := data["tax_group_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_group_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["use_tax"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Use_tax = b
-		}
-	}
-	if v, ok := data["tax_jurisdiction_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_jurisdiction_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_group_used"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_group_used = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Tax_type = TaxEntryTax_type(int(val))
-		case int:
-			t.Tax_type = TaxEntryTax_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Sales Tax", "Excise Tax"}
-			for i, opt := range options {
-				if opt == val {
-					t.Tax_type = TaxEntryTax_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["tax_on_tax"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Tax_on_tax = b
-		}
-	}
-	if v, ok := data["sales_tax_connection_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Sales_tax_connection_no = int(val)
-		case int:
-			t.Sales_tax_connection_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Sales_tax_connection_no = n
-			}
-		}
-	}
-	if v, ok := data["unrealized_tax_entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Unrealized_tax_entry_no = int(val)
-		case int:
-			t.Unrealized_tax_entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Unrealized_tax_entry_no = n
-			}
-		}
-	}
-	if v, ok := data["tax_bus_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_bus_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_prod_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_prod_posting_group = types.NewCode(s)
-		}
-	}
+	taxEntryFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -6908,460 +4087,755 @@ func (t *TaxEntry) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *TaxEntry) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "gen_bus_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "gen_prod_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "posting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "document_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "document_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            8,
-			Name:          "base",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            9,
-			Name:          "amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         10,
-			Name:       "tax_calculation_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "sell_to_buy_from_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         13,
-			Name:       "eu_3_party_trade",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         14,
-			Name:       "user_id",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         15,
-			Name:       "source_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         16,
-			Name:       "reason_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         17,
-			Name:       "closed_by_entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         18,
-			Name:       "closed",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         19,
-			Name:       "country_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         20,
-			Name:       "internal_ref_no",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         21,
-			Name:       "transaction_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            22,
-			Name:          "unrealized_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            23,
-			Name:          "unrealized_base",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            24,
-			Name:          "remaining_unrealized_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            25,
-			Name:          "remaining_unrealized_base",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            43,
-			Name:          "additional_currency_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            44,
-			Name:          "additional_currency_base",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            45,
-			Name:          "add_currency_unrealized_amt",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            46,
-			Name:          "add_currency_unrealized_base",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            49,
-			Name:          "add_curr_rem_unreal_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            50,
-			Name:          "add_curr_rem_unreal_base",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         26,
-			Name:       "external_document_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         28,
-			Name:       "no_series",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         29,
-			Name:       "tax_area_code",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         30,
-			Name:       "tax_liable",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         31,
-			Name:       "tax_group_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         32,
-			Name:       "use_tax",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         33,
-			Name:       "tax_jurisdiction_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         34,
-			Name:       "tax_group_used",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         35,
-			Name:       "tax_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         36,
-			Name:       "tax_on_tax",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         37,
-			Name:       "sales_tax_connection_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         38,
-			Name:       "unrealized_tax_entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         39,
-			Name:       "tax_bus_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         40,
-			Name:       "tax_prod_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return taxEntryFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in taxEntryFields.Fields
+func (t *TaxEntry) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Entry_no
+	case 1:
+		return &t.Gen_bus_posting_group
+	case 2:
+		return &t.Gen_prod_posting_group
+	case 3:
+		return &t.Posting_date
+	case 4:
+		return &t.Document_no
+	case 5:
+		return &t.Document_type
+	case 6:
+		return &t.Type
+	case 7:
+		return &t.Base
+	case 8:
+		return &t.Amount
+	case 9:
+		return &t.Tax_calculation_type
+	case 10:
+		return &t.Sell_to_buy_from_no
+	case 11:
+		return &t.Eu_3_party_trade
+	case 12:
+		return &t.User_id
+	case 13:
+		return &t.Source_code
+	case 14:
+		return &t.Reason_code
+	case 15:
+		return &t.Closed_by_entry_no
+	case 16:
+		return &t.Closed
+	case 17:
+		return &t.Country_code
+	case 18:
+		return &t.Internal_ref_no
+	case 19:
+		return &t.Transaction_no
+	case 20:
+		return &t.Unrealized_amount
+	case 21:
+		return &t.Unrealized_base
+	case 22:
+		return &t.Remaining_unrealized_amount
+	case 23:
+		return &t.Remaining_unrealized_base
+	case 24:
+		return &t.Additional_currency_amount
+	case 25:
+		return &t.Additional_currency_base
+	case 26:
+		return &t.Add_currency_unrealized_amt
+	case 27:
+		return &t.Add_currency_unrealized_base
+	case 28:
+		return &t.Add_curr_rem_unreal_amount
+	case 29:
+		return &t.Add_curr_rem_unreal_base
+	case 30:
+		return &t.External_document_no
+	case 31:
+		return &t.No_series
+	case 32:
+		return &t.Tax_area_code
+	case 33:
+		return &t.Tax_liable
+	case 34:
+		return &t.Tax_group_code
+	case 35:
+		return &t.Use_tax
+	case 36:
+		return &t.Tax_jurisdiction_code
+	case 37:
+		return &t.Tax_group_used
+	case 38:
+		return &t.Tax_type
+	case 39:
+		return &t.Tax_on_tax
+	case 40:
+		return &t.Sales_tax_connection_no
+	case 41:
+		return &t.Unrealized_tax_entry_no
+	case 42:
+		return &t.Tax_bus_posting_group
+	case 43:
+		return &t.Tax_prod_posting_group
 	}
+	return nil
+}
+
+// taxEntryFields describes the fields of Tax_Entry for the record functions
+// written once in foundation/tables
+var taxEntryFields = &tables.TableFields{
+	Table: TaxEntryTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Entry_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "gen_bus_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Gen_bus_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "gen_prod_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Gen_prod_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "posting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Posting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "document_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Document_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "document_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Document_type",
+			Options: []string{" ", "Payment", "Invoice", "Credit Memo", "Finance Charge Memo", "Reminder"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Type",
+			Options: []string{" ", "Purchase", "Sale", "Settlement"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            8,
+				Name:          "base",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Base",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            9,
+				Name:          "amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "tax_calculation_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Tax_calculation_type",
+			Options: []string{"Normal VAT", "Reverse Charge VAT", "Full VAT", "Sales Tax"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "sell_to_buy_from_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Sell_to_buy_from_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "eu_3_party_trade",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Eu_3_party_trade",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "user_id",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_User_id",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         15,
+				Name:       "source_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Source_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         16,
+				Name:       "reason_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Reason_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         17,
+				Name:       "closed_by_entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Closed_by_entry_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         18,
+				Name:       "closed",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Closed",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         19,
+				Name:       "country_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Country_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         20,
+				Name:       "internal_ref_no",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Internal_ref_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         21,
+				Name:       "transaction_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Transaction_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            22,
+				Name:          "unrealized_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Unrealized_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            23,
+				Name:          "unrealized_base",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Unrealized_base",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            24,
+				Name:          "remaining_unrealized_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Remaining_unrealized_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            25,
+				Name:          "remaining_unrealized_base",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Remaining_unrealized_base",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            43,
+				Name:          "additional_currency_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Additional_currency_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            44,
+				Name:          "additional_currency_base",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Additional_currency_base",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            45,
+				Name:          "add_currency_unrealized_amt",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Add_currency_unrealized_amt",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            46,
+				Name:          "add_currency_unrealized_base",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Add_currency_unrealized_base",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            49,
+				Name:          "add_curr_rem_unreal_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Add_curr_rem_unreal_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            50,
+				Name:          "add_curr_rem_unreal_base",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Add_curr_rem_unreal_base",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         26,
+				Name:       "external_document_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_External_document_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         28,
+				Name:       "no_series",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_No_series",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         29,
+				Name:       "tax_area_code",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_area_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         30,
+				Name:       "tax_liable",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Tax_liable",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         31,
+				Name:       "tax_group_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_group_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         32,
+				Name:       "use_tax",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Use_tax",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         33,
+				Name:       "tax_jurisdiction_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_jurisdiction_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         34,
+				Name:       "tax_group_used",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_group_used",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         35,
+				Name:       "tax_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Tax_type",
+			Options: []string{"Sales Tax", "Excise Tax"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         36,
+				Name:       "tax_on_tax",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Tax_on_tax",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         37,
+				Name:       "sales_tax_connection_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Sales_tax_connection_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         38,
+				Name:       "unrealized_tax_entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Unrealized_tax_entry_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         39,
+				Name:       "tax_bus_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_bus_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         40,
+				Name:       "tax_prod_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_prod_posting_group",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

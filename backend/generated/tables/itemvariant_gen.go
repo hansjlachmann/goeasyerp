@@ -121,32 +121,12 @@ var ItemVariant_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *ItemVariant) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "item_no":
-		return 2
-	case "code":
-		return 1
-	case "description":
-		return 3
-	case "description_2":
-		return 4
-	}
-	return 0
+	return itemVariantFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *ItemVariant) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 2:
-		return "item_no"
-	case 1:
-		return "code"
-	case 3:
-		return "description"
-	case 4:
-		return "description_2"
-	}
-	return ""
+	return itemVariantFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -250,10 +230,6 @@ type (
 	ItemVariantOnBeforeRename interface {
 		OnBeforeRename(rec *ItemVariant, handled *bool) error
 	}
-	ItemVariantOnValidate_Item_no       interface{ OnValidate_Item_no(rec *ItemVariant) error }
-	ItemVariantOnValidate_Code          interface{ OnValidate_Code(rec *ItemVariant) error }
-	ItemVariantOnValidate_Description   interface{ OnValidate_Description(rec *ItemVariant) error }
-	ItemVariantOnValidate_Description_2 interface{ OnValidate_Description_2(rec *ItemVariant) error }
 )
 
 // itemVariantLogic is the registered business logic of Item_Variant, in
@@ -296,16 +272,9 @@ func itemVariantTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ItemVariantOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(ItemVariantOnBeforeRename)
-	case "OnValidate_Item_no":
-		_, ok = logic.(ItemVariantOnValidate_Item_no)
-	case "OnValidate_Code":
-		_, ok = logic.(ItemVariantOnValidate_Code)
-	case "OnValidate_Description":
-		_, ok = logic.(ItemVariantOnValidate_Description)
-	case "OnValidate_Description_2":
-		_, ok = logic.(ItemVariantOnValidate_Description_2)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return itemVariantFields.IsOnValidateTrigger(name, logic, (*ItemVariant)(nil))
 	}
 	return true, ok
 }
@@ -608,11 +577,7 @@ func (t *ItemVariant) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *ItemVariant) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["item_no"] = t.Item_no
-	t.oldValues["code"] = t.Code
-	t.oldValues["description"] = t.Description
-	t.oldValues["description_2"] = t.Description_2
+	t.oldValues = itemVariantFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -627,18 +592,7 @@ func (t *ItemVariant) OldValue(fieldName string) interface{} {
 func (t *ItemVariant) XRec() *ItemVariant {
 	x := &ItemVariant{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["item_no"].(types.Code); ok {
-		x.Item_no = v
-	}
-	if v, ok := t.oldValues["code"].(types.Code); ok {
-		x.Code = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["description_2"].(types.Text); ok {
-		x.Description_2 = v
-	}
+	itemVariantFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -926,37 +880,7 @@ func (t *ItemVariant) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *ItemVariant) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "item_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Item_no.Equal(old)
-		}
-	case "code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Code.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "description_2":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description_2.Equal(old)
-		}
-	}
-
-	return false
+	return itemVariantFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1158,17 +1082,7 @@ func (t *ItemVariant) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *ItemVariant) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("item_no"):
-		return "item_no", true
-	case strings.ToLower("code"):
-		return "code", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("description_2"):
-		return "description_2", true
-	}
-	return "", false
+	return itemVariantFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2003,88 +1917,20 @@ func (t *ItemVariant) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *ItemVariant) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "item_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Item_no = v
-		} else if v, ok := value.(string); ok {
-			t.Item_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field item_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "item_no"); err != nil {
+	i, err := itemVariantFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
+	}
+	f := &itemVariantFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
 			return err
 		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemVariantOnValidate_Item_no); ok {
-				if err := trg.OnValidate_Item_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-		} else if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemVariantOnValidate_Code); ok {
-				if err := trg.OnValidate_Code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemVariantOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description_2":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description_2 = v
-		} else if v, ok := value.(string); ok {
-			t.Description_2 = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description_2")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemVariantOnValidate_Description_2); ok {
-				if err := trg.OnValidate_Description_2(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2093,68 +1939,18 @@ func (t *ItemVariant) ValidateField(fieldName string, value interface{}) error {
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *ItemVariant) FieldValue(no int) (any, bool) {
-	switch no {
-	case 2:
-		return t.Item_no, true
-	case 1:
-		return t.Code, true
-	case 3:
-		return t.Description, true
-	case 4:
-		return t.Description_2, true
-	}
-	return nil, false
+	return itemVariantFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *ItemVariant) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return itemVariantFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *ItemVariant) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Item_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Item_no = types.NewCode(v)
-			return true
-		}
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Text); ok {
-			t.Description_2 = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description_2 = types.NewText(v)
-			return true
-		}
-	}
-	return false
+	return itemVariantFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2604,17 +2400,7 @@ func (t *ItemVariant) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *ItemVariant) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "item_no":
-		return t.Item_no, true
-	case "code":
-		return t.Code, true
-	case "description":
-		return t.Description, true
-	case "description_2":
-		return t.Description_2, true
-	}
-	return nil, false
+	return itemVariantFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2706,36 +2492,12 @@ func (t *ItemVariant) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *ItemVariant) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"item_no":       t.Item_no.String(),
-		"code":          t.Code.String(),
-		"description":   t.Description.String(),
-		"description_2": t.Description_2.String(),
-	}
+	return itemVariantFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *ItemVariant) FromMap(data map[string]interface{}) {
-	if v, ok := data["item_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Item_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["description_2"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description_2 = types.NewText(s)
-		}
-	}
+	itemVariantFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2756,48 +2518,87 @@ func (t *ItemVariant) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *ItemVariant) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         2,
-			Name:       "item_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         1,
-			Name:       "code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "description_2",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return itemVariantFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in itemVariantFields.Fields
+func (t *ItemVariant) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Item_no
+	case 1:
+		return &t.Code
+	case 2:
+		return &t.Description
+	case 3:
+		return &t.Description_2
 	}
+	return nil
+}
+
+// itemVariantFields describes the fields of Item_Variant for the record functions
+// written once in foundation/tables
+var itemVariantFields = &tables.TableFields{
+	Table: ItemVariantTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "item_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Item_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "description_2",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description_2",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

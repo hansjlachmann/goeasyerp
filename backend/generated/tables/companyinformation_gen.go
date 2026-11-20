@@ -53,11 +53,10 @@ package tables
 
 import (
 	"database/sql"
-	"encoding/base64"
+
 	"fmt"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -251,160 +250,12 @@ var CompanyInformation_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *CompanyInformation) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "primary_key":
-		return 1
-	case "name":
-		return 2
-	case "name_2":
-		return 3
-	case "address":
-		return 4
-	case "address_2":
-		return 5
-	case "city":
-		return 6
-	case "phone_no":
-		return 7
-	case "phone_no_2":
-		return 8
-	case "telex_no":
-		return 9
-	case "fax_no":
-		return 10
-	case "giro_no":
-		return 11
-	case "bank_name":
-		return 12
-	case "bank_branch_no":
-		return 13
-	case "bank_account_no":
-		return 14
-	case "payment_routing_no":
-		return 15
-	case "customs_permit_no":
-		return 17
-	case "customs_permit_date":
-		return 18
-	case "vat_registration_no":
-		return 19
-	case "registration_no":
-		return 20
-	case "telex_answer_back":
-		return 21
-	case "ship_to_name":
-		return 22
-	case "ship_to_name_2":
-		return 23
-	case "ship_to_address":
-		return 24
-	case "ship_to_address_2":
-		return 25
-	case "ship_to_city":
-		return 26
-	case "ship_to_contact":
-		return 27
-	case "location_code":
-		return 28
-	case "picture":
-		return 29
-	case "post_code":
-		return 30
-	case "state":
-		return 31
-	case "ship_to_post_code":
-		return 32
-	case "ship_to_state":
-		return 33
-	case "e_mail":
-		return 34
-	case "home_page":
-		return 35
-	case "federal_id_no":
-		return 900
-	case "country_code":
-		return 901
-	}
-	return 0
+	return companyInformationFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *CompanyInformation) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "primary_key"
-	case 2:
-		return "name"
-	case 3:
-		return "name_2"
-	case 4:
-		return "address"
-	case 5:
-		return "address_2"
-	case 6:
-		return "city"
-	case 7:
-		return "phone_no"
-	case 8:
-		return "phone_no_2"
-	case 9:
-		return "telex_no"
-	case 10:
-		return "fax_no"
-	case 11:
-		return "giro_no"
-	case 12:
-		return "bank_name"
-	case 13:
-		return "bank_branch_no"
-	case 14:
-		return "bank_account_no"
-	case 15:
-		return "payment_routing_no"
-	case 17:
-		return "customs_permit_no"
-	case 18:
-		return "customs_permit_date"
-	case 19:
-		return "vat_registration_no"
-	case 20:
-		return "registration_no"
-	case 21:
-		return "telex_answer_back"
-	case 22:
-		return "ship_to_name"
-	case 23:
-		return "ship_to_name_2"
-	case 24:
-		return "ship_to_address"
-	case 25:
-		return "ship_to_address_2"
-	case 26:
-		return "ship_to_city"
-	case 27:
-		return "ship_to_contact"
-	case 28:
-		return "location_code"
-	case 29:
-		return "picture"
-	case 30:
-		return "post_code"
-	case 31:
-		return "state"
-	case 32:
-		return "ship_to_post_code"
-	case 33:
-		return "ship_to_state"
-	case 34:
-		return "e_mail"
-	case 35:
-		return "home_page"
-	case 900:
-		return "federal_id_no"
-	case 901:
-		return "country_code"
-	}
-	return ""
+	return companyInformationFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -516,114 +367,6 @@ type (
 	CompanyInformationOnBeforeRename interface {
 		OnBeforeRename(rec *CompanyInformation, handled *bool) error
 	}
-	CompanyInformationOnValidate_Primary_key interface {
-		OnValidate_Primary_key(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_Name interface {
-		OnValidate_Name(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_Name_2 interface {
-		OnValidate_Name_2(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_Address interface {
-		OnValidate_Address(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_Address_2 interface {
-		OnValidate_Address_2(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_City interface {
-		OnValidate_City(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_Phone_no interface {
-		OnValidate_Phone_no(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_Phone_no_2 interface {
-		OnValidate_Phone_no_2(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_Telex_no interface {
-		OnValidate_Telex_no(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_Fax_no interface {
-		OnValidate_Fax_no(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_Giro_no interface {
-		OnValidate_Giro_no(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_Bank_name interface {
-		OnValidate_Bank_name(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_Bank_branch_no interface {
-		OnValidate_Bank_branch_no(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_Bank_account_no interface {
-		OnValidate_Bank_account_no(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_Payment_routing_no interface {
-		OnValidate_Payment_routing_no(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_Customs_permit_no interface {
-		OnValidate_Customs_permit_no(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_Customs_permit_date interface {
-		OnValidate_Customs_permit_date(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_Vat_registration_no interface {
-		OnValidate_Vat_registration_no(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_Registration_no interface {
-		OnValidate_Registration_no(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_Telex_answer_back interface {
-		OnValidate_Telex_answer_back(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_Ship_to_name interface {
-		OnValidate_Ship_to_name(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_Ship_to_name_2 interface {
-		OnValidate_Ship_to_name_2(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_Ship_to_address interface {
-		OnValidate_Ship_to_address(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_Ship_to_address_2 interface {
-		OnValidate_Ship_to_address_2(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_Ship_to_city interface {
-		OnValidate_Ship_to_city(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_Ship_to_contact interface {
-		OnValidate_Ship_to_contact(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_Location_code interface {
-		OnValidate_Location_code(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_Picture interface {
-		OnValidate_Picture(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_Post_code interface {
-		OnValidate_Post_code(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_State interface {
-		OnValidate_State(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_Ship_to_post_code interface {
-		OnValidate_Ship_to_post_code(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_Ship_to_state interface {
-		OnValidate_Ship_to_state(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_E_mail interface {
-		OnValidate_E_mail(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_Home_page interface {
-		OnValidate_Home_page(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_Federal_id_no interface {
-		OnValidate_Federal_id_no(rec *CompanyInformation) error
-	}
-	CompanyInformationOnValidate_Country_code interface {
-		OnValidate_Country_code(rec *CompanyInformation) error
-	}
 )
 
 // companyInformationLogic is the registered business logic of Company_Information, in
@@ -666,80 +409,9 @@ func companyInformationTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(CompanyInformationOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(CompanyInformationOnBeforeRename)
-	case "OnValidate_Primary_key":
-		_, ok = logic.(CompanyInformationOnValidate_Primary_key)
-	case "OnValidate_Name":
-		_, ok = logic.(CompanyInformationOnValidate_Name)
-	case "OnValidate_Name_2":
-		_, ok = logic.(CompanyInformationOnValidate_Name_2)
-	case "OnValidate_Address":
-		_, ok = logic.(CompanyInformationOnValidate_Address)
-	case "OnValidate_Address_2":
-		_, ok = logic.(CompanyInformationOnValidate_Address_2)
-	case "OnValidate_City":
-		_, ok = logic.(CompanyInformationOnValidate_City)
-	case "OnValidate_Phone_no":
-		_, ok = logic.(CompanyInformationOnValidate_Phone_no)
-	case "OnValidate_Phone_no_2":
-		_, ok = logic.(CompanyInformationOnValidate_Phone_no_2)
-	case "OnValidate_Telex_no":
-		_, ok = logic.(CompanyInformationOnValidate_Telex_no)
-	case "OnValidate_Fax_no":
-		_, ok = logic.(CompanyInformationOnValidate_Fax_no)
-	case "OnValidate_Giro_no":
-		_, ok = logic.(CompanyInformationOnValidate_Giro_no)
-	case "OnValidate_Bank_name":
-		_, ok = logic.(CompanyInformationOnValidate_Bank_name)
-	case "OnValidate_Bank_branch_no":
-		_, ok = logic.(CompanyInformationOnValidate_Bank_branch_no)
-	case "OnValidate_Bank_account_no":
-		_, ok = logic.(CompanyInformationOnValidate_Bank_account_no)
-	case "OnValidate_Payment_routing_no":
-		_, ok = logic.(CompanyInformationOnValidate_Payment_routing_no)
-	case "OnValidate_Customs_permit_no":
-		_, ok = logic.(CompanyInformationOnValidate_Customs_permit_no)
-	case "OnValidate_Customs_permit_date":
-		_, ok = logic.(CompanyInformationOnValidate_Customs_permit_date)
-	case "OnValidate_Vat_registration_no":
-		_, ok = logic.(CompanyInformationOnValidate_Vat_registration_no)
-	case "OnValidate_Registration_no":
-		_, ok = logic.(CompanyInformationOnValidate_Registration_no)
-	case "OnValidate_Telex_answer_back":
-		_, ok = logic.(CompanyInformationOnValidate_Telex_answer_back)
-	case "OnValidate_Ship_to_name":
-		_, ok = logic.(CompanyInformationOnValidate_Ship_to_name)
-	case "OnValidate_Ship_to_name_2":
-		_, ok = logic.(CompanyInformationOnValidate_Ship_to_name_2)
-	case "OnValidate_Ship_to_address":
-		_, ok = logic.(CompanyInformationOnValidate_Ship_to_address)
-	case "OnValidate_Ship_to_address_2":
-		_, ok = logic.(CompanyInformationOnValidate_Ship_to_address_2)
-	case "OnValidate_Ship_to_city":
-		_, ok = logic.(CompanyInformationOnValidate_Ship_to_city)
-	case "OnValidate_Ship_to_contact":
-		_, ok = logic.(CompanyInformationOnValidate_Ship_to_contact)
-	case "OnValidate_Location_code":
-		_, ok = logic.(CompanyInformationOnValidate_Location_code)
-	case "OnValidate_Picture":
-		_, ok = logic.(CompanyInformationOnValidate_Picture)
-	case "OnValidate_Post_code":
-		_, ok = logic.(CompanyInformationOnValidate_Post_code)
-	case "OnValidate_State":
-		_, ok = logic.(CompanyInformationOnValidate_State)
-	case "OnValidate_Ship_to_post_code":
-		_, ok = logic.(CompanyInformationOnValidate_Ship_to_post_code)
-	case "OnValidate_Ship_to_state":
-		_, ok = logic.(CompanyInformationOnValidate_Ship_to_state)
-	case "OnValidate_E_mail":
-		_, ok = logic.(CompanyInformationOnValidate_E_mail)
-	case "OnValidate_Home_page":
-		_, ok = logic.(CompanyInformationOnValidate_Home_page)
-	case "OnValidate_Federal_id_no":
-		_, ok = logic.(CompanyInformationOnValidate_Federal_id_no)
-	case "OnValidate_Country_code":
-		_, ok = logic.(CompanyInformationOnValidate_Country_code)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return companyInformationFields.IsOnValidateTrigger(name, logic, (*CompanyInformation)(nil))
 	}
 	return true, ok
 }
@@ -1200,43 +872,7 @@ func (t *CompanyInformation) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *CompanyInformation) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["primary_key"] = t.Primary_key
-	t.oldValues["name"] = t.Name
-	t.oldValues["name_2"] = t.Name_2
-	t.oldValues["address"] = t.Address
-	t.oldValues["address_2"] = t.Address_2
-	t.oldValues["city"] = t.City
-	t.oldValues["phone_no"] = t.Phone_no
-	t.oldValues["phone_no_2"] = t.Phone_no_2
-	t.oldValues["telex_no"] = t.Telex_no
-	t.oldValues["fax_no"] = t.Fax_no
-	t.oldValues["giro_no"] = t.Giro_no
-	t.oldValues["bank_name"] = t.Bank_name
-	t.oldValues["bank_branch_no"] = t.Bank_branch_no
-	t.oldValues["bank_account_no"] = t.Bank_account_no
-	t.oldValues["payment_routing_no"] = t.Payment_routing_no
-	t.oldValues["customs_permit_no"] = t.Customs_permit_no
-	t.oldValues["customs_permit_date"] = t.Customs_permit_date
-	t.oldValues["vat_registration_no"] = t.Vat_registration_no
-	t.oldValues["registration_no"] = t.Registration_no
-	t.oldValues["telex_answer_back"] = t.Telex_answer_back
-	t.oldValues["ship_to_name"] = t.Ship_to_name
-	t.oldValues["ship_to_name_2"] = t.Ship_to_name_2
-	t.oldValues["ship_to_address"] = t.Ship_to_address
-	t.oldValues["ship_to_address_2"] = t.Ship_to_address_2
-	t.oldValues["ship_to_city"] = t.Ship_to_city
-	t.oldValues["ship_to_contact"] = t.Ship_to_contact
-	t.oldValues["location_code"] = t.Location_code
-	t.oldValues["picture"] = t.Picture
-	t.oldValues["post_code"] = t.Post_code
-	t.oldValues["state"] = t.State
-	t.oldValues["ship_to_post_code"] = t.Ship_to_post_code
-	t.oldValues["ship_to_state"] = t.Ship_to_state
-	t.oldValues["e_mail"] = t.E_mail
-	t.oldValues["home_page"] = t.Home_page
-	t.oldValues["federal_id_no"] = t.Federal_id_no
-	t.oldValues["country_code"] = t.Country_code
+	t.oldValues = companyInformationFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1251,114 +887,7 @@ func (t *CompanyInformation) OldValue(fieldName string) interface{} {
 func (t *CompanyInformation) XRec() *CompanyInformation {
 	x := &CompanyInformation{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["primary_key"].(types.Code); ok {
-		x.Primary_key = v
-	}
-	if v, ok := t.oldValues["name"].(types.Text); ok {
-		x.Name = v
-	}
-	if v, ok := t.oldValues["name_2"].(types.Text); ok {
-		x.Name_2 = v
-	}
-	if v, ok := t.oldValues["address"].(types.Text); ok {
-		x.Address = v
-	}
-	if v, ok := t.oldValues["address_2"].(types.Text); ok {
-		x.Address_2 = v
-	}
-	if v, ok := t.oldValues["city"].(types.Text); ok {
-		x.City = v
-	}
-	if v, ok := t.oldValues["phone_no"].(types.Text); ok {
-		x.Phone_no = v
-	}
-	if v, ok := t.oldValues["phone_no_2"].(types.Text); ok {
-		x.Phone_no_2 = v
-	}
-	if v, ok := t.oldValues["telex_no"].(types.Text); ok {
-		x.Telex_no = v
-	}
-	if v, ok := t.oldValues["fax_no"].(types.Text); ok {
-		x.Fax_no = v
-	}
-	if v, ok := t.oldValues["giro_no"].(types.Text); ok {
-		x.Giro_no = v
-	}
-	if v, ok := t.oldValues["bank_name"].(types.Text); ok {
-		x.Bank_name = v
-	}
-	if v, ok := t.oldValues["bank_branch_no"].(types.Text); ok {
-		x.Bank_branch_no = v
-	}
-	if v, ok := t.oldValues["bank_account_no"].(types.Text); ok {
-		x.Bank_account_no = v
-	}
-	if v, ok := t.oldValues["payment_routing_no"].(types.Text); ok {
-		x.Payment_routing_no = v
-	}
-	if v, ok := t.oldValues["customs_permit_no"].(types.Text); ok {
-		x.Customs_permit_no = v
-	}
-	if v, ok := t.oldValues["customs_permit_date"].(types.Date); ok {
-		x.Customs_permit_date = v
-	}
-	if v, ok := t.oldValues["vat_registration_no"].(types.Text); ok {
-		x.Vat_registration_no = v
-	}
-	if v, ok := t.oldValues["registration_no"].(types.Text); ok {
-		x.Registration_no = v
-	}
-	if v, ok := t.oldValues["telex_answer_back"].(types.Text); ok {
-		x.Telex_answer_back = v
-	}
-	if v, ok := t.oldValues["ship_to_name"].(types.Text); ok {
-		x.Ship_to_name = v
-	}
-	if v, ok := t.oldValues["ship_to_name_2"].(types.Text); ok {
-		x.Ship_to_name_2 = v
-	}
-	if v, ok := t.oldValues["ship_to_address"].(types.Text); ok {
-		x.Ship_to_address = v
-	}
-	if v, ok := t.oldValues["ship_to_address_2"].(types.Text); ok {
-		x.Ship_to_address_2 = v
-	}
-	if v, ok := t.oldValues["ship_to_city"].(types.Text); ok {
-		x.Ship_to_city = v
-	}
-	if v, ok := t.oldValues["ship_to_contact"].(types.Text); ok {
-		x.Ship_to_contact = v
-	}
-	if v, ok := t.oldValues["location_code"].(types.Code); ok {
-		x.Location_code = v
-	}
-	if v, ok := t.oldValues["picture"].([]byte); ok {
-		x.Picture = v
-	}
-	if v, ok := t.oldValues["post_code"].(types.Code); ok {
-		x.Post_code = v
-	}
-	if v, ok := t.oldValues["state"].(types.Text); ok {
-		x.State = v
-	}
-	if v, ok := t.oldValues["ship_to_post_code"].(types.Code); ok {
-		x.Ship_to_post_code = v
-	}
-	if v, ok := t.oldValues["ship_to_state"].(types.Text); ok {
-		x.Ship_to_state = v
-	}
-	if v, ok := t.oldValues["e_mail"].(types.Text); ok {
-		x.E_mail = v
-	}
-	if v, ok := t.oldValues["home_page"].(types.Text); ok {
-		x.Home_page = v
-	}
-	if v, ok := t.oldValues["federal_id_no"].(types.Text); ok {
-		x.Federal_id_no = v
-	}
-	if v, ok := t.oldValues["country_code"].(types.Code); ok {
-		x.Country_code = v
-	}
+	companyInformationFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1987,164 +1516,7 @@ func (t *CompanyInformation) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *CompanyInformation) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "primary_key":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Primary_key.Equal(old)
-		}
-	case "name":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Name.Equal(old)
-		}
-	case "name_2":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Name_2.Equal(old)
-		}
-	case "address":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Address.Equal(old)
-		}
-	case "address_2":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Address_2.Equal(old)
-		}
-	case "city":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.City.Equal(old)
-		}
-	case "phone_no":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Phone_no.Equal(old)
-		}
-	case "phone_no_2":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Phone_no_2.Equal(old)
-		}
-	case "telex_no":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Telex_no.Equal(old)
-		}
-	case "fax_no":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Fax_no.Equal(old)
-		}
-	case "giro_no":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Giro_no.Equal(old)
-		}
-	case "bank_name":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Bank_name.Equal(old)
-		}
-	case "bank_branch_no":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Bank_branch_no.Equal(old)
-		}
-	case "bank_account_no":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Bank_account_no.Equal(old)
-		}
-	case "payment_routing_no":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Payment_routing_no.Equal(old)
-		}
-	case "customs_permit_no":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Customs_permit_no.Equal(old)
-		}
-	case "customs_permit_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Customs_permit_date.Equal(old)
-		}
-	case "vat_registration_no":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Vat_registration_no.Equal(old)
-		}
-	case "registration_no":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Registration_no.Equal(old)
-		}
-	case "telex_answer_back":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Telex_answer_back.Equal(old)
-		}
-	case "ship_to_name":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Ship_to_name.Equal(old)
-		}
-	case "ship_to_name_2":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Ship_to_name_2.Equal(old)
-		}
-	case "ship_to_address":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Ship_to_address.Equal(old)
-		}
-	case "ship_to_address_2":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Ship_to_address_2.Equal(old)
-		}
-	case "ship_to_city":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Ship_to_city.Equal(old)
-		}
-	case "ship_to_contact":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Ship_to_contact.Equal(old)
-		}
-	case "location_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Location_code.Equal(old)
-		}
-	case "picture":
-		// Skip comparison for BLOB fields (too large, use always modified)
-		return true
-	case "post_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Post_code.Equal(old)
-		}
-	case "state":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.State.Equal(old)
-		}
-	case "ship_to_post_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Ship_to_post_code.Equal(old)
-		}
-	case "ship_to_state":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Ship_to_state.Equal(old)
-		}
-	case "e_mail":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.E_mail.Equal(old)
-		}
-	case "home_page":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Home_page.Equal(old)
-		}
-	case "federal_id_no":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Federal_id_no.Equal(old)
-		}
-	case "country_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Country_code.Equal(old)
-		}
-	}
-
-	return false
+	return companyInformationFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -2345,81 +1717,7 @@ func (t *CompanyInformation) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *CompanyInformation) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("primary_key"):
-		return "primary_key", true
-	case strings.ToLower("name"):
-		return "name", true
-	case strings.ToLower("name_2"):
-		return "name_2", true
-	case strings.ToLower("address"):
-		return "address", true
-	case strings.ToLower("address_2"):
-		return "address_2", true
-	case strings.ToLower("city"):
-		return "city", true
-	case strings.ToLower("phone_no"):
-		return "phone_no", true
-	case strings.ToLower("phone_no_2"):
-		return "phone_no_2", true
-	case strings.ToLower("telex_no"):
-		return "telex_no", true
-	case strings.ToLower("fax_no"):
-		return "fax_no", true
-	case strings.ToLower("giro_no"):
-		return "giro_no", true
-	case strings.ToLower("bank_name"):
-		return "bank_name", true
-	case strings.ToLower("bank_branch_no"):
-		return "bank_branch_no", true
-	case strings.ToLower("bank_account_no"):
-		return "bank_account_no", true
-	case strings.ToLower("payment_routing_no"):
-		return "payment_routing_no", true
-	case strings.ToLower("customs_permit_no"):
-		return "customs_permit_no", true
-	case strings.ToLower("customs_permit_date"):
-		return "customs_permit_date", true
-	case strings.ToLower("vat_registration_no"):
-		return "vat_registration_no", true
-	case strings.ToLower("registration_no"):
-		return "registration_no", true
-	case strings.ToLower("telex_answer_back"):
-		return "telex_answer_back", true
-	case strings.ToLower("ship_to_name"):
-		return "ship_to_name", true
-	case strings.ToLower("ship_to_name_2"):
-		return "ship_to_name_2", true
-	case strings.ToLower("ship_to_address"):
-		return "ship_to_address", true
-	case strings.ToLower("ship_to_address_2"):
-		return "ship_to_address_2", true
-	case strings.ToLower("ship_to_city"):
-		return "ship_to_city", true
-	case strings.ToLower("ship_to_contact"):
-		return "ship_to_contact", true
-	case strings.ToLower("location_code"):
-		return "location_code", true
-	case strings.ToLower("picture"):
-		return "picture", true
-	case strings.ToLower("post_code"):
-		return "post_code", true
-	case strings.ToLower("state"):
-		return "state", true
-	case strings.ToLower("ship_to_post_code"):
-		return "ship_to_post_code", true
-	case strings.ToLower("ship_to_state"):
-		return "ship_to_state", true
-	case strings.ToLower("e_mail"):
-		return "e_mail", true
-	case strings.ToLower("home_page"):
-		return "home_page", true
-	case strings.ToLower("federal_id_no"):
-		return "federal_id_no", true
-	case strings.ToLower("country_code"):
-		return "country_code", true
-	}
-	return "", false
+	return companyInformationFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -3664,694 +2962,20 @@ func (t *CompanyInformation) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *CompanyInformation) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "primary_key":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Primary_key = v
-		} else if v, ok := value.(string); ok {
-			t.Primary_key = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field primary_key")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_Primary_key); ok {
-				if err := trg.OnValidate_Primary_key(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "name":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-		} else if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_Name); ok {
-				if err := trg.OnValidate_Name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "name_2":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Name_2 = v
-		} else if v, ok := value.(string); ok {
-			t.Name_2 = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field name_2")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_Name_2); ok {
-				if err := trg.OnValidate_Name_2(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "address":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Address = v
-		} else if v, ok := value.(string); ok {
-			t.Address = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field address")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_Address); ok {
-				if err := trg.OnValidate_Address(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "address_2":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Address_2 = v
-		} else if v, ok := value.(string); ok {
-			t.Address_2 = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field address_2")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_Address_2); ok {
-				if err := trg.OnValidate_Address_2(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "city":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.City = v
-		} else if v, ok := value.(string); ok {
-			t.City = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field city")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_City); ok {
-				if err := trg.OnValidate_City(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "phone_no":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Phone_no = v
-		} else if v, ok := value.(string); ok {
-			t.Phone_no = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field phone_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_Phone_no); ok {
-				if err := trg.OnValidate_Phone_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "phone_no_2":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Phone_no_2 = v
-		} else if v, ok := value.(string); ok {
-			t.Phone_no_2 = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field phone_no_2")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_Phone_no_2); ok {
-				if err := trg.OnValidate_Phone_no_2(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "telex_no":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Telex_no = v
-		} else if v, ok := value.(string); ok {
-			t.Telex_no = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field telex_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_Telex_no); ok {
-				if err := trg.OnValidate_Telex_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fax_no":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Fax_no = v
-		} else if v, ok := value.(string); ok {
-			t.Fax_no = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field fax_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_Fax_no); ok {
-				if err := trg.OnValidate_Fax_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "giro_no":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Giro_no = v
-		} else if v, ok := value.(string); ok {
-			t.Giro_no = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field giro_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_Giro_no); ok {
-				if err := trg.OnValidate_Giro_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bank_name":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Bank_name = v
-		} else if v, ok := value.(string); ok {
-			t.Bank_name = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field bank_name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_Bank_name); ok {
-				if err := trg.OnValidate_Bank_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bank_branch_no":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Bank_branch_no = v
-		} else if v, ok := value.(string); ok {
-			t.Bank_branch_no = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field bank_branch_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_Bank_branch_no); ok {
-				if err := trg.OnValidate_Bank_branch_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bank_account_no":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Bank_account_no = v
-		} else if v, ok := value.(string); ok {
-			t.Bank_account_no = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field bank_account_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_Bank_account_no); ok {
-				if err := trg.OnValidate_Bank_account_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "payment_routing_no":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Payment_routing_no = v
-		} else if v, ok := value.(string); ok {
-			t.Payment_routing_no = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field payment_routing_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_Payment_routing_no); ok {
-				if err := trg.OnValidate_Payment_routing_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "customs_permit_no":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Customs_permit_no = v
-		} else if v, ok := value.(string); ok {
-			t.Customs_permit_no = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field customs_permit_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_Customs_permit_no); ok {
-				if err := trg.OnValidate_Customs_permit_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "customs_permit_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Customs_permit_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Customs_permit_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field customs_permit_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Customs_permit_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field customs_permit_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_Customs_permit_date); ok {
-				if err := trg.OnValidate_Customs_permit_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "vat_registration_no":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Vat_registration_no = v
-		} else if v, ok := value.(string); ok {
-			t.Vat_registration_no = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field vat_registration_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_Vat_registration_no); ok {
-				if err := trg.OnValidate_Vat_registration_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "registration_no":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Registration_no = v
-		} else if v, ok := value.(string); ok {
-			t.Registration_no = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field registration_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_Registration_no); ok {
-				if err := trg.OnValidate_Registration_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "telex_answer_back":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Telex_answer_back = v
-		} else if v, ok := value.(string); ok {
-			t.Telex_answer_back = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field telex_answer_back")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_Telex_answer_back); ok {
-				if err := trg.OnValidate_Telex_answer_back(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "ship_to_name":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Ship_to_name = v
-		} else if v, ok := value.(string); ok {
-			t.Ship_to_name = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field ship_to_name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_Ship_to_name); ok {
-				if err := trg.OnValidate_Ship_to_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "ship_to_name_2":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Ship_to_name_2 = v
-		} else if v, ok := value.(string); ok {
-			t.Ship_to_name_2 = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field ship_to_name_2")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_Ship_to_name_2); ok {
-				if err := trg.OnValidate_Ship_to_name_2(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "ship_to_address":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Ship_to_address = v
-		} else if v, ok := value.(string); ok {
-			t.Ship_to_address = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field ship_to_address")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_Ship_to_address); ok {
-				if err := trg.OnValidate_Ship_to_address(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "ship_to_address_2":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Ship_to_address_2 = v
-		} else if v, ok := value.(string); ok {
-			t.Ship_to_address_2 = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field ship_to_address_2")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_Ship_to_address_2); ok {
-				if err := trg.OnValidate_Ship_to_address_2(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "ship_to_city":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Ship_to_city = v
-		} else if v, ok := value.(string); ok {
-			t.Ship_to_city = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field ship_to_city")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_Ship_to_city); ok {
-				if err := trg.OnValidate_Ship_to_city(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "ship_to_contact":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Ship_to_contact = v
-		} else if v, ok := value.(string); ok {
-			t.Ship_to_contact = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field ship_to_contact")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_Ship_to_contact); ok {
-				if err := trg.OnValidate_Ship_to_contact(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "location_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Location_code = v
-		} else if v, ok := value.(string); ok {
-			t.Location_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field location_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "location_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_Location_code); ok {
-				if err := trg.OnValidate_Location_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "picture":
-		// Set field value
-		// Accept nil, []byte, or base64-encoded string
-		if value == nil {
-			t.Picture = nil
-		} else if v, ok := value.([]byte); ok {
-			t.Picture = v
-		} else if s, ok := value.(string); ok {
-			if s == "" {
-				t.Picture = nil
-			} else {
-				// Try base64 decode
-				decoded, err := base64.StdEncoding.DecodeString(s)
-				if err != nil {
-					return fmt.Errorf("invalid base64 value for field picture: %w", err)
-				}
-				t.Picture = decoded
-			}
-		} else {
-			return fmt.Errorf("invalid type for field picture (expected []byte, string, or nil)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_Picture); ok {
-				if err := trg.OnValidate_Picture(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "post_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Post_code = v
-		} else if v, ok := value.(string); ok {
-			t.Post_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field post_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "post_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_Post_code); ok {
-				if err := trg.OnValidate_Post_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "state":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.State = v
-		} else if v, ok := value.(string); ok {
-			t.State = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field state")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_State); ok {
-				if err := trg.OnValidate_State(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "ship_to_post_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Ship_to_post_code = v
-		} else if v, ok := value.(string); ok {
-			t.Ship_to_post_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field ship_to_post_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "ship_to_post_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_Ship_to_post_code); ok {
-				if err := trg.OnValidate_Ship_to_post_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "ship_to_state":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Ship_to_state = v
-		} else if v, ok := value.(string); ok {
-			t.Ship_to_state = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field ship_to_state")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_Ship_to_state); ok {
-				if err := trg.OnValidate_Ship_to_state(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "e_mail":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.E_mail = v
-		} else if v, ok := value.(string); ok {
-			t.E_mail = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field e_mail")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_E_mail); ok {
-				if err := trg.OnValidate_E_mail(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "home_page":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Home_page = v
-		} else if v, ok := value.(string); ok {
-			t.Home_page = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field home_page")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_Home_page); ok {
-				if err := trg.OnValidate_Home_page(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "federal_id_no":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Federal_id_no = v
-		} else if v, ok := value.(string); ok {
-			t.Federal_id_no = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field federal_id_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_Federal_id_no); ok {
-				if err := trg.OnValidate_Federal_id_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "country_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Country_code = v
-		} else if v, ok := value.(string); ok {
-			t.Country_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field country_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "country_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyInformationOnValidate_Country_code); ok {
-				if err := trg.OnValidate_Country_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := companyInformationFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &companyInformationFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -4360,412 +2984,18 @@ func (t *CompanyInformation) ValidateField(fieldName string, value interface{}) 
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *CompanyInformation) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Primary_key, true
-	case 2:
-		return t.Name, true
-	case 3:
-		return t.Name_2, true
-	case 4:
-		return t.Address, true
-	case 5:
-		return t.Address_2, true
-	case 6:
-		return t.City, true
-	case 7:
-		return t.Phone_no, true
-	case 8:
-		return t.Phone_no_2, true
-	case 9:
-		return t.Telex_no, true
-	case 10:
-		return t.Fax_no, true
-	case 11:
-		return t.Giro_no, true
-	case 12:
-		return t.Bank_name, true
-	case 13:
-		return t.Bank_branch_no, true
-	case 14:
-		return t.Bank_account_no, true
-	case 15:
-		return t.Payment_routing_no, true
-	case 17:
-		return t.Customs_permit_no, true
-	case 18:
-		return t.Customs_permit_date, true
-	case 19:
-		return t.Vat_registration_no, true
-	case 20:
-		return t.Registration_no, true
-	case 21:
-		return t.Telex_answer_back, true
-	case 22:
-		return t.Ship_to_name, true
-	case 23:
-		return t.Ship_to_name_2, true
-	case 24:
-		return t.Ship_to_address, true
-	case 25:
-		return t.Ship_to_address_2, true
-	case 26:
-		return t.Ship_to_city, true
-	case 27:
-		return t.Ship_to_contact, true
-	case 28:
-		return t.Location_code, true
-	case 29:
-		return t.Picture, true
-	case 30:
-		return t.Post_code, true
-	case 31:
-		return t.State, true
-	case 32:
-		return t.Ship_to_post_code, true
-	case 33:
-		return t.Ship_to_state, true
-	case 34:
-		return t.E_mail, true
-	case 35:
-		return t.Home_page, true
-	case 900:
-		return t.Federal_id_no, true
-	case 901:
-		return t.Country_code, true
-	}
-	return nil, false
+	return companyInformationFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *CompanyInformation) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return companyInformationFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *CompanyInformation) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Primary_key = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Primary_key = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Text); ok {
-			t.Name_2 = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Name_2 = types.NewText(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Text); ok {
-			t.Address = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Address = types.NewText(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Text); ok {
-			t.Address_2 = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Address_2 = types.NewText(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Text); ok {
-			t.City = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.City = types.NewText(v)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Text); ok {
-			t.Phone_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Phone_no = types.NewText(v)
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Text); ok {
-			t.Phone_no_2 = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Phone_no_2 = types.NewText(v)
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.Text); ok {
-			t.Telex_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Telex_no = types.NewText(v)
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Text); ok {
-			t.Fax_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Fax_no = types.NewText(v)
-			return true
-		}
-	case 11:
-		if v, ok := value.(types.Text); ok {
-			t.Giro_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Giro_no = types.NewText(v)
-			return true
-		}
-	case 12:
-		if v, ok := value.(types.Text); ok {
-			t.Bank_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Bank_name = types.NewText(v)
-			return true
-		}
-	case 13:
-		if v, ok := value.(types.Text); ok {
-			t.Bank_branch_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Bank_branch_no = types.NewText(v)
-			return true
-		}
-	case 14:
-		if v, ok := value.(types.Text); ok {
-			t.Bank_account_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Bank_account_no = types.NewText(v)
-			return true
-		}
-	case 15:
-		if v, ok := value.(types.Text); ok {
-			t.Payment_routing_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Payment_routing_no = types.NewText(v)
-			return true
-		}
-	case 17:
-		if v, ok := value.(types.Text); ok {
-			t.Customs_permit_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Customs_permit_no = types.NewText(v)
-			return true
-		}
-	case 18:
-		if v, ok := value.(types.Date); ok {
-			t.Customs_permit_date = v
-			return true
-		}
-	case 19:
-		if v, ok := value.(types.Text); ok {
-			t.Vat_registration_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Vat_registration_no = types.NewText(v)
-			return true
-		}
-	case 20:
-		if v, ok := value.(types.Text); ok {
-			t.Registration_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Registration_no = types.NewText(v)
-			return true
-		}
-	case 21:
-		if v, ok := value.(types.Text); ok {
-			t.Telex_answer_back = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Telex_answer_back = types.NewText(v)
-			return true
-		}
-	case 22:
-		if v, ok := value.(types.Text); ok {
-			t.Ship_to_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Ship_to_name = types.NewText(v)
-			return true
-		}
-	case 23:
-		if v, ok := value.(types.Text); ok {
-			t.Ship_to_name_2 = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Ship_to_name_2 = types.NewText(v)
-			return true
-		}
-	case 24:
-		if v, ok := value.(types.Text); ok {
-			t.Ship_to_address = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Ship_to_address = types.NewText(v)
-			return true
-		}
-	case 25:
-		if v, ok := value.(types.Text); ok {
-			t.Ship_to_address_2 = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Ship_to_address_2 = types.NewText(v)
-			return true
-		}
-	case 26:
-		if v, ok := value.(types.Text); ok {
-			t.Ship_to_city = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Ship_to_city = types.NewText(v)
-			return true
-		}
-	case 27:
-		if v, ok := value.(types.Text); ok {
-			t.Ship_to_contact = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Ship_to_contact = types.NewText(v)
-			return true
-		}
-	case 28:
-		if v, ok := value.(types.Code); ok {
-			t.Location_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Location_code = types.NewCode(v)
-			return true
-		}
-	case 29:
-		if v, ok := value.([]byte); ok {
-			t.Picture = v
-			return true
-		}
-	case 30:
-		if v, ok := value.(types.Code); ok {
-			t.Post_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Post_code = types.NewCode(v)
-			return true
-		}
-	case 31:
-		if v, ok := value.(types.Text); ok {
-			t.State = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.State = types.NewText(v)
-			return true
-		}
-	case 32:
-		if v, ok := value.(types.Code); ok {
-			t.Ship_to_post_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Ship_to_post_code = types.NewCode(v)
-			return true
-		}
-	case 33:
-		if v, ok := value.(types.Text); ok {
-			t.Ship_to_state = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Ship_to_state = types.NewText(v)
-			return true
-		}
-	case 34:
-		if v, ok := value.(types.Text); ok {
-			t.E_mail = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.E_mail = types.NewText(v)
-			return true
-		}
-	case 35:
-		if v, ok := value.(types.Text); ok {
-			t.Home_page = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Home_page = types.NewText(v)
-			return true
-		}
-	case 900:
-		if v, ok := value.(types.Text); ok {
-			t.Federal_id_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Federal_id_no = types.NewText(v)
-			return true
-		}
-	case 901:
-		if v, ok := value.(types.Code); ok {
-			t.Country_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Country_code = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return companyInformationFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -5214,81 +3444,7 @@ func (t *CompanyInformation) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *CompanyInformation) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "primary_key":
-		return t.Primary_key, true
-	case "name":
-		return t.Name, true
-	case "name_2":
-		return t.Name_2, true
-	case "address":
-		return t.Address, true
-	case "address_2":
-		return t.Address_2, true
-	case "city":
-		return t.City, true
-	case "phone_no":
-		return t.Phone_no, true
-	case "phone_no_2":
-		return t.Phone_no_2, true
-	case "telex_no":
-		return t.Telex_no, true
-	case "fax_no":
-		return t.Fax_no, true
-	case "giro_no":
-		return t.Giro_no, true
-	case "bank_name":
-		return t.Bank_name, true
-	case "bank_branch_no":
-		return t.Bank_branch_no, true
-	case "bank_account_no":
-		return t.Bank_account_no, true
-	case "payment_routing_no":
-		return t.Payment_routing_no, true
-	case "customs_permit_no":
-		return t.Customs_permit_no, true
-	case "customs_permit_date":
-		return t.Customs_permit_date, true
-	case "vat_registration_no":
-		return t.Vat_registration_no, true
-	case "registration_no":
-		return t.Registration_no, true
-	case "telex_answer_back":
-		return t.Telex_answer_back, true
-	case "ship_to_name":
-		return t.Ship_to_name, true
-	case "ship_to_name_2":
-		return t.Ship_to_name_2, true
-	case "ship_to_address":
-		return t.Ship_to_address, true
-	case "ship_to_address_2":
-		return t.Ship_to_address_2, true
-	case "ship_to_city":
-		return t.Ship_to_city, true
-	case "ship_to_contact":
-		return t.Ship_to_contact, true
-	case "location_code":
-		return t.Location_code, true
-	case "picture":
-		return t.Picture, true
-	case "post_code":
-		return t.Post_code, true
-	case "state":
-		return t.State, true
-	case "ship_to_post_code":
-		return t.Ship_to_post_code, true
-	case "ship_to_state":
-		return t.Ship_to_state, true
-	case "e_mail":
-		return t.E_mail, true
-	case "home_page":
-		return t.Home_page, true
-	case "federal_id_no":
-		return t.Federal_id_no, true
-	case "country_code":
-		return t.Country_code, true
-	}
-	return nil, false
+	return companyInformationFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -5409,225 +3565,12 @@ func (t *CompanyInformation) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *CompanyInformation) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"primary_key":         t.Primary_key.String(),
-		"name":                t.Name.String(),
-		"name_2":              t.Name_2.String(),
-		"address":             t.Address.String(),
-		"address_2":           t.Address_2.String(),
-		"city":                t.City.String(),
-		"phone_no":            t.Phone_no.String(),
-		"phone_no_2":          t.Phone_no_2.String(),
-		"telex_no":            t.Telex_no.String(),
-		"fax_no":              t.Fax_no.String(),
-		"giro_no":             t.Giro_no.String(),
-		"bank_name":           t.Bank_name.String(),
-		"bank_branch_no":      t.Bank_branch_no.String(),
-		"bank_account_no":     t.Bank_account_no.String(),
-		"payment_routing_no":  t.Payment_routing_no.String(),
-		"customs_permit_no":   t.Customs_permit_no.String(),
-		"customs_permit_date": t.Customs_permit_date.String(),
-		"vat_registration_no": t.Vat_registration_no.String(),
-		"registration_no":     t.Registration_no.String(),
-		"telex_answer_back":   t.Telex_answer_back.String(),
-		"ship_to_name":        t.Ship_to_name.String(),
-		"ship_to_name_2":      t.Ship_to_name_2.String(),
-		"ship_to_address":     t.Ship_to_address.String(),
-		"ship_to_address_2":   t.Ship_to_address_2.String(),
-		"ship_to_city":        t.Ship_to_city.String(),
-		"ship_to_contact":     t.Ship_to_contact.String(),
-		"location_code":       t.Location_code.String(),
-		"picture":             t.Picture,
-		"post_code":           t.Post_code.String(),
-		"state":               t.State.String(),
-		"ship_to_post_code":   t.Ship_to_post_code.String(),
-		"ship_to_state":       t.Ship_to_state.String(),
-		"e_mail":              t.E_mail.String(),
-		"home_page":           t.Home_page.String(),
-		"federal_id_no":       t.Federal_id_no.String(),
-		"country_code":        t.Country_code.String(),
-	}
+	return companyInformationFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *CompanyInformation) FromMap(data map[string]interface{}) {
-	if v, ok := data["primary_key"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Primary_key = types.NewCode(s)
-		}
-	}
-	if v, ok := data["name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Name = types.NewText(s)
-		}
-	}
-	if v, ok := data["name_2"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Name_2 = types.NewText(s)
-		}
-	}
-	if v, ok := data["address"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Address = types.NewText(s)
-		}
-	}
-	if v, ok := data["address_2"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Address_2 = types.NewText(s)
-		}
-	}
-	if v, ok := data["city"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.City = types.NewText(s)
-		}
-	}
-	if v, ok := data["phone_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Phone_no = types.NewText(s)
-		}
-	}
-	if v, ok := data["phone_no_2"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Phone_no_2 = types.NewText(s)
-		}
-	}
-	if v, ok := data["telex_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Telex_no = types.NewText(s)
-		}
-	}
-	if v, ok := data["fax_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fax_no = types.NewText(s)
-		}
-	}
-	if v, ok := data["giro_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Giro_no = types.NewText(s)
-		}
-	}
-	if v, ok := data["bank_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Bank_name = types.NewText(s)
-		}
-	}
-	if v, ok := data["bank_branch_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Bank_branch_no = types.NewText(s)
-		}
-	}
-	if v, ok := data["bank_account_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Bank_account_no = types.NewText(s)
-		}
-	}
-	if v, ok := data["payment_routing_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Payment_routing_no = types.NewText(s)
-		}
-	}
-	if v, ok := data["customs_permit_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Customs_permit_no = types.NewText(s)
-		}
-	}
-	if v, ok := data["customs_permit_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Customs_permit_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["vat_registration_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Vat_registration_no = types.NewText(s)
-		}
-	}
-	if v, ok := data["registration_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Registration_no = types.NewText(s)
-		}
-	}
-	if v, ok := data["telex_answer_back"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Telex_answer_back = types.NewText(s)
-		}
-	}
-	if v, ok := data["ship_to_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Ship_to_name = types.NewText(s)
-		}
-	}
-	if v, ok := data["ship_to_name_2"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Ship_to_name_2 = types.NewText(s)
-		}
-	}
-	if v, ok := data["ship_to_address"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Ship_to_address = types.NewText(s)
-		}
-	}
-	if v, ok := data["ship_to_address_2"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Ship_to_address_2 = types.NewText(s)
-		}
-	}
-	if v, ok := data["ship_to_city"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Ship_to_city = types.NewText(s)
-		}
-	}
-	if v, ok := data["ship_to_contact"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Ship_to_contact = types.NewText(s)
-		}
-	}
-	if v, ok := data["location_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Location_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["picture"]; ok && v != nil {
-	}
-	if v, ok := data["post_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Post_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["state"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.State = types.NewText(s)
-		}
-	}
-	if v, ok := data["ship_to_post_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Ship_to_post_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["ship_to_state"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Ship_to_state = types.NewText(s)
-		}
-	}
-	if v, ok := data["e_mail"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.E_mail = types.NewText(s)
-		}
-	}
-	if v, ok := data["home_page"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Home_page = types.NewText(s)
-		}
-	}
-	if v, ok := data["federal_id_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Federal_id_no = types.NewText(s)
-		}
-	}
-	if v, ok := data["country_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Country_code = types.NewCode(s)
-		}
-	}
+	companyInformationFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -5648,368 +3591,602 @@ func (t *CompanyInformation) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *CompanyInformation) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "primary_key",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "name",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "name_2",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "address",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "address_2",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "city",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "phone_no",
-			Type:       tables.FieldTypeText,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "phone_no_2",
-			Type:       tables.FieldTypeText,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "telex_no",
-			Type:       tables.FieldTypeText,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "fax_no",
-			Type:       tables.FieldTypeText,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "giro_no",
-			Type:       tables.FieldTypeText,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "bank_name",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         13,
-			Name:       "bank_branch_no",
-			Type:       tables.FieldTypeText,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         14,
-			Name:       "bank_account_no",
-			Type:       tables.FieldTypeText,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         15,
-			Name:       "payment_routing_no",
-			Type:       tables.FieldTypeText,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         17,
-			Name:       "customs_permit_no",
-			Type:       tables.FieldTypeText,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         18,
-			Name:       "customs_permit_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         19,
-			Name:       "vat_registration_no",
-			Type:       tables.FieldTypeText,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         20,
-			Name:       "registration_no",
-			Type:       tables.FieldTypeText,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         21,
-			Name:       "telex_answer_back",
-			Type:       tables.FieldTypeText,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         22,
-			Name:       "ship_to_name",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         23,
-			Name:       "ship_to_name_2",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         24,
-			Name:       "ship_to_address",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         25,
-			Name:       "ship_to_address_2",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         26,
-			Name:       "ship_to_city",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         27,
-			Name:       "ship_to_contact",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         28,
-			Name:       "location_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         29,
-			Name:       "picture",
-			Type:       tables.FieldTypeBlob,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         30,
-			Name:       "post_code",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         31,
-			Name:       "state",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         32,
-			Name:       "ship_to_post_code",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         33,
-			Name:       "ship_to_state",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         34,
-			Name:       "e_mail",
-			Type:       tables.FieldTypeText,
-			Length:     80,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         35,
-			Name:       "home_page",
-			Type:       tables.FieldTypeText,
-			Length:     80,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         900,
-			Name:       "federal_id_no",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         901,
-			Name:       "country_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return companyInformationFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in companyInformationFields.Fields
+func (t *CompanyInformation) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Primary_key
+	case 1:
+		return &t.Name
+	case 2:
+		return &t.Name_2
+	case 3:
+		return &t.Address
+	case 4:
+		return &t.Address_2
+	case 5:
+		return &t.City
+	case 6:
+		return &t.Phone_no
+	case 7:
+		return &t.Phone_no_2
+	case 8:
+		return &t.Telex_no
+	case 9:
+		return &t.Fax_no
+	case 10:
+		return &t.Giro_no
+	case 11:
+		return &t.Bank_name
+	case 12:
+		return &t.Bank_branch_no
+	case 13:
+		return &t.Bank_account_no
+	case 14:
+		return &t.Payment_routing_no
+	case 15:
+		return &t.Customs_permit_no
+	case 16:
+		return &t.Customs_permit_date
+	case 17:
+		return &t.Vat_registration_no
+	case 18:
+		return &t.Registration_no
+	case 19:
+		return &t.Telex_answer_back
+	case 20:
+		return &t.Ship_to_name
+	case 21:
+		return &t.Ship_to_name_2
+	case 22:
+		return &t.Ship_to_address
+	case 23:
+		return &t.Ship_to_address_2
+	case 24:
+		return &t.Ship_to_city
+	case 25:
+		return &t.Ship_to_contact
+	case 26:
+		return &t.Location_code
+	case 27:
+		return &t.Picture
+	case 28:
+		return &t.Post_code
+	case 29:
+		return &t.State
+	case 30:
+		return &t.Ship_to_post_code
+	case 31:
+		return &t.Ship_to_state
+	case 32:
+		return &t.E_mail
+	case 33:
+		return &t.Home_page
+	case 34:
+		return &t.Federal_id_no
+	case 35:
+		return &t.Country_code
 	}
+	return nil
+}
+
+// companyInformationFields describes the fields of Company_Information for the record functions
+// written once in foundation/tables
+var companyInformationFields = &tables.TableFields{
+	Table: CompanyInformationTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "primary_key",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Primary_key",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "name",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "name_2",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Name_2",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "address",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Address",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "address_2",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Address_2",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "city",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_City",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "phone_no",
+				Type:       tables.FieldTypeText,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Phone_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "phone_no_2",
+				Type:       tables.FieldTypeText,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Phone_no_2",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "telex_no",
+				Type:       tables.FieldTypeText,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Telex_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "fax_no",
+				Type:       tables.FieldTypeText,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Fax_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "giro_no",
+				Type:       tables.FieldTypeText,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Giro_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "bank_name",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Bank_name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "bank_branch_no",
+				Type:       tables.FieldTypeText,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Bank_branch_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "bank_account_no",
+				Type:       tables.FieldTypeText,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Bank_account_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         15,
+				Name:       "payment_routing_no",
+				Type:       tables.FieldTypeText,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Payment_routing_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         17,
+				Name:       "customs_permit_no",
+				Type:       tables.FieldTypeText,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Customs_permit_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         18,
+				Name:       "customs_permit_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Customs_permit_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         19,
+				Name:       "vat_registration_no",
+				Type:       tables.FieldTypeText,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Vat_registration_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         20,
+				Name:       "registration_no",
+				Type:       tables.FieldTypeText,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Registration_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         21,
+				Name:       "telex_answer_back",
+				Type:       tables.FieldTypeText,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Telex_answer_back",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         22,
+				Name:       "ship_to_name",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Ship_to_name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         23,
+				Name:       "ship_to_name_2",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Ship_to_name_2",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         24,
+				Name:       "ship_to_address",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Ship_to_address",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         25,
+				Name:       "ship_to_address_2",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Ship_to_address_2",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         26,
+				Name:       "ship_to_city",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Ship_to_city",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         27,
+				Name:       "ship_to_contact",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Ship_to_contact",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         28,
+				Name:       "location_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Location_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         29,
+				Name:       "picture",
+				Type:       tables.FieldTypeBlob,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBlob,
+			Trigger: "OnValidate_Picture",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         30,
+				Name:       "post_code",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Post_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         31,
+				Name:       "state",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_State",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         32,
+				Name:       "ship_to_post_code",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Ship_to_post_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         33,
+				Name:       "ship_to_state",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Ship_to_state",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         34,
+				Name:       "e_mail",
+				Type:       tables.FieldTypeText,
+				Length:     80,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_E_mail",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         35,
+				Name:       "home_page",
+				Type:       tables.FieldTypeText,
+				Length:     80,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Home_page",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         900,
+				Name:       "federal_id_no",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Federal_id_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         901,
+				Name:       "country_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Country_code",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

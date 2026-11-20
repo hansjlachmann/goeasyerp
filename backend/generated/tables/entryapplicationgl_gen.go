@@ -134,44 +134,12 @@ var EntryApplicationGL_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *EntryApplicationGL) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "application_no":
-		return 1
-	case "line_no":
-		return 2
-	case "gl_account_no":
-		return 3
-	case "amount":
-		return 4
-	case "additional_currency_amount":
-		return 5
-	case "use_add_curr_amount":
-		return 6
-	case "tax_entry_no":
-		return 7
-	}
-	return 0
+	return entryApplicationGLFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *EntryApplicationGL) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "application_no"
-	case 2:
-		return "line_no"
-	case 3:
-		return "gl_account_no"
-	case 4:
-		return "amount"
-	case 5:
-		return "additional_currency_amount"
-	case 6:
-		return "use_add_curr_amount"
-	case 7:
-		return "tax_entry_no"
-	}
-	return ""
+	return entryApplicationGLFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -283,27 +251,6 @@ type (
 	EntryApplicationGLOnBeforeRename interface {
 		OnBeforeRename(rec *EntryApplicationGL, handled *bool) error
 	}
-	EntryApplicationGLOnValidate_Application_no interface {
-		OnValidate_Application_no(rec *EntryApplicationGL) error
-	}
-	EntryApplicationGLOnValidate_Line_no interface {
-		OnValidate_Line_no(rec *EntryApplicationGL) error
-	}
-	EntryApplicationGLOnValidate_Gl_account_no interface {
-		OnValidate_Gl_account_no(rec *EntryApplicationGL) error
-	}
-	EntryApplicationGLOnValidate_Amount interface {
-		OnValidate_Amount(rec *EntryApplicationGL) error
-	}
-	EntryApplicationGLOnValidate_Additional_currency_amount interface {
-		OnValidate_Additional_currency_amount(rec *EntryApplicationGL) error
-	}
-	EntryApplicationGLOnValidate_Use_add_curr_amount interface {
-		OnValidate_Use_add_curr_amount(rec *EntryApplicationGL) error
-	}
-	EntryApplicationGLOnValidate_Tax_entry_no interface {
-		OnValidate_Tax_entry_no(rec *EntryApplicationGL) error
-	}
 )
 
 // entryApplicationGLLogic is the registered business logic of Entry_Application_GL, in
@@ -346,22 +293,9 @@ func entryApplicationGLTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(EntryApplicationGLOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(EntryApplicationGLOnBeforeRename)
-	case "OnValidate_Application_no":
-		_, ok = logic.(EntryApplicationGLOnValidate_Application_no)
-	case "OnValidate_Line_no":
-		_, ok = logic.(EntryApplicationGLOnValidate_Line_no)
-	case "OnValidate_Gl_account_no":
-		_, ok = logic.(EntryApplicationGLOnValidate_Gl_account_no)
-	case "OnValidate_Amount":
-		_, ok = logic.(EntryApplicationGLOnValidate_Amount)
-	case "OnValidate_Additional_currency_amount":
-		_, ok = logic.(EntryApplicationGLOnValidate_Additional_currency_amount)
-	case "OnValidate_Use_add_curr_amount":
-		_, ok = logic.(EntryApplicationGLOnValidate_Use_add_curr_amount)
-	case "OnValidate_Tax_entry_no":
-		_, ok = logic.(EntryApplicationGLOnValidate_Tax_entry_no)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return entryApplicationGLFields.IsOnValidateTrigger(name, logic, (*EntryApplicationGL)(nil))
 	}
 	return true, ok
 }
@@ -655,14 +589,7 @@ func (t *EntryApplicationGL) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *EntryApplicationGL) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["application_no"] = t.Application_no
-	t.oldValues["line_no"] = t.Line_no
-	t.oldValues["gl_account_no"] = t.Gl_account_no
-	t.oldValues["amount"] = t.Amount
-	t.oldValues["additional_currency_amount"] = t.Additional_currency_amount
-	t.oldValues["use_add_curr_amount"] = t.Use_add_curr_amount
-	t.oldValues["tax_entry_no"] = t.Tax_entry_no
+	t.oldValues = entryApplicationGLFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -677,27 +604,7 @@ func (t *EntryApplicationGL) OldValue(fieldName string) interface{} {
 func (t *EntryApplicationGL) XRec() *EntryApplicationGL {
 	x := &EntryApplicationGL{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["application_no"].(int); ok {
-		x.Application_no = v
-	}
-	if v, ok := t.oldValues["line_no"].(int); ok {
-		x.Line_no = v
-	}
-	if v, ok := t.oldValues["gl_account_no"].(types.Code); ok {
-		x.Gl_account_no = v
-	}
-	if v, ok := t.oldValues["amount"].(types.Decimal); ok {
-		x.Amount = v
-	}
-	if v, ok := t.oldValues["additional_currency_amount"].(types.Decimal); ok {
-		x.Additional_currency_amount = v
-	}
-	if v, ok := t.oldValues["use_add_curr_amount"].(bool); ok {
-		x.Use_add_curr_amount = v
-	}
-	if v, ok := t.oldValues["tax_entry_no"].(int); ok {
-		x.Tax_entry_no = v
-	}
+	entryApplicationGLFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1028,53 +935,7 @@ func (t *EntryApplicationGL) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *EntryApplicationGL) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "application_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Application_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "line_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Line_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "gl_account_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Gl_account_no.Equal(old)
-		}
-	case "amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Amount.Equal(old)
-		}
-	case "additional_currency_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Additional_currency_amount.Equal(old)
-		}
-	case "use_add_curr_amount":
-		if old, ok := oldValue.(bool); ok {
-			return t.Use_add_curr_amount != old
-		}
-		return true // Type mismatch, assume changed
-	case "tax_entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Tax_entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	}
-
-	return false
+	return entryApplicationGLFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1276,23 +1137,7 @@ func (t *EntryApplicationGL) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *EntryApplicationGL) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("application_no"):
-		return "application_no", true
-	case strings.ToLower("line_no"):
-		return "line_no", true
-	case strings.ToLower("gl_account_no"):
-		return "gl_account_no", true
-	case strings.ToLower("amount"):
-		return "amount", true
-	case strings.ToLower("additional_currency_amount"):
-		return "additional_currency_amount", true
-	case strings.ToLower("use_add_curr_amount"):
-		return "use_add_curr_amount", true
-	case strings.ToLower("tax_entry_no"):
-		return "tax_entry_no", true
-	}
-	return "", false
+	return entryApplicationGLFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2148,186 +1993,20 @@ func (t *EntryApplicationGL) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *EntryApplicationGL) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "application_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Application_no = v
-		case float64:
-			t.Application_no = int(v)
-		case string:
-			if v == "" {
-				t.Application_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Application_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field application_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field application_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationGLOnValidate_Application_no); ok {
-				if err := trg.OnValidate_Application_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "line_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Line_no = v
-		case float64:
-			t.Line_no = int(v)
-		case string:
-			if v == "" {
-				t.Line_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Line_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field line_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field line_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationGLOnValidate_Line_no); ok {
-				if err := trg.OnValidate_Line_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "gl_account_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Gl_account_no = v
-		} else if v, ok := value.(string); ok {
-			t.Gl_account_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field gl_account_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationGLOnValidate_Gl_account_no); ok {
-				if err := trg.OnValidate_Gl_account_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationGLOnValidate_Amount); ok {
-				if err := trg.OnValidate_Amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "additional_currency_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Additional_currency_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Additional_currency_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field additional_currency_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Additional_currency_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Additional_currency_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Additional_currency_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field additional_currency_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationGLOnValidate_Additional_currency_amount); ok {
-				if err := trg.OnValidate_Additional_currency_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "use_add_curr_amount":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Use_add_curr_amount = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Use_add_curr_amount = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field use_add_curr_amount")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationGLOnValidate_Use_add_curr_amount); ok {
-				if err := trg.OnValidate_Use_add_curr_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Tax_entry_no = v
-		case float64:
-			t.Tax_entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Tax_entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Tax_entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field tax_entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field tax_entry_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(EntryApplicationGLOnValidate_Tax_entry_no); ok {
-				if err := trg.OnValidate_Tax_entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := entryApplicationGLFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &entryApplicationGLFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2336,77 +2015,18 @@ func (t *EntryApplicationGL) ValidateField(fieldName string, value interface{}) 
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *EntryApplicationGL) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Application_no, true
-	case 2:
-		return t.Line_no, true
-	case 3:
-		return t.Gl_account_no, true
-	case 4:
-		return t.Amount, true
-	case 5:
-		return t.Additional_currency_amount, true
-	case 6:
-		return t.Use_add_curr_amount, true
-	case 7:
-		return t.Tax_entry_no, true
-	}
-	return nil, false
+	return entryApplicationGLFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *EntryApplicationGL) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return entryApplicationGLFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *EntryApplicationGL) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(int); ok {
-			t.Application_no = v
-			return true
-		}
-	case 2:
-		if v, ok := value.(int); ok {
-			t.Line_no = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Code); ok {
-			t.Gl_account_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Gl_account_no = types.NewCode(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount = v
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Decimal); ok {
-			t.Additional_currency_amount = v
-			return true
-		}
-	case 6:
-		if v, ok := value.(bool); ok {
-			t.Use_add_curr_amount = v
-			return true
-		}
-	case 7:
-		if v, ok := value.(int); ok {
-			t.Tax_entry_no = v
-			return true
-		}
-	}
-	return false
+	return entryApplicationGLFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2909,23 +2529,7 @@ func (t *EntryApplicationGL) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *EntryApplicationGL) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "application_no":
-		return t.Application_no, true
-	case "line_no":
-		return t.Line_no, true
-	case "gl_account_no":
-		return t.Gl_account_no, true
-	case "amount":
-		return t.Amount, true
-	case "additional_currency_amount":
-		return t.Additional_currency_amount, true
-	case "use_add_curr_amount":
-		return t.Use_add_curr_amount, true
-	case "tax_entry_no":
-		return t.Tax_entry_no, true
-	}
-	return nil, false
+	return entryApplicationGLFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3020,92 +2624,12 @@ func (t *EntryApplicationGL) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *EntryApplicationGL) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"application_no":             t.Application_no,
-		"line_no":                    t.Line_no,
-		"gl_account_no":              t.Gl_account_no.String(),
-		"amount":                     t.Amount.String(),
-		"additional_currency_amount": t.Additional_currency_amount.String(),
-		"use_add_curr_amount":        t.Use_add_curr_amount,
-		"tax_entry_no":               t.Tax_entry_no,
-	}
+	return entryApplicationGLFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *EntryApplicationGL) FromMap(data map[string]interface{}) {
-	if v, ok := data["application_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Application_no = int(val)
-		case int:
-			t.Application_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Application_no = n
-			}
-		}
-	}
-	if v, ok := data["line_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Line_no = int(val)
-		case int:
-			t.Line_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Line_no = n
-			}
-		}
-	}
-	if v, ok := data["gl_account_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Gl_account_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Amount = types.NewDecimal(val)
-		case int:
-			t.Amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["additional_currency_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Additional_currency_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Additional_currency_amount = types.NewDecimal(val)
-		case int:
-			t.Additional_currency_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Additional_currency_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["use_add_curr_amount"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Use_add_curr_amount = b
-		}
-	}
-	if v, ok := data["tax_entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Tax_entry_no = int(val)
-		case int:
-			t.Tax_entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Tax_entry_no = n
-			}
-		}
-	}
+	entryApplicationGLFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3126,80 +2650,136 @@ func (t *EntryApplicationGL) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *EntryApplicationGL) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "application_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "line_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "gl_account_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            4,
-			Name:          "amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            5,
-			Name:          "additional_currency_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         6,
-			Name:       "use_add_curr_amount",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "tax_entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return entryApplicationGLFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in entryApplicationGLFields.Fields
+func (t *EntryApplicationGL) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Application_no
+	case 1:
+		return &t.Line_no
+	case 2:
+		return &t.Gl_account_no
+	case 3:
+		return &t.Amount
+	case 4:
+		return &t.Additional_currency_amount
+	case 5:
+		return &t.Use_add_curr_amount
+	case 6:
+		return &t.Tax_entry_no
 	}
+	return nil
+}
+
+// entryApplicationGLFields describes the fields of Entry_Application_GL for the record functions
+// written once in foundation/tables
+var entryApplicationGLFields = &tables.TableFields{
+	Table: EntryApplicationGLTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "application_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Application_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "line_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Line_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "gl_account_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Gl_account_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            4,
+				Name:          "amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            5,
+				Name:          "additional_currency_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Additional_currency_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "use_add_curr_amount",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Use_add_curr_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "tax_entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Tax_entry_no",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

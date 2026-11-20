@@ -27,7 +27,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -191,40 +190,12 @@ var BOMLedgerEntry_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *BOMLedgerEntry) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "entry_no":
-		return 1
-	case "reference_type":
-		return 2
-	case "reference_entry_no":
-		return 3
-	case "posting_date":
-		return 4
-	case "entry_type":
-		return 5
-	case "document_date":
-		return 6
-	}
-	return 0
+	return bOMLedgerEntryFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *BOMLedgerEntry) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "entry_no"
-	case 2:
-		return "reference_type"
-	case 3:
-		return "reference_entry_no"
-	case 4:
-		return "posting_date"
-	case 5:
-		return "entry_type"
-	case 6:
-		return "document_date"
-	}
-	return ""
+	return bOMLedgerEntryFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -336,24 +307,6 @@ type (
 	BOMLedgerEntryOnBeforeRename interface {
 		OnBeforeRename(rec *BOMLedgerEntry, handled *bool) error
 	}
-	BOMLedgerEntryOnValidate_Entry_no interface {
-		OnValidate_Entry_no(rec *BOMLedgerEntry) error
-	}
-	BOMLedgerEntryOnValidate_Reference_type interface {
-		OnValidate_Reference_type(rec *BOMLedgerEntry) error
-	}
-	BOMLedgerEntryOnValidate_Reference_entry_no interface {
-		OnValidate_Reference_entry_no(rec *BOMLedgerEntry) error
-	}
-	BOMLedgerEntryOnValidate_Posting_date interface {
-		OnValidate_Posting_date(rec *BOMLedgerEntry) error
-	}
-	BOMLedgerEntryOnValidate_Entry_type interface {
-		OnValidate_Entry_type(rec *BOMLedgerEntry) error
-	}
-	BOMLedgerEntryOnValidate_Document_date interface {
-		OnValidate_Document_date(rec *BOMLedgerEntry) error
-	}
 )
 
 // bOMLedgerEntryLogic is the registered business logic of BOM_Ledger_Entry, in
@@ -396,20 +349,9 @@ func bOMLedgerEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(BOMLedgerEntryOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(BOMLedgerEntryOnBeforeRename)
-	case "OnValidate_Entry_no":
-		_, ok = logic.(BOMLedgerEntryOnValidate_Entry_no)
-	case "OnValidate_Reference_type":
-		_, ok = logic.(BOMLedgerEntryOnValidate_Reference_type)
-	case "OnValidate_Reference_entry_no":
-		_, ok = logic.(BOMLedgerEntryOnValidate_Reference_entry_no)
-	case "OnValidate_Posting_date":
-		_, ok = logic.(BOMLedgerEntryOnValidate_Posting_date)
-	case "OnValidate_Entry_type":
-		_, ok = logic.(BOMLedgerEntryOnValidate_Entry_type)
-	case "OnValidate_Document_date":
-		_, ok = logic.(BOMLedgerEntryOnValidate_Document_date)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return bOMLedgerEntryFields.IsOnValidateTrigger(name, logic, (*BOMLedgerEntry)(nil))
 	}
 	return true, ok
 }
@@ -714,13 +656,7 @@ func (t *BOMLedgerEntry) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *BOMLedgerEntry) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["entry_no"] = t.Entry_no
-	t.oldValues["reference_type"] = t.Reference_type
-	t.oldValues["reference_entry_no"] = t.Reference_entry_no
-	t.oldValues["posting_date"] = t.Posting_date
-	t.oldValues["entry_type"] = t.Entry_type
-	t.oldValues["document_date"] = t.Document_date
+	t.oldValues = bOMLedgerEntryFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -735,24 +671,7 @@ func (t *BOMLedgerEntry) OldValue(fieldName string) interface{} {
 func (t *BOMLedgerEntry) XRec() *BOMLedgerEntry {
 	x := &BOMLedgerEntry{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["entry_no"].(int); ok {
-		x.Entry_no = v
-	}
-	if v, ok := t.oldValues["reference_type"].(BOMLedgerEntryReference_type); ok {
-		x.Reference_type = v
-	}
-	if v, ok := t.oldValues["reference_entry_no"].(int); ok {
-		x.Reference_entry_no = v
-	}
-	if v, ok := t.oldValues["posting_date"].(types.Date); ok {
-		x.Posting_date = v
-	}
-	if v, ok := t.oldValues["entry_type"].(BOMLedgerEntryEntry_type); ok {
-		x.Entry_type = v
-	}
-	if v, ok := t.oldValues["document_date"].(types.Date); ok {
-		x.Document_date = v
-	}
+	bOMLedgerEntryFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1061,47 +980,7 @@ func (t *BOMLedgerEntry) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *BOMLedgerEntry) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "reference_type":
-		if old, ok := oldValue.(BOMLedgerEntryReference_type); ok {
-			return t.Reference_type != old
-		}
-	case "reference_entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Reference_entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "posting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Posting_date.Equal(old)
-		}
-	case "entry_type":
-		if old, ok := oldValue.(BOMLedgerEntryEntry_type); ok {
-			return t.Entry_type != old
-		}
-	case "document_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Document_date.Equal(old)
-		}
-	}
-
-	return false
+	return bOMLedgerEntryFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1302,21 +1181,7 @@ func (t *BOMLedgerEntry) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *BOMLedgerEntry) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("entry_no"):
-		return "entry_no", true
-	case strings.ToLower("reference_type"):
-		return "reference_type", true
-	case strings.ToLower("reference_entry_no"):
-		return "reference_entry_no", true
-	case strings.ToLower("posting_date"):
-		return "posting_date", true
-	case strings.ToLower("entry_type"):
-		return "entry_type", true
-	case strings.ToLower("document_date"):
-		return "document_date", true
-	}
-	return "", false
+	return bOMLedgerEntryFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2165,216 +2030,20 @@ func (t *BOMLedgerEntry) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *BOMLedgerEntry) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Entry_no = v
-		case float64:
-			t.Entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field entry_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(BOMLedgerEntryOnValidate_Entry_no); ok {
-				if err := trg.OnValidate_Entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reference_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(BOMLedgerEntryReference_type); ok {
-			t.Reference_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 2 {
-				return fmt.Errorf("invalid option value %d for field reference_type (valid range: 0-%d)", v, 2-1)
-			}
-			t.Reference_type = BOMLedgerEntryReference_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 2 {
-				return fmt.Errorf("invalid option value %d for field reference_type (valid range: 0-%d)", intVal, 2-1)
-			}
-			t.Reference_type = BOMLedgerEntryReference_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Reference_type = 0
-			} else {
-				options := []string{"Item", "Resource"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Reference_type = BOMLedgerEntryReference_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field reference_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field reference_type (expected BOMLedgerEntryReference_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(BOMLedgerEntryOnValidate_Reference_type); ok {
-				if err := trg.OnValidate_Reference_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reference_entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Reference_entry_no = v
-		case float64:
-			t.Reference_entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Reference_entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Reference_entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field reference_entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field reference_entry_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "reference_entry_no"); err != nil {
+	i, err := bOMLedgerEntryFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
+	}
+	f := &bOMLedgerEntryFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
 			return err
 		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(BOMLedgerEntryOnValidate_Reference_entry_no); ok {
-				if err := trg.OnValidate_Reference_entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "posting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Posting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Posting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field posting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Posting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field posting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(BOMLedgerEntryOnValidate_Posting_date); ok {
-				if err := trg.OnValidate_Posting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "entry_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(BOMLedgerEntryEntry_type); ok {
-			t.Entry_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 2 {
-				return fmt.Errorf("invalid option value %d for field entry_type (valid range: 0-%d)", v, 2-1)
-			}
-			t.Entry_type = BOMLedgerEntryEntry_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 2 {
-				return fmt.Errorf("invalid option value %d for field entry_type (valid range: 0-%d)", intVal, 2-1)
-			}
-			t.Entry_type = BOMLedgerEntryEntry_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Entry_type = 0
-			} else {
-				options := []string{"Component", "BOM"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Entry_type = BOMLedgerEntryEntry_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field entry_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field entry_type (expected BOMLedgerEntryEntry_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(BOMLedgerEntryOnValidate_Entry_type); ok {
-				if err := trg.OnValidate_Entry_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Document_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Document_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field document_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Document_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field document_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(BOMLedgerEntryOnValidate_Document_date); ok {
-				if err := trg.OnValidate_Document_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2383,66 +2052,18 @@ func (t *BOMLedgerEntry) ValidateField(fieldName string, value interface{}) erro
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *BOMLedgerEntry) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Entry_no, true
-	case 2:
-		return t.Reference_type, true
-	case 3:
-		return t.Reference_entry_no, true
-	case 4:
-		return t.Posting_date, true
-	case 5:
-		return t.Entry_type, true
-	case 6:
-		return t.Document_date, true
-	}
-	return nil, false
+	return bOMLedgerEntryFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *BOMLedgerEntry) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return bOMLedgerEntryFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *BOMLedgerEntry) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(int); ok {
-			t.Entry_no = v
-			return true
-		}
-	case 2:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 2 {
-			t.Reference_type = BOMLedgerEntryReference_type(i)
-			return true
-		}
-	case 3:
-		if v, ok := value.(int); ok {
-			t.Reference_entry_no = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Date); ok {
-			t.Posting_date = v
-			return true
-		}
-	case 5:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 2 {
-			t.Entry_type = BOMLedgerEntryEntry_type(i)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Date); ok {
-			t.Document_date = v
-			return true
-		}
-	}
-	return false
+	return bOMLedgerEntryFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2920,21 +2541,7 @@ func (t *BOMLedgerEntry) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *BOMLedgerEntry) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "entry_no":
-		return t.Entry_no, true
-	case "reference_type":
-		return int(t.Reference_type), true
-	case "reference_entry_no":
-		return t.Reference_entry_no, true
-	case "posting_date":
-		return t.Posting_date, true
-	case "entry_type":
-		return int(t.Entry_type), true
-	case "document_date":
-		return t.Document_date, true
-	}
-	return nil, false
+	return bOMLedgerEntryFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3025,88 +2632,12 @@ func (t *BOMLedgerEntry) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *BOMLedgerEntry) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"entry_no":           t.Entry_no,
-		"reference_type":     int(t.Reference_type),
-		"reference_entry_no": t.Reference_entry_no,
-		"posting_date":       t.Posting_date.String(),
-		"entry_type":         int(t.Entry_type),
-		"document_date":      t.Document_date.String(),
-	}
+	return bOMLedgerEntryFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *BOMLedgerEntry) FromMap(data map[string]interface{}) {
-	if v, ok := data["entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Entry_no = int(val)
-		case int:
-			t.Entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Entry_no = n
-			}
-		}
-	}
-	if v, ok := data["reference_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Reference_type = BOMLedgerEntryReference_type(int(val))
-		case int:
-			t.Reference_type = BOMLedgerEntryReference_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Item", "Resource"}
-			for i, opt := range options {
-				if opt == val {
-					t.Reference_type = BOMLedgerEntryReference_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["reference_entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Reference_entry_no = int(val)
-		case int:
-			t.Reference_entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Reference_entry_no = n
-			}
-		}
-	}
-	if v, ok := data["posting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Posting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["entry_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Entry_type = BOMLedgerEntryEntry_type(int(val))
-		case int:
-			t.Entry_type = BOMLedgerEntryEntry_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Component", "BOM"}
-			for i, opt := range options {
-				if opt == val {
-					t.Entry_type = BOMLedgerEntryEntry_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["document_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Document_date, _ = types.NewDateFromString(s)
-		}
-	}
+	bOMLedgerEntryFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3127,68 +2658,121 @@ func (t *BOMLedgerEntry) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *BOMLedgerEntry) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "reference_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "reference_entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "posting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "entry_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "document_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return bOMLedgerEntryFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in bOMLedgerEntryFields.Fields
+func (t *BOMLedgerEntry) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Entry_no
+	case 1:
+		return &t.Reference_type
+	case 2:
+		return &t.Reference_entry_no
+	case 3:
+		return &t.Posting_date
+	case 4:
+		return &t.Entry_type
+	case 5:
+		return &t.Document_date
 	}
+	return nil
+}
+
+// bOMLedgerEntryFields describes the fields of BOM_Ledger_Entry for the record functions
+// written once in foundation/tables
+var bOMLedgerEntryFields = &tables.TableFields{
+	Table: BOMLedgerEntryTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Entry_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "reference_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Reference_type",
+			Options: []string{"Item", "Resource"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "reference_entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindInt,
+			Trigger:  "OnValidate_Reference_entry_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "posting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Posting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "entry_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Entry_type",
+			Options: []string{"Component", "BOM"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "document_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Document_date",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

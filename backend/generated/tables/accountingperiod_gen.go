@@ -126,36 +126,12 @@ var AccountingPeriod_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *AccountingPeriod) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "starting_date":
-		return 1
-	case "name":
-		return 2
-	case "new_fiscal_year":
-		return 3
-	case "closed":
-		return 4
-	case "date_locked":
-		return 5
-	}
-	return 0
+	return accountingPeriodFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *AccountingPeriod) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "starting_date"
-	case 2:
-		return "name"
-	case 3:
-		return "new_fiscal_year"
-	case 4:
-		return "closed"
-	case 5:
-		return "date_locked"
-	}
-	return ""
+	return accountingPeriodFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -267,21 +243,6 @@ type (
 	AccountingPeriodOnBeforeRename interface {
 		OnBeforeRename(rec *AccountingPeriod, handled *bool) error
 	}
-	AccountingPeriodOnValidate_Starting_date interface {
-		OnValidate_Starting_date(rec *AccountingPeriod) error
-	}
-	AccountingPeriodOnValidate_Name interface {
-		OnValidate_Name(rec *AccountingPeriod) error
-	}
-	AccountingPeriodOnValidate_New_fiscal_year interface {
-		OnValidate_New_fiscal_year(rec *AccountingPeriod) error
-	}
-	AccountingPeriodOnValidate_Closed interface {
-		OnValidate_Closed(rec *AccountingPeriod) error
-	}
-	AccountingPeriodOnValidate_Date_locked interface {
-		OnValidate_Date_locked(rec *AccountingPeriod) error
-	}
 )
 
 // accountingPeriodLogic is the registered business logic of Accounting_Period, in
@@ -324,18 +285,9 @@ func accountingPeriodTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(AccountingPeriodOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(AccountingPeriodOnBeforeRename)
-	case "OnValidate_Starting_date":
-		_, ok = logic.(AccountingPeriodOnValidate_Starting_date)
-	case "OnValidate_Name":
-		_, ok = logic.(AccountingPeriodOnValidate_Name)
-	case "OnValidate_New_fiscal_year":
-		_, ok = logic.(AccountingPeriodOnValidate_New_fiscal_year)
-	case "OnValidate_Closed":
-		_, ok = logic.(AccountingPeriodOnValidate_Closed)
-	case "OnValidate_Date_locked":
-		_, ok = logic.(AccountingPeriodOnValidate_Date_locked)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return accountingPeriodFields.IsOnValidateTrigger(name, logic, (*AccountingPeriod)(nil))
 	}
 	return true, ok
 }
@@ -635,12 +587,7 @@ func (t *AccountingPeriod) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *AccountingPeriod) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["starting_date"] = t.Starting_date
-	t.oldValues["name"] = t.Name
-	t.oldValues["new_fiscal_year"] = t.New_fiscal_year
-	t.oldValues["closed"] = t.Closed
-	t.oldValues["date_locked"] = t.Date_locked
+	t.oldValues = accountingPeriodFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -655,21 +602,7 @@ func (t *AccountingPeriod) OldValue(fieldName string) interface{} {
 func (t *AccountingPeriod) XRec() *AccountingPeriod {
 	x := &AccountingPeriod{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["starting_date"].(types.Date); ok {
-		x.Starting_date = v
-	}
-	if v, ok := t.oldValues["name"].(types.Text); ok {
-		x.Name = v
-	}
-	if v, ok := t.oldValues["new_fiscal_year"].(bool); ok {
-		x.New_fiscal_year = v
-	}
-	if v, ok := t.oldValues["closed"].(bool); ok {
-		x.Closed = v
-	}
-	if v, ok := t.oldValues["date_locked"].(bool); ok {
-		x.Date_locked = v
-	}
+	accountingPeriodFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -963,44 +896,7 @@ func (t *AccountingPeriod) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *AccountingPeriod) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "starting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Starting_date.Equal(old)
-		}
-	case "name":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Name.Equal(old)
-		}
-	case "new_fiscal_year":
-		if old, ok := oldValue.(bool); ok {
-			return t.New_fiscal_year != old
-		}
-		return true // Type mismatch, assume changed
-	case "closed":
-		if old, ok := oldValue.(bool); ok {
-			return t.Closed != old
-		}
-		return true // Type mismatch, assume changed
-	case "date_locked":
-		if old, ok := oldValue.(bool); ok {
-			return t.Date_locked != old
-		}
-		return true // Type mismatch, assume changed
-	}
-
-	return false
+	return accountingPeriodFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1201,19 +1097,7 @@ func (t *AccountingPeriod) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *AccountingPeriod) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("starting_date"):
-		return "starting_date", true
-	case strings.ToLower("name"):
-		return "name", true
-	case strings.ToLower("new_fiscal_year"):
-		return "new_fiscal_year", true
-	case strings.ToLower("closed"):
-		return "closed", true
-	case strings.ToLower("date_locked"):
-		return "date_locked", true
-	}
-	return "", false
+	return accountingPeriodFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2071,111 +1955,20 @@ func (t *AccountingPeriod) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *AccountingPeriod) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "starting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Starting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Starting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field starting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Starting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field starting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccountingPeriodOnValidate_Starting_date); ok {
-				if err := trg.OnValidate_Starting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "name":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-		} else if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccountingPeriodOnValidate_Name); ok {
-				if err := trg.OnValidate_Name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "new_fiscal_year":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.New_fiscal_year = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.New_fiscal_year = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field new_fiscal_year")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccountingPeriodOnValidate_New_fiscal_year); ok {
-				if err := trg.OnValidate_New_fiscal_year(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "closed":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Closed = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Closed = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field closed")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccountingPeriodOnValidate_Closed); ok {
-				if err := trg.OnValidate_Closed(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "date_locked":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Date_locked = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Date_locked = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field date_locked")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AccountingPeriodOnValidate_Date_locked); ok {
-				if err := trg.OnValidate_Date_locked(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := accountingPeriodFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &accountingPeriodFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2184,63 +1977,18 @@ func (t *AccountingPeriod) ValidateField(fieldName string, value interface{}) er
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *AccountingPeriod) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Starting_date, true
-	case 2:
-		return t.Name, true
-	case 3:
-		return t.New_fiscal_year, true
-	case 4:
-		return t.Closed, true
-	case 5:
-		return t.Date_locked, true
-	}
-	return nil, false
+	return accountingPeriodFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *AccountingPeriod) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return accountingPeriodFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *AccountingPeriod) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Date); ok {
-			t.Starting_date = v
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(bool); ok {
-			t.New_fiscal_year = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(bool); ok {
-			t.Closed = v
-			return true
-		}
-	case 5:
-		if v, ok := value.(bool); ok {
-			t.Date_locked = v
-			return true
-		}
-	}
-	return false
+	return accountingPeriodFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2689,19 +2437,7 @@ func (t *AccountingPeriod) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *AccountingPeriod) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "starting_date":
-		return t.Starting_date, true
-	case "name":
-		return t.Name, true
-	case "new_fiscal_year":
-		return t.New_fiscal_year, true
-	case "closed":
-		return t.Closed, true
-	case "date_locked":
-		return t.Date_locked, true
-	}
-	return nil, false
+	return accountingPeriodFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2791,42 +2527,12 @@ func (t *AccountingPeriod) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *AccountingPeriod) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"starting_date":   t.Starting_date.String(),
-		"name":            t.Name.String(),
-		"new_fiscal_year": t.New_fiscal_year,
-		"closed":          t.Closed,
-		"date_locked":     t.Date_locked,
-	}
+	return accountingPeriodFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *AccountingPeriod) FromMap(data map[string]interface{}) {
-	if v, ok := data["starting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Starting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Name = types.NewText(s)
-		}
-	}
-	if v, ok := data["new_fiscal_year"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.New_fiscal_year = b
-		}
-	}
-	if v, ok := data["closed"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Closed = b
-		}
-	}
-	if v, ok := data["date_locked"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Date_locked = b
-		}
-	}
+	accountingPeriodFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2847,60 +2553,104 @@ func (t *AccountingPeriod) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *AccountingPeriod) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "starting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "name",
-			Type:       tables.FieldTypeText,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "new_fiscal_year",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "closed",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         5,
-			Name:       "date_locked",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
+	return accountingPeriodFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in accountingPeriodFields.Fields
+func (t *AccountingPeriod) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Starting_date
+	case 1:
+		return &t.Name
+	case 2:
+		return &t.New_fiscal_year
+	case 3:
+		return &t.Closed
+	case 4:
+		return &t.Date_locked
 	}
+	return nil
+}
+
+// accountingPeriodFields describes the fields of Accounting_Period for the record functions
+// written once in foundation/tables
+var accountingPeriodFields = &tables.TableFields{
+	Table: AccountingPeriodTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "starting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Starting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "name",
+				Type:       tables.FieldTypeText,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "new_fiscal_year",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_New_fiscal_year",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "closed",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Closed",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "date_locked",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Date_locked",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

@@ -57,7 +57,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -311,160 +310,12 @@ var DepreciationBook_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *DepreciationBook) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "code":
-		return 1
-	case "description":
-		return 2
-	case "g_l_integration_acq_cost":
-		return 3
-	case "g_l_integration_depreciation":
-		return 4
-	case "g_l_integration_write_down":
-		return 5
-	case "g_l_integration_appreciation":
-		return 6
-	case "g_l_integration_custom_1":
-		return 7
-	case "g_l_integration_custom_2":
-		return 8
-	case "g_l_integration_disposal":
-		return 9
-	case "g_l_integration_maintenance":
-		return 10
-	case "disposal_calculation_method":
-		return 11
-	case "use_custom_1_depreciation":
-		return 12
-	case "allow_depr_below_zero":
-		return 13
-	case "use_fa_exch_rate_in_duplic":
-		return 14
-	case "part_of_duplication_list":
-		return 15
-	case "last_date_modified":
-		return 17
-	case "allow_indexation":
-		return 18
-	case "use_same_fa_g_l_posting_dates":
-		return 19
-	case "default_exchange_rate":
-		return 20
-	case "use_fa_ledger_check":
-		return 23
-	case "use_rounding_in_periodic_depr":
-		return 24
-	case "new_fiscal_year_starting_date":
-		return 25
-	case "no_of_days_in_fiscal_year":
-		return 26
-	case "allow_changes_in_depr_fields":
-		return 27
-	case "default_final_rounding_amount":
-		return 28
-	case "default_ending_book_value":
-		return 29
-	case "periodic_depr_date_calc":
-		return 32
-	case "mark_errors_as_corrections":
-		return 33
-	case "add_curr_exch_rate_acq_cost":
-		return 34
-	case "add_curr_exch_rate_depr":
-		return 35
-	case "add_curr_exch_rate_write_down":
-		return 36
-	case "add_curr_exch_rate_apprec":
-		return 37
-	case "add_curr_exch_rate_custom_1":
-		return 38
-	case "add_curr_exch_rate_custom_2":
-		return 39
-	case "add_curr_exch_rate_disp":
-		return 40
-	case "add_curr_exch_rate_maint":
-		return 41
-	}
-	return 0
+	return depreciationBookFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *DepreciationBook) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "code"
-	case 2:
-		return "description"
-	case 3:
-		return "g_l_integration_acq_cost"
-	case 4:
-		return "g_l_integration_depreciation"
-	case 5:
-		return "g_l_integration_write_down"
-	case 6:
-		return "g_l_integration_appreciation"
-	case 7:
-		return "g_l_integration_custom_1"
-	case 8:
-		return "g_l_integration_custom_2"
-	case 9:
-		return "g_l_integration_disposal"
-	case 10:
-		return "g_l_integration_maintenance"
-	case 11:
-		return "disposal_calculation_method"
-	case 12:
-		return "use_custom_1_depreciation"
-	case 13:
-		return "allow_depr_below_zero"
-	case 14:
-		return "use_fa_exch_rate_in_duplic"
-	case 15:
-		return "part_of_duplication_list"
-	case 17:
-		return "last_date_modified"
-	case 18:
-		return "allow_indexation"
-	case 19:
-		return "use_same_fa_g_l_posting_dates"
-	case 20:
-		return "default_exchange_rate"
-	case 23:
-		return "use_fa_ledger_check"
-	case 24:
-		return "use_rounding_in_periodic_depr"
-	case 25:
-		return "new_fiscal_year_starting_date"
-	case 26:
-		return "no_of_days_in_fiscal_year"
-	case 27:
-		return "allow_changes_in_depr_fields"
-	case 28:
-		return "default_final_rounding_amount"
-	case 29:
-		return "default_ending_book_value"
-	case 32:
-		return "periodic_depr_date_calc"
-	case 33:
-		return "mark_errors_as_corrections"
-	case 34:
-		return "add_curr_exch_rate_acq_cost"
-	case 35:
-		return "add_curr_exch_rate_depr"
-	case 36:
-		return "add_curr_exch_rate_write_down"
-	case 37:
-		return "add_curr_exch_rate_apprec"
-	case 38:
-		return "add_curr_exch_rate_custom_1"
-	case 39:
-		return "add_curr_exch_rate_custom_2"
-	case 40:
-		return "add_curr_exch_rate_disp"
-	case 41:
-		return "add_curr_exch_rate_maint"
-	}
-	return ""
+	return depreciationBookFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -576,114 +427,6 @@ type (
 	DepreciationBookOnBeforeRename interface {
 		OnBeforeRename(rec *DepreciationBook, handled *bool) error
 	}
-	DepreciationBookOnValidate_Code interface {
-		OnValidate_Code(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_Description interface {
-		OnValidate_Description(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_G_l_integration_acq_cost interface {
-		OnValidate_G_l_integration_acq_cost(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_G_l_integration_depreciation interface {
-		OnValidate_G_l_integration_depreciation(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_G_l_integration_write_down interface {
-		OnValidate_G_l_integration_write_down(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_G_l_integration_appreciation interface {
-		OnValidate_G_l_integration_appreciation(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_G_l_integration_custom_1 interface {
-		OnValidate_G_l_integration_custom_1(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_G_l_integration_custom_2 interface {
-		OnValidate_G_l_integration_custom_2(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_G_l_integration_disposal interface {
-		OnValidate_G_l_integration_disposal(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_G_l_integration_maintenance interface {
-		OnValidate_G_l_integration_maintenance(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_Disposal_calculation_method interface {
-		OnValidate_Disposal_calculation_method(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_Use_custom_1_depreciation interface {
-		OnValidate_Use_custom_1_depreciation(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_Allow_depr_below_zero interface {
-		OnValidate_Allow_depr_below_zero(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_Use_fa_exch_rate_in_duplic interface {
-		OnValidate_Use_fa_exch_rate_in_duplic(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_Part_of_duplication_list interface {
-		OnValidate_Part_of_duplication_list(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_Last_date_modified interface {
-		OnValidate_Last_date_modified(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_Allow_indexation interface {
-		OnValidate_Allow_indexation(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_Use_same_fa_g_l_posting_dates interface {
-		OnValidate_Use_same_fa_g_l_posting_dates(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_Default_exchange_rate interface {
-		OnValidate_Default_exchange_rate(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_Use_fa_ledger_check interface {
-		OnValidate_Use_fa_ledger_check(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_Use_rounding_in_periodic_depr interface {
-		OnValidate_Use_rounding_in_periodic_depr(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_New_fiscal_year_starting_date interface {
-		OnValidate_New_fiscal_year_starting_date(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_No_of_days_in_fiscal_year interface {
-		OnValidate_No_of_days_in_fiscal_year(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_Allow_changes_in_depr_fields interface {
-		OnValidate_Allow_changes_in_depr_fields(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_Default_final_rounding_amount interface {
-		OnValidate_Default_final_rounding_amount(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_Default_ending_book_value interface {
-		OnValidate_Default_ending_book_value(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_Periodic_depr_date_calc interface {
-		OnValidate_Periodic_depr_date_calc(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_Mark_errors_as_corrections interface {
-		OnValidate_Mark_errors_as_corrections(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_Add_curr_exch_rate_acq_cost interface {
-		OnValidate_Add_curr_exch_rate_acq_cost(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_Add_curr_exch_rate_depr interface {
-		OnValidate_Add_curr_exch_rate_depr(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_Add_curr_exch_rate_write_down interface {
-		OnValidate_Add_curr_exch_rate_write_down(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_Add_curr_exch_rate_apprec interface {
-		OnValidate_Add_curr_exch_rate_apprec(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_Add_curr_exch_rate_custom_1 interface {
-		OnValidate_Add_curr_exch_rate_custom_1(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_Add_curr_exch_rate_custom_2 interface {
-		OnValidate_Add_curr_exch_rate_custom_2(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_Add_curr_exch_rate_disp interface {
-		OnValidate_Add_curr_exch_rate_disp(rec *DepreciationBook) error
-	}
-	DepreciationBookOnValidate_Add_curr_exch_rate_maint interface {
-		OnValidate_Add_curr_exch_rate_maint(rec *DepreciationBook) error
-	}
 )
 
 // depreciationBookLogic is the registered business logic of Depreciation_Book, in
@@ -726,80 +469,9 @@ func depreciationBookTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(DepreciationBookOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(DepreciationBookOnBeforeRename)
-	case "OnValidate_Code":
-		_, ok = logic.(DepreciationBookOnValidate_Code)
-	case "OnValidate_Description":
-		_, ok = logic.(DepreciationBookOnValidate_Description)
-	case "OnValidate_G_l_integration_acq_cost":
-		_, ok = logic.(DepreciationBookOnValidate_G_l_integration_acq_cost)
-	case "OnValidate_G_l_integration_depreciation":
-		_, ok = logic.(DepreciationBookOnValidate_G_l_integration_depreciation)
-	case "OnValidate_G_l_integration_write_down":
-		_, ok = logic.(DepreciationBookOnValidate_G_l_integration_write_down)
-	case "OnValidate_G_l_integration_appreciation":
-		_, ok = logic.(DepreciationBookOnValidate_G_l_integration_appreciation)
-	case "OnValidate_G_l_integration_custom_1":
-		_, ok = logic.(DepreciationBookOnValidate_G_l_integration_custom_1)
-	case "OnValidate_G_l_integration_custom_2":
-		_, ok = logic.(DepreciationBookOnValidate_G_l_integration_custom_2)
-	case "OnValidate_G_l_integration_disposal":
-		_, ok = logic.(DepreciationBookOnValidate_G_l_integration_disposal)
-	case "OnValidate_G_l_integration_maintenance":
-		_, ok = logic.(DepreciationBookOnValidate_G_l_integration_maintenance)
-	case "OnValidate_Disposal_calculation_method":
-		_, ok = logic.(DepreciationBookOnValidate_Disposal_calculation_method)
-	case "OnValidate_Use_custom_1_depreciation":
-		_, ok = logic.(DepreciationBookOnValidate_Use_custom_1_depreciation)
-	case "OnValidate_Allow_depr_below_zero":
-		_, ok = logic.(DepreciationBookOnValidate_Allow_depr_below_zero)
-	case "OnValidate_Use_fa_exch_rate_in_duplic":
-		_, ok = logic.(DepreciationBookOnValidate_Use_fa_exch_rate_in_duplic)
-	case "OnValidate_Part_of_duplication_list":
-		_, ok = logic.(DepreciationBookOnValidate_Part_of_duplication_list)
-	case "OnValidate_Last_date_modified":
-		_, ok = logic.(DepreciationBookOnValidate_Last_date_modified)
-	case "OnValidate_Allow_indexation":
-		_, ok = logic.(DepreciationBookOnValidate_Allow_indexation)
-	case "OnValidate_Use_same_fa_g_l_posting_dates":
-		_, ok = logic.(DepreciationBookOnValidate_Use_same_fa_g_l_posting_dates)
-	case "OnValidate_Default_exchange_rate":
-		_, ok = logic.(DepreciationBookOnValidate_Default_exchange_rate)
-	case "OnValidate_Use_fa_ledger_check":
-		_, ok = logic.(DepreciationBookOnValidate_Use_fa_ledger_check)
-	case "OnValidate_Use_rounding_in_periodic_depr":
-		_, ok = logic.(DepreciationBookOnValidate_Use_rounding_in_periodic_depr)
-	case "OnValidate_New_fiscal_year_starting_date":
-		_, ok = logic.(DepreciationBookOnValidate_New_fiscal_year_starting_date)
-	case "OnValidate_No_of_days_in_fiscal_year":
-		_, ok = logic.(DepreciationBookOnValidate_No_of_days_in_fiscal_year)
-	case "OnValidate_Allow_changes_in_depr_fields":
-		_, ok = logic.(DepreciationBookOnValidate_Allow_changes_in_depr_fields)
-	case "OnValidate_Default_final_rounding_amount":
-		_, ok = logic.(DepreciationBookOnValidate_Default_final_rounding_amount)
-	case "OnValidate_Default_ending_book_value":
-		_, ok = logic.(DepreciationBookOnValidate_Default_ending_book_value)
-	case "OnValidate_Periodic_depr_date_calc":
-		_, ok = logic.(DepreciationBookOnValidate_Periodic_depr_date_calc)
-	case "OnValidate_Mark_errors_as_corrections":
-		_, ok = logic.(DepreciationBookOnValidate_Mark_errors_as_corrections)
-	case "OnValidate_Add_curr_exch_rate_acq_cost":
-		_, ok = logic.(DepreciationBookOnValidate_Add_curr_exch_rate_acq_cost)
-	case "OnValidate_Add_curr_exch_rate_depr":
-		_, ok = logic.(DepreciationBookOnValidate_Add_curr_exch_rate_depr)
-	case "OnValidate_Add_curr_exch_rate_write_down":
-		_, ok = logic.(DepreciationBookOnValidate_Add_curr_exch_rate_write_down)
-	case "OnValidate_Add_curr_exch_rate_apprec":
-		_, ok = logic.(DepreciationBookOnValidate_Add_curr_exch_rate_apprec)
-	case "OnValidate_Add_curr_exch_rate_custom_1":
-		_, ok = logic.(DepreciationBookOnValidate_Add_curr_exch_rate_custom_1)
-	case "OnValidate_Add_curr_exch_rate_custom_2":
-		_, ok = logic.(DepreciationBookOnValidate_Add_curr_exch_rate_custom_2)
-	case "OnValidate_Add_curr_exch_rate_disp":
-		_, ok = logic.(DepreciationBookOnValidate_Add_curr_exch_rate_disp)
-	case "OnValidate_Add_curr_exch_rate_maint":
-		_, ok = logic.(DepreciationBookOnValidate_Add_curr_exch_rate_maint)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return depreciationBookFields.IsOnValidateTrigger(name, logic, (*DepreciationBook)(nil))
 	}
 	return true, ok
 }
@@ -1163,43 +835,7 @@ func (t *DepreciationBook) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *DepreciationBook) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["code"] = t.Code
-	t.oldValues["description"] = t.Description
-	t.oldValues["g_l_integration_acq_cost"] = t.G_l_integration_acq_cost
-	t.oldValues["g_l_integration_depreciation"] = t.G_l_integration_depreciation
-	t.oldValues["g_l_integration_write_down"] = t.G_l_integration_write_down
-	t.oldValues["g_l_integration_appreciation"] = t.G_l_integration_appreciation
-	t.oldValues["g_l_integration_custom_1"] = t.G_l_integration_custom_1
-	t.oldValues["g_l_integration_custom_2"] = t.G_l_integration_custom_2
-	t.oldValues["g_l_integration_disposal"] = t.G_l_integration_disposal
-	t.oldValues["g_l_integration_maintenance"] = t.G_l_integration_maintenance
-	t.oldValues["disposal_calculation_method"] = t.Disposal_calculation_method
-	t.oldValues["use_custom_1_depreciation"] = t.Use_custom_1_depreciation
-	t.oldValues["allow_depr_below_zero"] = t.Allow_depr_below_zero
-	t.oldValues["use_fa_exch_rate_in_duplic"] = t.Use_fa_exch_rate_in_duplic
-	t.oldValues["part_of_duplication_list"] = t.Part_of_duplication_list
-	t.oldValues["last_date_modified"] = t.Last_date_modified
-	t.oldValues["allow_indexation"] = t.Allow_indexation
-	t.oldValues["use_same_fa_g_l_posting_dates"] = t.Use_same_fa_g_l_posting_dates
-	t.oldValues["default_exchange_rate"] = t.Default_exchange_rate
-	t.oldValues["use_fa_ledger_check"] = t.Use_fa_ledger_check
-	t.oldValues["use_rounding_in_periodic_depr"] = t.Use_rounding_in_periodic_depr
-	t.oldValues["new_fiscal_year_starting_date"] = t.New_fiscal_year_starting_date
-	t.oldValues["no_of_days_in_fiscal_year"] = t.No_of_days_in_fiscal_year
-	t.oldValues["allow_changes_in_depr_fields"] = t.Allow_changes_in_depr_fields
-	t.oldValues["default_final_rounding_amount"] = t.Default_final_rounding_amount
-	t.oldValues["default_ending_book_value"] = t.Default_ending_book_value
-	t.oldValues["periodic_depr_date_calc"] = t.Periodic_depr_date_calc
-	t.oldValues["mark_errors_as_corrections"] = t.Mark_errors_as_corrections
-	t.oldValues["add_curr_exch_rate_acq_cost"] = t.Add_curr_exch_rate_acq_cost
-	t.oldValues["add_curr_exch_rate_depr"] = t.Add_curr_exch_rate_depr
-	t.oldValues["add_curr_exch_rate_write_down"] = t.Add_curr_exch_rate_write_down
-	t.oldValues["add_curr_exch_rate_apprec"] = t.Add_curr_exch_rate_apprec
-	t.oldValues["add_curr_exch_rate_custom_1"] = t.Add_curr_exch_rate_custom_1
-	t.oldValues["add_curr_exch_rate_custom_2"] = t.Add_curr_exch_rate_custom_2
-	t.oldValues["add_curr_exch_rate_disp"] = t.Add_curr_exch_rate_disp
-	t.oldValues["add_curr_exch_rate_maint"] = t.Add_curr_exch_rate_maint
+	t.oldValues = depreciationBookFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1214,114 +850,7 @@ func (t *DepreciationBook) OldValue(fieldName string) interface{} {
 func (t *DepreciationBook) XRec() *DepreciationBook {
 	x := &DepreciationBook{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["code"].(types.Code); ok {
-		x.Code = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["g_l_integration_acq_cost"].(bool); ok {
-		x.G_l_integration_acq_cost = v
-	}
-	if v, ok := t.oldValues["g_l_integration_depreciation"].(bool); ok {
-		x.G_l_integration_depreciation = v
-	}
-	if v, ok := t.oldValues["g_l_integration_write_down"].(bool); ok {
-		x.G_l_integration_write_down = v
-	}
-	if v, ok := t.oldValues["g_l_integration_appreciation"].(bool); ok {
-		x.G_l_integration_appreciation = v
-	}
-	if v, ok := t.oldValues["g_l_integration_custom_1"].(bool); ok {
-		x.G_l_integration_custom_1 = v
-	}
-	if v, ok := t.oldValues["g_l_integration_custom_2"].(bool); ok {
-		x.G_l_integration_custom_2 = v
-	}
-	if v, ok := t.oldValues["g_l_integration_disposal"].(bool); ok {
-		x.G_l_integration_disposal = v
-	}
-	if v, ok := t.oldValues["g_l_integration_maintenance"].(bool); ok {
-		x.G_l_integration_maintenance = v
-	}
-	if v, ok := t.oldValues["disposal_calculation_method"].(DepreciationBookDisposal_calculation_method); ok {
-		x.Disposal_calculation_method = v
-	}
-	if v, ok := t.oldValues["use_custom_1_depreciation"].(bool); ok {
-		x.Use_custom_1_depreciation = v
-	}
-	if v, ok := t.oldValues["allow_depr_below_zero"].(bool); ok {
-		x.Allow_depr_below_zero = v
-	}
-	if v, ok := t.oldValues["use_fa_exch_rate_in_duplic"].(bool); ok {
-		x.Use_fa_exch_rate_in_duplic = v
-	}
-	if v, ok := t.oldValues["part_of_duplication_list"].(bool); ok {
-		x.Part_of_duplication_list = v
-	}
-	if v, ok := t.oldValues["last_date_modified"].(types.Date); ok {
-		x.Last_date_modified = v
-	}
-	if v, ok := t.oldValues["allow_indexation"].(bool); ok {
-		x.Allow_indexation = v
-	}
-	if v, ok := t.oldValues["use_same_fa_g_l_posting_dates"].(bool); ok {
-		x.Use_same_fa_g_l_posting_dates = v
-	}
-	if v, ok := t.oldValues["default_exchange_rate"].(types.Decimal); ok {
-		x.Default_exchange_rate = v
-	}
-	if v, ok := t.oldValues["use_fa_ledger_check"].(bool); ok {
-		x.Use_fa_ledger_check = v
-	}
-	if v, ok := t.oldValues["use_rounding_in_periodic_depr"].(bool); ok {
-		x.Use_rounding_in_periodic_depr = v
-	}
-	if v, ok := t.oldValues["new_fiscal_year_starting_date"].(types.Date); ok {
-		x.New_fiscal_year_starting_date = v
-	}
-	if v, ok := t.oldValues["no_of_days_in_fiscal_year"].(int); ok {
-		x.No_of_days_in_fiscal_year = v
-	}
-	if v, ok := t.oldValues["allow_changes_in_depr_fields"].(bool); ok {
-		x.Allow_changes_in_depr_fields = v
-	}
-	if v, ok := t.oldValues["default_final_rounding_amount"].(types.Decimal); ok {
-		x.Default_final_rounding_amount = v
-	}
-	if v, ok := t.oldValues["default_ending_book_value"].(types.Decimal); ok {
-		x.Default_ending_book_value = v
-	}
-	if v, ok := t.oldValues["periodic_depr_date_calc"].(DepreciationBookPeriodic_depr_date_calc); ok {
-		x.Periodic_depr_date_calc = v
-	}
-	if v, ok := t.oldValues["mark_errors_as_corrections"].(bool); ok {
-		x.Mark_errors_as_corrections = v
-	}
-	if v, ok := t.oldValues["add_curr_exch_rate_acq_cost"].(bool); ok {
-		x.Add_curr_exch_rate_acq_cost = v
-	}
-	if v, ok := t.oldValues["add_curr_exch_rate_depr"].(bool); ok {
-		x.Add_curr_exch_rate_depr = v
-	}
-	if v, ok := t.oldValues["add_curr_exch_rate_write_down"].(bool); ok {
-		x.Add_curr_exch_rate_write_down = v
-	}
-	if v, ok := t.oldValues["add_curr_exch_rate_apprec"].(bool); ok {
-		x.Add_curr_exch_rate_apprec = v
-	}
-	if v, ok := t.oldValues["add_curr_exch_rate_custom_1"].(bool); ok {
-		x.Add_curr_exch_rate_custom_1 = v
-	}
-	if v, ok := t.oldValues["add_curr_exch_rate_custom_2"].(bool); ok {
-		x.Add_curr_exch_rate_custom_2 = v
-	}
-	if v, ok := t.oldValues["add_curr_exch_rate_disp"].(bool); ok {
-		x.Add_curr_exch_rate_disp = v
-	}
-	if v, ok := t.oldValues["add_curr_exch_rate_maint"].(bool); ok {
-		x.Add_curr_exch_rate_maint = v
-	}
+	depreciationBookFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1972,192 +1501,7 @@ func (t *DepreciationBook) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *DepreciationBook) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Code.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "g_l_integration_acq_cost":
-		if old, ok := oldValue.(bool); ok {
-			return t.G_l_integration_acq_cost != old
-		}
-		return true // Type mismatch, assume changed
-	case "g_l_integration_depreciation":
-		if old, ok := oldValue.(bool); ok {
-			return t.G_l_integration_depreciation != old
-		}
-		return true // Type mismatch, assume changed
-	case "g_l_integration_write_down":
-		if old, ok := oldValue.(bool); ok {
-			return t.G_l_integration_write_down != old
-		}
-		return true // Type mismatch, assume changed
-	case "g_l_integration_appreciation":
-		if old, ok := oldValue.(bool); ok {
-			return t.G_l_integration_appreciation != old
-		}
-		return true // Type mismatch, assume changed
-	case "g_l_integration_custom_1":
-		if old, ok := oldValue.(bool); ok {
-			return t.G_l_integration_custom_1 != old
-		}
-		return true // Type mismatch, assume changed
-	case "g_l_integration_custom_2":
-		if old, ok := oldValue.(bool); ok {
-			return t.G_l_integration_custom_2 != old
-		}
-		return true // Type mismatch, assume changed
-	case "g_l_integration_disposal":
-		if old, ok := oldValue.(bool); ok {
-			return t.G_l_integration_disposal != old
-		}
-		return true // Type mismatch, assume changed
-	case "g_l_integration_maintenance":
-		if old, ok := oldValue.(bool); ok {
-			return t.G_l_integration_maintenance != old
-		}
-		return true // Type mismatch, assume changed
-	case "disposal_calculation_method":
-		if old, ok := oldValue.(DepreciationBookDisposal_calculation_method); ok {
-			return t.Disposal_calculation_method != old
-		}
-	case "use_custom_1_depreciation":
-		if old, ok := oldValue.(bool); ok {
-			return t.Use_custom_1_depreciation != old
-		}
-		return true // Type mismatch, assume changed
-	case "allow_depr_below_zero":
-		if old, ok := oldValue.(bool); ok {
-			return t.Allow_depr_below_zero != old
-		}
-		return true // Type mismatch, assume changed
-	case "use_fa_exch_rate_in_duplic":
-		if old, ok := oldValue.(bool); ok {
-			return t.Use_fa_exch_rate_in_duplic != old
-		}
-		return true // Type mismatch, assume changed
-	case "part_of_duplication_list":
-		if old, ok := oldValue.(bool); ok {
-			return t.Part_of_duplication_list != old
-		}
-		return true // Type mismatch, assume changed
-	case "last_date_modified":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Last_date_modified.Equal(old)
-		}
-	case "allow_indexation":
-		if old, ok := oldValue.(bool); ok {
-			return t.Allow_indexation != old
-		}
-		return true // Type mismatch, assume changed
-	case "use_same_fa_g_l_posting_dates":
-		if old, ok := oldValue.(bool); ok {
-			return t.Use_same_fa_g_l_posting_dates != old
-		}
-		return true // Type mismatch, assume changed
-	case "default_exchange_rate":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Default_exchange_rate.Equal(old)
-		}
-	case "use_fa_ledger_check":
-		if old, ok := oldValue.(bool); ok {
-			return t.Use_fa_ledger_check != old
-		}
-		return true // Type mismatch, assume changed
-	case "use_rounding_in_periodic_depr":
-		if old, ok := oldValue.(bool); ok {
-			return t.Use_rounding_in_periodic_depr != old
-		}
-		return true // Type mismatch, assume changed
-	case "new_fiscal_year_starting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.New_fiscal_year_starting_date.Equal(old)
-		}
-	case "no_of_days_in_fiscal_year":
-		if old, ok := oldValue.(int); ok {
-			return t.No_of_days_in_fiscal_year != old
-		}
-		return true // Type mismatch, assume changed
-	case "allow_changes_in_depr_fields":
-		if old, ok := oldValue.(bool); ok {
-			return t.Allow_changes_in_depr_fields != old
-		}
-		return true // Type mismatch, assume changed
-	case "default_final_rounding_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Default_final_rounding_amount.Equal(old)
-		}
-	case "default_ending_book_value":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Default_ending_book_value.Equal(old)
-		}
-	case "periodic_depr_date_calc":
-		if old, ok := oldValue.(DepreciationBookPeriodic_depr_date_calc); ok {
-			return t.Periodic_depr_date_calc != old
-		}
-	case "mark_errors_as_corrections":
-		if old, ok := oldValue.(bool); ok {
-			return t.Mark_errors_as_corrections != old
-		}
-		return true // Type mismatch, assume changed
-	case "add_curr_exch_rate_acq_cost":
-		if old, ok := oldValue.(bool); ok {
-			return t.Add_curr_exch_rate_acq_cost != old
-		}
-		return true // Type mismatch, assume changed
-	case "add_curr_exch_rate_depr":
-		if old, ok := oldValue.(bool); ok {
-			return t.Add_curr_exch_rate_depr != old
-		}
-		return true // Type mismatch, assume changed
-	case "add_curr_exch_rate_write_down":
-		if old, ok := oldValue.(bool); ok {
-			return t.Add_curr_exch_rate_write_down != old
-		}
-		return true // Type mismatch, assume changed
-	case "add_curr_exch_rate_apprec":
-		if old, ok := oldValue.(bool); ok {
-			return t.Add_curr_exch_rate_apprec != old
-		}
-		return true // Type mismatch, assume changed
-	case "add_curr_exch_rate_custom_1":
-		if old, ok := oldValue.(bool); ok {
-			return t.Add_curr_exch_rate_custom_1 != old
-		}
-		return true // Type mismatch, assume changed
-	case "add_curr_exch_rate_custom_2":
-		if old, ok := oldValue.(bool); ok {
-			return t.Add_curr_exch_rate_custom_2 != old
-		}
-		return true // Type mismatch, assume changed
-	case "add_curr_exch_rate_disp":
-		if old, ok := oldValue.(bool); ok {
-			return t.Add_curr_exch_rate_disp != old
-		}
-		return true // Type mismatch, assume changed
-	case "add_curr_exch_rate_maint":
-		if old, ok := oldValue.(bool); ok {
-			return t.Add_curr_exch_rate_maint != old
-		}
-		return true // Type mismatch, assume changed
-	}
-
-	return false
+	return depreciationBookFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -2398,81 +1742,7 @@ func (t *DepreciationBook) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *DepreciationBook) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("code"):
-		return "code", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("g_l_integration_acq_cost"):
-		return "g_l_integration_acq_cost", true
-	case strings.ToLower("g_l_integration_depreciation"):
-		return "g_l_integration_depreciation", true
-	case strings.ToLower("g_l_integration_write_down"):
-		return "g_l_integration_write_down", true
-	case strings.ToLower("g_l_integration_appreciation"):
-		return "g_l_integration_appreciation", true
-	case strings.ToLower("g_l_integration_custom_1"):
-		return "g_l_integration_custom_1", true
-	case strings.ToLower("g_l_integration_custom_2"):
-		return "g_l_integration_custom_2", true
-	case strings.ToLower("g_l_integration_disposal"):
-		return "g_l_integration_disposal", true
-	case strings.ToLower("g_l_integration_maintenance"):
-		return "g_l_integration_maintenance", true
-	case strings.ToLower("disposal_calculation_method"):
-		return "disposal_calculation_method", true
-	case strings.ToLower("use_custom_1_depreciation"):
-		return "use_custom_1_depreciation", true
-	case strings.ToLower("allow_depr_below_zero"):
-		return "allow_depr_below_zero", true
-	case strings.ToLower("use_fa_exch_rate_in_duplic"):
-		return "use_fa_exch_rate_in_duplic", true
-	case strings.ToLower("part_of_duplication_list"):
-		return "part_of_duplication_list", true
-	case strings.ToLower("last_date_modified"):
-		return "last_date_modified", true
-	case strings.ToLower("allow_indexation"):
-		return "allow_indexation", true
-	case strings.ToLower("use_same_fa_g_l_posting_dates"):
-		return "use_same_fa_g_l_posting_dates", true
-	case strings.ToLower("default_exchange_rate"):
-		return "default_exchange_rate", true
-	case strings.ToLower("use_fa_ledger_check"):
-		return "use_fa_ledger_check", true
-	case strings.ToLower("use_rounding_in_periodic_depr"):
-		return "use_rounding_in_periodic_depr", true
-	case strings.ToLower("new_fiscal_year_starting_date"):
-		return "new_fiscal_year_starting_date", true
-	case strings.ToLower("no_of_days_in_fiscal_year"):
-		return "no_of_days_in_fiscal_year", true
-	case strings.ToLower("allow_changes_in_depr_fields"):
-		return "allow_changes_in_depr_fields", true
-	case strings.ToLower("default_final_rounding_amount"):
-		return "default_final_rounding_amount", true
-	case strings.ToLower("default_ending_book_value"):
-		return "default_ending_book_value", true
-	case strings.ToLower("periodic_depr_date_calc"):
-		return "periodic_depr_date_calc", true
-	case strings.ToLower("mark_errors_as_corrections"):
-		return "mark_errors_as_corrections", true
-	case strings.ToLower("add_curr_exch_rate_acq_cost"):
-		return "add_curr_exch_rate_acq_cost", true
-	case strings.ToLower("add_curr_exch_rate_depr"):
-		return "add_curr_exch_rate_depr", true
-	case strings.ToLower("add_curr_exch_rate_write_down"):
-		return "add_curr_exch_rate_write_down", true
-	case strings.ToLower("add_curr_exch_rate_apprec"):
-		return "add_curr_exch_rate_apprec", true
-	case strings.ToLower("add_curr_exch_rate_custom_1"):
-		return "add_curr_exch_rate_custom_1", true
-	case strings.ToLower("add_curr_exch_rate_custom_2"):
-		return "add_curr_exch_rate_custom_2", true
-	case strings.ToLower("add_curr_exch_rate_disp"):
-		return "add_curr_exch_rate_disp", true
-	case strings.ToLower("add_curr_exch_rate_maint"):
-		return "add_curr_exch_rate_maint", true
-	}
-	return "", false
+	return depreciationBookFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -3777,799 +3047,20 @@ func (t *DepreciationBook) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *DepreciationBook) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-		} else if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_Code); ok {
-				if err := trg.OnValidate_Code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "g_l_integration_acq_cost":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.G_l_integration_acq_cost = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.G_l_integration_acq_cost = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field g_l_integration_acq_cost")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_G_l_integration_acq_cost); ok {
-				if err := trg.OnValidate_G_l_integration_acq_cost(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "g_l_integration_depreciation":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.G_l_integration_depreciation = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.G_l_integration_depreciation = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field g_l_integration_depreciation")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_G_l_integration_depreciation); ok {
-				if err := trg.OnValidate_G_l_integration_depreciation(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "g_l_integration_write_down":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.G_l_integration_write_down = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.G_l_integration_write_down = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field g_l_integration_write_down")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_G_l_integration_write_down); ok {
-				if err := trg.OnValidate_G_l_integration_write_down(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "g_l_integration_appreciation":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.G_l_integration_appreciation = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.G_l_integration_appreciation = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field g_l_integration_appreciation")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_G_l_integration_appreciation); ok {
-				if err := trg.OnValidate_G_l_integration_appreciation(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "g_l_integration_custom_1":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.G_l_integration_custom_1 = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.G_l_integration_custom_1 = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field g_l_integration_custom_1")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_G_l_integration_custom_1); ok {
-				if err := trg.OnValidate_G_l_integration_custom_1(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "g_l_integration_custom_2":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.G_l_integration_custom_2 = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.G_l_integration_custom_2 = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field g_l_integration_custom_2")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_G_l_integration_custom_2); ok {
-				if err := trg.OnValidate_G_l_integration_custom_2(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "g_l_integration_disposal":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.G_l_integration_disposal = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.G_l_integration_disposal = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field g_l_integration_disposal")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_G_l_integration_disposal); ok {
-				if err := trg.OnValidate_G_l_integration_disposal(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "g_l_integration_maintenance":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.G_l_integration_maintenance = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.G_l_integration_maintenance = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field g_l_integration_maintenance")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_G_l_integration_maintenance); ok {
-				if err := trg.OnValidate_G_l_integration_maintenance(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "disposal_calculation_method":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(DepreciationBookDisposal_calculation_method); ok {
-			t.Disposal_calculation_method = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 2 {
-				return fmt.Errorf("invalid option value %d for field disposal_calculation_method (valid range: 0-%d)", v, 2-1)
-			}
-			t.Disposal_calculation_method = DepreciationBookDisposal_calculation_method(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 2 {
-				return fmt.Errorf("invalid option value %d for field disposal_calculation_method (valid range: 0-%d)", intVal, 2-1)
-			}
-			t.Disposal_calculation_method = DepreciationBookDisposal_calculation_method(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Disposal_calculation_method = 0
-			} else {
-				options := []string{"Net", "Gross"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Disposal_calculation_method = DepreciationBookDisposal_calculation_method(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field disposal_calculation_method (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field disposal_calculation_method (expected DepreciationBookDisposal_calculation_method, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_Disposal_calculation_method); ok {
-				if err := trg.OnValidate_Disposal_calculation_method(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "use_custom_1_depreciation":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Use_custom_1_depreciation = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Use_custom_1_depreciation = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field use_custom_1_depreciation")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_Use_custom_1_depreciation); ok {
-				if err := trg.OnValidate_Use_custom_1_depreciation(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "allow_depr_below_zero":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Allow_depr_below_zero = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Allow_depr_below_zero = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field allow_depr_below_zero")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_Allow_depr_below_zero); ok {
-				if err := trg.OnValidate_Allow_depr_below_zero(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "use_fa_exch_rate_in_duplic":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Use_fa_exch_rate_in_duplic = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Use_fa_exch_rate_in_duplic = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field use_fa_exch_rate_in_duplic")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_Use_fa_exch_rate_in_duplic); ok {
-				if err := trg.OnValidate_Use_fa_exch_rate_in_duplic(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "part_of_duplication_list":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Part_of_duplication_list = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Part_of_duplication_list = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field part_of_duplication_list")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_Part_of_duplication_list); ok {
-				if err := trg.OnValidate_Part_of_duplication_list(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "last_date_modified":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Last_date_modified = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Last_date_modified, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field last_date_modified: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Last_date_modified = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field last_date_modified (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_Last_date_modified); ok {
-				if err := trg.OnValidate_Last_date_modified(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "allow_indexation":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Allow_indexation = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Allow_indexation = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field allow_indexation")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_Allow_indexation); ok {
-				if err := trg.OnValidate_Allow_indexation(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "use_same_fa_g_l_posting_dates":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Use_same_fa_g_l_posting_dates = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Use_same_fa_g_l_posting_dates = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field use_same_fa_g_l_posting_dates")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_Use_same_fa_g_l_posting_dates); ok {
-				if err := trg.OnValidate_Use_same_fa_g_l_posting_dates(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "default_exchange_rate":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Default_exchange_rate = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Default_exchange_rate, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field default_exchange_rate: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Default_exchange_rate = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Default_exchange_rate = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Default_exchange_rate = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field default_exchange_rate (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_Default_exchange_rate); ok {
-				if err := trg.OnValidate_Default_exchange_rate(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "use_fa_ledger_check":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Use_fa_ledger_check = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Use_fa_ledger_check = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field use_fa_ledger_check")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_Use_fa_ledger_check); ok {
-				if err := trg.OnValidate_Use_fa_ledger_check(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "use_rounding_in_periodic_depr":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Use_rounding_in_periodic_depr = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Use_rounding_in_periodic_depr = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field use_rounding_in_periodic_depr")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_Use_rounding_in_periodic_depr); ok {
-				if err := trg.OnValidate_Use_rounding_in_periodic_depr(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "new_fiscal_year_starting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.New_fiscal_year_starting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.New_fiscal_year_starting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field new_fiscal_year_starting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.New_fiscal_year_starting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field new_fiscal_year_starting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_New_fiscal_year_starting_date); ok {
-				if err := trg.OnValidate_New_fiscal_year_starting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no_of_days_in_fiscal_year":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.No_of_days_in_fiscal_year = v
-		case float64:
-			t.No_of_days_in_fiscal_year = int(v)
-		case string:
-			if v == "" {
-				t.No_of_days_in_fiscal_year = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.No_of_days_in_fiscal_year = i
-			} else {
-				return fmt.Errorf("invalid integer value for field no_of_days_in_fiscal_year: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field no_of_days_in_fiscal_year")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_No_of_days_in_fiscal_year); ok {
-				if err := trg.OnValidate_No_of_days_in_fiscal_year(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "allow_changes_in_depr_fields":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Allow_changes_in_depr_fields = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Allow_changes_in_depr_fields = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field allow_changes_in_depr_fields")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_Allow_changes_in_depr_fields); ok {
-				if err := trg.OnValidate_Allow_changes_in_depr_fields(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "default_final_rounding_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Default_final_rounding_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Default_final_rounding_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field default_final_rounding_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Default_final_rounding_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Default_final_rounding_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Default_final_rounding_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field default_final_rounding_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_Default_final_rounding_amount); ok {
-				if err := trg.OnValidate_Default_final_rounding_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "default_ending_book_value":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Default_ending_book_value = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Default_ending_book_value, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field default_ending_book_value: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Default_ending_book_value = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Default_ending_book_value = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Default_ending_book_value = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field default_ending_book_value (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_Default_ending_book_value); ok {
-				if err := trg.OnValidate_Default_ending_book_value(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "periodic_depr_date_calc":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(DepreciationBookPeriodic_depr_date_calc); ok {
-			t.Periodic_depr_date_calc = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 2 {
-				return fmt.Errorf("invalid option value %d for field periodic_depr_date_calc (valid range: 0-%d)", v, 2-1)
-			}
-			t.Periodic_depr_date_calc = DepreciationBookPeriodic_depr_date_calc(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 2 {
-				return fmt.Errorf("invalid option value %d for field periodic_depr_date_calc (valid range: 0-%d)", intVal, 2-1)
-			}
-			t.Periodic_depr_date_calc = DepreciationBookPeriodic_depr_date_calc(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Periodic_depr_date_calc = 0
-			} else {
-				options := []string{"Last Entry", "Last Depr. Entry"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Periodic_depr_date_calc = DepreciationBookPeriodic_depr_date_calc(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field periodic_depr_date_calc (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field periodic_depr_date_calc (expected DepreciationBookPeriodic_depr_date_calc, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_Periodic_depr_date_calc); ok {
-				if err := trg.OnValidate_Periodic_depr_date_calc(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "mark_errors_as_corrections":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Mark_errors_as_corrections = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Mark_errors_as_corrections = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field mark_errors_as_corrections")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_Mark_errors_as_corrections); ok {
-				if err := trg.OnValidate_Mark_errors_as_corrections(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "add_curr_exch_rate_acq_cost":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Add_curr_exch_rate_acq_cost = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Add_curr_exch_rate_acq_cost = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field add_curr_exch_rate_acq_cost")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_Add_curr_exch_rate_acq_cost); ok {
-				if err := trg.OnValidate_Add_curr_exch_rate_acq_cost(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "add_curr_exch_rate_depr":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Add_curr_exch_rate_depr = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Add_curr_exch_rate_depr = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field add_curr_exch_rate_depr")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_Add_curr_exch_rate_depr); ok {
-				if err := trg.OnValidate_Add_curr_exch_rate_depr(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "add_curr_exch_rate_write_down":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Add_curr_exch_rate_write_down = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Add_curr_exch_rate_write_down = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field add_curr_exch_rate_write_down")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_Add_curr_exch_rate_write_down); ok {
-				if err := trg.OnValidate_Add_curr_exch_rate_write_down(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "add_curr_exch_rate_apprec":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Add_curr_exch_rate_apprec = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Add_curr_exch_rate_apprec = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field add_curr_exch_rate_apprec")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_Add_curr_exch_rate_apprec); ok {
-				if err := trg.OnValidate_Add_curr_exch_rate_apprec(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "add_curr_exch_rate_custom_1":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Add_curr_exch_rate_custom_1 = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Add_curr_exch_rate_custom_1 = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field add_curr_exch_rate_custom_1")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_Add_curr_exch_rate_custom_1); ok {
-				if err := trg.OnValidate_Add_curr_exch_rate_custom_1(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "add_curr_exch_rate_custom_2":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Add_curr_exch_rate_custom_2 = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Add_curr_exch_rate_custom_2 = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field add_curr_exch_rate_custom_2")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_Add_curr_exch_rate_custom_2); ok {
-				if err := trg.OnValidate_Add_curr_exch_rate_custom_2(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "add_curr_exch_rate_disp":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Add_curr_exch_rate_disp = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Add_curr_exch_rate_disp = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field add_curr_exch_rate_disp")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_Add_curr_exch_rate_disp); ok {
-				if err := trg.OnValidate_Add_curr_exch_rate_disp(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "add_curr_exch_rate_maint":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Add_curr_exch_rate_maint = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Add_curr_exch_rate_maint = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field add_curr_exch_rate_maint")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DepreciationBookOnValidate_Add_curr_exch_rate_maint); ok {
-				if err := trg.OnValidate_Add_curr_exch_rate_maint(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := depreciationBookFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &depreciationBookFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -4578,284 +3069,18 @@ func (t *DepreciationBook) ValidateField(fieldName string, value interface{}) er
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *DepreciationBook) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Code, true
-	case 2:
-		return t.Description, true
-	case 3:
-		return t.G_l_integration_acq_cost, true
-	case 4:
-		return t.G_l_integration_depreciation, true
-	case 5:
-		return t.G_l_integration_write_down, true
-	case 6:
-		return t.G_l_integration_appreciation, true
-	case 7:
-		return t.G_l_integration_custom_1, true
-	case 8:
-		return t.G_l_integration_custom_2, true
-	case 9:
-		return t.G_l_integration_disposal, true
-	case 10:
-		return t.G_l_integration_maintenance, true
-	case 11:
-		return t.Disposal_calculation_method, true
-	case 12:
-		return t.Use_custom_1_depreciation, true
-	case 13:
-		return t.Allow_depr_below_zero, true
-	case 14:
-		return t.Use_fa_exch_rate_in_duplic, true
-	case 15:
-		return t.Part_of_duplication_list, true
-	case 17:
-		return t.Last_date_modified, true
-	case 18:
-		return t.Allow_indexation, true
-	case 19:
-		return t.Use_same_fa_g_l_posting_dates, true
-	case 20:
-		return t.Default_exchange_rate, true
-	case 23:
-		return t.Use_fa_ledger_check, true
-	case 24:
-		return t.Use_rounding_in_periodic_depr, true
-	case 25:
-		return t.New_fiscal_year_starting_date, true
-	case 26:
-		return t.No_of_days_in_fiscal_year, true
-	case 27:
-		return t.Allow_changes_in_depr_fields, true
-	case 28:
-		return t.Default_final_rounding_amount, true
-	case 29:
-		return t.Default_ending_book_value, true
-	case 32:
-		return t.Periodic_depr_date_calc, true
-	case 33:
-		return t.Mark_errors_as_corrections, true
-	case 34:
-		return t.Add_curr_exch_rate_acq_cost, true
-	case 35:
-		return t.Add_curr_exch_rate_depr, true
-	case 36:
-		return t.Add_curr_exch_rate_write_down, true
-	case 37:
-		return t.Add_curr_exch_rate_apprec, true
-	case 38:
-		return t.Add_curr_exch_rate_custom_1, true
-	case 39:
-		return t.Add_curr_exch_rate_custom_2, true
-	case 40:
-		return t.Add_curr_exch_rate_disp, true
-	case 41:
-		return t.Add_curr_exch_rate_maint, true
-	}
-	return nil, false
+	return depreciationBookFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *DepreciationBook) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return depreciationBookFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *DepreciationBook) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(bool); ok {
-			t.G_l_integration_acq_cost = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(bool); ok {
-			t.G_l_integration_depreciation = v
-			return true
-		}
-	case 5:
-		if v, ok := value.(bool); ok {
-			t.G_l_integration_write_down = v
-			return true
-		}
-	case 6:
-		if v, ok := value.(bool); ok {
-			t.G_l_integration_appreciation = v
-			return true
-		}
-	case 7:
-		if v, ok := value.(bool); ok {
-			t.G_l_integration_custom_1 = v
-			return true
-		}
-	case 8:
-		if v, ok := value.(bool); ok {
-			t.G_l_integration_custom_2 = v
-			return true
-		}
-	case 9:
-		if v, ok := value.(bool); ok {
-			t.G_l_integration_disposal = v
-			return true
-		}
-	case 10:
-		if v, ok := value.(bool); ok {
-			t.G_l_integration_maintenance = v
-			return true
-		}
-	case 11:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 2 {
-			t.Disposal_calculation_method = DepreciationBookDisposal_calculation_method(i)
-			return true
-		}
-	case 12:
-		if v, ok := value.(bool); ok {
-			t.Use_custom_1_depreciation = v
-			return true
-		}
-	case 13:
-		if v, ok := value.(bool); ok {
-			t.Allow_depr_below_zero = v
-			return true
-		}
-	case 14:
-		if v, ok := value.(bool); ok {
-			t.Use_fa_exch_rate_in_duplic = v
-			return true
-		}
-	case 15:
-		if v, ok := value.(bool); ok {
-			t.Part_of_duplication_list = v
-			return true
-		}
-	case 17:
-		if v, ok := value.(types.Date); ok {
-			t.Last_date_modified = v
-			return true
-		}
-	case 18:
-		if v, ok := value.(bool); ok {
-			t.Allow_indexation = v
-			return true
-		}
-	case 19:
-		if v, ok := value.(bool); ok {
-			t.Use_same_fa_g_l_posting_dates = v
-			return true
-		}
-	case 20:
-		if v, ok := value.(types.Decimal); ok {
-			t.Default_exchange_rate = v
-			return true
-		}
-	case 23:
-		if v, ok := value.(bool); ok {
-			t.Use_fa_ledger_check = v
-			return true
-		}
-	case 24:
-		if v, ok := value.(bool); ok {
-			t.Use_rounding_in_periodic_depr = v
-			return true
-		}
-	case 25:
-		if v, ok := value.(types.Date); ok {
-			t.New_fiscal_year_starting_date = v
-			return true
-		}
-	case 26:
-		if v, ok := value.(int); ok {
-			t.No_of_days_in_fiscal_year = v
-			return true
-		}
-	case 27:
-		if v, ok := value.(bool); ok {
-			t.Allow_changes_in_depr_fields = v
-			return true
-		}
-	case 28:
-		if v, ok := value.(types.Decimal); ok {
-			t.Default_final_rounding_amount = v
-			return true
-		}
-	case 29:
-		if v, ok := value.(types.Decimal); ok {
-			t.Default_ending_book_value = v
-			return true
-		}
-	case 32:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 2 {
-			t.Periodic_depr_date_calc = DepreciationBookPeriodic_depr_date_calc(i)
-			return true
-		}
-	case 33:
-		if v, ok := value.(bool); ok {
-			t.Mark_errors_as_corrections = v
-			return true
-		}
-	case 34:
-		if v, ok := value.(bool); ok {
-			t.Add_curr_exch_rate_acq_cost = v
-			return true
-		}
-	case 35:
-		if v, ok := value.(bool); ok {
-			t.Add_curr_exch_rate_depr = v
-			return true
-		}
-	case 36:
-		if v, ok := value.(bool); ok {
-			t.Add_curr_exch_rate_write_down = v
-			return true
-		}
-	case 37:
-		if v, ok := value.(bool); ok {
-			t.Add_curr_exch_rate_apprec = v
-			return true
-		}
-	case 38:
-		if v, ok := value.(bool); ok {
-			t.Add_curr_exch_rate_custom_1 = v
-			return true
-		}
-	case 39:
-		if v, ok := value.(bool); ok {
-			t.Add_curr_exch_rate_custom_2 = v
-			return true
-		}
-	case 40:
-		if v, ok := value.(bool); ok {
-			t.Add_curr_exch_rate_disp = v
-			return true
-		}
-	case 41:
-		if v, ok := value.(bool); ok {
-			t.Add_curr_exch_rate_maint = v
-			return true
-		}
-	}
-	return false
+	return depreciationBookFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -5349,81 +3574,7 @@ func (t *DepreciationBook) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *DepreciationBook) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "code":
-		return t.Code, true
-	case "description":
-		return t.Description, true
-	case "g_l_integration_acq_cost":
-		return t.G_l_integration_acq_cost, true
-	case "g_l_integration_depreciation":
-		return t.G_l_integration_depreciation, true
-	case "g_l_integration_write_down":
-		return t.G_l_integration_write_down, true
-	case "g_l_integration_appreciation":
-		return t.G_l_integration_appreciation, true
-	case "g_l_integration_custom_1":
-		return t.G_l_integration_custom_1, true
-	case "g_l_integration_custom_2":
-		return t.G_l_integration_custom_2, true
-	case "g_l_integration_disposal":
-		return t.G_l_integration_disposal, true
-	case "g_l_integration_maintenance":
-		return t.G_l_integration_maintenance, true
-	case "disposal_calculation_method":
-		return int(t.Disposal_calculation_method), true
-	case "use_custom_1_depreciation":
-		return t.Use_custom_1_depreciation, true
-	case "allow_depr_below_zero":
-		return t.Allow_depr_below_zero, true
-	case "use_fa_exch_rate_in_duplic":
-		return t.Use_fa_exch_rate_in_duplic, true
-	case "part_of_duplication_list":
-		return t.Part_of_duplication_list, true
-	case "last_date_modified":
-		return t.Last_date_modified, true
-	case "allow_indexation":
-		return t.Allow_indexation, true
-	case "use_same_fa_g_l_posting_dates":
-		return t.Use_same_fa_g_l_posting_dates, true
-	case "default_exchange_rate":
-		return t.Default_exchange_rate, true
-	case "use_fa_ledger_check":
-		return t.Use_fa_ledger_check, true
-	case "use_rounding_in_periodic_depr":
-		return t.Use_rounding_in_periodic_depr, true
-	case "new_fiscal_year_starting_date":
-		return t.New_fiscal_year_starting_date, true
-	case "no_of_days_in_fiscal_year":
-		return t.No_of_days_in_fiscal_year, true
-	case "allow_changes_in_depr_fields":
-		return t.Allow_changes_in_depr_fields, true
-	case "default_final_rounding_amount":
-		return t.Default_final_rounding_amount, true
-	case "default_ending_book_value":
-		return t.Default_ending_book_value, true
-	case "periodic_depr_date_calc":
-		return int(t.Periodic_depr_date_calc), true
-	case "mark_errors_as_corrections":
-		return t.Mark_errors_as_corrections, true
-	case "add_curr_exch_rate_acq_cost":
-		return t.Add_curr_exch_rate_acq_cost, true
-	case "add_curr_exch_rate_depr":
-		return t.Add_curr_exch_rate_depr, true
-	case "add_curr_exch_rate_write_down":
-		return t.Add_curr_exch_rate_write_down, true
-	case "add_curr_exch_rate_apprec":
-		return t.Add_curr_exch_rate_apprec, true
-	case "add_curr_exch_rate_custom_1":
-		return t.Add_curr_exch_rate_custom_1, true
-	case "add_curr_exch_rate_custom_2":
-		return t.Add_curr_exch_rate_custom_2, true
-	case "add_curr_exch_rate_disp":
-		return t.Add_curr_exch_rate_disp, true
-	case "add_curr_exch_rate_maint":
-		return t.Add_curr_exch_rate_maint, true
-	}
-	return nil, false
+	return depreciationBookFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -5544,281 +3695,12 @@ func (t *DepreciationBook) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *DepreciationBook) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"code":                          t.Code.String(),
-		"description":                   t.Description.String(),
-		"g_l_integration_acq_cost":      t.G_l_integration_acq_cost,
-		"g_l_integration_depreciation":  t.G_l_integration_depreciation,
-		"g_l_integration_write_down":    t.G_l_integration_write_down,
-		"g_l_integration_appreciation":  t.G_l_integration_appreciation,
-		"g_l_integration_custom_1":      t.G_l_integration_custom_1,
-		"g_l_integration_custom_2":      t.G_l_integration_custom_2,
-		"g_l_integration_disposal":      t.G_l_integration_disposal,
-		"g_l_integration_maintenance":   t.G_l_integration_maintenance,
-		"disposal_calculation_method":   int(t.Disposal_calculation_method),
-		"use_custom_1_depreciation":     t.Use_custom_1_depreciation,
-		"allow_depr_below_zero":         t.Allow_depr_below_zero,
-		"use_fa_exch_rate_in_duplic":    t.Use_fa_exch_rate_in_duplic,
-		"part_of_duplication_list":      t.Part_of_duplication_list,
-		"last_date_modified":            t.Last_date_modified.String(),
-		"allow_indexation":              t.Allow_indexation,
-		"use_same_fa_g_l_posting_dates": t.Use_same_fa_g_l_posting_dates,
-		"default_exchange_rate":         t.Default_exchange_rate.String(),
-		"use_fa_ledger_check":           t.Use_fa_ledger_check,
-		"use_rounding_in_periodic_depr": t.Use_rounding_in_periodic_depr,
-		"new_fiscal_year_starting_date": t.New_fiscal_year_starting_date.String(),
-		"no_of_days_in_fiscal_year":     t.No_of_days_in_fiscal_year,
-		"allow_changes_in_depr_fields":  t.Allow_changes_in_depr_fields,
-		"default_final_rounding_amount": t.Default_final_rounding_amount.String(),
-		"default_ending_book_value":     t.Default_ending_book_value.String(),
-		"periodic_depr_date_calc":       int(t.Periodic_depr_date_calc),
-		"mark_errors_as_corrections":    t.Mark_errors_as_corrections,
-		"add_curr_exch_rate_acq_cost":   t.Add_curr_exch_rate_acq_cost,
-		"add_curr_exch_rate_depr":       t.Add_curr_exch_rate_depr,
-		"add_curr_exch_rate_write_down": t.Add_curr_exch_rate_write_down,
-		"add_curr_exch_rate_apprec":     t.Add_curr_exch_rate_apprec,
-		"add_curr_exch_rate_custom_1":   t.Add_curr_exch_rate_custom_1,
-		"add_curr_exch_rate_custom_2":   t.Add_curr_exch_rate_custom_2,
-		"add_curr_exch_rate_disp":       t.Add_curr_exch_rate_disp,
-		"add_curr_exch_rate_maint":      t.Add_curr_exch_rate_maint,
-	}
+	return depreciationBookFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *DepreciationBook) FromMap(data map[string]interface{}) {
-	if v, ok := data["code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["g_l_integration_acq_cost"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.G_l_integration_acq_cost = b
-		}
-	}
-	if v, ok := data["g_l_integration_depreciation"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.G_l_integration_depreciation = b
-		}
-	}
-	if v, ok := data["g_l_integration_write_down"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.G_l_integration_write_down = b
-		}
-	}
-	if v, ok := data["g_l_integration_appreciation"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.G_l_integration_appreciation = b
-		}
-	}
-	if v, ok := data["g_l_integration_custom_1"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.G_l_integration_custom_1 = b
-		}
-	}
-	if v, ok := data["g_l_integration_custom_2"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.G_l_integration_custom_2 = b
-		}
-	}
-	if v, ok := data["g_l_integration_disposal"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.G_l_integration_disposal = b
-		}
-	}
-	if v, ok := data["g_l_integration_maintenance"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.G_l_integration_maintenance = b
-		}
-	}
-	if v, ok := data["disposal_calculation_method"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Disposal_calculation_method = DepreciationBookDisposal_calculation_method(int(val))
-		case int:
-			t.Disposal_calculation_method = DepreciationBookDisposal_calculation_method(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Net", "Gross"}
-			for i, opt := range options {
-				if opt == val {
-					t.Disposal_calculation_method = DepreciationBookDisposal_calculation_method(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["use_custom_1_depreciation"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Use_custom_1_depreciation = b
-		}
-	}
-	if v, ok := data["allow_depr_below_zero"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Allow_depr_below_zero = b
-		}
-	}
-	if v, ok := data["use_fa_exch_rate_in_duplic"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Use_fa_exch_rate_in_duplic = b
-		}
-	}
-	if v, ok := data["part_of_duplication_list"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Part_of_duplication_list = b
-		}
-	}
-	if v, ok := data["last_date_modified"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Last_date_modified, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["allow_indexation"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Allow_indexation = b
-		}
-	}
-	if v, ok := data["use_same_fa_g_l_posting_dates"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Use_same_fa_g_l_posting_dates = b
-		}
-	}
-	if v, ok := data["default_exchange_rate"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Default_exchange_rate, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Default_exchange_rate = types.NewDecimal(val)
-		case int:
-			t.Default_exchange_rate = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Default_exchange_rate = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["use_fa_ledger_check"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Use_fa_ledger_check = b
-		}
-	}
-	if v, ok := data["use_rounding_in_periodic_depr"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Use_rounding_in_periodic_depr = b
-		}
-	}
-	if v, ok := data["new_fiscal_year_starting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.New_fiscal_year_starting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["no_of_days_in_fiscal_year"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.No_of_days_in_fiscal_year = int(val)
-		case int:
-			t.No_of_days_in_fiscal_year = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.No_of_days_in_fiscal_year = n
-			}
-		}
-	}
-	if v, ok := data["allow_changes_in_depr_fields"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Allow_changes_in_depr_fields = b
-		}
-	}
-	if v, ok := data["default_final_rounding_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Default_final_rounding_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Default_final_rounding_amount = types.NewDecimal(val)
-		case int:
-			t.Default_final_rounding_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Default_final_rounding_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["default_ending_book_value"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Default_ending_book_value, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Default_ending_book_value = types.NewDecimal(val)
-		case int:
-			t.Default_ending_book_value = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Default_ending_book_value = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["periodic_depr_date_calc"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Periodic_depr_date_calc = DepreciationBookPeriodic_depr_date_calc(int(val))
-		case int:
-			t.Periodic_depr_date_calc = DepreciationBookPeriodic_depr_date_calc(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Last Entry", "Last Depr. Entry"}
-			for i, opt := range options {
-				if opt == val {
-					t.Periodic_depr_date_calc = DepreciationBookPeriodic_depr_date_calc(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["mark_errors_as_corrections"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Mark_errors_as_corrections = b
-		}
-	}
-	if v, ok := data["add_curr_exch_rate_acq_cost"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Add_curr_exch_rate_acq_cost = b
-		}
-	}
-	if v, ok := data["add_curr_exch_rate_depr"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Add_curr_exch_rate_depr = b
-		}
-	}
-	if v, ok := data["add_curr_exch_rate_write_down"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Add_curr_exch_rate_write_down = b
-		}
-	}
-	if v, ok := data["add_curr_exch_rate_apprec"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Add_curr_exch_rate_apprec = b
-		}
-	}
-	if v, ok := data["add_curr_exch_rate_custom_1"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Add_curr_exch_rate_custom_1 = b
-		}
-	}
-	if v, ok := data["add_curr_exch_rate_custom_2"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Add_curr_exch_rate_custom_2 = b
-		}
-	}
-	if v, ok := data["add_curr_exch_rate_disp"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Add_curr_exch_rate_disp = b
-		}
-	}
-	if v, ok := data["add_curr_exch_rate_maint"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Add_curr_exch_rate_maint = b
-		}
-	}
+	depreciationBookFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -5839,372 +3721,604 @@ func (t *DepreciationBook) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *DepreciationBook) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "g_l_integration_acq_cost",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "g_l_integration_depreciation",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "g_l_integration_write_down",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "g_l_integration_appreciation",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "g_l_integration_custom_1",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "g_l_integration_custom_2",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "g_l_integration_disposal",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "g_l_integration_maintenance",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "disposal_calculation_method",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "use_custom_1_depreciation",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         13,
-			Name:       "allow_depr_below_zero",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         14,
-			Name:       "use_fa_exch_rate_in_duplic",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         15,
-			Name:       "part_of_duplication_list",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         17,
-			Name:       "last_date_modified",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         18,
-			Name:       "allow_indexation",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         19,
-			Name:       "use_same_fa_g_l_posting_dates",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            20,
-			Name:          "default_exchange_rate",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "4:4",
-		},
-		{
-			No:         23,
-			Name:       "use_fa_ledger_check",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         24,
-			Name:       "use_rounding_in_periodic_depr",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         25,
-			Name:       "new_fiscal_year_starting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         26,
-			Name:       "no_of_days_in_fiscal_year",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         27,
-			Name:       "allow_changes_in_depr_fields",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            28,
-			Name:          "default_final_rounding_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            29,
-			Name:          "default_ending_book_value",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         32,
-			Name:       "periodic_depr_date_calc",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         33,
-			Name:       "mark_errors_as_corrections",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         34,
-			Name:       "add_curr_exch_rate_acq_cost",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         35,
-			Name:       "add_curr_exch_rate_depr",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         36,
-			Name:       "add_curr_exch_rate_write_down",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         37,
-			Name:       "add_curr_exch_rate_apprec",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         38,
-			Name:       "add_curr_exch_rate_custom_1",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         39,
-			Name:       "add_curr_exch_rate_custom_2",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         40,
-			Name:       "add_curr_exch_rate_disp",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         41,
-			Name:       "add_curr_exch_rate_maint",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return depreciationBookFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in depreciationBookFields.Fields
+func (t *DepreciationBook) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Code
+	case 1:
+		return &t.Description
+	case 2:
+		return &t.G_l_integration_acq_cost
+	case 3:
+		return &t.G_l_integration_depreciation
+	case 4:
+		return &t.G_l_integration_write_down
+	case 5:
+		return &t.G_l_integration_appreciation
+	case 6:
+		return &t.G_l_integration_custom_1
+	case 7:
+		return &t.G_l_integration_custom_2
+	case 8:
+		return &t.G_l_integration_disposal
+	case 9:
+		return &t.G_l_integration_maintenance
+	case 10:
+		return &t.Disposal_calculation_method
+	case 11:
+		return &t.Use_custom_1_depreciation
+	case 12:
+		return &t.Allow_depr_below_zero
+	case 13:
+		return &t.Use_fa_exch_rate_in_duplic
+	case 14:
+		return &t.Part_of_duplication_list
+	case 15:
+		return &t.Last_date_modified
+	case 16:
+		return &t.Allow_indexation
+	case 17:
+		return &t.Use_same_fa_g_l_posting_dates
+	case 18:
+		return &t.Default_exchange_rate
+	case 19:
+		return &t.Use_fa_ledger_check
+	case 20:
+		return &t.Use_rounding_in_periodic_depr
+	case 21:
+		return &t.New_fiscal_year_starting_date
+	case 22:
+		return &t.No_of_days_in_fiscal_year
+	case 23:
+		return &t.Allow_changes_in_depr_fields
+	case 24:
+		return &t.Default_final_rounding_amount
+	case 25:
+		return &t.Default_ending_book_value
+	case 26:
+		return &t.Periodic_depr_date_calc
+	case 27:
+		return &t.Mark_errors_as_corrections
+	case 28:
+		return &t.Add_curr_exch_rate_acq_cost
+	case 29:
+		return &t.Add_curr_exch_rate_depr
+	case 30:
+		return &t.Add_curr_exch_rate_write_down
+	case 31:
+		return &t.Add_curr_exch_rate_apprec
+	case 32:
+		return &t.Add_curr_exch_rate_custom_1
+	case 33:
+		return &t.Add_curr_exch_rate_custom_2
+	case 34:
+		return &t.Add_curr_exch_rate_disp
+	case 35:
+		return &t.Add_curr_exch_rate_maint
 	}
+	return nil
+}
+
+// depreciationBookFields describes the fields of Depreciation_Book for the record functions
+// written once in foundation/tables
+var depreciationBookFields = &tables.TableFields{
+	Table: DepreciationBookTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "g_l_integration_acq_cost",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_G_l_integration_acq_cost",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "g_l_integration_depreciation",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_G_l_integration_depreciation",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "g_l_integration_write_down",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_G_l_integration_write_down",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "g_l_integration_appreciation",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_G_l_integration_appreciation",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "g_l_integration_custom_1",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_G_l_integration_custom_1",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "g_l_integration_custom_2",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_G_l_integration_custom_2",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "g_l_integration_disposal",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_G_l_integration_disposal",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "g_l_integration_maintenance",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_G_l_integration_maintenance",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "disposal_calculation_method",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Disposal_calculation_method",
+			Options: []string{"Net", "Gross"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "use_custom_1_depreciation",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Use_custom_1_depreciation",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "allow_depr_below_zero",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Allow_depr_below_zero",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "use_fa_exch_rate_in_duplic",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Use_fa_exch_rate_in_duplic",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         15,
+				Name:       "part_of_duplication_list",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Part_of_duplication_list",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         17,
+				Name:       "last_date_modified",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Last_date_modified",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         18,
+				Name:       "allow_indexation",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Allow_indexation",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         19,
+				Name:       "use_same_fa_g_l_posting_dates",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Use_same_fa_g_l_posting_dates",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            20,
+				Name:          "default_exchange_rate",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "4:4",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Default_exchange_rate",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         23,
+				Name:       "use_fa_ledger_check",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Use_fa_ledger_check",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         24,
+				Name:       "use_rounding_in_periodic_depr",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Use_rounding_in_periodic_depr",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         25,
+				Name:       "new_fiscal_year_starting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_New_fiscal_year_starting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         26,
+				Name:       "no_of_days_in_fiscal_year",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_No_of_days_in_fiscal_year",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         27,
+				Name:       "allow_changes_in_depr_fields",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Allow_changes_in_depr_fields",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            28,
+				Name:          "default_final_rounding_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Default_final_rounding_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            29,
+				Name:          "default_ending_book_value",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Default_ending_book_value",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         32,
+				Name:       "periodic_depr_date_calc",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Periodic_depr_date_calc",
+			Options: []string{"Last Entry", "Last Depr. Entry"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         33,
+				Name:       "mark_errors_as_corrections",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Mark_errors_as_corrections",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         34,
+				Name:       "add_curr_exch_rate_acq_cost",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Add_curr_exch_rate_acq_cost",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         35,
+				Name:       "add_curr_exch_rate_depr",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Add_curr_exch_rate_depr",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         36,
+				Name:       "add_curr_exch_rate_write_down",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Add_curr_exch_rate_write_down",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         37,
+				Name:       "add_curr_exch_rate_apprec",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Add_curr_exch_rate_apprec",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         38,
+				Name:       "add_curr_exch_rate_custom_1",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Add_curr_exch_rate_custom_1",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         39,
+				Name:       "add_curr_exch_rate_custom_2",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Add_curr_exch_rate_custom_2",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         40,
+				Name:       "add_curr_exch_rate_disp",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Add_curr_exch_rate_disp",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         41,
+				Name:       "add_curr_exch_rate_maint",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Add_curr_exch_rate_maint",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

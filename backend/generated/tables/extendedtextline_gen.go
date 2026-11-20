@@ -168,40 +168,12 @@ var ExtendedTextLine_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *ExtendedTextLine) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "table_name":
-		return 1
-	case "no":
-		return 2
-	case "language_code":
-		return 3
-	case "text_no":
-		return 4
-	case "line_no":
-		return 5
-	case "text":
-		return 6
-	}
-	return 0
+	return extendedTextLineFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *ExtendedTextLine) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "table_name"
-	case 2:
-		return "no"
-	case 3:
-		return "language_code"
-	case 4:
-		return "text_no"
-	case 5:
-		return "line_no"
-	case 6:
-		return "text"
-	}
-	return ""
+	return extendedTextLineFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -313,24 +285,6 @@ type (
 	ExtendedTextLineOnBeforeRename interface {
 		OnBeforeRename(rec *ExtendedTextLine, handled *bool) error
 	}
-	ExtendedTextLineOnValidate_Table_name interface {
-		OnValidate_Table_name(rec *ExtendedTextLine) error
-	}
-	ExtendedTextLineOnValidate_No interface {
-		OnValidate_No(rec *ExtendedTextLine) error
-	}
-	ExtendedTextLineOnValidate_Language_code interface {
-		OnValidate_Language_code(rec *ExtendedTextLine) error
-	}
-	ExtendedTextLineOnValidate_Text_no interface {
-		OnValidate_Text_no(rec *ExtendedTextLine) error
-	}
-	ExtendedTextLineOnValidate_Line_no interface {
-		OnValidate_Line_no(rec *ExtendedTextLine) error
-	}
-	ExtendedTextLineOnValidate_Text interface {
-		OnValidate_Text(rec *ExtendedTextLine) error
-	}
 )
 
 // extendedTextLineLogic is the registered business logic of Extended_Text_Line, in
@@ -373,20 +327,9 @@ func extendedTextLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ExtendedTextLineOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(ExtendedTextLineOnBeforeRename)
-	case "OnValidate_Table_name":
-		_, ok = logic.(ExtendedTextLineOnValidate_Table_name)
-	case "OnValidate_No":
-		_, ok = logic.(ExtendedTextLineOnValidate_No)
-	case "OnValidate_Language_code":
-		_, ok = logic.(ExtendedTextLineOnValidate_Language_code)
-	case "OnValidate_Text_no":
-		_, ok = logic.(ExtendedTextLineOnValidate_Text_no)
-	case "OnValidate_Line_no":
-		_, ok = logic.(ExtendedTextLineOnValidate_Line_no)
-	case "OnValidate_Text":
-		_, ok = logic.(ExtendedTextLineOnValidate_Text)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return extendedTextLineFields.IsOnValidateTrigger(name, logic, (*ExtendedTextLine)(nil))
 	}
 	return true, ok
 }
@@ -690,13 +633,7 @@ func (t *ExtendedTextLine) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *ExtendedTextLine) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["table_name"] = t.Table_name
-	t.oldValues["no"] = t.No
-	t.oldValues["language_code"] = t.Language_code
-	t.oldValues["text_no"] = t.Text_no
-	t.oldValues["line_no"] = t.Line_no
-	t.oldValues["text"] = t.Text
+	t.oldValues = extendedTextLineFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -711,24 +648,7 @@ func (t *ExtendedTextLine) OldValue(fieldName string) interface{} {
 func (t *ExtendedTextLine) XRec() *ExtendedTextLine {
 	x := &ExtendedTextLine{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["table_name"].(ExtendedTextLineTable_name); ok {
-		x.Table_name = v
-	}
-	if v, ok := t.oldValues["no"].(types.Code); ok {
-		x.No = v
-	}
-	if v, ok := t.oldValues["language_code"].(types.Code); ok {
-		x.Language_code = v
-	}
-	if v, ok := t.oldValues["text_no"].(int); ok {
-		x.Text_no = v
-	}
-	if v, ok := t.oldValues["line_no"].(int); ok {
-		x.Line_no = v
-	}
-	if v, ok := t.oldValues["text"].(types.Text); ok {
-		x.Text = v
-	}
+	extendedTextLineFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1102,47 +1022,7 @@ func (t *ExtendedTextLine) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *ExtendedTextLine) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "table_name":
-		if old, ok := oldValue.(ExtendedTextLineTable_name); ok {
-			return t.Table_name != old
-		}
-	case "no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No.Equal(old)
-		}
-	case "language_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Language_code.Equal(old)
-		}
-	case "text_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Text_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "line_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Line_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "text":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Text.Equal(old)
-		}
-	}
-
-	return false
+	return extendedTextLineFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1347,21 +1227,7 @@ func (t *ExtendedTextLine) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *ExtendedTextLine) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("table_name"):
-		return "table_name", true
-	case strings.ToLower("no"):
-		return "no", true
-	case strings.ToLower("language_code"):
-		return "language_code", true
-	case strings.ToLower("text_no"):
-		return "text_no", true
-	case strings.ToLower("line_no"):
-		return "line_no", true
-	case strings.ToLower("text"):
-		return "text", true
-	}
-	return "", false
+	return extendedTextLineFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2206,169 +2072,20 @@ func (t *ExtendedTextLine) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *ExtendedTextLine) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "table_name":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ExtendedTextLineTable_name); ok {
-			t.Table_name = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field table_name (valid range: 0-%d)", v, 4-1)
-			}
-			t.Table_name = ExtendedTextLineTable_name(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field table_name (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Table_name = ExtendedTextLineTable_name(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Table_name = 0
-			} else {
-				options := []string{"Standard Text", "G/L Account", "Item", "Resource"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Table_name = ExtendedTextLineTable_name(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field table_name (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field table_name (expected ExtendedTextLineTable_name, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExtendedTextLineOnValidate_Table_name); ok {
-				if err := trg.OnValidate_Table_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-		} else if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExtendedTextLineOnValidate_No); ok {
-				if err := trg.OnValidate_No(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "language_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Language_code = v
-		} else if v, ok := value.(string); ok {
-			t.Language_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field language_code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExtendedTextLineOnValidate_Language_code); ok {
-				if err := trg.OnValidate_Language_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "text_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Text_no = v
-		case float64:
-			t.Text_no = int(v)
-		case string:
-			if v == "" {
-				t.Text_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Text_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field text_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field text_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExtendedTextLineOnValidate_Text_no); ok {
-				if err := trg.OnValidate_Text_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "line_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Line_no = v
-		case float64:
-			t.Line_no = int(v)
-		case string:
-			if v == "" {
-				t.Line_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Line_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field line_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field line_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExtendedTextLineOnValidate_Line_no); ok {
-				if err := trg.OnValidate_Line_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "text":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Text = v
-		} else if v, ok := value.(string); ok {
-			t.Text = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field text")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExtendedTextLineOnValidate_Text); ok {
-				if err := trg.OnValidate_Text(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := extendedTextLineFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &extendedTextLineFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2377,78 +2094,18 @@ func (t *ExtendedTextLine) ValidateField(fieldName string, value interface{}) er
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *ExtendedTextLine) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Table_name, true
-	case 2:
-		return t.No, true
-	case 3:
-		return t.Language_code, true
-	case 4:
-		return t.Text_no, true
-	case 5:
-		return t.Line_no, true
-	case 6:
-		return t.Text, true
-	}
-	return nil, false
+	return extendedTextLineFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *ExtendedTextLine) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return extendedTextLineFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *ExtendedTextLine) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Table_name = ExtendedTextLineTable_name(i)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Code); ok {
-			t.Language_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Language_code = types.NewCode(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(int); ok {
-			t.Text_no = v
-			return true
-		}
-	case 5:
-		if v, ok := value.(int); ok {
-			t.Line_no = v
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Text); ok {
-			t.Text = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Text = types.NewText(v)
-			return true
-		}
-	}
-	return false
+	return extendedTextLineFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2930,21 +2587,7 @@ func (t *ExtendedTextLine) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *ExtendedTextLine) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "table_name":
-		return int(t.Table_name), true
-	case "no":
-		return t.No, true
-	case "language_code":
-		return t.Language_code, true
-	case "text_no":
-		return t.Text_no, true
-	case "line_no":
-		return t.Line_no, true
-	case "text":
-		return t.Text, true
-	}
-	return nil, false
+	return extendedTextLineFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3047,76 +2690,12 @@ func (t *ExtendedTextLine) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *ExtendedTextLine) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"table_name":    int(t.Table_name),
-		"no":            t.No.String(),
-		"language_code": t.Language_code.String(),
-		"text_no":       t.Text_no,
-		"line_no":       t.Line_no,
-		"text":          t.Text.String(),
-	}
+	return extendedTextLineFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *ExtendedTextLine) FromMap(data map[string]interface{}) {
-	if v, ok := data["table_name"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Table_name = ExtendedTextLineTable_name(int(val))
-		case int:
-			t.Table_name = ExtendedTextLineTable_name(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Standard Text", "G/L Account", "Item", "Resource"}
-			for i, opt := range options {
-				if opt == val {
-					t.Table_name = ExtendedTextLineTable_name(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No = types.NewCode(s)
-		}
-	}
-	if v, ok := data["language_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Language_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["text_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Text_no = int(val)
-		case int:
-			t.Text_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Text_no = n
-			}
-		}
-	}
-	if v, ok := data["line_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Line_no = int(val)
-		case int:
-			t.Line_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Line_no = n
-			}
-		}
-	}
-	if v, ok := data["text"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Text = types.NewText(s)
-		}
-	}
+	extendedTextLineFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3137,68 +2716,119 @@ func (t *ExtendedTextLine) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *ExtendedTextLine) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "table_name",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "language_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "text_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "line_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "text",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return extendedTextLineFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in extendedTextLineFields.Fields
+func (t *ExtendedTextLine) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Table_name
+	case 1:
+		return &t.No
+	case 2:
+		return &t.Language_code
+	case 3:
+		return &t.Text_no
+	case 4:
+		return &t.Line_no
+	case 5:
+		return &t.Text
 	}
+	return nil
+}
+
+// extendedTextLineFields describes the fields of Extended_Text_Line for the record functions
+// written once in foundation/tables
+var extendedTextLineFields = &tables.TableFields{
+	Table: ExtendedTextLineTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "table_name",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Table_name",
+			Options: []string{"Standard Text", "G/L Account", "Item", "Resource"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_No",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "language_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Language_code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "text_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Text_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "line_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Line_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "text",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Text",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

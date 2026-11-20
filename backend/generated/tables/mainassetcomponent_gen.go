@@ -117,28 +117,12 @@ var MainAssetComponent_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *MainAssetComponent) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "main_asset_no":
-		return 1
-	case "fa_no":
-		return 3
-	case "description":
-		return 4
-	}
-	return 0
+	return mainAssetComponentFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *MainAssetComponent) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "main_asset_no"
-	case 3:
-		return "fa_no"
-	case 4:
-		return "description"
-	}
-	return ""
+	return mainAssetComponentFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -250,15 +234,6 @@ type (
 	MainAssetComponentOnBeforeRename interface {
 		OnBeforeRename(rec *MainAssetComponent, handled *bool) error
 	}
-	MainAssetComponentOnValidate_Main_asset_no interface {
-		OnValidate_Main_asset_no(rec *MainAssetComponent) error
-	}
-	MainAssetComponentOnValidate_Fa_no interface {
-		OnValidate_Fa_no(rec *MainAssetComponent) error
-	}
-	MainAssetComponentOnValidate_Description interface {
-		OnValidate_Description(rec *MainAssetComponent) error
-	}
 )
 
 // mainAssetComponentLogic is the registered business logic of Main_Asset_Component, in
@@ -301,14 +276,9 @@ func mainAssetComponentTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(MainAssetComponentOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(MainAssetComponentOnBeforeRename)
-	case "OnValidate_Main_asset_no":
-		_, ok = logic.(MainAssetComponentOnValidate_Main_asset_no)
-	case "OnValidate_Fa_no":
-		_, ok = logic.(MainAssetComponentOnValidate_Fa_no)
-	case "OnValidate_Description":
-		_, ok = logic.(MainAssetComponentOnValidate_Description)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return mainAssetComponentFields.IsOnValidateTrigger(name, logic, (*MainAssetComponent)(nil))
 	}
 	return true, ok
 }
@@ -612,10 +582,7 @@ func (t *MainAssetComponent) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *MainAssetComponent) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["main_asset_no"] = t.Main_asset_no
-	t.oldValues["fa_no"] = t.Fa_no
-	t.oldValues["description"] = t.Description
+	t.oldValues = mainAssetComponentFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -630,15 +597,7 @@ func (t *MainAssetComponent) OldValue(fieldName string) interface{} {
 func (t *MainAssetComponent) XRec() *MainAssetComponent {
 	x := &MainAssetComponent{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["main_asset_no"].(types.Code); ok {
-		x.Main_asset_no = v
-	}
-	if v, ok := t.oldValues["fa_no"].(types.Code); ok {
-		x.Fa_no = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
+	mainAssetComponentFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -915,33 +874,7 @@ func (t *MainAssetComponent) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *MainAssetComponent) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "main_asset_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Main_asset_no.Equal(old)
-		}
-	case "fa_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Fa_no.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	}
-
-	return false
+	return mainAssetComponentFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1143,15 +1076,7 @@ func (t *MainAssetComponent) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *MainAssetComponent) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("main_asset_no"):
-		return "main_asset_no", true
-	case strings.ToLower("fa_no"):
-		return "fa_no", true
-	case strings.ToLower("description"):
-		return "description", true
-	}
-	return "", false
+	return mainAssetComponentFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -1973,74 +1898,20 @@ func (t *MainAssetComponent) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *MainAssetComponent) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "main_asset_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Main_asset_no = v
-		} else if v, ok := value.(string); ok {
-			t.Main_asset_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field main_asset_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "main_asset_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(MainAssetComponentOnValidate_Main_asset_no); ok {
-				if err := trg.OnValidate_Main_asset_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "fa_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Fa_no = v
-		} else if v, ok := value.(string); ok {
-			t.Fa_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field fa_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "fa_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(MainAssetComponentOnValidate_Fa_no); ok {
-				if err := trg.OnValidate_Fa_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(MainAssetComponentOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := mainAssetComponentFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &mainAssetComponentFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2049,57 +1920,18 @@ func (t *MainAssetComponent) ValidateField(fieldName string, value interface{}) 
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *MainAssetComponent) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Main_asset_no, true
-	case 3:
-		return t.Fa_no, true
-	case 4:
-		return t.Description, true
-	}
-	return nil, false
+	return mainAssetComponentFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *MainAssetComponent) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return mainAssetComponentFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *MainAssetComponent) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Main_asset_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Main_asset_no = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Code); ok {
-			t.Fa_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Fa_no = types.NewCode(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	}
-	return false
+	return mainAssetComponentFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2549,15 +2381,7 @@ func (t *MainAssetComponent) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *MainAssetComponent) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "main_asset_no":
-		return t.Main_asset_no, true
-	case "fa_no":
-		return t.Fa_no, true
-	case "description":
-		return t.Description, true
-	}
-	return nil, false
+	return mainAssetComponentFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2648,30 +2472,12 @@ func (t *MainAssetComponent) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *MainAssetComponent) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"main_asset_no": t.Main_asset_no.String(),
-		"fa_no":         t.Fa_no.String(),
-		"description":   t.Description.String(),
-	}
+	return mainAssetComponentFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *MainAssetComponent) FromMap(data map[string]interface{}) {
-	if v, ok := data["main_asset_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Main_asset_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["fa_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Fa_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
+	mainAssetComponentFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2692,39 +2498,73 @@ func (t *MainAssetComponent) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *MainAssetComponent) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "main_asset_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         3,
-			Name:       "fa_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return mainAssetComponentFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in mainAssetComponentFields.Fields
+func (t *MainAssetComponent) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Main_asset_no
+	case 1:
+		return &t.Fa_no
+	case 2:
+		return &t.Description
 	}
+	return nil
+}
+
+// mainAssetComponentFields describes the fields of Main_Asset_Component for the record functions
+// written once in foundation/tables
+var mainAssetComponentFields = &tables.TableFields{
+	Table: MainAssetComponentTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "main_asset_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Main_asset_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "fa_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Fa_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

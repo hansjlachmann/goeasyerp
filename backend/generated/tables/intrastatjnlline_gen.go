@@ -49,7 +49,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -281,128 +280,12 @@ var IntrastatJnlLine_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *IntrastatJnlLine) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "journal_template_name":
-		return 1
-	case "journal_batch_name":
-		return 2
-	case "line_no":
-		return 3
-	case "type":
-		return 4
-	case "date":
-		return 5
-	case "tariff_no":
-		return 6
-	case "item_description":
-		return 7
-	case "country_code":
-		return 8
-	case "transaction_type":
-		return 9
-	case "transport_method":
-		return 10
-	case "source_type":
-		return 11
-	case "source_entry_no":
-		return 12
-	case "net_weight":
-		return 13
-	case "amount":
-		return 14
-	case "quantity":
-		return 15
-	case "cost_regulation_percent":
-		return 16
-	case "indirect_cost":
-		return 17
-	case "statistical_value":
-		return 18
-	case "document_no":
-		return 19
-	case "item_no":
-		return 20
-	case "name":
-		return 21
-	case "total_weight":
-		return 22
-	case "supplementary_units":
-		return 23
-	case "internal_ref_no":
-		return 24
-	case "country_of_origin_code":
-		return 25
-	case "entry_exit_point":
-		return 26
-	case "area":
-		return 27
-	case "transaction_specification":
-		return 28
-	}
-	return 0
+	return intrastatJnlLineFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *IntrastatJnlLine) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "journal_template_name"
-	case 2:
-		return "journal_batch_name"
-	case 3:
-		return "line_no"
-	case 4:
-		return "type"
-	case 5:
-		return "date"
-	case 6:
-		return "tariff_no"
-	case 7:
-		return "item_description"
-	case 8:
-		return "country_code"
-	case 9:
-		return "transaction_type"
-	case 10:
-		return "transport_method"
-	case 11:
-		return "source_type"
-	case 12:
-		return "source_entry_no"
-	case 13:
-		return "net_weight"
-	case 14:
-		return "amount"
-	case 15:
-		return "quantity"
-	case 16:
-		return "cost_regulation_percent"
-	case 17:
-		return "indirect_cost"
-	case 18:
-		return "statistical_value"
-	case 19:
-		return "document_no"
-	case 20:
-		return "item_no"
-	case 21:
-		return "name"
-	case 22:
-		return "total_weight"
-	case 23:
-		return "supplementary_units"
-	case 24:
-		return "internal_ref_no"
-	case 25:
-		return "country_of_origin_code"
-	case 26:
-		return "entry_exit_point"
-	case 27:
-		return "area"
-	case 28:
-		return "transaction_specification"
-	}
-	return ""
+	return intrastatJnlLineFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -514,90 +397,6 @@ type (
 	IntrastatJnlLineOnBeforeRename interface {
 		OnBeforeRename(rec *IntrastatJnlLine, handled *bool) error
 	}
-	IntrastatJnlLineOnValidate_Journal_template_name interface {
-		OnValidate_Journal_template_name(rec *IntrastatJnlLine) error
-	}
-	IntrastatJnlLineOnValidate_Journal_batch_name interface {
-		OnValidate_Journal_batch_name(rec *IntrastatJnlLine) error
-	}
-	IntrastatJnlLineOnValidate_Line_no interface {
-		OnValidate_Line_no(rec *IntrastatJnlLine) error
-	}
-	IntrastatJnlLineOnValidate_Type interface {
-		OnValidate_Type(rec *IntrastatJnlLine) error
-	}
-	IntrastatJnlLineOnValidate_Date interface {
-		OnValidate_Date(rec *IntrastatJnlLine) error
-	}
-	IntrastatJnlLineOnValidate_Tariff_no interface {
-		OnValidate_Tariff_no(rec *IntrastatJnlLine) error
-	}
-	IntrastatJnlLineOnValidate_Item_description interface {
-		OnValidate_Item_description(rec *IntrastatJnlLine) error
-	}
-	IntrastatJnlLineOnValidate_Country_code interface {
-		OnValidate_Country_code(rec *IntrastatJnlLine) error
-	}
-	IntrastatJnlLineOnValidate_Transaction_type interface {
-		OnValidate_Transaction_type(rec *IntrastatJnlLine) error
-	}
-	IntrastatJnlLineOnValidate_Transport_method interface {
-		OnValidate_Transport_method(rec *IntrastatJnlLine) error
-	}
-	IntrastatJnlLineOnValidate_Source_type interface {
-		OnValidate_Source_type(rec *IntrastatJnlLine) error
-	}
-	IntrastatJnlLineOnValidate_Source_entry_no interface {
-		OnValidate_Source_entry_no(rec *IntrastatJnlLine) error
-	}
-	IntrastatJnlLineOnValidate_Net_weight interface {
-		OnValidate_Net_weight(rec *IntrastatJnlLine) error
-	}
-	IntrastatJnlLineOnValidate_Amount interface {
-		OnValidate_Amount(rec *IntrastatJnlLine) error
-	}
-	IntrastatJnlLineOnValidate_Quantity interface {
-		OnValidate_Quantity(rec *IntrastatJnlLine) error
-	}
-	IntrastatJnlLineOnValidate_Cost_regulation_percent interface {
-		OnValidate_Cost_regulation_percent(rec *IntrastatJnlLine) error
-	}
-	IntrastatJnlLineOnValidate_Indirect_cost interface {
-		OnValidate_Indirect_cost(rec *IntrastatJnlLine) error
-	}
-	IntrastatJnlLineOnValidate_Statistical_value interface {
-		OnValidate_Statistical_value(rec *IntrastatJnlLine) error
-	}
-	IntrastatJnlLineOnValidate_Document_no interface {
-		OnValidate_Document_no(rec *IntrastatJnlLine) error
-	}
-	IntrastatJnlLineOnValidate_Item_no interface {
-		OnValidate_Item_no(rec *IntrastatJnlLine) error
-	}
-	IntrastatJnlLineOnValidate_Name interface {
-		OnValidate_Name(rec *IntrastatJnlLine) error
-	}
-	IntrastatJnlLineOnValidate_Total_weight interface {
-		OnValidate_Total_weight(rec *IntrastatJnlLine) error
-	}
-	IntrastatJnlLineOnValidate_Supplementary_units interface {
-		OnValidate_Supplementary_units(rec *IntrastatJnlLine) error
-	}
-	IntrastatJnlLineOnValidate_Internal_ref_no interface {
-		OnValidate_Internal_ref_no(rec *IntrastatJnlLine) error
-	}
-	IntrastatJnlLineOnValidate_Country_of_origin_code interface {
-		OnValidate_Country_of_origin_code(rec *IntrastatJnlLine) error
-	}
-	IntrastatJnlLineOnValidate_Entry_exit_point interface {
-		OnValidate_Entry_exit_point(rec *IntrastatJnlLine) error
-	}
-	IntrastatJnlLineOnValidate_Area interface {
-		OnValidate_Area(rec *IntrastatJnlLine) error
-	}
-	IntrastatJnlLineOnValidate_Transaction_specification interface {
-		OnValidate_Transaction_specification(rec *IntrastatJnlLine) error
-	}
 )
 
 // intrastatJnlLineLogic is the registered business logic of Intrastat_Jnl_Line, in
@@ -640,64 +439,9 @@ func intrastatJnlLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(IntrastatJnlLineOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(IntrastatJnlLineOnBeforeRename)
-	case "OnValidate_Journal_template_name":
-		_, ok = logic.(IntrastatJnlLineOnValidate_Journal_template_name)
-	case "OnValidate_Journal_batch_name":
-		_, ok = logic.(IntrastatJnlLineOnValidate_Journal_batch_name)
-	case "OnValidate_Line_no":
-		_, ok = logic.(IntrastatJnlLineOnValidate_Line_no)
-	case "OnValidate_Type":
-		_, ok = logic.(IntrastatJnlLineOnValidate_Type)
-	case "OnValidate_Date":
-		_, ok = logic.(IntrastatJnlLineOnValidate_Date)
-	case "OnValidate_Tariff_no":
-		_, ok = logic.(IntrastatJnlLineOnValidate_Tariff_no)
-	case "OnValidate_Item_description":
-		_, ok = logic.(IntrastatJnlLineOnValidate_Item_description)
-	case "OnValidate_Country_code":
-		_, ok = logic.(IntrastatJnlLineOnValidate_Country_code)
-	case "OnValidate_Transaction_type":
-		_, ok = logic.(IntrastatJnlLineOnValidate_Transaction_type)
-	case "OnValidate_Transport_method":
-		_, ok = logic.(IntrastatJnlLineOnValidate_Transport_method)
-	case "OnValidate_Source_type":
-		_, ok = logic.(IntrastatJnlLineOnValidate_Source_type)
-	case "OnValidate_Source_entry_no":
-		_, ok = logic.(IntrastatJnlLineOnValidate_Source_entry_no)
-	case "OnValidate_Net_weight":
-		_, ok = logic.(IntrastatJnlLineOnValidate_Net_weight)
-	case "OnValidate_Amount":
-		_, ok = logic.(IntrastatJnlLineOnValidate_Amount)
-	case "OnValidate_Quantity":
-		_, ok = logic.(IntrastatJnlLineOnValidate_Quantity)
-	case "OnValidate_Cost_regulation_percent":
-		_, ok = logic.(IntrastatJnlLineOnValidate_Cost_regulation_percent)
-	case "OnValidate_Indirect_cost":
-		_, ok = logic.(IntrastatJnlLineOnValidate_Indirect_cost)
-	case "OnValidate_Statistical_value":
-		_, ok = logic.(IntrastatJnlLineOnValidate_Statistical_value)
-	case "OnValidate_Document_no":
-		_, ok = logic.(IntrastatJnlLineOnValidate_Document_no)
-	case "OnValidate_Item_no":
-		_, ok = logic.(IntrastatJnlLineOnValidate_Item_no)
-	case "OnValidate_Name":
-		_, ok = logic.(IntrastatJnlLineOnValidate_Name)
-	case "OnValidate_Total_weight":
-		_, ok = logic.(IntrastatJnlLineOnValidate_Total_weight)
-	case "OnValidate_Supplementary_units":
-		_, ok = logic.(IntrastatJnlLineOnValidate_Supplementary_units)
-	case "OnValidate_Internal_ref_no":
-		_, ok = logic.(IntrastatJnlLineOnValidate_Internal_ref_no)
-	case "OnValidate_Country_of_origin_code":
-		_, ok = logic.(IntrastatJnlLineOnValidate_Country_of_origin_code)
-	case "OnValidate_Entry_exit_point":
-		_, ok = logic.(IntrastatJnlLineOnValidate_Entry_exit_point)
-	case "OnValidate_Area":
-		_, ok = logic.(IntrastatJnlLineOnValidate_Area)
-	case "OnValidate_Transaction_specification":
-		_, ok = logic.(IntrastatJnlLineOnValidate_Transaction_specification)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return intrastatJnlLineFields.IsOnValidateTrigger(name, logic, (*IntrastatJnlLine)(nil))
 	}
 	return true, ok
 }
@@ -1102,35 +846,7 @@ func (t *IntrastatJnlLine) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *IntrastatJnlLine) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["journal_template_name"] = t.Journal_template_name
-	t.oldValues["journal_batch_name"] = t.Journal_batch_name
-	t.oldValues["line_no"] = t.Line_no
-	t.oldValues["type"] = t.Type
-	t.oldValues["date"] = t.Date
-	t.oldValues["tariff_no"] = t.Tariff_no
-	t.oldValues["item_description"] = t.Item_description
-	t.oldValues["country_code"] = t.Country_code
-	t.oldValues["transaction_type"] = t.Transaction_type
-	t.oldValues["transport_method"] = t.Transport_method
-	t.oldValues["source_type"] = t.Source_type
-	t.oldValues["source_entry_no"] = t.Source_entry_no
-	t.oldValues["net_weight"] = t.Net_weight
-	t.oldValues["amount"] = t.Amount
-	t.oldValues["quantity"] = t.Quantity
-	t.oldValues["cost_regulation_percent"] = t.Cost_regulation_percent
-	t.oldValues["indirect_cost"] = t.Indirect_cost
-	t.oldValues["statistical_value"] = t.Statistical_value
-	t.oldValues["document_no"] = t.Document_no
-	t.oldValues["item_no"] = t.Item_no
-	t.oldValues["name"] = t.Name
-	t.oldValues["total_weight"] = t.Total_weight
-	t.oldValues["supplementary_units"] = t.Supplementary_units
-	t.oldValues["internal_ref_no"] = t.Internal_ref_no
-	t.oldValues["country_of_origin_code"] = t.Country_of_origin_code
-	t.oldValues["entry_exit_point"] = t.Entry_exit_point
-	t.oldValues["area"] = t.Area
-	t.oldValues["transaction_specification"] = t.Transaction_specification
+	t.oldValues = intrastatJnlLineFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1145,90 +861,7 @@ func (t *IntrastatJnlLine) OldValue(fieldName string) interface{} {
 func (t *IntrastatJnlLine) XRec() *IntrastatJnlLine {
 	x := &IntrastatJnlLine{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["journal_template_name"].(types.Code); ok {
-		x.Journal_template_name = v
-	}
-	if v, ok := t.oldValues["journal_batch_name"].(types.Code); ok {
-		x.Journal_batch_name = v
-	}
-	if v, ok := t.oldValues["line_no"].(int); ok {
-		x.Line_no = v
-	}
-	if v, ok := t.oldValues["type"].(IntrastatJnlLineType); ok {
-		x.Type = v
-	}
-	if v, ok := t.oldValues["date"].(types.Date); ok {
-		x.Date = v
-	}
-	if v, ok := t.oldValues["tariff_no"].(types.Code); ok {
-		x.Tariff_no = v
-	}
-	if v, ok := t.oldValues["item_description"].(types.Text); ok {
-		x.Item_description = v
-	}
-	if v, ok := t.oldValues["country_code"].(types.Code); ok {
-		x.Country_code = v
-	}
-	if v, ok := t.oldValues["transaction_type"].(types.Code); ok {
-		x.Transaction_type = v
-	}
-	if v, ok := t.oldValues["transport_method"].(types.Code); ok {
-		x.Transport_method = v
-	}
-	if v, ok := t.oldValues["source_type"].(IntrastatJnlLineSource_type); ok {
-		x.Source_type = v
-	}
-	if v, ok := t.oldValues["source_entry_no"].(int); ok {
-		x.Source_entry_no = v
-	}
-	if v, ok := t.oldValues["net_weight"].(types.Decimal); ok {
-		x.Net_weight = v
-	}
-	if v, ok := t.oldValues["amount"].(types.Decimal); ok {
-		x.Amount = v
-	}
-	if v, ok := t.oldValues["quantity"].(types.Decimal); ok {
-		x.Quantity = v
-	}
-	if v, ok := t.oldValues["cost_regulation_percent"].(types.Decimal); ok {
-		x.Cost_regulation_percent = v
-	}
-	if v, ok := t.oldValues["indirect_cost"].(types.Decimal); ok {
-		x.Indirect_cost = v
-	}
-	if v, ok := t.oldValues["statistical_value"].(types.Decimal); ok {
-		x.Statistical_value = v
-	}
-	if v, ok := t.oldValues["document_no"].(types.Code); ok {
-		x.Document_no = v
-	}
-	if v, ok := t.oldValues["item_no"].(types.Code); ok {
-		x.Item_no = v
-	}
-	if v, ok := t.oldValues["name"].(types.Text); ok {
-		x.Name = v
-	}
-	if v, ok := t.oldValues["total_weight"].(types.Decimal); ok {
-		x.Total_weight = v
-	}
-	if v, ok := t.oldValues["supplementary_units"].(bool); ok {
-		x.Supplementary_units = v
-	}
-	if v, ok := t.oldValues["internal_ref_no"].(types.Text); ok {
-		x.Internal_ref_no = v
-	}
-	if v, ok := t.oldValues["country_of_origin_code"].(types.Code); ok {
-		x.Country_of_origin_code = v
-	}
-	if v, ok := t.oldValues["entry_exit_point"].(types.Code); ok {
-		x.Entry_exit_point = v
-	}
-	if v, ok := t.oldValues["area"].(types.Code); ok {
-		x.Area = v
-	}
-	if v, ok := t.oldValues["transaction_specification"].(types.Code); ok {
-		x.Transaction_specification = v
-	}
+	intrastatJnlLineFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1801,136 +1434,7 @@ func (t *IntrastatJnlLine) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *IntrastatJnlLine) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "journal_template_name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Journal_template_name.Equal(old)
-		}
-	case "journal_batch_name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Journal_batch_name.Equal(old)
-		}
-	case "line_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Line_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "type":
-		if old, ok := oldValue.(IntrastatJnlLineType); ok {
-			return t.Type != old
-		}
-	case "date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Date.Equal(old)
-		}
-	case "tariff_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tariff_no.Equal(old)
-		}
-	case "item_description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Item_description.Equal(old)
-		}
-	case "country_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Country_code.Equal(old)
-		}
-	case "transaction_type":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Transaction_type.Equal(old)
-		}
-	case "transport_method":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Transport_method.Equal(old)
-		}
-	case "source_type":
-		if old, ok := oldValue.(IntrastatJnlLineSource_type); ok {
-			return t.Source_type != old
-		}
-	case "source_entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Source_entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "net_weight":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Net_weight.Equal(old)
-		}
-	case "amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Amount.Equal(old)
-		}
-	case "quantity":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Quantity.Equal(old)
-		}
-	case "cost_regulation_percent":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Cost_regulation_percent.Equal(old)
-		}
-	case "indirect_cost":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Indirect_cost.Equal(old)
-		}
-	case "statistical_value":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Statistical_value.Equal(old)
-		}
-	case "document_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Document_no.Equal(old)
-		}
-	case "item_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Item_no.Equal(old)
-		}
-	case "name":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Name.Equal(old)
-		}
-	case "total_weight":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Total_weight.Equal(old)
-		}
-	case "supplementary_units":
-		if old, ok := oldValue.(bool); ok {
-			return t.Supplementary_units != old
-		}
-		return true // Type mismatch, assume changed
-	case "internal_ref_no":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Internal_ref_no.Equal(old)
-		}
-	case "country_of_origin_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Country_of_origin_code.Equal(old)
-		}
-	case "entry_exit_point":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Entry_exit_point.Equal(old)
-		}
-	case "area":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Area.Equal(old)
-		}
-	case "transaction_specification":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Transaction_specification.Equal(old)
-		}
-	}
-
-	return false
+	return intrastatJnlLineFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -2133,65 +1637,7 @@ func (t *IntrastatJnlLine) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *IntrastatJnlLine) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("journal_template_name"):
-		return "journal_template_name", true
-	case strings.ToLower("journal_batch_name"):
-		return "journal_batch_name", true
-	case strings.ToLower("line_no"):
-		return "line_no", true
-	case strings.ToLower("type"):
-		return "type", true
-	case strings.ToLower("date"):
-		return "date", true
-	case strings.ToLower("tariff_no"):
-		return "tariff_no", true
-	case strings.ToLower("item_description"):
-		return "item_description", true
-	case strings.ToLower("country_code"):
-		return "country_code", true
-	case strings.ToLower("transaction_type"):
-		return "transaction_type", true
-	case strings.ToLower("transport_method"):
-		return "transport_method", true
-	case strings.ToLower("source_type"):
-		return "source_type", true
-	case strings.ToLower("source_entry_no"):
-		return "source_entry_no", true
-	case strings.ToLower("net_weight"):
-		return "net_weight", true
-	case strings.ToLower("amount"):
-		return "amount", true
-	case strings.ToLower("quantity"):
-		return "quantity", true
-	case strings.ToLower("cost_regulation_percent"):
-		return "cost_regulation_percent", true
-	case strings.ToLower("indirect_cost"):
-		return "indirect_cost", true
-	case strings.ToLower("statistical_value"):
-		return "statistical_value", true
-	case strings.ToLower("document_no"):
-		return "document_no", true
-	case strings.ToLower("item_no"):
-		return "item_no", true
-	case strings.ToLower("name"):
-		return "name", true
-	case strings.ToLower("total_weight"):
-		return "total_weight", true
-	case strings.ToLower("supplementary_units"):
-		return "supplementary_units", true
-	case strings.ToLower("internal_ref_no"):
-		return "internal_ref_no", true
-	case strings.ToLower("country_of_origin_code"):
-		return "country_of_origin_code", true
-	case strings.ToLower("entry_exit_point"):
-		return "entry_exit_point", true
-	case strings.ToLower("area"):
-		return "area", true
-	case strings.ToLower("transaction_specification"):
-		return "transaction_specification", true
-	}
-	return "", false
+	return intrastatJnlLineFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -3340,717 +2786,20 @@ func (t *IntrastatJnlLine) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *IntrastatJnlLine) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "journal_template_name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Journal_template_name = v
-		} else if v, ok := value.(string); ok {
-			t.Journal_template_name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field journal_template_name")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "journal_template_name"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlLineOnValidate_Journal_template_name); ok {
-				if err := trg.OnValidate_Journal_template_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "journal_batch_name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Journal_batch_name = v
-		} else if v, ok := value.(string); ok {
-			t.Journal_batch_name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field journal_batch_name")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "journal_batch_name"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlLineOnValidate_Journal_batch_name); ok {
-				if err := trg.OnValidate_Journal_batch_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "line_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Line_no = v
-		case float64:
-			t.Line_no = int(v)
-		case string:
-			if v == "" {
-				t.Line_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Line_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field line_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field line_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlLineOnValidate_Line_no); ok {
-				if err := trg.OnValidate_Line_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(IntrastatJnlLineType); ok {
-			t.Type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 2 {
-				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", v, 2-1)
-			}
-			t.Type = IntrastatJnlLineType(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 2 {
-				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", intVal, 2-1)
-			}
-			t.Type = IntrastatJnlLineType(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Type = 0
-			} else {
-				options := []string{"Receipt", "Shipment"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Type = IntrastatJnlLineType(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field type (expected IntrastatJnlLineType, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlLineOnValidate_Type); ok {
-				if err := trg.OnValidate_Type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlLineOnValidate_Date); ok {
-				if err := trg.OnValidate_Date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tariff_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tariff_no = v
-		} else if v, ok := value.(string); ok {
-			t.Tariff_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tariff_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tariff_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlLineOnValidate_Tariff_no); ok {
-				if err := trg.OnValidate_Tariff_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "item_description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Item_description = v
-		} else if v, ok := value.(string); ok {
-			t.Item_description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field item_description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlLineOnValidate_Item_description); ok {
-				if err := trg.OnValidate_Item_description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "country_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Country_code = v
-		} else if v, ok := value.(string); ok {
-			t.Country_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field country_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "country_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlLineOnValidate_Country_code); ok {
-				if err := trg.OnValidate_Country_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "transaction_type":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Transaction_type = v
-		} else if v, ok := value.(string); ok {
-			t.Transaction_type = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field transaction_type")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "transaction_type"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlLineOnValidate_Transaction_type); ok {
-				if err := trg.OnValidate_Transaction_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "transport_method":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Transport_method = v
-		} else if v, ok := value.(string); ok {
-			t.Transport_method = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field transport_method")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "transport_method"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlLineOnValidate_Transport_method); ok {
-				if err := trg.OnValidate_Transport_method(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "source_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(IntrastatJnlLineSource_type); ok {
-			t.Source_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field source_type (valid range: 0-%d)", v, 3-1)
-			}
-			t.Source_type = IntrastatJnlLineSource_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field source_type (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Source_type = IntrastatJnlLineSource_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Source_type = 0
-			} else {
-				options := []string{" ", "Item entry", "Project entry"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Source_type = IntrastatJnlLineSource_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field source_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field source_type (expected IntrastatJnlLineSource_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlLineOnValidate_Source_type); ok {
-				if err := trg.OnValidate_Source_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "source_entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Source_entry_no = v
-		case float64:
-			t.Source_entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Source_entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Source_entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field source_entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field source_entry_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlLineOnValidate_Source_entry_no); ok {
-				if err := trg.OnValidate_Source_entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "net_weight":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Net_weight = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Net_weight, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field net_weight: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Net_weight = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Net_weight = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Net_weight = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field net_weight (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlLineOnValidate_Net_weight); ok {
-				if err := trg.OnValidate_Net_weight(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlLineOnValidate_Amount); ok {
-				if err := trg.OnValidate_Amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "quantity":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Quantity, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field quantity: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Quantity = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Quantity = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Quantity = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field quantity (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlLineOnValidate_Quantity); ok {
-				if err := trg.OnValidate_Quantity(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "cost_regulation_percent":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Cost_regulation_percent = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Cost_regulation_percent, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field cost_regulation_percent: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Cost_regulation_percent = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Cost_regulation_percent = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Cost_regulation_percent = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field cost_regulation_percent (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlLineOnValidate_Cost_regulation_percent); ok {
-				if err := trg.OnValidate_Cost_regulation_percent(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "indirect_cost":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Indirect_cost = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Indirect_cost, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field indirect_cost: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Indirect_cost = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Indirect_cost = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Indirect_cost = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field indirect_cost (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlLineOnValidate_Indirect_cost); ok {
-				if err := trg.OnValidate_Indirect_cost(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "statistical_value":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Statistical_value = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Statistical_value, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field statistical_value: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Statistical_value = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Statistical_value = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Statistical_value = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field statistical_value (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlLineOnValidate_Statistical_value); ok {
-				if err := trg.OnValidate_Statistical_value(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Document_no = v
-		} else if v, ok := value.(string); ok {
-			t.Document_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field document_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlLineOnValidate_Document_no); ok {
-				if err := trg.OnValidate_Document_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "item_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Item_no = v
-		} else if v, ok := value.(string); ok {
-			t.Item_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field item_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "item_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlLineOnValidate_Item_no); ok {
-				if err := trg.OnValidate_Item_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "name":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-		} else if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlLineOnValidate_Name); ok {
-				if err := trg.OnValidate_Name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "total_weight":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Total_weight = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Total_weight, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field total_weight: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Total_weight = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Total_weight = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Total_weight = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field total_weight (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlLineOnValidate_Total_weight); ok {
-				if err := trg.OnValidate_Total_weight(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "supplementary_units":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Supplementary_units = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Supplementary_units = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field supplementary_units")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlLineOnValidate_Supplementary_units); ok {
-				if err := trg.OnValidate_Supplementary_units(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "internal_ref_no":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Internal_ref_no = v
-		} else if v, ok := value.(string); ok {
-			t.Internal_ref_no = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field internal_ref_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlLineOnValidate_Internal_ref_no); ok {
-				if err := trg.OnValidate_Internal_ref_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "country_of_origin_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Country_of_origin_code = v
-		} else if v, ok := value.(string); ok {
-			t.Country_of_origin_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field country_of_origin_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "country_of_origin_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlLineOnValidate_Country_of_origin_code); ok {
-				if err := trg.OnValidate_Country_of_origin_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "entry_exit_point":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Entry_exit_point = v
-		} else if v, ok := value.(string); ok {
-			t.Entry_exit_point = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field entry_exit_point")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "entry_exit_point"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlLineOnValidate_Entry_exit_point); ok {
-				if err := trg.OnValidate_Entry_exit_point(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "area":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Area = v
-		} else if v, ok := value.(string); ok {
-			t.Area = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field area")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "area"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlLineOnValidate_Area); ok {
-				if err := trg.OnValidate_Area(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "transaction_specification":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Transaction_specification = v
-		} else if v, ok := value.(string); ok {
-			t.Transaction_specification = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field transaction_specification")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "transaction_specification"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(IntrastatJnlLineOnValidate_Transaction_specification); ok {
-				if err := trg.OnValidate_Transaction_specification(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := intrastatJnlLineFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &intrastatJnlLineFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -4059,280 +2808,18 @@ func (t *IntrastatJnlLine) ValidateField(fieldName string, value interface{}) er
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *IntrastatJnlLine) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Journal_template_name, true
-	case 2:
-		return t.Journal_batch_name, true
-	case 3:
-		return t.Line_no, true
-	case 4:
-		return t.Type, true
-	case 5:
-		return t.Date, true
-	case 6:
-		return t.Tariff_no, true
-	case 7:
-		return t.Item_description, true
-	case 8:
-		return t.Country_code, true
-	case 9:
-		return t.Transaction_type, true
-	case 10:
-		return t.Transport_method, true
-	case 11:
-		return t.Source_type, true
-	case 12:
-		return t.Source_entry_no, true
-	case 13:
-		return t.Net_weight, true
-	case 14:
-		return t.Amount, true
-	case 15:
-		return t.Quantity, true
-	case 16:
-		return t.Cost_regulation_percent, true
-	case 17:
-		return t.Indirect_cost, true
-	case 18:
-		return t.Statistical_value, true
-	case 19:
-		return t.Document_no, true
-	case 20:
-		return t.Item_no, true
-	case 21:
-		return t.Name, true
-	case 22:
-		return t.Total_weight, true
-	case 23:
-		return t.Supplementary_units, true
-	case 24:
-		return t.Internal_ref_no, true
-	case 25:
-		return t.Country_of_origin_code, true
-	case 26:
-		return t.Entry_exit_point, true
-	case 27:
-		return t.Area, true
-	case 28:
-		return t.Transaction_specification, true
-	}
-	return nil, false
+	return intrastatJnlLineFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *IntrastatJnlLine) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return intrastatJnlLineFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *IntrastatJnlLine) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Journal_template_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Journal_template_name = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Journal_batch_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Journal_batch_name = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(int); ok {
-			t.Line_no = v
-			return true
-		}
-	case 4:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 2 {
-			t.Type = IntrastatJnlLineType(i)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Date); ok {
-			t.Date = v
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Code); ok {
-			t.Tariff_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tariff_no = types.NewCode(v)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Text); ok {
-			t.Item_description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Item_description = types.NewText(v)
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Code); ok {
-			t.Country_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Country_code = types.NewCode(v)
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.Code); ok {
-			t.Transaction_type = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Transaction_type = types.NewCode(v)
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Code); ok {
-			t.Transport_method = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Transport_method = types.NewCode(v)
-			return true
-		}
-	case 11:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Source_type = IntrastatJnlLineSource_type(i)
-			return true
-		}
-	case 12:
-		if v, ok := value.(int); ok {
-			t.Source_entry_no = v
-			return true
-		}
-	case 13:
-		if v, ok := value.(types.Decimal); ok {
-			t.Net_weight = v
-			return true
-		}
-	case 14:
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount = v
-			return true
-		}
-	case 15:
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity = v
-			return true
-		}
-	case 16:
-		if v, ok := value.(types.Decimal); ok {
-			t.Cost_regulation_percent = v
-			return true
-		}
-	case 17:
-		if v, ok := value.(types.Decimal); ok {
-			t.Indirect_cost = v
-			return true
-		}
-	case 18:
-		if v, ok := value.(types.Decimal); ok {
-			t.Statistical_value = v
-			return true
-		}
-	case 19:
-		if v, ok := value.(types.Code); ok {
-			t.Document_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Document_no = types.NewCode(v)
-			return true
-		}
-	case 20:
-		if v, ok := value.(types.Code); ok {
-			t.Item_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Item_no = types.NewCode(v)
-			return true
-		}
-	case 21:
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-			return true
-		}
-	case 22:
-		if v, ok := value.(types.Decimal); ok {
-			t.Total_weight = v
-			return true
-		}
-	case 23:
-		if v, ok := value.(bool); ok {
-			t.Supplementary_units = v
-			return true
-		}
-	case 24:
-		if v, ok := value.(types.Text); ok {
-			t.Internal_ref_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Internal_ref_no = types.NewText(v)
-			return true
-		}
-	case 25:
-		if v, ok := value.(types.Code); ok {
-			t.Country_of_origin_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Country_of_origin_code = types.NewCode(v)
-			return true
-		}
-	case 26:
-		if v, ok := value.(types.Code); ok {
-			t.Entry_exit_point = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Entry_exit_point = types.NewCode(v)
-			return true
-		}
-	case 27:
-		if v, ok := value.(types.Code); ok {
-			t.Area = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Area = types.NewCode(v)
-			return true
-		}
-	case 28:
-		if v, ok := value.(types.Code); ok {
-			t.Transaction_specification = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Transaction_specification = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return intrastatJnlLineFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -4868,65 +3355,7 @@ func (t *IntrastatJnlLine) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *IntrastatJnlLine) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "journal_template_name":
-		return t.Journal_template_name, true
-	case "journal_batch_name":
-		return t.Journal_batch_name, true
-	case "line_no":
-		return t.Line_no, true
-	case "type":
-		return int(t.Type), true
-	case "date":
-		return t.Date, true
-	case "tariff_no":
-		return t.Tariff_no, true
-	case "item_description":
-		return t.Item_description, true
-	case "country_code":
-		return t.Country_code, true
-	case "transaction_type":
-		return t.Transaction_type, true
-	case "transport_method":
-		return t.Transport_method, true
-	case "source_type":
-		return int(t.Source_type), true
-	case "source_entry_no":
-		return t.Source_entry_no, true
-	case "net_weight":
-		return t.Net_weight, true
-	case "amount":
-		return t.Amount, true
-	case "quantity":
-		return t.Quantity, true
-	case "cost_regulation_percent":
-		return t.Cost_regulation_percent, true
-	case "indirect_cost":
-		return t.Indirect_cost, true
-	case "statistical_value":
-		return t.Statistical_value, true
-	case "document_no":
-		return t.Document_no, true
-	case "item_no":
-		return t.Item_no, true
-	case "name":
-		return t.Name, true
-	case "total_weight":
-		return t.Total_weight, true
-	case "supplementary_units":
-		return t.Supplementary_units, true
-	case "internal_ref_no":
-		return t.Internal_ref_no, true
-	case "country_of_origin_code":
-		return t.Country_of_origin_code, true
-	case "entry_exit_point":
-		return t.Entry_exit_point, true
-	case "area":
-		return t.Area, true
-	case "transaction_specification":
-		return t.Transaction_specification, true
-	}
-	return nil, false
+	return intrastatJnlLineFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -5045,269 +3474,12 @@ func (t *IntrastatJnlLine) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *IntrastatJnlLine) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"journal_template_name":     t.Journal_template_name.String(),
-		"journal_batch_name":        t.Journal_batch_name.String(),
-		"line_no":                   t.Line_no,
-		"type":                      int(t.Type),
-		"date":                      t.Date.String(),
-		"tariff_no":                 t.Tariff_no.String(),
-		"item_description":          t.Item_description.String(),
-		"country_code":              t.Country_code.String(),
-		"transaction_type":          t.Transaction_type.String(),
-		"transport_method":          t.Transport_method.String(),
-		"source_type":               int(t.Source_type),
-		"source_entry_no":           t.Source_entry_no,
-		"net_weight":                t.Net_weight.String(),
-		"amount":                    t.Amount.String(),
-		"quantity":                  t.Quantity.String(),
-		"cost_regulation_percent":   t.Cost_regulation_percent.String(),
-		"indirect_cost":             t.Indirect_cost.String(),
-		"statistical_value":         t.Statistical_value.String(),
-		"document_no":               t.Document_no.String(),
-		"item_no":                   t.Item_no.String(),
-		"name":                      t.Name.String(),
-		"total_weight":              t.Total_weight.String(),
-		"supplementary_units":       t.Supplementary_units,
-		"internal_ref_no":           t.Internal_ref_no.String(),
-		"country_of_origin_code":    t.Country_of_origin_code.String(),
-		"entry_exit_point":          t.Entry_exit_point.String(),
-		"area":                      t.Area.String(),
-		"transaction_specification": t.Transaction_specification.String(),
-	}
+	return intrastatJnlLineFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *IntrastatJnlLine) FromMap(data map[string]interface{}) {
-	if v, ok := data["journal_template_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Journal_template_name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["journal_batch_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Journal_batch_name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["line_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Line_no = int(val)
-		case int:
-			t.Line_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Line_no = n
-			}
-		}
-	}
-	if v, ok := data["type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Type = IntrastatJnlLineType(int(val))
-		case int:
-			t.Type = IntrastatJnlLineType(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Receipt", "Shipment"}
-			for i, opt := range options {
-				if opt == val {
-					t.Type = IntrastatJnlLineType(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["tariff_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tariff_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["item_description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Item_description = types.NewText(s)
-		}
-	}
-	if v, ok := data["country_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Country_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["transaction_type"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Transaction_type = types.NewCode(s)
-		}
-	}
-	if v, ok := data["transport_method"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Transport_method = types.NewCode(s)
-		}
-	}
-	if v, ok := data["source_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Source_type = IntrastatJnlLineSource_type(int(val))
-		case int:
-			t.Source_type = IntrastatJnlLineSource_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Item entry", "Project entry"}
-			for i, opt := range options {
-				if opt == val {
-					t.Source_type = IntrastatJnlLineSource_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["source_entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Source_entry_no = int(val)
-		case int:
-			t.Source_entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Source_entry_no = n
-			}
-		}
-	}
-	if v, ok := data["net_weight"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Net_weight, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Net_weight = types.NewDecimal(val)
-		case int:
-			t.Net_weight = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Net_weight = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Amount = types.NewDecimal(val)
-		case int:
-			t.Amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["quantity"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Quantity, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Quantity = types.NewDecimal(val)
-		case int:
-			t.Quantity = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Quantity = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["cost_regulation_percent"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Cost_regulation_percent, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Cost_regulation_percent = types.NewDecimal(val)
-		case int:
-			t.Cost_regulation_percent = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Cost_regulation_percent = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["indirect_cost"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Indirect_cost, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Indirect_cost = types.NewDecimal(val)
-		case int:
-			t.Indirect_cost = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Indirect_cost = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["statistical_value"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Statistical_value, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Statistical_value = types.NewDecimal(val)
-		case int:
-			t.Statistical_value = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Statistical_value = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["document_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Document_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["item_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Item_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Name = types.NewText(s)
-		}
-	}
-	if v, ok := data["total_weight"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Total_weight, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Total_weight = types.NewDecimal(val)
-		case int:
-			t.Total_weight = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Total_weight = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["supplementary_units"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Supplementary_units = b
-		}
-	}
-	if v, ok := data["internal_ref_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Internal_ref_no = types.NewText(s)
-		}
-	}
-	if v, ok := data["country_of_origin_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Country_of_origin_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["entry_exit_point"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Entry_exit_point = types.NewCode(s)
-		}
-	}
-	if v, ok := data["area"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Area = types.NewCode(s)
-		}
-	}
-	if v, ok := data["transaction_specification"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Transaction_specification = types.NewCode(s)
-		}
-	}
+	intrastatJnlLineFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -5328,300 +3500,495 @@ func (t *IntrastatJnlLine) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *IntrastatJnlLine) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "journal_template_name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "journal_batch_name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "line_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "tariff_no",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "item_description",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "country_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "transaction_type",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "transport_method",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "source_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "source_entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:            13,
-			Name:          "net_weight",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:5",
-		},
-		{
-			No:            14,
-			Name:          "amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:0",
-		},
-		{
-			No:            15,
-			Name:          "quantity",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:0",
-		},
-		{
-			No:            16,
-			Name:          "cost_regulation_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            17,
-			Name:          "indirect_cost",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:0",
-		},
-		{
-			No:            18,
-			Name:          "statistical_value",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "0:0",
-		},
-		{
-			No:         19,
-			Name:       "document_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         20,
-			Name:       "item_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         21,
-			Name:       "name",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            22,
-			Name:          "total_weight",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         23,
-			Name:       "supplementary_units",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         24,
-			Name:       "internal_ref_no",
-			Type:       tables.FieldTypeText,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         25,
-			Name:       "country_of_origin_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         26,
-			Name:       "entry_exit_point",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         27,
-			Name:       "area",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         28,
-			Name:       "transaction_specification",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return intrastatJnlLineFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in intrastatJnlLineFields.Fields
+func (t *IntrastatJnlLine) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Journal_template_name
+	case 1:
+		return &t.Journal_batch_name
+	case 2:
+		return &t.Line_no
+	case 3:
+		return &t.Type
+	case 4:
+		return &t.Date
+	case 5:
+		return &t.Tariff_no
+	case 6:
+		return &t.Item_description
+	case 7:
+		return &t.Country_code
+	case 8:
+		return &t.Transaction_type
+	case 9:
+		return &t.Transport_method
+	case 10:
+		return &t.Source_type
+	case 11:
+		return &t.Source_entry_no
+	case 12:
+		return &t.Net_weight
+	case 13:
+		return &t.Amount
+	case 14:
+		return &t.Quantity
+	case 15:
+		return &t.Cost_regulation_percent
+	case 16:
+		return &t.Indirect_cost
+	case 17:
+		return &t.Statistical_value
+	case 18:
+		return &t.Document_no
+	case 19:
+		return &t.Item_no
+	case 20:
+		return &t.Name
+	case 21:
+		return &t.Total_weight
+	case 22:
+		return &t.Supplementary_units
+	case 23:
+		return &t.Internal_ref_no
+	case 24:
+		return &t.Country_of_origin_code
+	case 25:
+		return &t.Entry_exit_point
+	case 26:
+		return &t.Area
+	case 27:
+		return &t.Transaction_specification
 	}
+	return nil
+}
+
+// intrastatJnlLineFields describes the fields of Intrastat_Jnl_Line for the record functions
+// written once in foundation/tables
+var intrastatJnlLineFields = &tables.TableFields{
+	Table: IntrastatJnlLineTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "journal_template_name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Journal_template_name",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "journal_batch_name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Journal_batch_name",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "line_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Line_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Type",
+			Options: []string{"Receipt", "Shipment"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "tariff_no",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tariff_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "item_description",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Item_description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "country_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Country_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "transaction_type",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Transaction_type",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "transport_method",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Transport_method",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "source_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Source_type",
+			Options: []string{" ", "Item entry", "Project entry"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "source_entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Source_entry_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            13,
+				Name:          "net_weight",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Net_weight",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            14,
+				Name:          "amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:0",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            15,
+				Name:          "quantity",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:0",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Quantity",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            16,
+				Name:          "cost_regulation_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Cost_regulation_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            17,
+				Name:          "indirect_cost",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:0",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Indirect_cost",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            18,
+				Name:          "statistical_value",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "0:0",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Statistical_value",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         19,
+				Name:       "document_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Document_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         20,
+				Name:       "item_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Item_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         21,
+				Name:       "name",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            22,
+				Name:          "total_weight",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Total_weight",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         23,
+				Name:       "supplementary_units",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Supplementary_units",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         24,
+				Name:       "internal_ref_no",
+				Type:       tables.FieldTypeText,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Internal_ref_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         25,
+				Name:       "country_of_origin_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Country_of_origin_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         26,
+				Name:       "entry_exit_point",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Entry_exit_point",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         27,
+				Name:       "area",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Area",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         28,
+				Name:       "transaction_specification",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Transaction_specification",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

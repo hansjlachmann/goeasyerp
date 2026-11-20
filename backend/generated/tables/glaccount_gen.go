@@ -53,7 +53,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -548,216 +547,12 @@ var GLAccount_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *GLAccount) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "no":
-		return 1
-	case "name":
-		return 2
-	case "search_name":
-		return 3
-	case "account_type":
-		return 4
-	case "dimension_1_code":
-		return 6
-	case "dimension_2_code":
-		return 7
-	case "income_balance":
-		return 9
-	case "debit_credit":
-		return 10
-	case "no_2":
-		return 11
-	case "blocked":
-		return 13
-	case "direct_posting":
-		return 14
-	case "reconciliation_account":
-		return 16
-	case "new_page":
-		return 17
-	case "no_of_blank_lines":
-		return 18
-	case "indentation":
-		return 19
-	case "last_date_modified":
-		return 26
-	case "totaling":
-		return 34
-	case "balance_at_date":
-		return 31
-	case "net_change":
-		return 32
-	case "budgeted_amount":
-		return 33
-	case "budget_at_date":
-		return 37
-	case "balance":
-		return 36
-	case "debit_amount":
-		return 47
-	case "credit_amount":
-		return 48
-	case "additional_currency_net_change":
-		return 60
-	case "add_currency_balance_at_date":
-		return 61
-	case "additional_currency_balance":
-		return 62
-	case "add_currency_debit_amount":
-		return 64
-	case "add_currency_credit_amount":
-		return 65
-	case "consol_debit_acc":
-		return 40
-	case "consol_credit_acc":
-		return 41
-	case "consol_currency_val_method":
-		return 900
-	case "gen_posting_type":
-		return 43
-	case "gen_bus_posting_group":
-		return 44
-	case "gen_prod_posting_group":
-		return 45
-	case "automatic_ext_text":
-		return 49
-	case "dimension_1_posting":
-		return 50
-	case "dimension_2_posting":
-		return 51
-	case "tax_area_code":
-		return 54
-	case "tax_liable":
-		return 55
-	case "tax_group_code":
-		return 56
-	case "tax_bus_posting_group":
-		return 57
-	case "tax_prod_posting_group":
-		return 58
-	case "exchange_rate_adjustment":
-		return 63
-	case "comment":
-		return 12
-	case "date_filter":
-		return 28
-	case "dimension_1_filter":
-		return 29
-	case "dimension_2_filter":
-		return 30
-	case "business_unit_filter":
-		return 42
-	case "budget_filter":
-		return 35
-	}
-	return 0
+	return gLAccountFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *GLAccount) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "no"
-	case 2:
-		return "name"
-	case 3:
-		return "search_name"
-	case 4:
-		return "account_type"
-	case 6:
-		return "dimension_1_code"
-	case 7:
-		return "dimension_2_code"
-	case 9:
-		return "income_balance"
-	case 10:
-		return "debit_credit"
-	case 11:
-		return "no_2"
-	case 13:
-		return "blocked"
-	case 14:
-		return "direct_posting"
-	case 16:
-		return "reconciliation_account"
-	case 17:
-		return "new_page"
-	case 18:
-		return "no_of_blank_lines"
-	case 19:
-		return "indentation"
-	case 26:
-		return "last_date_modified"
-	case 34:
-		return "totaling"
-	case 31:
-		return "balance_at_date"
-	case 32:
-		return "net_change"
-	case 33:
-		return "budgeted_amount"
-	case 37:
-		return "budget_at_date"
-	case 36:
-		return "balance"
-	case 47:
-		return "debit_amount"
-	case 48:
-		return "credit_amount"
-	case 60:
-		return "additional_currency_net_change"
-	case 61:
-		return "add_currency_balance_at_date"
-	case 62:
-		return "additional_currency_balance"
-	case 64:
-		return "add_currency_debit_amount"
-	case 65:
-		return "add_currency_credit_amount"
-	case 40:
-		return "consol_debit_acc"
-	case 41:
-		return "consol_credit_acc"
-	case 900:
-		return "consol_currency_val_method"
-	case 43:
-		return "gen_posting_type"
-	case 44:
-		return "gen_bus_posting_group"
-	case 45:
-		return "gen_prod_posting_group"
-	case 49:
-		return "automatic_ext_text"
-	case 50:
-		return "dimension_1_posting"
-	case 51:
-		return "dimension_2_posting"
-	case 54:
-		return "tax_area_code"
-	case 55:
-		return "tax_liable"
-	case 56:
-		return "tax_group_code"
-	case 57:
-		return "tax_bus_posting_group"
-	case 58:
-		return "tax_prod_posting_group"
-	case 63:
-		return "exchange_rate_adjustment"
-	case 12:
-		return "comment"
-	case 28:
-		return "date_filter"
-	case 29:
-		return "dimension_1_filter"
-	case 30:
-		return "dimension_2_filter"
-	case 42:
-		return "business_unit_filter"
-	case 35:
-		return "budget_filter"
-	}
-	return ""
+	return gLAccountFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -861,38 +656,6 @@ type (
 	GLAccountOnBeforeRename interface {
 		OnBeforeRename(rec *GLAccount, handled *bool) error
 	}
-	GLAccountOnValidate_No                         interface{ OnValidate_No(rec *GLAccount) error }
-	GLAccountOnValidate_Name                       interface{ OnValidate_Name(rec *GLAccount) error }
-	GLAccountOnValidate_Search_name                interface{ OnValidate_Search_name(rec *GLAccount) error }
-	GLAccountOnValidate_Account_type               interface{ OnValidate_Account_type(rec *GLAccount) error }
-	GLAccountOnValidate_Dimension_1_code           interface{ OnValidate_Dimension_1_code(rec *GLAccount) error }
-	GLAccountOnValidate_Dimension_2_code           interface{ OnValidate_Dimension_2_code(rec *GLAccount) error }
-	GLAccountOnValidate_Income_balance             interface{ OnValidate_Income_balance(rec *GLAccount) error }
-	GLAccountOnValidate_Debit_credit               interface{ OnValidate_Debit_credit(rec *GLAccount) error }
-	GLAccountOnValidate_No_2                       interface{ OnValidate_No_2(rec *GLAccount) error }
-	GLAccountOnValidate_Blocked                    interface{ OnValidate_Blocked(rec *GLAccount) error }
-	GLAccountOnValidate_Direct_posting             interface{ OnValidate_Direct_posting(rec *GLAccount) error }
-	GLAccountOnValidate_Reconciliation_account     interface{ OnValidate_Reconciliation_account(rec *GLAccount) error }
-	GLAccountOnValidate_New_page                   interface{ OnValidate_New_page(rec *GLAccount) error }
-	GLAccountOnValidate_No_of_blank_lines          interface{ OnValidate_No_of_blank_lines(rec *GLAccount) error }
-	GLAccountOnValidate_Indentation                interface{ OnValidate_Indentation(rec *GLAccount) error }
-	GLAccountOnValidate_Last_date_modified         interface{ OnValidate_Last_date_modified(rec *GLAccount) error }
-	GLAccountOnValidate_Totaling                   interface{ OnValidate_Totaling(rec *GLAccount) error }
-	GLAccountOnValidate_Consol_debit_acc           interface{ OnValidate_Consol_debit_acc(rec *GLAccount) error }
-	GLAccountOnValidate_Consol_credit_acc          interface{ OnValidate_Consol_credit_acc(rec *GLAccount) error }
-	GLAccountOnValidate_Consol_currency_val_method interface{ OnValidate_Consol_currency_val_method(rec *GLAccount) error }
-	GLAccountOnValidate_Gen_posting_type           interface{ OnValidate_Gen_posting_type(rec *GLAccount) error }
-	GLAccountOnValidate_Gen_bus_posting_group      interface{ OnValidate_Gen_bus_posting_group(rec *GLAccount) error }
-	GLAccountOnValidate_Gen_prod_posting_group     interface{ OnValidate_Gen_prod_posting_group(rec *GLAccount) error }
-	GLAccountOnValidate_Automatic_ext_text         interface{ OnValidate_Automatic_ext_text(rec *GLAccount) error }
-	GLAccountOnValidate_Dimension_1_posting        interface{ OnValidate_Dimension_1_posting(rec *GLAccount) error }
-	GLAccountOnValidate_Dimension_2_posting        interface{ OnValidate_Dimension_2_posting(rec *GLAccount) error }
-	GLAccountOnValidate_Tax_area_code              interface{ OnValidate_Tax_area_code(rec *GLAccount) error }
-	GLAccountOnValidate_Tax_liable                 interface{ OnValidate_Tax_liable(rec *GLAccount) error }
-	GLAccountOnValidate_Tax_group_code             interface{ OnValidate_Tax_group_code(rec *GLAccount) error }
-	GLAccountOnValidate_Tax_bus_posting_group      interface{ OnValidate_Tax_bus_posting_group(rec *GLAccount) error }
-	GLAccountOnValidate_Tax_prod_posting_group     interface{ OnValidate_Tax_prod_posting_group(rec *GLAccount) error }
-	GLAccountOnValidate_Exchange_rate_adjustment   interface{ OnValidate_Exchange_rate_adjustment(rec *GLAccount) error }
 )
 
 // gLAccountLogic is the registered business logic of G_L_Account, in
@@ -935,72 +698,9 @@ func gLAccountTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(GLAccountOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(GLAccountOnBeforeRename)
-	case "OnValidate_No":
-		_, ok = logic.(GLAccountOnValidate_No)
-	case "OnValidate_Name":
-		_, ok = logic.(GLAccountOnValidate_Name)
-	case "OnValidate_Search_name":
-		_, ok = logic.(GLAccountOnValidate_Search_name)
-	case "OnValidate_Account_type":
-		_, ok = logic.(GLAccountOnValidate_Account_type)
-	case "OnValidate_Dimension_1_code":
-		_, ok = logic.(GLAccountOnValidate_Dimension_1_code)
-	case "OnValidate_Dimension_2_code":
-		_, ok = logic.(GLAccountOnValidate_Dimension_2_code)
-	case "OnValidate_Income_balance":
-		_, ok = logic.(GLAccountOnValidate_Income_balance)
-	case "OnValidate_Debit_credit":
-		_, ok = logic.(GLAccountOnValidate_Debit_credit)
-	case "OnValidate_No_2":
-		_, ok = logic.(GLAccountOnValidate_No_2)
-	case "OnValidate_Blocked":
-		_, ok = logic.(GLAccountOnValidate_Blocked)
-	case "OnValidate_Direct_posting":
-		_, ok = logic.(GLAccountOnValidate_Direct_posting)
-	case "OnValidate_Reconciliation_account":
-		_, ok = logic.(GLAccountOnValidate_Reconciliation_account)
-	case "OnValidate_New_page":
-		_, ok = logic.(GLAccountOnValidate_New_page)
-	case "OnValidate_No_of_blank_lines":
-		_, ok = logic.(GLAccountOnValidate_No_of_blank_lines)
-	case "OnValidate_Indentation":
-		_, ok = logic.(GLAccountOnValidate_Indentation)
-	case "OnValidate_Last_date_modified":
-		_, ok = logic.(GLAccountOnValidate_Last_date_modified)
-	case "OnValidate_Totaling":
-		_, ok = logic.(GLAccountOnValidate_Totaling)
-	case "OnValidate_Consol_debit_acc":
-		_, ok = logic.(GLAccountOnValidate_Consol_debit_acc)
-	case "OnValidate_Consol_credit_acc":
-		_, ok = logic.(GLAccountOnValidate_Consol_credit_acc)
-	case "OnValidate_Consol_currency_val_method":
-		_, ok = logic.(GLAccountOnValidate_Consol_currency_val_method)
-	case "OnValidate_Gen_posting_type":
-		_, ok = logic.(GLAccountOnValidate_Gen_posting_type)
-	case "OnValidate_Gen_bus_posting_group":
-		_, ok = logic.(GLAccountOnValidate_Gen_bus_posting_group)
-	case "OnValidate_Gen_prod_posting_group":
-		_, ok = logic.(GLAccountOnValidate_Gen_prod_posting_group)
-	case "OnValidate_Automatic_ext_text":
-		_, ok = logic.(GLAccountOnValidate_Automatic_ext_text)
-	case "OnValidate_Dimension_1_posting":
-		_, ok = logic.(GLAccountOnValidate_Dimension_1_posting)
-	case "OnValidate_Dimension_2_posting":
-		_, ok = logic.(GLAccountOnValidate_Dimension_2_posting)
-	case "OnValidate_Tax_area_code":
-		_, ok = logic.(GLAccountOnValidate_Tax_area_code)
-	case "OnValidate_Tax_liable":
-		_, ok = logic.(GLAccountOnValidate_Tax_liable)
-	case "OnValidate_Tax_group_code":
-		_, ok = logic.(GLAccountOnValidate_Tax_group_code)
-	case "OnValidate_Tax_bus_posting_group":
-		_, ok = logic.(GLAccountOnValidate_Tax_bus_posting_group)
-	case "OnValidate_Tax_prod_posting_group":
-		_, ok = logic.(GLAccountOnValidate_Tax_prod_posting_group)
-	case "OnValidate_Exchange_rate_adjustment":
-		_, ok = logic.(GLAccountOnValidate_Exchange_rate_adjustment)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return gLAccountFields.IsOnValidateTrigger(name, logic, (*GLAccount)(nil))
 	}
 	return true, ok
 }
@@ -1460,39 +1160,7 @@ func (t *GLAccount) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *GLAccount) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["no"] = t.No
-	t.oldValues["name"] = t.Name
-	t.oldValues["search_name"] = t.Search_name
-	t.oldValues["account_type"] = t.Account_type
-	t.oldValues["dimension_1_code"] = t.Dimension_1_code
-	t.oldValues["dimension_2_code"] = t.Dimension_2_code
-	t.oldValues["income_balance"] = t.Income_balance
-	t.oldValues["debit_credit"] = t.Debit_credit
-	t.oldValues["no_2"] = t.No_2
-	t.oldValues["blocked"] = t.Blocked
-	t.oldValues["direct_posting"] = t.Direct_posting
-	t.oldValues["reconciliation_account"] = t.Reconciliation_account
-	t.oldValues["new_page"] = t.New_page
-	t.oldValues["no_of_blank_lines"] = t.No_of_blank_lines
-	t.oldValues["indentation"] = t.Indentation
-	t.oldValues["last_date_modified"] = t.Last_date_modified
-	t.oldValues["totaling"] = t.Totaling
-	t.oldValues["consol_debit_acc"] = t.Consol_debit_acc
-	t.oldValues["consol_credit_acc"] = t.Consol_credit_acc
-	t.oldValues["consol_currency_val_method"] = t.Consol_currency_val_method
-	t.oldValues["gen_posting_type"] = t.Gen_posting_type
-	t.oldValues["gen_bus_posting_group"] = t.Gen_bus_posting_group
-	t.oldValues["gen_prod_posting_group"] = t.Gen_prod_posting_group
-	t.oldValues["automatic_ext_text"] = t.Automatic_ext_text
-	t.oldValues["dimension_1_posting"] = t.Dimension_1_posting
-	t.oldValues["dimension_2_posting"] = t.Dimension_2_posting
-	t.oldValues["tax_area_code"] = t.Tax_area_code
-	t.oldValues["tax_liable"] = t.Tax_liable
-	t.oldValues["tax_group_code"] = t.Tax_group_code
-	t.oldValues["tax_bus_posting_group"] = t.Tax_bus_posting_group
-	t.oldValues["tax_prod_posting_group"] = t.Tax_prod_posting_group
-	t.oldValues["exchange_rate_adjustment"] = t.Exchange_rate_adjustment
+	t.oldValues = gLAccountFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1507,102 +1175,7 @@ func (t *GLAccount) OldValue(fieldName string) interface{} {
 func (t *GLAccount) XRec() *GLAccount {
 	x := &GLAccount{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["no"].(types.Code); ok {
-		x.No = v
-	}
-	if v, ok := t.oldValues["name"].(types.Text); ok {
-		x.Name = v
-	}
-	if v, ok := t.oldValues["search_name"].(types.Code); ok {
-		x.Search_name = v
-	}
-	if v, ok := t.oldValues["account_type"].(GLAccountAccount_type); ok {
-		x.Account_type = v
-	}
-	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
-		x.Dimension_1_code = v
-	}
-	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
-		x.Dimension_2_code = v
-	}
-	if v, ok := t.oldValues["income_balance"].(GLAccountIncome_balance); ok {
-		x.Income_balance = v
-	}
-	if v, ok := t.oldValues["debit_credit"].(GLAccountDebit_credit); ok {
-		x.Debit_credit = v
-	}
-	if v, ok := t.oldValues["no_2"].(types.Code); ok {
-		x.No_2 = v
-	}
-	if v, ok := t.oldValues["blocked"].(bool); ok {
-		x.Blocked = v
-	}
-	if v, ok := t.oldValues["direct_posting"].(bool); ok {
-		x.Direct_posting = v
-	}
-	if v, ok := t.oldValues["reconciliation_account"].(bool); ok {
-		x.Reconciliation_account = v
-	}
-	if v, ok := t.oldValues["new_page"].(bool); ok {
-		x.New_page = v
-	}
-	if v, ok := t.oldValues["no_of_blank_lines"].(int); ok {
-		x.No_of_blank_lines = v
-	}
-	if v, ok := t.oldValues["indentation"].(int); ok {
-		x.Indentation = v
-	}
-	if v, ok := t.oldValues["last_date_modified"].(types.Date); ok {
-		x.Last_date_modified = v
-	}
-	if v, ok := t.oldValues["totaling"].(types.Text); ok {
-		x.Totaling = v
-	}
-	if v, ok := t.oldValues["consol_debit_acc"].(types.Code); ok {
-		x.Consol_debit_acc = v
-	}
-	if v, ok := t.oldValues["consol_credit_acc"].(types.Code); ok {
-		x.Consol_credit_acc = v
-	}
-	if v, ok := t.oldValues["consol_currency_val_method"].(GLAccountConsol_currency_val_method); ok {
-		x.Consol_currency_val_method = v
-	}
-	if v, ok := t.oldValues["gen_posting_type"].(GLAccountGen_posting_type); ok {
-		x.Gen_posting_type = v
-	}
-	if v, ok := t.oldValues["gen_bus_posting_group"].(types.Code); ok {
-		x.Gen_bus_posting_group = v
-	}
-	if v, ok := t.oldValues["gen_prod_posting_group"].(types.Code); ok {
-		x.Gen_prod_posting_group = v
-	}
-	if v, ok := t.oldValues["automatic_ext_text"].(bool); ok {
-		x.Automatic_ext_text = v
-	}
-	if v, ok := t.oldValues["dimension_1_posting"].(GLAccountDimension_1_posting); ok {
-		x.Dimension_1_posting = v
-	}
-	if v, ok := t.oldValues["dimension_2_posting"].(GLAccountDimension_2_posting); ok {
-		x.Dimension_2_posting = v
-	}
-	if v, ok := t.oldValues["tax_area_code"].(types.Code); ok {
-		x.Tax_area_code = v
-	}
-	if v, ok := t.oldValues["tax_liable"].(bool); ok {
-		x.Tax_liable = v
-	}
-	if v, ok := t.oldValues["tax_group_code"].(types.Code); ok {
-		x.Tax_group_code = v
-	}
-	if v, ok := t.oldValues["tax_bus_posting_group"].(types.Code); ok {
-		x.Tax_bus_posting_group = v
-	}
-	if v, ok := t.oldValues["tax_prod_posting_group"].(types.Code); ok {
-		x.Tax_prod_posting_group = v
-	}
-	if v, ok := t.oldValues["exchange_rate_adjustment"].(GLAccountExchange_rate_adjustment); ok {
-		x.Exchange_rate_adjustment = v
-	}
+	gLAccountFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -2209,157 +1782,7 @@ func (t *GLAccount) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *GLAccount) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No.Equal(old)
-		}
-	case "name":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Name.Equal(old)
-		}
-	case "search_name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Search_name.Equal(old)
-		}
-	case "account_type":
-		if old, ok := oldValue.(GLAccountAccount_type); ok {
-			return t.Account_type != old
-		}
-	case "dimension_1_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_1_code.Equal(old)
-		}
-	case "dimension_2_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_2_code.Equal(old)
-		}
-	case "income_balance":
-		if old, ok := oldValue.(GLAccountIncome_balance); ok {
-			return t.Income_balance != old
-		}
-	case "debit_credit":
-		if old, ok := oldValue.(GLAccountDebit_credit); ok {
-			return t.Debit_credit != old
-		}
-	case "no_2":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No_2.Equal(old)
-		}
-	case "blocked":
-		if old, ok := oldValue.(bool); ok {
-			return t.Blocked != old
-		}
-		return true // Type mismatch, assume changed
-	case "direct_posting":
-		if old, ok := oldValue.(bool); ok {
-			return t.Direct_posting != old
-		}
-		return true // Type mismatch, assume changed
-	case "reconciliation_account":
-		if old, ok := oldValue.(bool); ok {
-			return t.Reconciliation_account != old
-		}
-		return true // Type mismatch, assume changed
-	case "new_page":
-		if old, ok := oldValue.(bool); ok {
-			return t.New_page != old
-		}
-		return true // Type mismatch, assume changed
-	case "no_of_blank_lines":
-		if old, ok := oldValue.(int); ok {
-			return t.No_of_blank_lines != old
-		}
-		return true // Type mismatch, assume changed
-	case "indentation":
-		if old, ok := oldValue.(int); ok {
-			return t.Indentation != old
-		}
-		return true // Type mismatch, assume changed
-	case "last_date_modified":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Last_date_modified.Equal(old)
-		}
-	case "totaling":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Totaling.Equal(old)
-		}
-	case "consol_debit_acc":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Consol_debit_acc.Equal(old)
-		}
-	case "consol_credit_acc":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Consol_credit_acc.Equal(old)
-		}
-	case "consol_currency_val_method":
-		if old, ok := oldValue.(GLAccountConsol_currency_val_method); ok {
-			return t.Consol_currency_val_method != old
-		}
-	case "gen_posting_type":
-		if old, ok := oldValue.(GLAccountGen_posting_type); ok {
-			return t.Gen_posting_type != old
-		}
-	case "gen_bus_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Gen_bus_posting_group.Equal(old)
-		}
-	case "gen_prod_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Gen_prod_posting_group.Equal(old)
-		}
-	case "automatic_ext_text":
-		if old, ok := oldValue.(bool); ok {
-			return t.Automatic_ext_text != old
-		}
-		return true // Type mismatch, assume changed
-	case "dimension_1_posting":
-		if old, ok := oldValue.(GLAccountDimension_1_posting); ok {
-			return t.Dimension_1_posting != old
-		}
-	case "dimension_2_posting":
-		if old, ok := oldValue.(GLAccountDimension_2_posting); ok {
-			return t.Dimension_2_posting != old
-		}
-	case "tax_area_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_area_code.Equal(old)
-		}
-	case "tax_liable":
-		if old, ok := oldValue.(bool); ok {
-			return t.Tax_liable != old
-		}
-		return true // Type mismatch, assume changed
-	case "tax_group_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_group_code.Equal(old)
-		}
-	case "tax_bus_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_bus_posting_group.Equal(old)
-		}
-	case "tax_prod_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_prod_posting_group.Equal(old)
-		}
-	case "exchange_rate_adjustment":
-		if old, ok := oldValue.(GLAccountExchange_rate_adjustment); ok {
-			return t.Exchange_rate_adjustment != old
-		}
-	}
-
-	return false
+	return gLAccountFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -5369,73 +4792,7 @@ func (t *GLAccount) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *GLAccount) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("no"):
-		return "no", true
-	case strings.ToLower("name"):
-		return "name", true
-	case strings.ToLower("search_name"):
-		return "search_name", true
-	case strings.ToLower("account_type"):
-		return "account_type", true
-	case strings.ToLower("dimension_1_code"):
-		return "dimension_1_code", true
-	case strings.ToLower("dimension_2_code"):
-		return "dimension_2_code", true
-	case strings.ToLower("income_balance"):
-		return "income_balance", true
-	case strings.ToLower("debit_credit"):
-		return "debit_credit", true
-	case strings.ToLower("no_2"):
-		return "no_2", true
-	case strings.ToLower("blocked"):
-		return "blocked", true
-	case strings.ToLower("direct_posting"):
-		return "direct_posting", true
-	case strings.ToLower("reconciliation_account"):
-		return "reconciliation_account", true
-	case strings.ToLower("new_page"):
-		return "new_page", true
-	case strings.ToLower("no_of_blank_lines"):
-		return "no_of_blank_lines", true
-	case strings.ToLower("indentation"):
-		return "indentation", true
-	case strings.ToLower("last_date_modified"):
-		return "last_date_modified", true
-	case strings.ToLower("totaling"):
-		return "totaling", true
-	case strings.ToLower("consol_debit_acc"):
-		return "consol_debit_acc", true
-	case strings.ToLower("consol_credit_acc"):
-		return "consol_credit_acc", true
-	case strings.ToLower("consol_currency_val_method"):
-		return "consol_currency_val_method", true
-	case strings.ToLower("gen_posting_type"):
-		return "gen_posting_type", true
-	case strings.ToLower("gen_bus_posting_group"):
-		return "gen_bus_posting_group", true
-	case strings.ToLower("gen_prod_posting_group"):
-		return "gen_prod_posting_group", true
-	case strings.ToLower("automatic_ext_text"):
-		return "automatic_ext_text", true
-	case strings.ToLower("dimension_1_posting"):
-		return "dimension_1_posting", true
-	case strings.ToLower("dimension_2_posting"):
-		return "dimension_2_posting", true
-	case strings.ToLower("tax_area_code"):
-		return "tax_area_code", true
-	case strings.ToLower("tax_liable"):
-		return "tax_liable", true
-	case strings.ToLower("tax_group_code"):
-		return "tax_group_code", true
-	case strings.ToLower("tax_bus_posting_group"):
-		return "tax_bus_posting_group", true
-	case strings.ToLower("tax_prod_posting_group"):
-		return "tax_prod_posting_group", true
-	case strings.ToLower("exchange_rate_adjustment"):
-		return "exchange_rate_adjustment", true
-	}
-	return "", false
+	return gLAccountFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -6645,902 +6002,20 @@ func (t *GLAccount) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *GLAccount) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-		} else if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountOnValidate_No); ok {
-				if err := trg.OnValidate_No(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "name":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-		} else if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountOnValidate_Name); ok {
-				if err := trg.OnValidate_Name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "search_name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Search_name = v
-		} else if v, ok := value.(string); ok {
-			t.Search_name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field search_name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountOnValidate_Search_name); ok {
-				if err := trg.OnValidate_Search_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "account_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(GLAccountAccount_type); ok {
-			t.Account_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 5 {
-				return fmt.Errorf("invalid option value %d for field account_type (valid range: 0-%d)", v, 5-1)
-			}
-			t.Account_type = GLAccountAccount_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 5 {
-				return fmt.Errorf("invalid option value %d for field account_type (valid range: 0-%d)", intVal, 5-1)
-			}
-			t.Account_type = GLAccountAccount_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Account_type = 0
-			} else {
-				options := []string{"Posting", "Heading", "Total", "Begin-Total", "End-Total"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Account_type = GLAccountAccount_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field account_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field account_type (expected GLAccountAccount_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountOnValidate_Account_type); ok {
-				if err := trg.OnValidate_Account_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_1_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_1_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountOnValidate_Dimension_1_code); ok {
-				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_2_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_2_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountOnValidate_Dimension_2_code); ok {
-				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "income_balance":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(GLAccountIncome_balance); ok {
-			t.Income_balance = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 2 {
-				return fmt.Errorf("invalid option value %d for field income_balance (valid range: 0-%d)", v, 2-1)
-			}
-			t.Income_balance = GLAccountIncome_balance(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 2 {
-				return fmt.Errorf("invalid option value %d for field income_balance (valid range: 0-%d)", intVal, 2-1)
-			}
-			t.Income_balance = GLAccountIncome_balance(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Income_balance = 0
-			} else {
-				options := []string{"Income Statement", "Balance Sheet"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Income_balance = GLAccountIncome_balance(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field income_balance (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field income_balance (expected GLAccountIncome_balance, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountOnValidate_Income_balance); ok {
-				if err := trg.OnValidate_Income_balance(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "debit_credit":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(GLAccountDebit_credit); ok {
-			t.Debit_credit = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field debit_credit (valid range: 0-%d)", v, 3-1)
-			}
-			t.Debit_credit = GLAccountDebit_credit(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field debit_credit (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Debit_credit = GLAccountDebit_credit(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Debit_credit = 0
-			} else {
-				options := []string{"Both", "Debit", "Credit"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Debit_credit = GLAccountDebit_credit(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field debit_credit (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field debit_credit (expected GLAccountDebit_credit, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountOnValidate_Debit_credit); ok {
-				if err := trg.OnValidate_Debit_credit(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no_2":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No_2 = v
-		} else if v, ok := value.(string); ok {
-			t.No_2 = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no_2")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountOnValidate_No_2); ok {
-				if err := trg.OnValidate_No_2(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "blocked":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Blocked = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Blocked = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field blocked")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountOnValidate_Blocked); ok {
-				if err := trg.OnValidate_Blocked(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "direct_posting":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Direct_posting = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Direct_posting = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field direct_posting")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountOnValidate_Direct_posting); ok {
-				if err := trg.OnValidate_Direct_posting(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reconciliation_account":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Reconciliation_account = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Reconciliation_account = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field reconciliation_account")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountOnValidate_Reconciliation_account); ok {
-				if err := trg.OnValidate_Reconciliation_account(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "new_page":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.New_page = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.New_page = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field new_page")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountOnValidate_New_page); ok {
-				if err := trg.OnValidate_New_page(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no_of_blank_lines":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.No_of_blank_lines = v
-		case float64:
-			t.No_of_blank_lines = int(v)
-		case string:
-			if v == "" {
-				t.No_of_blank_lines = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.No_of_blank_lines = i
-			} else {
-				return fmt.Errorf("invalid integer value for field no_of_blank_lines: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field no_of_blank_lines")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountOnValidate_No_of_blank_lines); ok {
-				if err := trg.OnValidate_No_of_blank_lines(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "indentation":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Indentation = v
-		case float64:
-			t.Indentation = int(v)
-		case string:
-			if v == "" {
-				t.Indentation = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Indentation = i
-			} else {
-				return fmt.Errorf("invalid integer value for field indentation: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field indentation")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountOnValidate_Indentation); ok {
-				if err := trg.OnValidate_Indentation(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "last_date_modified":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Last_date_modified = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Last_date_modified, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field last_date_modified: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Last_date_modified = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field last_date_modified (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountOnValidate_Last_date_modified); ok {
-				if err := trg.OnValidate_Last_date_modified(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "totaling":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Totaling = v
-		} else if v, ok := value.(string); ok {
-			t.Totaling = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field totaling")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "totaling"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountOnValidate_Totaling); ok {
-				if err := trg.OnValidate_Totaling(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "consol_debit_acc":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Consol_debit_acc = v
-		} else if v, ok := value.(string); ok {
-			t.Consol_debit_acc = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field consol_debit_acc")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountOnValidate_Consol_debit_acc); ok {
-				if err := trg.OnValidate_Consol_debit_acc(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "consol_credit_acc":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Consol_credit_acc = v
-		} else if v, ok := value.(string); ok {
-			t.Consol_credit_acc = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field consol_credit_acc")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountOnValidate_Consol_credit_acc); ok {
-				if err := trg.OnValidate_Consol_credit_acc(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "consol_currency_val_method":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(GLAccountConsol_currency_val_method); ok {
-			t.Consol_currency_val_method = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field consol_currency_val_method (valid range: 0-%d)", v, 4-1)
-			}
-			t.Consol_currency_val_method = GLAccountConsol_currency_val_method(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field consol_currency_val_method (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Consol_currency_val_method = GLAccountConsol_currency_val_method(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Consol_currency_val_method = 0
-			} else {
-				options := []string{"Automatic", "Current Rate", "Historical Rate", "Manual Rate"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Consol_currency_val_method = GLAccountConsol_currency_val_method(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field consol_currency_val_method (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field consol_currency_val_method (expected GLAccountConsol_currency_val_method, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountOnValidate_Consol_currency_val_method); ok {
-				if err := trg.OnValidate_Consol_currency_val_method(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "gen_posting_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(GLAccountGen_posting_type); ok {
-			t.Gen_posting_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field gen_posting_type (valid range: 0-%d)", v, 3-1)
-			}
-			t.Gen_posting_type = GLAccountGen_posting_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field gen_posting_type (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Gen_posting_type = GLAccountGen_posting_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Gen_posting_type = 0
-			} else {
-				options := []string{" ", "Purchase", "Sale"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Gen_posting_type = GLAccountGen_posting_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field gen_posting_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field gen_posting_type (expected GLAccountGen_posting_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountOnValidate_Gen_posting_type); ok {
-				if err := trg.OnValidate_Gen_posting_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "gen_bus_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Gen_bus_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Gen_bus_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field gen_bus_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "gen_bus_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountOnValidate_Gen_bus_posting_group); ok {
-				if err := trg.OnValidate_Gen_bus_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "gen_prod_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Gen_prod_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Gen_prod_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field gen_prod_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "gen_prod_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountOnValidate_Gen_prod_posting_group); ok {
-				if err := trg.OnValidate_Gen_prod_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "automatic_ext_text":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Automatic_ext_text = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Automatic_ext_text = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field automatic_ext_text")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountOnValidate_Automatic_ext_text); ok {
-				if err := trg.OnValidate_Automatic_ext_text(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_1_posting":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(GLAccountDimension_1_posting); ok {
-			t.Dimension_1_posting = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field dimension_1_posting (valid range: 0-%d)", v, 4-1)
-			}
-			t.Dimension_1_posting = GLAccountDimension_1_posting(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field dimension_1_posting (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Dimension_1_posting = GLAccountDimension_1_posting(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Dimension_1_posting = 0
-			} else {
-				options := []string{" ", "Code Mandatory", "Same Code", "No Code"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Dimension_1_posting = GLAccountDimension_1_posting(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field dimension_1_posting (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field dimension_1_posting (expected GLAccountDimension_1_posting, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountOnValidate_Dimension_1_posting); ok {
-				if err := trg.OnValidate_Dimension_1_posting(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_2_posting":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(GLAccountDimension_2_posting); ok {
-			t.Dimension_2_posting = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field dimension_2_posting (valid range: 0-%d)", v, 4-1)
-			}
-			t.Dimension_2_posting = GLAccountDimension_2_posting(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field dimension_2_posting (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Dimension_2_posting = GLAccountDimension_2_posting(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Dimension_2_posting = 0
-			} else {
-				options := []string{" ", "Code Mandatory", "Same Code", "No Code"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Dimension_2_posting = GLAccountDimension_2_posting(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field dimension_2_posting (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field dimension_2_posting (expected GLAccountDimension_2_posting, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountOnValidate_Dimension_2_posting); ok {
-				if err := trg.OnValidate_Dimension_2_posting(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_area_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_area_code = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_area_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_area_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_area_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountOnValidate_Tax_area_code); ok {
-				if err := trg.OnValidate_Tax_area_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_liable":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Tax_liable = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Tax_liable = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field tax_liable")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountOnValidate_Tax_liable); ok {
-				if err := trg.OnValidate_Tax_liable(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_group_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_group_code = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_group_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_group_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_group_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountOnValidate_Tax_group_code); ok {
-				if err := trg.OnValidate_Tax_group_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_bus_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_bus_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_bus_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_bus_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_bus_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountOnValidate_Tax_bus_posting_group); ok {
-				if err := trg.OnValidate_Tax_bus_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_prod_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_prod_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_prod_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_prod_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_prod_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountOnValidate_Tax_prod_posting_group); ok {
-				if err := trg.OnValidate_Tax_prod_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "exchange_rate_adjustment":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(GLAccountExchange_rate_adjustment); ok {
-			t.Exchange_rate_adjustment = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field exchange_rate_adjustment (valid range: 0-%d)", v, 3-1)
-			}
-			t.Exchange_rate_adjustment = GLAccountExchange_rate_adjustment(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field exchange_rate_adjustment (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Exchange_rate_adjustment = GLAccountExchange_rate_adjustment(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Exchange_rate_adjustment = 0
-			} else {
-				options := []string{"No Adjustment", "Adjust Amount", "Adjust Additional-Currency Amount"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Exchange_rate_adjustment = GLAccountExchange_rate_adjustment(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field exchange_rate_adjustment (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field exchange_rate_adjustment (expected GLAccountExchange_rate_adjustment, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(GLAccountOnValidate_Exchange_rate_adjustment); ok {
-				if err := trg.OnValidate_Exchange_rate_adjustment(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := gLAccountFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &gLAccountFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -7549,334 +6024,18 @@ func (t *GLAccount) ValidateField(fieldName string, value interface{}) error {
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *GLAccount) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.No, true
-	case 2:
-		return t.Name, true
-	case 3:
-		return t.Search_name, true
-	case 4:
-		return t.Account_type, true
-	case 6:
-		return t.Dimension_1_code, true
-	case 7:
-		return t.Dimension_2_code, true
-	case 9:
-		return t.Income_balance, true
-	case 10:
-		return t.Debit_credit, true
-	case 11:
-		return t.No_2, true
-	case 13:
-		return t.Blocked, true
-	case 14:
-		return t.Direct_posting, true
-	case 16:
-		return t.Reconciliation_account, true
-	case 17:
-		return t.New_page, true
-	case 18:
-		return t.No_of_blank_lines, true
-	case 19:
-		return t.Indentation, true
-	case 26:
-		return t.Last_date_modified, true
-	case 34:
-		return t.Totaling, true
-	case 40:
-		return t.Consol_debit_acc, true
-	case 41:
-		return t.Consol_credit_acc, true
-	case 900:
-		return t.Consol_currency_val_method, true
-	case 43:
-		return t.Gen_posting_type, true
-	case 44:
-		return t.Gen_bus_posting_group, true
-	case 45:
-		return t.Gen_prod_posting_group, true
-	case 49:
-		return t.Automatic_ext_text, true
-	case 50:
-		return t.Dimension_1_posting, true
-	case 51:
-		return t.Dimension_2_posting, true
-	case 54:
-		return t.Tax_area_code, true
-	case 55:
-		return t.Tax_liable, true
-	case 56:
-		return t.Tax_group_code, true
-	case 57:
-		return t.Tax_bus_posting_group, true
-	case 58:
-		return t.Tax_prod_posting_group, true
-	case 63:
-		return t.Exchange_rate_adjustment, true
-	}
-	return nil, false
+	return gLAccountFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *GLAccount) flowFieldValue(no int) (any, bool) {
-	switch no {
-	case 31:
-		return t.Balance_at_date, true
-	case 32:
-		return t.Net_change, true
-	case 33:
-		return t.Budgeted_amount, true
-	case 37:
-		return t.Budget_at_date, true
-	case 36:
-		return t.Balance, true
-	case 47:
-		return t.Debit_amount, true
-	case 48:
-		return t.Credit_amount, true
-	case 60:
-		return t.Additional_currency_net_change, true
-	case 61:
-		return t.Add_currency_balance_at_date, true
-	case 62:
-		return t.Additional_currency_balance, true
-	case 64:
-		return t.Add_currency_debit_amount, true
-	case 65:
-		return t.Add_currency_credit_amount, true
-	case 12:
-		return t.Comment, true
-	}
-	return nil, false
+	return gLAccountFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *GLAccount) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Code); ok {
-			t.Search_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Search_name = types.NewCode(v)
-			return true
-		}
-	case 4:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 5 {
-			t.Account_type = GLAccountAccount_type(i)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-			return true
-		}
-	case 9:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 2 {
-			t.Income_balance = GLAccountIncome_balance(i)
-			return true
-		}
-	case 10:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Debit_credit = GLAccountDebit_credit(i)
-			return true
-		}
-	case 11:
-		if v, ok := value.(types.Code); ok {
-			t.No_2 = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No_2 = types.NewCode(v)
-			return true
-		}
-	case 13:
-		if v, ok := value.(bool); ok {
-			t.Blocked = v
-			return true
-		}
-	case 14:
-		if v, ok := value.(bool); ok {
-			t.Direct_posting = v
-			return true
-		}
-	case 16:
-		if v, ok := value.(bool); ok {
-			t.Reconciliation_account = v
-			return true
-		}
-	case 17:
-		if v, ok := value.(bool); ok {
-			t.New_page = v
-			return true
-		}
-	case 18:
-		if v, ok := value.(int); ok {
-			t.No_of_blank_lines = v
-			return true
-		}
-	case 19:
-		if v, ok := value.(int); ok {
-			t.Indentation = v
-			return true
-		}
-	case 26:
-		if v, ok := value.(types.Date); ok {
-			t.Last_date_modified = v
-			return true
-		}
-	case 34:
-		if v, ok := value.(types.Text); ok {
-			t.Totaling = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Totaling = types.NewText(v)
-			return true
-		}
-	case 40:
-		if v, ok := value.(types.Code); ok {
-			t.Consol_debit_acc = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Consol_debit_acc = types.NewCode(v)
-			return true
-		}
-	case 41:
-		if v, ok := value.(types.Code); ok {
-			t.Consol_credit_acc = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Consol_credit_acc = types.NewCode(v)
-			return true
-		}
-	case 900:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Consol_currency_val_method = GLAccountConsol_currency_val_method(i)
-			return true
-		}
-	case 43:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Gen_posting_type = GLAccountGen_posting_type(i)
-			return true
-		}
-	case 44:
-		if v, ok := value.(types.Code); ok {
-			t.Gen_bus_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Gen_bus_posting_group = types.NewCode(v)
-			return true
-		}
-	case 45:
-		if v, ok := value.(types.Code); ok {
-			t.Gen_prod_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Gen_prod_posting_group = types.NewCode(v)
-			return true
-		}
-	case 49:
-		if v, ok := value.(bool); ok {
-			t.Automatic_ext_text = v
-			return true
-		}
-	case 50:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Dimension_1_posting = GLAccountDimension_1_posting(i)
-			return true
-		}
-	case 51:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Dimension_2_posting = GLAccountDimension_2_posting(i)
-			return true
-		}
-	case 54:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_area_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_area_code = types.NewCode(v)
-			return true
-		}
-	case 55:
-		if v, ok := value.(bool); ok {
-			t.Tax_liable = v
-			return true
-		}
-	case 56:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_group_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_group_code = types.NewCode(v)
-			return true
-		}
-	case 57:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_bus_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_bus_posting_group = types.NewCode(v)
-			return true
-		}
-	case 58:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_prod_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_prod_posting_group = types.NewCode(v)
-			return true
-		}
-	case 63:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Exchange_rate_adjustment = GLAccountExchange_rate_adjustment(i)
-			return true
-		}
-	}
-	return false
+	return gLAccountFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -8354,73 +6513,7 @@ func (t *GLAccount) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *GLAccount) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "no":
-		return t.No, true
-	case "name":
-		return t.Name, true
-	case "search_name":
-		return t.Search_name, true
-	case "account_type":
-		return int(t.Account_type), true
-	case "dimension_1_code":
-		return t.Dimension_1_code, true
-	case "dimension_2_code":
-		return t.Dimension_2_code, true
-	case "income_balance":
-		return int(t.Income_balance), true
-	case "debit_credit":
-		return int(t.Debit_credit), true
-	case "no_2":
-		return t.No_2, true
-	case "blocked":
-		return t.Blocked, true
-	case "direct_posting":
-		return t.Direct_posting, true
-	case "reconciliation_account":
-		return t.Reconciliation_account, true
-	case "new_page":
-		return t.New_page, true
-	case "no_of_blank_lines":
-		return t.No_of_blank_lines, true
-	case "indentation":
-		return t.Indentation, true
-	case "last_date_modified":
-		return t.Last_date_modified, true
-	case "totaling":
-		return t.Totaling, true
-	case "consol_debit_acc":
-		return t.Consol_debit_acc, true
-	case "consol_credit_acc":
-		return t.Consol_credit_acc, true
-	case "consol_currency_val_method":
-		return int(t.Consol_currency_val_method), true
-	case "gen_posting_type":
-		return int(t.Gen_posting_type), true
-	case "gen_bus_posting_group":
-		return t.Gen_bus_posting_group, true
-	case "gen_prod_posting_group":
-		return t.Gen_prod_posting_group, true
-	case "automatic_ext_text":
-		return t.Automatic_ext_text, true
-	case "dimension_1_posting":
-		return int(t.Dimension_1_posting), true
-	case "dimension_2_posting":
-		return int(t.Dimension_2_posting), true
-	case "tax_area_code":
-		return t.Tax_area_code, true
-	case "tax_liable":
-		return t.Tax_liable, true
-	case "tax_group_code":
-		return t.Tax_group_code, true
-	case "tax_bus_posting_group":
-		return t.Tax_bus_posting_group, true
-	case "tax_prod_posting_group":
-		return t.Tax_prod_posting_group, true
-	case "exchange_rate_adjustment":
-		return int(t.Exchange_rate_adjustment), true
-	}
-	return nil, false
+	return gLAccountFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -8537,342 +6630,12 @@ func (t *GLAccount) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *GLAccount) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"no":                     t.No.String(),
-		"name":                   t.Name.String(),
-		"search_name":            t.Search_name.String(),
-		"account_type":           int(t.Account_type),
-		"dimension_1_code":       t.Dimension_1_code.String(),
-		"dimension_2_code":       t.Dimension_2_code.String(),
-		"income_balance":         int(t.Income_balance),
-		"debit_credit":           int(t.Debit_credit),
-		"no_2":                   t.No_2.String(),
-		"blocked":                t.Blocked,
-		"direct_posting":         t.Direct_posting,
-		"reconciliation_account": t.Reconciliation_account,
-		"new_page":               t.New_page,
-		"no_of_blank_lines":      t.No_of_blank_lines,
-		"indentation":            t.Indentation,
-		"last_date_modified":     t.Last_date_modified.String(),
-		"totaling":               t.Totaling.String(),
-		// FlowField: balance_at_date
-		"balance_at_date": t.Balance_at_date.String(),
-		// FlowField: net_change
-		"net_change": t.Net_change.String(),
-		// FlowField: budgeted_amount
-		"budgeted_amount": t.Budgeted_amount.String(),
-		// FlowField: budget_at_date
-		"budget_at_date": t.Budget_at_date.String(),
-		// FlowField: balance
-		"balance": t.Balance.String(),
-		// FlowField: debit_amount
-		"debit_amount": t.Debit_amount.String(),
-		// FlowField: credit_amount
-		"credit_amount": t.Credit_amount.String(),
-		// FlowField: additional_currency_net_change
-		"additional_currency_net_change": t.Additional_currency_net_change.String(),
-		// FlowField: add_currency_balance_at_date
-		"add_currency_balance_at_date": t.Add_currency_balance_at_date.String(),
-		// FlowField: additional_currency_balance
-		"additional_currency_balance": t.Additional_currency_balance.String(),
-		// FlowField: add_currency_debit_amount
-		"add_currency_debit_amount": t.Add_currency_debit_amount.String(),
-		// FlowField: add_currency_credit_amount
-		"add_currency_credit_amount": t.Add_currency_credit_amount.String(),
-		"consol_debit_acc":           t.Consol_debit_acc.String(),
-		"consol_credit_acc":          t.Consol_credit_acc.String(),
-		"consol_currency_val_method": int(t.Consol_currency_val_method),
-		"gen_posting_type":           int(t.Gen_posting_type),
-		"gen_bus_posting_group":      t.Gen_bus_posting_group.String(),
-		"gen_prod_posting_group":     t.Gen_prod_posting_group.String(),
-		"automatic_ext_text":         t.Automatic_ext_text,
-		"dimension_1_posting":        int(t.Dimension_1_posting),
-		"dimension_2_posting":        int(t.Dimension_2_posting),
-		"tax_area_code":              t.Tax_area_code.String(),
-		"tax_liable":                 t.Tax_liable,
-		"tax_group_code":             t.Tax_group_code.String(),
-		"tax_bus_posting_group":      t.Tax_bus_posting_group.String(),
-		"tax_prod_posting_group":     t.Tax_prod_posting_group.String(),
-		"exchange_rate_adjustment":   int(t.Exchange_rate_adjustment),
-		// FlowField: comment
-		"comment": t.Comment,
-	}
+	return gLAccountFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *GLAccount) FromMap(data map[string]interface{}) {
-	if v, ok := data["no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No = types.NewCode(s)
-		}
-	}
-	if v, ok := data["name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Name = types.NewText(s)
-		}
-	}
-	if v, ok := data["search_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Search_name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["account_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Account_type = GLAccountAccount_type(int(val))
-		case int:
-			t.Account_type = GLAccountAccount_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Posting", "Heading", "Total", "Begin-Total", "End-Total"}
-			for i, opt := range options {
-				if opt == val {
-					t.Account_type = GLAccountAccount_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["dimension_1_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_1_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["dimension_2_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_2_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["income_balance"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Income_balance = GLAccountIncome_balance(int(val))
-		case int:
-			t.Income_balance = GLAccountIncome_balance(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Income Statement", "Balance Sheet"}
-			for i, opt := range options {
-				if opt == val {
-					t.Income_balance = GLAccountIncome_balance(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["debit_credit"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Debit_credit = GLAccountDebit_credit(int(val))
-		case int:
-			t.Debit_credit = GLAccountDebit_credit(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Both", "Debit", "Credit"}
-			for i, opt := range options {
-				if opt == val {
-					t.Debit_credit = GLAccountDebit_credit(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["no_2"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No_2 = types.NewCode(s)
-		}
-	}
-	if v, ok := data["blocked"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Blocked = b
-		}
-	}
-	if v, ok := data["direct_posting"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Direct_posting = b
-		}
-	}
-	if v, ok := data["reconciliation_account"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Reconciliation_account = b
-		}
-	}
-	if v, ok := data["new_page"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.New_page = b
-		}
-	}
-	if v, ok := data["no_of_blank_lines"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.No_of_blank_lines = int(val)
-		case int:
-			t.No_of_blank_lines = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.No_of_blank_lines = n
-			}
-		}
-	}
-	if v, ok := data["indentation"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Indentation = int(val)
-		case int:
-			t.Indentation = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Indentation = n
-			}
-		}
-	}
-	if v, ok := data["last_date_modified"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Last_date_modified, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["totaling"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Totaling = types.NewText(s)
-		}
-	}
-	if v, ok := data["consol_debit_acc"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Consol_debit_acc = types.NewCode(s)
-		}
-	}
-	if v, ok := data["consol_credit_acc"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Consol_credit_acc = types.NewCode(s)
-		}
-	}
-	if v, ok := data["consol_currency_val_method"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Consol_currency_val_method = GLAccountConsol_currency_val_method(int(val))
-		case int:
-			t.Consol_currency_val_method = GLAccountConsol_currency_val_method(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Automatic", "Current Rate", "Historical Rate", "Manual Rate"}
-			for i, opt := range options {
-				if opt == val {
-					t.Consol_currency_val_method = GLAccountConsol_currency_val_method(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["gen_posting_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Gen_posting_type = GLAccountGen_posting_type(int(val))
-		case int:
-			t.Gen_posting_type = GLAccountGen_posting_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Purchase", "Sale"}
-			for i, opt := range options {
-				if opt == val {
-					t.Gen_posting_type = GLAccountGen_posting_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["gen_bus_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Gen_bus_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["gen_prod_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Gen_prod_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["automatic_ext_text"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Automatic_ext_text = b
-		}
-	}
-	if v, ok := data["dimension_1_posting"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Dimension_1_posting = GLAccountDimension_1_posting(int(val))
-		case int:
-			t.Dimension_1_posting = GLAccountDimension_1_posting(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Code Mandatory", "Same Code", "No Code"}
-			for i, opt := range options {
-				if opt == val {
-					t.Dimension_1_posting = GLAccountDimension_1_posting(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["dimension_2_posting"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Dimension_2_posting = GLAccountDimension_2_posting(int(val))
-		case int:
-			t.Dimension_2_posting = GLAccountDimension_2_posting(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Code Mandatory", "Same Code", "No Code"}
-			for i, opt := range options {
-				if opt == val {
-					t.Dimension_2_posting = GLAccountDimension_2_posting(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["tax_area_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_area_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_liable"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Tax_liable = b
-		}
-	}
-	if v, ok := data["tax_group_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_group_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_bus_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_bus_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_prod_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_prod_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["exchange_rate_adjustment"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Exchange_rate_adjustment = GLAccountExchange_rate_adjustment(int(val))
-		case int:
-			t.Exchange_rate_adjustment = GLAccountExchange_rate_adjustment(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"No Adjustment", "Adjust Amount", "Adjust Additional-Currency Amount"}
-			for i, opt := range options {
-				if opt == val {
-					t.Exchange_rate_adjustment = GLAccountExchange_rate_adjustment(i)
-					break
-				}
-			}
-		}
-	}
+	gLAccountFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -8893,471 +6656,779 @@ func (t *GLAccount) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *GLAccount) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "name",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "search_name",
-			Type:       tables.FieldTypeCode,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "account_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "dimension_1_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "dimension_2_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "income_balance",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "debit_credit",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "no_2",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         13,
-			Name:       "blocked",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         14,
-			Name:       "direct_posting",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         16,
-			Name:       "reconciliation_account",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         17,
-			Name:       "new_page",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         18,
-			Name:       "no_of_blank_lines",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         19,
-			Name:       "indentation",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         26,
-			Name:       "last_date_modified",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         34,
-			Name:       "totaling",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            31,
-			Name:          "balance_at_date",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            32,
-			Name:          "net_change",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            33,
-			Name:          "budgeted_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            37,
-			Name:          "budget_at_date",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            36,
-			Name:          "balance",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            47,
-			Name:          "debit_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            48,
-			Name:          "credit_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            60,
-			Name:          "additional_currency_net_change",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            61,
-			Name:          "add_currency_balance_at_date",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            62,
-			Name:          "additional_currency_balance",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            64,
-			Name:          "add_currency_debit_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            65,
-			Name:          "add_currency_credit_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         40,
-			Name:       "consol_debit_acc",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         41,
-			Name:       "consol_credit_acc",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         900,
-			Name:       "consol_currency_val_method",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         43,
-			Name:       "gen_posting_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         44,
-			Name:       "gen_bus_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         45,
-			Name:       "gen_prod_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         49,
-			Name:       "automatic_ext_text",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         50,
-			Name:       "dimension_1_posting",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         51,
-			Name:       "dimension_2_posting",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         54,
-			Name:       "tax_area_code",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         55,
-			Name:       "tax_liable",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         56,
-			Name:       "tax_group_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         57,
-			Name:       "tax_bus_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         58,
-			Name:       "tax_prod_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         63,
-			Name:       "exchange_rate_adjustment",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "comment",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  true,
-		},
+	return gLAccountFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in gLAccountFields.Fields
+func (t *GLAccount) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.No
+	case 1:
+		return &t.Name
+	case 2:
+		return &t.Search_name
+	case 3:
+		return &t.Account_type
+	case 4:
+		return &t.Dimension_1_code
+	case 5:
+		return &t.Dimension_2_code
+	case 6:
+		return &t.Income_balance
+	case 7:
+		return &t.Debit_credit
+	case 8:
+		return &t.No_2
+	case 9:
+		return &t.Blocked
+	case 10:
+		return &t.Direct_posting
+	case 11:
+		return &t.Reconciliation_account
+	case 12:
+		return &t.New_page
+	case 13:
+		return &t.No_of_blank_lines
+	case 14:
+		return &t.Indentation
+	case 15:
+		return &t.Last_date_modified
+	case 16:
+		return &t.Totaling
+	case 17:
+		return &t.Balance_at_date
+	case 18:
+		return &t.Net_change
+	case 19:
+		return &t.Budgeted_amount
+	case 20:
+		return &t.Budget_at_date
+	case 21:
+		return &t.Balance
+	case 22:
+		return &t.Debit_amount
+	case 23:
+		return &t.Credit_amount
+	case 24:
+		return &t.Additional_currency_net_change
+	case 25:
+		return &t.Add_currency_balance_at_date
+	case 26:
+		return &t.Additional_currency_balance
+	case 27:
+		return &t.Add_currency_debit_amount
+	case 28:
+		return &t.Add_currency_credit_amount
+	case 29:
+		return &t.Consol_debit_acc
+	case 30:
+		return &t.Consol_credit_acc
+	case 31:
+		return &t.Consol_currency_val_method
+	case 32:
+		return &t.Gen_posting_type
+	case 33:
+		return &t.Gen_bus_posting_group
+	case 34:
+		return &t.Gen_prod_posting_group
+	case 35:
+		return &t.Automatic_ext_text
+	case 36:
+		return &t.Dimension_1_posting
+	case 37:
+		return &t.Dimension_2_posting
+	case 38:
+		return &t.Tax_area_code
+	case 39:
+		return &t.Tax_liable
+	case 40:
+		return &t.Tax_group_code
+	case 41:
+		return &t.Tax_bus_posting_group
+	case 42:
+		return &t.Tax_prod_posting_group
+	case 43:
+		return &t.Exchange_rate_adjustment
+	case 44:
+		return &t.Comment
 	}
+	return nil
+}
+
+// gLAccountFields describes the fields of G_L_Account for the record functions
+// written once in foundation/tables
+var gLAccountFields = &tables.TableFields{
+	Table: GLAccountTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_No",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "name",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "search_name",
+				Type:       tables.FieldTypeCode,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Search_name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "account_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Account_type",
+			Options: []string{"Posting", "Heading", "Total", "Begin-Total", "End-Total"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "dimension_1_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_1_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "dimension_2_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_2_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "income_balance",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Income_balance",
+			Options: []string{"Income Statement", "Balance Sheet"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "debit_credit",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Debit_credit",
+			Options: []string{"Both", "Debit", "Credit"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "no_2",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_No_2",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "blocked",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Blocked",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "direct_posting",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Direct_posting",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         16,
+				Name:       "reconciliation_account",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Reconciliation_account",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         17,
+				Name:       "new_page",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_New_page",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         18,
+				Name:       "no_of_blank_lines",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_No_of_blank_lines",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         19,
+				Name:       "indentation",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Indentation",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         26,
+				Name:       "last_date_modified",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Last_date_modified",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         34,
+				Name:       "totaling",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindText,
+			Trigger:  "OnValidate_Totaling",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            31,
+				Name:          "balance_at_date",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Balance_at_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            32,
+				Name:          "net_change",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Net_change",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            33,
+				Name:          "budgeted_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Budgeted_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            37,
+				Name:          "budget_at_date",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Budget_at_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            36,
+				Name:          "balance",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Balance",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            47,
+				Name:          "debit_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Debit_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            48,
+				Name:          "credit_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Credit_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            60,
+				Name:          "additional_currency_net_change",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Additional_currency_net_change",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            61,
+				Name:          "add_currency_balance_at_date",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Add_currency_balance_at_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            62,
+				Name:          "additional_currency_balance",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Additional_currency_balance",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            64,
+				Name:          "add_currency_debit_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Add_currency_debit_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            65,
+				Name:          "add_currency_credit_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Add_currency_credit_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         40,
+				Name:       "consol_debit_acc",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Consol_debit_acc",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         41,
+				Name:       "consol_credit_acc",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Consol_credit_acc",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         900,
+				Name:       "consol_currency_val_method",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Consol_currency_val_method",
+			Options: []string{"Automatic", "Current Rate", "Historical Rate", "Manual Rate"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         43,
+				Name:       "gen_posting_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Gen_posting_type",
+			Options: []string{" ", "Purchase", "Sale"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         44,
+				Name:       "gen_bus_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Gen_bus_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         45,
+				Name:       "gen_prod_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Gen_prod_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         49,
+				Name:       "automatic_ext_text",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Automatic_ext_text",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         50,
+				Name:       "dimension_1_posting",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Dimension_1_posting",
+			Options: []string{" ", "Code Mandatory", "Same Code", "No Code"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         51,
+				Name:       "dimension_2_posting",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Dimension_2_posting",
+			Options: []string{" ", "Code Mandatory", "Same Code", "No Code"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         54,
+				Name:       "tax_area_code",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_area_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         55,
+				Name:       "tax_liable",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Tax_liable",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         56,
+				Name:       "tax_group_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_group_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         57,
+				Name:       "tax_bus_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_bus_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         58,
+				Name:       "tax_prod_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_prod_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         63,
+				Name:       "exchange_rate_adjustment",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Exchange_rate_adjustment",
+			Options: []string{"No Adjustment", "Adjust Amount", "Adjust Additional-Currency Amount"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "comment",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  true,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Comment",
+		},
+	},
+	FlowFilters: []tables.FieldInfo{
+		{No: 28, Name: "date_filter"},
+		{No: 29, Name: "dimension_1_filter"},
+		{No: 30, Name: "dimension_2_filter"},
+		{No: 42, Name: "business_unit_filter"},
+		{No: 35, Name: "budget_filter"},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

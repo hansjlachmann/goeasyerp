@@ -84,7 +84,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -421,268 +420,12 @@ var ProjectLedgerEntry_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *ProjectLedgerEntry) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "entry_no":
-		return 1
-	case "project_no":
-		return 2
-	case "posting_date":
-		return 3
-	case "document_no":
-		return 4
-	case "type":
-		return 5
-	case "no":
-		return 7
-	case "description":
-		return 8
-	case "quantity":
-		return 9
-	case "direct_unit_cost":
-		return 11
-	case "unit_cost":
-		return 12
-	case "total_cost":
-		return 13
-	case "unit_price":
-		return 14
-	case "total_price":
-		return 15
-	case "resource_group_no":
-		return 16
-	case "unit_of_measure_code":
-		return 17
-	case "location_code":
-		return 20
-	case "chargeable":
-		return 21
-	case "project_posting_group":
-		return 29
-	case "dimension_1_code":
-		return 30
-	case "dimension_2_code":
-		return 31
-	case "work_type_code":
-		return 32
-	case "price_group_code":
-		return 33
-	case "user_id":
-		return 37
-	case "source_code":
-		return 38
-	case "related_to_budget":
-		return 43
-	case "phase_code":
-		return 44
-	case "task_code":
-		return 45
-	case "step_code":
-		return 46
-	case "amt_to_post_to_g_l":
-		return 60
-	case "amt_posted_to_g_l":
-		return 61
-	case "amt_to_recognize":
-		return 62
-	case "amt_recognized":
-		return 63
-	case "entry_type":
-		return 64
-	case "positive":
-		return 65
-	case "open":
-		return 66
-	case "remaining_amount":
-		return 67
-	case "closed_by_entry_no":
-		return 68
-	case "closed_at_date":
-		return 69
-	case "closed_by_amount":
-		return 70
-	case "applies_to_id":
-		return 71
-	case "journal_batch_name":
-		return 75
-	case "reason_code":
-		return 76
-	case "transaction_type":
-		return 77
-	case "transport_method":
-		return 78
-	case "country_code":
-		return 79
-	case "gen_bus_posting_group":
-		return 80
-	case "gen_prod_posting_group":
-		return 81
-	case "entry_exit_point":
-		return 82
-	case "document_date":
-		return 83
-	case "external_document_no":
-		return 84
-	case "area":
-		return 85
-	case "transaction_specification":
-		return 86
-	case "no_series":
-		return 87
-	case "additional_currency_total_cost":
-		return 88
-	case "add_currency_total_price":
-		return 89
-	case "add_curr_amount_to_recognize":
-		return 90
-	case "add_curr_amt_to_post_to_g_l":
-		return 91
-	case "add_curr_amount_recognized":
-		return 92
-	case "add_curr_amt_posted_to_g_l":
-		return 93
-	case "lot_no":
-		return 5400
-	case "variant_code":
-		return 5402
-	case "bin_code":
-		return 5403
-	case "qty_per_unit_of_measure":
-		return 5404
-	}
-	return 0
+	return projectLedgerEntryFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *ProjectLedgerEntry) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "entry_no"
-	case 2:
-		return "project_no"
-	case 3:
-		return "posting_date"
-	case 4:
-		return "document_no"
-	case 5:
-		return "type"
-	case 7:
-		return "no"
-	case 8:
-		return "description"
-	case 9:
-		return "quantity"
-	case 11:
-		return "direct_unit_cost"
-	case 12:
-		return "unit_cost"
-	case 13:
-		return "total_cost"
-	case 14:
-		return "unit_price"
-	case 15:
-		return "total_price"
-	case 16:
-		return "resource_group_no"
-	case 17:
-		return "unit_of_measure_code"
-	case 20:
-		return "location_code"
-	case 21:
-		return "chargeable"
-	case 29:
-		return "project_posting_group"
-	case 30:
-		return "dimension_1_code"
-	case 31:
-		return "dimension_2_code"
-	case 32:
-		return "work_type_code"
-	case 33:
-		return "price_group_code"
-	case 37:
-		return "user_id"
-	case 38:
-		return "source_code"
-	case 43:
-		return "related_to_budget"
-	case 44:
-		return "phase_code"
-	case 45:
-		return "task_code"
-	case 46:
-		return "step_code"
-	case 60:
-		return "amt_to_post_to_g_l"
-	case 61:
-		return "amt_posted_to_g_l"
-	case 62:
-		return "amt_to_recognize"
-	case 63:
-		return "amt_recognized"
-	case 64:
-		return "entry_type"
-	case 65:
-		return "positive"
-	case 66:
-		return "open"
-	case 67:
-		return "remaining_amount"
-	case 68:
-		return "closed_by_entry_no"
-	case 69:
-		return "closed_at_date"
-	case 70:
-		return "closed_by_amount"
-	case 71:
-		return "applies_to_id"
-	case 75:
-		return "journal_batch_name"
-	case 76:
-		return "reason_code"
-	case 77:
-		return "transaction_type"
-	case 78:
-		return "transport_method"
-	case 79:
-		return "country_code"
-	case 80:
-		return "gen_bus_posting_group"
-	case 81:
-		return "gen_prod_posting_group"
-	case 82:
-		return "entry_exit_point"
-	case 83:
-		return "document_date"
-	case 84:
-		return "external_document_no"
-	case 85:
-		return "area"
-	case 86:
-		return "transaction_specification"
-	case 87:
-		return "no_series"
-	case 88:
-		return "additional_currency_total_cost"
-	case 89:
-		return "add_currency_total_price"
-	case 90:
-		return "add_curr_amount_to_recognize"
-	case 91:
-		return "add_curr_amt_to_post_to_g_l"
-	case 92:
-		return "add_curr_amount_recognized"
-	case 93:
-		return "add_curr_amt_posted_to_g_l"
-	case 5400:
-		return "lot_no"
-	case 5402:
-		return "variant_code"
-	case 5403:
-		return "bin_code"
-	case 5404:
-		return "qty_per_unit_of_measure"
-	}
-	return ""
+	return projectLedgerEntryFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -794,195 +537,6 @@ type (
 	ProjectLedgerEntryOnBeforeRename interface {
 		OnBeforeRename(rec *ProjectLedgerEntry, handled *bool) error
 	}
-	ProjectLedgerEntryOnValidate_Entry_no interface {
-		OnValidate_Entry_no(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Project_no interface {
-		OnValidate_Project_no(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Posting_date interface {
-		OnValidate_Posting_date(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Document_no interface {
-		OnValidate_Document_no(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Type interface {
-		OnValidate_Type(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_No interface {
-		OnValidate_No(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Description interface {
-		OnValidate_Description(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Quantity interface {
-		OnValidate_Quantity(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Direct_unit_cost interface {
-		OnValidate_Direct_unit_cost(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Unit_cost interface {
-		OnValidate_Unit_cost(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Total_cost interface {
-		OnValidate_Total_cost(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Unit_price interface {
-		OnValidate_Unit_price(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Total_price interface {
-		OnValidate_Total_price(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Resource_group_no interface {
-		OnValidate_Resource_group_no(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Unit_of_measure_code interface {
-		OnValidate_Unit_of_measure_code(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Location_code interface {
-		OnValidate_Location_code(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Chargeable interface {
-		OnValidate_Chargeable(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Project_posting_group interface {
-		OnValidate_Project_posting_group(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Dimension_1_code interface {
-		OnValidate_Dimension_1_code(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Dimension_2_code interface {
-		OnValidate_Dimension_2_code(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Work_type_code interface {
-		OnValidate_Work_type_code(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Price_group_code interface {
-		OnValidate_Price_group_code(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_User_id interface {
-		OnValidate_User_id(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Source_code interface {
-		OnValidate_Source_code(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Related_to_budget interface {
-		OnValidate_Related_to_budget(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Phase_code interface {
-		OnValidate_Phase_code(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Task_code interface {
-		OnValidate_Task_code(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Step_code interface {
-		OnValidate_Step_code(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Amt_to_post_to_g_l interface {
-		OnValidate_Amt_to_post_to_g_l(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Amt_posted_to_g_l interface {
-		OnValidate_Amt_posted_to_g_l(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Amt_to_recognize interface {
-		OnValidate_Amt_to_recognize(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Amt_recognized interface {
-		OnValidate_Amt_recognized(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Entry_type interface {
-		OnValidate_Entry_type(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Positive interface {
-		OnValidate_Positive(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Open interface {
-		OnValidate_Open(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Remaining_amount interface {
-		OnValidate_Remaining_amount(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Closed_by_entry_no interface {
-		OnValidate_Closed_by_entry_no(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Closed_at_date interface {
-		OnValidate_Closed_at_date(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Closed_by_amount interface {
-		OnValidate_Closed_by_amount(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Applies_to_id interface {
-		OnValidate_Applies_to_id(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Journal_batch_name interface {
-		OnValidate_Journal_batch_name(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Reason_code interface {
-		OnValidate_Reason_code(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Transaction_type interface {
-		OnValidate_Transaction_type(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Transport_method interface {
-		OnValidate_Transport_method(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Country_code interface {
-		OnValidate_Country_code(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Gen_bus_posting_group interface {
-		OnValidate_Gen_bus_posting_group(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Gen_prod_posting_group interface {
-		OnValidate_Gen_prod_posting_group(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Entry_exit_point interface {
-		OnValidate_Entry_exit_point(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Document_date interface {
-		OnValidate_Document_date(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_External_document_no interface {
-		OnValidate_External_document_no(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Area interface {
-		OnValidate_Area(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Transaction_specification interface {
-		OnValidate_Transaction_specification(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_No_series interface {
-		OnValidate_No_series(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Additional_currency_total_cost interface {
-		OnValidate_Additional_currency_total_cost(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Add_currency_total_price interface {
-		OnValidate_Add_currency_total_price(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Add_curr_amount_to_recognize interface {
-		OnValidate_Add_curr_amount_to_recognize(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Add_curr_amt_to_post_to_g_l interface {
-		OnValidate_Add_curr_amt_to_post_to_g_l(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Add_curr_amount_recognized interface {
-		OnValidate_Add_curr_amount_recognized(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Add_curr_amt_posted_to_g_l interface {
-		OnValidate_Add_curr_amt_posted_to_g_l(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Lot_no interface {
-		OnValidate_Lot_no(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Variant_code interface {
-		OnValidate_Variant_code(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Bin_code interface {
-		OnValidate_Bin_code(rec *ProjectLedgerEntry) error
-	}
-	ProjectLedgerEntryOnValidate_Qty_per_unit_of_measure interface {
-		OnValidate_Qty_per_unit_of_measure(rec *ProjectLedgerEntry) error
-	}
 )
 
 // projectLedgerEntryLogic is the registered business logic of Project_Ledger_Entry, in
@@ -1025,134 +579,9 @@ func projectLedgerEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ProjectLedgerEntryOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(ProjectLedgerEntryOnBeforeRename)
-	case "OnValidate_Entry_no":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Entry_no)
-	case "OnValidate_Project_no":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Project_no)
-	case "OnValidate_Posting_date":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Posting_date)
-	case "OnValidate_Document_no":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Document_no)
-	case "OnValidate_Type":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Type)
-	case "OnValidate_No":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_No)
-	case "OnValidate_Description":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Description)
-	case "OnValidate_Quantity":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Quantity)
-	case "OnValidate_Direct_unit_cost":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Direct_unit_cost)
-	case "OnValidate_Unit_cost":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Unit_cost)
-	case "OnValidate_Total_cost":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Total_cost)
-	case "OnValidate_Unit_price":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Unit_price)
-	case "OnValidate_Total_price":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Total_price)
-	case "OnValidate_Resource_group_no":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Resource_group_no)
-	case "OnValidate_Unit_of_measure_code":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Unit_of_measure_code)
-	case "OnValidate_Location_code":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Location_code)
-	case "OnValidate_Chargeable":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Chargeable)
-	case "OnValidate_Project_posting_group":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Project_posting_group)
-	case "OnValidate_Dimension_1_code":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Dimension_1_code)
-	case "OnValidate_Dimension_2_code":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Dimension_2_code)
-	case "OnValidate_Work_type_code":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Work_type_code)
-	case "OnValidate_Price_group_code":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Price_group_code)
-	case "OnValidate_User_id":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_User_id)
-	case "OnValidate_Source_code":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Source_code)
-	case "OnValidate_Related_to_budget":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Related_to_budget)
-	case "OnValidate_Phase_code":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Phase_code)
-	case "OnValidate_Task_code":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Task_code)
-	case "OnValidate_Step_code":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Step_code)
-	case "OnValidate_Amt_to_post_to_g_l":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Amt_to_post_to_g_l)
-	case "OnValidate_Amt_posted_to_g_l":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Amt_posted_to_g_l)
-	case "OnValidate_Amt_to_recognize":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Amt_to_recognize)
-	case "OnValidate_Amt_recognized":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Amt_recognized)
-	case "OnValidate_Entry_type":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Entry_type)
-	case "OnValidate_Positive":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Positive)
-	case "OnValidate_Open":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Open)
-	case "OnValidate_Remaining_amount":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Remaining_amount)
-	case "OnValidate_Closed_by_entry_no":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Closed_by_entry_no)
-	case "OnValidate_Closed_at_date":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Closed_at_date)
-	case "OnValidate_Closed_by_amount":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Closed_by_amount)
-	case "OnValidate_Applies_to_id":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Applies_to_id)
-	case "OnValidate_Journal_batch_name":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Journal_batch_name)
-	case "OnValidate_Reason_code":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Reason_code)
-	case "OnValidate_Transaction_type":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Transaction_type)
-	case "OnValidate_Transport_method":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Transport_method)
-	case "OnValidate_Country_code":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Country_code)
-	case "OnValidate_Gen_bus_posting_group":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Gen_bus_posting_group)
-	case "OnValidate_Gen_prod_posting_group":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Gen_prod_posting_group)
-	case "OnValidate_Entry_exit_point":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Entry_exit_point)
-	case "OnValidate_Document_date":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Document_date)
-	case "OnValidate_External_document_no":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_External_document_no)
-	case "OnValidate_Area":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Area)
-	case "OnValidate_Transaction_specification":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Transaction_specification)
-	case "OnValidate_No_series":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_No_series)
-	case "OnValidate_Additional_currency_total_cost":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Additional_currency_total_cost)
-	case "OnValidate_Add_currency_total_price":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Add_currency_total_price)
-	case "OnValidate_Add_curr_amount_to_recognize":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Add_curr_amount_to_recognize)
-	case "OnValidate_Add_curr_amt_to_post_to_g_l":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Add_curr_amt_to_post_to_g_l)
-	case "OnValidate_Add_curr_amount_recognized":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Add_curr_amount_recognized)
-	case "OnValidate_Add_curr_amt_posted_to_g_l":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Add_curr_amt_posted_to_g_l)
-	case "OnValidate_Lot_no":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Lot_no)
-	case "OnValidate_Variant_code":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Variant_code)
-	case "OnValidate_Bin_code":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Bin_code)
-	case "OnValidate_Qty_per_unit_of_measure":
-		_, ok = logic.(ProjectLedgerEntryOnValidate_Qty_per_unit_of_measure)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return projectLedgerEntryFields.IsOnValidateTrigger(name, logic, (*ProjectLedgerEntry)(nil))
 	}
 	return true, ok
 }
@@ -1725,70 +1154,7 @@ func (t *ProjectLedgerEntry) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *ProjectLedgerEntry) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["entry_no"] = t.Entry_no
-	t.oldValues["project_no"] = t.Project_no
-	t.oldValues["posting_date"] = t.Posting_date
-	t.oldValues["document_no"] = t.Document_no
-	t.oldValues["type"] = t.Type
-	t.oldValues["no"] = t.No
-	t.oldValues["description"] = t.Description
-	t.oldValues["quantity"] = t.Quantity
-	t.oldValues["direct_unit_cost"] = t.Direct_unit_cost
-	t.oldValues["unit_cost"] = t.Unit_cost
-	t.oldValues["total_cost"] = t.Total_cost
-	t.oldValues["unit_price"] = t.Unit_price
-	t.oldValues["total_price"] = t.Total_price
-	t.oldValues["resource_group_no"] = t.Resource_group_no
-	t.oldValues["unit_of_measure_code"] = t.Unit_of_measure_code
-	t.oldValues["location_code"] = t.Location_code
-	t.oldValues["chargeable"] = t.Chargeable
-	t.oldValues["project_posting_group"] = t.Project_posting_group
-	t.oldValues["dimension_1_code"] = t.Dimension_1_code
-	t.oldValues["dimension_2_code"] = t.Dimension_2_code
-	t.oldValues["work_type_code"] = t.Work_type_code
-	t.oldValues["price_group_code"] = t.Price_group_code
-	t.oldValues["user_id"] = t.User_id
-	t.oldValues["source_code"] = t.Source_code
-	t.oldValues["related_to_budget"] = t.Related_to_budget
-	t.oldValues["phase_code"] = t.Phase_code
-	t.oldValues["task_code"] = t.Task_code
-	t.oldValues["step_code"] = t.Step_code
-	t.oldValues["amt_to_post_to_g_l"] = t.Amt_to_post_to_g_l
-	t.oldValues["amt_posted_to_g_l"] = t.Amt_posted_to_g_l
-	t.oldValues["amt_to_recognize"] = t.Amt_to_recognize
-	t.oldValues["amt_recognized"] = t.Amt_recognized
-	t.oldValues["entry_type"] = t.Entry_type
-	t.oldValues["positive"] = t.Positive
-	t.oldValues["open"] = t.Open
-	t.oldValues["remaining_amount"] = t.Remaining_amount
-	t.oldValues["closed_by_entry_no"] = t.Closed_by_entry_no
-	t.oldValues["closed_at_date"] = t.Closed_at_date
-	t.oldValues["closed_by_amount"] = t.Closed_by_amount
-	t.oldValues["applies_to_id"] = t.Applies_to_id
-	t.oldValues["journal_batch_name"] = t.Journal_batch_name
-	t.oldValues["reason_code"] = t.Reason_code
-	t.oldValues["transaction_type"] = t.Transaction_type
-	t.oldValues["transport_method"] = t.Transport_method
-	t.oldValues["country_code"] = t.Country_code
-	t.oldValues["gen_bus_posting_group"] = t.Gen_bus_posting_group
-	t.oldValues["gen_prod_posting_group"] = t.Gen_prod_posting_group
-	t.oldValues["entry_exit_point"] = t.Entry_exit_point
-	t.oldValues["document_date"] = t.Document_date
-	t.oldValues["external_document_no"] = t.External_document_no
-	t.oldValues["area"] = t.Area
-	t.oldValues["transaction_specification"] = t.Transaction_specification
-	t.oldValues["no_series"] = t.No_series
-	t.oldValues["additional_currency_total_cost"] = t.Additional_currency_total_cost
-	t.oldValues["add_currency_total_price"] = t.Add_currency_total_price
-	t.oldValues["add_curr_amount_to_recognize"] = t.Add_curr_amount_to_recognize
-	t.oldValues["add_curr_amt_to_post_to_g_l"] = t.Add_curr_amt_to_post_to_g_l
-	t.oldValues["add_curr_amount_recognized"] = t.Add_curr_amount_recognized
-	t.oldValues["add_curr_amt_posted_to_g_l"] = t.Add_curr_amt_posted_to_g_l
-	t.oldValues["lot_no"] = t.Lot_no
-	t.oldValues["variant_code"] = t.Variant_code
-	t.oldValues["bin_code"] = t.Bin_code
-	t.oldValues["qty_per_unit_of_measure"] = t.Qty_per_unit_of_measure
+	t.oldValues = projectLedgerEntryFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1803,195 +1169,7 @@ func (t *ProjectLedgerEntry) OldValue(fieldName string) interface{} {
 func (t *ProjectLedgerEntry) XRec() *ProjectLedgerEntry {
 	x := &ProjectLedgerEntry{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["entry_no"].(int); ok {
-		x.Entry_no = v
-	}
-	if v, ok := t.oldValues["project_no"].(types.Code); ok {
-		x.Project_no = v
-	}
-	if v, ok := t.oldValues["posting_date"].(types.Date); ok {
-		x.Posting_date = v
-	}
-	if v, ok := t.oldValues["document_no"].(types.Code); ok {
-		x.Document_no = v
-	}
-	if v, ok := t.oldValues["type"].(ProjectLedgerEntryType); ok {
-		x.Type = v
-	}
-	if v, ok := t.oldValues["no"].(types.Code); ok {
-		x.No = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["quantity"].(types.Decimal); ok {
-		x.Quantity = v
-	}
-	if v, ok := t.oldValues["direct_unit_cost"].(types.Decimal); ok {
-		x.Direct_unit_cost = v
-	}
-	if v, ok := t.oldValues["unit_cost"].(types.Decimal); ok {
-		x.Unit_cost = v
-	}
-	if v, ok := t.oldValues["total_cost"].(types.Decimal); ok {
-		x.Total_cost = v
-	}
-	if v, ok := t.oldValues["unit_price"].(types.Decimal); ok {
-		x.Unit_price = v
-	}
-	if v, ok := t.oldValues["total_price"].(types.Decimal); ok {
-		x.Total_price = v
-	}
-	if v, ok := t.oldValues["resource_group_no"].(types.Code); ok {
-		x.Resource_group_no = v
-	}
-	if v, ok := t.oldValues["unit_of_measure_code"].(types.Code); ok {
-		x.Unit_of_measure_code = v
-	}
-	if v, ok := t.oldValues["location_code"].(types.Code); ok {
-		x.Location_code = v
-	}
-	if v, ok := t.oldValues["chargeable"].(bool); ok {
-		x.Chargeable = v
-	}
-	if v, ok := t.oldValues["project_posting_group"].(types.Code); ok {
-		x.Project_posting_group = v
-	}
-	if v, ok := t.oldValues["dimension_1_code"].(types.Code); ok {
-		x.Dimension_1_code = v
-	}
-	if v, ok := t.oldValues["dimension_2_code"].(types.Code); ok {
-		x.Dimension_2_code = v
-	}
-	if v, ok := t.oldValues["work_type_code"].(types.Code); ok {
-		x.Work_type_code = v
-	}
-	if v, ok := t.oldValues["price_group_code"].(types.Code); ok {
-		x.Price_group_code = v
-	}
-	if v, ok := t.oldValues["user_id"].(types.Code); ok {
-		x.User_id = v
-	}
-	if v, ok := t.oldValues["source_code"].(types.Code); ok {
-		x.Source_code = v
-	}
-	if v, ok := t.oldValues["related_to_budget"].(bool); ok {
-		x.Related_to_budget = v
-	}
-	if v, ok := t.oldValues["phase_code"].(types.Code); ok {
-		x.Phase_code = v
-	}
-	if v, ok := t.oldValues["task_code"].(types.Code); ok {
-		x.Task_code = v
-	}
-	if v, ok := t.oldValues["step_code"].(types.Code); ok {
-		x.Step_code = v
-	}
-	if v, ok := t.oldValues["amt_to_post_to_g_l"].(types.Decimal); ok {
-		x.Amt_to_post_to_g_l = v
-	}
-	if v, ok := t.oldValues["amt_posted_to_g_l"].(types.Decimal); ok {
-		x.Amt_posted_to_g_l = v
-	}
-	if v, ok := t.oldValues["amt_to_recognize"].(types.Decimal); ok {
-		x.Amt_to_recognize = v
-	}
-	if v, ok := t.oldValues["amt_recognized"].(types.Decimal); ok {
-		x.Amt_recognized = v
-	}
-	if v, ok := t.oldValues["entry_type"].(ProjectLedgerEntryEntry_type); ok {
-		x.Entry_type = v
-	}
-	if v, ok := t.oldValues["positive"].(bool); ok {
-		x.Positive = v
-	}
-	if v, ok := t.oldValues["open"].(bool); ok {
-		x.Open = v
-	}
-	if v, ok := t.oldValues["remaining_amount"].(types.Decimal); ok {
-		x.Remaining_amount = v
-	}
-	if v, ok := t.oldValues["closed_by_entry_no"].(int); ok {
-		x.Closed_by_entry_no = v
-	}
-	if v, ok := t.oldValues["closed_at_date"].(types.Date); ok {
-		x.Closed_at_date = v
-	}
-	if v, ok := t.oldValues["closed_by_amount"].(types.Decimal); ok {
-		x.Closed_by_amount = v
-	}
-	if v, ok := t.oldValues["applies_to_id"].(types.Code); ok {
-		x.Applies_to_id = v
-	}
-	if v, ok := t.oldValues["journal_batch_name"].(types.Code); ok {
-		x.Journal_batch_name = v
-	}
-	if v, ok := t.oldValues["reason_code"].(types.Code); ok {
-		x.Reason_code = v
-	}
-	if v, ok := t.oldValues["transaction_type"].(types.Code); ok {
-		x.Transaction_type = v
-	}
-	if v, ok := t.oldValues["transport_method"].(types.Code); ok {
-		x.Transport_method = v
-	}
-	if v, ok := t.oldValues["country_code"].(types.Code); ok {
-		x.Country_code = v
-	}
-	if v, ok := t.oldValues["gen_bus_posting_group"].(types.Code); ok {
-		x.Gen_bus_posting_group = v
-	}
-	if v, ok := t.oldValues["gen_prod_posting_group"].(types.Code); ok {
-		x.Gen_prod_posting_group = v
-	}
-	if v, ok := t.oldValues["entry_exit_point"].(types.Code); ok {
-		x.Entry_exit_point = v
-	}
-	if v, ok := t.oldValues["document_date"].(types.Date); ok {
-		x.Document_date = v
-	}
-	if v, ok := t.oldValues["external_document_no"].(types.Code); ok {
-		x.External_document_no = v
-	}
-	if v, ok := t.oldValues["area"].(types.Code); ok {
-		x.Area = v
-	}
-	if v, ok := t.oldValues["transaction_specification"].(types.Code); ok {
-		x.Transaction_specification = v
-	}
-	if v, ok := t.oldValues["no_series"].(types.Code); ok {
-		x.No_series = v
-	}
-	if v, ok := t.oldValues["additional_currency_total_cost"].(types.Decimal); ok {
-		x.Additional_currency_total_cost = v
-	}
-	if v, ok := t.oldValues["add_currency_total_price"].(types.Decimal); ok {
-		x.Add_currency_total_price = v
-	}
-	if v, ok := t.oldValues["add_curr_amount_to_recognize"].(types.Decimal); ok {
-		x.Add_curr_amount_to_recognize = v
-	}
-	if v, ok := t.oldValues["add_curr_amt_to_post_to_g_l"].(types.Decimal); ok {
-		x.Add_curr_amt_to_post_to_g_l = v
-	}
-	if v, ok := t.oldValues["add_curr_amount_recognized"].(types.Decimal); ok {
-		x.Add_curr_amount_recognized = v
-	}
-	if v, ok := t.oldValues["add_curr_amt_posted_to_g_l"].(types.Decimal); ok {
-		x.Add_curr_amt_posted_to_g_l = v
-	}
-	if v, ok := t.oldValues["lot_no"].(types.Code); ok {
-		x.Lot_no = v
-	}
-	if v, ok := t.oldValues["variant_code"].(types.Code); ok {
-		x.Variant_code = v
-	}
-	if v, ok := t.oldValues["bin_code"].(types.Code); ok {
-		x.Bin_code = v
-	}
-	if v, ok := t.oldValues["qty_per_unit_of_measure"].(types.Decimal); ok {
-		x.Qty_per_unit_of_measure = v
-	}
+	projectLedgerEntryFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -2927,279 +2105,7 @@ func (t *ProjectLedgerEntry) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *ProjectLedgerEntry) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "project_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_no.Equal(old)
-		}
-	case "posting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Posting_date.Equal(old)
-		}
-	case "document_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Document_no.Equal(old)
-		}
-	case "type":
-		if old, ok := oldValue.(ProjectLedgerEntryType); ok {
-			return t.Type != old
-		}
-	case "no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "quantity":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Quantity.Equal(old)
-		}
-	case "direct_unit_cost":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Direct_unit_cost.Equal(old)
-		}
-	case "unit_cost":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Unit_cost.Equal(old)
-		}
-	case "total_cost":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Total_cost.Equal(old)
-		}
-	case "unit_price":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Unit_price.Equal(old)
-		}
-	case "total_price":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Total_price.Equal(old)
-		}
-	case "resource_group_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Resource_group_no.Equal(old)
-		}
-	case "unit_of_measure_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Unit_of_measure_code.Equal(old)
-		}
-	case "location_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Location_code.Equal(old)
-		}
-	case "chargeable":
-		if old, ok := oldValue.(bool); ok {
-			return t.Chargeable != old
-		}
-		return true // Type mismatch, assume changed
-	case "project_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_posting_group.Equal(old)
-		}
-	case "dimension_1_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_1_code.Equal(old)
-		}
-	case "dimension_2_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Dimension_2_code.Equal(old)
-		}
-	case "work_type_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Work_type_code.Equal(old)
-		}
-	case "price_group_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Price_group_code.Equal(old)
-		}
-	case "user_id":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.User_id.Equal(old)
-		}
-	case "source_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Source_code.Equal(old)
-		}
-	case "related_to_budget":
-		if old, ok := oldValue.(bool); ok {
-			return t.Related_to_budget != old
-		}
-		return true // Type mismatch, assume changed
-	case "phase_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Phase_code.Equal(old)
-		}
-	case "task_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Task_code.Equal(old)
-		}
-	case "step_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Step_code.Equal(old)
-		}
-	case "amt_to_post_to_g_l":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Amt_to_post_to_g_l.Equal(old)
-		}
-	case "amt_posted_to_g_l":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Amt_posted_to_g_l.Equal(old)
-		}
-	case "amt_to_recognize":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Amt_to_recognize.Equal(old)
-		}
-	case "amt_recognized":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Amt_recognized.Equal(old)
-		}
-	case "entry_type":
-		if old, ok := oldValue.(ProjectLedgerEntryEntry_type); ok {
-			return t.Entry_type != old
-		}
-	case "positive":
-		if old, ok := oldValue.(bool); ok {
-			return t.Positive != old
-		}
-		return true // Type mismatch, assume changed
-	case "open":
-		if old, ok := oldValue.(bool); ok {
-			return t.Open != old
-		}
-		return true // Type mismatch, assume changed
-	case "remaining_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Remaining_amount.Equal(old)
-		}
-	case "closed_by_entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Closed_by_entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "closed_at_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Closed_at_date.Equal(old)
-		}
-	case "closed_by_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Closed_by_amount.Equal(old)
-		}
-	case "applies_to_id":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Applies_to_id.Equal(old)
-		}
-	case "journal_batch_name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Journal_batch_name.Equal(old)
-		}
-	case "reason_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Reason_code.Equal(old)
-		}
-	case "transaction_type":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Transaction_type.Equal(old)
-		}
-	case "transport_method":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Transport_method.Equal(old)
-		}
-	case "country_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Country_code.Equal(old)
-		}
-	case "gen_bus_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Gen_bus_posting_group.Equal(old)
-		}
-	case "gen_prod_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Gen_prod_posting_group.Equal(old)
-		}
-	case "entry_exit_point":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Entry_exit_point.Equal(old)
-		}
-	case "document_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Document_date.Equal(old)
-		}
-	case "external_document_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.External_document_no.Equal(old)
-		}
-	case "area":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Area.Equal(old)
-		}
-	case "transaction_specification":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Transaction_specification.Equal(old)
-		}
-	case "no_series":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No_series.Equal(old)
-		}
-	case "additional_currency_total_cost":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Additional_currency_total_cost.Equal(old)
-		}
-	case "add_currency_total_price":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Add_currency_total_price.Equal(old)
-		}
-	case "add_curr_amount_to_recognize":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Add_curr_amount_to_recognize.Equal(old)
-		}
-	case "add_curr_amt_to_post_to_g_l":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Add_curr_amt_to_post_to_g_l.Equal(old)
-		}
-	case "add_curr_amount_recognized":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Add_curr_amount_recognized.Equal(old)
-		}
-	case "add_curr_amt_posted_to_g_l":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Add_curr_amt_posted_to_g_l.Equal(old)
-		}
-	case "lot_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Lot_no.Equal(old)
-		}
-	case "variant_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Variant_code.Equal(old)
-		}
-	case "bin_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Bin_code.Equal(old)
-		}
-	case "qty_per_unit_of_measure":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Qty_per_unit_of_measure.Equal(old)
-		}
-	}
-
-	return false
+	return projectLedgerEntryFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -3400,135 +2306,7 @@ func (t *ProjectLedgerEntry) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *ProjectLedgerEntry) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("entry_no"):
-		return "entry_no", true
-	case strings.ToLower("project_no"):
-		return "project_no", true
-	case strings.ToLower("posting_date"):
-		return "posting_date", true
-	case strings.ToLower("document_no"):
-		return "document_no", true
-	case strings.ToLower("type"):
-		return "type", true
-	case strings.ToLower("no"):
-		return "no", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("quantity"):
-		return "quantity", true
-	case strings.ToLower("direct_unit_cost"):
-		return "direct_unit_cost", true
-	case strings.ToLower("unit_cost"):
-		return "unit_cost", true
-	case strings.ToLower("total_cost"):
-		return "total_cost", true
-	case strings.ToLower("unit_price"):
-		return "unit_price", true
-	case strings.ToLower("total_price"):
-		return "total_price", true
-	case strings.ToLower("resource_group_no"):
-		return "resource_group_no", true
-	case strings.ToLower("unit_of_measure_code"):
-		return "unit_of_measure_code", true
-	case strings.ToLower("location_code"):
-		return "location_code", true
-	case strings.ToLower("chargeable"):
-		return "chargeable", true
-	case strings.ToLower("project_posting_group"):
-		return "project_posting_group", true
-	case strings.ToLower("dimension_1_code"):
-		return "dimension_1_code", true
-	case strings.ToLower("dimension_2_code"):
-		return "dimension_2_code", true
-	case strings.ToLower("work_type_code"):
-		return "work_type_code", true
-	case strings.ToLower("price_group_code"):
-		return "price_group_code", true
-	case strings.ToLower("user_id"):
-		return "user_id", true
-	case strings.ToLower("source_code"):
-		return "source_code", true
-	case strings.ToLower("related_to_budget"):
-		return "related_to_budget", true
-	case strings.ToLower("phase_code"):
-		return "phase_code", true
-	case strings.ToLower("task_code"):
-		return "task_code", true
-	case strings.ToLower("step_code"):
-		return "step_code", true
-	case strings.ToLower("amt_to_post_to_g_l"):
-		return "amt_to_post_to_g_l", true
-	case strings.ToLower("amt_posted_to_g_l"):
-		return "amt_posted_to_g_l", true
-	case strings.ToLower("amt_to_recognize"):
-		return "amt_to_recognize", true
-	case strings.ToLower("amt_recognized"):
-		return "amt_recognized", true
-	case strings.ToLower("entry_type"):
-		return "entry_type", true
-	case strings.ToLower("positive"):
-		return "positive", true
-	case strings.ToLower("open"):
-		return "open", true
-	case strings.ToLower("remaining_amount"):
-		return "remaining_amount", true
-	case strings.ToLower("closed_by_entry_no"):
-		return "closed_by_entry_no", true
-	case strings.ToLower("closed_at_date"):
-		return "closed_at_date", true
-	case strings.ToLower("closed_by_amount"):
-		return "closed_by_amount", true
-	case strings.ToLower("applies_to_id"):
-		return "applies_to_id", true
-	case strings.ToLower("journal_batch_name"):
-		return "journal_batch_name", true
-	case strings.ToLower("reason_code"):
-		return "reason_code", true
-	case strings.ToLower("transaction_type"):
-		return "transaction_type", true
-	case strings.ToLower("transport_method"):
-		return "transport_method", true
-	case strings.ToLower("country_code"):
-		return "country_code", true
-	case strings.ToLower("gen_bus_posting_group"):
-		return "gen_bus_posting_group", true
-	case strings.ToLower("gen_prod_posting_group"):
-		return "gen_prod_posting_group", true
-	case strings.ToLower("entry_exit_point"):
-		return "entry_exit_point", true
-	case strings.ToLower("document_date"):
-		return "document_date", true
-	case strings.ToLower("external_document_no"):
-		return "external_document_no", true
-	case strings.ToLower("area"):
-		return "area", true
-	case strings.ToLower("transaction_specification"):
-		return "transaction_specification", true
-	case strings.ToLower("no_series"):
-		return "no_series", true
-	case strings.ToLower("additional_currency_total_cost"):
-		return "additional_currency_total_cost", true
-	case strings.ToLower("add_currency_total_price"):
-		return "add_currency_total_price", true
-	case strings.ToLower("add_curr_amount_to_recognize"):
-		return "add_curr_amount_to_recognize", true
-	case strings.ToLower("add_curr_amt_to_post_to_g_l"):
-		return "add_curr_amt_to_post_to_g_l", true
-	case strings.ToLower("add_curr_amount_recognized"):
-		return "add_curr_amount_recognized", true
-	case strings.ToLower("add_curr_amt_posted_to_g_l"):
-		return "add_curr_amt_posted_to_g_l", true
-	case strings.ToLower("lot_no"):
-		return "lot_no", true
-	case strings.ToLower("variant_code"):
-		return "variant_code", true
-	case strings.ToLower("bin_code"):
-		return "bin_code", true
-	case strings.ToLower("qty_per_unit_of_measure"):
-		return "qty_per_unit_of_measure", true
-	}
-	return "", false
+	return projectLedgerEntryFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -5166,1546 +3944,20 @@ func (t *ProjectLedgerEntry) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *ProjectLedgerEntry) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Entry_no = v
-		case float64:
-			t.Entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field entry_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Entry_no); ok {
-				if err := trg.OnValidate_Entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "project_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Project_no = v
-		} else if v, ok := value.(string); ok {
-			t.Project_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field project_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Project_no); ok {
-				if err := trg.OnValidate_Project_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "posting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Posting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Posting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field posting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Posting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field posting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Posting_date); ok {
-				if err := trg.OnValidate_Posting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Document_no = v
-		} else if v, ok := value.(string); ok {
-			t.Document_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field document_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Document_no); ok {
-				if err := trg.OnValidate_Document_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ProjectLedgerEntryType); ok {
-			t.Type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", v, 3-1)
-			}
-			t.Type = ProjectLedgerEntryType(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Type = ProjectLedgerEntryType(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Type = 0
-			} else {
-				options := []string{"Resource", "Item", "Account (G/L)"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Type = ProjectLedgerEntryType(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field type (expected ProjectLedgerEntryType, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Type); ok {
-				if err := trg.OnValidate_Type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-		} else if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_No); ok {
-				if err := trg.OnValidate_No(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "quantity":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Quantity, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field quantity: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Quantity = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Quantity = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Quantity = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field quantity (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Quantity); ok {
-				if err := trg.OnValidate_Quantity(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "direct_unit_cost":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Direct_unit_cost = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Direct_unit_cost, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field direct_unit_cost: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Direct_unit_cost = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Direct_unit_cost = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Direct_unit_cost = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field direct_unit_cost (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Direct_unit_cost); ok {
-				if err := trg.OnValidate_Direct_unit_cost(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unit_cost":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Unit_cost = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Unit_cost, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field unit_cost: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Unit_cost = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Unit_cost = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Unit_cost = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field unit_cost (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Unit_cost); ok {
-				if err := trg.OnValidate_Unit_cost(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "total_cost":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Total_cost = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Total_cost, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field total_cost: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Total_cost = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Total_cost = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Total_cost = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field total_cost (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Total_cost); ok {
-				if err := trg.OnValidate_Total_cost(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unit_price":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Unit_price = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Unit_price, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field unit_price: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Unit_price = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Unit_price = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Unit_price = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field unit_price (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Unit_price); ok {
-				if err := trg.OnValidate_Unit_price(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "total_price":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Total_price = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Total_price, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field total_price: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Total_price = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Total_price = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Total_price = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field total_price (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Total_price); ok {
-				if err := trg.OnValidate_Total_price(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "resource_group_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Resource_group_no = v
-		} else if v, ok := value.(string); ok {
-			t.Resource_group_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field resource_group_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "resource_group_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Resource_group_no); ok {
-				if err := trg.OnValidate_Resource_group_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unit_of_measure_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Unit_of_measure_code = v
-		} else if v, ok := value.(string); ok {
-			t.Unit_of_measure_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field unit_of_measure_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "unit_of_measure_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Unit_of_measure_code); ok {
-				if err := trg.OnValidate_Unit_of_measure_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "location_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Location_code = v
-		} else if v, ok := value.(string); ok {
-			t.Location_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field location_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "location_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Location_code); ok {
-				if err := trg.OnValidate_Location_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "chargeable":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Chargeable = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Chargeable = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field chargeable")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Chargeable); ok {
-				if err := trg.OnValidate_Chargeable(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "project_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Project_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Project_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field project_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Project_posting_group); ok {
-				if err := trg.OnValidate_Project_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_1_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_1_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_1_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Dimension_1_code); ok {
-				if err := trg.OnValidate_Dimension_1_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "dimension_2_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-		} else if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field dimension_2_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "dimension_2_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Dimension_2_code); ok {
-				if err := trg.OnValidate_Dimension_2_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "work_type_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Work_type_code = v
-		} else if v, ok := value.(string); ok {
-			t.Work_type_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field work_type_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "work_type_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Work_type_code); ok {
-				if err := trg.OnValidate_Work_type_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "price_group_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Price_group_code = v
-		} else if v, ok := value.(string); ok {
-			t.Price_group_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field price_group_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "price_group_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Price_group_code); ok {
-				if err := trg.OnValidate_Price_group_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "user_id":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-		} else if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field user_id")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "user_id"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_User_id); ok {
-				if err := trg.OnValidate_User_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "source_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Source_code = v
-		} else if v, ok := value.(string); ok {
-			t.Source_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field source_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "source_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Source_code); ok {
-				if err := trg.OnValidate_Source_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "related_to_budget":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Related_to_budget = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Related_to_budget = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field related_to_budget")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Related_to_budget); ok {
-				if err := trg.OnValidate_Related_to_budget(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "phase_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Phase_code = v
-		} else if v, ok := value.(string); ok {
-			t.Phase_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field phase_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "phase_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Phase_code); ok {
-				if err := trg.OnValidate_Phase_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "task_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Task_code = v
-		} else if v, ok := value.(string); ok {
-			t.Task_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field task_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "task_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Task_code); ok {
-				if err := trg.OnValidate_Task_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "step_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Step_code = v
-		} else if v, ok := value.(string); ok {
-			t.Step_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field step_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "step_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Step_code); ok {
-				if err := trg.OnValidate_Step_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "amt_to_post_to_g_l":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Amt_to_post_to_g_l = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Amt_to_post_to_g_l, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field amt_to_post_to_g_l: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Amt_to_post_to_g_l = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Amt_to_post_to_g_l = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Amt_to_post_to_g_l = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field amt_to_post_to_g_l (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Amt_to_post_to_g_l); ok {
-				if err := trg.OnValidate_Amt_to_post_to_g_l(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "amt_posted_to_g_l":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Amt_posted_to_g_l = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Amt_posted_to_g_l, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field amt_posted_to_g_l: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Amt_posted_to_g_l = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Amt_posted_to_g_l = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Amt_posted_to_g_l = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field amt_posted_to_g_l (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Amt_posted_to_g_l); ok {
-				if err := trg.OnValidate_Amt_posted_to_g_l(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "amt_to_recognize":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Amt_to_recognize = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Amt_to_recognize, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field amt_to_recognize: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Amt_to_recognize = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Amt_to_recognize = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Amt_to_recognize = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field amt_to_recognize (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Amt_to_recognize); ok {
-				if err := trg.OnValidate_Amt_to_recognize(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "amt_recognized":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Amt_recognized = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Amt_recognized, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field amt_recognized: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Amt_recognized = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Amt_recognized = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Amt_recognized = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field amt_recognized (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Amt_recognized); ok {
-				if err := trg.OnValidate_Amt_recognized(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "entry_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ProjectLedgerEntryEntry_type); ok {
-			t.Entry_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 2 {
-				return fmt.Errorf("invalid option value %d for field entry_type (valid range: 0-%d)", v, 2-1)
-			}
-			t.Entry_type = ProjectLedgerEntryEntry_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 2 {
-				return fmt.Errorf("invalid option value %d for field entry_type (valid range: 0-%d)", intVal, 2-1)
-			}
-			t.Entry_type = ProjectLedgerEntryEntry_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Entry_type = 0
-			} else {
-				options := []string{"Usage", "Sale"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Entry_type = ProjectLedgerEntryEntry_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field entry_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field entry_type (expected ProjectLedgerEntryEntry_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Entry_type); ok {
-				if err := trg.OnValidate_Entry_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "positive":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Positive = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Positive = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field positive")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Positive); ok {
-				if err := trg.OnValidate_Positive(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "open":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Open = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Open = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field open")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Open); ok {
-				if err := trg.OnValidate_Open(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "remaining_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Remaining_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Remaining_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field remaining_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Remaining_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Remaining_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Remaining_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field remaining_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Remaining_amount); ok {
-				if err := trg.OnValidate_Remaining_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "closed_by_entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Closed_by_entry_no = v
-		case float64:
-			t.Closed_by_entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Closed_by_entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Closed_by_entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field closed_by_entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field closed_by_entry_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Closed_by_entry_no); ok {
-				if err := trg.OnValidate_Closed_by_entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "closed_at_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Closed_at_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Closed_at_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field closed_at_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Closed_at_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field closed_at_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Closed_at_date); ok {
-				if err := trg.OnValidate_Closed_at_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "closed_by_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Closed_by_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Closed_by_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field closed_by_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Closed_by_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Closed_by_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Closed_by_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field closed_by_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Closed_by_amount); ok {
-				if err := trg.OnValidate_Closed_by_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "applies_to_id":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Applies_to_id = v
-		} else if v, ok := value.(string); ok {
-			t.Applies_to_id = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field applies_to_id")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Applies_to_id); ok {
-				if err := trg.OnValidate_Applies_to_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "journal_batch_name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Journal_batch_name = v
-		} else if v, ok := value.(string); ok {
-			t.Journal_batch_name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field journal_batch_name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Journal_batch_name); ok {
-				if err := trg.OnValidate_Journal_batch_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reason_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Reason_code = v
-		} else if v, ok := value.(string); ok {
-			t.Reason_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field reason_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "reason_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Reason_code); ok {
-				if err := trg.OnValidate_Reason_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "transaction_type":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Transaction_type = v
-		} else if v, ok := value.(string); ok {
-			t.Transaction_type = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field transaction_type")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "transaction_type"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Transaction_type); ok {
-				if err := trg.OnValidate_Transaction_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "transport_method":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Transport_method = v
-		} else if v, ok := value.(string); ok {
-			t.Transport_method = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field transport_method")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "transport_method"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Transport_method); ok {
-				if err := trg.OnValidate_Transport_method(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "country_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Country_code = v
-		} else if v, ok := value.(string); ok {
-			t.Country_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field country_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "country_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Country_code); ok {
-				if err := trg.OnValidate_Country_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "gen_bus_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Gen_bus_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Gen_bus_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field gen_bus_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "gen_bus_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Gen_bus_posting_group); ok {
-				if err := trg.OnValidate_Gen_bus_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "gen_prod_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Gen_prod_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Gen_prod_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field gen_prod_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "gen_prod_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Gen_prod_posting_group); ok {
-				if err := trg.OnValidate_Gen_prod_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "entry_exit_point":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Entry_exit_point = v
-		} else if v, ok := value.(string); ok {
-			t.Entry_exit_point = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field entry_exit_point")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "entry_exit_point"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Entry_exit_point); ok {
-				if err := trg.OnValidate_Entry_exit_point(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Document_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Document_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field document_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Document_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field document_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Document_date); ok {
-				if err := trg.OnValidate_Document_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "external_document_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.External_document_no = v
-		} else if v, ok := value.(string); ok {
-			t.External_document_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field external_document_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_External_document_no); ok {
-				if err := trg.OnValidate_External_document_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "area":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Area = v
-		} else if v, ok := value.(string); ok {
-			t.Area = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field area")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "area"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Area); ok {
-				if err := trg.OnValidate_Area(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "transaction_specification":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Transaction_specification = v
-		} else if v, ok := value.(string); ok {
-			t.Transaction_specification = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field transaction_specification")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "transaction_specification"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Transaction_specification); ok {
-				if err := trg.OnValidate_Transaction_specification(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no_series":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No_series = v
-		} else if v, ok := value.(string); ok {
-			t.No_series = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no_series")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "no_series"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_No_series); ok {
-				if err := trg.OnValidate_No_series(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "additional_currency_total_cost":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Additional_currency_total_cost = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Additional_currency_total_cost, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field additional_currency_total_cost: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Additional_currency_total_cost = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Additional_currency_total_cost = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Additional_currency_total_cost = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field additional_currency_total_cost (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Additional_currency_total_cost); ok {
-				if err := trg.OnValidate_Additional_currency_total_cost(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "add_currency_total_price":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Add_currency_total_price = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Add_currency_total_price, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field add_currency_total_price: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Add_currency_total_price = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Add_currency_total_price = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Add_currency_total_price = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field add_currency_total_price (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Add_currency_total_price); ok {
-				if err := trg.OnValidate_Add_currency_total_price(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "add_curr_amount_to_recognize":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Add_curr_amount_to_recognize = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Add_curr_amount_to_recognize, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field add_curr_amount_to_recognize: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Add_curr_amount_to_recognize = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Add_curr_amount_to_recognize = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Add_curr_amount_to_recognize = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field add_curr_amount_to_recognize (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Add_curr_amount_to_recognize); ok {
-				if err := trg.OnValidate_Add_curr_amount_to_recognize(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "add_curr_amt_to_post_to_g_l":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Add_curr_amt_to_post_to_g_l = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Add_curr_amt_to_post_to_g_l, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field add_curr_amt_to_post_to_g_l: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Add_curr_amt_to_post_to_g_l = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Add_curr_amt_to_post_to_g_l = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Add_curr_amt_to_post_to_g_l = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field add_curr_amt_to_post_to_g_l (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Add_curr_amt_to_post_to_g_l); ok {
-				if err := trg.OnValidate_Add_curr_amt_to_post_to_g_l(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "add_curr_amount_recognized":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Add_curr_amount_recognized = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Add_curr_amount_recognized, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field add_curr_amount_recognized: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Add_curr_amount_recognized = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Add_curr_amount_recognized = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Add_curr_amount_recognized = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field add_curr_amount_recognized (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Add_curr_amount_recognized); ok {
-				if err := trg.OnValidate_Add_curr_amount_recognized(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "add_curr_amt_posted_to_g_l":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Add_curr_amt_posted_to_g_l = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Add_curr_amt_posted_to_g_l, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field add_curr_amt_posted_to_g_l: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Add_curr_amt_posted_to_g_l = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Add_curr_amt_posted_to_g_l = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Add_curr_amt_posted_to_g_l = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field add_curr_amt_posted_to_g_l (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Add_curr_amt_posted_to_g_l); ok {
-				if err := trg.OnValidate_Add_curr_amt_posted_to_g_l(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "lot_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Lot_no = v
-		} else if v, ok := value.(string); ok {
-			t.Lot_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field lot_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Lot_no); ok {
-				if err := trg.OnValidate_Lot_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "variant_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Variant_code = v
-		} else if v, ok := value.(string); ok {
-			t.Variant_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field variant_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "variant_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Variant_code); ok {
-				if err := trg.OnValidate_Variant_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "bin_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Bin_code = v
-		} else if v, ok := value.(string); ok {
-			t.Bin_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field bin_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "bin_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Bin_code); ok {
-				if err := trg.OnValidate_Bin_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "qty_per_unit_of_measure":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Qty_per_unit_of_measure = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Qty_per_unit_of_measure, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field qty_per_unit_of_measure: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Qty_per_unit_of_measure = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Qty_per_unit_of_measure = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Qty_per_unit_of_measure = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field qty_per_unit_of_measure (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectLedgerEntryOnValidate_Qty_per_unit_of_measure); ok {
-				if err := trg.OnValidate_Qty_per_unit_of_measure(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := projectLedgerEntryFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &projectLedgerEntryFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -6714,597 +3966,18 @@ func (t *ProjectLedgerEntry) ValidateField(fieldName string, value interface{}) 
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *ProjectLedgerEntry) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Entry_no, true
-	case 2:
-		return t.Project_no, true
-	case 3:
-		return t.Posting_date, true
-	case 4:
-		return t.Document_no, true
-	case 5:
-		return t.Type, true
-	case 7:
-		return t.No, true
-	case 8:
-		return t.Description, true
-	case 9:
-		return t.Quantity, true
-	case 11:
-		return t.Direct_unit_cost, true
-	case 12:
-		return t.Unit_cost, true
-	case 13:
-		return t.Total_cost, true
-	case 14:
-		return t.Unit_price, true
-	case 15:
-		return t.Total_price, true
-	case 16:
-		return t.Resource_group_no, true
-	case 17:
-		return t.Unit_of_measure_code, true
-	case 20:
-		return t.Location_code, true
-	case 21:
-		return t.Chargeable, true
-	case 29:
-		return t.Project_posting_group, true
-	case 30:
-		return t.Dimension_1_code, true
-	case 31:
-		return t.Dimension_2_code, true
-	case 32:
-		return t.Work_type_code, true
-	case 33:
-		return t.Price_group_code, true
-	case 37:
-		return t.User_id, true
-	case 38:
-		return t.Source_code, true
-	case 43:
-		return t.Related_to_budget, true
-	case 44:
-		return t.Phase_code, true
-	case 45:
-		return t.Task_code, true
-	case 46:
-		return t.Step_code, true
-	case 60:
-		return t.Amt_to_post_to_g_l, true
-	case 61:
-		return t.Amt_posted_to_g_l, true
-	case 62:
-		return t.Amt_to_recognize, true
-	case 63:
-		return t.Amt_recognized, true
-	case 64:
-		return t.Entry_type, true
-	case 65:
-		return t.Positive, true
-	case 66:
-		return t.Open, true
-	case 67:
-		return t.Remaining_amount, true
-	case 68:
-		return t.Closed_by_entry_no, true
-	case 69:
-		return t.Closed_at_date, true
-	case 70:
-		return t.Closed_by_amount, true
-	case 71:
-		return t.Applies_to_id, true
-	case 75:
-		return t.Journal_batch_name, true
-	case 76:
-		return t.Reason_code, true
-	case 77:
-		return t.Transaction_type, true
-	case 78:
-		return t.Transport_method, true
-	case 79:
-		return t.Country_code, true
-	case 80:
-		return t.Gen_bus_posting_group, true
-	case 81:
-		return t.Gen_prod_posting_group, true
-	case 82:
-		return t.Entry_exit_point, true
-	case 83:
-		return t.Document_date, true
-	case 84:
-		return t.External_document_no, true
-	case 85:
-		return t.Area, true
-	case 86:
-		return t.Transaction_specification, true
-	case 87:
-		return t.No_series, true
-	case 88:
-		return t.Additional_currency_total_cost, true
-	case 89:
-		return t.Add_currency_total_price, true
-	case 90:
-		return t.Add_curr_amount_to_recognize, true
-	case 91:
-		return t.Add_curr_amt_to_post_to_g_l, true
-	case 92:
-		return t.Add_curr_amount_recognized, true
-	case 93:
-		return t.Add_curr_amt_posted_to_g_l, true
-	case 5400:
-		return t.Lot_no, true
-	case 5402:
-		return t.Variant_code, true
-	case 5403:
-		return t.Bin_code, true
-	case 5404:
-		return t.Qty_per_unit_of_measure, true
-	}
-	return nil, false
+	return projectLedgerEntryFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *ProjectLedgerEntry) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return projectLedgerEntryFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *ProjectLedgerEntry) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(int); ok {
-			t.Entry_no = v
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Project_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Project_no = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Date); ok {
-			t.Posting_date = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Code); ok {
-			t.Document_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Document_no = types.NewCode(v)
-			return true
-		}
-	case 5:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Type = ProjectLedgerEntryType(i)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity = v
-			return true
-		}
-	case 11:
-		if v, ok := value.(types.Decimal); ok {
-			t.Direct_unit_cost = v
-			return true
-		}
-	case 12:
-		if v, ok := value.(types.Decimal); ok {
-			t.Unit_cost = v
-			return true
-		}
-	case 13:
-		if v, ok := value.(types.Decimal); ok {
-			t.Total_cost = v
-			return true
-		}
-	case 14:
-		if v, ok := value.(types.Decimal); ok {
-			t.Unit_price = v
-			return true
-		}
-	case 15:
-		if v, ok := value.(types.Decimal); ok {
-			t.Total_price = v
-			return true
-		}
-	case 16:
-		if v, ok := value.(types.Code); ok {
-			t.Resource_group_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Resource_group_no = types.NewCode(v)
-			return true
-		}
-	case 17:
-		if v, ok := value.(types.Code); ok {
-			t.Unit_of_measure_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Unit_of_measure_code = types.NewCode(v)
-			return true
-		}
-	case 20:
-		if v, ok := value.(types.Code); ok {
-			t.Location_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Location_code = types.NewCode(v)
-			return true
-		}
-	case 21:
-		if v, ok := value.(bool); ok {
-			t.Chargeable = v
-			return true
-		}
-	case 29:
-		if v, ok := value.(types.Code); ok {
-			t.Project_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Project_posting_group = types.NewCode(v)
-			return true
-		}
-	case 30:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_1_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_1_code = types.NewCode(v)
-			return true
-		}
-	case 31:
-		if v, ok := value.(types.Code); ok {
-			t.Dimension_2_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Dimension_2_code = types.NewCode(v)
-			return true
-		}
-	case 32:
-		if v, ok := value.(types.Code); ok {
-			t.Work_type_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Work_type_code = types.NewCode(v)
-			return true
-		}
-	case 33:
-		if v, ok := value.(types.Code); ok {
-			t.Price_group_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Price_group_code = types.NewCode(v)
-			return true
-		}
-	case 37:
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-			return true
-		}
-	case 38:
-		if v, ok := value.(types.Code); ok {
-			t.Source_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Source_code = types.NewCode(v)
-			return true
-		}
-	case 43:
-		if v, ok := value.(bool); ok {
-			t.Related_to_budget = v
-			return true
-		}
-	case 44:
-		if v, ok := value.(types.Code); ok {
-			t.Phase_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Phase_code = types.NewCode(v)
-			return true
-		}
-	case 45:
-		if v, ok := value.(types.Code); ok {
-			t.Task_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Task_code = types.NewCode(v)
-			return true
-		}
-	case 46:
-		if v, ok := value.(types.Code); ok {
-			t.Step_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Step_code = types.NewCode(v)
-			return true
-		}
-	case 60:
-		if v, ok := value.(types.Decimal); ok {
-			t.Amt_to_post_to_g_l = v
-			return true
-		}
-	case 61:
-		if v, ok := value.(types.Decimal); ok {
-			t.Amt_posted_to_g_l = v
-			return true
-		}
-	case 62:
-		if v, ok := value.(types.Decimal); ok {
-			t.Amt_to_recognize = v
-			return true
-		}
-	case 63:
-		if v, ok := value.(types.Decimal); ok {
-			t.Amt_recognized = v
-			return true
-		}
-	case 64:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 2 {
-			t.Entry_type = ProjectLedgerEntryEntry_type(i)
-			return true
-		}
-	case 65:
-		if v, ok := value.(bool); ok {
-			t.Positive = v
-			return true
-		}
-	case 66:
-		if v, ok := value.(bool); ok {
-			t.Open = v
-			return true
-		}
-	case 67:
-		if v, ok := value.(types.Decimal); ok {
-			t.Remaining_amount = v
-			return true
-		}
-	case 68:
-		if v, ok := value.(int); ok {
-			t.Closed_by_entry_no = v
-			return true
-		}
-	case 69:
-		if v, ok := value.(types.Date); ok {
-			t.Closed_at_date = v
-			return true
-		}
-	case 70:
-		if v, ok := value.(types.Decimal); ok {
-			t.Closed_by_amount = v
-			return true
-		}
-	case 71:
-		if v, ok := value.(types.Code); ok {
-			t.Applies_to_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Applies_to_id = types.NewCode(v)
-			return true
-		}
-	case 75:
-		if v, ok := value.(types.Code); ok {
-			t.Journal_batch_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Journal_batch_name = types.NewCode(v)
-			return true
-		}
-	case 76:
-		if v, ok := value.(types.Code); ok {
-			t.Reason_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Reason_code = types.NewCode(v)
-			return true
-		}
-	case 77:
-		if v, ok := value.(types.Code); ok {
-			t.Transaction_type = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Transaction_type = types.NewCode(v)
-			return true
-		}
-	case 78:
-		if v, ok := value.(types.Code); ok {
-			t.Transport_method = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Transport_method = types.NewCode(v)
-			return true
-		}
-	case 79:
-		if v, ok := value.(types.Code); ok {
-			t.Country_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Country_code = types.NewCode(v)
-			return true
-		}
-	case 80:
-		if v, ok := value.(types.Code); ok {
-			t.Gen_bus_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Gen_bus_posting_group = types.NewCode(v)
-			return true
-		}
-	case 81:
-		if v, ok := value.(types.Code); ok {
-			t.Gen_prod_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Gen_prod_posting_group = types.NewCode(v)
-			return true
-		}
-	case 82:
-		if v, ok := value.(types.Code); ok {
-			t.Entry_exit_point = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Entry_exit_point = types.NewCode(v)
-			return true
-		}
-	case 83:
-		if v, ok := value.(types.Date); ok {
-			t.Document_date = v
-			return true
-		}
-	case 84:
-		if v, ok := value.(types.Code); ok {
-			t.External_document_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.External_document_no = types.NewCode(v)
-			return true
-		}
-	case 85:
-		if v, ok := value.(types.Code); ok {
-			t.Area = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Area = types.NewCode(v)
-			return true
-		}
-	case 86:
-		if v, ok := value.(types.Code); ok {
-			t.Transaction_specification = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Transaction_specification = types.NewCode(v)
-			return true
-		}
-	case 87:
-		if v, ok := value.(types.Code); ok {
-			t.No_series = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No_series = types.NewCode(v)
-			return true
-		}
-	case 88:
-		if v, ok := value.(types.Decimal); ok {
-			t.Additional_currency_total_cost = v
-			return true
-		}
-	case 89:
-		if v, ok := value.(types.Decimal); ok {
-			t.Add_currency_total_price = v
-			return true
-		}
-	case 90:
-		if v, ok := value.(types.Decimal); ok {
-			t.Add_curr_amount_to_recognize = v
-			return true
-		}
-	case 91:
-		if v, ok := value.(types.Decimal); ok {
-			t.Add_curr_amt_to_post_to_g_l = v
-			return true
-		}
-	case 92:
-		if v, ok := value.(types.Decimal); ok {
-			t.Add_curr_amount_recognized = v
-			return true
-		}
-	case 93:
-		if v, ok := value.(types.Decimal); ok {
-			t.Add_curr_amt_posted_to_g_l = v
-			return true
-		}
-	case 5400:
-		if v, ok := value.(types.Code); ok {
-			t.Lot_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Lot_no = types.NewCode(v)
-			return true
-		}
-	case 5402:
-		if v, ok := value.(types.Code); ok {
-			t.Variant_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Variant_code = types.NewCode(v)
-			return true
-		}
-	case 5403:
-		if v, ok := value.(types.Code); ok {
-			t.Bin_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Bin_code = types.NewCode(v)
-			return true
-		}
-	case 5404:
-		if v, ok := value.(types.Decimal); ok {
-			t.Qty_per_unit_of_measure = v
-			return true
-		}
-	}
-	return false
+	return projectLedgerEntryFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -7934,135 +4607,7 @@ func (t *ProjectLedgerEntry) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *ProjectLedgerEntry) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "entry_no":
-		return t.Entry_no, true
-	case "project_no":
-		return t.Project_no, true
-	case "posting_date":
-		return t.Posting_date, true
-	case "document_no":
-		return t.Document_no, true
-	case "type":
-		return int(t.Type), true
-	case "no":
-		return t.No, true
-	case "description":
-		return t.Description, true
-	case "quantity":
-		return t.Quantity, true
-	case "direct_unit_cost":
-		return t.Direct_unit_cost, true
-	case "unit_cost":
-		return t.Unit_cost, true
-	case "total_cost":
-		return t.Total_cost, true
-	case "unit_price":
-		return t.Unit_price, true
-	case "total_price":
-		return t.Total_price, true
-	case "resource_group_no":
-		return t.Resource_group_no, true
-	case "unit_of_measure_code":
-		return t.Unit_of_measure_code, true
-	case "location_code":
-		return t.Location_code, true
-	case "chargeable":
-		return t.Chargeable, true
-	case "project_posting_group":
-		return t.Project_posting_group, true
-	case "dimension_1_code":
-		return t.Dimension_1_code, true
-	case "dimension_2_code":
-		return t.Dimension_2_code, true
-	case "work_type_code":
-		return t.Work_type_code, true
-	case "price_group_code":
-		return t.Price_group_code, true
-	case "user_id":
-		return t.User_id, true
-	case "source_code":
-		return t.Source_code, true
-	case "related_to_budget":
-		return t.Related_to_budget, true
-	case "phase_code":
-		return t.Phase_code, true
-	case "task_code":
-		return t.Task_code, true
-	case "step_code":
-		return t.Step_code, true
-	case "amt_to_post_to_g_l":
-		return t.Amt_to_post_to_g_l, true
-	case "amt_posted_to_g_l":
-		return t.Amt_posted_to_g_l, true
-	case "amt_to_recognize":
-		return t.Amt_to_recognize, true
-	case "amt_recognized":
-		return t.Amt_recognized, true
-	case "entry_type":
-		return int(t.Entry_type), true
-	case "positive":
-		return t.Positive, true
-	case "open":
-		return t.Open, true
-	case "remaining_amount":
-		return t.Remaining_amount, true
-	case "closed_by_entry_no":
-		return t.Closed_by_entry_no, true
-	case "closed_at_date":
-		return t.Closed_at_date, true
-	case "closed_by_amount":
-		return t.Closed_by_amount, true
-	case "applies_to_id":
-		return t.Applies_to_id, true
-	case "journal_batch_name":
-		return t.Journal_batch_name, true
-	case "reason_code":
-		return t.Reason_code, true
-	case "transaction_type":
-		return t.Transaction_type, true
-	case "transport_method":
-		return t.Transport_method, true
-	case "country_code":
-		return t.Country_code, true
-	case "gen_bus_posting_group":
-		return t.Gen_bus_posting_group, true
-	case "gen_prod_posting_group":
-		return t.Gen_prod_posting_group, true
-	case "entry_exit_point":
-		return t.Entry_exit_point, true
-	case "document_date":
-		return t.Document_date, true
-	case "external_document_no":
-		return t.External_document_no, true
-	case "area":
-		return t.Area, true
-	case "transaction_specification":
-		return t.Transaction_specification, true
-	case "no_series":
-		return t.No_series, true
-	case "additional_currency_total_cost":
-		return t.Additional_currency_total_cost, true
-	case "add_currency_total_price":
-		return t.Add_currency_total_price, true
-	case "add_curr_amount_to_recognize":
-		return t.Add_curr_amount_to_recognize, true
-	case "add_curr_amt_to_post_to_g_l":
-		return t.Add_curr_amt_to_post_to_g_l, true
-	case "add_curr_amount_recognized":
-		return t.Add_curr_amount_recognized, true
-	case "add_curr_amt_posted_to_g_l":
-		return t.Add_curr_amt_posted_to_g_l, true
-	case "lot_no":
-		return t.Lot_no, true
-	case "variant_code":
-		return t.Variant_code, true
-	case "bin_code":
-		return t.Bin_code, true
-	case "qty_per_unit_of_measure":
-		return t.Qty_per_unit_of_measure, true
-	}
-	return nil, false
+	return projectLedgerEntryFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -8210,563 +4755,12 @@ func (t *ProjectLedgerEntry) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *ProjectLedgerEntry) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"entry_no":                       t.Entry_no,
-		"project_no":                     t.Project_no.String(),
-		"posting_date":                   t.Posting_date.String(),
-		"document_no":                    t.Document_no.String(),
-		"type":                           int(t.Type),
-		"no":                             t.No.String(),
-		"description":                    t.Description.String(),
-		"quantity":                       t.Quantity.String(),
-		"direct_unit_cost":               t.Direct_unit_cost.String(),
-		"unit_cost":                      t.Unit_cost.String(),
-		"total_cost":                     t.Total_cost.String(),
-		"unit_price":                     t.Unit_price.String(),
-		"total_price":                    t.Total_price.String(),
-		"resource_group_no":              t.Resource_group_no.String(),
-		"unit_of_measure_code":           t.Unit_of_measure_code.String(),
-		"location_code":                  t.Location_code.String(),
-		"chargeable":                     t.Chargeable,
-		"project_posting_group":          t.Project_posting_group.String(),
-		"dimension_1_code":               t.Dimension_1_code.String(),
-		"dimension_2_code":               t.Dimension_2_code.String(),
-		"work_type_code":                 t.Work_type_code.String(),
-		"price_group_code":               t.Price_group_code.String(),
-		"user_id":                        t.User_id.String(),
-		"source_code":                    t.Source_code.String(),
-		"related_to_budget":              t.Related_to_budget,
-		"phase_code":                     t.Phase_code.String(),
-		"task_code":                      t.Task_code.String(),
-		"step_code":                      t.Step_code.String(),
-		"amt_to_post_to_g_l":             t.Amt_to_post_to_g_l.String(),
-		"amt_posted_to_g_l":              t.Amt_posted_to_g_l.String(),
-		"amt_to_recognize":               t.Amt_to_recognize.String(),
-		"amt_recognized":                 t.Amt_recognized.String(),
-		"entry_type":                     int(t.Entry_type),
-		"positive":                       t.Positive,
-		"open":                           t.Open,
-		"remaining_amount":               t.Remaining_amount.String(),
-		"closed_by_entry_no":             t.Closed_by_entry_no,
-		"closed_at_date":                 t.Closed_at_date.String(),
-		"closed_by_amount":               t.Closed_by_amount.String(),
-		"applies_to_id":                  t.Applies_to_id.String(),
-		"journal_batch_name":             t.Journal_batch_name.String(),
-		"reason_code":                    t.Reason_code.String(),
-		"transaction_type":               t.Transaction_type.String(),
-		"transport_method":               t.Transport_method.String(),
-		"country_code":                   t.Country_code.String(),
-		"gen_bus_posting_group":          t.Gen_bus_posting_group.String(),
-		"gen_prod_posting_group":         t.Gen_prod_posting_group.String(),
-		"entry_exit_point":               t.Entry_exit_point.String(),
-		"document_date":                  t.Document_date.String(),
-		"external_document_no":           t.External_document_no.String(),
-		"area":                           t.Area.String(),
-		"transaction_specification":      t.Transaction_specification.String(),
-		"no_series":                      t.No_series.String(),
-		"additional_currency_total_cost": t.Additional_currency_total_cost.String(),
-		"add_currency_total_price":       t.Add_currency_total_price.String(),
-		"add_curr_amount_to_recognize":   t.Add_curr_amount_to_recognize.String(),
-		"add_curr_amt_to_post_to_g_l":    t.Add_curr_amt_to_post_to_g_l.String(),
-		"add_curr_amount_recognized":     t.Add_curr_amount_recognized.String(),
-		"add_curr_amt_posted_to_g_l":     t.Add_curr_amt_posted_to_g_l.String(),
-		"lot_no":                         t.Lot_no.String(),
-		"variant_code":                   t.Variant_code.String(),
-		"bin_code":                       t.Bin_code.String(),
-		"qty_per_unit_of_measure":        t.Qty_per_unit_of_measure.String(),
-	}
+	return projectLedgerEntryFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *ProjectLedgerEntry) FromMap(data map[string]interface{}) {
-	if v, ok := data["entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Entry_no = int(val)
-		case int:
-			t.Entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Entry_no = n
-			}
-		}
-	}
-	if v, ok := data["project_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Project_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["posting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Posting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["document_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Document_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Type = ProjectLedgerEntryType(int(val))
-		case int:
-			t.Type = ProjectLedgerEntryType(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Resource", "Item", "Account (G/L)"}
-			for i, opt := range options {
-				if opt == val {
-					t.Type = ProjectLedgerEntryType(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["quantity"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Quantity, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Quantity = types.NewDecimal(val)
-		case int:
-			t.Quantity = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Quantity = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["direct_unit_cost"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Direct_unit_cost, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Direct_unit_cost = types.NewDecimal(val)
-		case int:
-			t.Direct_unit_cost = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Direct_unit_cost = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["unit_cost"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Unit_cost, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Unit_cost = types.NewDecimal(val)
-		case int:
-			t.Unit_cost = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Unit_cost = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["total_cost"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Total_cost, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Total_cost = types.NewDecimal(val)
-		case int:
-			t.Total_cost = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Total_cost = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["unit_price"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Unit_price, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Unit_price = types.NewDecimal(val)
-		case int:
-			t.Unit_price = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Unit_price = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["total_price"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Total_price, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Total_price = types.NewDecimal(val)
-		case int:
-			t.Total_price = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Total_price = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["resource_group_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Resource_group_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["unit_of_measure_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Unit_of_measure_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["location_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Location_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["chargeable"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Chargeable = b
-		}
-	}
-	if v, ok := data["project_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Project_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["dimension_1_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_1_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["dimension_2_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Dimension_2_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["work_type_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Work_type_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["price_group_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Price_group_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["user_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.User_id = types.NewCode(s)
-		}
-	}
-	if v, ok := data["source_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Source_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["related_to_budget"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Related_to_budget = b
-		}
-	}
-	if v, ok := data["phase_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Phase_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["task_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Task_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["step_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Step_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["amt_to_post_to_g_l"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Amt_to_post_to_g_l, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Amt_to_post_to_g_l = types.NewDecimal(val)
-		case int:
-			t.Amt_to_post_to_g_l = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Amt_to_post_to_g_l = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["amt_posted_to_g_l"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Amt_posted_to_g_l, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Amt_posted_to_g_l = types.NewDecimal(val)
-		case int:
-			t.Amt_posted_to_g_l = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Amt_posted_to_g_l = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["amt_to_recognize"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Amt_to_recognize, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Amt_to_recognize = types.NewDecimal(val)
-		case int:
-			t.Amt_to_recognize = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Amt_to_recognize = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["amt_recognized"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Amt_recognized, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Amt_recognized = types.NewDecimal(val)
-		case int:
-			t.Amt_recognized = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Amt_recognized = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["entry_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Entry_type = ProjectLedgerEntryEntry_type(int(val))
-		case int:
-			t.Entry_type = ProjectLedgerEntryEntry_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Usage", "Sale"}
-			for i, opt := range options {
-				if opt == val {
-					t.Entry_type = ProjectLedgerEntryEntry_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["positive"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Positive = b
-		}
-	}
-	if v, ok := data["open"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Open = b
-		}
-	}
-	if v, ok := data["remaining_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Remaining_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Remaining_amount = types.NewDecimal(val)
-		case int:
-			t.Remaining_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Remaining_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["closed_by_entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Closed_by_entry_no = int(val)
-		case int:
-			t.Closed_by_entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Closed_by_entry_no = n
-			}
-		}
-	}
-	if v, ok := data["closed_at_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Closed_at_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["closed_by_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Closed_by_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Closed_by_amount = types.NewDecimal(val)
-		case int:
-			t.Closed_by_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Closed_by_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["applies_to_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Applies_to_id = types.NewCode(s)
-		}
-	}
-	if v, ok := data["journal_batch_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Journal_batch_name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["reason_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Reason_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["transaction_type"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Transaction_type = types.NewCode(s)
-		}
-	}
-	if v, ok := data["transport_method"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Transport_method = types.NewCode(s)
-		}
-	}
-	if v, ok := data["country_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Country_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["gen_bus_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Gen_bus_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["gen_prod_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Gen_prod_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["entry_exit_point"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Entry_exit_point = types.NewCode(s)
-		}
-	}
-	if v, ok := data["document_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Document_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["external_document_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.External_document_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["area"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Area = types.NewCode(s)
-		}
-	}
-	if v, ok := data["transaction_specification"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Transaction_specification = types.NewCode(s)
-		}
-	}
-	if v, ok := data["no_series"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No_series = types.NewCode(s)
-		}
-	}
-	if v, ok := data["additional_currency_total_cost"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Additional_currency_total_cost, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Additional_currency_total_cost = types.NewDecimal(val)
-		case int:
-			t.Additional_currency_total_cost = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Additional_currency_total_cost = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["add_currency_total_price"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Add_currency_total_price, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Add_currency_total_price = types.NewDecimal(val)
-		case int:
-			t.Add_currency_total_price = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Add_currency_total_price = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["add_curr_amount_to_recognize"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Add_curr_amount_to_recognize, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Add_curr_amount_to_recognize = types.NewDecimal(val)
-		case int:
-			t.Add_curr_amount_to_recognize = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Add_curr_amount_to_recognize = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["add_curr_amt_to_post_to_g_l"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Add_curr_amt_to_post_to_g_l, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Add_curr_amt_to_post_to_g_l = types.NewDecimal(val)
-		case int:
-			t.Add_curr_amt_to_post_to_g_l = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Add_curr_amt_to_post_to_g_l = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["add_curr_amount_recognized"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Add_curr_amount_recognized, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Add_curr_amount_recognized = types.NewDecimal(val)
-		case int:
-			t.Add_curr_amount_recognized = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Add_curr_amount_recognized = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["add_curr_amt_posted_to_g_l"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Add_curr_amt_posted_to_g_l, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Add_curr_amt_posted_to_g_l = types.NewDecimal(val)
-		case int:
-			t.Add_curr_amt_posted_to_g_l = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Add_curr_amt_posted_to_g_l = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["lot_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Lot_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["variant_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Variant_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["bin_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Bin_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["qty_per_unit_of_measure"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Qty_per_unit_of_measure, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Qty_per_unit_of_measure = types.NewDecimal(val)
-		case int:
-			t.Qty_per_unit_of_measure = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Qty_per_unit_of_measure = types.NewDecimalFromInt(val)
-		}
-	}
+	projectLedgerEntryFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -8787,657 +4781,1078 @@ func (t *ProjectLedgerEntry) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *ProjectLedgerEntry) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "project_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "posting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "document_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            9,
-			Name:          "quantity",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            11,
-			Name:          "direct_unit_cost",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:5",
-		},
-		{
-			No:            12,
-			Name:          "unit_cost",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:5",
-		},
-		{
-			No:            13,
-			Name:          "total_cost",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            14,
-			Name:          "unit_price",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:5",
-		},
-		{
-			No:            15,
-			Name:          "total_price",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         16,
-			Name:       "resource_group_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         17,
-			Name:       "unit_of_measure_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         20,
-			Name:       "location_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         21,
-			Name:       "chargeable",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         29,
-			Name:       "project_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         30,
-			Name:       "dimension_1_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         31,
-			Name:       "dimension_2_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         32,
-			Name:       "work_type_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         33,
-			Name:       "price_group_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         37,
-			Name:       "user_id",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         38,
-			Name:       "source_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         43,
-			Name:       "related_to_budget",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         44,
-			Name:       "phase_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         45,
-			Name:       "task_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         46,
-			Name:       "step_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            60,
-			Name:          "amt_to_post_to_g_l",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            61,
-			Name:          "amt_posted_to_g_l",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            62,
-			Name:          "amt_to_recognize",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            63,
-			Name:          "amt_recognized",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         64,
-			Name:       "entry_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         65,
-			Name:       "positive",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         66,
-			Name:       "open",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            67,
-			Name:          "remaining_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         68,
-			Name:       "closed_by_entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         69,
-			Name:       "closed_at_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            70,
-			Name:          "closed_by_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         71,
-			Name:       "applies_to_id",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         75,
-			Name:       "journal_batch_name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         76,
-			Name:       "reason_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         77,
-			Name:       "transaction_type",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         78,
-			Name:       "transport_method",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         79,
-			Name:       "country_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         80,
-			Name:       "gen_bus_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         81,
-			Name:       "gen_prod_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         82,
-			Name:       "entry_exit_point",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         83,
-			Name:       "document_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         84,
-			Name:       "external_document_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         85,
-			Name:       "area",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         86,
-			Name:       "transaction_specification",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         87,
-			Name:       "no_series",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            88,
-			Name:          "additional_currency_total_cost",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            89,
-			Name:          "add_currency_total_price",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            90,
-			Name:          "add_curr_amount_to_recognize",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            91,
-			Name:          "add_curr_amt_to_post_to_g_l",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            92,
-			Name:          "add_curr_amount_recognized",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            93,
-			Name:          "add_curr_amt_posted_to_g_l",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         5400,
-			Name:       "lot_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5402,
-			Name:       "variant_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5403,
-			Name:       "bin_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            5404,
-			Name:          "qty_per_unit_of_measure",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
+	return projectLedgerEntryFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in projectLedgerEntryFields.Fields
+func (t *ProjectLedgerEntry) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Entry_no
+	case 1:
+		return &t.Project_no
+	case 2:
+		return &t.Posting_date
+	case 3:
+		return &t.Document_no
+	case 4:
+		return &t.Type
+	case 5:
+		return &t.No
+	case 6:
+		return &t.Description
+	case 7:
+		return &t.Quantity
+	case 8:
+		return &t.Direct_unit_cost
+	case 9:
+		return &t.Unit_cost
+	case 10:
+		return &t.Total_cost
+	case 11:
+		return &t.Unit_price
+	case 12:
+		return &t.Total_price
+	case 13:
+		return &t.Resource_group_no
+	case 14:
+		return &t.Unit_of_measure_code
+	case 15:
+		return &t.Location_code
+	case 16:
+		return &t.Chargeable
+	case 17:
+		return &t.Project_posting_group
+	case 18:
+		return &t.Dimension_1_code
+	case 19:
+		return &t.Dimension_2_code
+	case 20:
+		return &t.Work_type_code
+	case 21:
+		return &t.Price_group_code
+	case 22:
+		return &t.User_id
+	case 23:
+		return &t.Source_code
+	case 24:
+		return &t.Related_to_budget
+	case 25:
+		return &t.Phase_code
+	case 26:
+		return &t.Task_code
+	case 27:
+		return &t.Step_code
+	case 28:
+		return &t.Amt_to_post_to_g_l
+	case 29:
+		return &t.Amt_posted_to_g_l
+	case 30:
+		return &t.Amt_to_recognize
+	case 31:
+		return &t.Amt_recognized
+	case 32:
+		return &t.Entry_type
+	case 33:
+		return &t.Positive
+	case 34:
+		return &t.Open
+	case 35:
+		return &t.Remaining_amount
+	case 36:
+		return &t.Closed_by_entry_no
+	case 37:
+		return &t.Closed_at_date
+	case 38:
+		return &t.Closed_by_amount
+	case 39:
+		return &t.Applies_to_id
+	case 40:
+		return &t.Journal_batch_name
+	case 41:
+		return &t.Reason_code
+	case 42:
+		return &t.Transaction_type
+	case 43:
+		return &t.Transport_method
+	case 44:
+		return &t.Country_code
+	case 45:
+		return &t.Gen_bus_posting_group
+	case 46:
+		return &t.Gen_prod_posting_group
+	case 47:
+		return &t.Entry_exit_point
+	case 48:
+		return &t.Document_date
+	case 49:
+		return &t.External_document_no
+	case 50:
+		return &t.Area
+	case 51:
+		return &t.Transaction_specification
+	case 52:
+		return &t.No_series
+	case 53:
+		return &t.Additional_currency_total_cost
+	case 54:
+		return &t.Add_currency_total_price
+	case 55:
+		return &t.Add_curr_amount_to_recognize
+	case 56:
+		return &t.Add_curr_amt_to_post_to_g_l
+	case 57:
+		return &t.Add_curr_amount_recognized
+	case 58:
+		return &t.Add_curr_amt_posted_to_g_l
+	case 59:
+		return &t.Lot_no
+	case 60:
+		return &t.Variant_code
+	case 61:
+		return &t.Bin_code
+	case 62:
+		return &t.Qty_per_unit_of_measure
 	}
+	return nil
+}
+
+// projectLedgerEntryFields describes the fields of Project_Ledger_Entry for the record functions
+// written once in foundation/tables
+var projectLedgerEntryFields = &tables.TableFields{
+	Table: ProjectLedgerEntryTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Entry_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "project_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Project_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "posting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Posting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "document_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Document_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Type",
+			Options: []string{"Resource", "Item", "Account (G/L)"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_No",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            9,
+				Name:          "quantity",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Quantity",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            11,
+				Name:          "direct_unit_cost",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Direct_unit_cost",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            12,
+				Name:          "unit_cost",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Unit_cost",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            13,
+				Name:          "total_cost",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Total_cost",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            14,
+				Name:          "unit_price",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Unit_price",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            15,
+				Name:          "total_price",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Total_price",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         16,
+				Name:       "resource_group_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Resource_group_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         17,
+				Name:       "unit_of_measure_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Unit_of_measure_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         20,
+				Name:       "location_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Location_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         21,
+				Name:       "chargeable",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Chargeable",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         29,
+				Name:       "project_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Project_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         30,
+				Name:       "dimension_1_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_1_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         31,
+				Name:       "dimension_2_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Dimension_2_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         32,
+				Name:       "work_type_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Work_type_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         33,
+				Name:       "price_group_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Price_group_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         37,
+				Name:       "user_id",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_User_id",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         38,
+				Name:       "source_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Source_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         43,
+				Name:       "related_to_budget",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Related_to_budget",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         44,
+				Name:       "phase_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Phase_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         45,
+				Name:       "task_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Task_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         46,
+				Name:       "step_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Step_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            60,
+				Name:          "amt_to_post_to_g_l",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Amt_to_post_to_g_l",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            61,
+				Name:          "amt_posted_to_g_l",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Amt_posted_to_g_l",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            62,
+				Name:          "amt_to_recognize",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Amt_to_recognize",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            63,
+				Name:          "amt_recognized",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Amt_recognized",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         64,
+				Name:       "entry_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Entry_type",
+			Options: []string{"Usage", "Sale"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         65,
+				Name:       "positive",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Positive",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         66,
+				Name:       "open",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Open",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            67,
+				Name:          "remaining_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Remaining_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         68,
+				Name:       "closed_by_entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Closed_by_entry_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         69,
+				Name:       "closed_at_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Closed_at_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            70,
+				Name:          "closed_by_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Closed_by_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         71,
+				Name:       "applies_to_id",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Applies_to_id",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         75,
+				Name:       "journal_batch_name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Journal_batch_name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         76,
+				Name:       "reason_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Reason_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         77,
+				Name:       "transaction_type",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Transaction_type",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         78,
+				Name:       "transport_method",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Transport_method",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         79,
+				Name:       "country_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Country_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         80,
+				Name:       "gen_bus_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Gen_bus_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         81,
+				Name:       "gen_prod_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Gen_prod_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         82,
+				Name:       "entry_exit_point",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Entry_exit_point",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         83,
+				Name:       "document_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Document_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         84,
+				Name:       "external_document_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_External_document_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         85,
+				Name:       "area",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Area",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         86,
+				Name:       "transaction_specification",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Transaction_specification",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         87,
+				Name:       "no_series",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_No_series",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            88,
+				Name:          "additional_currency_total_cost",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Additional_currency_total_cost",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            89,
+				Name:          "add_currency_total_price",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Add_currency_total_price",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            90,
+				Name:          "add_curr_amount_to_recognize",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Add_curr_amount_to_recognize",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            91,
+				Name:          "add_curr_amt_to_post_to_g_l",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Add_curr_amt_to_post_to_g_l",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            92,
+				Name:          "add_curr_amount_recognized",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Add_curr_amount_recognized",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            93,
+				Name:          "add_curr_amt_posted_to_g_l",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Add_curr_amt_posted_to_g_l",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5400,
+				Name:       "lot_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Lot_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5402,
+				Name:       "variant_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Variant_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5403,
+				Name:       "bin_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Bin_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            5404,
+				Name:          "qty_per_unit_of_measure",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Qty_per_unit_of_measure",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

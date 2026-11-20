@@ -35,7 +35,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -209,76 +208,12 @@ var DateComprRegister_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *DateComprRegister) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "no":
-		return 1
-	case "creation_date":
-		return 2
-	case "table_caption":
-		return 3
-	case "period_length":
-		return 4
-	case "ending_date":
-		return 5
-	case "no_of_new_records":
-		return 6
-	case "no_records_deleted":
-		return 7
-	case "user_id":
-		return 8
-	case "filter":
-		return 9
-	case "starting_date":
-		return 10
-	case "table_id":
-		return 11
-	case "register_no":
-		return 12
-	case "source_code":
-		return 13
-	case "retain_field_contents":
-		return 14
-	case "retain_totals":
-		return 15
-	}
-	return 0
+	return dateComprRegisterFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *DateComprRegister) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "no"
-	case 2:
-		return "creation_date"
-	case 3:
-		return "table_caption"
-	case 4:
-		return "period_length"
-	case 5:
-		return "ending_date"
-	case 6:
-		return "no_of_new_records"
-	case 7:
-		return "no_records_deleted"
-	case 8:
-		return "user_id"
-	case 9:
-		return "filter"
-	case 10:
-		return "starting_date"
-	case 11:
-		return "table_id"
-	case 12:
-		return "register_no"
-	case 13:
-		return "source_code"
-	case 14:
-		return "retain_field_contents"
-	case 15:
-		return "retain_totals"
-	}
-	return ""
+	return dateComprRegisterFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -390,48 +325,6 @@ type (
 	DateComprRegisterOnBeforeRename interface {
 		OnBeforeRename(rec *DateComprRegister, handled *bool) error
 	}
-	DateComprRegisterOnValidate_No interface {
-		OnValidate_No(rec *DateComprRegister) error
-	}
-	DateComprRegisterOnValidate_Creation_date interface {
-		OnValidate_Creation_date(rec *DateComprRegister) error
-	}
-	DateComprRegisterOnValidate_Period_length interface {
-		OnValidate_Period_length(rec *DateComprRegister) error
-	}
-	DateComprRegisterOnValidate_Ending_date interface {
-		OnValidate_Ending_date(rec *DateComprRegister) error
-	}
-	DateComprRegisterOnValidate_No_of_new_records interface {
-		OnValidate_No_of_new_records(rec *DateComprRegister) error
-	}
-	DateComprRegisterOnValidate_No_records_deleted interface {
-		OnValidate_No_records_deleted(rec *DateComprRegister) error
-	}
-	DateComprRegisterOnValidate_User_id interface {
-		OnValidate_User_id(rec *DateComprRegister) error
-	}
-	DateComprRegisterOnValidate_Filter interface {
-		OnValidate_Filter(rec *DateComprRegister) error
-	}
-	DateComprRegisterOnValidate_Starting_date interface {
-		OnValidate_Starting_date(rec *DateComprRegister) error
-	}
-	DateComprRegisterOnValidate_Table_id interface {
-		OnValidate_Table_id(rec *DateComprRegister) error
-	}
-	DateComprRegisterOnValidate_Register_no interface {
-		OnValidate_Register_no(rec *DateComprRegister) error
-	}
-	DateComprRegisterOnValidate_Source_code interface {
-		OnValidate_Source_code(rec *DateComprRegister) error
-	}
-	DateComprRegisterOnValidate_Retain_field_contents interface {
-		OnValidate_Retain_field_contents(rec *DateComprRegister) error
-	}
-	DateComprRegisterOnValidate_Retain_totals interface {
-		OnValidate_Retain_totals(rec *DateComprRegister) error
-	}
 )
 
 // dateComprRegisterLogic is the registered business logic of Date_Compr_Register, in
@@ -474,36 +367,9 @@ func dateComprRegisterTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(DateComprRegisterOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(DateComprRegisterOnBeforeRename)
-	case "OnValidate_No":
-		_, ok = logic.(DateComprRegisterOnValidate_No)
-	case "OnValidate_Creation_date":
-		_, ok = logic.(DateComprRegisterOnValidate_Creation_date)
-	case "OnValidate_Period_length":
-		_, ok = logic.(DateComprRegisterOnValidate_Period_length)
-	case "OnValidate_Ending_date":
-		_, ok = logic.(DateComprRegisterOnValidate_Ending_date)
-	case "OnValidate_No_of_new_records":
-		_, ok = logic.(DateComprRegisterOnValidate_No_of_new_records)
-	case "OnValidate_No_records_deleted":
-		_, ok = logic.(DateComprRegisterOnValidate_No_records_deleted)
-	case "OnValidate_User_id":
-		_, ok = logic.(DateComprRegisterOnValidate_User_id)
-	case "OnValidate_Filter":
-		_, ok = logic.(DateComprRegisterOnValidate_Filter)
-	case "OnValidate_Starting_date":
-		_, ok = logic.(DateComprRegisterOnValidate_Starting_date)
-	case "OnValidate_Table_id":
-		_, ok = logic.(DateComprRegisterOnValidate_Table_id)
-	case "OnValidate_Register_no":
-		_, ok = logic.(DateComprRegisterOnValidate_Register_no)
-	case "OnValidate_Source_code":
-		_, ok = logic.(DateComprRegisterOnValidate_Source_code)
-	case "OnValidate_Retain_field_contents":
-		_, ok = logic.(DateComprRegisterOnValidate_Retain_field_contents)
-	case "OnValidate_Retain_totals":
-		_, ok = logic.(DateComprRegisterOnValidate_Retain_totals)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return dateComprRegisterFields.IsOnValidateTrigger(name, logic, (*DateComprRegister)(nil))
 	}
 	return true, ok
 }
@@ -835,21 +701,7 @@ func (t *DateComprRegister) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *DateComprRegister) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["no"] = t.No
-	t.oldValues["creation_date"] = t.Creation_date
-	t.oldValues["period_length"] = t.Period_length
-	t.oldValues["ending_date"] = t.Ending_date
-	t.oldValues["no_of_new_records"] = t.No_of_new_records
-	t.oldValues["no_records_deleted"] = t.No_records_deleted
-	t.oldValues["user_id"] = t.User_id
-	t.oldValues["filter"] = t.Filter
-	t.oldValues["starting_date"] = t.Starting_date
-	t.oldValues["table_id"] = t.Table_id
-	t.oldValues["register_no"] = t.Register_no
-	t.oldValues["source_code"] = t.Source_code
-	t.oldValues["retain_field_contents"] = t.Retain_field_contents
-	t.oldValues["retain_totals"] = t.Retain_totals
+	t.oldValues = dateComprRegisterFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -864,48 +716,7 @@ func (t *DateComprRegister) OldValue(fieldName string) interface{} {
 func (t *DateComprRegister) XRec() *DateComprRegister {
 	x := &DateComprRegister{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["no"].(int); ok {
-		x.No = v
-	}
-	if v, ok := t.oldValues["creation_date"].(types.Date); ok {
-		x.Creation_date = v
-	}
-	if v, ok := t.oldValues["period_length"].(DateComprRegisterPeriod_length); ok {
-		x.Period_length = v
-	}
-	if v, ok := t.oldValues["ending_date"].(types.Date); ok {
-		x.Ending_date = v
-	}
-	if v, ok := t.oldValues["no_of_new_records"].(int); ok {
-		x.No_of_new_records = v
-	}
-	if v, ok := t.oldValues["no_records_deleted"].(int); ok {
-		x.No_records_deleted = v
-	}
-	if v, ok := t.oldValues["user_id"].(types.Code); ok {
-		x.User_id = v
-	}
-	if v, ok := t.oldValues["filter"].(types.Text); ok {
-		x.Filter = v
-	}
-	if v, ok := t.oldValues["starting_date"].(types.Date); ok {
-		x.Starting_date = v
-	}
-	if v, ok := t.oldValues["table_id"].(int); ok {
-		x.Table_id = v
-	}
-	if v, ok := t.oldValues["register_no"].(int); ok {
-		x.Register_no = v
-	}
-	if v, ok := t.oldValues["source_code"].(types.Code); ok {
-		x.Source_code = v
-	}
-	if v, ok := t.oldValues["retain_field_contents"].(types.Text); ok {
-		x.Retain_field_contents = v
-	}
-	if v, ok := t.oldValues["retain_totals"].(types.Text); ok {
-		x.Retain_totals = v
-	}
+	dateComprRegisterFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1302,82 +1113,7 @@ func (t *DateComprRegister) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *DateComprRegister) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "no":
-		if old, ok := oldValue.(int); ok {
-			return t.No != old
-		}
-		return true // Type mismatch, assume changed
-	case "creation_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Creation_date.Equal(old)
-		}
-	case "period_length":
-		if old, ok := oldValue.(DateComprRegisterPeriod_length); ok {
-			return t.Period_length != old
-		}
-	case "ending_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Ending_date.Equal(old)
-		}
-	case "no_of_new_records":
-		if old, ok := oldValue.(int); ok {
-			return t.No_of_new_records != old
-		}
-		return true // Type mismatch, assume changed
-	case "no_records_deleted":
-		if old, ok := oldValue.(int); ok {
-			return t.No_records_deleted != old
-		}
-		return true // Type mismatch, assume changed
-	case "user_id":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.User_id.Equal(old)
-		}
-	case "filter":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Filter.Equal(old)
-		}
-	case "starting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Starting_date.Equal(old)
-		}
-	case "table_id":
-		if old, ok := oldValue.(int); ok {
-			return t.Table_id != old
-		}
-		return true // Type mismatch, assume changed
-	case "register_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Register_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "source_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Source_code.Equal(old)
-		}
-	case "retain_field_contents":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Retain_field_contents.Equal(old)
-		}
-	case "retain_totals":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Retain_totals.Equal(old)
-		}
-	}
-
-	return false
+	return dateComprRegisterFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1656,37 +1392,7 @@ func (t *DateComprRegister) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *DateComprRegister) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("no"):
-		return "no", true
-	case strings.ToLower("creation_date"):
-		return "creation_date", true
-	case strings.ToLower("period_length"):
-		return "period_length", true
-	case strings.ToLower("ending_date"):
-		return "ending_date", true
-	case strings.ToLower("no_of_new_records"):
-		return "no_of_new_records", true
-	case strings.ToLower("no_records_deleted"):
-		return "no_records_deleted", true
-	case strings.ToLower("user_id"):
-		return "user_id", true
-	case strings.ToLower("filter"):
-		return "filter", true
-	case strings.ToLower("starting_date"):
-		return "starting_date", true
-	case strings.ToLower("table_id"):
-		return "table_id", true
-	case strings.ToLower("register_no"):
-		return "register_no", true
-	case strings.ToLower("source_code"):
-		return "source_code", true
-	case strings.ToLower("retain_field_contents"):
-		return "retain_field_contents", true
-	case strings.ToLower("retain_totals"):
-		return "retain_totals", true
-	}
-	return "", false
+	return dateComprRegisterFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2618,374 +2324,20 @@ func (t *DateComprRegister) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *DateComprRegister) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.No = v
-		case float64:
-			t.No = int(v)
-		case string:
-			if v == "" {
-				t.No = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.No = i
-			} else {
-				return fmt.Errorf("invalid integer value for field no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DateComprRegisterOnValidate_No); ok {
-				if err := trg.OnValidate_No(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "creation_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Creation_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Creation_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field creation_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Creation_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field creation_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DateComprRegisterOnValidate_Creation_date); ok {
-				if err := trg.OnValidate_Creation_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "period_length":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(DateComprRegisterPeriod_length); ok {
-			t.Period_length = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 6 {
-				return fmt.Errorf("invalid option value %d for field period_length (valid range: 0-%d)", v, 6-1)
-			}
-			t.Period_length = DateComprRegisterPeriod_length(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 6 {
-				return fmt.Errorf("invalid option value %d for field period_length (valid range: 0-%d)", intVal, 6-1)
-			}
-			t.Period_length = DateComprRegisterPeriod_length(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Period_length = 0
-			} else {
-				options := []string{"Day", "Week", "Month", "Quarter", "Year", "Period"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Period_length = DateComprRegisterPeriod_length(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field period_length (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field period_length (expected DateComprRegisterPeriod_length, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DateComprRegisterOnValidate_Period_length); ok {
-				if err := trg.OnValidate_Period_length(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "ending_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Ending_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Ending_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field ending_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Ending_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field ending_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DateComprRegisterOnValidate_Ending_date); ok {
-				if err := trg.OnValidate_Ending_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no_of_new_records":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.No_of_new_records = v
-		case float64:
-			t.No_of_new_records = int(v)
-		case string:
-			if v == "" {
-				t.No_of_new_records = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.No_of_new_records = i
-			} else {
-				return fmt.Errorf("invalid integer value for field no_of_new_records: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field no_of_new_records")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DateComprRegisterOnValidate_No_of_new_records); ok {
-				if err := trg.OnValidate_No_of_new_records(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no_records_deleted":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.No_records_deleted = v
-		case float64:
-			t.No_records_deleted = int(v)
-		case string:
-			if v == "" {
-				t.No_records_deleted = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.No_records_deleted = i
-			} else {
-				return fmt.Errorf("invalid integer value for field no_records_deleted: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field no_records_deleted")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DateComprRegisterOnValidate_No_records_deleted); ok {
-				if err := trg.OnValidate_No_records_deleted(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "user_id":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-		} else if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field user_id")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "user_id"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DateComprRegisterOnValidate_User_id); ok {
-				if err := trg.OnValidate_User_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "filter":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Filter = v
-		} else if v, ok := value.(string); ok {
-			t.Filter = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field filter")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DateComprRegisterOnValidate_Filter); ok {
-				if err := trg.OnValidate_Filter(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "starting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Starting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Starting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field starting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Starting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field starting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DateComprRegisterOnValidate_Starting_date); ok {
-				if err := trg.OnValidate_Starting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "table_id":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Table_id = v
-		case float64:
-			t.Table_id = int(v)
-		case string:
-			if v == "" {
-				t.Table_id = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Table_id = i
-			} else {
-				return fmt.Errorf("invalid integer value for field table_id: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field table_id")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "table_id"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DateComprRegisterOnValidate_Table_id); ok {
-				if err := trg.OnValidate_Table_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "register_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Register_no = v
-		case float64:
-			t.Register_no = int(v)
-		case string:
-			if v == "" {
-				t.Register_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Register_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field register_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field register_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "register_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DateComprRegisterOnValidate_Register_no); ok {
-				if err := trg.OnValidate_Register_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "source_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Source_code = v
-		} else if v, ok := value.(string); ok {
-			t.Source_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field source_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "source_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DateComprRegisterOnValidate_Source_code); ok {
-				if err := trg.OnValidate_Source_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "retain_field_contents":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Retain_field_contents = v
-		} else if v, ok := value.(string); ok {
-			t.Retain_field_contents = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field retain_field_contents")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DateComprRegisterOnValidate_Retain_field_contents); ok {
-				if err := trg.OnValidate_Retain_field_contents(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "retain_totals":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Retain_totals = v
-		} else if v, ok := value.(string); ok {
-			t.Retain_totals = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field retain_totals")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(DateComprRegisterOnValidate_Retain_totals); ok {
-				if err := trg.OnValidate_Retain_totals(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := dateComprRegisterFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &dateComprRegisterFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2994,144 +2346,18 @@ func (t *DateComprRegister) ValidateField(fieldName string, value interface{}) e
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *DateComprRegister) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.No, true
-	case 2:
-		return t.Creation_date, true
-	case 4:
-		return t.Period_length, true
-	case 5:
-		return t.Ending_date, true
-	case 6:
-		return t.No_of_new_records, true
-	case 7:
-		return t.No_records_deleted, true
-	case 8:
-		return t.User_id, true
-	case 9:
-		return t.Filter, true
-	case 10:
-		return t.Starting_date, true
-	case 11:
-		return t.Table_id, true
-	case 12:
-		return t.Register_no, true
-	case 13:
-		return t.Source_code, true
-	case 14:
-		return t.Retain_field_contents, true
-	case 15:
-		return t.Retain_totals, true
-	}
-	return nil, false
+	return dateComprRegisterFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *DateComprRegister) flowFieldValue(no int) (any, bool) {
-	switch no {
-	case 3:
-		return t.Table_caption, true
-	}
-	return nil, false
+	return dateComprRegisterFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *DateComprRegister) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(int); ok {
-			t.No = v
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Date); ok {
-			t.Creation_date = v
-			return true
-		}
-	case 4:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 6 {
-			t.Period_length = DateComprRegisterPeriod_length(i)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Date); ok {
-			t.Ending_date = v
-			return true
-		}
-	case 6:
-		if v, ok := value.(int); ok {
-			t.No_of_new_records = v
-			return true
-		}
-	case 7:
-		if v, ok := value.(int); ok {
-			t.No_records_deleted = v
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.Text); ok {
-			t.Filter = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Filter = types.NewText(v)
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Date); ok {
-			t.Starting_date = v
-			return true
-		}
-	case 11:
-		if v, ok := value.(int); ok {
-			t.Table_id = v
-			return true
-		}
-	case 12:
-		if v, ok := value.(int); ok {
-			t.Register_no = v
-			return true
-		}
-	case 13:
-		if v, ok := value.(types.Code); ok {
-			t.Source_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Source_code = types.NewCode(v)
-			return true
-		}
-	case 14:
-		if v, ok := value.(types.Text); ok {
-			t.Retain_field_contents = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Retain_field_contents = types.NewText(v)
-			return true
-		}
-	case 15:
-		if v, ok := value.(types.Text); ok {
-			t.Retain_totals = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Retain_totals = types.NewText(v)
-			return true
-		}
-	}
-	return false
+	return dateComprRegisterFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3633,37 +2859,7 @@ func (t *DateComprRegister) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *DateComprRegister) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "no":
-		return t.No, true
-	case "creation_date":
-		return t.Creation_date, true
-	case "period_length":
-		return int(t.Period_length), true
-	case "ending_date":
-		return t.Ending_date, true
-	case "no_of_new_records":
-		return t.No_of_new_records, true
-	case "no_records_deleted":
-		return t.No_records_deleted, true
-	case "user_id":
-		return t.User_id, true
-	case "filter":
-		return t.Filter, true
-	case "starting_date":
-		return t.Starting_date, true
-	case "table_id":
-		return t.Table_id, true
-	case "register_no":
-		return t.Register_no, true
-	case "source_code":
-		return t.Source_code, true
-	case "retain_field_contents":
-		return t.Retain_field_contents, true
-	case "retain_totals":
-		return t.Retain_totals, true
-	}
-	return nil, false
+	return dateComprRegisterFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3762,150 +2958,12 @@ func (t *DateComprRegister) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *DateComprRegister) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"no":            t.No,
-		"creation_date": t.Creation_date.String(),
-		// FlowField: table_caption
-		"table_caption":         t.Table_caption,
-		"period_length":         int(t.Period_length),
-		"ending_date":           t.Ending_date.String(),
-		"no_of_new_records":     t.No_of_new_records,
-		"no_records_deleted":    t.No_records_deleted,
-		"user_id":               t.User_id.String(),
-		"filter":                t.Filter.String(),
-		"starting_date":         t.Starting_date.String(),
-		"table_id":              t.Table_id,
-		"register_no":           t.Register_no,
-		"source_code":           t.Source_code.String(),
-		"retain_field_contents": t.Retain_field_contents.String(),
-		"retain_totals":         t.Retain_totals.String(),
-	}
+	return dateComprRegisterFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *DateComprRegister) FromMap(data map[string]interface{}) {
-	if v, ok := data["no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.No = int(val)
-		case int:
-			t.No = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.No = n
-			}
-		}
-	}
-	if v, ok := data["creation_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Creation_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["period_length"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Period_length = DateComprRegisterPeriod_length(int(val))
-		case int:
-			t.Period_length = DateComprRegisterPeriod_length(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Day", "Week", "Month", "Quarter", "Year", "Period"}
-			for i, opt := range options {
-				if opt == val {
-					t.Period_length = DateComprRegisterPeriod_length(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["ending_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Ending_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["no_of_new_records"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.No_of_new_records = int(val)
-		case int:
-			t.No_of_new_records = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.No_of_new_records = n
-			}
-		}
-	}
-	if v, ok := data["no_records_deleted"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.No_records_deleted = int(val)
-		case int:
-			t.No_records_deleted = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.No_records_deleted = n
-			}
-		}
-	}
-	if v, ok := data["user_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.User_id = types.NewCode(s)
-		}
-	}
-	if v, ok := data["filter"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Filter = types.NewText(s)
-		}
-	}
-	if v, ok := data["starting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Starting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["table_id"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Table_id = int(val)
-		case int:
-			t.Table_id = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Table_id = n
-			}
-		}
-	}
-	if v, ok := data["register_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Register_no = int(val)
-		case int:
-			t.Register_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Register_no = n
-			}
-		}
-	}
-	if v, ok := data["source_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Source_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["retain_field_contents"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Retain_field_contents = types.NewText(s)
-		}
-	}
-	if v, ok := data["retain_totals"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Retain_totals = types.NewText(s)
-		}
-	}
+	dateComprRegisterFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3926,158 +2984,267 @@ func (t *DateComprRegister) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *DateComprRegister) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "creation_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "table_caption",
-			Type:       tables.FieldTypeText,
-			Length:     80,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  true,
-		},
-		{
-			No:         4,
-			Name:       "period_length",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "ending_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "no_of_new_records",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "no_records_deleted",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "user_id",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "filter",
-			Type:       tables.FieldTypeText,
-			Length:     250,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "starting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "table_id",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "register_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         13,
-			Name:       "source_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         14,
-			Name:       "retain_field_contents",
-			Type:       tables.FieldTypeText,
-			Length:     250,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         15,
-			Name:       "retain_totals",
-			Type:       tables.FieldTypeText,
-			Length:     250,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return dateComprRegisterFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in dateComprRegisterFields.Fields
+func (t *DateComprRegister) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.No
+	case 1:
+		return &t.Creation_date
+	case 2:
+		return &t.Table_caption
+	case 3:
+		return &t.Period_length
+	case 4:
+		return &t.Ending_date
+	case 5:
+		return &t.No_of_new_records
+	case 6:
+		return &t.No_records_deleted
+	case 7:
+		return &t.User_id
+	case 8:
+		return &t.Filter
+	case 9:
+		return &t.Starting_date
+	case 10:
+		return &t.Table_id
+	case 11:
+		return &t.Register_no
+	case 12:
+		return &t.Source_code
+	case 13:
+		return &t.Retain_field_contents
+	case 14:
+		return &t.Retain_totals
 	}
+	return nil
+}
+
+// dateComprRegisterFields describes the fields of Date_Compr_Register for the record functions
+// written once in foundation/tables
+var dateComprRegisterFields = &tables.TableFields{
+	Table: DateComprRegisterTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_No",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "creation_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Creation_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "table_caption",
+				Type:       tables.FieldTypeText,
+				Length:     80,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  true,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Table_caption",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "period_length",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Period_length",
+			Options: []string{"Day", "Week", "Month", "Quarter", "Year", "Period"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "ending_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Ending_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "no_of_new_records",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_No_of_new_records",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "no_records_deleted",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_No_records_deleted",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "user_id",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_User_id",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "filter",
+				Type:       tables.FieldTypeText,
+				Length:     250,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Filter",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "starting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Starting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "table_id",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindInt,
+			Trigger:  "OnValidate_Table_id",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "register_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindInt,
+			Trigger:  "OnValidate_Register_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "source_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Source_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "retain_field_contents",
+				Type:       tables.FieldTypeText,
+				Length:     250,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Retain_field_contents",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         15,
+				Name:       "retain_totals",
+				Type:       tables.FieldTypeText,
+				Length:     250,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Retain_totals",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

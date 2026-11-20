@@ -32,7 +32,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -199,68 +198,12 @@ var SetupChecklistLine_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *SetupChecklistLine) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "line_no":
-		return 1
-	case "table_id":
-		return 2
-	case "table_name":
-		return 3
-	case "copying_available":
-		return 13
-	case "page_id":
-		return 14
-	case "page_name":
-		return 15
-	case "starting_date":
-		return 18
-	case "ending_date":
-		return 19
-	case "responsible_id":
-		return 20
-	case "status":
-		return 21
-	case "comments":
-		return 22
-	case "application_area_id":
-		return 23
-	case "application_area_name":
-		return 24
-	}
-	return 0
+	return setupChecklistLineFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *SetupChecklistLine) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "line_no"
-	case 2:
-		return "table_id"
-	case 3:
-		return "table_name"
-	case 13:
-		return "copying_available"
-	case 14:
-		return "page_id"
-	case 15:
-		return "page_name"
-	case 18:
-		return "starting_date"
-	case 19:
-		return "ending_date"
-	case 20:
-		return "responsible_id"
-	case 21:
-		return "status"
-	case 22:
-		return "comments"
-	case 23:
-		return "application_area_id"
-	case 24:
-		return "application_area_name"
-	}
-	return ""
+	return setupChecklistLineFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -372,39 +315,6 @@ type (
 	SetupChecklistLineOnBeforeRename interface {
 		OnBeforeRename(rec *SetupChecklistLine, handled *bool) error
 	}
-	SetupChecklistLineOnValidate_Line_no interface {
-		OnValidate_Line_no(rec *SetupChecklistLine) error
-	}
-	SetupChecklistLineOnValidate_Table_id interface {
-		OnValidate_Table_id(rec *SetupChecklistLine) error
-	}
-	SetupChecklistLineOnValidate_Table_name interface {
-		OnValidate_Table_name(rec *SetupChecklistLine) error
-	}
-	SetupChecklistLineOnValidate_Copying_available interface {
-		OnValidate_Copying_available(rec *SetupChecklistLine) error
-	}
-	SetupChecklistLineOnValidate_Page_id interface {
-		OnValidate_Page_id(rec *SetupChecklistLine) error
-	}
-	SetupChecklistLineOnValidate_Page_name interface {
-		OnValidate_Page_name(rec *SetupChecklistLine) error
-	}
-	SetupChecklistLineOnValidate_Starting_date interface {
-		OnValidate_Starting_date(rec *SetupChecklistLine) error
-	}
-	SetupChecklistLineOnValidate_Ending_date interface {
-		OnValidate_Ending_date(rec *SetupChecklistLine) error
-	}
-	SetupChecklistLineOnValidate_Responsible_id interface {
-		OnValidate_Responsible_id(rec *SetupChecklistLine) error
-	}
-	SetupChecklistLineOnValidate_Status interface {
-		OnValidate_Status(rec *SetupChecklistLine) error
-	}
-	SetupChecklistLineOnValidate_Application_area_id interface {
-		OnValidate_Application_area_id(rec *SetupChecklistLine) error
-	}
 )
 
 // setupChecklistLineLogic is the registered business logic of Setup_Checklist_Line, in
@@ -447,30 +357,9 @@ func setupChecklistLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(SetupChecklistLineOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(SetupChecklistLineOnBeforeRename)
-	case "OnValidate_Line_no":
-		_, ok = logic.(SetupChecklistLineOnValidate_Line_no)
-	case "OnValidate_Table_id":
-		_, ok = logic.(SetupChecklistLineOnValidate_Table_id)
-	case "OnValidate_Table_name":
-		_, ok = logic.(SetupChecklistLineOnValidate_Table_name)
-	case "OnValidate_Copying_available":
-		_, ok = logic.(SetupChecklistLineOnValidate_Copying_available)
-	case "OnValidate_Page_id":
-		_, ok = logic.(SetupChecklistLineOnValidate_Page_id)
-	case "OnValidate_Page_name":
-		_, ok = logic.(SetupChecklistLineOnValidate_Page_name)
-	case "OnValidate_Starting_date":
-		_, ok = logic.(SetupChecklistLineOnValidate_Starting_date)
-	case "OnValidate_Ending_date":
-		_, ok = logic.(SetupChecklistLineOnValidate_Ending_date)
-	case "OnValidate_Responsible_id":
-		_, ok = logic.(SetupChecklistLineOnValidate_Responsible_id)
-	case "OnValidate_Status":
-		_, ok = logic.(SetupChecklistLineOnValidate_Status)
-	case "OnValidate_Application_area_id":
-		_, ok = logic.(SetupChecklistLineOnValidate_Application_area_id)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return setupChecklistLineFields.IsOnValidateTrigger(name, logic, (*SetupChecklistLine)(nil))
 	}
 	return true, ok
 }
@@ -798,18 +687,7 @@ func (t *SetupChecklistLine) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *SetupChecklistLine) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["line_no"] = t.Line_no
-	t.oldValues["table_id"] = t.Table_id
-	t.oldValues["table_name"] = t.Table_name
-	t.oldValues["copying_available"] = t.Copying_available
-	t.oldValues["page_id"] = t.Page_id
-	t.oldValues["page_name"] = t.Page_name
-	t.oldValues["starting_date"] = t.Starting_date
-	t.oldValues["ending_date"] = t.Ending_date
-	t.oldValues["responsible_id"] = t.Responsible_id
-	t.oldValues["status"] = t.Status
-	t.oldValues["application_area_id"] = t.Application_area_id
+	t.oldValues = setupChecklistLineFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -824,39 +702,7 @@ func (t *SetupChecklistLine) OldValue(fieldName string) interface{} {
 func (t *SetupChecklistLine) XRec() *SetupChecklistLine {
 	x := &SetupChecklistLine{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["line_no"].(int); ok {
-		x.Line_no = v
-	}
-	if v, ok := t.oldValues["table_id"].(int); ok {
-		x.Table_id = v
-	}
-	if v, ok := t.oldValues["table_name"].(types.Text); ok {
-		x.Table_name = v
-	}
-	if v, ok := t.oldValues["copying_available"].(bool); ok {
-		x.Copying_available = v
-	}
-	if v, ok := t.oldValues["page_id"].(int); ok {
-		x.Page_id = v
-	}
-	if v, ok := t.oldValues["page_name"].(types.Text); ok {
-		x.Page_name = v
-	}
-	if v, ok := t.oldValues["starting_date"].(types.Date); ok {
-		x.Starting_date = v
-	}
-	if v, ok := t.oldValues["ending_date"].(types.Date); ok {
-		x.Ending_date = v
-	}
-	if v, ok := t.oldValues["responsible_id"].(types.Code); ok {
-		x.Responsible_id = v
-	}
-	if v, ok := t.oldValues["status"].(SetupChecklistLineStatus); ok {
-		x.Status = v
-	}
-	if v, ok := t.oldValues["application_area_id"].(int); ok {
-		x.Application_area_id = v
-	}
+	setupChecklistLineFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1220,70 +1066,7 @@ func (t *SetupChecklistLine) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *SetupChecklistLine) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "line_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Line_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "table_id":
-		if old, ok := oldValue.(int); ok {
-			return t.Table_id != old
-		}
-		return true // Type mismatch, assume changed
-	case "table_name":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Table_name.Equal(old)
-		}
-	case "copying_available":
-		if old, ok := oldValue.(bool); ok {
-			return t.Copying_available != old
-		}
-		return true // Type mismatch, assume changed
-	case "page_id":
-		if old, ok := oldValue.(int); ok {
-			return t.Page_id != old
-		}
-		return true // Type mismatch, assume changed
-	case "page_name":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Page_name.Equal(old)
-		}
-	case "starting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Starting_date.Equal(old)
-		}
-	case "ending_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Ending_date.Equal(old)
-		}
-	case "responsible_id":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Responsible_id.Equal(old)
-		}
-	case "status":
-		if old, ok := oldValue.(SetupChecklistLineStatus); ok {
-			return t.Status != old
-		}
-	case "application_area_id":
-		if old, ok := oldValue.(int); ok {
-			return t.Application_area_id != old
-		}
-		return true // Type mismatch, assume changed
-	}
-
-	return false
+	return setupChecklistLineFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1671,31 +1454,7 @@ func (t *SetupChecklistLine) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *SetupChecklistLine) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("line_no"):
-		return "line_no", true
-	case strings.ToLower("table_id"):
-		return "table_id", true
-	case strings.ToLower("table_name"):
-		return "table_name", true
-	case strings.ToLower("copying_available"):
-		return "copying_available", true
-	case strings.ToLower("page_id"):
-		return "page_id", true
-	case strings.ToLower("page_name"):
-		return "page_name", true
-	case strings.ToLower("starting_date"):
-		return "starting_date", true
-	case strings.ToLower("ending_date"):
-		return "ending_date", true
-	case strings.ToLower("responsible_id"):
-		return "responsible_id", true
-	case strings.ToLower("status"):
-		return "status", true
-	case strings.ToLower("application_area_id"):
-		return "application_area_id", true
-	}
-	return "", false
+	return setupChecklistLineFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2597,302 +2356,20 @@ func (t *SetupChecklistLine) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *SetupChecklistLine) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "line_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Line_no = v
-		case float64:
-			t.Line_no = int(v)
-		case string:
-			if v == "" {
-				t.Line_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Line_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field line_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field line_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SetupChecklistLineOnValidate_Line_no); ok {
-				if err := trg.OnValidate_Line_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "table_id":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Table_id = v
-		case float64:
-			t.Table_id = int(v)
-		case string:
-			if v == "" {
-				t.Table_id = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Table_id = i
-			} else {
-				return fmt.Errorf("invalid integer value for field table_id: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field table_id")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "table_id"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SetupChecklistLineOnValidate_Table_id); ok {
-				if err := trg.OnValidate_Table_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "table_name":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Table_name = v
-		} else if v, ok := value.(string); ok {
-			t.Table_name = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field table_name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SetupChecklistLineOnValidate_Table_name); ok {
-				if err := trg.OnValidate_Table_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "copying_available":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Copying_available = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Copying_available = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field copying_available")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SetupChecklistLineOnValidate_Copying_available); ok {
-				if err := trg.OnValidate_Copying_available(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "page_id":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Page_id = v
-		case float64:
-			t.Page_id = int(v)
-		case string:
-			if v == "" {
-				t.Page_id = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Page_id = i
-			} else {
-				return fmt.Errorf("invalid integer value for field page_id: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field page_id")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "page_id"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SetupChecklistLineOnValidate_Page_id); ok {
-				if err := trg.OnValidate_Page_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "page_name":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Page_name = v
-		} else if v, ok := value.(string); ok {
-			t.Page_name = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field page_name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SetupChecklistLineOnValidate_Page_name); ok {
-				if err := trg.OnValidate_Page_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "starting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Starting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Starting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field starting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Starting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field starting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SetupChecklistLineOnValidate_Starting_date); ok {
-				if err := trg.OnValidate_Starting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "ending_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Ending_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Ending_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field ending_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Ending_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field ending_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SetupChecklistLineOnValidate_Ending_date); ok {
-				if err := trg.OnValidate_Ending_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "responsible_id":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Responsible_id = v
-		} else if v, ok := value.(string); ok {
-			t.Responsible_id = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field responsible_id")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "responsible_id"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SetupChecklistLineOnValidate_Responsible_id); ok {
-				if err := trg.OnValidate_Responsible_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "status":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(SetupChecklistLineStatus); ok {
-			t.Status = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 5 {
-				return fmt.Errorf("invalid option value %d for field status (valid range: 0-%d)", v, 5-1)
-			}
-			t.Status = SetupChecklistLineStatus(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 5 {
-				return fmt.Errorf("invalid option value %d for field status (valid range: 0-%d)", intVal, 5-1)
-			}
-			t.Status = SetupChecklistLineStatus(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Status = 0
-			} else {
-				options := []string{" ", "Planning", "Started", "Completed", "Not Used"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Status = SetupChecklistLineStatus(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field status (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field status (expected SetupChecklistLineStatus, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SetupChecklistLineOnValidate_Status); ok {
-				if err := trg.OnValidate_Status(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "application_area_id":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Application_area_id = v
-		case float64:
-			t.Application_area_id = int(v)
-		case string:
-			if v == "" {
-				t.Application_area_id = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Application_area_id = i
-			} else {
-				return fmt.Errorf("invalid integer value for field application_area_id: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field application_area_id")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(SetupChecklistLineOnValidate_Application_area_id); ok {
-				if err := trg.OnValidate_Application_area_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := setupChecklistLineFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &setupChecklistLineFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2901,117 +2378,18 @@ func (t *SetupChecklistLine) ValidateField(fieldName string, value interface{}) 
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *SetupChecklistLine) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Line_no, true
-	case 2:
-		return t.Table_id, true
-	case 3:
-		return t.Table_name, true
-	case 13:
-		return t.Copying_available, true
-	case 14:
-		return t.Page_id, true
-	case 15:
-		return t.Page_name, true
-	case 18:
-		return t.Starting_date, true
-	case 19:
-		return t.Ending_date, true
-	case 20:
-		return t.Responsible_id, true
-	case 21:
-		return t.Status, true
-	case 23:
-		return t.Application_area_id, true
-	}
-	return nil, false
+	return setupChecklistLineFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *SetupChecklistLine) flowFieldValue(no int) (any, bool) {
-	switch no {
-	case 22:
-		return t.Comments, true
-	case 24:
-		return t.Application_area_name, true
-	}
-	return nil, false
+	return setupChecklistLineFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *SetupChecklistLine) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(int); ok {
-			t.Line_no = v
-			return true
-		}
-	case 2:
-		if v, ok := value.(int); ok {
-			t.Table_id = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Text); ok {
-			t.Table_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Table_name = types.NewText(v)
-			return true
-		}
-	case 13:
-		if v, ok := value.(bool); ok {
-			t.Copying_available = v
-			return true
-		}
-	case 14:
-		if v, ok := value.(int); ok {
-			t.Page_id = v
-			return true
-		}
-	case 15:
-		if v, ok := value.(types.Text); ok {
-			t.Page_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Page_name = types.NewText(v)
-			return true
-		}
-	case 18:
-		if v, ok := value.(types.Date); ok {
-			t.Starting_date = v
-			return true
-		}
-	case 19:
-		if v, ok := value.(types.Date); ok {
-			t.Ending_date = v
-			return true
-		}
-	case 20:
-		if v, ok := value.(types.Code); ok {
-			t.Responsible_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Responsible_id = types.NewCode(v)
-			return true
-		}
-	case 21:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 5 {
-			t.Status = SetupChecklistLineStatus(i)
-			return true
-		}
-	case 23:
-		if v, ok := value.(int); ok {
-			t.Application_area_id = v
-			return true
-		}
-	}
-	return false
+	return setupChecklistLineFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3505,31 +2883,7 @@ func (t *SetupChecklistLine) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *SetupChecklistLine) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "line_no":
-		return t.Line_no, true
-	case "table_id":
-		return t.Table_id, true
-	case "table_name":
-		return t.Table_name, true
-	case "copying_available":
-		return t.Copying_available, true
-	case "page_id":
-		return t.Page_id, true
-	case "page_name":
-		return t.Page_name, true
-	case "starting_date":
-		return t.Starting_date, true
-	case "ending_date":
-		return t.Ending_date, true
-	case "responsible_id":
-		return t.Responsible_id, true
-	case "status":
-		return int(t.Status), true
-	case "application_area_id":
-		return t.Application_area_id, true
-	}
-	return nil, false
+	return setupChecklistLineFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3625,126 +2979,12 @@ func (t *SetupChecklistLine) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *SetupChecklistLine) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"line_no":           t.Line_no,
-		"table_id":          t.Table_id,
-		"table_name":        t.Table_name.String(),
-		"copying_available": t.Copying_available,
-		"page_id":           t.Page_id,
-		"page_name":         t.Page_name.String(),
-		"starting_date":     t.Starting_date.String(),
-		"ending_date":       t.Ending_date.String(),
-		"responsible_id":    t.Responsible_id.String(),
-		"status":            int(t.Status),
-		// FlowField: comments
-		"comments":            t.Comments,
-		"application_area_id": t.Application_area_id,
-		// FlowField: application_area_name
-		"application_area_name": t.Application_area_name,
-	}
+	return setupChecklistLineFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *SetupChecklistLine) FromMap(data map[string]interface{}) {
-	if v, ok := data["line_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Line_no = int(val)
-		case int:
-			t.Line_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Line_no = n
-			}
-		}
-	}
-	if v, ok := data["table_id"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Table_id = int(val)
-		case int:
-			t.Table_id = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Table_id = n
-			}
-		}
-	}
-	if v, ok := data["table_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Table_name = types.NewText(s)
-		}
-	}
-	if v, ok := data["copying_available"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Copying_available = b
-		}
-	}
-	if v, ok := data["page_id"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Page_id = int(val)
-		case int:
-			t.Page_id = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Page_id = n
-			}
-		}
-	}
-	if v, ok := data["page_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Page_name = types.NewText(s)
-		}
-	}
-	if v, ok := data["starting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Starting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["ending_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Ending_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["responsible_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Responsible_id = types.NewCode(s)
-		}
-	}
-	if v, ok := data["status"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Status = SetupChecklistLineStatus(int(val))
-		case int:
-			t.Status = SetupChecklistLineStatus(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Planning", "Started", "Completed", "Not Used"}
-			for i, opt := range options {
-				if opt == val {
-					t.Status = SetupChecklistLineStatus(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["application_area_id"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Application_area_id = int(val)
-		case int:
-			t.Application_area_id = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Application_area_id = n
-			}
-		}
-	}
+	setupChecklistLineFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3765,145 +3005,241 @@ func (t *SetupChecklistLine) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *SetupChecklistLine) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "line_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         2,
-			Name:       "table_id",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         3,
-			Name:       "table_name",
-			Type:       tables.FieldTypeText,
-			Length:     80,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         13,
-			Name:       "copying_available",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         14,
-			Name:       "page_id",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         15,
-			Name:       "page_name",
-			Type:       tables.FieldTypeText,
-			Length:     80,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         18,
-			Name:       "starting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         19,
-			Name:       "ending_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         20,
-			Name:       "responsible_id",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         21,
-			Name:       "status",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         22,
-			Name:       "comments",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  true,
-		},
-		{
-			No:         23,
-			Name:       "application_area_id",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         24,
-			Name:       "application_area_name",
-			Type:       tables.FieldTypeText,
-			Length:     80,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  true,
-		},
+	return setupChecklistLineFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in setupChecklistLineFields.Fields
+func (t *SetupChecklistLine) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Line_no
+	case 1:
+		return &t.Table_id
+	case 2:
+		return &t.Table_name
+	case 3:
+		return &t.Copying_available
+	case 4:
+		return &t.Page_id
+	case 5:
+		return &t.Page_name
+	case 6:
+		return &t.Starting_date
+	case 7:
+		return &t.Ending_date
+	case 8:
+		return &t.Responsible_id
+	case 9:
+		return &t.Status
+	case 10:
+		return &t.Comments
+	case 11:
+		return &t.Application_area_id
+	case 12:
+		return &t.Application_area_name
 	}
+	return nil
+}
+
+// setupChecklistLineFields describes the fields of Setup_Checklist_Line for the record functions
+// written once in foundation/tables
+var setupChecklistLineFields = &tables.TableFields{
+	Table: SetupChecklistLineTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "line_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Line_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "table_id",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:     tables.KindInt,
+			Trigger:  "OnValidate_Table_id",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "table_name",
+				Type:       tables.FieldTypeText,
+				Length:     80,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Table_name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "copying_available",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Copying_available",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "page_id",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:     tables.KindInt,
+			Trigger:  "OnValidate_Page_id",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         15,
+				Name:       "page_name",
+				Type:       tables.FieldTypeText,
+				Length:     80,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Page_name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         18,
+				Name:       "starting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Starting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         19,
+				Name:       "ending_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Ending_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         20,
+				Name:       "responsible_id",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Responsible_id",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         21,
+				Name:       "status",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Status",
+			Options: []string{" ", "Planning", "Started", "Completed", "Not Used"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         22,
+				Name:       "comments",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  true,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Comments",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         23,
+				Name:       "application_area_id",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Application_area_id",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         24,
+				Name:       "application_area_name",
+				Type:       tables.FieldTypeText,
+				Length:     80,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  true,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Application_area_name",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

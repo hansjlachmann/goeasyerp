@@ -23,7 +23,6 @@ import (
 	"fmt"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -118,28 +117,12 @@ var UserTheme_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *UserTheme) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "user_id":
-		return 1
-	case "theme_code":
-		return 2
-	case "added_at":
-		return 3
-	}
-	return 0
+	return userThemeFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *UserTheme) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "user_id"
-	case 2:
-		return "theme_code"
-	case 3:
-		return "added_at"
-	}
-	return ""
+	return userThemeFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -243,9 +226,6 @@ type (
 	UserThemeOnBeforeRename interface {
 		OnBeforeRename(rec *UserTheme, handled *bool) error
 	}
-	UserThemeOnValidate_User_id    interface{ OnValidate_User_id(rec *UserTheme) error }
-	UserThemeOnValidate_Theme_code interface{ OnValidate_Theme_code(rec *UserTheme) error }
-	UserThemeOnValidate_Added_at   interface{ OnValidate_Added_at(rec *UserTheme) error }
 )
 
 // userThemeLogic is the registered business logic of User_Theme, in
@@ -288,14 +268,9 @@ func userThemeTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(UserThemeOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(UserThemeOnBeforeRename)
-	case "OnValidate_User_id":
-		_, ok = logic.(UserThemeOnValidate_User_id)
-	case "OnValidate_Theme_code":
-		_, ok = logic.(UserThemeOnValidate_Theme_code)
-	case "OnValidate_Added_at":
-		_, ok = logic.(UserThemeOnValidate_Added_at)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return userThemeFields.IsOnValidateTrigger(name, logic, (*UserTheme)(nil))
 	}
 	return true, ok
 }
@@ -584,10 +559,7 @@ func (t *UserTheme) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *UserTheme) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["user_id"] = t.User_id
-	t.oldValues["theme_code"] = t.Theme_code
-	t.oldValues["added_at"] = t.Added_at
+	t.oldValues = userThemeFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -602,15 +574,7 @@ func (t *UserTheme) OldValue(fieldName string) interface{} {
 func (t *UserTheme) XRec() *UserTheme {
 	x := &UserTheme{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["user_id"].(types.Code); ok {
-		x.User_id = v
-	}
-	if v, ok := t.oldValues["theme_code"].(types.Code); ok {
-		x.Theme_code = v
-	}
-	if v, ok := t.oldValues["added_at"].(types.DateTime); ok {
-		x.Added_at = v
-	}
+	userThemeFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -887,33 +851,7 @@ func (t *UserTheme) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *UserTheme) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "user_id":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.User_id.Equal(old)
-		}
-	case "theme_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Theme_code.Equal(old)
-		}
-	case "added_at":
-		if old, ok := oldValue.(types.DateTime); ok {
-			return !t.Added_at.Equal(old)
-		}
-	}
-
-	return false
+	return userThemeFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1115,15 +1053,7 @@ func (t *UserTheme) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *UserTheme) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("user_id"):
-		return "user_id", true
-	case strings.ToLower("theme_code"):
-		return "theme_code", true
-	case strings.ToLower("added_at"):
-		return "added_at", true
-	}
-	return "", false
+	return userThemeFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -1945,80 +1875,20 @@ func (t *UserTheme) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *UserTheme) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "user_id":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-		} else if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field user_id")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "user_id"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserThemeOnValidate_User_id); ok {
-				if err := trg.OnValidate_User_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "theme_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Theme_code = v
-		} else if v, ok := value.(string); ok {
-			t.Theme_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field theme_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "theme_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserThemeOnValidate_Theme_code); ok {
-				if err := trg.OnValidate_Theme_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "added_at":
-		// Set field value
-		if v, ok := value.(types.DateTime); ok {
-			t.Added_at = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Added_at, err = types.NewDateTimeFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid datetime value for field added_at: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Added_at = types.NewDateTimeFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field added_at (expected DateTime, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(UserThemeOnValidate_Added_at); ok {
-				if err := trg.OnValidate_Added_at(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := userThemeFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &userThemeFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2027,53 +1897,18 @@ func (t *UserTheme) ValidateField(fieldName string, value interface{}) error {
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *UserTheme) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.User_id, true
-	case 2:
-		return t.Theme_code, true
-	case 3:
-		return t.Added_at, true
-	}
-	return nil, false
+	return userThemeFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *UserTheme) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return userThemeFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *UserTheme) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Theme_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Theme_code = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.DateTime); ok {
-			t.Added_at = v
-			return true
-		}
-	}
-	return false
+	return userThemeFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2523,15 +2358,7 @@ func (t *UserTheme) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *UserTheme) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "user_id":
-		return t.User_id, true
-	case "theme_code":
-		return t.Theme_code, true
-	case "added_at":
-		return t.Added_at, true
-	}
-	return nil, false
+	return userThemeFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2622,30 +2449,12 @@ func (t *UserTheme) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *UserTheme) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"user_id":    t.User_id.String(),
-		"theme_code": t.Theme_code.String(),
-		"added_at":   t.Added_at.String(),
-	}
+	return userThemeFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *UserTheme) FromMap(data map[string]interface{}) {
-	if v, ok := data["user_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.User_id = types.NewCode(s)
-		}
-	}
-	if v, ok := data["theme_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Theme_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["added_at"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Added_at, _ = types.NewDateTimeFromString(s)
-		}
-	}
+	userThemeFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2666,38 +2475,72 @@ func (t *UserTheme) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *UserTheme) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "user_id",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "theme_code",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "added_at",
-			Type:       tables.FieldTypeDateTime,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return userThemeFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in userThemeFields.Fields
+func (t *UserTheme) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.User_id
+	case 1:
+		return &t.Theme_code
+	case 2:
+		return &t.Added_at
 	}
+	return nil
+}
+
+// userThemeFields describes the fields of User_Theme for the record functions
+// written once in foundation/tables
+var userThemeFields = &tables.TableFields{
+	Table: UserThemeTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "user_id",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_User_id",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "theme_code",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Theme_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "added_at",
+				Type:       tables.FieldTypeDateTime,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDateTime,
+			Trigger: "OnValidate_Added_at",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

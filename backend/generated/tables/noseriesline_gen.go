@@ -31,7 +31,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -147,56 +146,12 @@ var NoSeriesLine_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *NoSeriesLine) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "series_code":
-		return 1
-	case "line_no":
-		return 2
-	case "starting_date":
-		return 3
-	case "starting_no":
-		return 4
-	case "ending_no":
-		return 5
-	case "warning_no":
-		return 6
-	case "increment_by_no":
-		return 7
-	case "last_no_used":
-		return 8
-	case "open":
-		return 9
-	case "last_date_used":
-		return 10
-	}
-	return 0
+	return noSeriesLineFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *NoSeriesLine) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "series_code"
-	case 2:
-		return "line_no"
-	case 3:
-		return "starting_date"
-	case 4:
-		return "starting_no"
-	case 5:
-		return "ending_no"
-	case 6:
-		return "warning_no"
-	case 7:
-		return "increment_by_no"
-	case 8:
-		return "last_no_used"
-	case 9:
-		return "open"
-	case 10:
-		return "last_date_used"
-	}
-	return ""
+	return noSeriesLineFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -300,16 +255,6 @@ type (
 	NoSeriesLineOnBeforeRename interface {
 		OnBeforeRename(rec *NoSeriesLine, handled *bool) error
 	}
-	NoSeriesLineOnValidate_Series_code     interface{ OnValidate_Series_code(rec *NoSeriesLine) error }
-	NoSeriesLineOnValidate_Line_no         interface{ OnValidate_Line_no(rec *NoSeriesLine) error }
-	NoSeriesLineOnValidate_Starting_date   interface{ OnValidate_Starting_date(rec *NoSeriesLine) error }
-	NoSeriesLineOnValidate_Starting_no     interface{ OnValidate_Starting_no(rec *NoSeriesLine) error }
-	NoSeriesLineOnValidate_Ending_no       interface{ OnValidate_Ending_no(rec *NoSeriesLine) error }
-	NoSeriesLineOnValidate_Warning_no      interface{ OnValidate_Warning_no(rec *NoSeriesLine) error }
-	NoSeriesLineOnValidate_Increment_by_no interface{ OnValidate_Increment_by_no(rec *NoSeriesLine) error }
-	NoSeriesLineOnValidate_Last_no_used    interface{ OnValidate_Last_no_used(rec *NoSeriesLine) error }
-	NoSeriesLineOnValidate_Open            interface{ OnValidate_Open(rec *NoSeriesLine) error }
-	NoSeriesLineOnValidate_Last_date_used  interface{ OnValidate_Last_date_used(rec *NoSeriesLine) error }
 )
 
 // noSeriesLineLogic is the registered business logic of No_Series_Line, in
@@ -352,28 +297,9 @@ func noSeriesLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(NoSeriesLineOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(NoSeriesLineOnBeforeRename)
-	case "OnValidate_Series_code":
-		_, ok = logic.(NoSeriesLineOnValidate_Series_code)
-	case "OnValidate_Line_no":
-		_, ok = logic.(NoSeriesLineOnValidate_Line_no)
-	case "OnValidate_Starting_date":
-		_, ok = logic.(NoSeriesLineOnValidate_Starting_date)
-	case "OnValidate_Starting_no":
-		_, ok = logic.(NoSeriesLineOnValidate_Starting_no)
-	case "OnValidate_Ending_no":
-		_, ok = logic.(NoSeriesLineOnValidate_Ending_no)
-	case "OnValidate_Warning_no":
-		_, ok = logic.(NoSeriesLineOnValidate_Warning_no)
-	case "OnValidate_Increment_by_no":
-		_, ok = logic.(NoSeriesLineOnValidate_Increment_by_no)
-	case "OnValidate_Last_no_used":
-		_, ok = logic.(NoSeriesLineOnValidate_Last_no_used)
-	case "OnValidate_Open":
-		_, ok = logic.(NoSeriesLineOnValidate_Open)
-	case "OnValidate_Last_date_used":
-		_, ok = logic.(NoSeriesLineOnValidate_Last_date_used)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return noSeriesLineFields.IsOnValidateTrigger(name, logic, (*NoSeriesLine)(nil))
 	}
 	return true, ok
 }
@@ -705,17 +631,7 @@ func (t *NoSeriesLine) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *NoSeriesLine) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["series_code"] = t.Series_code
-	t.oldValues["line_no"] = t.Line_no
-	t.oldValues["starting_date"] = t.Starting_date
-	t.oldValues["starting_no"] = t.Starting_no
-	t.oldValues["ending_no"] = t.Ending_no
-	t.oldValues["warning_no"] = t.Warning_no
-	t.oldValues["increment_by_no"] = t.Increment_by_no
-	t.oldValues["last_no_used"] = t.Last_no_used
-	t.oldValues["open"] = t.Open
-	t.oldValues["last_date_used"] = t.Last_date_used
+	t.oldValues = noSeriesLineFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -730,36 +646,7 @@ func (t *NoSeriesLine) OldValue(fieldName string) interface{} {
 func (t *NoSeriesLine) XRec() *NoSeriesLine {
 	x := &NoSeriesLine{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["series_code"].(types.Code); ok {
-		x.Series_code = v
-	}
-	if v, ok := t.oldValues["line_no"].(int); ok {
-		x.Line_no = v
-	}
-	if v, ok := t.oldValues["starting_date"].(types.Date); ok {
-		x.Starting_date = v
-	}
-	if v, ok := t.oldValues["starting_no"].(types.Code); ok {
-		x.Starting_no = v
-	}
-	if v, ok := t.oldValues["ending_no"].(types.Code); ok {
-		x.Ending_no = v
-	}
-	if v, ok := t.oldValues["warning_no"].(types.Code); ok {
-		x.Warning_no = v
-	}
-	if v, ok := t.oldValues["increment_by_no"].(int); ok {
-		x.Increment_by_no = v
-	}
-	if v, ok := t.oldValues["last_no_used"].(types.Code); ok {
-		x.Last_no_used = v
-	}
-	if v, ok := t.oldValues["open"].(bool); ok {
-		x.Open = v
-	}
-	if v, ok := t.oldValues["last_date_used"].(types.Date); ok {
-		x.Last_date_used = v
-	}
+	noSeriesLineFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1118,64 +1005,7 @@ func (t *NoSeriesLine) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *NoSeriesLine) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "series_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Series_code.Equal(old)
-		}
-	case "line_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Line_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "starting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Starting_date.Equal(old)
-		}
-	case "starting_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Starting_no.Equal(old)
-		}
-	case "ending_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Ending_no.Equal(old)
-		}
-	case "warning_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Warning_no.Equal(old)
-		}
-	case "increment_by_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Increment_by_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "last_no_used":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Last_no_used.Equal(old)
-		}
-	case "open":
-		if old, ok := oldValue.(bool); ok {
-			return t.Open != old
-		}
-		return true // Type mismatch, assume changed
-	case "last_date_used":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Last_date_used.Equal(old)
-		}
-	}
-
-	return false
+	return noSeriesLineFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1377,29 +1207,7 @@ func (t *NoSeriesLine) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *NoSeriesLine) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("series_code"):
-		return "series_code", true
-	case strings.ToLower("line_no"):
-		return "line_no", true
-	case strings.ToLower("starting_date"):
-		return "starting_date", true
-	case strings.ToLower("starting_no"):
-		return "starting_no", true
-	case strings.ToLower("ending_no"):
-		return "ending_no", true
-	case strings.ToLower("warning_no"):
-		return "warning_no", true
-	case strings.ToLower("increment_by_no"):
-		return "increment_by_no", true
-	case strings.ToLower("last_no_used"):
-		return "last_no_used", true
-	case strings.ToLower("open"):
-		return "open", true
-	case strings.ToLower("last_date_used"):
-		return "last_date_used", true
-	}
-	return "", false
+	return noSeriesLineFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2302,227 +2110,20 @@ func (t *NoSeriesLine) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *NoSeriesLine) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "series_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Series_code = v
-		} else if v, ok := value.(string); ok {
-			t.Series_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field series_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "series_code"); err != nil {
+	i, err := noSeriesLineFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
+	}
+	f := &noSeriesLineFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
 			return err
 		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(NoSeriesLineOnValidate_Series_code); ok {
-				if err := trg.OnValidate_Series_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "line_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Line_no = v
-		case float64:
-			t.Line_no = int(v)
-		case string:
-			if v == "" {
-				t.Line_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Line_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field line_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field line_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(NoSeriesLineOnValidate_Line_no); ok {
-				if err := trg.OnValidate_Line_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "starting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Starting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Starting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field starting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Starting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field starting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(NoSeriesLineOnValidate_Starting_date); ok {
-				if err := trg.OnValidate_Starting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "starting_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Starting_no = v
-		} else if v, ok := value.(string); ok {
-			t.Starting_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field starting_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(NoSeriesLineOnValidate_Starting_no); ok {
-				if err := trg.OnValidate_Starting_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "ending_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Ending_no = v
-		} else if v, ok := value.(string); ok {
-			t.Ending_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field ending_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(NoSeriesLineOnValidate_Ending_no); ok {
-				if err := trg.OnValidate_Ending_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "warning_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Warning_no = v
-		} else if v, ok := value.(string); ok {
-			t.Warning_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field warning_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(NoSeriesLineOnValidate_Warning_no); ok {
-				if err := trg.OnValidate_Warning_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "increment_by_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Increment_by_no = v
-		case float64:
-			t.Increment_by_no = int(v)
-		case string:
-			if v == "" {
-				t.Increment_by_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Increment_by_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field increment_by_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field increment_by_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(NoSeriesLineOnValidate_Increment_by_no); ok {
-				if err := trg.OnValidate_Increment_by_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "last_no_used":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Last_no_used = v
-		} else if v, ok := value.(string); ok {
-			t.Last_no_used = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field last_no_used")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(NoSeriesLineOnValidate_Last_no_used); ok {
-				if err := trg.OnValidate_Last_no_used(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "open":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Open = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Open = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field open")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(NoSeriesLineOnValidate_Open); ok {
-				if err := trg.OnValidate_Open(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "last_date_used":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Last_date_used = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Last_date_used, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field last_date_used: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Last_date_used = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field last_date_used (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(NoSeriesLineOnValidate_Last_date_used); ok {
-				if err := trg.OnValidate_Last_date_used(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2531,114 +2132,18 @@ func (t *NoSeriesLine) ValidateField(fieldName string, value interface{}) error 
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *NoSeriesLine) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Series_code, true
-	case 2:
-		return t.Line_no, true
-	case 3:
-		return t.Starting_date, true
-	case 4:
-		return t.Starting_no, true
-	case 5:
-		return t.Ending_no, true
-	case 6:
-		return t.Warning_no, true
-	case 7:
-		return t.Increment_by_no, true
-	case 8:
-		return t.Last_no_used, true
-	case 9:
-		return t.Open, true
-	case 10:
-		return t.Last_date_used, true
-	}
-	return nil, false
+	return noSeriesLineFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *NoSeriesLine) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return noSeriesLineFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *NoSeriesLine) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Series_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Series_code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(int); ok {
-			t.Line_no = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Date); ok {
-			t.Starting_date = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Code); ok {
-			t.Starting_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Starting_no = types.NewCode(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Code); ok {
-			t.Ending_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Ending_no = types.NewCode(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Code); ok {
-			t.Warning_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Warning_no = types.NewCode(v)
-			return true
-		}
-	case 7:
-		if v, ok := value.(int); ok {
-			t.Increment_by_no = v
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Code); ok {
-			t.Last_no_used = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Last_no_used = types.NewCode(v)
-			return true
-		}
-	case 9:
-		if v, ok := value.(bool); ok {
-			t.Open = v
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Date); ok {
-			t.Last_date_used = v
-			return true
-		}
-	}
-	return false
+	return noSeriesLineFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3117,29 +2622,7 @@ func (t *NoSeriesLine) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *NoSeriesLine) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "series_code":
-		return t.Series_code, true
-	case "line_no":
-		return t.Line_no, true
-	case "starting_date":
-		return t.Starting_date, true
-	case "starting_no":
-		return t.Starting_no, true
-	case "ending_no":
-		return t.Ending_no, true
-	case "warning_no":
-		return t.Warning_no, true
-	case "increment_by_no":
-		return t.Increment_by_no, true
-	case "last_no_used":
-		return t.Last_no_used, true
-	case "open":
-		return t.Open, true
-	case "last_date_used":
-		return t.Last_date_used, true
-	}
-	return nil, false
+	return noSeriesLineFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3237,88 +2720,12 @@ func (t *NoSeriesLine) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *NoSeriesLine) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"series_code":     t.Series_code.String(),
-		"line_no":         t.Line_no,
-		"starting_date":   t.Starting_date.String(),
-		"starting_no":     t.Starting_no.String(),
-		"ending_no":       t.Ending_no.String(),
-		"warning_no":      t.Warning_no.String(),
-		"increment_by_no": t.Increment_by_no,
-		"last_no_used":    t.Last_no_used.String(),
-		"open":            t.Open,
-		"last_date_used":  t.Last_date_used.String(),
-	}
+	return noSeriesLineFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *NoSeriesLine) FromMap(data map[string]interface{}) {
-	if v, ok := data["series_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Series_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["line_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Line_no = int(val)
-		case int:
-			t.Line_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Line_no = n
-			}
-		}
-	}
-	if v, ok := data["starting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Starting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["starting_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Starting_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["ending_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Ending_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["warning_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Warning_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["increment_by_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Increment_by_no = int(val)
-		case int:
-			t.Increment_by_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Increment_by_no = n
-			}
-		}
-	}
-	if v, ok := data["last_no_used"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Last_no_used = types.NewCode(s)
-		}
-	}
-	if v, ok := data["open"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Open = b
-		}
-	}
-	if v, ok := data["last_date_used"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Last_date_used, _ = types.NewDateFromString(s)
-		}
-	}
+	noSeriesLineFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3339,109 +2746,184 @@ func (t *NoSeriesLine) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *NoSeriesLine) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "series_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "line_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "starting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "starting_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "ending_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "warning_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "increment_by_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "last_no_used",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "open",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         10,
-			Name:       "last_date_used",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return noSeriesLineFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in noSeriesLineFields.Fields
+func (t *NoSeriesLine) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Series_code
+	case 1:
+		return &t.Line_no
+	case 2:
+		return &t.Starting_date
+	case 3:
+		return &t.Starting_no
+	case 4:
+		return &t.Ending_no
+	case 5:
+		return &t.Warning_no
+	case 6:
+		return &t.Increment_by_no
+	case 7:
+		return &t.Last_no_used
+	case 8:
+		return &t.Open
+	case 9:
+		return &t.Last_date_used
 	}
+	return nil
+}
+
+// noSeriesLineFields describes the fields of No_Series_Line for the record functions
+// written once in foundation/tables
+var noSeriesLineFields = &tables.TableFields{
+	Table: NoSeriesLineTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "series_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Series_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "line_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Line_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "starting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Starting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "starting_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Starting_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "ending_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Ending_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "warning_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Warning_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "increment_by_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Increment_by_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "last_no_used",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Last_no_used",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "open",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Open",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "last_date_used",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Last_date_used",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

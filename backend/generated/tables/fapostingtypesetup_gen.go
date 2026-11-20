@@ -212,56 +212,12 @@ var FAPostingTypeSetup_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *FAPostingTypeSetup) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "fa_posting_type":
-		return 1
-	case "depreciation_book_code":
-		return 2
-	case "part_of_book_value":
-		return 3
-	case "part_of_depreciable_basis":
-		return 4
-	case "include_in_depr_calculation":
-		return 5
-	case "include_in_gain_loss_calc":
-		return 6
-	case "reverse_before_disposal":
-		return 7
-	case "sign":
-		return 8
-	case "depreciation_type":
-		return 9
-	case "acquisition_type":
-		return 10
-	}
-	return 0
+	return fAPostingTypeSetupFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *FAPostingTypeSetup) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "fa_posting_type"
-	case 2:
-		return "depreciation_book_code"
-	case 3:
-		return "part_of_book_value"
-	case 4:
-		return "part_of_depreciable_basis"
-	case 5:
-		return "include_in_depr_calculation"
-	case 6:
-		return "include_in_gain_loss_calc"
-	case 7:
-		return "reverse_before_disposal"
-	case 8:
-		return "sign"
-	case 9:
-		return "depreciation_type"
-	case 10:
-		return "acquisition_type"
-	}
-	return ""
+	return fAPostingTypeSetupFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -373,36 +329,6 @@ type (
 	FAPostingTypeSetupOnBeforeRename interface {
 		OnBeforeRename(rec *FAPostingTypeSetup, handled *bool) error
 	}
-	FAPostingTypeSetupOnValidate_Fa_posting_type interface {
-		OnValidate_Fa_posting_type(rec *FAPostingTypeSetup) error
-	}
-	FAPostingTypeSetupOnValidate_Depreciation_book_code interface {
-		OnValidate_Depreciation_book_code(rec *FAPostingTypeSetup) error
-	}
-	FAPostingTypeSetupOnValidate_Part_of_book_value interface {
-		OnValidate_Part_of_book_value(rec *FAPostingTypeSetup) error
-	}
-	FAPostingTypeSetupOnValidate_Part_of_depreciable_basis interface {
-		OnValidate_Part_of_depreciable_basis(rec *FAPostingTypeSetup) error
-	}
-	FAPostingTypeSetupOnValidate_Include_in_depr_calculation interface {
-		OnValidate_Include_in_depr_calculation(rec *FAPostingTypeSetup) error
-	}
-	FAPostingTypeSetupOnValidate_Include_in_gain_loss_calc interface {
-		OnValidate_Include_in_gain_loss_calc(rec *FAPostingTypeSetup) error
-	}
-	FAPostingTypeSetupOnValidate_Reverse_before_disposal interface {
-		OnValidate_Reverse_before_disposal(rec *FAPostingTypeSetup) error
-	}
-	FAPostingTypeSetupOnValidate_Sign interface {
-		OnValidate_Sign(rec *FAPostingTypeSetup) error
-	}
-	FAPostingTypeSetupOnValidate_Depreciation_type interface {
-		OnValidate_Depreciation_type(rec *FAPostingTypeSetup) error
-	}
-	FAPostingTypeSetupOnValidate_Acquisition_type interface {
-		OnValidate_Acquisition_type(rec *FAPostingTypeSetup) error
-	}
 )
 
 // fAPostingTypeSetupLogic is the registered business logic of FA_Posting_Type_Setup, in
@@ -445,28 +371,9 @@ func fAPostingTypeSetupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(FAPostingTypeSetupOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(FAPostingTypeSetupOnBeforeRename)
-	case "OnValidate_Fa_posting_type":
-		_, ok = logic.(FAPostingTypeSetupOnValidate_Fa_posting_type)
-	case "OnValidate_Depreciation_book_code":
-		_, ok = logic.(FAPostingTypeSetupOnValidate_Depreciation_book_code)
-	case "OnValidate_Part_of_book_value":
-		_, ok = logic.(FAPostingTypeSetupOnValidate_Part_of_book_value)
-	case "OnValidate_Part_of_depreciable_basis":
-		_, ok = logic.(FAPostingTypeSetupOnValidate_Part_of_depreciable_basis)
-	case "OnValidate_Include_in_depr_calculation":
-		_, ok = logic.(FAPostingTypeSetupOnValidate_Include_in_depr_calculation)
-	case "OnValidate_Include_in_gain_loss_calc":
-		_, ok = logic.(FAPostingTypeSetupOnValidate_Include_in_gain_loss_calc)
-	case "OnValidate_Reverse_before_disposal":
-		_, ok = logic.(FAPostingTypeSetupOnValidate_Reverse_before_disposal)
-	case "OnValidate_Sign":
-		_, ok = logic.(FAPostingTypeSetupOnValidate_Sign)
-	case "OnValidate_Depreciation_type":
-		_, ok = logic.(FAPostingTypeSetupOnValidate_Depreciation_type)
-	case "OnValidate_Acquisition_type":
-		_, ok = logic.(FAPostingTypeSetupOnValidate_Acquisition_type)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return fAPostingTypeSetupFields.IsOnValidateTrigger(name, logic, (*FAPostingTypeSetup)(nil))
 	}
 	return true, ok
 }
@@ -775,17 +682,7 @@ func (t *FAPostingTypeSetup) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *FAPostingTypeSetup) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["fa_posting_type"] = t.Fa_posting_type
-	t.oldValues["depreciation_book_code"] = t.Depreciation_book_code
-	t.oldValues["part_of_book_value"] = t.Part_of_book_value
-	t.oldValues["part_of_depreciable_basis"] = t.Part_of_depreciable_basis
-	t.oldValues["include_in_depr_calculation"] = t.Include_in_depr_calculation
-	t.oldValues["include_in_gain_loss_calc"] = t.Include_in_gain_loss_calc
-	t.oldValues["reverse_before_disposal"] = t.Reverse_before_disposal
-	t.oldValues["sign"] = t.Sign
-	t.oldValues["depreciation_type"] = t.Depreciation_type
-	t.oldValues["acquisition_type"] = t.Acquisition_type
+	t.oldValues = fAPostingTypeSetupFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -800,36 +697,7 @@ func (t *FAPostingTypeSetup) OldValue(fieldName string) interface{} {
 func (t *FAPostingTypeSetup) XRec() *FAPostingTypeSetup {
 	x := &FAPostingTypeSetup{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["fa_posting_type"].(FAPostingTypeSetupFa_posting_type); ok {
-		x.Fa_posting_type = v
-	}
-	if v, ok := t.oldValues["depreciation_book_code"].(types.Code); ok {
-		x.Depreciation_book_code = v
-	}
-	if v, ok := t.oldValues["part_of_book_value"].(bool); ok {
-		x.Part_of_book_value = v
-	}
-	if v, ok := t.oldValues["part_of_depreciable_basis"].(bool); ok {
-		x.Part_of_depreciable_basis = v
-	}
-	if v, ok := t.oldValues["include_in_depr_calculation"].(bool); ok {
-		x.Include_in_depr_calculation = v
-	}
-	if v, ok := t.oldValues["include_in_gain_loss_calc"].(bool); ok {
-		x.Include_in_gain_loss_calc = v
-	}
-	if v, ok := t.oldValues["reverse_before_disposal"].(bool); ok {
-		x.Reverse_before_disposal = v
-	}
-	if v, ok := t.oldValues["sign"].(FAPostingTypeSetupSign); ok {
-		x.Sign = v
-	}
-	if v, ok := t.oldValues["depreciation_type"].(bool); ok {
-		x.Depreciation_type = v
-	}
-	if v, ok := t.oldValues["acquisition_type"].(bool); ok {
-		x.Acquisition_type = v
-	}
+	fAPostingTypeSetupFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1189,68 +1057,7 @@ func (t *FAPostingTypeSetup) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *FAPostingTypeSetup) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "fa_posting_type":
-		if old, ok := oldValue.(FAPostingTypeSetupFa_posting_type); ok {
-			return t.Fa_posting_type != old
-		}
-	case "depreciation_book_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Depreciation_book_code.Equal(old)
-		}
-	case "part_of_book_value":
-		if old, ok := oldValue.(bool); ok {
-			return t.Part_of_book_value != old
-		}
-		return true // Type mismatch, assume changed
-	case "part_of_depreciable_basis":
-		if old, ok := oldValue.(bool); ok {
-			return t.Part_of_depreciable_basis != old
-		}
-		return true // Type mismatch, assume changed
-	case "include_in_depr_calculation":
-		if old, ok := oldValue.(bool); ok {
-			return t.Include_in_depr_calculation != old
-		}
-		return true // Type mismatch, assume changed
-	case "include_in_gain_loss_calc":
-		if old, ok := oldValue.(bool); ok {
-			return t.Include_in_gain_loss_calc != old
-		}
-		return true // Type mismatch, assume changed
-	case "reverse_before_disposal":
-		if old, ok := oldValue.(bool); ok {
-			return t.Reverse_before_disposal != old
-		}
-		return true // Type mismatch, assume changed
-	case "sign":
-		if old, ok := oldValue.(FAPostingTypeSetupSign); ok {
-			return t.Sign != old
-		}
-	case "depreciation_type":
-		if old, ok := oldValue.(bool); ok {
-			return t.Depreciation_type != old
-		}
-		return true // Type mismatch, assume changed
-	case "acquisition_type":
-		if old, ok := oldValue.(bool); ok {
-			return t.Acquisition_type != old
-		}
-		return true // Type mismatch, assume changed
-	}
-
-	return false
+	return fAPostingTypeSetupFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1452,29 +1259,7 @@ func (t *FAPostingTypeSetup) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *FAPostingTypeSetup) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("fa_posting_type"):
-		return "fa_posting_type", true
-	case strings.ToLower("depreciation_book_code"):
-		return "depreciation_book_code", true
-	case strings.ToLower("part_of_book_value"):
-		return "part_of_book_value", true
-	case strings.ToLower("part_of_depreciable_basis"):
-		return "part_of_depreciable_basis", true
-	case strings.ToLower("include_in_depr_calculation"):
-		return "include_in_depr_calculation", true
-	case strings.ToLower("include_in_gain_loss_calc"):
-		return "include_in_gain_loss_calc", true
-	case strings.ToLower("reverse_before_disposal"):
-		return "reverse_before_disposal", true
-	case strings.ToLower("sign"):
-		return "sign", true
-	case strings.ToLower("depreciation_type"):
-		return "depreciation_type", true
-	case strings.ToLower("acquisition_type"):
-		return "acquisition_type", true
-	}
-	return "", false
+	return fAPostingTypeSetupFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2401,265 +2186,20 @@ func (t *FAPostingTypeSetup) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *FAPostingTypeSetup) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "fa_posting_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(FAPostingTypeSetupFa_posting_type); ok {
-			t.Fa_posting_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field fa_posting_type (valid range: 0-%d)", v, 4-1)
-			}
-			t.Fa_posting_type = FAPostingTypeSetupFa_posting_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field fa_posting_type (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Fa_posting_type = FAPostingTypeSetupFa_posting_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Fa_posting_type = 0
-			} else {
-				options := []string{"Write-Down", "Appreciation", "Custom 1", "Custom 2"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Fa_posting_type = FAPostingTypeSetupFa_posting_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field fa_posting_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field fa_posting_type (expected FAPostingTypeSetupFa_posting_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingTypeSetupOnValidate_Fa_posting_type); ok {
-				if err := trg.OnValidate_Fa_posting_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "depreciation_book_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Depreciation_book_code = v
-		} else if v, ok := value.(string); ok {
-			t.Depreciation_book_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field depreciation_book_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "depreciation_book_code"); err != nil {
+	i, err := fAPostingTypeSetupFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
+	}
+	f := &fAPostingTypeSetupFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
 			return err
 		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingTypeSetupOnValidate_Depreciation_book_code); ok {
-				if err := trg.OnValidate_Depreciation_book_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "part_of_book_value":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Part_of_book_value = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Part_of_book_value = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field part_of_book_value")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingTypeSetupOnValidate_Part_of_book_value); ok {
-				if err := trg.OnValidate_Part_of_book_value(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "part_of_depreciable_basis":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Part_of_depreciable_basis = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Part_of_depreciable_basis = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field part_of_depreciable_basis")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingTypeSetupOnValidate_Part_of_depreciable_basis); ok {
-				if err := trg.OnValidate_Part_of_depreciable_basis(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "include_in_depr_calculation":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Include_in_depr_calculation = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Include_in_depr_calculation = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field include_in_depr_calculation")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingTypeSetupOnValidate_Include_in_depr_calculation); ok {
-				if err := trg.OnValidate_Include_in_depr_calculation(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "include_in_gain_loss_calc":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Include_in_gain_loss_calc = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Include_in_gain_loss_calc = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field include_in_gain_loss_calc")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingTypeSetupOnValidate_Include_in_gain_loss_calc); ok {
-				if err := trg.OnValidate_Include_in_gain_loss_calc(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reverse_before_disposal":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Reverse_before_disposal = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Reverse_before_disposal = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field reverse_before_disposal")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingTypeSetupOnValidate_Reverse_before_disposal); ok {
-				if err := trg.OnValidate_Reverse_before_disposal(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sign":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(FAPostingTypeSetupSign); ok {
-			t.Sign = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field sign (valid range: 0-%d)", v, 3-1)
-			}
-			t.Sign = FAPostingTypeSetupSign(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field sign (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Sign = FAPostingTypeSetupSign(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Sign = 0
-			} else {
-				options := []string{" ", "Debit", "Credit"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Sign = FAPostingTypeSetupSign(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field sign (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field sign (expected FAPostingTypeSetupSign, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingTypeSetupOnValidate_Sign); ok {
-				if err := trg.OnValidate_Sign(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "depreciation_type":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Depreciation_type = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Depreciation_type = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field depreciation_type")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingTypeSetupOnValidate_Depreciation_type); ok {
-				if err := trg.OnValidate_Depreciation_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "acquisition_type":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Acquisition_type = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Acquisition_type = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field acquisition_type")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAPostingTypeSetupOnValidate_Acquisition_type); ok {
-				if err := trg.OnValidate_Acquisition_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2668,98 +2208,18 @@ func (t *FAPostingTypeSetup) ValidateField(fieldName string, value interface{}) 
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *FAPostingTypeSetup) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Fa_posting_type, true
-	case 2:
-		return t.Depreciation_book_code, true
-	case 3:
-		return t.Part_of_book_value, true
-	case 4:
-		return t.Part_of_depreciable_basis, true
-	case 5:
-		return t.Include_in_depr_calculation, true
-	case 6:
-		return t.Include_in_gain_loss_calc, true
-	case 7:
-		return t.Reverse_before_disposal, true
-	case 8:
-		return t.Sign, true
-	case 9:
-		return t.Depreciation_type, true
-	case 10:
-		return t.Acquisition_type, true
-	}
-	return nil, false
+	return fAPostingTypeSetupFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *FAPostingTypeSetup) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return fAPostingTypeSetupFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *FAPostingTypeSetup) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Fa_posting_type = FAPostingTypeSetupFa_posting_type(i)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Depreciation_book_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Depreciation_book_code = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(bool); ok {
-			t.Part_of_book_value = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(bool); ok {
-			t.Part_of_depreciable_basis = v
-			return true
-		}
-	case 5:
-		if v, ok := value.(bool); ok {
-			t.Include_in_depr_calculation = v
-			return true
-		}
-	case 6:
-		if v, ok := value.(bool); ok {
-			t.Include_in_gain_loss_calc = v
-			return true
-		}
-	case 7:
-		if v, ok := value.(bool); ok {
-			t.Reverse_before_disposal = v
-			return true
-		}
-	case 8:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Sign = FAPostingTypeSetupSign(i)
-			return true
-		}
-	case 9:
-		if v, ok := value.(bool); ok {
-			t.Depreciation_type = v
-			return true
-		}
-	case 10:
-		if v, ok := value.(bool); ok {
-			t.Acquisition_type = v
-			return true
-		}
-	}
-	return false
+	return fAPostingTypeSetupFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3209,29 +2669,7 @@ func (t *FAPostingTypeSetup) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *FAPostingTypeSetup) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "fa_posting_type":
-		return int(t.Fa_posting_type), true
-	case "depreciation_book_code":
-		return t.Depreciation_book_code, true
-	case "part_of_book_value":
-		return t.Part_of_book_value, true
-	case "part_of_depreciable_basis":
-		return t.Part_of_depreciable_basis, true
-	case "include_in_depr_calculation":
-		return t.Include_in_depr_calculation, true
-	case "include_in_gain_loss_calc":
-		return t.Include_in_gain_loss_calc, true
-	case "reverse_before_disposal":
-		return t.Reverse_before_disposal, true
-	case "sign":
-		return int(t.Sign), true
-	case "depreciation_type":
-		return t.Depreciation_type, true
-	case "acquisition_type":
-		return t.Acquisition_type, true
-	}
-	return nil, false
+	return fAPostingTypeSetupFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3329,96 +2767,12 @@ func (t *FAPostingTypeSetup) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *FAPostingTypeSetup) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"fa_posting_type":             int(t.Fa_posting_type),
-		"depreciation_book_code":      t.Depreciation_book_code.String(),
-		"part_of_book_value":          t.Part_of_book_value,
-		"part_of_depreciable_basis":   t.Part_of_depreciable_basis,
-		"include_in_depr_calculation": t.Include_in_depr_calculation,
-		"include_in_gain_loss_calc":   t.Include_in_gain_loss_calc,
-		"reverse_before_disposal":     t.Reverse_before_disposal,
-		"sign":                        int(t.Sign),
-		"depreciation_type":           t.Depreciation_type,
-		"acquisition_type":            t.Acquisition_type,
-	}
+	return fAPostingTypeSetupFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *FAPostingTypeSetup) FromMap(data map[string]interface{}) {
-	if v, ok := data["fa_posting_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Fa_posting_type = FAPostingTypeSetupFa_posting_type(int(val))
-		case int:
-			t.Fa_posting_type = FAPostingTypeSetupFa_posting_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Write-Down", "Appreciation", "Custom 1", "Custom 2"}
-			for i, opt := range options {
-				if opt == val {
-					t.Fa_posting_type = FAPostingTypeSetupFa_posting_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["depreciation_book_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Depreciation_book_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["part_of_book_value"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Part_of_book_value = b
-		}
-	}
-	if v, ok := data["part_of_depreciable_basis"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Part_of_depreciable_basis = b
-		}
-	}
-	if v, ok := data["include_in_depr_calculation"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Include_in_depr_calculation = b
-		}
-	}
-	if v, ok := data["include_in_gain_loss_calc"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Include_in_gain_loss_calc = b
-		}
-	}
-	if v, ok := data["reverse_before_disposal"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Reverse_before_disposal = b
-		}
-	}
-	if v, ok := data["sign"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Sign = FAPostingTypeSetupSign(int(val))
-		case int:
-			t.Sign = FAPostingTypeSetupSign(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Debit", "Credit"}
-			for i, opt := range options {
-				if opt == val {
-					t.Sign = FAPostingTypeSetupSign(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["depreciation_type"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Depreciation_type = b
-		}
-	}
-	if v, ok := data["acquisition_type"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Acquisition_type = b
-		}
-	}
+	fAPostingTypeSetupFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3439,110 +2793,187 @@ func (t *FAPostingTypeSetup) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *FAPostingTypeSetup) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "fa_posting_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         2,
-			Name:       "depreciation_book_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         3,
-			Name:       "part_of_book_value",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "part_of_depreciable_basis",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "include_in_depr_calculation",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "include_in_gain_loss_calc",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "reverse_before_disposal",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "sign",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "depreciation_type",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "acquisition_type",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return fAPostingTypeSetupFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in fAPostingTypeSetupFields.Fields
+func (t *FAPostingTypeSetup) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Fa_posting_type
+	case 1:
+		return &t.Depreciation_book_code
+	case 2:
+		return &t.Part_of_book_value
+	case 3:
+		return &t.Part_of_depreciable_basis
+	case 4:
+		return &t.Include_in_depr_calculation
+	case 5:
+		return &t.Include_in_gain_loss_calc
+	case 6:
+		return &t.Reverse_before_disposal
+	case 7:
+		return &t.Sign
+	case 8:
+		return &t.Depreciation_type
+	case 9:
+		return &t.Acquisition_type
 	}
+	return nil
+}
+
+// fAPostingTypeSetupFields describes the fields of FA_Posting_Type_Setup for the record functions
+// written once in foundation/tables
+var fAPostingTypeSetupFields = &tables.TableFields{
+	Table: FAPostingTypeSetupTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "fa_posting_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Fa_posting_type",
+			Options: []string{"Write-Down", "Appreciation", "Custom 1", "Custom 2"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "depreciation_book_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Depreciation_book_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "part_of_book_value",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Part_of_book_value",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "part_of_depreciable_basis",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Part_of_depreciable_basis",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "include_in_depr_calculation",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Include_in_depr_calculation",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "include_in_gain_loss_calc",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Include_in_gain_loss_calc",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "reverse_before_disposal",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Reverse_before_disposal",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "sign",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Sign",
+			Options: []string{" ", "Debit", "Credit"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "depreciation_type",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Depreciation_type",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "acquisition_type",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Acquisition_type",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

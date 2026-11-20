@@ -118,28 +118,12 @@ var FAReclassJournalTemplate_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *FAReclassJournalTemplate) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "name":
-		return 1
-	case "description":
-		return 2
-	case "page_id":
-		return 6
-	}
-	return 0
+	return fAReclassJournalTemplateFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *FAReclassJournalTemplate) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "name"
-	case 2:
-		return "description"
-	case 6:
-		return "page_id"
-	}
-	return ""
+	return fAReclassJournalTemplateFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -251,15 +235,6 @@ type (
 	FAReclassJournalTemplateOnBeforeRename interface {
 		OnBeforeRename(rec *FAReclassJournalTemplate, handled *bool) error
 	}
-	FAReclassJournalTemplateOnValidate_Name interface {
-		OnValidate_Name(rec *FAReclassJournalTemplate) error
-	}
-	FAReclassJournalTemplateOnValidate_Description interface {
-		OnValidate_Description(rec *FAReclassJournalTemplate) error
-	}
-	FAReclassJournalTemplateOnValidate_Page_id interface {
-		OnValidate_Page_id(rec *FAReclassJournalTemplate) error
-	}
 )
 
 // fAReclassJournalTemplateLogic is the registered business logic of FA_Reclass_Journal_Template, in
@@ -302,14 +277,9 @@ func fAReclassJournalTemplateTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(FAReclassJournalTemplateOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(FAReclassJournalTemplateOnBeforeRename)
-	case "OnValidate_Name":
-		_, ok = logic.(FAReclassJournalTemplateOnValidate_Name)
-	case "OnValidate_Description":
-		_, ok = logic.(FAReclassJournalTemplateOnValidate_Description)
-	case "OnValidate_Page_id":
-		_, ok = logic.(FAReclassJournalTemplateOnValidate_Page_id)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return fAReclassJournalTemplateFields.IsOnValidateTrigger(name, logic, (*FAReclassJournalTemplate)(nil))
 	}
 	return true, ok
 }
@@ -599,10 +569,7 @@ func (t *FAReclassJournalTemplate) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *FAReclassJournalTemplate) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["name"] = t.Name
-	t.oldValues["description"] = t.Description
-	t.oldValues["page_id"] = t.Page_id
+	t.oldValues = fAReclassJournalTemplateFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -617,15 +584,7 @@ func (t *FAReclassJournalTemplate) OldValue(fieldName string) interface{} {
 func (t *FAReclassJournalTemplate) XRec() *FAReclassJournalTemplate {
 	x := &FAReclassJournalTemplate{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["name"].(types.Code); ok {
-		x.Name = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["page_id"].(int); ok {
-		x.Page_id = v
-	}
+	fAReclassJournalTemplateFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -913,34 +872,7 @@ func (t *FAReclassJournalTemplate) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *FAReclassJournalTemplate) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Name.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "page_id":
-		if old, ok := oldValue.(int); ok {
-			return t.Page_id != old
-		}
-		return true // Type mismatch, assume changed
-	}
-
-	return false
+	return fAReclassJournalTemplateFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1181,15 +1113,7 @@ func (t *FAReclassJournalTemplate) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *FAReclassJournalTemplate) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("name"):
-		return "name", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("page_id"):
-		return "page_id", true
-	}
-	return "", false
+	return fAReclassJournalTemplateFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2003,79 +1927,20 @@ func (t *FAReclassJournalTemplate) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *FAReclassJournalTemplate) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Name = v
-		} else if v, ok := value.(string); ok {
-			t.Name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAReclassJournalTemplateOnValidate_Name); ok {
-				if err := trg.OnValidate_Name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAReclassJournalTemplateOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "page_id":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Page_id = v
-		case float64:
-			t.Page_id = int(v)
-		case string:
-			if v == "" {
-				t.Page_id = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Page_id = i
-			} else {
-				return fmt.Errorf("invalid integer value for field page_id: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field page_id")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "page_id"); err != nil {
+	i, err := fAReclassJournalTemplateFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
+	}
+	f := &fAReclassJournalTemplateFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
 			return err
 		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(FAReclassJournalTemplateOnValidate_Page_id); ok {
-				if err := trg.OnValidate_Page_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2084,53 +1949,18 @@ func (t *FAReclassJournalTemplate) ValidateField(fieldName string, value interfa
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *FAReclassJournalTemplate) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Name, true
-	case 2:
-		return t.Description, true
-	case 6:
-		return t.Page_id, true
-	}
-	return nil, false
+	return fAReclassJournalTemplateFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *FAReclassJournalTemplate) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return fAReclassJournalTemplateFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *FAReclassJournalTemplate) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Name = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(int); ok {
-			t.Page_id = v
-			return true
-		}
-	}
-	return false
+	return fAReclassJournalTemplateFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2600,15 +2430,7 @@ func (t *FAReclassJournalTemplate) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *FAReclassJournalTemplate) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "name":
-		return t.Name, true
-	case "description":
-		return t.Description, true
-	case "page_id":
-		return t.Page_id, true
-	}
-	return nil, false
+	return fAReclassJournalTemplateFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2696,38 +2518,12 @@ func (t *FAReclassJournalTemplate) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *FAReclassJournalTemplate) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"name":        t.Name.String(),
-		"description": t.Description.String(),
-		"page_id":     t.Page_id,
-	}
+	return fAReclassJournalTemplateFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *FAReclassJournalTemplate) FromMap(data map[string]interface{}) {
-	if v, ok := data["name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["page_id"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Page_id = int(val)
-		case int:
-			t.Page_id = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Page_id = n
-			}
-		}
-	}
+	fAReclassJournalTemplateFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2748,38 +2544,71 @@ func (t *FAReclassJournalTemplate) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *FAReclassJournalTemplate) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     80,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "page_id",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return fAReclassJournalTemplateFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in fAReclassJournalTemplateFields.Fields
+func (t *FAReclassJournalTemplate) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Name
+	case 1:
+		return &t.Description
+	case 2:
+		return &t.Page_id
 	}
+	return nil
+}
+
+// fAReclassJournalTemplateFields describes the fields of FA_Reclass_Journal_Template for the record functions
+// written once in foundation/tables
+var fAReclassJournalTemplateFields = &tables.TableFields{
+	Table: FAReclassJournalTemplateTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     80,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "page_id",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindInt,
+			Trigger:  "OnValidate_Page_id",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

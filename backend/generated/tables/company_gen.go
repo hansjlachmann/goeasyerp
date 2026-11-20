@@ -113,24 +113,12 @@ var Company_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *Company) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "name":
-		return 1
-	case "display_name":
-		return 3
-	}
-	return 0
+	return companyFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *Company) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "name"
-	case 3:
-		return "display_name"
-	}
-	return ""
+	return companyFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -234,8 +222,6 @@ type (
 	CompanyOnBeforeRename interface {
 		OnBeforeRename(rec *Company, handled *bool) error
 	}
-	CompanyOnValidate_Name         interface{ OnValidate_Name(rec *Company) error }
-	CompanyOnValidate_Display_name interface{ OnValidate_Display_name(rec *Company) error }
 )
 
 // companyLogic is the registered business logic of Company, in
@@ -278,12 +264,9 @@ func companyTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(CompanyOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(CompanyOnBeforeRename)
-	case "OnValidate_Name":
-		_, ok = logic.(CompanyOnValidate_Name)
-	case "OnValidate_Display_name":
-		_, ok = logic.(CompanyOnValidate_Display_name)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return companyFields.IsOnValidateTrigger(name, logic, (*Company)(nil))
 	}
 	return true, ok
 }
@@ -571,9 +554,7 @@ func (t *Company) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *Company) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["name"] = t.Name
-	t.oldValues["display_name"] = t.Display_name
+	t.oldValues = companyFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -588,12 +569,7 @@ func (t *Company) OldValue(fieldName string) interface{} {
 func (t *Company) XRec() *Company {
 	x := &Company{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["name"].(types.Text); ok {
-		x.Name = v
-	}
-	if v, ok := t.oldValues["display_name"].(types.Text); ok {
-		x.Display_name = v
-	}
+	companyFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -870,29 +846,7 @@ func (t *Company) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *Company) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "name":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Name.Equal(old)
-		}
-	case "display_name":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Display_name.Equal(old)
-		}
-	}
-
-	return false
+	return companyFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1146,13 +1100,7 @@ func (t *Company) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *Company) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("name"):
-		return "name", true
-	case strings.ToLower("display_name"):
-		return "display_name", true
-	}
-	return "", false
+	return companyFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -1961,48 +1909,20 @@ func (t *Company) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *Company) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "name":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-		} else if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyOnValidate_Name); ok {
-				if err := trg.OnValidate_Name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "display_name":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Display_name = v
-		} else if v, ok := value.(string); ok {
-			t.Display_name = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field display_name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(CompanyOnValidate_Display_name); ok {
-				if err := trg.OnValidate_Display_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := companyFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &companyFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2011,46 +1931,18 @@ func (t *Company) ValidateField(fieldName string, value interface{}) error {
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *Company) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Name, true
-	case 3:
-		return t.Display_name, true
-	}
-	return nil, false
+	return companyFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *Company) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return companyFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *Company) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Text); ok {
-			t.Display_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Display_name = types.NewText(v)
-			return true
-		}
-	}
-	return false
+	return companyFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2499,13 +2391,7 @@ func (t *Company) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *Company) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "name":
-		return t.Name, true
-	case "display_name":
-		return t.Display_name, true
-	}
-	return nil, false
+	return companyFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2592,24 +2478,12 @@ func (t *Company) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *Company) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"name":         t.Name.String(),
-		"display_name": t.Display_name.String(),
-	}
+	return companyFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *Company) FromMap(data map[string]interface{}) {
-	if v, ok := data["name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Name = types.NewText(s)
-		}
-	}
-	if v, ok := data["display_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Display_name = types.NewText(s)
-		}
-	}
+	companyFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2630,28 +2504,54 @@ func (t *Company) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *Company) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "name",
-			Type:       tables.FieldTypeText,
-			Length:     100,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "display_name",
-			Type:       tables.FieldTypeText,
-			Length:     100,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return companyFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in companyFields.Fields
+func (t *Company) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Name
+	case 1:
+		return &t.Display_name
 	}
+	return nil
+}
+
+// companyFields describes the fields of Company for the record functions
+// written once in foundation/tables
+var companyFields = &tables.TableFields{
+	Table: CompanyTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "name",
+				Type:       tables.FieldTypeText,
+				Length:     100,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "display_name",
+				Type:       tables.FieldTypeText,
+				Length:     100,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Display_name",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

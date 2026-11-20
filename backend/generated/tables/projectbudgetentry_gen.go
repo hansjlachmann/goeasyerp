@@ -36,7 +36,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -235,76 +234,12 @@ var ProjectBudgetEntry_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *ProjectBudgetEntry) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "entry_no":
-		return 1
-	case "project_status":
-		return 2
-	case "project_no":
-		return 3
-	case "type":
-		return 4
-	case "no":
-		return 5
-	case "phase_code":
-		return 6
-	case "task_code":
-		return 7
-	case "step_code":
-		return 8
-	case "date":
-		return 9
-	case "resource_group_no":
-		return 10
-	case "quantity":
-		return 11
-	case "total_cost":
-		return 12
-	case "total_price":
-		return 13
-	case "user_id":
-		return 14
-	case "variant_code":
-		return 5402
-	}
-	return 0
+	return projectBudgetEntryFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *ProjectBudgetEntry) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "entry_no"
-	case 2:
-		return "project_status"
-	case 3:
-		return "project_no"
-	case 4:
-		return "type"
-	case 5:
-		return "no"
-	case 6:
-		return "phase_code"
-	case 7:
-		return "task_code"
-	case 8:
-		return "step_code"
-	case 9:
-		return "date"
-	case 10:
-		return "resource_group_no"
-	case 11:
-		return "quantity"
-	case 12:
-		return "total_cost"
-	case 13:
-		return "total_price"
-	case 14:
-		return "user_id"
-	case 5402:
-		return "variant_code"
-	}
-	return ""
+	return projectBudgetEntryFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -416,51 +351,6 @@ type (
 	ProjectBudgetEntryOnBeforeRename interface {
 		OnBeforeRename(rec *ProjectBudgetEntry, handled *bool) error
 	}
-	ProjectBudgetEntryOnValidate_Entry_no interface {
-		OnValidate_Entry_no(rec *ProjectBudgetEntry) error
-	}
-	ProjectBudgetEntryOnValidate_Project_status interface {
-		OnValidate_Project_status(rec *ProjectBudgetEntry) error
-	}
-	ProjectBudgetEntryOnValidate_Project_no interface {
-		OnValidate_Project_no(rec *ProjectBudgetEntry) error
-	}
-	ProjectBudgetEntryOnValidate_Type interface {
-		OnValidate_Type(rec *ProjectBudgetEntry) error
-	}
-	ProjectBudgetEntryOnValidate_No interface {
-		OnValidate_No(rec *ProjectBudgetEntry) error
-	}
-	ProjectBudgetEntryOnValidate_Phase_code interface {
-		OnValidate_Phase_code(rec *ProjectBudgetEntry) error
-	}
-	ProjectBudgetEntryOnValidate_Task_code interface {
-		OnValidate_Task_code(rec *ProjectBudgetEntry) error
-	}
-	ProjectBudgetEntryOnValidate_Step_code interface {
-		OnValidate_Step_code(rec *ProjectBudgetEntry) error
-	}
-	ProjectBudgetEntryOnValidate_Date interface {
-		OnValidate_Date(rec *ProjectBudgetEntry) error
-	}
-	ProjectBudgetEntryOnValidate_Resource_group_no interface {
-		OnValidate_Resource_group_no(rec *ProjectBudgetEntry) error
-	}
-	ProjectBudgetEntryOnValidate_Quantity interface {
-		OnValidate_Quantity(rec *ProjectBudgetEntry) error
-	}
-	ProjectBudgetEntryOnValidate_Total_cost interface {
-		OnValidate_Total_cost(rec *ProjectBudgetEntry) error
-	}
-	ProjectBudgetEntryOnValidate_Total_price interface {
-		OnValidate_Total_price(rec *ProjectBudgetEntry) error
-	}
-	ProjectBudgetEntryOnValidate_User_id interface {
-		OnValidate_User_id(rec *ProjectBudgetEntry) error
-	}
-	ProjectBudgetEntryOnValidate_Variant_code interface {
-		OnValidate_Variant_code(rec *ProjectBudgetEntry) error
-	}
 )
 
 // projectBudgetEntryLogic is the registered business logic of Project_Budget_Entry, in
@@ -503,38 +393,9 @@ func projectBudgetEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ProjectBudgetEntryOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(ProjectBudgetEntryOnBeforeRename)
-	case "OnValidate_Entry_no":
-		_, ok = logic.(ProjectBudgetEntryOnValidate_Entry_no)
-	case "OnValidate_Project_status":
-		_, ok = logic.(ProjectBudgetEntryOnValidate_Project_status)
-	case "OnValidate_Project_no":
-		_, ok = logic.(ProjectBudgetEntryOnValidate_Project_no)
-	case "OnValidate_Type":
-		_, ok = logic.(ProjectBudgetEntryOnValidate_Type)
-	case "OnValidate_No":
-		_, ok = logic.(ProjectBudgetEntryOnValidate_No)
-	case "OnValidate_Phase_code":
-		_, ok = logic.(ProjectBudgetEntryOnValidate_Phase_code)
-	case "OnValidate_Task_code":
-		_, ok = logic.(ProjectBudgetEntryOnValidate_Task_code)
-	case "OnValidate_Step_code":
-		_, ok = logic.(ProjectBudgetEntryOnValidate_Step_code)
-	case "OnValidate_Date":
-		_, ok = logic.(ProjectBudgetEntryOnValidate_Date)
-	case "OnValidate_Resource_group_no":
-		_, ok = logic.(ProjectBudgetEntryOnValidate_Resource_group_no)
-	case "OnValidate_Quantity":
-		_, ok = logic.(ProjectBudgetEntryOnValidate_Quantity)
-	case "OnValidate_Total_cost":
-		_, ok = logic.(ProjectBudgetEntryOnValidate_Total_cost)
-	case "OnValidate_Total_price":
-		_, ok = logic.(ProjectBudgetEntryOnValidate_Total_price)
-	case "OnValidate_User_id":
-		_, ok = logic.(ProjectBudgetEntryOnValidate_User_id)
-	case "OnValidate_Variant_code":
-		_, ok = logic.(ProjectBudgetEntryOnValidate_Variant_code)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return projectBudgetEntryFields.IsOnValidateTrigger(name, logic, (*ProjectBudgetEntry)(nil))
 	}
 	return true, ok
 }
@@ -925,22 +786,7 @@ func (t *ProjectBudgetEntry) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *ProjectBudgetEntry) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["entry_no"] = t.Entry_no
-	t.oldValues["project_status"] = t.Project_status
-	t.oldValues["project_no"] = t.Project_no
-	t.oldValues["type"] = t.Type
-	t.oldValues["no"] = t.No
-	t.oldValues["phase_code"] = t.Phase_code
-	t.oldValues["task_code"] = t.Task_code
-	t.oldValues["step_code"] = t.Step_code
-	t.oldValues["date"] = t.Date
-	t.oldValues["resource_group_no"] = t.Resource_group_no
-	t.oldValues["quantity"] = t.Quantity
-	t.oldValues["total_cost"] = t.Total_cost
-	t.oldValues["total_price"] = t.Total_price
-	t.oldValues["user_id"] = t.User_id
-	t.oldValues["variant_code"] = t.Variant_code
+	t.oldValues = projectBudgetEntryFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -955,51 +801,7 @@ func (t *ProjectBudgetEntry) OldValue(fieldName string) interface{} {
 func (t *ProjectBudgetEntry) XRec() *ProjectBudgetEntry {
 	x := &ProjectBudgetEntry{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["entry_no"].(int); ok {
-		x.Entry_no = v
-	}
-	if v, ok := t.oldValues["project_status"].(ProjectBudgetEntryProject_status); ok {
-		x.Project_status = v
-	}
-	if v, ok := t.oldValues["project_no"].(types.Code); ok {
-		x.Project_no = v
-	}
-	if v, ok := t.oldValues["type"].(ProjectBudgetEntryType); ok {
-		x.Type = v
-	}
-	if v, ok := t.oldValues["no"].(types.Code); ok {
-		x.No = v
-	}
-	if v, ok := t.oldValues["phase_code"].(types.Code); ok {
-		x.Phase_code = v
-	}
-	if v, ok := t.oldValues["task_code"].(types.Code); ok {
-		x.Task_code = v
-	}
-	if v, ok := t.oldValues["step_code"].(types.Code); ok {
-		x.Step_code = v
-	}
-	if v, ok := t.oldValues["date"].(types.Date); ok {
-		x.Date = v
-	}
-	if v, ok := t.oldValues["resource_group_no"].(types.Code); ok {
-		x.Resource_group_no = v
-	}
-	if v, ok := t.oldValues["quantity"].(types.Decimal); ok {
-		x.Quantity = v
-	}
-	if v, ok := t.oldValues["total_cost"].(types.Decimal); ok {
-		x.Total_cost = v
-	}
-	if v, ok := t.oldValues["total_price"].(types.Decimal); ok {
-		x.Total_price = v
-	}
-	if v, ok := t.oldValues["user_id"].(types.Code); ok {
-		x.User_id = v
-	}
-	if v, ok := t.oldValues["variant_code"].(types.Code); ok {
-		x.Variant_code = v
-	}
+	projectBudgetEntryFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1407,82 +1209,7 @@ func (t *ProjectBudgetEntry) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *ProjectBudgetEntry) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "project_status":
-		if old, ok := oldValue.(ProjectBudgetEntryProject_status); ok {
-			return t.Project_status != old
-		}
-	case "project_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Project_no.Equal(old)
-		}
-	case "type":
-		if old, ok := oldValue.(ProjectBudgetEntryType); ok {
-			return t.Type != old
-		}
-	case "no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No.Equal(old)
-		}
-	case "phase_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Phase_code.Equal(old)
-		}
-	case "task_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Task_code.Equal(old)
-		}
-	case "step_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Step_code.Equal(old)
-		}
-	case "date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Date.Equal(old)
-		}
-	case "resource_group_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Resource_group_no.Equal(old)
-		}
-	case "quantity":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Quantity.Equal(old)
-		}
-	case "total_cost":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Total_cost.Equal(old)
-		}
-	case "total_price":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Total_price.Equal(old)
-		}
-	case "user_id":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.User_id.Equal(old)
-		}
-	case "variant_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Variant_code.Equal(old)
-		}
-	}
-
-	return false
+	return projectBudgetEntryFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1683,39 +1410,7 @@ func (t *ProjectBudgetEntry) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *ProjectBudgetEntry) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("entry_no"):
-		return "entry_no", true
-	case strings.ToLower("project_status"):
-		return "project_status", true
-	case strings.ToLower("project_no"):
-		return "project_no", true
-	case strings.ToLower("type"):
-		return "type", true
-	case strings.ToLower("no"):
-		return "no", true
-	case strings.ToLower("phase_code"):
-		return "phase_code", true
-	case strings.ToLower("task_code"):
-		return "task_code", true
-	case strings.ToLower("step_code"):
-		return "step_code", true
-	case strings.ToLower("date"):
-		return "date", true
-	case strings.ToLower("resource_group_no"):
-		return "resource_group_no", true
-	case strings.ToLower("quantity"):
-		return "quantity", true
-	case strings.ToLower("total_cost"):
-		return "total_cost", true
-	case strings.ToLower("total_price"):
-		return "total_price", true
-	case strings.ToLower("user_id"):
-		return "user_id", true
-	case strings.ToLower("variant_code"):
-		return "variant_code", true
-	}
-	return "", false
+	return projectBudgetEntryFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2693,421 +2388,20 @@ func (t *ProjectBudgetEntry) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *ProjectBudgetEntry) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Entry_no = v
-		case float64:
-			t.Entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field entry_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectBudgetEntryOnValidate_Entry_no); ok {
-				if err := trg.OnValidate_Entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "project_status":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ProjectBudgetEntryProject_status); ok {
-			t.Project_status = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field project_status (valid range: 0-%d)", v, 4-1)
-			}
-			t.Project_status = ProjectBudgetEntryProject_status(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field project_status (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Project_status = ProjectBudgetEntryProject_status(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Project_status = 0
-			} else {
-				options := []string{"Planning", "Quote", "Order", "Completed"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Project_status = ProjectBudgetEntryProject_status(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field project_status (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field project_status (expected ProjectBudgetEntryProject_status, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectBudgetEntryOnValidate_Project_status); ok {
-				if err := trg.OnValidate_Project_status(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "project_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Project_no = v
-		} else if v, ok := value.(string); ok {
-			t.Project_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field project_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "project_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectBudgetEntryOnValidate_Project_no); ok {
-				if err := trg.OnValidate_Project_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ProjectBudgetEntryType); ok {
-			t.Type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", v, 4-1)
-			}
-			t.Type = ProjectBudgetEntryType(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Type = ProjectBudgetEntryType(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Type = 0
-			} else {
-				options := []string{"Resource", "Item", "Account (G/L)", "Group (Resource)"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Type = ProjectBudgetEntryType(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field type (expected ProjectBudgetEntryType, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectBudgetEntryOnValidate_Type); ok {
-				if err := trg.OnValidate_Type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-		} else if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectBudgetEntryOnValidate_No); ok {
-				if err := trg.OnValidate_No(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "phase_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Phase_code = v
-		} else if v, ok := value.(string); ok {
-			t.Phase_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field phase_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "phase_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectBudgetEntryOnValidate_Phase_code); ok {
-				if err := trg.OnValidate_Phase_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "task_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Task_code = v
-		} else if v, ok := value.(string); ok {
-			t.Task_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field task_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "task_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectBudgetEntryOnValidate_Task_code); ok {
-				if err := trg.OnValidate_Task_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "step_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Step_code = v
-		} else if v, ok := value.(string); ok {
-			t.Step_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field step_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "step_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectBudgetEntryOnValidate_Step_code); ok {
-				if err := trg.OnValidate_Step_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectBudgetEntryOnValidate_Date); ok {
-				if err := trg.OnValidate_Date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "resource_group_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Resource_group_no = v
-		} else if v, ok := value.(string); ok {
-			t.Resource_group_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field resource_group_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "resource_group_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectBudgetEntryOnValidate_Resource_group_no); ok {
-				if err := trg.OnValidate_Resource_group_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "quantity":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Quantity, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field quantity: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Quantity = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Quantity = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Quantity = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field quantity (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectBudgetEntryOnValidate_Quantity); ok {
-				if err := trg.OnValidate_Quantity(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "total_cost":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Total_cost = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Total_cost, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field total_cost: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Total_cost = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Total_cost = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Total_cost = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field total_cost (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectBudgetEntryOnValidate_Total_cost); ok {
-				if err := trg.OnValidate_Total_cost(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "total_price":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Total_price = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Total_price, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field total_price: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Total_price = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Total_price = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Total_price = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field total_price (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectBudgetEntryOnValidate_Total_price); ok {
-				if err := trg.OnValidate_Total_price(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "user_id":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-		} else if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field user_id")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "user_id"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectBudgetEntryOnValidate_User_id); ok {
-				if err := trg.OnValidate_User_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "variant_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Variant_code = v
-		} else if v, ok := value.(string); ok {
-			t.Variant_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field variant_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "variant_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ProjectBudgetEntryOnValidate_Variant_code); ok {
-				if err := trg.OnValidate_Variant_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := projectBudgetEntryFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &projectBudgetEntryFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -3116,161 +2410,18 @@ func (t *ProjectBudgetEntry) ValidateField(fieldName string, value interface{}) 
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *ProjectBudgetEntry) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Entry_no, true
-	case 2:
-		return t.Project_status, true
-	case 3:
-		return t.Project_no, true
-	case 4:
-		return t.Type, true
-	case 5:
-		return t.No, true
-	case 6:
-		return t.Phase_code, true
-	case 7:
-		return t.Task_code, true
-	case 8:
-		return t.Step_code, true
-	case 9:
-		return t.Date, true
-	case 10:
-		return t.Resource_group_no, true
-	case 11:
-		return t.Quantity, true
-	case 12:
-		return t.Total_cost, true
-	case 13:
-		return t.Total_price, true
-	case 14:
-		return t.User_id, true
-	case 5402:
-		return t.Variant_code, true
-	}
-	return nil, false
+	return projectBudgetEntryFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *ProjectBudgetEntry) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return projectBudgetEntryFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *ProjectBudgetEntry) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(int); ok {
-			t.Entry_no = v
-			return true
-		}
-	case 2:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Project_status = ProjectBudgetEntryProject_status(i)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Code); ok {
-			t.Project_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Project_no = types.NewCode(v)
-			return true
-		}
-	case 4:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Type = ProjectBudgetEntryType(i)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Code); ok {
-			t.Phase_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Phase_code = types.NewCode(v)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Code); ok {
-			t.Task_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Task_code = types.NewCode(v)
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Code); ok {
-			t.Step_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Step_code = types.NewCode(v)
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.Date); ok {
-			t.Date = v
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Code); ok {
-			t.Resource_group_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Resource_group_no = types.NewCode(v)
-			return true
-		}
-	case 11:
-		if v, ok := value.(types.Decimal); ok {
-			t.Quantity = v
-			return true
-		}
-	case 12:
-		if v, ok := value.(types.Decimal); ok {
-			t.Total_cost = v
-			return true
-		}
-	case 13:
-		if v, ok := value.(types.Decimal); ok {
-			t.Total_price = v
-			return true
-		}
-	case 14:
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-			return true
-		}
-	case 5402:
-		if v, ok := value.(types.Code); ok {
-			t.Variant_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Variant_code = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return projectBudgetEntryFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3764,39 +2915,7 @@ func (t *ProjectBudgetEntry) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *ProjectBudgetEntry) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "entry_no":
-		return t.Entry_no, true
-	case "project_status":
-		return int(t.Project_status), true
-	case "project_no":
-		return t.Project_no, true
-	case "type":
-		return int(t.Type), true
-	case "no":
-		return t.No, true
-	case "phase_code":
-		return t.Phase_code, true
-	case "task_code":
-		return t.Task_code, true
-	case "step_code":
-		return t.Step_code, true
-	case "date":
-		return t.Date, true
-	case "resource_group_no":
-		return t.Resource_group_no, true
-	case "quantity":
-		return t.Quantity, true
-	case "total_cost":
-		return t.Total_cost, true
-	case "total_price":
-		return t.Total_price, true
-	case "user_id":
-		return t.User_id, true
-	case "variant_code":
-		return t.Variant_code, true
-	}
-	return nil, false
+	return projectBudgetEntryFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3896,155 +3015,12 @@ func (t *ProjectBudgetEntry) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *ProjectBudgetEntry) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"entry_no":          t.Entry_no,
-		"project_status":    int(t.Project_status),
-		"project_no":        t.Project_no.String(),
-		"type":              int(t.Type),
-		"no":                t.No.String(),
-		"phase_code":        t.Phase_code.String(),
-		"task_code":         t.Task_code.String(),
-		"step_code":         t.Step_code.String(),
-		"date":              t.Date.String(),
-		"resource_group_no": t.Resource_group_no.String(),
-		"quantity":          t.Quantity.String(),
-		"total_cost":        t.Total_cost.String(),
-		"total_price":       t.Total_price.String(),
-		"user_id":           t.User_id.String(),
-		"variant_code":      t.Variant_code.String(),
-	}
+	return projectBudgetEntryFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *ProjectBudgetEntry) FromMap(data map[string]interface{}) {
-	if v, ok := data["entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Entry_no = int(val)
-		case int:
-			t.Entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Entry_no = n
-			}
-		}
-	}
-	if v, ok := data["project_status"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Project_status = ProjectBudgetEntryProject_status(int(val))
-		case int:
-			t.Project_status = ProjectBudgetEntryProject_status(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Planning", "Quote", "Order", "Completed"}
-			for i, opt := range options {
-				if opt == val {
-					t.Project_status = ProjectBudgetEntryProject_status(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["project_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Project_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Type = ProjectBudgetEntryType(int(val))
-		case int:
-			t.Type = ProjectBudgetEntryType(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Resource", "Item", "Account (G/L)", "Group (Resource)"}
-			for i, opt := range options {
-				if opt == val {
-					t.Type = ProjectBudgetEntryType(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No = types.NewCode(s)
-		}
-	}
-	if v, ok := data["phase_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Phase_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["task_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Task_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["step_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Step_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["resource_group_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Resource_group_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["quantity"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Quantity, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Quantity = types.NewDecimal(val)
-		case int:
-			t.Quantity = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Quantity = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["total_cost"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Total_cost, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Total_cost = types.NewDecimal(val)
-		case int:
-			t.Total_cost = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Total_cost = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["total_price"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Total_price, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Total_price = types.NewDecimal(val)
-		case int:
-			t.Total_price = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Total_price = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["user_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.User_id = types.NewCode(s)
-		}
-	}
-	if v, ok := data["variant_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Variant_code = types.NewCode(s)
-		}
-	}
+	projectBudgetEntryFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -4065,162 +3041,276 @@ func (t *ProjectBudgetEntry) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *ProjectBudgetEntry) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "project_status",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "project_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "phase_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "task_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "step_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "resource_group_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            11,
-			Name:          "quantity",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            12,
-			Name:          "total_cost",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            13,
-			Name:          "total_price",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         14,
-			Name:       "user_id",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         5402,
-			Name:       "variant_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return projectBudgetEntryFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in projectBudgetEntryFields.Fields
+func (t *ProjectBudgetEntry) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Entry_no
+	case 1:
+		return &t.Project_status
+	case 2:
+		return &t.Project_no
+	case 3:
+		return &t.Type
+	case 4:
+		return &t.No
+	case 5:
+		return &t.Phase_code
+	case 6:
+		return &t.Task_code
+	case 7:
+		return &t.Step_code
+	case 8:
+		return &t.Date
+	case 9:
+		return &t.Resource_group_no
+	case 10:
+		return &t.Quantity
+	case 11:
+		return &t.Total_cost
+	case 12:
+		return &t.Total_price
+	case 13:
+		return &t.User_id
+	case 14:
+		return &t.Variant_code
 	}
+	return nil
+}
+
+// projectBudgetEntryFields describes the fields of Project_Budget_Entry for the record functions
+// written once in foundation/tables
+var projectBudgetEntryFields = &tables.TableFields{
+	Table: ProjectBudgetEntryTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Entry_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "project_status",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Project_status",
+			Options: []string{"Planning", "Quote", "Order", "Completed"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "project_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Project_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Type",
+			Options: []string{"Resource", "Item", "Account (G/L)", "Group (Resource)"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_No",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "phase_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Phase_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "task_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Task_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "step_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Step_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "resource_group_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Resource_group_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            11,
+				Name:          "quantity",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Quantity",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            12,
+				Name:          "total_cost",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Total_cost",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            13,
+				Name:          "total_price",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Total_price",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "user_id",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_User_id",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5402,
+				Name:       "variant_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Variant_code",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

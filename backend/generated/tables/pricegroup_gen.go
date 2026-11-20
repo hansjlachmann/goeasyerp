@@ -129,40 +129,12 @@ var PriceGroup_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *PriceGroup) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "code":
-		return 1
-	case "price_includes_tax":
-		return 2
-	case "allow_quantity_disc":
-		return 3
-	case "allow_cust_item_disc":
-		return 4
-	case "allow_invoice_disc":
-		return 5
-	case "tax_bus_posting_gr_price":
-		return 6
-	}
-	return 0
+	return priceGroupFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *PriceGroup) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "code"
-	case 2:
-		return "price_includes_tax"
-	case 3:
-		return "allow_quantity_disc"
-	case 4:
-		return "allow_cust_item_disc"
-	case 5:
-		return "allow_invoice_disc"
-	case 6:
-		return "tax_bus_posting_gr_price"
-	}
-	return ""
+	return priceGroupFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -266,12 +238,6 @@ type (
 	PriceGroupOnBeforeRename interface {
 		OnBeforeRename(rec *PriceGroup, handled *bool) error
 	}
-	PriceGroupOnValidate_Code                     interface{ OnValidate_Code(rec *PriceGroup) error }
-	PriceGroupOnValidate_Price_includes_tax       interface{ OnValidate_Price_includes_tax(rec *PriceGroup) error }
-	PriceGroupOnValidate_Allow_quantity_disc      interface{ OnValidate_Allow_quantity_disc(rec *PriceGroup) error }
-	PriceGroupOnValidate_Allow_cust_item_disc     interface{ OnValidate_Allow_cust_item_disc(rec *PriceGroup) error }
-	PriceGroupOnValidate_Allow_invoice_disc       interface{ OnValidate_Allow_invoice_disc(rec *PriceGroup) error }
-	PriceGroupOnValidate_Tax_bus_posting_gr_price interface{ OnValidate_Tax_bus_posting_gr_price(rec *PriceGroup) error }
 )
 
 // priceGroupLogic is the registered business logic of Price_Group, in
@@ -314,20 +280,9 @@ func priceGroupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(PriceGroupOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(PriceGroupOnBeforeRename)
-	case "OnValidate_Code":
-		_, ok = logic.(PriceGroupOnValidate_Code)
-	case "OnValidate_Price_includes_tax":
-		_, ok = logic.(PriceGroupOnValidate_Price_includes_tax)
-	case "OnValidate_Allow_quantity_disc":
-		_, ok = logic.(PriceGroupOnValidate_Allow_quantity_disc)
-	case "OnValidate_Allow_cust_item_disc":
-		_, ok = logic.(PriceGroupOnValidate_Allow_cust_item_disc)
-	case "OnValidate_Allow_invoice_disc":
-		_, ok = logic.(PriceGroupOnValidate_Allow_invoice_disc)
-	case "OnValidate_Tax_bus_posting_gr_price":
-		_, ok = logic.(PriceGroupOnValidate_Tax_bus_posting_gr_price)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return priceGroupFields.IsOnValidateTrigger(name, logic, (*PriceGroup)(nil))
 	}
 	return true, ok
 }
@@ -626,13 +581,7 @@ func (t *PriceGroup) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *PriceGroup) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["code"] = t.Code
-	t.oldValues["price_includes_tax"] = t.Price_includes_tax
-	t.oldValues["allow_quantity_disc"] = t.Allow_quantity_disc
-	t.oldValues["allow_cust_item_disc"] = t.Allow_cust_item_disc
-	t.oldValues["allow_invoice_disc"] = t.Allow_invoice_disc
-	t.oldValues["tax_bus_posting_gr_price"] = t.Tax_bus_posting_gr_price
+	t.oldValues = priceGroupFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -647,24 +596,7 @@ func (t *PriceGroup) OldValue(fieldName string) interface{} {
 func (t *PriceGroup) XRec() *PriceGroup {
 	x := &PriceGroup{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["code"].(types.Code); ok {
-		x.Code = v
-	}
-	if v, ok := t.oldValues["price_includes_tax"].(bool); ok {
-		x.Price_includes_tax = v
-	}
-	if v, ok := t.oldValues["allow_quantity_disc"].(bool); ok {
-		x.Allow_quantity_disc = v
-	}
-	if v, ok := t.oldValues["allow_cust_item_disc"].(bool); ok {
-		x.Allow_cust_item_disc = v
-	}
-	if v, ok := t.oldValues["allow_invoice_disc"].(bool); ok {
-		x.Allow_invoice_disc = v
-	}
-	if v, ok := t.oldValues["tax_bus_posting_gr_price"].(types.Code); ok {
-		x.Tax_bus_posting_gr_price = v
-	}
+	priceGroupFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -985,49 +917,7 @@ func (t *PriceGroup) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *PriceGroup) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Code.Equal(old)
-		}
-	case "price_includes_tax":
-		if old, ok := oldValue.(bool); ok {
-			return t.Price_includes_tax != old
-		}
-		return true // Type mismatch, assume changed
-	case "allow_quantity_disc":
-		if old, ok := oldValue.(bool); ok {
-			return t.Allow_quantity_disc != old
-		}
-		return true // Type mismatch, assume changed
-	case "allow_cust_item_disc":
-		if old, ok := oldValue.(bool); ok {
-			return t.Allow_cust_item_disc != old
-		}
-		return true // Type mismatch, assume changed
-	case "allow_invoice_disc":
-		if old, ok := oldValue.(bool); ok {
-			return t.Allow_invoice_disc != old
-		}
-		return true // Type mismatch, assume changed
-	case "tax_bus_posting_gr_price":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_bus_posting_gr_price.Equal(old)
-		}
-	}
-
-	return false
+	return priceGroupFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1298,21 +1188,7 @@ func (t *PriceGroup) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *PriceGroup) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("code"):
-		return "code", true
-	case strings.ToLower("price_includes_tax"):
-		return "price_includes_tax", true
-	case strings.ToLower("allow_quantity_disc"):
-		return "allow_quantity_disc", true
-	case strings.ToLower("allow_cust_item_disc"):
-		return "allow_cust_item_disc", true
-	case strings.ToLower("allow_invoice_disc"):
-		return "allow_invoice_disc", true
-	case strings.ToLower("tax_bus_posting_gr_price"):
-		return "tax_bus_posting_gr_price", true
-	}
-	return "", false
+	return priceGroupFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2181,128 +2057,20 @@ func (t *PriceGroup) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *PriceGroup) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-		} else if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PriceGroupOnValidate_Code); ok {
-				if err := trg.OnValidate_Code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "price_includes_tax":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Price_includes_tax = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Price_includes_tax = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field price_includes_tax")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PriceGroupOnValidate_Price_includes_tax); ok {
-				if err := trg.OnValidate_Price_includes_tax(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "allow_quantity_disc":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Allow_quantity_disc = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Allow_quantity_disc = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field allow_quantity_disc")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PriceGroupOnValidate_Allow_quantity_disc); ok {
-				if err := trg.OnValidate_Allow_quantity_disc(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "allow_cust_item_disc":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Allow_cust_item_disc = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Allow_cust_item_disc = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field allow_cust_item_disc")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PriceGroupOnValidate_Allow_cust_item_disc); ok {
-				if err := trg.OnValidate_Allow_cust_item_disc(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "allow_invoice_disc":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Allow_invoice_disc = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Allow_invoice_disc = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field allow_invoice_disc")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PriceGroupOnValidate_Allow_invoice_disc); ok {
-				if err := trg.OnValidate_Allow_invoice_disc(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_bus_posting_gr_price":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_bus_posting_gr_price = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_bus_posting_gr_price = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_bus_posting_gr_price")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_bus_posting_gr_price"); err != nil {
+	i, err := priceGroupFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
+	}
+	f := &priceGroupFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
 			return err
 		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(PriceGroupOnValidate_Tax_bus_posting_gr_price); ok {
-				if err := trg.OnValidate_Tax_bus_posting_gr_price(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2311,74 +2079,18 @@ func (t *PriceGroup) ValidateField(fieldName string, value interface{}) error {
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *PriceGroup) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Code, true
-	case 2:
-		return t.Price_includes_tax, true
-	case 3:
-		return t.Allow_quantity_disc, true
-	case 4:
-		return t.Allow_cust_item_disc, true
-	case 5:
-		return t.Allow_invoice_disc, true
-	case 6:
-		return t.Tax_bus_posting_gr_price, true
-	}
-	return nil, false
+	return priceGroupFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *PriceGroup) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return priceGroupFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *PriceGroup) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(bool); ok {
-			t.Price_includes_tax = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(bool); ok {
-			t.Allow_quantity_disc = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(bool); ok {
-			t.Allow_cust_item_disc = v
-			return true
-		}
-	case 5:
-		if v, ok := value.(bool); ok {
-			t.Allow_invoice_disc = v
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_bus_posting_gr_price = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_bus_posting_gr_price = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return priceGroupFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2827,21 +2539,7 @@ func (t *PriceGroup) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *PriceGroup) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "code":
-		return t.Code, true
-	case "price_includes_tax":
-		return t.Price_includes_tax, true
-	case "allow_quantity_disc":
-		return t.Allow_quantity_disc, true
-	case "allow_cust_item_disc":
-		return t.Allow_cust_item_disc, true
-	case "allow_invoice_disc":
-		return t.Allow_invoice_disc, true
-	case "tax_bus_posting_gr_price":
-		return t.Tax_bus_posting_gr_price, true
-	}
-	return nil, false
+	return priceGroupFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2932,48 +2630,12 @@ func (t *PriceGroup) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *PriceGroup) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"code":                     t.Code.String(),
-		"price_includes_tax":       t.Price_includes_tax,
-		"allow_quantity_disc":      t.Allow_quantity_disc,
-		"allow_cust_item_disc":     t.Allow_cust_item_disc,
-		"allow_invoice_disc":       t.Allow_invoice_disc,
-		"tax_bus_posting_gr_price": t.Tax_bus_posting_gr_price.String(),
-	}
+	return priceGroupFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *PriceGroup) FromMap(data map[string]interface{}) {
-	if v, ok := data["code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["price_includes_tax"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Price_includes_tax = b
-		}
-	}
-	if v, ok := data["allow_quantity_disc"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Allow_quantity_disc = b
-		}
-	}
-	if v, ok := data["allow_cust_item_disc"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Allow_cust_item_disc = b
-		}
-	}
-	if v, ok := data["allow_invoice_disc"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Allow_invoice_disc = b
-		}
-	}
-	if v, ok := data["tax_bus_posting_gr_price"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_bus_posting_gr_price = types.NewCode(s)
-		}
-	}
+	priceGroupFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2994,68 +2656,119 @@ func (t *PriceGroup) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *PriceGroup) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "price_includes_tax",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "allow_quantity_disc",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "allow_cust_item_disc",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "allow_invoice_disc",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "tax_bus_posting_gr_price",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return priceGroupFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in priceGroupFields.Fields
+func (t *PriceGroup) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Code
+	case 1:
+		return &t.Price_includes_tax
+	case 2:
+		return &t.Allow_quantity_disc
+	case 3:
+		return &t.Allow_cust_item_disc
+	case 4:
+		return &t.Allow_invoice_disc
+	case 5:
+		return &t.Tax_bus_posting_gr_price
 	}
+	return nil
+}
+
+// priceGroupFields describes the fields of Price_Group for the record functions
+// written once in foundation/tables
+var priceGroupFields = &tables.TableFields{
+	Table: PriceGroupTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "price_includes_tax",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Price_includes_tax",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "allow_quantity_disc",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Allow_quantity_disc",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "allow_cust_item_disc",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Allow_cust_item_disc",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "allow_invoice_disc",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Allow_invoice_disc",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "tax_bus_posting_gr_price",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_bus_posting_gr_price",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

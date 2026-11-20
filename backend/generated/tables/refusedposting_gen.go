@@ -26,12 +26,11 @@ package tables
 
 import (
 	"database/sql"
-	"encoding/base64"
+
 	"fmt"
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -144,52 +143,12 @@ var RefusedPosting_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *RefusedPosting) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "entry_no":
-		return 1
-	case "refused_at":
-		return 2
-	case "user_id":
-		return 3
-	case "error_code":
-		return 4
-	case "message":
-		return 5
-	case "document_no":
-		return 6
-	case "posting_date":
-		return 7
-	case "difference":
-		return 8
-	case "details":
-		return 9
-	}
-	return 0
+	return refusedPostingFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *RefusedPosting) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "entry_no"
-	case 2:
-		return "refused_at"
-	case 3:
-		return "user_id"
-	case 4:
-		return "error_code"
-	case 5:
-		return "message"
-	case 6:
-		return "document_no"
-	case 7:
-		return "posting_date"
-	case 8:
-		return "difference"
-	case 9:
-		return "details"
-	}
-	return ""
+	return refusedPostingFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -301,33 +260,6 @@ type (
 	RefusedPostingOnBeforeRename interface {
 		OnBeforeRename(rec *RefusedPosting, handled *bool) error
 	}
-	RefusedPostingOnValidate_Entry_no interface {
-		OnValidate_Entry_no(rec *RefusedPosting) error
-	}
-	RefusedPostingOnValidate_Refused_at interface {
-		OnValidate_Refused_at(rec *RefusedPosting) error
-	}
-	RefusedPostingOnValidate_User_id interface {
-		OnValidate_User_id(rec *RefusedPosting) error
-	}
-	RefusedPostingOnValidate_Error_code interface {
-		OnValidate_Error_code(rec *RefusedPosting) error
-	}
-	RefusedPostingOnValidate_Message interface {
-		OnValidate_Message(rec *RefusedPosting) error
-	}
-	RefusedPostingOnValidate_Document_no interface {
-		OnValidate_Document_no(rec *RefusedPosting) error
-	}
-	RefusedPostingOnValidate_Posting_date interface {
-		OnValidate_Posting_date(rec *RefusedPosting) error
-	}
-	RefusedPostingOnValidate_Difference interface {
-		OnValidate_Difference(rec *RefusedPosting) error
-	}
-	RefusedPostingOnValidate_Details interface {
-		OnValidate_Details(rec *RefusedPosting) error
-	}
 )
 
 // refusedPostingLogic is the registered business logic of Refused_Posting, in
@@ -370,26 +302,9 @@ func refusedPostingTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(RefusedPostingOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(RefusedPostingOnBeforeRename)
-	case "OnValidate_Entry_no":
-		_, ok = logic.(RefusedPostingOnValidate_Entry_no)
-	case "OnValidate_Refused_at":
-		_, ok = logic.(RefusedPostingOnValidate_Refused_at)
-	case "OnValidate_User_id":
-		_, ok = logic.(RefusedPostingOnValidate_User_id)
-	case "OnValidate_Error_code":
-		_, ok = logic.(RefusedPostingOnValidate_Error_code)
-	case "OnValidate_Message":
-		_, ok = logic.(RefusedPostingOnValidate_Message)
-	case "OnValidate_Document_no":
-		_, ok = logic.(RefusedPostingOnValidate_Document_no)
-	case "OnValidate_Posting_date":
-		_, ok = logic.(RefusedPostingOnValidate_Posting_date)
-	case "OnValidate_Difference":
-		_, ok = logic.(RefusedPostingOnValidate_Difference)
-	case "OnValidate_Details":
-		_, ok = logic.(RefusedPostingOnValidate_Details)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return refusedPostingFields.IsOnValidateTrigger(name, logic, (*RefusedPosting)(nil))
 	}
 	return true, ok
 }
@@ -700,16 +615,7 @@ func (t *RefusedPosting) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *RefusedPosting) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["entry_no"] = t.Entry_no
-	t.oldValues["refused_at"] = t.Refused_at
-	t.oldValues["user_id"] = t.User_id
-	t.oldValues["error_code"] = t.Error_code
-	t.oldValues["message"] = t.Message
-	t.oldValues["document_no"] = t.Document_no
-	t.oldValues["posting_date"] = t.Posting_date
-	t.oldValues["difference"] = t.Difference
-	t.oldValues["details"] = t.Details
+	t.oldValues = refusedPostingFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -724,33 +630,7 @@ func (t *RefusedPosting) OldValue(fieldName string) interface{} {
 func (t *RefusedPosting) XRec() *RefusedPosting {
 	x := &RefusedPosting{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["entry_no"].(int); ok {
-		x.Entry_no = v
-	}
-	if v, ok := t.oldValues["refused_at"].(types.DateTime); ok {
-		x.Refused_at = v
-	}
-	if v, ok := t.oldValues["user_id"].(types.Code); ok {
-		x.User_id = v
-	}
-	if v, ok := t.oldValues["error_code"].(types.Code); ok {
-		x.Error_code = v
-	}
-	if v, ok := t.oldValues["message"].(types.Text); ok {
-		x.Message = v
-	}
-	if v, ok := t.oldValues["document_no"].(types.Code); ok {
-		x.Document_no = v
-	}
-	if v, ok := t.oldValues["posting_date"].(types.Text); ok {
-		x.Posting_date = v
-	}
-	if v, ok := t.oldValues["difference"].(types.Text); ok {
-		x.Difference = v
-	}
-	if v, ok := t.oldValues["details"].([]byte); ok {
-		x.Details = v
-	}
+	refusedPostingFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1092,57 +972,7 @@ func (t *RefusedPosting) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *RefusedPosting) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "refused_at":
-		if old, ok := oldValue.(types.DateTime); ok {
-			return !t.Refused_at.Equal(old)
-		}
-	case "user_id":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.User_id.Equal(old)
-		}
-	case "error_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Error_code.Equal(old)
-		}
-	case "message":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Message.Equal(old)
-		}
-	case "document_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Document_no.Equal(old)
-		}
-	case "posting_date":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Posting_date.Equal(old)
-		}
-	case "difference":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Difference.Equal(old)
-		}
-	case "details":
-		// Skip comparison for BLOB fields (too large, use always modified)
-		return true
-	}
-
-	return false
+	return refusedPostingFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1343,27 +1173,7 @@ func (t *RefusedPosting) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *RefusedPosting) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("entry_no"):
-		return "entry_no", true
-	case strings.ToLower("refused_at"):
-		return "refused_at", true
-	case strings.ToLower("user_id"):
-		return "user_id", true
-	case strings.ToLower("error_code"):
-		return "error_code", true
-	case strings.ToLower("message"):
-		return "message", true
-	case strings.ToLower("document_no"):
-		return "document_no", true
-	case strings.ToLower("posting_date"):
-		return "posting_date", true
-	case strings.ToLower("difference"):
-		return "difference", true
-	case strings.ToLower("details"):
-		return "details", true
-	}
-	return "", false
+	return refusedPostingFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2247,205 +2057,20 @@ func (t *RefusedPosting) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *RefusedPosting) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Entry_no = v
-		case float64:
-			t.Entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field entry_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RefusedPostingOnValidate_Entry_no); ok {
-				if err := trg.OnValidate_Entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "refused_at":
-		// Set field value
-		if v, ok := value.(types.DateTime); ok {
-			t.Refused_at = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Refused_at, err = types.NewDateTimeFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid datetime value for field refused_at: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Refused_at = types.NewDateTimeFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field refused_at (expected DateTime, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RefusedPostingOnValidate_Refused_at); ok {
-				if err := trg.OnValidate_Refused_at(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "user_id":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-		} else if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field user_id")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "user_id"); err != nil {
+	i, err := refusedPostingFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
+	}
+	f := &refusedPostingFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
 			return err
 		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RefusedPostingOnValidate_User_id); ok {
-				if err := trg.OnValidate_User_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "error_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Error_code = v
-		} else if v, ok := value.(string); ok {
-			t.Error_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field error_code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RefusedPostingOnValidate_Error_code); ok {
-				if err := trg.OnValidate_Error_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "message":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Message = v
-		} else if v, ok := value.(string); ok {
-			t.Message = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field message")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RefusedPostingOnValidate_Message); ok {
-				if err := trg.OnValidate_Message(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Document_no = v
-		} else if v, ok := value.(string); ok {
-			t.Document_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field document_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RefusedPostingOnValidate_Document_no); ok {
-				if err := trg.OnValidate_Document_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "posting_date":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Posting_date = v
-		} else if v, ok := value.(string); ok {
-			t.Posting_date = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field posting_date")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RefusedPostingOnValidate_Posting_date); ok {
-				if err := trg.OnValidate_Posting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "difference":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Difference = v
-		} else if v, ok := value.(string); ok {
-			t.Difference = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field difference")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RefusedPostingOnValidate_Difference); ok {
-				if err := trg.OnValidate_Difference(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "details":
-		// Set field value
-		// Accept nil, []byte, or base64-encoded string
-		if value == nil {
-			t.Details = nil
-		} else if v, ok := value.([]byte); ok {
-			t.Details = v
-		} else if s, ok := value.(string); ok {
-			if s == "" {
-				t.Details = nil
-			} else {
-				// Try base64 decode
-				decoded, err := base64.StdEncoding.DecodeString(s)
-				if err != nil {
-					return fmt.Errorf("invalid base64 value for field details: %w", err)
-				}
-				t.Details = decoded
-			}
-		} else {
-			return fmt.Errorf("invalid type for field details (expected []byte, string, or nil)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(RefusedPostingOnValidate_Details); ok {
-				if err := trg.OnValidate_Details(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2454,111 +2079,18 @@ func (t *RefusedPosting) ValidateField(fieldName string, value interface{}) erro
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *RefusedPosting) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Entry_no, true
-	case 2:
-		return t.Refused_at, true
-	case 3:
-		return t.User_id, true
-	case 4:
-		return t.Error_code, true
-	case 5:
-		return t.Message, true
-	case 6:
-		return t.Document_no, true
-	case 7:
-		return t.Posting_date, true
-	case 8:
-		return t.Difference, true
-	case 9:
-		return t.Details, true
-	}
-	return nil, false
+	return refusedPostingFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *RefusedPosting) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return refusedPostingFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *RefusedPosting) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(int); ok {
-			t.Entry_no = v
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.DateTime); ok {
-			t.Refused_at = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Code); ok {
-			t.User_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.User_id = types.NewCode(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Code); ok {
-			t.Error_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Error_code = types.NewCode(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Text); ok {
-			t.Message = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Message = types.NewText(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Code); ok {
-			t.Document_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Document_no = types.NewCode(v)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Text); ok {
-			t.Posting_date = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Posting_date = types.NewText(v)
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Text); ok {
-			t.Difference = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Difference = types.NewText(v)
-			return true
-		}
-	case 9:
-		if v, ok := value.([]byte); ok {
-			t.Details = v
-			return true
-		}
-	}
-	return false
+	return refusedPostingFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3028,27 +2560,7 @@ func (t *RefusedPosting) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *RefusedPosting) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "entry_no":
-		return t.Entry_no, true
-	case "refused_at":
-		return t.Refused_at, true
-	case "user_id":
-		return t.User_id, true
-	case "error_code":
-		return t.Error_code, true
-	case "message":
-		return t.Message, true
-	case "document_no":
-		return t.Document_no, true
-	case "posting_date":
-		return t.Posting_date, true
-	case "difference":
-		return t.Difference, true
-	case "details":
-		return t.Details, true
-	}
-	return nil, false
+	return refusedPostingFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3142,71 +2654,12 @@ func (t *RefusedPosting) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *RefusedPosting) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"entry_no":     t.Entry_no,
-		"refused_at":   t.Refused_at.String(),
-		"user_id":      t.User_id.String(),
-		"error_code":   t.Error_code.String(),
-		"message":      t.Message.String(),
-		"document_no":  t.Document_no.String(),
-		"posting_date": t.Posting_date.String(),
-		"difference":   t.Difference.String(),
-		"details":      t.Details,
-	}
+	return refusedPostingFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *RefusedPosting) FromMap(data map[string]interface{}) {
-	if v, ok := data["entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Entry_no = int(val)
-		case int:
-			t.Entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Entry_no = n
-			}
-		}
-	}
-	if v, ok := data["refused_at"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Refused_at, _ = types.NewDateTimeFromString(s)
-		}
-	}
-	if v, ok := data["user_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.User_id = types.NewCode(s)
-		}
-	}
-	if v, ok := data["error_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Error_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["message"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Message = types.NewText(s)
-		}
-	}
-	if v, ok := data["document_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Document_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["posting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Posting_date = types.NewText(s)
-		}
-	}
-	if v, ok := data["difference"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Difference = types.NewText(s)
-		}
-	}
-	if v, ok := data["details"]; ok && v != nil {
-	}
+	refusedPostingFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3227,98 +2680,167 @@ func (t *RefusedPosting) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *RefusedPosting) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "refused_at",
-			Type:       tables.FieldTypeDateTime,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "user_id",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "error_code",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "message",
-			Type:       tables.FieldTypeText,
-			Length:     250,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "document_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "posting_date",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "difference",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "details",
-			Type:       tables.FieldTypeBlob,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return refusedPostingFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in refusedPostingFields.Fields
+func (t *RefusedPosting) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Entry_no
+	case 1:
+		return &t.Refused_at
+	case 2:
+		return &t.User_id
+	case 3:
+		return &t.Error_code
+	case 4:
+		return &t.Message
+	case 5:
+		return &t.Document_no
+	case 6:
+		return &t.Posting_date
+	case 7:
+		return &t.Difference
+	case 8:
+		return &t.Details
 	}
+	return nil
+}
+
+// refusedPostingFields describes the fields of Refused_Posting for the record functions
+// written once in foundation/tables
+var refusedPostingFields = &tables.TableFields{
+	Table: RefusedPostingTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Entry_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "refused_at",
+				Type:       tables.FieldTypeDateTime,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDateTime,
+			Trigger: "OnValidate_Refused_at",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "user_id",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_User_id",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "error_code",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Error_code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "message",
+				Type:       tables.FieldTypeText,
+				Length:     250,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Message",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "document_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Document_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "posting_date",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Posting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "difference",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Difference",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "details",
+				Type:       tables.FieldTypeBlob,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBlob,
+			Trigger: "OnValidate_Details",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

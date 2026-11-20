@@ -121,32 +121,12 @@ var ShippingAgent_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *ShippingAgent) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "code":
-		return 1
-	case "name":
-		return 2
-	case "internet_address":
-		return 3
-	case "account_no":
-		return 4
-	}
-	return 0
+	return shippingAgentFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *ShippingAgent) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "code"
-	case 2:
-		return "name"
-	case 3:
-		return "internet_address"
-	case 4:
-		return "account_no"
-	}
-	return ""
+	return shippingAgentFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -258,18 +238,6 @@ type (
 	ShippingAgentOnBeforeRename interface {
 		OnBeforeRename(rec *ShippingAgent, handled *bool) error
 	}
-	ShippingAgentOnValidate_Code interface {
-		OnValidate_Code(rec *ShippingAgent) error
-	}
-	ShippingAgentOnValidate_Name interface {
-		OnValidate_Name(rec *ShippingAgent) error
-	}
-	ShippingAgentOnValidate_Internet_address interface {
-		OnValidate_Internet_address(rec *ShippingAgent) error
-	}
-	ShippingAgentOnValidate_Account_no interface {
-		OnValidate_Account_no(rec *ShippingAgent) error
-	}
 )
 
 // shippingAgentLogic is the registered business logic of Shipping_Agent, in
@@ -312,16 +280,9 @@ func shippingAgentTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ShippingAgentOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(ShippingAgentOnBeforeRename)
-	case "OnValidate_Code":
-		_, ok = logic.(ShippingAgentOnValidate_Code)
-	case "OnValidate_Name":
-		_, ok = logic.(ShippingAgentOnValidate_Name)
-	case "OnValidate_Internet_address":
-		_, ok = logic.(ShippingAgentOnValidate_Internet_address)
-	case "OnValidate_Account_no":
-		_, ok = logic.(ShippingAgentOnValidate_Account_no)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return shippingAgentFields.IsOnValidateTrigger(name, logic, (*ShippingAgent)(nil))
 	}
 	return true, ok
 }
@@ -619,11 +580,7 @@ func (t *ShippingAgent) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *ShippingAgent) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["code"] = t.Code
-	t.oldValues["name"] = t.Name
-	t.oldValues["internet_address"] = t.Internet_address
-	t.oldValues["account_no"] = t.Account_no
+	t.oldValues = shippingAgentFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -638,18 +595,7 @@ func (t *ShippingAgent) OldValue(fieldName string) interface{} {
 func (t *ShippingAgent) XRec() *ShippingAgent {
 	x := &ShippingAgent{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["code"].(types.Code); ok {
-		x.Code = v
-	}
-	if v, ok := t.oldValues["name"].(types.Text); ok {
-		x.Name = v
-	}
-	if v, ok := t.oldValues["internet_address"].(types.Text); ok {
-		x.Internet_address = v
-	}
-	if v, ok := t.oldValues["account_no"].(types.Text); ok {
-		x.Account_no = v
-	}
+	shippingAgentFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -948,37 +894,7 @@ func (t *ShippingAgent) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *ShippingAgent) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Code.Equal(old)
-		}
-	case "name":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Name.Equal(old)
-		}
-	case "internet_address":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Internet_address.Equal(old)
-		}
-	case "account_no":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Account_no.Equal(old)
-		}
-	}
-
-	return false
+	return shippingAgentFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1242,17 +1158,7 @@ func (t *ShippingAgent) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *ShippingAgent) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("code"):
-		return "code", true
-	case strings.ToLower("name"):
-		return "name", true
-	case strings.ToLower("internet_address"):
-		return "internet_address", true
-	case strings.ToLower("account_no"):
-		return "account_no", true
-	}
-	return "", false
+	return shippingAgentFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2087,84 +1993,20 @@ func (t *ShippingAgent) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *ShippingAgent) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-		} else if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ShippingAgentOnValidate_Code); ok {
-				if err := trg.OnValidate_Code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "name":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-		} else if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ShippingAgentOnValidate_Name); ok {
-				if err := trg.OnValidate_Name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "internet_address":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Internet_address = v
-		} else if v, ok := value.(string); ok {
-			t.Internet_address = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field internet_address")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ShippingAgentOnValidate_Internet_address); ok {
-				if err := trg.OnValidate_Internet_address(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "account_no":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Account_no = v
-		} else if v, ok := value.(string); ok {
-			t.Account_no = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field account_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ShippingAgentOnValidate_Account_no); ok {
-				if err := trg.OnValidate_Account_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := shippingAgentFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &shippingAgentFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2173,68 +2015,18 @@ func (t *ShippingAgent) ValidateField(fieldName string, value interface{}) error
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *ShippingAgent) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Code, true
-	case 2:
-		return t.Name, true
-	case 3:
-		return t.Internet_address, true
-	case 4:
-		return t.Account_no, true
-	}
-	return nil, false
+	return shippingAgentFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *ShippingAgent) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return shippingAgentFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *ShippingAgent) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Text); ok {
-			t.Internet_address = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Internet_address = types.NewText(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Text); ok {
-			t.Account_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Account_no = types.NewText(v)
-			return true
-		}
-	}
-	return false
+	return shippingAgentFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2683,17 +2475,7 @@ func (t *ShippingAgent) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *ShippingAgent) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "code":
-		return t.Code, true
-	case "name":
-		return t.Name, true
-	case "internet_address":
-		return t.Internet_address, true
-	case "account_no":
-		return t.Account_no, true
-	}
-	return nil, false
+	return shippingAgentFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2782,36 +2564,12 @@ func (t *ShippingAgent) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *ShippingAgent) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"code":             t.Code.String(),
-		"name":             t.Name.String(),
-		"internet_address": t.Internet_address.String(),
-		"account_no":       t.Account_no.String(),
-	}
+	return shippingAgentFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *ShippingAgent) FromMap(data map[string]interface{}) {
-	if v, ok := data["code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Name = types.NewText(s)
-		}
-	}
-	if v, ok := data["internet_address"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Internet_address = types.NewText(s)
-		}
-	}
-	if v, ok := data["account_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Account_no = types.NewText(s)
-		}
-	}
+	shippingAgentFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2832,48 +2590,86 @@ func (t *ShippingAgent) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *ShippingAgent) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "name",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "internet_address",
-			Type:       tables.FieldTypeText,
-			Length:     250,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "account_no",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return shippingAgentFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in shippingAgentFields.Fields
+func (t *ShippingAgent) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Code
+	case 1:
+		return &t.Name
+	case 2:
+		return &t.Internet_address
+	case 3:
+		return &t.Account_no
 	}
+	return nil
+}
+
+// shippingAgentFields describes the fields of Shipping_Agent for the record functions
+// written once in foundation/tables
+var shippingAgentFields = &tables.TableFields{
+	Table: ShippingAgentTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "name",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "internet_address",
+				Type:       tables.FieldTypeText,
+				Length:     250,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Internet_address",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "account_no",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Account_no",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

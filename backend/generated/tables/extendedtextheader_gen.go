@@ -38,7 +38,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -213,84 +212,12 @@ var ExtendedTextHeader_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *ExtendedTextHeader) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "table_name":
-		return 1
-	case "no":
-		return 2
-	case "language_code":
-		return 3
-	case "text_no":
-		return 4
-	case "starting_date":
-		return 5
-	case "ending_date":
-		return 6
-	case "all_language_codes":
-		return 7
-	case "sales_quote":
-		return 11
-	case "sales_invoice":
-		return 12
-	case "sales_order":
-		return 13
-	case "sales_credit_memo":
-		return 14
-	case "purchase_quote":
-		return 15
-	case "purchase_invoice":
-		return 16
-	case "purchase_order":
-		return 17
-	case "purchase_credit_memo":
-		return 18
-	case "reminder":
-		return 19
-	case "finance_charge_memo":
-		return 20
-	}
-	return 0
+	return extendedTextHeaderFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *ExtendedTextHeader) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "table_name"
-	case 2:
-		return "no"
-	case 3:
-		return "language_code"
-	case 4:
-		return "text_no"
-	case 5:
-		return "starting_date"
-	case 6:
-		return "ending_date"
-	case 7:
-		return "all_language_codes"
-	case 11:
-		return "sales_quote"
-	case 12:
-		return "sales_invoice"
-	case 13:
-		return "sales_order"
-	case 14:
-		return "sales_credit_memo"
-	case 15:
-		return "purchase_quote"
-	case 16:
-		return "purchase_invoice"
-	case 17:
-		return "purchase_order"
-	case 18:
-		return "purchase_credit_memo"
-	case 19:
-		return "reminder"
-	case 20:
-		return "finance_charge_memo"
-	}
-	return ""
+	return extendedTextHeaderFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -402,57 +329,6 @@ type (
 	ExtendedTextHeaderOnBeforeRename interface {
 		OnBeforeRename(rec *ExtendedTextHeader, handled *bool) error
 	}
-	ExtendedTextHeaderOnValidate_Table_name interface {
-		OnValidate_Table_name(rec *ExtendedTextHeader) error
-	}
-	ExtendedTextHeaderOnValidate_No interface {
-		OnValidate_No(rec *ExtendedTextHeader) error
-	}
-	ExtendedTextHeaderOnValidate_Language_code interface {
-		OnValidate_Language_code(rec *ExtendedTextHeader) error
-	}
-	ExtendedTextHeaderOnValidate_Text_no interface {
-		OnValidate_Text_no(rec *ExtendedTextHeader) error
-	}
-	ExtendedTextHeaderOnValidate_Starting_date interface {
-		OnValidate_Starting_date(rec *ExtendedTextHeader) error
-	}
-	ExtendedTextHeaderOnValidate_Ending_date interface {
-		OnValidate_Ending_date(rec *ExtendedTextHeader) error
-	}
-	ExtendedTextHeaderOnValidate_All_language_codes interface {
-		OnValidate_All_language_codes(rec *ExtendedTextHeader) error
-	}
-	ExtendedTextHeaderOnValidate_Sales_quote interface {
-		OnValidate_Sales_quote(rec *ExtendedTextHeader) error
-	}
-	ExtendedTextHeaderOnValidate_Sales_invoice interface {
-		OnValidate_Sales_invoice(rec *ExtendedTextHeader) error
-	}
-	ExtendedTextHeaderOnValidate_Sales_order interface {
-		OnValidate_Sales_order(rec *ExtendedTextHeader) error
-	}
-	ExtendedTextHeaderOnValidate_Sales_credit_memo interface {
-		OnValidate_Sales_credit_memo(rec *ExtendedTextHeader) error
-	}
-	ExtendedTextHeaderOnValidate_Purchase_quote interface {
-		OnValidate_Purchase_quote(rec *ExtendedTextHeader) error
-	}
-	ExtendedTextHeaderOnValidate_Purchase_invoice interface {
-		OnValidate_Purchase_invoice(rec *ExtendedTextHeader) error
-	}
-	ExtendedTextHeaderOnValidate_Purchase_order interface {
-		OnValidate_Purchase_order(rec *ExtendedTextHeader) error
-	}
-	ExtendedTextHeaderOnValidate_Purchase_credit_memo interface {
-		OnValidate_Purchase_credit_memo(rec *ExtendedTextHeader) error
-	}
-	ExtendedTextHeaderOnValidate_Reminder interface {
-		OnValidate_Reminder(rec *ExtendedTextHeader) error
-	}
-	ExtendedTextHeaderOnValidate_Finance_charge_memo interface {
-		OnValidate_Finance_charge_memo(rec *ExtendedTextHeader) error
-	}
 )
 
 // extendedTextHeaderLogic is the registered business logic of Extended_Text_Header, in
@@ -495,42 +371,9 @@ func extendedTextHeaderTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ExtendedTextHeaderOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(ExtendedTextHeaderOnBeforeRename)
-	case "OnValidate_Table_name":
-		_, ok = logic.(ExtendedTextHeaderOnValidate_Table_name)
-	case "OnValidate_No":
-		_, ok = logic.(ExtendedTextHeaderOnValidate_No)
-	case "OnValidate_Language_code":
-		_, ok = logic.(ExtendedTextHeaderOnValidate_Language_code)
-	case "OnValidate_Text_no":
-		_, ok = logic.(ExtendedTextHeaderOnValidate_Text_no)
-	case "OnValidate_Starting_date":
-		_, ok = logic.(ExtendedTextHeaderOnValidate_Starting_date)
-	case "OnValidate_Ending_date":
-		_, ok = logic.(ExtendedTextHeaderOnValidate_Ending_date)
-	case "OnValidate_All_language_codes":
-		_, ok = logic.(ExtendedTextHeaderOnValidate_All_language_codes)
-	case "OnValidate_Sales_quote":
-		_, ok = logic.(ExtendedTextHeaderOnValidate_Sales_quote)
-	case "OnValidate_Sales_invoice":
-		_, ok = logic.(ExtendedTextHeaderOnValidate_Sales_invoice)
-	case "OnValidate_Sales_order":
-		_, ok = logic.(ExtendedTextHeaderOnValidate_Sales_order)
-	case "OnValidate_Sales_credit_memo":
-		_, ok = logic.(ExtendedTextHeaderOnValidate_Sales_credit_memo)
-	case "OnValidate_Purchase_quote":
-		_, ok = logic.(ExtendedTextHeaderOnValidate_Purchase_quote)
-	case "OnValidate_Purchase_invoice":
-		_, ok = logic.(ExtendedTextHeaderOnValidate_Purchase_invoice)
-	case "OnValidate_Purchase_order":
-		_, ok = logic.(ExtendedTextHeaderOnValidate_Purchase_order)
-	case "OnValidate_Purchase_credit_memo":
-		_, ok = logic.(ExtendedTextHeaderOnValidate_Purchase_credit_memo)
-	case "OnValidate_Reminder":
-		_, ok = logic.(ExtendedTextHeaderOnValidate_Reminder)
-	case "OnValidate_Finance_charge_memo":
-		_, ok = logic.(ExtendedTextHeaderOnValidate_Finance_charge_memo)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return extendedTextHeaderFields.IsOnValidateTrigger(name, logic, (*ExtendedTextHeader)(nil))
 	}
 	return true, ok
 }
@@ -869,24 +712,7 @@ func (t *ExtendedTextHeader) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *ExtendedTextHeader) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["table_name"] = t.Table_name
-	t.oldValues["no"] = t.No
-	t.oldValues["language_code"] = t.Language_code
-	t.oldValues["text_no"] = t.Text_no
-	t.oldValues["starting_date"] = t.Starting_date
-	t.oldValues["ending_date"] = t.Ending_date
-	t.oldValues["all_language_codes"] = t.All_language_codes
-	t.oldValues["sales_quote"] = t.Sales_quote
-	t.oldValues["sales_invoice"] = t.Sales_invoice
-	t.oldValues["sales_order"] = t.Sales_order
-	t.oldValues["sales_credit_memo"] = t.Sales_credit_memo
-	t.oldValues["purchase_quote"] = t.Purchase_quote
-	t.oldValues["purchase_invoice"] = t.Purchase_invoice
-	t.oldValues["purchase_order"] = t.Purchase_order
-	t.oldValues["purchase_credit_memo"] = t.Purchase_credit_memo
-	t.oldValues["reminder"] = t.Reminder
-	t.oldValues["finance_charge_memo"] = t.Finance_charge_memo
+	t.oldValues = extendedTextHeaderFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -901,57 +727,7 @@ func (t *ExtendedTextHeader) OldValue(fieldName string) interface{} {
 func (t *ExtendedTextHeader) XRec() *ExtendedTextHeader {
 	x := &ExtendedTextHeader{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["table_name"].(ExtendedTextHeaderTable_name); ok {
-		x.Table_name = v
-	}
-	if v, ok := t.oldValues["no"].(types.Code); ok {
-		x.No = v
-	}
-	if v, ok := t.oldValues["language_code"].(types.Code); ok {
-		x.Language_code = v
-	}
-	if v, ok := t.oldValues["text_no"].(int); ok {
-		x.Text_no = v
-	}
-	if v, ok := t.oldValues["starting_date"].(types.Date); ok {
-		x.Starting_date = v
-	}
-	if v, ok := t.oldValues["ending_date"].(types.Date); ok {
-		x.Ending_date = v
-	}
-	if v, ok := t.oldValues["all_language_codes"].(bool); ok {
-		x.All_language_codes = v
-	}
-	if v, ok := t.oldValues["sales_quote"].(bool); ok {
-		x.Sales_quote = v
-	}
-	if v, ok := t.oldValues["sales_invoice"].(bool); ok {
-		x.Sales_invoice = v
-	}
-	if v, ok := t.oldValues["sales_order"].(bool); ok {
-		x.Sales_order = v
-	}
-	if v, ok := t.oldValues["sales_credit_memo"].(bool); ok {
-		x.Sales_credit_memo = v
-	}
-	if v, ok := t.oldValues["purchase_quote"].(bool); ok {
-		x.Purchase_quote = v
-	}
-	if v, ok := t.oldValues["purchase_invoice"].(bool); ok {
-		x.Purchase_invoice = v
-	}
-	if v, ok := t.oldValues["purchase_order"].(bool); ok {
-		x.Purchase_order = v
-	}
-	if v, ok := t.oldValues["purchase_credit_memo"].(bool); ok {
-		x.Purchase_credit_memo = v
-	}
-	if v, ok := t.oldValues["reminder"].(bool); ok {
-		x.Reminder = v
-	}
-	if v, ok := t.oldValues["finance_charge_memo"].(bool); ok {
-		x.Finance_charge_memo = v
-	}
+	extendedTextHeaderFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1425,101 +1201,7 @@ func (t *ExtendedTextHeader) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *ExtendedTextHeader) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "table_name":
-		if old, ok := oldValue.(ExtendedTextHeaderTable_name); ok {
-			return t.Table_name != old
-		}
-	case "no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No.Equal(old)
-		}
-	case "language_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Language_code.Equal(old)
-		}
-	case "text_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Text_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "starting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Starting_date.Equal(old)
-		}
-	case "ending_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Ending_date.Equal(old)
-		}
-	case "all_language_codes":
-		if old, ok := oldValue.(bool); ok {
-			return t.All_language_codes != old
-		}
-		return true // Type mismatch, assume changed
-	case "sales_quote":
-		if old, ok := oldValue.(bool); ok {
-			return t.Sales_quote != old
-		}
-		return true // Type mismatch, assume changed
-	case "sales_invoice":
-		if old, ok := oldValue.(bool); ok {
-			return t.Sales_invoice != old
-		}
-		return true // Type mismatch, assume changed
-	case "sales_order":
-		if old, ok := oldValue.(bool); ok {
-			return t.Sales_order != old
-		}
-		return true // Type mismatch, assume changed
-	case "sales_credit_memo":
-		if old, ok := oldValue.(bool); ok {
-			return t.Sales_credit_memo != old
-		}
-		return true // Type mismatch, assume changed
-	case "purchase_quote":
-		if old, ok := oldValue.(bool); ok {
-			return t.Purchase_quote != old
-		}
-		return true // Type mismatch, assume changed
-	case "purchase_invoice":
-		if old, ok := oldValue.(bool); ok {
-			return t.Purchase_invoice != old
-		}
-		return true // Type mismatch, assume changed
-	case "purchase_order":
-		if old, ok := oldValue.(bool); ok {
-			return t.Purchase_order != old
-		}
-		return true // Type mismatch, assume changed
-	case "purchase_credit_memo":
-		if old, ok := oldValue.(bool); ok {
-			return t.Purchase_credit_memo != old
-		}
-		return true // Type mismatch, assume changed
-	case "reminder":
-		if old, ok := oldValue.(bool); ok {
-			return t.Reminder != old
-		}
-		return true // Type mismatch, assume changed
-	case "finance_charge_memo":
-		if old, ok := oldValue.(bool); ok {
-			return t.Finance_charge_memo != old
-		}
-		return true // Type mismatch, assume changed
-	}
-
-	return false
+	return extendedTextHeaderFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1723,43 +1405,7 @@ func (t *ExtendedTextHeader) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *ExtendedTextHeader) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("table_name"):
-		return "table_name", true
-	case strings.ToLower("no"):
-		return "no", true
-	case strings.ToLower("language_code"):
-		return "language_code", true
-	case strings.ToLower("text_no"):
-		return "text_no", true
-	case strings.ToLower("starting_date"):
-		return "starting_date", true
-	case strings.ToLower("ending_date"):
-		return "ending_date", true
-	case strings.ToLower("all_language_codes"):
-		return "all_language_codes", true
-	case strings.ToLower("sales_quote"):
-		return "sales_quote", true
-	case strings.ToLower("sales_invoice"):
-		return "sales_invoice", true
-	case strings.ToLower("sales_order"):
-		return "sales_order", true
-	case strings.ToLower("sales_credit_memo"):
-		return "sales_credit_memo", true
-	case strings.ToLower("purchase_quote"):
-		return "purchase_quote", true
-	case strings.ToLower("purchase_invoice"):
-		return "purchase_invoice", true
-	case strings.ToLower("purchase_order"):
-		return "purchase_order", true
-	case strings.ToLower("purchase_credit_memo"):
-		return "purchase_credit_memo", true
-	case strings.ToLower("reminder"):
-		return "reminder", true
-	case strings.ToLower("finance_charge_memo"):
-		return "finance_charge_memo", true
-	}
-	return "", false
+	return extendedTextHeaderFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2781,389 +2427,20 @@ func (t *ExtendedTextHeader) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *ExtendedTextHeader) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "table_name":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ExtendedTextHeaderTable_name); ok {
-			t.Table_name = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field table_name (valid range: 0-%d)", v, 4-1)
-			}
-			t.Table_name = ExtendedTextHeaderTable_name(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field table_name (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Table_name = ExtendedTextHeaderTable_name(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Table_name = 0
-			} else {
-				options := []string{"Standard Text", "G/L Account", "Item", "Resource"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Table_name = ExtendedTextHeaderTable_name(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field table_name (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field table_name (expected ExtendedTextHeaderTable_name, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExtendedTextHeaderOnValidate_Table_name); ok {
-				if err := trg.OnValidate_Table_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-		} else if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExtendedTextHeaderOnValidate_No); ok {
-				if err := trg.OnValidate_No(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "language_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Language_code = v
-		} else if v, ok := value.(string); ok {
-			t.Language_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field language_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "language_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExtendedTextHeaderOnValidate_Language_code); ok {
-				if err := trg.OnValidate_Language_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "text_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Text_no = v
-		case float64:
-			t.Text_no = int(v)
-		case string:
-			if v == "" {
-				t.Text_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Text_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field text_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field text_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExtendedTextHeaderOnValidate_Text_no); ok {
-				if err := trg.OnValidate_Text_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "starting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Starting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Starting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field starting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Starting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field starting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExtendedTextHeaderOnValidate_Starting_date); ok {
-				if err := trg.OnValidate_Starting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "ending_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Ending_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Ending_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field ending_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Ending_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field ending_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExtendedTextHeaderOnValidate_Ending_date); ok {
-				if err := trg.OnValidate_Ending_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "all_language_codes":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.All_language_codes = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.All_language_codes = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field all_language_codes")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExtendedTextHeaderOnValidate_All_language_codes); ok {
-				if err := trg.OnValidate_All_language_codes(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sales_quote":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Sales_quote = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Sales_quote = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field sales_quote")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExtendedTextHeaderOnValidate_Sales_quote); ok {
-				if err := trg.OnValidate_Sales_quote(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sales_invoice":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Sales_invoice = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Sales_invoice = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field sales_invoice")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExtendedTextHeaderOnValidate_Sales_invoice); ok {
-				if err := trg.OnValidate_Sales_invoice(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sales_order":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Sales_order = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Sales_order = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field sales_order")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExtendedTextHeaderOnValidate_Sales_order); ok {
-				if err := trg.OnValidate_Sales_order(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sales_credit_memo":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Sales_credit_memo = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Sales_credit_memo = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field sales_credit_memo")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExtendedTextHeaderOnValidate_Sales_credit_memo); ok {
-				if err := trg.OnValidate_Sales_credit_memo(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "purchase_quote":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Purchase_quote = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Purchase_quote = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field purchase_quote")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExtendedTextHeaderOnValidate_Purchase_quote); ok {
-				if err := trg.OnValidate_Purchase_quote(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "purchase_invoice":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Purchase_invoice = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Purchase_invoice = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field purchase_invoice")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExtendedTextHeaderOnValidate_Purchase_invoice); ok {
-				if err := trg.OnValidate_Purchase_invoice(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "purchase_order":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Purchase_order = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Purchase_order = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field purchase_order")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExtendedTextHeaderOnValidate_Purchase_order); ok {
-				if err := trg.OnValidate_Purchase_order(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "purchase_credit_memo":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Purchase_credit_memo = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Purchase_credit_memo = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field purchase_credit_memo")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExtendedTextHeaderOnValidate_Purchase_credit_memo); ok {
-				if err := trg.OnValidate_Purchase_credit_memo(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reminder":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Reminder = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Reminder = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field reminder")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExtendedTextHeaderOnValidate_Reminder); ok {
-				if err := trg.OnValidate_Reminder(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "finance_charge_memo":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Finance_charge_memo = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Finance_charge_memo = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field finance_charge_memo")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ExtendedTextHeaderOnValidate_Finance_charge_memo); ok {
-				if err := trg.OnValidate_Finance_charge_memo(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := extendedTextHeaderFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &extendedTextHeaderFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -3172,151 +2449,18 @@ func (t *ExtendedTextHeader) ValidateField(fieldName string, value interface{}) 
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *ExtendedTextHeader) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Table_name, true
-	case 2:
-		return t.No, true
-	case 3:
-		return t.Language_code, true
-	case 4:
-		return t.Text_no, true
-	case 5:
-		return t.Starting_date, true
-	case 6:
-		return t.Ending_date, true
-	case 7:
-		return t.All_language_codes, true
-	case 11:
-		return t.Sales_quote, true
-	case 12:
-		return t.Sales_invoice, true
-	case 13:
-		return t.Sales_order, true
-	case 14:
-		return t.Sales_credit_memo, true
-	case 15:
-		return t.Purchase_quote, true
-	case 16:
-		return t.Purchase_invoice, true
-	case 17:
-		return t.Purchase_order, true
-	case 18:
-		return t.Purchase_credit_memo, true
-	case 19:
-		return t.Reminder, true
-	case 20:
-		return t.Finance_charge_memo, true
-	}
-	return nil, false
+	return extendedTextHeaderFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *ExtendedTextHeader) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return extendedTextHeaderFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *ExtendedTextHeader) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Table_name = ExtendedTextHeaderTable_name(i)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Code); ok {
-			t.Language_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Language_code = types.NewCode(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(int); ok {
-			t.Text_no = v
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Date); ok {
-			t.Starting_date = v
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Date); ok {
-			t.Ending_date = v
-			return true
-		}
-	case 7:
-		if v, ok := value.(bool); ok {
-			t.All_language_codes = v
-			return true
-		}
-	case 11:
-		if v, ok := value.(bool); ok {
-			t.Sales_quote = v
-			return true
-		}
-	case 12:
-		if v, ok := value.(bool); ok {
-			t.Sales_invoice = v
-			return true
-		}
-	case 13:
-		if v, ok := value.(bool); ok {
-			t.Sales_order = v
-			return true
-		}
-	case 14:
-		if v, ok := value.(bool); ok {
-			t.Sales_credit_memo = v
-			return true
-		}
-	case 15:
-		if v, ok := value.(bool); ok {
-			t.Purchase_quote = v
-			return true
-		}
-	case 16:
-		if v, ok := value.(bool); ok {
-			t.Purchase_invoice = v
-			return true
-		}
-	case 17:
-		if v, ok := value.(bool); ok {
-			t.Purchase_order = v
-			return true
-		}
-	case 18:
-		if v, ok := value.(bool); ok {
-			t.Purchase_credit_memo = v
-			return true
-		}
-	case 19:
-		if v, ok := value.(bool); ok {
-			t.Reminder = v
-			return true
-		}
-	case 20:
-		if v, ok := value.(bool); ok {
-			t.Finance_charge_memo = v
-			return true
-		}
-	}
-	return false
+	return extendedTextHeaderFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3789,43 +2933,7 @@ func (t *ExtendedTextHeader) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *ExtendedTextHeader) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "table_name":
-		return int(t.Table_name), true
-	case "no":
-		return t.No, true
-	case "language_code":
-		return t.Language_code, true
-	case "text_no":
-		return t.Text_no, true
-	case "starting_date":
-		return t.Starting_date, true
-	case "ending_date":
-		return t.Ending_date, true
-	case "all_language_codes":
-		return t.All_language_codes, true
-	case "sales_quote":
-		return t.Sales_quote, true
-	case "sales_invoice":
-		return t.Sales_invoice, true
-	case "sales_order":
-		return t.Sales_order, true
-	case "sales_credit_memo":
-		return t.Sales_credit_memo, true
-	case "purchase_quote":
-		return t.Purchase_quote, true
-	case "purchase_invoice":
-		return t.Purchase_invoice, true
-	case "purchase_order":
-		return t.Purchase_order, true
-	case "purchase_credit_memo":
-		return t.Purchase_credit_memo, true
-	case "reminder":
-		return t.Reminder, true
-	case "finance_charge_memo":
-		return t.Finance_charge_memo, true
-	}
-	return nil, false
+	return extendedTextHeaderFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3936,134 +3044,12 @@ func (t *ExtendedTextHeader) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *ExtendedTextHeader) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"table_name":           int(t.Table_name),
-		"no":                   t.No.String(),
-		"language_code":        t.Language_code.String(),
-		"text_no":              t.Text_no,
-		"starting_date":        t.Starting_date.String(),
-		"ending_date":          t.Ending_date.String(),
-		"all_language_codes":   t.All_language_codes,
-		"sales_quote":          t.Sales_quote,
-		"sales_invoice":        t.Sales_invoice,
-		"sales_order":          t.Sales_order,
-		"sales_credit_memo":    t.Sales_credit_memo,
-		"purchase_quote":       t.Purchase_quote,
-		"purchase_invoice":     t.Purchase_invoice,
-		"purchase_order":       t.Purchase_order,
-		"purchase_credit_memo": t.Purchase_credit_memo,
-		"reminder":             t.Reminder,
-		"finance_charge_memo":  t.Finance_charge_memo,
-	}
+	return extendedTextHeaderFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *ExtendedTextHeader) FromMap(data map[string]interface{}) {
-	if v, ok := data["table_name"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Table_name = ExtendedTextHeaderTable_name(int(val))
-		case int:
-			t.Table_name = ExtendedTextHeaderTable_name(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Standard Text", "G/L Account", "Item", "Resource"}
-			for i, opt := range options {
-				if opt == val {
-					t.Table_name = ExtendedTextHeaderTable_name(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No = types.NewCode(s)
-		}
-	}
-	if v, ok := data["language_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Language_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["text_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Text_no = int(val)
-		case int:
-			t.Text_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Text_no = n
-			}
-		}
-	}
-	if v, ok := data["starting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Starting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["ending_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Ending_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["all_language_codes"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.All_language_codes = b
-		}
-	}
-	if v, ok := data["sales_quote"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Sales_quote = b
-		}
-	}
-	if v, ok := data["sales_invoice"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Sales_invoice = b
-		}
-	}
-	if v, ok := data["sales_order"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Sales_order = b
-		}
-	}
-	if v, ok := data["sales_credit_memo"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Sales_credit_memo = b
-		}
-	}
-	if v, ok := data["purchase_quote"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Purchase_quote = b
-		}
-	}
-	if v, ok := data["purchase_invoice"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Purchase_invoice = b
-		}
-	}
-	if v, ok := data["purchase_order"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Purchase_order = b
-		}
-	}
-	if v, ok := data["purchase_credit_memo"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Purchase_credit_memo = b
-		}
-	}
-	if v, ok := data["reminder"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Reminder = b
-		}
-	}
-	if v, ok := data["finance_charge_memo"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Finance_charge_memo = b
-		}
-	}
+	extendedTextHeaderFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -4084,179 +3070,298 @@ func (t *ExtendedTextHeader) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *ExtendedTextHeader) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "table_name",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "language_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "text_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         5,
-			Name:       "starting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "ending_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "all_language_codes",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "sales_quote",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "sales_invoice",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         13,
-			Name:       "sales_order",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         14,
-			Name:       "sales_credit_memo",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         15,
-			Name:       "purchase_quote",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         16,
-			Name:       "purchase_invoice",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         17,
-			Name:       "purchase_order",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         18,
-			Name:       "purchase_credit_memo",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         19,
-			Name:       "reminder",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         20,
-			Name:       "finance_charge_memo",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return extendedTextHeaderFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in extendedTextHeaderFields.Fields
+func (t *ExtendedTextHeader) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Table_name
+	case 1:
+		return &t.No
+	case 2:
+		return &t.Language_code
+	case 3:
+		return &t.Text_no
+	case 4:
+		return &t.Starting_date
+	case 5:
+		return &t.Ending_date
+	case 6:
+		return &t.All_language_codes
+	case 7:
+		return &t.Sales_quote
+	case 8:
+		return &t.Sales_invoice
+	case 9:
+		return &t.Sales_order
+	case 10:
+		return &t.Sales_credit_memo
+	case 11:
+		return &t.Purchase_quote
+	case 12:
+		return &t.Purchase_invoice
+	case 13:
+		return &t.Purchase_order
+	case 14:
+		return &t.Purchase_credit_memo
+	case 15:
+		return &t.Reminder
+	case 16:
+		return &t.Finance_charge_memo
 	}
+	return nil
+}
+
+// extendedTextHeaderFields describes the fields of Extended_Text_Header for the record functions
+// written once in foundation/tables
+var extendedTextHeaderFields = &tables.TableFields{
+	Table: ExtendedTextHeaderTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "table_name",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Table_name",
+			Options: []string{"Standard Text", "G/L Account", "Item", "Resource"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_No",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "language_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Language_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "text_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Text_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "starting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Starting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "ending_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Ending_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "all_language_codes",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_All_language_codes",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "sales_quote",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Sales_quote",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "sales_invoice",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Sales_invoice",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "sales_order",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Sales_order",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "sales_credit_memo",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Sales_credit_memo",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         15,
+				Name:       "purchase_quote",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Purchase_quote",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         16,
+				Name:       "purchase_invoice",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Purchase_invoice",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         17,
+				Name:       "purchase_order",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Purchase_order",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         18,
+				Name:       "purchase_credit_memo",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Purchase_credit_memo",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         19,
+				Name:       "reminder",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Reminder",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         20,
+				Name:       "finance_charge_memo",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Finance_charge_memo",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

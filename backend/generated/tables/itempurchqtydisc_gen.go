@@ -121,32 +121,12 @@ var ItemPurchQtyDisc_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *ItemPurchQtyDisc) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "item_no":
-		return 1
-	case "vendor_no":
-		return 2
-	case "minimum_quantity":
-		return 3
-	case "discount_percent":
-		return 4
-	}
-	return 0
+	return itemPurchQtyDiscFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *ItemPurchQtyDisc) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "item_no"
-	case 2:
-		return "vendor_no"
-	case 3:
-		return "minimum_quantity"
-	case 4:
-		return "discount_percent"
-	}
-	return ""
+	return itemPurchQtyDiscFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -258,18 +238,6 @@ type (
 	ItemPurchQtyDiscOnBeforeRename interface {
 		OnBeforeRename(rec *ItemPurchQtyDisc, handled *bool) error
 	}
-	ItemPurchQtyDiscOnValidate_Item_no interface {
-		OnValidate_Item_no(rec *ItemPurchQtyDisc) error
-	}
-	ItemPurchQtyDiscOnValidate_Vendor_no interface {
-		OnValidate_Vendor_no(rec *ItemPurchQtyDisc) error
-	}
-	ItemPurchQtyDiscOnValidate_Minimum_quantity interface {
-		OnValidate_Minimum_quantity(rec *ItemPurchQtyDisc) error
-	}
-	ItemPurchQtyDiscOnValidate_Discount_percent interface {
-		OnValidate_Discount_percent(rec *ItemPurchQtyDisc) error
-	}
 )
 
 // itemPurchQtyDiscLogic is the registered business logic of Item_Purch_Qty_Disc, in
@@ -312,16 +280,9 @@ func itemPurchQtyDiscTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ItemPurchQtyDiscOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(ItemPurchQtyDiscOnBeforeRename)
-	case "OnValidate_Item_no":
-		_, ok = logic.(ItemPurchQtyDiscOnValidate_Item_no)
-	case "OnValidate_Vendor_no":
-		_, ok = logic.(ItemPurchQtyDiscOnValidate_Vendor_no)
-	case "OnValidate_Minimum_quantity":
-		_, ok = logic.(ItemPurchQtyDiscOnValidate_Minimum_quantity)
-	case "OnValidate_Discount_percent":
-		_, ok = logic.(ItemPurchQtyDiscOnValidate_Discount_percent)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return itemPurchQtyDiscFields.IsOnValidateTrigger(name, logic, (*ItemPurchQtyDisc)(nil))
 	}
 	return true, ok
 }
@@ -624,11 +585,7 @@ func (t *ItemPurchQtyDisc) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *ItemPurchQtyDisc) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["item_no"] = t.Item_no
-	t.oldValues["vendor_no"] = t.Vendor_no
-	t.oldValues["minimum_quantity"] = t.Minimum_quantity
-	t.oldValues["discount_percent"] = t.Discount_percent
+	t.oldValues = itemPurchQtyDiscFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -643,18 +600,7 @@ func (t *ItemPurchQtyDisc) OldValue(fieldName string) interface{} {
 func (t *ItemPurchQtyDisc) XRec() *ItemPurchQtyDisc {
 	x := &ItemPurchQtyDisc{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["item_no"].(types.Code); ok {
-		x.Item_no = v
-	}
-	if v, ok := t.oldValues["vendor_no"].(types.Code); ok {
-		x.Vendor_no = v
-	}
-	if v, ok := t.oldValues["minimum_quantity"].(types.Decimal); ok {
-		x.Minimum_quantity = v
-	}
-	if v, ok := t.oldValues["discount_percent"].(types.Decimal); ok {
-		x.Discount_percent = v
-	}
+	itemPurchQtyDiscFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -963,37 +909,7 @@ func (t *ItemPurchQtyDisc) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *ItemPurchQtyDisc) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "item_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Item_no.Equal(old)
-		}
-	case "vendor_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Vendor_no.Equal(old)
-		}
-	case "minimum_quantity":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Minimum_quantity.Equal(old)
-		}
-	case "discount_percent":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Discount_percent.Equal(old)
-		}
-	}
-
-	return false
+	return itemPurchQtyDiscFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1196,17 +1112,7 @@ func (t *ItemPurchQtyDisc) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *ItemPurchQtyDisc) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("item_no"):
-		return "item_no", true
-	case strings.ToLower("vendor_no"):
-		return "vendor_no", true
-	case strings.ToLower("minimum_quantity"):
-		return "minimum_quantity", true
-	case strings.ToLower("discount_percent"):
-		return "discount_percent", true
-	}
-	return "", false
+	return itemPurchQtyDiscFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2045,112 +1951,20 @@ func (t *ItemPurchQtyDisc) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *ItemPurchQtyDisc) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "item_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Item_no = v
-		} else if v, ok := value.(string); ok {
-			t.Item_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field item_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "item_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemPurchQtyDiscOnValidate_Item_no); ok {
-				if err := trg.OnValidate_Item_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "vendor_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Vendor_no = v
-		} else if v, ok := value.(string); ok {
-			t.Vendor_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field vendor_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "vendor_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemPurchQtyDiscOnValidate_Vendor_no); ok {
-				if err := trg.OnValidate_Vendor_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "minimum_quantity":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Minimum_quantity = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Minimum_quantity, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field minimum_quantity: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Minimum_quantity = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Minimum_quantity = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Minimum_quantity = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field minimum_quantity (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemPurchQtyDiscOnValidate_Minimum_quantity); ok {
-				if err := trg.OnValidate_Minimum_quantity(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "discount_percent":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Discount_percent = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Discount_percent, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field discount_percent: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Discount_percent = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Discount_percent = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Discount_percent = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field discount_percent (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemPurchQtyDiscOnValidate_Discount_percent); ok {
-				if err := trg.OnValidate_Discount_percent(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := itemPurchQtyDiscFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &itemPurchQtyDiscFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2159,60 +1973,18 @@ func (t *ItemPurchQtyDisc) ValidateField(fieldName string, value interface{}) er
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *ItemPurchQtyDisc) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Item_no, true
-	case 2:
-		return t.Vendor_no, true
-	case 3:
-		return t.Minimum_quantity, true
-	case 4:
-		return t.Discount_percent, true
-	}
-	return nil, false
+	return itemPurchQtyDiscFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *ItemPurchQtyDisc) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return itemPurchQtyDiscFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *ItemPurchQtyDisc) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Item_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Item_no = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Vendor_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Vendor_no = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Decimal); ok {
-			t.Minimum_quantity = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Decimal); ok {
-			t.Discount_percent = v
-			return true
-		}
-	}
-	return false
+	return itemPurchQtyDiscFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2692,17 +2464,7 @@ func (t *ItemPurchQtyDisc) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *ItemPurchQtyDisc) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "item_no":
-		return t.Item_no, true
-	case "vendor_no":
-		return t.Vendor_no, true
-	case "minimum_quantity":
-		return t.Minimum_quantity, true
-	case "discount_percent":
-		return t.Discount_percent, true
-	}
-	return nil, false
+	return itemPurchQtyDiscFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2797,50 +2559,12 @@ func (t *ItemPurchQtyDisc) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *ItemPurchQtyDisc) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"item_no":          t.Item_no.String(),
-		"vendor_no":        t.Vendor_no.String(),
-		"minimum_quantity": t.Minimum_quantity.String(),
-		"discount_percent": t.Discount_percent.String(),
-	}
+	return itemPurchQtyDiscFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *ItemPurchQtyDisc) FromMap(data map[string]interface{}) {
-	if v, ok := data["item_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Item_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["vendor_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Vendor_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["minimum_quantity"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Minimum_quantity, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Minimum_quantity = types.NewDecimal(val)
-		case int:
-			t.Minimum_quantity = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Minimum_quantity = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["discount_percent"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Discount_percent, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Discount_percent = types.NewDecimal(val)
-		case int:
-			t.Discount_percent = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Discount_percent = types.NewDecimalFromInt(val)
-		}
-	}
+	itemPurchQtyDiscFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2861,50 +2585,90 @@ func (t *ItemPurchQtyDisc) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *ItemPurchQtyDisc) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "item_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "vendor_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:            3,
-			Name:          "minimum_quantity",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      false,
-			PrimaryKey:    true,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            4,
-			Name:          "discount_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
+	return itemPurchQtyDiscFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in itemPurchQtyDiscFields.Fields
+func (t *ItemPurchQtyDisc) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Item_no
+	case 1:
+		return &t.Vendor_no
+	case 2:
+		return &t.Minimum_quantity
+	case 3:
+		return &t.Discount_percent
 	}
+	return nil
+}
+
+// itemPurchQtyDiscFields describes the fields of Item_Purch_Qty_Disc for the record functions
+// written once in foundation/tables
+var itemPurchQtyDiscFields = &tables.TableFields{
+	Table: ItemPurchQtyDiscTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "item_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Item_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "vendor_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Vendor_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            3,
+				Name:          "minimum_quantity",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      false,
+				PrimaryKey:    true,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Minimum_quantity",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            4,
+				Name:          "discount_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Discount_percent",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

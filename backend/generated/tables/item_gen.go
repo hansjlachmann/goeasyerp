@@ -85,12 +85,11 @@ package tables
 
 import (
 	"database/sql"
-	"encoding/base64"
+
 	"fmt"
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -589,400 +588,12 @@ var Item_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *Item) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "no":
-		return 1
-	case "no_2":
-		return 2
-	case "description":
-		return 3
-	case "search_description":
-		return 4
-	case "description_2":
-		return 5
-	case "bill_of_materials":
-		return 6
-	case "class":
-		return 7
-	case "base_unit_of_measure":
-		return 8
-	case "price_unit_conversion":
-		return 9
-	case "inventory_posting_group":
-		return 11
-	case "shelf_bin_no":
-		return 12
-	case "sales_qty_disc_code":
-		return 13
-	case "item_cust_disc_gr":
-		return 14
-	case "allow_invoice_disc":
-		return 15
-	case "statistics_group":
-		return 16
-	case "commission_group":
-		return 17
-	case "unit_price":
-		return 18
-	case "price_profit_calculation":
-		return 19
-	case "profit_percent":
-		return 20
-	case "costing_method":
-		return 21
-	case "unit_cost":
-		return 22
-	case "standard_cost":
-		return 24
-	case "last_direct_cost":
-		return 25
-	case "average_cost":
-		return 26
-	case "add_curr_average_cost":
-		return 104
-	case "minimum_unit_price":
-		return 27
-	case "indirect_cost_percent":
-		return 28
-	case "vendor_no":
-		return 31
-	case "vendor_item_no":
-		return 32
-	case "lead_time_calculation":
-		return 33
-	case "reorder_point":
-		return 34
-	case "maximum_inventory":
-		return 35
-	case "reorder_quantity":
-		return 36
-	case "requisition_method_code":
-		return 5408
-	case "order_multiple":
-		return 5414
-	case "reorder_cycle":
-		return 5428
-	case "alternative_item_no":
-		return 37
-	case "unit_list_price":
-		return 38
-	case "duty_due_percent":
-		return 39
-	case "duty_code":
-		return 40
-	case "gross_weight":
-		return 41
-	case "net_weight":
-		return 42
-	case "units_per_parcel":
-		return 43
-	case "unit_volume":
-		return 44
-	case "durability":
-		return 45
-	case "freight_type":
-		return 46
-	case "tariff_no":
-		return 47
-	case "duty_unit_conversion":
-		return 48
-	case "country_purchased_code":
-		return 49
-	case "budget_quantity":
-		return 50
-	case "budgeted_amount":
-		return 51
-	case "budget_profit":
-		return 52
-	case "comment":
-		return 53
-	case "blocked":
-		return 54
-	case "last_date_modified":
-		return 62
-	case "quantity_on_hand":
-		return 68
-	case "qty_on_purch_order":
-		return 84
-	case "qty_on_sales_order":
-		return 85
-	case "net_invoiced_qty":
-		return 69
-	case "net_change":
-		return 70
-	case "purchases_qty":
-		return 71
-	case "sales_qty":
-		return 72
-	case "positive_adjmt_qty":
-		return 73
-	case "negative_adjmt_qty":
-		return 74
-	case "purchases_lcy":
-		return 77
-	case "sales_lcy":
-		return 78
-	case "positive_adjmt_lcy":
-		return 79
-	case "negative_adjmt_lcy":
-		return 80
-	case "cogs_lcy":
-		return 83
-	case "transferred_qty":
-		return 93
-	case "transferred_lcy":
-		return 94
-	case "price_includes_tax":
-		return 87
-	case "tax_bus_posting_gr_price":
-		return 90
-	case "gen_prod_posting_group":
-		return 91
-	case "picture":
-		return 92
-	case "country_of_origin_code":
-		return 95
-	case "no_series":
-		return 97
-	case "tax_group_code":
-		return 98
-	case "tax_prod_posting_group":
-		return 99
-	case "reserve":
-		return 100
-	case "reserved_qty_on_inventory":
-		return 101
-	case "reserved_qty_on_purch_orders":
-		return 102
-	case "reserved_qty_on_sales_orders":
-		return 103
-	case "inventory_value_zero":
-		return 5409
-	case "rounding_precision":
-		return 5422
-	case "sales_unit_of_measure":
-		return 5425
-	case "purch_unit_of_measure":
-		return 5426
-	case "serial_nos":
-		return 5402
-	case "automatic_ext_text":
-		return 96
-	case "date_filter":
-		return 64
-	case "dimension_1_filter":
-		return 65
-	case "dimension_2_filter":
-		return 66
-	case "location_filter":
-		return 67
-	case "drop_shipment_filter":
-		return 89
-	case "variant_filter":
-		return 5424
-	case "bin_filter":
-		return 5423
-	}
-	return 0
+	return itemFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *Item) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "no"
-	case 2:
-		return "no_2"
-	case 3:
-		return "description"
-	case 4:
-		return "search_description"
-	case 5:
-		return "description_2"
-	case 6:
-		return "bill_of_materials"
-	case 7:
-		return "class"
-	case 8:
-		return "base_unit_of_measure"
-	case 9:
-		return "price_unit_conversion"
-	case 11:
-		return "inventory_posting_group"
-	case 12:
-		return "shelf_bin_no"
-	case 13:
-		return "sales_qty_disc_code"
-	case 14:
-		return "item_cust_disc_gr"
-	case 15:
-		return "allow_invoice_disc"
-	case 16:
-		return "statistics_group"
-	case 17:
-		return "commission_group"
-	case 18:
-		return "unit_price"
-	case 19:
-		return "price_profit_calculation"
-	case 20:
-		return "profit_percent"
-	case 21:
-		return "costing_method"
-	case 22:
-		return "unit_cost"
-	case 24:
-		return "standard_cost"
-	case 25:
-		return "last_direct_cost"
-	case 26:
-		return "average_cost"
-	case 104:
-		return "add_curr_average_cost"
-	case 27:
-		return "minimum_unit_price"
-	case 28:
-		return "indirect_cost_percent"
-	case 31:
-		return "vendor_no"
-	case 32:
-		return "vendor_item_no"
-	case 33:
-		return "lead_time_calculation"
-	case 34:
-		return "reorder_point"
-	case 35:
-		return "maximum_inventory"
-	case 36:
-		return "reorder_quantity"
-	case 5408:
-		return "requisition_method_code"
-	case 5414:
-		return "order_multiple"
-	case 5428:
-		return "reorder_cycle"
-	case 37:
-		return "alternative_item_no"
-	case 38:
-		return "unit_list_price"
-	case 39:
-		return "duty_due_percent"
-	case 40:
-		return "duty_code"
-	case 41:
-		return "gross_weight"
-	case 42:
-		return "net_weight"
-	case 43:
-		return "units_per_parcel"
-	case 44:
-		return "unit_volume"
-	case 45:
-		return "durability"
-	case 46:
-		return "freight_type"
-	case 47:
-		return "tariff_no"
-	case 48:
-		return "duty_unit_conversion"
-	case 49:
-		return "country_purchased_code"
-	case 50:
-		return "budget_quantity"
-	case 51:
-		return "budgeted_amount"
-	case 52:
-		return "budget_profit"
-	case 53:
-		return "comment"
-	case 54:
-		return "blocked"
-	case 62:
-		return "last_date_modified"
-	case 68:
-		return "quantity_on_hand"
-	case 84:
-		return "qty_on_purch_order"
-	case 85:
-		return "qty_on_sales_order"
-	case 69:
-		return "net_invoiced_qty"
-	case 70:
-		return "net_change"
-	case 71:
-		return "purchases_qty"
-	case 72:
-		return "sales_qty"
-	case 73:
-		return "positive_adjmt_qty"
-	case 74:
-		return "negative_adjmt_qty"
-	case 77:
-		return "purchases_lcy"
-	case 78:
-		return "sales_lcy"
-	case 79:
-		return "positive_adjmt_lcy"
-	case 80:
-		return "negative_adjmt_lcy"
-	case 83:
-		return "cogs_lcy"
-	case 93:
-		return "transferred_qty"
-	case 94:
-		return "transferred_lcy"
-	case 87:
-		return "price_includes_tax"
-	case 90:
-		return "tax_bus_posting_gr_price"
-	case 91:
-		return "gen_prod_posting_group"
-	case 92:
-		return "picture"
-	case 95:
-		return "country_of_origin_code"
-	case 97:
-		return "no_series"
-	case 98:
-		return "tax_group_code"
-	case 99:
-		return "tax_prod_posting_group"
-	case 100:
-		return "reserve"
-	case 101:
-		return "reserved_qty_on_inventory"
-	case 102:
-		return "reserved_qty_on_purch_orders"
-	case 103:
-		return "reserved_qty_on_sales_orders"
-	case 5409:
-		return "inventory_value_zero"
-	case 5422:
-		return "rounding_precision"
-	case 5425:
-		return "sales_unit_of_measure"
-	case 5426:
-		return "purch_unit_of_measure"
-	case 5402:
-		return "serial_nos"
-	case 96:
-		return "automatic_ext_text"
-	case 64:
-		return "date_filter"
-	case 65:
-		return "dimension_1_filter"
-	case 66:
-		return "dimension_2_filter"
-	case 67:
-		return "location_filter"
-	case 89:
-		return "drop_shipment_filter"
-	case 5424:
-		return "variant_filter"
-	case 5423:
-		return "bin_filter"
-	}
-	return ""
+	return itemFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -1086,74 +697,6 @@ type (
 	ItemOnBeforeRename interface {
 		OnBeforeRename(rec *Item, handled *bool) error
 	}
-	ItemOnValidate_No                       interface{ OnValidate_No(rec *Item) error }
-	ItemOnValidate_No_2                     interface{ OnValidate_No_2(rec *Item) error }
-	ItemOnValidate_Description              interface{ OnValidate_Description(rec *Item) error }
-	ItemOnValidate_Search_description       interface{ OnValidate_Search_description(rec *Item) error }
-	ItemOnValidate_Description_2            interface{ OnValidate_Description_2(rec *Item) error }
-	ItemOnValidate_Class                    interface{ OnValidate_Class(rec *Item) error }
-	ItemOnValidate_Base_unit_of_measure     interface{ OnValidate_Base_unit_of_measure(rec *Item) error }
-	ItemOnValidate_Price_unit_conversion    interface{ OnValidate_Price_unit_conversion(rec *Item) error }
-	ItemOnValidate_Inventory_posting_group  interface{ OnValidate_Inventory_posting_group(rec *Item) error }
-	ItemOnValidate_Shelf_bin_no             interface{ OnValidate_Shelf_bin_no(rec *Item) error }
-	ItemOnValidate_Sales_qty_disc_code      interface{ OnValidate_Sales_qty_disc_code(rec *Item) error }
-	ItemOnValidate_Item_cust_disc_gr        interface{ OnValidate_Item_cust_disc_gr(rec *Item) error }
-	ItemOnValidate_Allow_invoice_disc       interface{ OnValidate_Allow_invoice_disc(rec *Item) error }
-	ItemOnValidate_Statistics_group         interface{ OnValidate_Statistics_group(rec *Item) error }
-	ItemOnValidate_Commission_group         interface{ OnValidate_Commission_group(rec *Item) error }
-	ItemOnValidate_Unit_price               interface{ OnValidate_Unit_price(rec *Item) error }
-	ItemOnValidate_Price_profit_calculation interface{ OnValidate_Price_profit_calculation(rec *Item) error }
-	ItemOnValidate_Profit_percent           interface{ OnValidate_Profit_percent(rec *Item) error }
-	ItemOnValidate_Costing_method           interface{ OnValidate_Costing_method(rec *Item) error }
-	ItemOnValidate_Unit_cost                interface{ OnValidate_Unit_cost(rec *Item) error }
-	ItemOnValidate_Standard_cost            interface{ OnValidate_Standard_cost(rec *Item) error }
-	ItemOnValidate_Last_direct_cost         interface{ OnValidate_Last_direct_cost(rec *Item) error }
-	ItemOnValidate_Average_cost             interface{ OnValidate_Average_cost(rec *Item) error }
-	ItemOnValidate_Add_curr_average_cost    interface{ OnValidate_Add_curr_average_cost(rec *Item) error }
-	ItemOnValidate_Minimum_unit_price       interface{ OnValidate_Minimum_unit_price(rec *Item) error }
-	ItemOnValidate_Indirect_cost_percent    interface{ OnValidate_Indirect_cost_percent(rec *Item) error }
-	ItemOnValidate_Vendor_no                interface{ OnValidate_Vendor_no(rec *Item) error }
-	ItemOnValidate_Vendor_item_no           interface{ OnValidate_Vendor_item_no(rec *Item) error }
-	ItemOnValidate_Lead_time_calculation    interface{ OnValidate_Lead_time_calculation(rec *Item) error }
-	ItemOnValidate_Reorder_point            interface{ OnValidate_Reorder_point(rec *Item) error }
-	ItemOnValidate_Maximum_inventory        interface{ OnValidate_Maximum_inventory(rec *Item) error }
-	ItemOnValidate_Reorder_quantity         interface{ OnValidate_Reorder_quantity(rec *Item) error }
-	ItemOnValidate_Requisition_method_code  interface{ OnValidate_Requisition_method_code(rec *Item) error }
-	ItemOnValidate_Order_multiple           interface{ OnValidate_Order_multiple(rec *Item) error }
-	ItemOnValidate_Reorder_cycle            interface{ OnValidate_Reorder_cycle(rec *Item) error }
-	ItemOnValidate_Alternative_item_no      interface{ OnValidate_Alternative_item_no(rec *Item) error }
-	ItemOnValidate_Unit_list_price          interface{ OnValidate_Unit_list_price(rec *Item) error }
-	ItemOnValidate_Duty_due_percent         interface{ OnValidate_Duty_due_percent(rec *Item) error }
-	ItemOnValidate_Duty_code                interface{ OnValidate_Duty_code(rec *Item) error }
-	ItemOnValidate_Gross_weight             interface{ OnValidate_Gross_weight(rec *Item) error }
-	ItemOnValidate_Net_weight               interface{ OnValidate_Net_weight(rec *Item) error }
-	ItemOnValidate_Units_per_parcel         interface{ OnValidate_Units_per_parcel(rec *Item) error }
-	ItemOnValidate_Unit_volume              interface{ OnValidate_Unit_volume(rec *Item) error }
-	ItemOnValidate_Durability               interface{ OnValidate_Durability(rec *Item) error }
-	ItemOnValidate_Freight_type             interface{ OnValidate_Freight_type(rec *Item) error }
-	ItemOnValidate_Tariff_no                interface{ OnValidate_Tariff_no(rec *Item) error }
-	ItemOnValidate_Duty_unit_conversion     interface{ OnValidate_Duty_unit_conversion(rec *Item) error }
-	ItemOnValidate_Country_purchased_code   interface{ OnValidate_Country_purchased_code(rec *Item) error }
-	ItemOnValidate_Budget_quantity          interface{ OnValidate_Budget_quantity(rec *Item) error }
-	ItemOnValidate_Budgeted_amount          interface{ OnValidate_Budgeted_amount(rec *Item) error }
-	ItemOnValidate_Budget_profit            interface{ OnValidate_Budget_profit(rec *Item) error }
-	ItemOnValidate_Blocked                  interface{ OnValidate_Blocked(rec *Item) error }
-	ItemOnValidate_Last_date_modified       interface{ OnValidate_Last_date_modified(rec *Item) error }
-	ItemOnValidate_Price_includes_tax       interface{ OnValidate_Price_includes_tax(rec *Item) error }
-	ItemOnValidate_Tax_bus_posting_gr_price interface{ OnValidate_Tax_bus_posting_gr_price(rec *Item) error }
-	ItemOnValidate_Gen_prod_posting_group   interface{ OnValidate_Gen_prod_posting_group(rec *Item) error }
-	ItemOnValidate_Picture                  interface{ OnValidate_Picture(rec *Item) error }
-	ItemOnValidate_Country_of_origin_code   interface{ OnValidate_Country_of_origin_code(rec *Item) error }
-	ItemOnValidate_No_series                interface{ OnValidate_No_series(rec *Item) error }
-	ItemOnValidate_Tax_group_code           interface{ OnValidate_Tax_group_code(rec *Item) error }
-	ItemOnValidate_Tax_prod_posting_group   interface{ OnValidate_Tax_prod_posting_group(rec *Item) error }
-	ItemOnValidate_Reserve                  interface{ OnValidate_Reserve(rec *Item) error }
-	ItemOnValidate_Inventory_value_zero     interface{ OnValidate_Inventory_value_zero(rec *Item) error }
-	ItemOnValidate_Rounding_precision       interface{ OnValidate_Rounding_precision(rec *Item) error }
-	ItemOnValidate_Sales_unit_of_measure    interface{ OnValidate_Sales_unit_of_measure(rec *Item) error }
-	ItemOnValidate_Purch_unit_of_measure    interface{ OnValidate_Purch_unit_of_measure(rec *Item) error }
-	ItemOnValidate_Serial_nos               interface{ OnValidate_Serial_nos(rec *Item) error }
-	ItemOnValidate_Automatic_ext_text       interface{ OnValidate_Automatic_ext_text(rec *Item) error }
 )
 
 // itemLogic is the registered business logic of Item, in
@@ -1196,144 +739,9 @@ func itemTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ItemOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(ItemOnBeforeRename)
-	case "OnValidate_No":
-		_, ok = logic.(ItemOnValidate_No)
-	case "OnValidate_No_2":
-		_, ok = logic.(ItemOnValidate_No_2)
-	case "OnValidate_Description":
-		_, ok = logic.(ItemOnValidate_Description)
-	case "OnValidate_Search_description":
-		_, ok = logic.(ItemOnValidate_Search_description)
-	case "OnValidate_Description_2":
-		_, ok = logic.(ItemOnValidate_Description_2)
-	case "OnValidate_Class":
-		_, ok = logic.(ItemOnValidate_Class)
-	case "OnValidate_Base_unit_of_measure":
-		_, ok = logic.(ItemOnValidate_Base_unit_of_measure)
-	case "OnValidate_Price_unit_conversion":
-		_, ok = logic.(ItemOnValidate_Price_unit_conversion)
-	case "OnValidate_Inventory_posting_group":
-		_, ok = logic.(ItemOnValidate_Inventory_posting_group)
-	case "OnValidate_Shelf_bin_no":
-		_, ok = logic.(ItemOnValidate_Shelf_bin_no)
-	case "OnValidate_Sales_qty_disc_code":
-		_, ok = logic.(ItemOnValidate_Sales_qty_disc_code)
-	case "OnValidate_Item_cust_disc_gr":
-		_, ok = logic.(ItemOnValidate_Item_cust_disc_gr)
-	case "OnValidate_Allow_invoice_disc":
-		_, ok = logic.(ItemOnValidate_Allow_invoice_disc)
-	case "OnValidate_Statistics_group":
-		_, ok = logic.(ItemOnValidate_Statistics_group)
-	case "OnValidate_Commission_group":
-		_, ok = logic.(ItemOnValidate_Commission_group)
-	case "OnValidate_Unit_price":
-		_, ok = logic.(ItemOnValidate_Unit_price)
-	case "OnValidate_Price_profit_calculation":
-		_, ok = logic.(ItemOnValidate_Price_profit_calculation)
-	case "OnValidate_Profit_percent":
-		_, ok = logic.(ItemOnValidate_Profit_percent)
-	case "OnValidate_Costing_method":
-		_, ok = logic.(ItemOnValidate_Costing_method)
-	case "OnValidate_Unit_cost":
-		_, ok = logic.(ItemOnValidate_Unit_cost)
-	case "OnValidate_Standard_cost":
-		_, ok = logic.(ItemOnValidate_Standard_cost)
-	case "OnValidate_Last_direct_cost":
-		_, ok = logic.(ItemOnValidate_Last_direct_cost)
-	case "OnValidate_Average_cost":
-		_, ok = logic.(ItemOnValidate_Average_cost)
-	case "OnValidate_Add_curr_average_cost":
-		_, ok = logic.(ItemOnValidate_Add_curr_average_cost)
-	case "OnValidate_Minimum_unit_price":
-		_, ok = logic.(ItemOnValidate_Minimum_unit_price)
-	case "OnValidate_Indirect_cost_percent":
-		_, ok = logic.(ItemOnValidate_Indirect_cost_percent)
-	case "OnValidate_Vendor_no":
-		_, ok = logic.(ItemOnValidate_Vendor_no)
-	case "OnValidate_Vendor_item_no":
-		_, ok = logic.(ItemOnValidate_Vendor_item_no)
-	case "OnValidate_Lead_time_calculation":
-		_, ok = logic.(ItemOnValidate_Lead_time_calculation)
-	case "OnValidate_Reorder_point":
-		_, ok = logic.(ItemOnValidate_Reorder_point)
-	case "OnValidate_Maximum_inventory":
-		_, ok = logic.(ItemOnValidate_Maximum_inventory)
-	case "OnValidate_Reorder_quantity":
-		_, ok = logic.(ItemOnValidate_Reorder_quantity)
-	case "OnValidate_Requisition_method_code":
-		_, ok = logic.(ItemOnValidate_Requisition_method_code)
-	case "OnValidate_Order_multiple":
-		_, ok = logic.(ItemOnValidate_Order_multiple)
-	case "OnValidate_Reorder_cycle":
-		_, ok = logic.(ItemOnValidate_Reorder_cycle)
-	case "OnValidate_Alternative_item_no":
-		_, ok = logic.(ItemOnValidate_Alternative_item_no)
-	case "OnValidate_Unit_list_price":
-		_, ok = logic.(ItemOnValidate_Unit_list_price)
-	case "OnValidate_Duty_due_percent":
-		_, ok = logic.(ItemOnValidate_Duty_due_percent)
-	case "OnValidate_Duty_code":
-		_, ok = logic.(ItemOnValidate_Duty_code)
-	case "OnValidate_Gross_weight":
-		_, ok = logic.(ItemOnValidate_Gross_weight)
-	case "OnValidate_Net_weight":
-		_, ok = logic.(ItemOnValidate_Net_weight)
-	case "OnValidate_Units_per_parcel":
-		_, ok = logic.(ItemOnValidate_Units_per_parcel)
-	case "OnValidate_Unit_volume":
-		_, ok = logic.(ItemOnValidate_Unit_volume)
-	case "OnValidate_Durability":
-		_, ok = logic.(ItemOnValidate_Durability)
-	case "OnValidate_Freight_type":
-		_, ok = logic.(ItemOnValidate_Freight_type)
-	case "OnValidate_Tariff_no":
-		_, ok = logic.(ItemOnValidate_Tariff_no)
-	case "OnValidate_Duty_unit_conversion":
-		_, ok = logic.(ItemOnValidate_Duty_unit_conversion)
-	case "OnValidate_Country_purchased_code":
-		_, ok = logic.(ItemOnValidate_Country_purchased_code)
-	case "OnValidate_Budget_quantity":
-		_, ok = logic.(ItemOnValidate_Budget_quantity)
-	case "OnValidate_Budgeted_amount":
-		_, ok = logic.(ItemOnValidate_Budgeted_amount)
-	case "OnValidate_Budget_profit":
-		_, ok = logic.(ItemOnValidate_Budget_profit)
-	case "OnValidate_Blocked":
-		_, ok = logic.(ItemOnValidate_Blocked)
-	case "OnValidate_Last_date_modified":
-		_, ok = logic.(ItemOnValidate_Last_date_modified)
-	case "OnValidate_Price_includes_tax":
-		_, ok = logic.(ItemOnValidate_Price_includes_tax)
-	case "OnValidate_Tax_bus_posting_gr_price":
-		_, ok = logic.(ItemOnValidate_Tax_bus_posting_gr_price)
-	case "OnValidate_Gen_prod_posting_group":
-		_, ok = logic.(ItemOnValidate_Gen_prod_posting_group)
-	case "OnValidate_Picture":
-		_, ok = logic.(ItemOnValidate_Picture)
-	case "OnValidate_Country_of_origin_code":
-		_, ok = logic.(ItemOnValidate_Country_of_origin_code)
-	case "OnValidate_No_series":
-		_, ok = logic.(ItemOnValidate_No_series)
-	case "OnValidate_Tax_group_code":
-		_, ok = logic.(ItemOnValidate_Tax_group_code)
-	case "OnValidate_Tax_prod_posting_group":
-		_, ok = logic.(ItemOnValidate_Tax_prod_posting_group)
-	case "OnValidate_Reserve":
-		_, ok = logic.(ItemOnValidate_Reserve)
-	case "OnValidate_Inventory_value_zero":
-		_, ok = logic.(ItemOnValidate_Inventory_value_zero)
-	case "OnValidate_Rounding_precision":
-		_, ok = logic.(ItemOnValidate_Rounding_precision)
-	case "OnValidate_Sales_unit_of_measure":
-		_, ok = logic.(ItemOnValidate_Sales_unit_of_measure)
-	case "OnValidate_Purch_unit_of_measure":
-		_, ok = logic.(ItemOnValidate_Purch_unit_of_measure)
-	case "OnValidate_Serial_nos":
-		_, ok = logic.(ItemOnValidate_Serial_nos)
-	case "OnValidate_Automatic_ext_text":
-		_, ok = logic.(ItemOnValidate_Automatic_ext_text)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return itemFields.IsOnValidateTrigger(name, logic, (*Item)(nil))
 	}
 	return true, ok
 }
@@ -1975,75 +1383,7 @@ func (t *Item) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *Item) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["no"] = t.No
-	t.oldValues["no_2"] = t.No_2
-	t.oldValues["description"] = t.Description
-	t.oldValues["search_description"] = t.Search_description
-	t.oldValues["description_2"] = t.Description_2
-	t.oldValues["class"] = t.Class
-	t.oldValues["base_unit_of_measure"] = t.Base_unit_of_measure
-	t.oldValues["price_unit_conversion"] = t.Price_unit_conversion
-	t.oldValues["inventory_posting_group"] = t.Inventory_posting_group
-	t.oldValues["shelf_bin_no"] = t.Shelf_bin_no
-	t.oldValues["sales_qty_disc_code"] = t.Sales_qty_disc_code
-	t.oldValues["item_cust_disc_gr"] = t.Item_cust_disc_gr
-	t.oldValues["allow_invoice_disc"] = t.Allow_invoice_disc
-	t.oldValues["statistics_group"] = t.Statistics_group
-	t.oldValues["commission_group"] = t.Commission_group
-	t.oldValues["unit_price"] = t.Unit_price
-	t.oldValues["price_profit_calculation"] = t.Price_profit_calculation
-	t.oldValues["profit_percent"] = t.Profit_percent
-	t.oldValues["costing_method"] = t.Costing_method
-	t.oldValues["unit_cost"] = t.Unit_cost
-	t.oldValues["standard_cost"] = t.Standard_cost
-	t.oldValues["last_direct_cost"] = t.Last_direct_cost
-	t.oldValues["average_cost"] = t.Average_cost
-	t.oldValues["add_curr_average_cost"] = t.Add_curr_average_cost
-	t.oldValues["minimum_unit_price"] = t.Minimum_unit_price
-	t.oldValues["indirect_cost_percent"] = t.Indirect_cost_percent
-	t.oldValues["vendor_no"] = t.Vendor_no
-	t.oldValues["vendor_item_no"] = t.Vendor_item_no
-	t.oldValues["lead_time_calculation"] = t.Lead_time_calculation
-	t.oldValues["reorder_point"] = t.Reorder_point
-	t.oldValues["maximum_inventory"] = t.Maximum_inventory
-	t.oldValues["reorder_quantity"] = t.Reorder_quantity
-	t.oldValues["requisition_method_code"] = t.Requisition_method_code
-	t.oldValues["order_multiple"] = t.Order_multiple
-	t.oldValues["reorder_cycle"] = t.Reorder_cycle
-	t.oldValues["alternative_item_no"] = t.Alternative_item_no
-	t.oldValues["unit_list_price"] = t.Unit_list_price
-	t.oldValues["duty_due_percent"] = t.Duty_due_percent
-	t.oldValues["duty_code"] = t.Duty_code
-	t.oldValues["gross_weight"] = t.Gross_weight
-	t.oldValues["net_weight"] = t.Net_weight
-	t.oldValues["units_per_parcel"] = t.Units_per_parcel
-	t.oldValues["unit_volume"] = t.Unit_volume
-	t.oldValues["durability"] = t.Durability
-	t.oldValues["freight_type"] = t.Freight_type
-	t.oldValues["tariff_no"] = t.Tariff_no
-	t.oldValues["duty_unit_conversion"] = t.Duty_unit_conversion
-	t.oldValues["country_purchased_code"] = t.Country_purchased_code
-	t.oldValues["budget_quantity"] = t.Budget_quantity
-	t.oldValues["budgeted_amount"] = t.Budgeted_amount
-	t.oldValues["budget_profit"] = t.Budget_profit
-	t.oldValues["blocked"] = t.Blocked
-	t.oldValues["last_date_modified"] = t.Last_date_modified
-	t.oldValues["price_includes_tax"] = t.Price_includes_tax
-	t.oldValues["tax_bus_posting_gr_price"] = t.Tax_bus_posting_gr_price
-	t.oldValues["gen_prod_posting_group"] = t.Gen_prod_posting_group
-	t.oldValues["picture"] = t.Picture
-	t.oldValues["country_of_origin_code"] = t.Country_of_origin_code
-	t.oldValues["no_series"] = t.No_series
-	t.oldValues["tax_group_code"] = t.Tax_group_code
-	t.oldValues["tax_prod_posting_group"] = t.Tax_prod_posting_group
-	t.oldValues["reserve"] = t.Reserve
-	t.oldValues["inventory_value_zero"] = t.Inventory_value_zero
-	t.oldValues["rounding_precision"] = t.Rounding_precision
-	t.oldValues["sales_unit_of_measure"] = t.Sales_unit_of_measure
-	t.oldValues["purch_unit_of_measure"] = t.Purch_unit_of_measure
-	t.oldValues["serial_nos"] = t.Serial_nos
-	t.oldValues["automatic_ext_text"] = t.Automatic_ext_text
+	t.oldValues = itemFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -2058,210 +1398,7 @@ func (t *Item) OldValue(fieldName string) interface{} {
 func (t *Item) XRec() *Item {
 	x := &Item{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["no"].(types.Code); ok {
-		x.No = v
-	}
-	if v, ok := t.oldValues["no_2"].(types.Code); ok {
-		x.No_2 = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["search_description"].(types.Code); ok {
-		x.Search_description = v
-	}
-	if v, ok := t.oldValues["description_2"].(types.Text); ok {
-		x.Description_2 = v
-	}
-	if v, ok := t.oldValues["class"].(types.Code); ok {
-		x.Class = v
-	}
-	if v, ok := t.oldValues["base_unit_of_measure"].(types.Code); ok {
-		x.Base_unit_of_measure = v
-	}
-	if v, ok := t.oldValues["price_unit_conversion"].(int); ok {
-		x.Price_unit_conversion = v
-	}
-	if v, ok := t.oldValues["inventory_posting_group"].(types.Code); ok {
-		x.Inventory_posting_group = v
-	}
-	if v, ok := t.oldValues["shelf_bin_no"].(types.Code); ok {
-		x.Shelf_bin_no = v
-	}
-	if v, ok := t.oldValues["sales_qty_disc_code"].(types.Code); ok {
-		x.Sales_qty_disc_code = v
-	}
-	if v, ok := t.oldValues["item_cust_disc_gr"].(types.Code); ok {
-		x.Item_cust_disc_gr = v
-	}
-	if v, ok := t.oldValues["allow_invoice_disc"].(bool); ok {
-		x.Allow_invoice_disc = v
-	}
-	if v, ok := t.oldValues["statistics_group"].(int); ok {
-		x.Statistics_group = v
-	}
-	if v, ok := t.oldValues["commission_group"].(int); ok {
-		x.Commission_group = v
-	}
-	if v, ok := t.oldValues["unit_price"].(types.Decimal); ok {
-		x.Unit_price = v
-	}
-	if v, ok := t.oldValues["price_profit_calculation"].(ItemPrice_profit_calculation); ok {
-		x.Price_profit_calculation = v
-	}
-	if v, ok := t.oldValues["profit_percent"].(types.Decimal); ok {
-		x.Profit_percent = v
-	}
-	if v, ok := t.oldValues["costing_method"].(ItemCosting_method); ok {
-		x.Costing_method = v
-	}
-	if v, ok := t.oldValues["unit_cost"].(types.Decimal); ok {
-		x.Unit_cost = v
-	}
-	if v, ok := t.oldValues["standard_cost"].(types.Decimal); ok {
-		x.Standard_cost = v
-	}
-	if v, ok := t.oldValues["last_direct_cost"].(types.Decimal); ok {
-		x.Last_direct_cost = v
-	}
-	if v, ok := t.oldValues["average_cost"].(types.Decimal); ok {
-		x.Average_cost = v
-	}
-	if v, ok := t.oldValues["add_curr_average_cost"].(types.Decimal); ok {
-		x.Add_curr_average_cost = v
-	}
-	if v, ok := t.oldValues["minimum_unit_price"].(types.Decimal); ok {
-		x.Minimum_unit_price = v
-	}
-	if v, ok := t.oldValues["indirect_cost_percent"].(types.Decimal); ok {
-		x.Indirect_cost_percent = v
-	}
-	if v, ok := t.oldValues["vendor_no"].(types.Code); ok {
-		x.Vendor_no = v
-	}
-	if v, ok := t.oldValues["vendor_item_no"].(types.Text); ok {
-		x.Vendor_item_no = v
-	}
-	if v, ok := t.oldValues["lead_time_calculation"].(types.Code); ok {
-		x.Lead_time_calculation = v
-	}
-	if v, ok := t.oldValues["reorder_point"].(types.Decimal); ok {
-		x.Reorder_point = v
-	}
-	if v, ok := t.oldValues["maximum_inventory"].(types.Decimal); ok {
-		x.Maximum_inventory = v
-	}
-	if v, ok := t.oldValues["reorder_quantity"].(types.Decimal); ok {
-		x.Reorder_quantity = v
-	}
-	if v, ok := t.oldValues["requisition_method_code"].(types.Code); ok {
-		x.Requisition_method_code = v
-	}
-	if v, ok := t.oldValues["order_multiple"].(types.Decimal); ok {
-		x.Order_multiple = v
-	}
-	if v, ok := t.oldValues["reorder_cycle"].(types.Code); ok {
-		x.Reorder_cycle = v
-	}
-	if v, ok := t.oldValues["alternative_item_no"].(types.Code); ok {
-		x.Alternative_item_no = v
-	}
-	if v, ok := t.oldValues["unit_list_price"].(types.Decimal); ok {
-		x.Unit_list_price = v
-	}
-	if v, ok := t.oldValues["duty_due_percent"].(types.Decimal); ok {
-		x.Duty_due_percent = v
-	}
-	if v, ok := t.oldValues["duty_code"].(types.Code); ok {
-		x.Duty_code = v
-	}
-	if v, ok := t.oldValues["gross_weight"].(types.Decimal); ok {
-		x.Gross_weight = v
-	}
-	if v, ok := t.oldValues["net_weight"].(types.Decimal); ok {
-		x.Net_weight = v
-	}
-	if v, ok := t.oldValues["units_per_parcel"].(types.Decimal); ok {
-		x.Units_per_parcel = v
-	}
-	if v, ok := t.oldValues["unit_volume"].(types.Decimal); ok {
-		x.Unit_volume = v
-	}
-	if v, ok := t.oldValues["durability"].(types.Code); ok {
-		x.Durability = v
-	}
-	if v, ok := t.oldValues["freight_type"].(types.Code); ok {
-		x.Freight_type = v
-	}
-	if v, ok := t.oldValues["tariff_no"].(types.Code); ok {
-		x.Tariff_no = v
-	}
-	if v, ok := t.oldValues["duty_unit_conversion"].(types.Decimal); ok {
-		x.Duty_unit_conversion = v
-	}
-	if v, ok := t.oldValues["country_purchased_code"].(types.Code); ok {
-		x.Country_purchased_code = v
-	}
-	if v, ok := t.oldValues["budget_quantity"].(types.Decimal); ok {
-		x.Budget_quantity = v
-	}
-	if v, ok := t.oldValues["budgeted_amount"].(types.Decimal); ok {
-		x.Budgeted_amount = v
-	}
-	if v, ok := t.oldValues["budget_profit"].(types.Decimal); ok {
-		x.Budget_profit = v
-	}
-	if v, ok := t.oldValues["blocked"].(bool); ok {
-		x.Blocked = v
-	}
-	if v, ok := t.oldValues["last_date_modified"].(types.Date); ok {
-		x.Last_date_modified = v
-	}
-	if v, ok := t.oldValues["price_includes_tax"].(bool); ok {
-		x.Price_includes_tax = v
-	}
-	if v, ok := t.oldValues["tax_bus_posting_gr_price"].(types.Code); ok {
-		x.Tax_bus_posting_gr_price = v
-	}
-	if v, ok := t.oldValues["gen_prod_posting_group"].(types.Code); ok {
-		x.Gen_prod_posting_group = v
-	}
-	if v, ok := t.oldValues["picture"].([]byte); ok {
-		x.Picture = v
-	}
-	if v, ok := t.oldValues["country_of_origin_code"].(types.Code); ok {
-		x.Country_of_origin_code = v
-	}
-	if v, ok := t.oldValues["no_series"].(types.Code); ok {
-		x.No_series = v
-	}
-	if v, ok := t.oldValues["tax_group_code"].(types.Code); ok {
-		x.Tax_group_code = v
-	}
-	if v, ok := t.oldValues["tax_prod_posting_group"].(types.Code); ok {
-		x.Tax_prod_posting_group = v
-	}
-	if v, ok := t.oldValues["reserve"].(ItemReserve); ok {
-		x.Reserve = v
-	}
-	if v, ok := t.oldValues["inventory_value_zero"].(bool); ok {
-		x.Inventory_value_zero = v
-	}
-	if v, ok := t.oldValues["rounding_precision"].(types.Decimal); ok {
-		x.Rounding_precision = v
-	}
-	if v, ok := t.oldValues["sales_unit_of_measure"].(types.Code); ok {
-		x.Sales_unit_of_measure = v
-	}
-	if v, ok := t.oldValues["purch_unit_of_measure"].(types.Code); ok {
-		x.Purch_unit_of_measure = v
-	}
-	if v, ok := t.oldValues["serial_nos"].(types.Code); ok {
-		x.Serial_nos = v
-	}
-	if v, ok := t.oldValues["automatic_ext_text"].(bool); ok {
-		x.Automatic_ext_text = v
-	}
+	itemFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -3264,300 +2401,7 @@ func (t *Item) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *Item) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No.Equal(old)
-		}
-	case "no_2":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No_2.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "search_description":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Search_description.Equal(old)
-		}
-	case "description_2":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description_2.Equal(old)
-		}
-	case "class":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Class.Equal(old)
-		}
-	case "base_unit_of_measure":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Base_unit_of_measure.Equal(old)
-		}
-	case "price_unit_conversion":
-		if old, ok := oldValue.(int); ok {
-			return t.Price_unit_conversion != old
-		}
-		return true // Type mismatch, assume changed
-	case "inventory_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Inventory_posting_group.Equal(old)
-		}
-	case "shelf_bin_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Shelf_bin_no.Equal(old)
-		}
-	case "sales_qty_disc_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Sales_qty_disc_code.Equal(old)
-		}
-	case "item_cust_disc_gr":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Item_cust_disc_gr.Equal(old)
-		}
-	case "allow_invoice_disc":
-		if old, ok := oldValue.(bool); ok {
-			return t.Allow_invoice_disc != old
-		}
-		return true // Type mismatch, assume changed
-	case "statistics_group":
-		if old, ok := oldValue.(int); ok {
-			return t.Statistics_group != old
-		}
-		return true // Type mismatch, assume changed
-	case "commission_group":
-		if old, ok := oldValue.(int); ok {
-			return t.Commission_group != old
-		}
-		return true // Type mismatch, assume changed
-	case "unit_price":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Unit_price.Equal(old)
-		}
-	case "price_profit_calculation":
-		if old, ok := oldValue.(ItemPrice_profit_calculation); ok {
-			return t.Price_profit_calculation != old
-		}
-	case "profit_percent":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Profit_percent.Equal(old)
-		}
-	case "costing_method":
-		if old, ok := oldValue.(ItemCosting_method); ok {
-			return t.Costing_method != old
-		}
-	case "unit_cost":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Unit_cost.Equal(old)
-		}
-	case "standard_cost":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Standard_cost.Equal(old)
-		}
-	case "last_direct_cost":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Last_direct_cost.Equal(old)
-		}
-	case "average_cost":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Average_cost.Equal(old)
-		}
-	case "add_curr_average_cost":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Add_curr_average_cost.Equal(old)
-		}
-	case "minimum_unit_price":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Minimum_unit_price.Equal(old)
-		}
-	case "indirect_cost_percent":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Indirect_cost_percent.Equal(old)
-		}
-	case "vendor_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Vendor_no.Equal(old)
-		}
-	case "vendor_item_no":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Vendor_item_no.Equal(old)
-		}
-	case "lead_time_calculation":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Lead_time_calculation.Equal(old)
-		}
-	case "reorder_point":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Reorder_point.Equal(old)
-		}
-	case "maximum_inventory":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Maximum_inventory.Equal(old)
-		}
-	case "reorder_quantity":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Reorder_quantity.Equal(old)
-		}
-	case "requisition_method_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Requisition_method_code.Equal(old)
-		}
-	case "order_multiple":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Order_multiple.Equal(old)
-		}
-	case "reorder_cycle":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Reorder_cycle.Equal(old)
-		}
-	case "alternative_item_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Alternative_item_no.Equal(old)
-		}
-	case "unit_list_price":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Unit_list_price.Equal(old)
-		}
-	case "duty_due_percent":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Duty_due_percent.Equal(old)
-		}
-	case "duty_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Duty_code.Equal(old)
-		}
-	case "gross_weight":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Gross_weight.Equal(old)
-		}
-	case "net_weight":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Net_weight.Equal(old)
-		}
-	case "units_per_parcel":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Units_per_parcel.Equal(old)
-		}
-	case "unit_volume":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Unit_volume.Equal(old)
-		}
-	case "durability":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Durability.Equal(old)
-		}
-	case "freight_type":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Freight_type.Equal(old)
-		}
-	case "tariff_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tariff_no.Equal(old)
-		}
-	case "duty_unit_conversion":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Duty_unit_conversion.Equal(old)
-		}
-	case "country_purchased_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Country_purchased_code.Equal(old)
-		}
-	case "budget_quantity":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Budget_quantity.Equal(old)
-		}
-	case "budgeted_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Budgeted_amount.Equal(old)
-		}
-	case "budget_profit":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Budget_profit.Equal(old)
-		}
-	case "blocked":
-		if old, ok := oldValue.(bool); ok {
-			return t.Blocked != old
-		}
-		return true // Type mismatch, assume changed
-	case "last_date_modified":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Last_date_modified.Equal(old)
-		}
-	case "price_includes_tax":
-		if old, ok := oldValue.(bool); ok {
-			return t.Price_includes_tax != old
-		}
-		return true // Type mismatch, assume changed
-	case "tax_bus_posting_gr_price":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_bus_posting_gr_price.Equal(old)
-		}
-	case "gen_prod_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Gen_prod_posting_group.Equal(old)
-		}
-	case "picture":
-		// Skip comparison for BLOB fields (too large, use always modified)
-		return true
-	case "country_of_origin_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Country_of_origin_code.Equal(old)
-		}
-	case "no_series":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No_series.Equal(old)
-		}
-	case "tax_group_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_group_code.Equal(old)
-		}
-	case "tax_prod_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_prod_posting_group.Equal(old)
-		}
-	case "reserve":
-		if old, ok := oldValue.(ItemReserve); ok {
-			return t.Reserve != old
-		}
-	case "inventory_value_zero":
-		if old, ok := oldValue.(bool); ok {
-			return t.Inventory_value_zero != old
-		}
-		return true // Type mismatch, assume changed
-	case "rounding_precision":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Rounding_precision.Equal(old)
-		}
-	case "sales_unit_of_measure":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Sales_unit_of_measure.Equal(old)
-		}
-	case "purch_unit_of_measure":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Purch_unit_of_measure.Equal(old)
-		}
-	case "serial_nos":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Serial_nos.Equal(old)
-		}
-	case "automatic_ext_text":
-		if old, ok := oldValue.(bool); ok {
-			return t.Automatic_ext_text != old
-		}
-		return true // Type mismatch, assume changed
-	}
-
-	return false
+	return itemFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -9441,145 +8285,7 @@ func (t *Item) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *Item) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("no"):
-		return "no", true
-	case strings.ToLower("no_2"):
-		return "no_2", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("search_description"):
-		return "search_description", true
-	case strings.ToLower("description_2"):
-		return "description_2", true
-	case strings.ToLower("class"):
-		return "class", true
-	case strings.ToLower("base_unit_of_measure"):
-		return "base_unit_of_measure", true
-	case strings.ToLower("price_unit_conversion"):
-		return "price_unit_conversion", true
-	case strings.ToLower("inventory_posting_group"):
-		return "inventory_posting_group", true
-	case strings.ToLower("shelf_bin_no"):
-		return "shelf_bin_no", true
-	case strings.ToLower("sales_qty_disc_code"):
-		return "sales_qty_disc_code", true
-	case strings.ToLower("item_cust_disc_gr"):
-		return "item_cust_disc_gr", true
-	case strings.ToLower("allow_invoice_disc"):
-		return "allow_invoice_disc", true
-	case strings.ToLower("statistics_group"):
-		return "statistics_group", true
-	case strings.ToLower("commission_group"):
-		return "commission_group", true
-	case strings.ToLower("unit_price"):
-		return "unit_price", true
-	case strings.ToLower("price_profit_calculation"):
-		return "price_profit_calculation", true
-	case strings.ToLower("profit_percent"):
-		return "profit_percent", true
-	case strings.ToLower("costing_method"):
-		return "costing_method", true
-	case strings.ToLower("unit_cost"):
-		return "unit_cost", true
-	case strings.ToLower("standard_cost"):
-		return "standard_cost", true
-	case strings.ToLower("last_direct_cost"):
-		return "last_direct_cost", true
-	case strings.ToLower("average_cost"):
-		return "average_cost", true
-	case strings.ToLower("add_curr_average_cost"):
-		return "add_curr_average_cost", true
-	case strings.ToLower("minimum_unit_price"):
-		return "minimum_unit_price", true
-	case strings.ToLower("indirect_cost_percent"):
-		return "indirect_cost_percent", true
-	case strings.ToLower("vendor_no"):
-		return "vendor_no", true
-	case strings.ToLower("vendor_item_no"):
-		return "vendor_item_no", true
-	case strings.ToLower("lead_time_calculation"):
-		return "lead_time_calculation", true
-	case strings.ToLower("reorder_point"):
-		return "reorder_point", true
-	case strings.ToLower("maximum_inventory"):
-		return "maximum_inventory", true
-	case strings.ToLower("reorder_quantity"):
-		return "reorder_quantity", true
-	case strings.ToLower("requisition_method_code"):
-		return "requisition_method_code", true
-	case strings.ToLower("order_multiple"):
-		return "order_multiple", true
-	case strings.ToLower("reorder_cycle"):
-		return "reorder_cycle", true
-	case strings.ToLower("alternative_item_no"):
-		return "alternative_item_no", true
-	case strings.ToLower("unit_list_price"):
-		return "unit_list_price", true
-	case strings.ToLower("duty_due_percent"):
-		return "duty_due_percent", true
-	case strings.ToLower("duty_code"):
-		return "duty_code", true
-	case strings.ToLower("gross_weight"):
-		return "gross_weight", true
-	case strings.ToLower("net_weight"):
-		return "net_weight", true
-	case strings.ToLower("units_per_parcel"):
-		return "units_per_parcel", true
-	case strings.ToLower("unit_volume"):
-		return "unit_volume", true
-	case strings.ToLower("durability"):
-		return "durability", true
-	case strings.ToLower("freight_type"):
-		return "freight_type", true
-	case strings.ToLower("tariff_no"):
-		return "tariff_no", true
-	case strings.ToLower("duty_unit_conversion"):
-		return "duty_unit_conversion", true
-	case strings.ToLower("country_purchased_code"):
-		return "country_purchased_code", true
-	case strings.ToLower("budget_quantity"):
-		return "budget_quantity", true
-	case strings.ToLower("budgeted_amount"):
-		return "budgeted_amount", true
-	case strings.ToLower("budget_profit"):
-		return "budget_profit", true
-	case strings.ToLower("blocked"):
-		return "blocked", true
-	case strings.ToLower("last_date_modified"):
-		return "last_date_modified", true
-	case strings.ToLower("price_includes_tax"):
-		return "price_includes_tax", true
-	case strings.ToLower("tax_bus_posting_gr_price"):
-		return "tax_bus_posting_gr_price", true
-	case strings.ToLower("gen_prod_posting_group"):
-		return "gen_prod_posting_group", true
-	case strings.ToLower("picture"):
-		return "picture", true
-	case strings.ToLower("country_of_origin_code"):
-		return "country_of_origin_code", true
-	case strings.ToLower("no_series"):
-		return "no_series", true
-	case strings.ToLower("tax_group_code"):
-		return "tax_group_code", true
-	case strings.ToLower("tax_prod_posting_group"):
-		return "tax_prod_posting_group", true
-	case strings.ToLower("reserve"):
-		return "reserve", true
-	case strings.ToLower("inventory_value_zero"):
-		return "inventory_value_zero", true
-	case strings.ToLower("rounding_precision"):
-		return "rounding_precision", true
-	case strings.ToLower("sales_unit_of_measure"):
-		return "sales_unit_of_measure", true
-	case strings.ToLower("purch_unit_of_measure"):
-		return "purch_unit_of_measure", true
-	case strings.ToLower("serial_nos"):
-		return "serial_nos", true
-	case strings.ToLower("automatic_ext_text"):
-		return "automatic_ext_text", true
-	}
-	return "", false
+	return itemFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -11313,1697 +10019,20 @@ func (t *Item) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *Item) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-		} else if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_No); ok {
-				if err := trg.OnValidate_No(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no_2":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No_2 = v
-		} else if v, ok := value.(string); ok {
-			t.No_2 = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no_2")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_No_2); ok {
-				if err := trg.OnValidate_No_2(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "search_description":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Search_description = v
-		} else if v, ok := value.(string); ok {
-			t.Search_description = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field search_description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Search_description); ok {
-				if err := trg.OnValidate_Search_description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description_2":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description_2 = v
-		} else if v, ok := value.(string); ok {
-			t.Description_2 = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description_2")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Description_2); ok {
-				if err := trg.OnValidate_Description_2(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "class":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Class = v
-		} else if v, ok := value.(string); ok {
-			t.Class = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field class")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Class); ok {
-				if err := trg.OnValidate_Class(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "base_unit_of_measure":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Base_unit_of_measure = v
-		} else if v, ok := value.(string); ok {
-			t.Base_unit_of_measure = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field base_unit_of_measure")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "base_unit_of_measure"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Base_unit_of_measure); ok {
-				if err := trg.OnValidate_Base_unit_of_measure(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "price_unit_conversion":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Price_unit_conversion = v
-		case float64:
-			t.Price_unit_conversion = int(v)
-		case string:
-			if v == "" {
-				t.Price_unit_conversion = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Price_unit_conversion = i
-			} else {
-				return fmt.Errorf("invalid integer value for field price_unit_conversion: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field price_unit_conversion")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Price_unit_conversion); ok {
-				if err := trg.OnValidate_Price_unit_conversion(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "inventory_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Inventory_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Inventory_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field inventory_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "inventory_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Inventory_posting_group); ok {
-				if err := trg.OnValidate_Inventory_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "shelf_bin_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Shelf_bin_no = v
-		} else if v, ok := value.(string); ok {
-			t.Shelf_bin_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field shelf_bin_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Shelf_bin_no); ok {
-				if err := trg.OnValidate_Shelf_bin_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sales_qty_disc_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Sales_qty_disc_code = v
-		} else if v, ok := value.(string); ok {
-			t.Sales_qty_disc_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field sales_qty_disc_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "sales_qty_disc_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Sales_qty_disc_code); ok {
-				if err := trg.OnValidate_Sales_qty_disc_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "item_cust_disc_gr":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Item_cust_disc_gr = v
-		} else if v, ok := value.(string); ok {
-			t.Item_cust_disc_gr = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field item_cust_disc_gr")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "item_cust_disc_gr"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Item_cust_disc_gr); ok {
-				if err := trg.OnValidate_Item_cust_disc_gr(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "allow_invoice_disc":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Allow_invoice_disc = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Allow_invoice_disc = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field allow_invoice_disc")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Allow_invoice_disc); ok {
-				if err := trg.OnValidate_Allow_invoice_disc(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "statistics_group":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Statistics_group = v
-		case float64:
-			t.Statistics_group = int(v)
-		case string:
-			if v == "" {
-				t.Statistics_group = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Statistics_group = i
-			} else {
-				return fmt.Errorf("invalid integer value for field statistics_group: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field statistics_group")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Statistics_group); ok {
-				if err := trg.OnValidate_Statistics_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "commission_group":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Commission_group = v
-		case float64:
-			t.Commission_group = int(v)
-		case string:
-			if v == "" {
-				t.Commission_group = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Commission_group = i
-			} else {
-				return fmt.Errorf("invalid integer value for field commission_group: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field commission_group")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Commission_group); ok {
-				if err := trg.OnValidate_Commission_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unit_price":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Unit_price = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Unit_price, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field unit_price: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Unit_price = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Unit_price = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Unit_price = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field unit_price (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Unit_price); ok {
-				if err := trg.OnValidate_Unit_price(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "price_profit_calculation":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ItemPrice_profit_calculation); ok {
-			t.Price_profit_calculation = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field price_profit_calculation (valid range: 0-%d)", v, 3-1)
-			}
-			t.Price_profit_calculation = ItemPrice_profit_calculation(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field price_profit_calculation (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Price_profit_calculation = ItemPrice_profit_calculation(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Price_profit_calculation = 0
-			} else {
-				options := []string{"Profit=Price-Cost", "Price=Cost+Profit", "No Relationship"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Price_profit_calculation = ItemPrice_profit_calculation(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field price_profit_calculation (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field price_profit_calculation (expected ItemPrice_profit_calculation, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Price_profit_calculation); ok {
-				if err := trg.OnValidate_Price_profit_calculation(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "profit_percent":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Profit_percent = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Profit_percent, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field profit_percent: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Profit_percent = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Profit_percent = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Profit_percent = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field profit_percent (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Profit_percent); ok {
-				if err := trg.OnValidate_Profit_percent(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "costing_method":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ItemCosting_method); ok {
-			t.Costing_method = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 5 {
-				return fmt.Errorf("invalid option value %d for field costing_method (valid range: 0-%d)", v, 5-1)
-			}
-			t.Costing_method = ItemCosting_method(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 5 {
-				return fmt.Errorf("invalid option value %d for field costing_method (valid range: 0-%d)", intVal, 5-1)
-			}
-			t.Costing_method = ItemCosting_method(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Costing_method = 0
-			} else {
-				options := []string{"FIFO", "LIFO", "Specific", "Average", "Standard"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Costing_method = ItemCosting_method(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field costing_method (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field costing_method (expected ItemCosting_method, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Costing_method); ok {
-				if err := trg.OnValidate_Costing_method(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unit_cost":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Unit_cost = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Unit_cost, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field unit_cost: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Unit_cost = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Unit_cost = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Unit_cost = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field unit_cost (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Unit_cost); ok {
-				if err := trg.OnValidate_Unit_cost(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "standard_cost":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Standard_cost = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Standard_cost, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field standard_cost: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Standard_cost = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Standard_cost = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Standard_cost = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field standard_cost (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Standard_cost); ok {
-				if err := trg.OnValidate_Standard_cost(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "last_direct_cost":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Last_direct_cost = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Last_direct_cost, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field last_direct_cost: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Last_direct_cost = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Last_direct_cost = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Last_direct_cost = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field last_direct_cost (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Last_direct_cost); ok {
-				if err := trg.OnValidate_Last_direct_cost(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "average_cost":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Average_cost = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Average_cost, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field average_cost: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Average_cost = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Average_cost = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Average_cost = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field average_cost (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Average_cost); ok {
-				if err := trg.OnValidate_Average_cost(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "add_curr_average_cost":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Add_curr_average_cost = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Add_curr_average_cost, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field add_curr_average_cost: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Add_curr_average_cost = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Add_curr_average_cost = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Add_curr_average_cost = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field add_curr_average_cost (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Add_curr_average_cost); ok {
-				if err := trg.OnValidate_Add_curr_average_cost(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "minimum_unit_price":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Minimum_unit_price = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Minimum_unit_price, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field minimum_unit_price: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Minimum_unit_price = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Minimum_unit_price = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Minimum_unit_price = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field minimum_unit_price (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Minimum_unit_price); ok {
-				if err := trg.OnValidate_Minimum_unit_price(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "indirect_cost_percent":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Indirect_cost_percent = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Indirect_cost_percent, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field indirect_cost_percent: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Indirect_cost_percent = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Indirect_cost_percent = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Indirect_cost_percent = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field indirect_cost_percent (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Indirect_cost_percent); ok {
-				if err := trg.OnValidate_Indirect_cost_percent(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "vendor_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Vendor_no = v
-		} else if v, ok := value.(string); ok {
-			t.Vendor_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field vendor_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "vendor_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Vendor_no); ok {
-				if err := trg.OnValidate_Vendor_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "vendor_item_no":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Vendor_item_no = v
-		} else if v, ok := value.(string); ok {
-			t.Vendor_item_no = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field vendor_item_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Vendor_item_no); ok {
-				if err := trg.OnValidate_Vendor_item_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "lead_time_calculation":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Lead_time_calculation = v
-		} else if v, ok := value.(string); ok {
-			t.Lead_time_calculation = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field lead_time_calculation")
-		}
-		if err := tables.CheckDateFormula(ItemTableName, "lead_time_calculation", string(t.Lead_time_calculation)); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Lead_time_calculation); ok {
-				if err := trg.OnValidate_Lead_time_calculation(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reorder_point":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Reorder_point = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Reorder_point, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field reorder_point: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Reorder_point = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Reorder_point = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Reorder_point = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field reorder_point (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Reorder_point); ok {
-				if err := trg.OnValidate_Reorder_point(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "maximum_inventory":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Maximum_inventory = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Maximum_inventory, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field maximum_inventory: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Maximum_inventory = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Maximum_inventory = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Maximum_inventory = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field maximum_inventory (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Maximum_inventory); ok {
-				if err := trg.OnValidate_Maximum_inventory(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reorder_quantity":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Reorder_quantity = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Reorder_quantity, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field reorder_quantity: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Reorder_quantity = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Reorder_quantity = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Reorder_quantity = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field reorder_quantity (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Reorder_quantity); ok {
-				if err := trg.OnValidate_Reorder_quantity(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "requisition_method_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Requisition_method_code = v
-		} else if v, ok := value.(string); ok {
-			t.Requisition_method_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field requisition_method_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "requisition_method_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Requisition_method_code); ok {
-				if err := trg.OnValidate_Requisition_method_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "order_multiple":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Order_multiple = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Order_multiple, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field order_multiple: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Order_multiple = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Order_multiple = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Order_multiple = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field order_multiple (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Order_multiple); ok {
-				if err := trg.OnValidate_Order_multiple(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reorder_cycle":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Reorder_cycle = v
-		} else if v, ok := value.(string); ok {
-			t.Reorder_cycle = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field reorder_cycle")
-		}
-		if err := tables.CheckDateFormula(ItemTableName, "reorder_cycle", string(t.Reorder_cycle)); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Reorder_cycle); ok {
-				if err := trg.OnValidate_Reorder_cycle(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "alternative_item_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Alternative_item_no = v
-		} else if v, ok := value.(string); ok {
-			t.Alternative_item_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field alternative_item_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "alternative_item_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Alternative_item_no); ok {
-				if err := trg.OnValidate_Alternative_item_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unit_list_price":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Unit_list_price = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Unit_list_price, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field unit_list_price: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Unit_list_price = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Unit_list_price = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Unit_list_price = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field unit_list_price (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Unit_list_price); ok {
-				if err := trg.OnValidate_Unit_list_price(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "duty_due_percent":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Duty_due_percent = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Duty_due_percent, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field duty_due_percent: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Duty_due_percent = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Duty_due_percent = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Duty_due_percent = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field duty_due_percent (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Duty_due_percent); ok {
-				if err := trg.OnValidate_Duty_due_percent(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "duty_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Duty_code = v
-		} else if v, ok := value.(string); ok {
-			t.Duty_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field duty_code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Duty_code); ok {
-				if err := trg.OnValidate_Duty_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "gross_weight":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Gross_weight = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Gross_weight, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field gross_weight: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Gross_weight = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Gross_weight = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Gross_weight = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field gross_weight (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Gross_weight); ok {
-				if err := trg.OnValidate_Gross_weight(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "net_weight":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Net_weight = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Net_weight, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field net_weight: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Net_weight = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Net_weight = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Net_weight = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field net_weight (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Net_weight); ok {
-				if err := trg.OnValidate_Net_weight(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "units_per_parcel":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Units_per_parcel = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Units_per_parcel, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field units_per_parcel: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Units_per_parcel = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Units_per_parcel = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Units_per_parcel = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field units_per_parcel (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Units_per_parcel); ok {
-				if err := trg.OnValidate_Units_per_parcel(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "unit_volume":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Unit_volume = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Unit_volume, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field unit_volume: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Unit_volume = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Unit_volume = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Unit_volume = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field unit_volume (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Unit_volume); ok {
-				if err := trg.OnValidate_Unit_volume(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "durability":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Durability = v
-		} else if v, ok := value.(string); ok {
-			t.Durability = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field durability")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Durability); ok {
-				if err := trg.OnValidate_Durability(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "freight_type":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Freight_type = v
-		} else if v, ok := value.(string); ok {
-			t.Freight_type = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field freight_type")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Freight_type); ok {
-				if err := trg.OnValidate_Freight_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tariff_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tariff_no = v
-		} else if v, ok := value.(string); ok {
-			t.Tariff_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tariff_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tariff_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Tariff_no); ok {
-				if err := trg.OnValidate_Tariff_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "duty_unit_conversion":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Duty_unit_conversion = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Duty_unit_conversion, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field duty_unit_conversion: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Duty_unit_conversion = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Duty_unit_conversion = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Duty_unit_conversion = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field duty_unit_conversion (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Duty_unit_conversion); ok {
-				if err := trg.OnValidate_Duty_unit_conversion(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "country_purchased_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Country_purchased_code = v
-		} else if v, ok := value.(string); ok {
-			t.Country_purchased_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field country_purchased_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "country_purchased_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Country_purchased_code); ok {
-				if err := trg.OnValidate_Country_purchased_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "budget_quantity":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Budget_quantity = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Budget_quantity, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field budget_quantity: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Budget_quantity = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Budget_quantity = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Budget_quantity = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field budget_quantity (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Budget_quantity); ok {
-				if err := trg.OnValidate_Budget_quantity(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "budgeted_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Budgeted_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Budgeted_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field budgeted_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Budgeted_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Budgeted_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Budgeted_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field budgeted_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Budgeted_amount); ok {
-				if err := trg.OnValidate_Budgeted_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "budget_profit":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Budget_profit = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Budget_profit, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field budget_profit: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Budget_profit = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Budget_profit = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Budget_profit = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field budget_profit (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Budget_profit); ok {
-				if err := trg.OnValidate_Budget_profit(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "blocked":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Blocked = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Blocked = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field blocked")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Blocked); ok {
-				if err := trg.OnValidate_Blocked(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "last_date_modified":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Last_date_modified = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Last_date_modified, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field last_date_modified: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Last_date_modified = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field last_date_modified (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Last_date_modified); ok {
-				if err := trg.OnValidate_Last_date_modified(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "price_includes_tax":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Price_includes_tax = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Price_includes_tax = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field price_includes_tax")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Price_includes_tax); ok {
-				if err := trg.OnValidate_Price_includes_tax(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_bus_posting_gr_price":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_bus_posting_gr_price = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_bus_posting_gr_price = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_bus_posting_gr_price")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_bus_posting_gr_price"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Tax_bus_posting_gr_price); ok {
-				if err := trg.OnValidate_Tax_bus_posting_gr_price(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "gen_prod_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Gen_prod_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Gen_prod_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field gen_prod_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "gen_prod_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Gen_prod_posting_group); ok {
-				if err := trg.OnValidate_Gen_prod_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "picture":
-		// Set field value
-		// Accept nil, []byte, or base64-encoded string
-		if value == nil {
-			t.Picture = nil
-		} else if v, ok := value.([]byte); ok {
-			t.Picture = v
-		} else if s, ok := value.(string); ok {
-			if s == "" {
-				t.Picture = nil
-			} else {
-				// Try base64 decode
-				decoded, err := base64.StdEncoding.DecodeString(s)
-				if err != nil {
-					return fmt.Errorf("invalid base64 value for field picture: %w", err)
-				}
-				t.Picture = decoded
-			}
-		} else {
-			return fmt.Errorf("invalid type for field picture (expected []byte, string, or nil)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Picture); ok {
-				if err := trg.OnValidate_Picture(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "country_of_origin_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Country_of_origin_code = v
-		} else if v, ok := value.(string); ok {
-			t.Country_of_origin_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field country_of_origin_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "country_of_origin_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Country_of_origin_code); ok {
-				if err := trg.OnValidate_Country_of_origin_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no_series":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No_series = v
-		} else if v, ok := value.(string); ok {
-			t.No_series = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no_series")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "no_series"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_No_series); ok {
-				if err := trg.OnValidate_No_series(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_group_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_group_code = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_group_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_group_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_group_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Tax_group_code); ok {
-				if err := trg.OnValidate_Tax_group_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_prod_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_prod_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_prod_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_prod_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_prod_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Tax_prod_posting_group); ok {
-				if err := trg.OnValidate_Tax_prod_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reserve":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ItemReserve); ok {
-			t.Reserve = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field reserve (valid range: 0-%d)", v, 3-1)
-			}
-			t.Reserve = ItemReserve(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field reserve (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Reserve = ItemReserve(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Reserve = 0
-			} else {
-				options := []string{"Never", "Optional", "Always"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Reserve = ItemReserve(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field reserve (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field reserve (expected ItemReserve, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Reserve); ok {
-				if err := trg.OnValidate_Reserve(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "inventory_value_zero":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Inventory_value_zero = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Inventory_value_zero = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field inventory_value_zero")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Inventory_value_zero); ok {
-				if err := trg.OnValidate_Inventory_value_zero(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "rounding_precision":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Rounding_precision = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Rounding_precision, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field rounding_precision: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Rounding_precision = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Rounding_precision = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Rounding_precision = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field rounding_precision (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Rounding_precision); ok {
-				if err := trg.OnValidate_Rounding_precision(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sales_unit_of_measure":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Sales_unit_of_measure = v
-		} else if v, ok := value.(string); ok {
-			t.Sales_unit_of_measure = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field sales_unit_of_measure")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "sales_unit_of_measure"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Sales_unit_of_measure); ok {
-				if err := trg.OnValidate_Sales_unit_of_measure(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "purch_unit_of_measure":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Purch_unit_of_measure = v
-		} else if v, ok := value.(string); ok {
-			t.Purch_unit_of_measure = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field purch_unit_of_measure")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "purch_unit_of_measure"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Purch_unit_of_measure); ok {
-				if err := trg.OnValidate_Purch_unit_of_measure(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "serial_nos":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Serial_nos = v
-		} else if v, ok := value.(string); ok {
-			t.Serial_nos = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field serial_nos")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "serial_nos"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Serial_nos); ok {
-				if err := trg.OnValidate_Serial_nos(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "automatic_ext_text":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Automatic_ext_text = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Automatic_ext_text = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field automatic_ext_text")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ItemOnValidate_Automatic_ext_text); ok {
-				if err := trg.OnValidate_Automatic_ext_text(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := itemFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &itemFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -13012,666 +10041,18 @@ func (t *Item) ValidateField(fieldName string, value interface{}) error {
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *Item) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.No, true
-	case 2:
-		return t.No_2, true
-	case 3:
-		return t.Description, true
-	case 4:
-		return t.Search_description, true
-	case 5:
-		return t.Description_2, true
-	case 7:
-		return t.Class, true
-	case 8:
-		return t.Base_unit_of_measure, true
-	case 9:
-		return t.Price_unit_conversion, true
-	case 11:
-		return t.Inventory_posting_group, true
-	case 12:
-		return t.Shelf_bin_no, true
-	case 13:
-		return t.Sales_qty_disc_code, true
-	case 14:
-		return t.Item_cust_disc_gr, true
-	case 15:
-		return t.Allow_invoice_disc, true
-	case 16:
-		return t.Statistics_group, true
-	case 17:
-		return t.Commission_group, true
-	case 18:
-		return t.Unit_price, true
-	case 19:
-		return t.Price_profit_calculation, true
-	case 20:
-		return t.Profit_percent, true
-	case 21:
-		return t.Costing_method, true
-	case 22:
-		return t.Unit_cost, true
-	case 24:
-		return t.Standard_cost, true
-	case 25:
-		return t.Last_direct_cost, true
-	case 26:
-		return t.Average_cost, true
-	case 104:
-		return t.Add_curr_average_cost, true
-	case 27:
-		return t.Minimum_unit_price, true
-	case 28:
-		return t.Indirect_cost_percent, true
-	case 31:
-		return t.Vendor_no, true
-	case 32:
-		return t.Vendor_item_no, true
-	case 33:
-		return t.Lead_time_calculation, true
-	case 34:
-		return t.Reorder_point, true
-	case 35:
-		return t.Maximum_inventory, true
-	case 36:
-		return t.Reorder_quantity, true
-	case 5408:
-		return t.Requisition_method_code, true
-	case 5414:
-		return t.Order_multiple, true
-	case 5428:
-		return t.Reorder_cycle, true
-	case 37:
-		return t.Alternative_item_no, true
-	case 38:
-		return t.Unit_list_price, true
-	case 39:
-		return t.Duty_due_percent, true
-	case 40:
-		return t.Duty_code, true
-	case 41:
-		return t.Gross_weight, true
-	case 42:
-		return t.Net_weight, true
-	case 43:
-		return t.Units_per_parcel, true
-	case 44:
-		return t.Unit_volume, true
-	case 45:
-		return t.Durability, true
-	case 46:
-		return t.Freight_type, true
-	case 47:
-		return t.Tariff_no, true
-	case 48:
-		return t.Duty_unit_conversion, true
-	case 49:
-		return t.Country_purchased_code, true
-	case 50:
-		return t.Budget_quantity, true
-	case 51:
-		return t.Budgeted_amount, true
-	case 52:
-		return t.Budget_profit, true
-	case 54:
-		return t.Blocked, true
-	case 62:
-		return t.Last_date_modified, true
-	case 87:
-		return t.Price_includes_tax, true
-	case 90:
-		return t.Tax_bus_posting_gr_price, true
-	case 91:
-		return t.Gen_prod_posting_group, true
-	case 92:
-		return t.Picture, true
-	case 95:
-		return t.Country_of_origin_code, true
-	case 97:
-		return t.No_series, true
-	case 98:
-		return t.Tax_group_code, true
-	case 99:
-		return t.Tax_prod_posting_group, true
-	case 100:
-		return t.Reserve, true
-	case 5409:
-		return t.Inventory_value_zero, true
-	case 5422:
-		return t.Rounding_precision, true
-	case 5425:
-		return t.Sales_unit_of_measure, true
-	case 5426:
-		return t.Purch_unit_of_measure, true
-	case 5402:
-		return t.Serial_nos, true
-	case 96:
-		return t.Automatic_ext_text, true
-	}
-	return nil, false
+	return itemFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *Item) flowFieldValue(no int) (any, bool) {
-	switch no {
-	case 6:
-		return t.Bill_of_materials, true
-	case 53:
-		return t.Comment, true
-	case 68:
-		return t.Quantity_on_hand, true
-	case 84:
-		return t.Qty_on_purch_order, true
-	case 85:
-		return t.Qty_on_sales_order, true
-	case 69:
-		return t.Net_invoiced_qty, true
-	case 70:
-		return t.Net_change, true
-	case 71:
-		return t.Purchases_qty, true
-	case 72:
-		return t.Sales_qty, true
-	case 73:
-		return t.Positive_adjmt_qty, true
-	case 74:
-		return t.Negative_adjmt_qty, true
-	case 77:
-		return t.Purchases_lcy, true
-	case 78:
-		return t.Sales_lcy, true
-	case 79:
-		return t.Positive_adjmt_lcy, true
-	case 80:
-		return t.Negative_adjmt_lcy, true
-	case 83:
-		return t.Cogs_lcy, true
-	case 93:
-		return t.Transferred_qty, true
-	case 94:
-		return t.Transferred_lcy, true
-	case 101:
-		return t.Reserved_qty_on_inventory, true
-	case 102:
-		return t.Reserved_qty_on_purch_orders, true
-	case 103:
-		return t.Reserved_qty_on_sales_orders, true
-	}
-	return nil, false
+	return itemFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *Item) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.No_2 = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No_2 = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Code); ok {
-			t.Search_description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Search_description = types.NewCode(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Text); ok {
-			t.Description_2 = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description_2 = types.NewText(v)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Code); ok {
-			t.Class = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Class = types.NewCode(v)
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Code); ok {
-			t.Base_unit_of_measure = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Base_unit_of_measure = types.NewCode(v)
-			return true
-		}
-	case 9:
-		if v, ok := value.(int); ok {
-			t.Price_unit_conversion = v
-			return true
-		}
-	case 11:
-		if v, ok := value.(types.Code); ok {
-			t.Inventory_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Inventory_posting_group = types.NewCode(v)
-			return true
-		}
-	case 12:
-		if v, ok := value.(types.Code); ok {
-			t.Shelf_bin_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Shelf_bin_no = types.NewCode(v)
-			return true
-		}
-	case 13:
-		if v, ok := value.(types.Code); ok {
-			t.Sales_qty_disc_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Sales_qty_disc_code = types.NewCode(v)
-			return true
-		}
-	case 14:
-		if v, ok := value.(types.Code); ok {
-			t.Item_cust_disc_gr = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Item_cust_disc_gr = types.NewCode(v)
-			return true
-		}
-	case 15:
-		if v, ok := value.(bool); ok {
-			t.Allow_invoice_disc = v
-			return true
-		}
-	case 16:
-		if v, ok := value.(int); ok {
-			t.Statistics_group = v
-			return true
-		}
-	case 17:
-		if v, ok := value.(int); ok {
-			t.Commission_group = v
-			return true
-		}
-	case 18:
-		if v, ok := value.(types.Decimal); ok {
-			t.Unit_price = v
-			return true
-		}
-	case 19:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Price_profit_calculation = ItemPrice_profit_calculation(i)
-			return true
-		}
-	case 20:
-		if v, ok := value.(types.Decimal); ok {
-			t.Profit_percent = v
-			return true
-		}
-	case 21:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 5 {
-			t.Costing_method = ItemCosting_method(i)
-			return true
-		}
-	case 22:
-		if v, ok := value.(types.Decimal); ok {
-			t.Unit_cost = v
-			return true
-		}
-	case 24:
-		if v, ok := value.(types.Decimal); ok {
-			t.Standard_cost = v
-			return true
-		}
-	case 25:
-		if v, ok := value.(types.Decimal); ok {
-			t.Last_direct_cost = v
-			return true
-		}
-	case 26:
-		if v, ok := value.(types.Decimal); ok {
-			t.Average_cost = v
-			return true
-		}
-	case 104:
-		if v, ok := value.(types.Decimal); ok {
-			t.Add_curr_average_cost = v
-			return true
-		}
-	case 27:
-		if v, ok := value.(types.Decimal); ok {
-			t.Minimum_unit_price = v
-			return true
-		}
-	case 28:
-		if v, ok := value.(types.Decimal); ok {
-			t.Indirect_cost_percent = v
-			return true
-		}
-	case 31:
-		if v, ok := value.(types.Code); ok {
-			t.Vendor_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Vendor_no = types.NewCode(v)
-			return true
-		}
-	case 32:
-		if v, ok := value.(types.Text); ok {
-			t.Vendor_item_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Vendor_item_no = types.NewText(v)
-			return true
-		}
-	case 33:
-		if v, ok := value.(types.Code); ok {
-			t.Lead_time_calculation = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Lead_time_calculation = types.NewCode(v)
-			return true
-		}
-	case 34:
-		if v, ok := value.(types.Decimal); ok {
-			t.Reorder_point = v
-			return true
-		}
-	case 35:
-		if v, ok := value.(types.Decimal); ok {
-			t.Maximum_inventory = v
-			return true
-		}
-	case 36:
-		if v, ok := value.(types.Decimal); ok {
-			t.Reorder_quantity = v
-			return true
-		}
-	case 5408:
-		if v, ok := value.(types.Code); ok {
-			t.Requisition_method_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Requisition_method_code = types.NewCode(v)
-			return true
-		}
-	case 5414:
-		if v, ok := value.(types.Decimal); ok {
-			t.Order_multiple = v
-			return true
-		}
-	case 5428:
-		if v, ok := value.(types.Code); ok {
-			t.Reorder_cycle = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Reorder_cycle = types.NewCode(v)
-			return true
-		}
-	case 37:
-		if v, ok := value.(types.Code); ok {
-			t.Alternative_item_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Alternative_item_no = types.NewCode(v)
-			return true
-		}
-	case 38:
-		if v, ok := value.(types.Decimal); ok {
-			t.Unit_list_price = v
-			return true
-		}
-	case 39:
-		if v, ok := value.(types.Decimal); ok {
-			t.Duty_due_percent = v
-			return true
-		}
-	case 40:
-		if v, ok := value.(types.Code); ok {
-			t.Duty_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Duty_code = types.NewCode(v)
-			return true
-		}
-	case 41:
-		if v, ok := value.(types.Decimal); ok {
-			t.Gross_weight = v
-			return true
-		}
-	case 42:
-		if v, ok := value.(types.Decimal); ok {
-			t.Net_weight = v
-			return true
-		}
-	case 43:
-		if v, ok := value.(types.Decimal); ok {
-			t.Units_per_parcel = v
-			return true
-		}
-	case 44:
-		if v, ok := value.(types.Decimal); ok {
-			t.Unit_volume = v
-			return true
-		}
-	case 45:
-		if v, ok := value.(types.Code); ok {
-			t.Durability = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Durability = types.NewCode(v)
-			return true
-		}
-	case 46:
-		if v, ok := value.(types.Code); ok {
-			t.Freight_type = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Freight_type = types.NewCode(v)
-			return true
-		}
-	case 47:
-		if v, ok := value.(types.Code); ok {
-			t.Tariff_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tariff_no = types.NewCode(v)
-			return true
-		}
-	case 48:
-		if v, ok := value.(types.Decimal); ok {
-			t.Duty_unit_conversion = v
-			return true
-		}
-	case 49:
-		if v, ok := value.(types.Code); ok {
-			t.Country_purchased_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Country_purchased_code = types.NewCode(v)
-			return true
-		}
-	case 50:
-		if v, ok := value.(types.Decimal); ok {
-			t.Budget_quantity = v
-			return true
-		}
-	case 51:
-		if v, ok := value.(types.Decimal); ok {
-			t.Budgeted_amount = v
-			return true
-		}
-	case 52:
-		if v, ok := value.(types.Decimal); ok {
-			t.Budget_profit = v
-			return true
-		}
-	case 54:
-		if v, ok := value.(bool); ok {
-			t.Blocked = v
-			return true
-		}
-	case 62:
-		if v, ok := value.(types.Date); ok {
-			t.Last_date_modified = v
-			return true
-		}
-	case 87:
-		if v, ok := value.(bool); ok {
-			t.Price_includes_tax = v
-			return true
-		}
-	case 90:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_bus_posting_gr_price = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_bus_posting_gr_price = types.NewCode(v)
-			return true
-		}
-	case 91:
-		if v, ok := value.(types.Code); ok {
-			t.Gen_prod_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Gen_prod_posting_group = types.NewCode(v)
-			return true
-		}
-	case 92:
-		if v, ok := value.([]byte); ok {
-			t.Picture = v
-			return true
-		}
-	case 95:
-		if v, ok := value.(types.Code); ok {
-			t.Country_of_origin_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Country_of_origin_code = types.NewCode(v)
-			return true
-		}
-	case 97:
-		if v, ok := value.(types.Code); ok {
-			t.No_series = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No_series = types.NewCode(v)
-			return true
-		}
-	case 98:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_group_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_group_code = types.NewCode(v)
-			return true
-		}
-	case 99:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_prod_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_prod_posting_group = types.NewCode(v)
-			return true
-		}
-	case 100:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Reserve = ItemReserve(i)
-			return true
-		}
-	case 5409:
-		if v, ok := value.(bool); ok {
-			t.Inventory_value_zero = v
-			return true
-		}
-	case 5422:
-		if v, ok := value.(types.Decimal); ok {
-			t.Rounding_precision = v
-			return true
-		}
-	case 5425:
-		if v, ok := value.(types.Code); ok {
-			t.Sales_unit_of_measure = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Sales_unit_of_measure = types.NewCode(v)
-			return true
-		}
-	case 5426:
-		if v, ok := value.(types.Code); ok {
-			t.Purch_unit_of_measure = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Purch_unit_of_measure = types.NewCode(v)
-			return true
-		}
-	case 5402:
-		if v, ok := value.(types.Code); ok {
-			t.Serial_nos = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Serial_nos = types.NewCode(v)
-			return true
-		}
-	case 96:
-		if v, ok := value.(bool); ok {
-			t.Automatic_ext_text = v
-			return true
-		}
-	}
-	return false
+	return itemFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -14352,145 +10733,7 @@ func (t *Item) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *Item) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "no":
-		return t.No, true
-	case "no_2":
-		return t.No_2, true
-	case "description":
-		return t.Description, true
-	case "search_description":
-		return t.Search_description, true
-	case "description_2":
-		return t.Description_2, true
-	case "class":
-		return t.Class, true
-	case "base_unit_of_measure":
-		return t.Base_unit_of_measure, true
-	case "price_unit_conversion":
-		return t.Price_unit_conversion, true
-	case "inventory_posting_group":
-		return t.Inventory_posting_group, true
-	case "shelf_bin_no":
-		return t.Shelf_bin_no, true
-	case "sales_qty_disc_code":
-		return t.Sales_qty_disc_code, true
-	case "item_cust_disc_gr":
-		return t.Item_cust_disc_gr, true
-	case "allow_invoice_disc":
-		return t.Allow_invoice_disc, true
-	case "statistics_group":
-		return t.Statistics_group, true
-	case "commission_group":
-		return t.Commission_group, true
-	case "unit_price":
-		return t.Unit_price, true
-	case "price_profit_calculation":
-		return int(t.Price_profit_calculation), true
-	case "profit_percent":
-		return t.Profit_percent, true
-	case "costing_method":
-		return int(t.Costing_method), true
-	case "unit_cost":
-		return t.Unit_cost, true
-	case "standard_cost":
-		return t.Standard_cost, true
-	case "last_direct_cost":
-		return t.Last_direct_cost, true
-	case "average_cost":
-		return t.Average_cost, true
-	case "add_curr_average_cost":
-		return t.Add_curr_average_cost, true
-	case "minimum_unit_price":
-		return t.Minimum_unit_price, true
-	case "indirect_cost_percent":
-		return t.Indirect_cost_percent, true
-	case "vendor_no":
-		return t.Vendor_no, true
-	case "vendor_item_no":
-		return t.Vendor_item_no, true
-	case "lead_time_calculation":
-		return t.Lead_time_calculation, true
-	case "reorder_point":
-		return t.Reorder_point, true
-	case "maximum_inventory":
-		return t.Maximum_inventory, true
-	case "reorder_quantity":
-		return t.Reorder_quantity, true
-	case "requisition_method_code":
-		return t.Requisition_method_code, true
-	case "order_multiple":
-		return t.Order_multiple, true
-	case "reorder_cycle":
-		return t.Reorder_cycle, true
-	case "alternative_item_no":
-		return t.Alternative_item_no, true
-	case "unit_list_price":
-		return t.Unit_list_price, true
-	case "duty_due_percent":
-		return t.Duty_due_percent, true
-	case "duty_code":
-		return t.Duty_code, true
-	case "gross_weight":
-		return t.Gross_weight, true
-	case "net_weight":
-		return t.Net_weight, true
-	case "units_per_parcel":
-		return t.Units_per_parcel, true
-	case "unit_volume":
-		return t.Unit_volume, true
-	case "durability":
-		return t.Durability, true
-	case "freight_type":
-		return t.Freight_type, true
-	case "tariff_no":
-		return t.Tariff_no, true
-	case "duty_unit_conversion":
-		return t.Duty_unit_conversion, true
-	case "country_purchased_code":
-		return t.Country_purchased_code, true
-	case "budget_quantity":
-		return t.Budget_quantity, true
-	case "budgeted_amount":
-		return t.Budgeted_amount, true
-	case "budget_profit":
-		return t.Budget_profit, true
-	case "blocked":
-		return t.Blocked, true
-	case "last_date_modified":
-		return t.Last_date_modified, true
-	case "price_includes_tax":
-		return t.Price_includes_tax, true
-	case "tax_bus_posting_gr_price":
-		return t.Tax_bus_posting_gr_price, true
-	case "gen_prod_posting_group":
-		return t.Gen_prod_posting_group, true
-	case "picture":
-		return t.Picture, true
-	case "country_of_origin_code":
-		return t.Country_of_origin_code, true
-	case "no_series":
-		return t.No_series, true
-	case "tax_group_code":
-		return t.Tax_group_code, true
-	case "tax_prod_posting_group":
-		return t.Tax_prod_posting_group, true
-	case "reserve":
-		return int(t.Reserve), true
-	case "inventory_value_zero":
-		return t.Inventory_value_zero, true
-	case "rounding_precision":
-		return t.Rounding_precision, true
-	case "sales_unit_of_measure":
-		return t.Sales_unit_of_measure, true
-	case "purch_unit_of_measure":
-		return t.Purch_unit_of_measure, true
-	case "serial_nos":
-		return t.Serial_nos, true
-	case "automatic_ext_text":
-		return t.Automatic_ext_text, true
-	}
-	return nil, false
+	return itemFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -14643,687 +10886,12 @@ func (t *Item) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *Item) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"no":                 t.No.String(),
-		"no_2":               t.No_2.String(),
-		"description":        t.Description.String(),
-		"search_description": t.Search_description.String(),
-		"description_2":      t.Description_2.String(),
-		// FlowField: bill_of_materials
-		"bill_of_materials":        t.Bill_of_materials,
-		"class":                    t.Class.String(),
-		"base_unit_of_measure":     t.Base_unit_of_measure.String(),
-		"price_unit_conversion":    t.Price_unit_conversion,
-		"inventory_posting_group":  t.Inventory_posting_group.String(),
-		"shelf_bin_no":             t.Shelf_bin_no.String(),
-		"sales_qty_disc_code":      t.Sales_qty_disc_code.String(),
-		"item_cust_disc_gr":        t.Item_cust_disc_gr.String(),
-		"allow_invoice_disc":       t.Allow_invoice_disc,
-		"statistics_group":         t.Statistics_group,
-		"commission_group":         t.Commission_group,
-		"unit_price":               t.Unit_price.String(),
-		"price_profit_calculation": int(t.Price_profit_calculation),
-		"profit_percent":           t.Profit_percent.String(),
-		"costing_method":           int(t.Costing_method),
-		"unit_cost":                t.Unit_cost.String(),
-		"standard_cost":            t.Standard_cost.String(),
-		"last_direct_cost":         t.Last_direct_cost.String(),
-		"average_cost":             t.Average_cost.String(),
-		"add_curr_average_cost":    t.Add_curr_average_cost.String(),
-		"minimum_unit_price":       t.Minimum_unit_price.String(),
-		"indirect_cost_percent":    t.Indirect_cost_percent.String(),
-		"vendor_no":                t.Vendor_no.String(),
-		"vendor_item_no":           t.Vendor_item_no.String(),
-		"lead_time_calculation":    t.Lead_time_calculation.String(),
-		"reorder_point":            t.Reorder_point.String(),
-		"maximum_inventory":        t.Maximum_inventory.String(),
-		"reorder_quantity":         t.Reorder_quantity.String(),
-		"requisition_method_code":  t.Requisition_method_code.String(),
-		"order_multiple":           t.Order_multiple.String(),
-		"reorder_cycle":            t.Reorder_cycle.String(),
-		"alternative_item_no":      t.Alternative_item_no.String(),
-		"unit_list_price":          t.Unit_list_price.String(),
-		"duty_due_percent":         t.Duty_due_percent.String(),
-		"duty_code":                t.Duty_code.String(),
-		"gross_weight":             t.Gross_weight.String(),
-		"net_weight":               t.Net_weight.String(),
-		"units_per_parcel":         t.Units_per_parcel.String(),
-		"unit_volume":              t.Unit_volume.String(),
-		"durability":               t.Durability.String(),
-		"freight_type":             t.Freight_type.String(),
-		"tariff_no":                t.Tariff_no.String(),
-		"duty_unit_conversion":     t.Duty_unit_conversion.String(),
-		"country_purchased_code":   t.Country_purchased_code.String(),
-		"budget_quantity":          t.Budget_quantity.String(),
-		"budgeted_amount":          t.Budgeted_amount.String(),
-		"budget_profit":            t.Budget_profit.String(),
-		// FlowField: comment
-		"comment":            t.Comment,
-		"blocked":            t.Blocked,
-		"last_date_modified": t.Last_date_modified.String(),
-		// FlowField: quantity_on_hand
-		"quantity_on_hand": t.Quantity_on_hand.String(),
-		// FlowField: qty_on_purch_order
-		"qty_on_purch_order": t.Qty_on_purch_order.String(),
-		// FlowField: qty_on_sales_order
-		"qty_on_sales_order": t.Qty_on_sales_order.String(),
-		// FlowField: net_invoiced_qty
-		"net_invoiced_qty": t.Net_invoiced_qty.String(),
-		// FlowField: net_change
-		"net_change": t.Net_change.String(),
-		// FlowField: purchases_qty
-		"purchases_qty": t.Purchases_qty.String(),
-		// FlowField: sales_qty
-		"sales_qty": t.Sales_qty.String(),
-		// FlowField: positive_adjmt_qty
-		"positive_adjmt_qty": t.Positive_adjmt_qty.String(),
-		// FlowField: negative_adjmt_qty
-		"negative_adjmt_qty": t.Negative_adjmt_qty.String(),
-		// FlowField: purchases_lcy
-		"purchases_lcy": t.Purchases_lcy.String(),
-		// FlowField: sales_lcy
-		"sales_lcy": t.Sales_lcy.String(),
-		// FlowField: positive_adjmt_lcy
-		"positive_adjmt_lcy": t.Positive_adjmt_lcy.String(),
-		// FlowField: negative_adjmt_lcy
-		"negative_adjmt_lcy": t.Negative_adjmt_lcy.String(),
-		// FlowField: cogs_lcy
-		"cogs_lcy": t.Cogs_lcy.String(),
-		// FlowField: transferred_qty
-		"transferred_qty": t.Transferred_qty.String(),
-		// FlowField: transferred_lcy
-		"transferred_lcy":          t.Transferred_lcy.String(),
-		"price_includes_tax":       t.Price_includes_tax,
-		"tax_bus_posting_gr_price": t.Tax_bus_posting_gr_price.String(),
-		"gen_prod_posting_group":   t.Gen_prod_posting_group.String(),
-		"picture":                  t.Picture,
-		"country_of_origin_code":   t.Country_of_origin_code.String(),
-		"no_series":                t.No_series.String(),
-		"tax_group_code":           t.Tax_group_code.String(),
-		"tax_prod_posting_group":   t.Tax_prod_posting_group.String(),
-		"reserve":                  int(t.Reserve),
-		// FlowField: reserved_qty_on_inventory
-		"reserved_qty_on_inventory": t.Reserved_qty_on_inventory.String(),
-		// FlowField: reserved_qty_on_purch_orders
-		"reserved_qty_on_purch_orders": t.Reserved_qty_on_purch_orders.String(),
-		// FlowField: reserved_qty_on_sales_orders
-		"reserved_qty_on_sales_orders": t.Reserved_qty_on_sales_orders.String(),
-		"inventory_value_zero":         t.Inventory_value_zero,
-		"rounding_precision":           t.Rounding_precision.String(),
-		"sales_unit_of_measure":        t.Sales_unit_of_measure.String(),
-		"purch_unit_of_measure":        t.Purch_unit_of_measure.String(),
-		"serial_nos":                   t.Serial_nos.String(),
-		"automatic_ext_text":           t.Automatic_ext_text,
-	}
+	return itemFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *Item) FromMap(data map[string]interface{}) {
-	if v, ok := data["no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No = types.NewCode(s)
-		}
-	}
-	if v, ok := data["no_2"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No_2 = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["search_description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Search_description = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description_2"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description_2 = types.NewText(s)
-		}
-	}
-	if v, ok := data["class"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Class = types.NewCode(s)
-		}
-	}
-	if v, ok := data["base_unit_of_measure"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Base_unit_of_measure = types.NewCode(s)
-		}
-	}
-	if v, ok := data["price_unit_conversion"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Price_unit_conversion = int(val)
-		case int:
-			t.Price_unit_conversion = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Price_unit_conversion = n
-			}
-		}
-	}
-	if v, ok := data["inventory_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Inventory_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["shelf_bin_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Shelf_bin_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["sales_qty_disc_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Sales_qty_disc_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["item_cust_disc_gr"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Item_cust_disc_gr = types.NewCode(s)
-		}
-	}
-	if v, ok := data["allow_invoice_disc"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Allow_invoice_disc = b
-		}
-	}
-	if v, ok := data["statistics_group"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Statistics_group = int(val)
-		case int:
-			t.Statistics_group = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Statistics_group = n
-			}
-		}
-	}
-	if v, ok := data["commission_group"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Commission_group = int(val)
-		case int:
-			t.Commission_group = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Commission_group = n
-			}
-		}
-	}
-	if v, ok := data["unit_price"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Unit_price, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Unit_price = types.NewDecimal(val)
-		case int:
-			t.Unit_price = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Unit_price = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["price_profit_calculation"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Price_profit_calculation = ItemPrice_profit_calculation(int(val))
-		case int:
-			t.Price_profit_calculation = ItemPrice_profit_calculation(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Profit=Price-Cost", "Price=Cost+Profit", "No Relationship"}
-			for i, opt := range options {
-				if opt == val {
-					t.Price_profit_calculation = ItemPrice_profit_calculation(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["profit_percent"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Profit_percent, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Profit_percent = types.NewDecimal(val)
-		case int:
-			t.Profit_percent = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Profit_percent = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["costing_method"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Costing_method = ItemCosting_method(int(val))
-		case int:
-			t.Costing_method = ItemCosting_method(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"FIFO", "LIFO", "Specific", "Average", "Standard"}
-			for i, opt := range options {
-				if opt == val {
-					t.Costing_method = ItemCosting_method(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["unit_cost"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Unit_cost, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Unit_cost = types.NewDecimal(val)
-		case int:
-			t.Unit_cost = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Unit_cost = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["standard_cost"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Standard_cost, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Standard_cost = types.NewDecimal(val)
-		case int:
-			t.Standard_cost = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Standard_cost = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["last_direct_cost"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Last_direct_cost, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Last_direct_cost = types.NewDecimal(val)
-		case int:
-			t.Last_direct_cost = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Last_direct_cost = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["average_cost"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Average_cost, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Average_cost = types.NewDecimal(val)
-		case int:
-			t.Average_cost = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Average_cost = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["add_curr_average_cost"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Add_curr_average_cost, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Add_curr_average_cost = types.NewDecimal(val)
-		case int:
-			t.Add_curr_average_cost = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Add_curr_average_cost = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["minimum_unit_price"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Minimum_unit_price, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Minimum_unit_price = types.NewDecimal(val)
-		case int:
-			t.Minimum_unit_price = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Minimum_unit_price = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["indirect_cost_percent"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Indirect_cost_percent, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Indirect_cost_percent = types.NewDecimal(val)
-		case int:
-			t.Indirect_cost_percent = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Indirect_cost_percent = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["vendor_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Vendor_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["vendor_item_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Vendor_item_no = types.NewText(s)
-		}
-	}
-	if v, ok := data["lead_time_calculation"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Lead_time_calculation = types.NewCode(s)
-		}
-	}
-	if v, ok := data["reorder_point"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Reorder_point, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Reorder_point = types.NewDecimal(val)
-		case int:
-			t.Reorder_point = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Reorder_point = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["maximum_inventory"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Maximum_inventory, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Maximum_inventory = types.NewDecimal(val)
-		case int:
-			t.Maximum_inventory = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Maximum_inventory = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["reorder_quantity"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Reorder_quantity, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Reorder_quantity = types.NewDecimal(val)
-		case int:
-			t.Reorder_quantity = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Reorder_quantity = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["requisition_method_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Requisition_method_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["order_multiple"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Order_multiple, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Order_multiple = types.NewDecimal(val)
-		case int:
-			t.Order_multiple = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Order_multiple = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["reorder_cycle"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Reorder_cycle = types.NewCode(s)
-		}
-	}
-	if v, ok := data["alternative_item_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Alternative_item_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["unit_list_price"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Unit_list_price, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Unit_list_price = types.NewDecimal(val)
-		case int:
-			t.Unit_list_price = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Unit_list_price = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["duty_due_percent"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Duty_due_percent, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Duty_due_percent = types.NewDecimal(val)
-		case int:
-			t.Duty_due_percent = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Duty_due_percent = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["duty_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Duty_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["gross_weight"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Gross_weight, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Gross_weight = types.NewDecimal(val)
-		case int:
-			t.Gross_weight = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Gross_weight = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["net_weight"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Net_weight, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Net_weight = types.NewDecimal(val)
-		case int:
-			t.Net_weight = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Net_weight = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["units_per_parcel"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Units_per_parcel, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Units_per_parcel = types.NewDecimal(val)
-		case int:
-			t.Units_per_parcel = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Units_per_parcel = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["unit_volume"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Unit_volume, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Unit_volume = types.NewDecimal(val)
-		case int:
-			t.Unit_volume = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Unit_volume = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["durability"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Durability = types.NewCode(s)
-		}
-	}
-	if v, ok := data["freight_type"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Freight_type = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tariff_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tariff_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["duty_unit_conversion"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Duty_unit_conversion, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Duty_unit_conversion = types.NewDecimal(val)
-		case int:
-			t.Duty_unit_conversion = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Duty_unit_conversion = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["country_purchased_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Country_purchased_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["budget_quantity"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Budget_quantity, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Budget_quantity = types.NewDecimal(val)
-		case int:
-			t.Budget_quantity = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Budget_quantity = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["budgeted_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Budgeted_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Budgeted_amount = types.NewDecimal(val)
-		case int:
-			t.Budgeted_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Budgeted_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["budget_profit"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Budget_profit, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Budget_profit = types.NewDecimal(val)
-		case int:
-			t.Budget_profit = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Budget_profit = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["blocked"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Blocked = b
-		}
-	}
-	if v, ok := data["last_date_modified"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Last_date_modified, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["price_includes_tax"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Price_includes_tax = b
-		}
-	}
-	if v, ok := data["tax_bus_posting_gr_price"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_bus_posting_gr_price = types.NewCode(s)
-		}
-	}
-	if v, ok := data["gen_prod_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Gen_prod_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["picture"]; ok && v != nil {
-	}
-	if v, ok := data["country_of_origin_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Country_of_origin_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["no_series"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No_series = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_group_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_group_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_prod_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_prod_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["reserve"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Reserve = ItemReserve(int(val))
-		case int:
-			t.Reserve = ItemReserve(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Never", "Optional", "Always"}
-			for i, opt := range options {
-				if opt == val {
-					t.Reserve = ItemReserve(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["inventory_value_zero"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Inventory_value_zero = b
-		}
-	}
-	if v, ok := data["rounding_precision"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Rounding_precision, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Rounding_precision = types.NewDecimal(val)
-		case int:
-			t.Rounding_precision = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Rounding_precision = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["sales_unit_of_measure"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Sales_unit_of_measure = types.NewCode(s)
-		}
-	}
-	if v, ok := data["purch_unit_of_measure"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Purch_unit_of_measure = types.NewCode(s)
-		}
-	}
-	if v, ok := data["serial_nos"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Serial_nos = types.NewCode(s)
-		}
-	}
-	if v, ok := data["automatic_ext_text"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Automatic_ext_text = b
-		}
-	}
+	itemFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -15344,944 +10912,1524 @@ func (t *Item) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *Item) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "no_2",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "search_description",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "description_2",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "bill_of_materials",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  true,
-		},
-		{
-			No:         7,
-			Name:       "class",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "base_unit_of_measure",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "price_unit_conversion",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "inventory_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "shelf_bin_no",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         13,
-			Name:       "sales_qty_disc_code",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         14,
-			Name:       "item_cust_disc_gr",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         15,
-			Name:       "allow_invoice_disc",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         16,
-			Name:       "statistics_group",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         17,
-			Name:       "commission_group",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            18,
-			Name:          "unit_price",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:5",
-		},
-		{
-			No:         19,
-			Name:       "price_profit_calculation",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            20,
-			Name:          "profit_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         21,
-			Name:       "costing_method",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            22,
-			Name:          "unit_cost",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "2:5",
-		},
-		{
-			No:            24,
-			Name:          "standard_cost",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:5",
-		},
-		{
-			No:            25,
-			Name:          "last_direct_cost",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:5",
-		},
-		{
-			No:            26,
-			Name:          "average_cost",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:5",
-		},
-		{
-			No:            104,
-			Name:          "add_curr_average_cost",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:5",
-		},
-		{
-			No:            27,
-			Name:          "minimum_unit_price",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:5",
-		},
-		{
-			No:            28,
-			Name:          "indirect_cost_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         31,
-			Name:       "vendor_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         32,
-			Name:       "vendor_item_no",
-			Type:       tables.FieldTypeText,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         33,
-			Name:       "lead_time_calculation",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            34,
-			Name:          "reorder_point",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            35,
-			Name:          "maximum_inventory",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            36,
-			Name:          "reorder_quantity",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         5408,
-			Name:       "requisition_method_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            5414,
-			Name:          "order_multiple",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         5428,
-			Name:       "reorder_cycle",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         37,
-			Name:       "alternative_item_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            38,
-			Name:          "unit_list_price",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:5",
-		},
-		{
-			No:            39,
-			Name:          "duty_due_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         40,
-			Name:       "duty_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            41,
-			Name:          "gross_weight",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            42,
-			Name:          "net_weight",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            43,
-			Name:          "units_per_parcel",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            44,
-			Name:          "unit_volume",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         45,
-			Name:       "durability",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         46,
-			Name:       "freight_type",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         47,
-			Name:       "tariff_no",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            48,
-			Name:          "duty_unit_conversion",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         49,
-			Name:       "country_purchased_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            50,
-			Name:          "budget_quantity",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            51,
-			Name:          "budgeted_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            52,
-			Name:          "budget_profit",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         53,
-			Name:       "comment",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  true,
-		},
-		{
-			No:         54,
-			Name:       "blocked",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         62,
-			Name:       "last_date_modified",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:            68,
-			Name:          "quantity_on_hand",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            84,
-			Name:          "qty_on_purch_order",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            85,
-			Name:          "qty_on_sales_order",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            69,
-			Name:          "net_invoiced_qty",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            70,
-			Name:          "net_change",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            71,
-			Name:          "purchases_qty",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            72,
-			Name:          "sales_qty",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            73,
-			Name:          "positive_adjmt_qty",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            74,
-			Name:          "negative_adjmt_qty",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            77,
-			Name:          "purchases_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            78,
-			Name:          "sales_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            79,
-			Name:          "positive_adjmt_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            80,
-			Name:          "negative_adjmt_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            83,
-			Name:          "cogs_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            93,
-			Name:          "transferred_qty",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            94,
-			Name:          "transferred_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         87,
-			Name:       "price_includes_tax",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         90,
-			Name:       "tax_bus_posting_gr_price",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         91,
-			Name:       "gen_prod_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         92,
-			Name:       "picture",
-			Type:       tables.FieldTypeBlob,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         95,
-			Name:       "country_of_origin_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         97,
-			Name:       "no_series",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         98,
-			Name:       "tax_group_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         99,
-			Name:       "tax_prod_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         100,
-			Name:       "reserve",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            101,
-			Name:          "reserved_qty_on_inventory",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            102,
-			Name:          "reserved_qty_on_purch_orders",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            103,
-			Name:          "reserved_qty_on_sales_orders",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         5409,
-			Name:       "inventory_value_zero",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            5422,
-			Name:          "rounding_precision",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         5425,
-			Name:       "sales_unit_of_measure",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5426,
-			Name:       "purch_unit_of_measure",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5402,
-			Name:       "serial_nos",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         96,
-			Name:       "automatic_ext_text",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return itemFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in itemFields.Fields
+func (t *Item) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.No
+	case 1:
+		return &t.No_2
+	case 2:
+		return &t.Description
+	case 3:
+		return &t.Search_description
+	case 4:
+		return &t.Description_2
+	case 5:
+		return &t.Bill_of_materials
+	case 6:
+		return &t.Class
+	case 7:
+		return &t.Base_unit_of_measure
+	case 8:
+		return &t.Price_unit_conversion
+	case 9:
+		return &t.Inventory_posting_group
+	case 10:
+		return &t.Shelf_bin_no
+	case 11:
+		return &t.Sales_qty_disc_code
+	case 12:
+		return &t.Item_cust_disc_gr
+	case 13:
+		return &t.Allow_invoice_disc
+	case 14:
+		return &t.Statistics_group
+	case 15:
+		return &t.Commission_group
+	case 16:
+		return &t.Unit_price
+	case 17:
+		return &t.Price_profit_calculation
+	case 18:
+		return &t.Profit_percent
+	case 19:
+		return &t.Costing_method
+	case 20:
+		return &t.Unit_cost
+	case 21:
+		return &t.Standard_cost
+	case 22:
+		return &t.Last_direct_cost
+	case 23:
+		return &t.Average_cost
+	case 24:
+		return &t.Add_curr_average_cost
+	case 25:
+		return &t.Minimum_unit_price
+	case 26:
+		return &t.Indirect_cost_percent
+	case 27:
+		return &t.Vendor_no
+	case 28:
+		return &t.Vendor_item_no
+	case 29:
+		return &t.Lead_time_calculation
+	case 30:
+		return &t.Reorder_point
+	case 31:
+		return &t.Maximum_inventory
+	case 32:
+		return &t.Reorder_quantity
+	case 33:
+		return &t.Requisition_method_code
+	case 34:
+		return &t.Order_multiple
+	case 35:
+		return &t.Reorder_cycle
+	case 36:
+		return &t.Alternative_item_no
+	case 37:
+		return &t.Unit_list_price
+	case 38:
+		return &t.Duty_due_percent
+	case 39:
+		return &t.Duty_code
+	case 40:
+		return &t.Gross_weight
+	case 41:
+		return &t.Net_weight
+	case 42:
+		return &t.Units_per_parcel
+	case 43:
+		return &t.Unit_volume
+	case 44:
+		return &t.Durability
+	case 45:
+		return &t.Freight_type
+	case 46:
+		return &t.Tariff_no
+	case 47:
+		return &t.Duty_unit_conversion
+	case 48:
+		return &t.Country_purchased_code
+	case 49:
+		return &t.Budget_quantity
+	case 50:
+		return &t.Budgeted_amount
+	case 51:
+		return &t.Budget_profit
+	case 52:
+		return &t.Comment
+	case 53:
+		return &t.Blocked
+	case 54:
+		return &t.Last_date_modified
+	case 55:
+		return &t.Quantity_on_hand
+	case 56:
+		return &t.Qty_on_purch_order
+	case 57:
+		return &t.Qty_on_sales_order
+	case 58:
+		return &t.Net_invoiced_qty
+	case 59:
+		return &t.Net_change
+	case 60:
+		return &t.Purchases_qty
+	case 61:
+		return &t.Sales_qty
+	case 62:
+		return &t.Positive_adjmt_qty
+	case 63:
+		return &t.Negative_adjmt_qty
+	case 64:
+		return &t.Purchases_lcy
+	case 65:
+		return &t.Sales_lcy
+	case 66:
+		return &t.Positive_adjmt_lcy
+	case 67:
+		return &t.Negative_adjmt_lcy
+	case 68:
+		return &t.Cogs_lcy
+	case 69:
+		return &t.Transferred_qty
+	case 70:
+		return &t.Transferred_lcy
+	case 71:
+		return &t.Price_includes_tax
+	case 72:
+		return &t.Tax_bus_posting_gr_price
+	case 73:
+		return &t.Gen_prod_posting_group
+	case 74:
+		return &t.Picture
+	case 75:
+		return &t.Country_of_origin_code
+	case 76:
+		return &t.No_series
+	case 77:
+		return &t.Tax_group_code
+	case 78:
+		return &t.Tax_prod_posting_group
+	case 79:
+		return &t.Reserve
+	case 80:
+		return &t.Reserved_qty_on_inventory
+	case 81:
+		return &t.Reserved_qty_on_purch_orders
+	case 82:
+		return &t.Reserved_qty_on_sales_orders
+	case 83:
+		return &t.Inventory_value_zero
+	case 84:
+		return &t.Rounding_precision
+	case 85:
+		return &t.Sales_unit_of_measure
+	case 86:
+		return &t.Purch_unit_of_measure
+	case 87:
+		return &t.Serial_nos
+	case 88:
+		return &t.Automatic_ext_text
 	}
+	return nil
+}
+
+// itemFields describes the fields of Item for the record functions
+// written once in foundation/tables
+var itemFields = &tables.TableFields{
+	Table: ItemTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_No",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "no_2",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_No_2",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "search_description",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Search_description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "description_2",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description_2",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "bill_of_materials",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  true,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Bill_of_materials",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "class",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Class",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "base_unit_of_measure",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Base_unit_of_measure",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "price_unit_conversion",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Price_unit_conversion",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "inventory_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Inventory_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "shelf_bin_no",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Shelf_bin_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "sales_qty_disc_code",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Sales_qty_disc_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "item_cust_disc_gr",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Item_cust_disc_gr",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         15,
+				Name:       "allow_invoice_disc",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Allow_invoice_disc",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         16,
+				Name:       "statistics_group",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Statistics_group",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         17,
+				Name:       "commission_group",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Commission_group",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            18,
+				Name:          "unit_price",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Unit_price",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         19,
+				Name:       "price_profit_calculation",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Price_profit_calculation",
+			Options: []string{"Profit=Price-Cost", "Price=Cost+Profit", "No Relationship"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            20,
+				Name:          "profit_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Profit_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         21,
+				Name:       "costing_method",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Costing_method",
+			Options: []string{"FIFO", "LIFO", "Specific", "Average", "Standard"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            22,
+				Name:          "unit_cost",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "2:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Unit_cost",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            24,
+				Name:          "standard_cost",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Standard_cost",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            25,
+				Name:          "last_direct_cost",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Last_direct_cost",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            26,
+				Name:          "average_cost",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Average_cost",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            104,
+				Name:          "add_curr_average_cost",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Add_curr_average_cost",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            27,
+				Name:          "minimum_unit_price",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Minimum_unit_price",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            28,
+				Name:          "indirect_cost_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Indirect_cost_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         31,
+				Name:       "vendor_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Vendor_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         32,
+				Name:       "vendor_item_no",
+				Type:       tables.FieldTypeText,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Vendor_item_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         33,
+				Name:       "lead_time_calculation",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:        tables.KindCode,
+			Trigger:     "OnValidate_Lead_time_calculation",
+			DateFormula: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            34,
+				Name:          "reorder_point",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Reorder_point",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            35,
+				Name:          "maximum_inventory",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Maximum_inventory",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            36,
+				Name:          "reorder_quantity",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Reorder_quantity",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5408,
+				Name:       "requisition_method_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Requisition_method_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            5414,
+				Name:          "order_multiple",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Order_multiple",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5428,
+				Name:       "reorder_cycle",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:        tables.KindCode,
+			Trigger:     "OnValidate_Reorder_cycle",
+			DateFormula: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         37,
+				Name:       "alternative_item_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Alternative_item_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            38,
+				Name:          "unit_list_price",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Unit_list_price",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            39,
+				Name:          "duty_due_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Duty_due_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         40,
+				Name:       "duty_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Duty_code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            41,
+				Name:          "gross_weight",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Gross_weight",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            42,
+				Name:          "net_weight",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Net_weight",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            43,
+				Name:          "units_per_parcel",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Units_per_parcel",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            44,
+				Name:          "unit_volume",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Unit_volume",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         45,
+				Name:       "durability",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Durability",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         46,
+				Name:       "freight_type",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Freight_type",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         47,
+				Name:       "tariff_no",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tariff_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            48,
+				Name:          "duty_unit_conversion",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Duty_unit_conversion",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         49,
+				Name:       "country_purchased_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Country_purchased_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            50,
+				Name:          "budget_quantity",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Budget_quantity",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            51,
+				Name:          "budgeted_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Budgeted_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            52,
+				Name:          "budget_profit",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Budget_profit",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         53,
+				Name:       "comment",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  true,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Comment",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         54,
+				Name:       "blocked",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Blocked",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         62,
+				Name:       "last_date_modified",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Last_date_modified",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            68,
+				Name:          "quantity_on_hand",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Quantity_on_hand",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            84,
+				Name:          "qty_on_purch_order",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Qty_on_purch_order",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            85,
+				Name:          "qty_on_sales_order",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Qty_on_sales_order",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            69,
+				Name:          "net_invoiced_qty",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Net_invoiced_qty",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            70,
+				Name:          "net_change",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Net_change",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            71,
+				Name:          "purchases_qty",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Purchases_qty",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            72,
+				Name:          "sales_qty",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Sales_qty",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            73,
+				Name:          "positive_adjmt_qty",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Positive_adjmt_qty",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            74,
+				Name:          "negative_adjmt_qty",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Negative_adjmt_qty",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            77,
+				Name:          "purchases_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Purchases_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            78,
+				Name:          "sales_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Sales_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            79,
+				Name:          "positive_adjmt_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Positive_adjmt_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            80,
+				Name:          "negative_adjmt_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Negative_adjmt_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            83,
+				Name:          "cogs_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Cogs_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            93,
+				Name:          "transferred_qty",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Transferred_qty",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            94,
+				Name:          "transferred_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Transferred_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         87,
+				Name:       "price_includes_tax",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Price_includes_tax",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         90,
+				Name:       "tax_bus_posting_gr_price",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_bus_posting_gr_price",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         91,
+				Name:       "gen_prod_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Gen_prod_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         92,
+				Name:       "picture",
+				Type:       tables.FieldTypeBlob,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBlob,
+			Trigger: "OnValidate_Picture",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         95,
+				Name:       "country_of_origin_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Country_of_origin_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         97,
+				Name:       "no_series",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_No_series",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         98,
+				Name:       "tax_group_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_group_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         99,
+				Name:       "tax_prod_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_prod_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         100,
+				Name:       "reserve",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Reserve",
+			Options: []string{"Never", "Optional", "Always"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            101,
+				Name:          "reserved_qty_on_inventory",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Reserved_qty_on_inventory",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            102,
+				Name:          "reserved_qty_on_purch_orders",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Reserved_qty_on_purch_orders",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            103,
+				Name:          "reserved_qty_on_sales_orders",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Reserved_qty_on_sales_orders",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5409,
+				Name:       "inventory_value_zero",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Inventory_value_zero",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            5422,
+				Name:          "rounding_precision",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Rounding_precision",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5425,
+				Name:       "sales_unit_of_measure",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Sales_unit_of_measure",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5426,
+				Name:       "purch_unit_of_measure",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Purch_unit_of_measure",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5402,
+				Name:       "serial_nos",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Serial_nos",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         96,
+				Name:       "automatic_ext_text",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Automatic_ext_text",
+		},
+	},
+	FlowFilters: []tables.FieldInfo{
+		{No: 64, Name: "date_filter"},
+		{No: 65, Name: "dimension_1_filter"},
+		{No: 66, Name: "dimension_2_filter"},
+		{No: 67, Name: "location_filter"},
+		{No: 89, Name: "drop_shipment_filter"},
+		{No: 5424, Name: "variant_filter"},
+		{No: 5423, Name: "bin_filter"},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

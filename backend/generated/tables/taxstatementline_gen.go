@@ -335,92 +335,12 @@ var TaxStatementLine_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *TaxStatementLine) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "statement_template_name":
-		return 1
-	case "statement_name":
-		return 2
-	case "line_no":
-		return 3
-	case "row_no":
-		return 4
-	case "description":
-		return 5
-	case "type":
-		return 6
-	case "account_totaling":
-		return 7
-	case "gen_posting_type":
-		return 8
-	case "tax_bus_posting_group":
-		return 9
-	case "tax_prod_posting_group":
-		return 10
-	case "row_totaling":
-		return 11
-	case "amount_type":
-		return 12
-	case "calculate_with":
-		return 13
-	case "print":
-		return 14
-	case "print_with":
-		return 15
-	case "new_page":
-		return 17
-	case "tax_jurisdiction_code":
-		return 18
-	case "use_tax":
-		return 19
-	case "date_filter":
-		return 16
-	}
-	return 0
+	return taxStatementLineFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *TaxStatementLine) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "statement_template_name"
-	case 2:
-		return "statement_name"
-	case 3:
-		return "line_no"
-	case 4:
-		return "row_no"
-	case 5:
-		return "description"
-	case 6:
-		return "type"
-	case 7:
-		return "account_totaling"
-	case 8:
-		return "gen_posting_type"
-	case 9:
-		return "tax_bus_posting_group"
-	case 10:
-		return "tax_prod_posting_group"
-	case 11:
-		return "row_totaling"
-	case 12:
-		return "amount_type"
-	case 13:
-		return "calculate_with"
-	case 14:
-		return "print"
-	case 15:
-		return "print_with"
-	case 17:
-		return "new_page"
-	case 18:
-		return "tax_jurisdiction_code"
-	case 19:
-		return "use_tax"
-	case 16:
-		return "date_filter"
-	}
-	return ""
+	return taxStatementLineFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -532,60 +452,6 @@ type (
 	TaxStatementLineOnBeforeRename interface {
 		OnBeforeRename(rec *TaxStatementLine, handled *bool) error
 	}
-	TaxStatementLineOnValidate_Statement_template_name interface {
-		OnValidate_Statement_template_name(rec *TaxStatementLine) error
-	}
-	TaxStatementLineOnValidate_Statement_name interface {
-		OnValidate_Statement_name(rec *TaxStatementLine) error
-	}
-	TaxStatementLineOnValidate_Line_no interface {
-		OnValidate_Line_no(rec *TaxStatementLine) error
-	}
-	TaxStatementLineOnValidate_Row_no interface {
-		OnValidate_Row_no(rec *TaxStatementLine) error
-	}
-	TaxStatementLineOnValidate_Description interface {
-		OnValidate_Description(rec *TaxStatementLine) error
-	}
-	TaxStatementLineOnValidate_Type interface {
-		OnValidate_Type(rec *TaxStatementLine) error
-	}
-	TaxStatementLineOnValidate_Account_totaling interface {
-		OnValidate_Account_totaling(rec *TaxStatementLine) error
-	}
-	TaxStatementLineOnValidate_Gen_posting_type interface {
-		OnValidate_Gen_posting_type(rec *TaxStatementLine) error
-	}
-	TaxStatementLineOnValidate_Tax_bus_posting_group interface {
-		OnValidate_Tax_bus_posting_group(rec *TaxStatementLine) error
-	}
-	TaxStatementLineOnValidate_Tax_prod_posting_group interface {
-		OnValidate_Tax_prod_posting_group(rec *TaxStatementLine) error
-	}
-	TaxStatementLineOnValidate_Row_totaling interface {
-		OnValidate_Row_totaling(rec *TaxStatementLine) error
-	}
-	TaxStatementLineOnValidate_Amount_type interface {
-		OnValidate_Amount_type(rec *TaxStatementLine) error
-	}
-	TaxStatementLineOnValidate_Calculate_with interface {
-		OnValidate_Calculate_with(rec *TaxStatementLine) error
-	}
-	TaxStatementLineOnValidate_Print interface {
-		OnValidate_Print(rec *TaxStatementLine) error
-	}
-	TaxStatementLineOnValidate_Print_with interface {
-		OnValidate_Print_with(rec *TaxStatementLine) error
-	}
-	TaxStatementLineOnValidate_New_page interface {
-		OnValidate_New_page(rec *TaxStatementLine) error
-	}
-	TaxStatementLineOnValidate_Tax_jurisdiction_code interface {
-		OnValidate_Tax_jurisdiction_code(rec *TaxStatementLine) error
-	}
-	TaxStatementLineOnValidate_Use_tax interface {
-		OnValidate_Use_tax(rec *TaxStatementLine) error
-	}
 )
 
 // taxStatementLineLogic is the registered business logic of Tax_Statement_Line, in
@@ -628,44 +494,9 @@ func taxStatementLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(TaxStatementLineOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(TaxStatementLineOnBeforeRename)
-	case "OnValidate_Statement_template_name":
-		_, ok = logic.(TaxStatementLineOnValidate_Statement_template_name)
-	case "OnValidate_Statement_name":
-		_, ok = logic.(TaxStatementLineOnValidate_Statement_name)
-	case "OnValidate_Line_no":
-		_, ok = logic.(TaxStatementLineOnValidate_Line_no)
-	case "OnValidate_Row_no":
-		_, ok = logic.(TaxStatementLineOnValidate_Row_no)
-	case "OnValidate_Description":
-		_, ok = logic.(TaxStatementLineOnValidate_Description)
-	case "OnValidate_Type":
-		_, ok = logic.(TaxStatementLineOnValidate_Type)
-	case "OnValidate_Account_totaling":
-		_, ok = logic.(TaxStatementLineOnValidate_Account_totaling)
-	case "OnValidate_Gen_posting_type":
-		_, ok = logic.(TaxStatementLineOnValidate_Gen_posting_type)
-	case "OnValidate_Tax_bus_posting_group":
-		_, ok = logic.(TaxStatementLineOnValidate_Tax_bus_posting_group)
-	case "OnValidate_Tax_prod_posting_group":
-		_, ok = logic.(TaxStatementLineOnValidate_Tax_prod_posting_group)
-	case "OnValidate_Row_totaling":
-		_, ok = logic.(TaxStatementLineOnValidate_Row_totaling)
-	case "OnValidate_Amount_type":
-		_, ok = logic.(TaxStatementLineOnValidate_Amount_type)
-	case "OnValidate_Calculate_with":
-		_, ok = logic.(TaxStatementLineOnValidate_Calculate_with)
-	case "OnValidate_Print":
-		_, ok = logic.(TaxStatementLineOnValidate_Print)
-	case "OnValidate_Print_with":
-		_, ok = logic.(TaxStatementLineOnValidate_Print_with)
-	case "OnValidate_New_page":
-		_, ok = logic.(TaxStatementLineOnValidate_New_page)
-	case "OnValidate_Tax_jurisdiction_code":
-		_, ok = logic.(TaxStatementLineOnValidate_Tax_jurisdiction_code)
-	case "OnValidate_Use_tax":
-		_, ok = logic.(TaxStatementLineOnValidate_Use_tax)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return taxStatementLineFields.IsOnValidateTrigger(name, logic, (*TaxStatementLine)(nil))
 	}
 	return true, ok
 }
@@ -1018,25 +849,7 @@ func (t *TaxStatementLine) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *TaxStatementLine) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["statement_template_name"] = t.Statement_template_name
-	t.oldValues["statement_name"] = t.Statement_name
-	t.oldValues["line_no"] = t.Line_no
-	t.oldValues["row_no"] = t.Row_no
-	t.oldValues["description"] = t.Description
-	t.oldValues["type"] = t.Type
-	t.oldValues["account_totaling"] = t.Account_totaling
-	t.oldValues["gen_posting_type"] = t.Gen_posting_type
-	t.oldValues["tax_bus_posting_group"] = t.Tax_bus_posting_group
-	t.oldValues["tax_prod_posting_group"] = t.Tax_prod_posting_group
-	t.oldValues["row_totaling"] = t.Row_totaling
-	t.oldValues["amount_type"] = t.Amount_type
-	t.oldValues["calculate_with"] = t.Calculate_with
-	t.oldValues["print"] = t.Print
-	t.oldValues["print_with"] = t.Print_with
-	t.oldValues["new_page"] = t.New_page
-	t.oldValues["tax_jurisdiction_code"] = t.Tax_jurisdiction_code
-	t.oldValues["use_tax"] = t.Use_tax
+	t.oldValues = taxStatementLineFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1051,60 +864,7 @@ func (t *TaxStatementLine) OldValue(fieldName string) interface{} {
 func (t *TaxStatementLine) XRec() *TaxStatementLine {
 	x := &TaxStatementLine{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["statement_template_name"].(types.Code); ok {
-		x.Statement_template_name = v
-	}
-	if v, ok := t.oldValues["statement_name"].(types.Code); ok {
-		x.Statement_name = v
-	}
-	if v, ok := t.oldValues["line_no"].(int); ok {
-		x.Line_no = v
-	}
-	if v, ok := t.oldValues["row_no"].(types.Code); ok {
-		x.Row_no = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["type"].(TaxStatementLineType); ok {
-		x.Type = v
-	}
-	if v, ok := t.oldValues["account_totaling"].(types.Text); ok {
-		x.Account_totaling = v
-	}
-	if v, ok := t.oldValues["gen_posting_type"].(TaxStatementLineGen_posting_type); ok {
-		x.Gen_posting_type = v
-	}
-	if v, ok := t.oldValues["tax_bus_posting_group"].(types.Code); ok {
-		x.Tax_bus_posting_group = v
-	}
-	if v, ok := t.oldValues["tax_prod_posting_group"].(types.Code); ok {
-		x.Tax_prod_posting_group = v
-	}
-	if v, ok := t.oldValues["row_totaling"].(types.Text); ok {
-		x.Row_totaling = v
-	}
-	if v, ok := t.oldValues["amount_type"].(TaxStatementLineAmount_type); ok {
-		x.Amount_type = v
-	}
-	if v, ok := t.oldValues["calculate_with"].(TaxStatementLineCalculate_with); ok {
-		x.Calculate_with = v
-	}
-	if v, ok := t.oldValues["print"].(bool); ok {
-		x.Print = v
-	}
-	if v, ok := t.oldValues["print_with"].(TaxStatementLinePrint_with); ok {
-		x.Print_with = v
-	}
-	if v, ok := t.oldValues["new_page"].(bool); ok {
-		x.New_page = v
-	}
-	if v, ok := t.oldValues["tax_jurisdiction_code"].(types.Code); ok {
-		x.Tax_jurisdiction_code = v
-	}
-	if v, ok := t.oldValues["use_tax"].(bool); ok {
-		x.Use_tax = v
-	}
+	taxStatementLineFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1567,97 +1327,7 @@ func (t *TaxStatementLine) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *TaxStatementLine) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "statement_template_name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Statement_template_name.Equal(old)
-		}
-	case "statement_name":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Statement_name.Equal(old)
-		}
-	case "line_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Line_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "row_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Row_no.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "type":
-		if old, ok := oldValue.(TaxStatementLineType); ok {
-			return t.Type != old
-		}
-	case "account_totaling":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Account_totaling.Equal(old)
-		}
-	case "gen_posting_type":
-		if old, ok := oldValue.(TaxStatementLineGen_posting_type); ok {
-			return t.Gen_posting_type != old
-		}
-	case "tax_bus_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_bus_posting_group.Equal(old)
-		}
-	case "tax_prod_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_prod_posting_group.Equal(old)
-		}
-	case "row_totaling":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Row_totaling.Equal(old)
-		}
-	case "amount_type":
-		if old, ok := oldValue.(TaxStatementLineAmount_type); ok {
-			return t.Amount_type != old
-		}
-	case "calculate_with":
-		if old, ok := oldValue.(TaxStatementLineCalculate_with); ok {
-			return t.Calculate_with != old
-		}
-	case "print":
-		if old, ok := oldValue.(bool); ok {
-			return t.Print != old
-		}
-		return true // Type mismatch, assume changed
-	case "print_with":
-		if old, ok := oldValue.(TaxStatementLinePrint_with); ok {
-			return t.Print_with != old
-		}
-	case "new_page":
-		if old, ok := oldValue.(bool); ok {
-			return t.New_page != old
-		}
-		return true // Type mismatch, assume changed
-	case "tax_jurisdiction_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_jurisdiction_code.Equal(old)
-		}
-	case "use_tax":
-		if old, ok := oldValue.(bool); ok {
-			return t.Use_tax != old
-		}
-		return true // Type mismatch, assume changed
-	}
-
-	return false
+	return taxStatementLineFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1860,45 +1530,7 @@ func (t *TaxStatementLine) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *TaxStatementLine) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("statement_template_name"):
-		return "statement_template_name", true
-	case strings.ToLower("statement_name"):
-		return "statement_name", true
-	case strings.ToLower("line_no"):
-		return "line_no", true
-	case strings.ToLower("row_no"):
-		return "row_no", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("type"):
-		return "type", true
-	case strings.ToLower("account_totaling"):
-		return "account_totaling", true
-	case strings.ToLower("gen_posting_type"):
-		return "gen_posting_type", true
-	case strings.ToLower("tax_bus_posting_group"):
-		return "tax_bus_posting_group", true
-	case strings.ToLower("tax_prod_posting_group"):
-		return "tax_prod_posting_group", true
-	case strings.ToLower("row_totaling"):
-		return "row_totaling", true
-	case strings.ToLower("amount_type"):
-		return "amount_type", true
-	case strings.ToLower("calculate_with"):
-		return "calculate_with", true
-	case strings.ToLower("print"):
-		return "print", true
-	case strings.ToLower("print_with"):
-		return "print_with", true
-	case strings.ToLower("new_page"):
-		return "new_page", true
-	case strings.ToLower("tax_jurisdiction_code"):
-		return "tax_jurisdiction_code", true
-	case strings.ToLower("use_tax"):
-		return "use_tax", true
-	}
-	return "", false
+	return taxStatementLineFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2913,527 +2545,20 @@ func (t *TaxStatementLine) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *TaxStatementLine) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "statement_template_name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Statement_template_name = v
-		} else if v, ok := value.(string); ok {
-			t.Statement_template_name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field statement_template_name")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "statement_template_name"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxStatementLineOnValidate_Statement_template_name); ok {
-				if err := trg.OnValidate_Statement_template_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "statement_name":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Statement_name = v
-		} else if v, ok := value.(string); ok {
-			t.Statement_name = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field statement_name")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "statement_name"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxStatementLineOnValidate_Statement_name); ok {
-				if err := trg.OnValidate_Statement_name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "line_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Line_no = v
-		case float64:
-			t.Line_no = int(v)
-		case string:
-			if v == "" {
-				t.Line_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Line_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field line_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field line_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxStatementLineOnValidate_Line_no); ok {
-				if err := trg.OnValidate_Line_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "row_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Row_no = v
-		} else if v, ok := value.(string); ok {
-			t.Row_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field row_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxStatementLineOnValidate_Row_no); ok {
-				if err := trg.OnValidate_Row_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxStatementLineOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(TaxStatementLineType); ok {
-			t.Type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", v, 4-1)
-			}
-			t.Type = TaxStatementLineType(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Type = TaxStatementLineType(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Type = 0
-			} else {
-				options := []string{"Account Totaling", "Tax Entry Totaling", "Row Totaling", "Description"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Type = TaxStatementLineType(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field type (expected TaxStatementLineType, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxStatementLineOnValidate_Type); ok {
-				if err := trg.OnValidate_Type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "account_totaling":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Account_totaling = v
-		} else if v, ok := value.(string); ok {
-			t.Account_totaling = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field account_totaling")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "account_totaling"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxStatementLineOnValidate_Account_totaling); ok {
-				if err := trg.OnValidate_Account_totaling(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "gen_posting_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(TaxStatementLineGen_posting_type); ok {
-			t.Gen_posting_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field gen_posting_type (valid range: 0-%d)", v, 4-1)
-			}
-			t.Gen_posting_type = TaxStatementLineGen_posting_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field gen_posting_type (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Gen_posting_type = TaxStatementLineGen_posting_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Gen_posting_type = 0
-			} else {
-				options := []string{" ", "Purchase", "Sale", "Settlement"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Gen_posting_type = TaxStatementLineGen_posting_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field gen_posting_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field gen_posting_type (expected TaxStatementLineGen_posting_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxStatementLineOnValidate_Gen_posting_type); ok {
-				if err := trg.OnValidate_Gen_posting_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_bus_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_bus_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_bus_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_bus_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_bus_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxStatementLineOnValidate_Tax_bus_posting_group); ok {
-				if err := trg.OnValidate_Tax_bus_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_prod_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_prod_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_prod_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_prod_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_prod_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxStatementLineOnValidate_Tax_prod_posting_group); ok {
-				if err := trg.OnValidate_Tax_prod_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "row_totaling":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Row_totaling = v
-		} else if v, ok := value.(string); ok {
-			t.Row_totaling = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field row_totaling")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxStatementLineOnValidate_Row_totaling); ok {
-				if err := trg.OnValidate_Row_totaling(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "amount_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(TaxStatementLineAmount_type); ok {
-			t.Amount_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 5 {
-				return fmt.Errorf("invalid option value %d for field amount_type (valid range: 0-%d)", v, 5-1)
-			}
-			t.Amount_type = TaxStatementLineAmount_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 5 {
-				return fmt.Errorf("invalid option value %d for field amount_type (valid range: 0-%d)", intVal, 5-1)
-			}
-			t.Amount_type = TaxStatementLineAmount_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Amount_type = 0
-			} else {
-				options := []string{" ", "Amount", "Base", "Unrealized Amount", "Unrealized Base"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Amount_type = TaxStatementLineAmount_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field amount_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field amount_type (expected TaxStatementLineAmount_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxStatementLineOnValidate_Amount_type); ok {
-				if err := trg.OnValidate_Amount_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "calculate_with":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(TaxStatementLineCalculate_with); ok {
-			t.Calculate_with = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 2 {
-				return fmt.Errorf("invalid option value %d for field calculate_with (valid range: 0-%d)", v, 2-1)
-			}
-			t.Calculate_with = TaxStatementLineCalculate_with(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 2 {
-				return fmt.Errorf("invalid option value %d for field calculate_with (valid range: 0-%d)", intVal, 2-1)
-			}
-			t.Calculate_with = TaxStatementLineCalculate_with(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Calculate_with = 0
-			} else {
-				options := []string{"Sign", "Opposite Sign"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Calculate_with = TaxStatementLineCalculate_with(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field calculate_with (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field calculate_with (expected TaxStatementLineCalculate_with, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxStatementLineOnValidate_Calculate_with); ok {
-				if err := trg.OnValidate_Calculate_with(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "print":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Print = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Print = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field print")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxStatementLineOnValidate_Print); ok {
-				if err := trg.OnValidate_Print(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "print_with":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(TaxStatementLinePrint_with); ok {
-			t.Print_with = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 2 {
-				return fmt.Errorf("invalid option value %d for field print_with (valid range: 0-%d)", v, 2-1)
-			}
-			t.Print_with = TaxStatementLinePrint_with(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 2 {
-				return fmt.Errorf("invalid option value %d for field print_with (valid range: 0-%d)", intVal, 2-1)
-			}
-			t.Print_with = TaxStatementLinePrint_with(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Print_with = 0
-			} else {
-				options := []string{"Sign", "Opposite Sign"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Print_with = TaxStatementLinePrint_with(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field print_with (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field print_with (expected TaxStatementLinePrint_with, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxStatementLineOnValidate_Print_with); ok {
-				if err := trg.OnValidate_Print_with(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "new_page":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.New_page = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.New_page = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field new_page")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxStatementLineOnValidate_New_page); ok {
-				if err := trg.OnValidate_New_page(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_jurisdiction_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_jurisdiction_code = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_jurisdiction_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_jurisdiction_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_jurisdiction_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxStatementLineOnValidate_Tax_jurisdiction_code); ok {
-				if err := trg.OnValidate_Tax_jurisdiction_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "use_tax":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Use_tax = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Use_tax = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field use_tax")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(TaxStatementLineOnValidate_Use_tax); ok {
-				if err := trg.OnValidate_Use_tax(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := taxStatementLineFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &taxStatementLineFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -3442,186 +2567,18 @@ func (t *TaxStatementLine) ValidateField(fieldName string, value interface{}) er
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *TaxStatementLine) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Statement_template_name, true
-	case 2:
-		return t.Statement_name, true
-	case 3:
-		return t.Line_no, true
-	case 4:
-		return t.Row_no, true
-	case 5:
-		return t.Description, true
-	case 6:
-		return t.Type, true
-	case 7:
-		return t.Account_totaling, true
-	case 8:
-		return t.Gen_posting_type, true
-	case 9:
-		return t.Tax_bus_posting_group, true
-	case 10:
-		return t.Tax_prod_posting_group, true
-	case 11:
-		return t.Row_totaling, true
-	case 12:
-		return t.Amount_type, true
-	case 13:
-		return t.Calculate_with, true
-	case 14:
-		return t.Print, true
-	case 15:
-		return t.Print_with, true
-	case 17:
-		return t.New_page, true
-	case 18:
-		return t.Tax_jurisdiction_code, true
-	case 19:
-		return t.Use_tax, true
-	}
-	return nil, false
+	return taxStatementLineFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *TaxStatementLine) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return taxStatementLineFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *TaxStatementLine) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Statement_template_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Statement_template_name = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Statement_name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Statement_name = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(int); ok {
-			t.Line_no = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Code); ok {
-			t.Row_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Row_no = types.NewCode(v)
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 6:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Type = TaxStatementLineType(i)
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Text); ok {
-			t.Account_totaling = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Account_totaling = types.NewText(v)
-			return true
-		}
-	case 8:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Gen_posting_type = TaxStatementLineGen_posting_type(i)
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_bus_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_bus_posting_group = types.NewCode(v)
-			return true
-		}
-	case 10:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_prod_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_prod_posting_group = types.NewCode(v)
-			return true
-		}
-	case 11:
-		if v, ok := value.(types.Text); ok {
-			t.Row_totaling = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Row_totaling = types.NewText(v)
-			return true
-		}
-	case 12:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 5 {
-			t.Amount_type = TaxStatementLineAmount_type(i)
-			return true
-		}
-	case 13:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 2 {
-			t.Calculate_with = TaxStatementLineCalculate_with(i)
-			return true
-		}
-	case 14:
-		if v, ok := value.(bool); ok {
-			t.Print = v
-			return true
-		}
-	case 15:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 2 {
-			t.Print_with = TaxStatementLinePrint_with(i)
-			return true
-		}
-	case 17:
-		if v, ok := value.(bool); ok {
-			t.New_page = v
-			return true
-		}
-	case 18:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_jurisdiction_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_jurisdiction_code = types.NewCode(v)
-			return true
-		}
-	case 19:
-		if v, ok := value.(bool); ok {
-			t.Use_tax = v
-			return true
-		}
-	}
-	return false
+	return taxStatementLineFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -4093,45 +3050,7 @@ func (t *TaxStatementLine) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *TaxStatementLine) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "statement_template_name":
-		return t.Statement_template_name, true
-	case "statement_name":
-		return t.Statement_name, true
-	case "line_no":
-		return t.Line_no, true
-	case "row_no":
-		return t.Row_no, true
-	case "description":
-		return t.Description, true
-	case "type":
-		return int(t.Type), true
-	case "account_totaling":
-		return t.Account_totaling, true
-	case "gen_posting_type":
-		return int(t.Gen_posting_type), true
-	case "tax_bus_posting_group":
-		return t.Tax_bus_posting_group, true
-	case "tax_prod_posting_group":
-		return t.Tax_prod_posting_group, true
-	case "row_totaling":
-		return t.Row_totaling, true
-	case "amount_type":
-		return int(t.Amount_type), true
-	case "calculate_with":
-		return int(t.Calculate_with), true
-	case "print":
-		return t.Print, true
-	case "print_with":
-		return int(t.Print_with), true
-	case "new_page":
-		return t.New_page, true
-	case "tax_jurisdiction_code":
-		return t.Tax_jurisdiction_code, true
-	case "use_tax":
-		return t.Use_tax, true
-	}
-	return nil, false
+	return taxStatementLineFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -4240,188 +3159,12 @@ func (t *TaxStatementLine) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *TaxStatementLine) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"statement_template_name": t.Statement_template_name.String(),
-		"statement_name":          t.Statement_name.String(),
-		"line_no":                 t.Line_no,
-		"row_no":                  t.Row_no.String(),
-		"description":             t.Description.String(),
-		"type":                    int(t.Type),
-		"account_totaling":        t.Account_totaling.String(),
-		"gen_posting_type":        int(t.Gen_posting_type),
-		"tax_bus_posting_group":   t.Tax_bus_posting_group.String(),
-		"tax_prod_posting_group":  t.Tax_prod_posting_group.String(),
-		"row_totaling":            t.Row_totaling.String(),
-		"amount_type":             int(t.Amount_type),
-		"calculate_with":          int(t.Calculate_with),
-		"print":                   t.Print,
-		"print_with":              int(t.Print_with),
-		"new_page":                t.New_page,
-		"tax_jurisdiction_code":   t.Tax_jurisdiction_code.String(),
-		"use_tax":                 t.Use_tax,
-	}
+	return taxStatementLineFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *TaxStatementLine) FromMap(data map[string]interface{}) {
-	if v, ok := data["statement_template_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Statement_template_name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["statement_name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Statement_name = types.NewCode(s)
-		}
-	}
-	if v, ok := data["line_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Line_no = int(val)
-		case int:
-			t.Line_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Line_no = n
-			}
-		}
-	}
-	if v, ok := data["row_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Row_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Type = TaxStatementLineType(int(val))
-		case int:
-			t.Type = TaxStatementLineType(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Account Totaling", "Tax Entry Totaling", "Row Totaling", "Description"}
-			for i, opt := range options {
-				if opt == val {
-					t.Type = TaxStatementLineType(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["account_totaling"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Account_totaling = types.NewText(s)
-		}
-	}
-	if v, ok := data["gen_posting_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Gen_posting_type = TaxStatementLineGen_posting_type(int(val))
-		case int:
-			t.Gen_posting_type = TaxStatementLineGen_posting_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Purchase", "Sale", "Settlement"}
-			for i, opt := range options {
-				if opt == val {
-					t.Gen_posting_type = TaxStatementLineGen_posting_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["tax_bus_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_bus_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_prod_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_prod_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["row_totaling"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Row_totaling = types.NewText(s)
-		}
-	}
-	if v, ok := data["amount_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Amount_type = TaxStatementLineAmount_type(int(val))
-		case int:
-			t.Amount_type = TaxStatementLineAmount_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Amount", "Base", "Unrealized Amount", "Unrealized Base"}
-			for i, opt := range options {
-				if opt == val {
-					t.Amount_type = TaxStatementLineAmount_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["calculate_with"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Calculate_with = TaxStatementLineCalculate_with(int(val))
-		case int:
-			t.Calculate_with = TaxStatementLineCalculate_with(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Sign", "Opposite Sign"}
-			for i, opt := range options {
-				if opt == val {
-					t.Calculate_with = TaxStatementLineCalculate_with(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["print"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Print = b
-		}
-	}
-	if v, ok := data["print_with"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Print_with = TaxStatementLinePrint_with(int(val))
-		case int:
-			t.Print_with = TaxStatementLinePrint_with(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Sign", "Opposite Sign"}
-			for i, opt := range options {
-				if opt == val {
-					t.Print_with = TaxStatementLinePrint_with(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["new_page"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.New_page = b
-		}
-	}
-	if v, ok := data["tax_jurisdiction_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_jurisdiction_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["use_tax"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Use_tax = b
-		}
-	}
+	taxStatementLineFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -4442,188 +3185,324 @@ func (t *TaxStatementLine) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *TaxStatementLine) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "statement_template_name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "statement_name",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "line_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "row_no",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "account_totaling",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         8,
-			Name:       "gen_posting_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         9,
-			Name:       "tax_bus_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         10,
-			Name:       "tax_prod_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "row_totaling",
-			Type:       tables.FieldTypeText,
-			Length:     30,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "amount_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         13,
-			Name:       "calculate_with",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         14,
-			Name:       "print",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         15,
-			Name:       "print_with",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         17,
-			Name:       "new_page",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         18,
-			Name:       "tax_jurisdiction_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         19,
-			Name:       "use_tax",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return taxStatementLineFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in taxStatementLineFields.Fields
+func (t *TaxStatementLine) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Statement_template_name
+	case 1:
+		return &t.Statement_name
+	case 2:
+		return &t.Line_no
+	case 3:
+		return &t.Row_no
+	case 4:
+		return &t.Description
+	case 5:
+		return &t.Type
+	case 6:
+		return &t.Account_totaling
+	case 7:
+		return &t.Gen_posting_type
+	case 8:
+		return &t.Tax_bus_posting_group
+	case 9:
+		return &t.Tax_prod_posting_group
+	case 10:
+		return &t.Row_totaling
+	case 11:
+		return &t.Amount_type
+	case 12:
+		return &t.Calculate_with
+	case 13:
+		return &t.Print
+	case 14:
+		return &t.Print_with
+	case 15:
+		return &t.New_page
+	case 16:
+		return &t.Tax_jurisdiction_code
+	case 17:
+		return &t.Use_tax
 	}
+	return nil
+}
+
+// taxStatementLineFields describes the fields of Tax_Statement_Line for the record functions
+// written once in foundation/tables
+var taxStatementLineFields = &tables.TableFields{
+	Table: TaxStatementLineTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "statement_template_name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Statement_template_name",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "statement_name",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Statement_name",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "line_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Line_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "row_no",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Row_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Type",
+			Options: []string{"Account Totaling", "Tax Entry Totaling", "Row Totaling", "Description"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "account_totaling",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindText,
+			Trigger:  "OnValidate_Account_totaling",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "gen_posting_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Gen_posting_type",
+			Options: []string{" ", "Purchase", "Sale", "Settlement"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "tax_bus_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_bus_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "tax_prod_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_prod_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "row_totaling",
+				Type:       tables.FieldTypeText,
+				Length:     30,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Row_totaling",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "amount_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Amount_type",
+			Options: []string{" ", "Amount", "Base", "Unrealized Amount", "Unrealized Base"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         13,
+				Name:       "calculate_with",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Calculate_with",
+			Options: []string{"Sign", "Opposite Sign"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         14,
+				Name:       "print",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Print",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         15,
+				Name:       "print_with",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Print_with",
+			Options: []string{"Sign", "Opposite Sign"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         17,
+				Name:       "new_page",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_New_page",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         18,
+				Name:       "tax_jurisdiction_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_jurisdiction_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         19,
+				Name:       "use_tax",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Use_tax",
+		},
+	},
+	FlowFilters: []tables.FieldInfo{
+		{No: 16, Name: "date_filter"},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

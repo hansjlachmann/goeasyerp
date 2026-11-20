@@ -162,72 +162,12 @@ var ResourceGroup_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *ResourceGroup) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "no":
-		return 1
-	case "name":
-		return 2
-	case "capacity":
-		return 23
-	case "usage_qty":
-		return 27
-	case "usage_cost":
-		return 28
-	case "usage_price":
-		return 29
-	case "sales_qty":
-		return 30
-	case "sales_cost":
-		return 31
-	case "sales_price":
-		return 32
-	case "qty_on_order_project":
-		return 24
-	case "qty_quoted_project":
-		return 25
-	case "date_filter":
-		return 22
-	case "unit_of_measure_filter":
-		return 26
-	case "chargeable_filter":
-		return 33
-	}
-	return 0
+	return resourceGroupFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *ResourceGroup) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "no"
-	case 2:
-		return "name"
-	case 23:
-		return "capacity"
-	case 27:
-		return "usage_qty"
-	case 28:
-		return "usage_cost"
-	case 29:
-		return "usage_price"
-	case 30:
-		return "sales_qty"
-	case 31:
-		return "sales_cost"
-	case 32:
-		return "sales_price"
-	case 24:
-		return "qty_on_order_project"
-	case 25:
-		return "qty_quoted_project"
-	case 22:
-		return "date_filter"
-	case 26:
-		return "unit_of_measure_filter"
-	case 33:
-		return "chargeable_filter"
-	}
-	return ""
+	return resourceGroupFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -339,12 +279,6 @@ type (
 	ResourceGroupOnBeforeRename interface {
 		OnBeforeRename(rec *ResourceGroup, handled *bool) error
 	}
-	ResourceGroupOnValidate_No interface {
-		OnValidate_No(rec *ResourceGroup) error
-	}
-	ResourceGroupOnValidate_Name interface {
-		OnValidate_Name(rec *ResourceGroup) error
-	}
 )
 
 // resourceGroupLogic is the registered business logic of Resource_Group, in
@@ -387,12 +321,9 @@ func resourceGroupTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ResourceGroupOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(ResourceGroupOnBeforeRename)
-	case "OnValidate_No":
-		_, ok = logic.(ResourceGroupOnValidate_No)
-	case "OnValidate_Name":
-		_, ok = logic.(ResourceGroupOnValidate_Name)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return resourceGroupFields.IsOnValidateTrigger(name, logic, (*ResourceGroup)(nil))
 	}
 	return true, ok
 }
@@ -698,9 +629,7 @@ func (t *ResourceGroup) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *ResourceGroup) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["no"] = t.No
-	t.oldValues["name"] = t.Name
+	t.oldValues = resourceGroupFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -715,12 +644,7 @@ func (t *ResourceGroup) OldValue(fieldName string) interface{} {
 func (t *ResourceGroup) XRec() *ResourceGroup {
 	x := &ResourceGroup{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["no"].(types.Code); ok {
-		x.No = v
-	}
-	if v, ok := t.oldValues["name"].(types.Text); ok {
-		x.Name = v
-	}
+	resourceGroupFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -997,29 +921,7 @@ func (t *ResourceGroup) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *ResourceGroup) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No.Equal(old)
-		}
-	case "name":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Name.Equal(old)
-		}
-	}
-
-	return false
+	return resourceGroupFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -3040,13 +2942,7 @@ func (t *ResourceGroup) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *ResourceGroup) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("no"):
-		return "no", true
-	case strings.ToLower("name"):
-		return "name", true
-	}
-	return "", false
+	return resourceGroupFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -3882,48 +3778,20 @@ func (t *ResourceGroup) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *ResourceGroup) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-		} else if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ResourceGroupOnValidate_No); ok {
-				if err := trg.OnValidate_No(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "name":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-		} else if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ResourceGroupOnValidate_Name); ok {
-				if err := trg.OnValidate_Name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := resourceGroupFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &resourceGroupFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -3932,64 +3800,18 @@ func (t *ResourceGroup) ValidateField(fieldName string, value interface{}) error
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *ResourceGroup) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.No, true
-	case 2:
-		return t.Name, true
-	}
-	return nil, false
+	return resourceGroupFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *ResourceGroup) flowFieldValue(no int) (any, bool) {
-	switch no {
-	case 23:
-		return t.Capacity, true
-	case 27:
-		return t.Usage_qty, true
-	case 28:
-		return t.Usage_cost, true
-	case 29:
-		return t.Usage_price, true
-	case 30:
-		return t.Sales_qty, true
-	case 31:
-		return t.Sales_cost, true
-	case 32:
-		return t.Sales_price, true
-	case 24:
-		return t.Qty_on_order_project, true
-	case 25:
-		return t.Qty_quoted_project, true
-	}
-	return nil, false
+	return resourceGroupFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *ResourceGroup) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-			return true
-		}
-	}
-	return false
+	return resourceGroupFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -4441,13 +4263,7 @@ func (t *ResourceGroup) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *ResourceGroup) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "no":
-		return t.No, true
-	case "name":
-		return t.Name, true
-	}
-	return nil, false
+	return resourceGroupFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -4534,42 +4350,12 @@ func (t *ResourceGroup) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *ResourceGroup) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"no":   t.No.String(),
-		"name": t.Name.String(),
-		// FlowField: capacity
-		"capacity": t.Capacity.String(),
-		// FlowField: usage_qty
-		"usage_qty": t.Usage_qty.String(),
-		// FlowField: usage_cost
-		"usage_cost": t.Usage_cost.String(),
-		// FlowField: usage_price
-		"usage_price": t.Usage_price.String(),
-		// FlowField: sales_qty
-		"sales_qty": t.Sales_qty.String(),
-		// FlowField: sales_cost
-		"sales_cost": t.Sales_cost.String(),
-		// FlowField: sales_price
-		"sales_price": t.Sales_price.String(),
-		// FlowField: qty_on_order_project
-		"qty_on_order_project": t.Qty_on_order_project.String(),
-		// FlowField: qty_quoted_project
-		"qty_quoted_project": t.Qty_quoted_project.String(),
-	}
+	return resourceGroupFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *ResourceGroup) FromMap(data map[string]interface{}) {
-	if v, ok := data["no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No = types.NewCode(s)
-		}
-	}
-	if v, ok := data["name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Name = types.NewText(s)
-		}
-	}
+	resourceGroupFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -4590,127 +4376,212 @@ func (t *ResourceGroup) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *ResourceGroup) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "name",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            23,
-			Name:          "capacity",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            27,
-			Name:          "usage_qty",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            28,
-			Name:          "usage_cost",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            29,
-			Name:          "usage_price",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            30,
-			Name:          "sales_qty",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            31,
-			Name:          "sales_cost",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            32,
-			Name:          "sales_price",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            24,
-			Name:          "qty_on_order_project",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:            25,
-			Name:          "qty_quoted_project",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     true,
-			DecimalPlaces: "0:5",
-		},
+	return resourceGroupFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in resourceGroupFields.Fields
+func (t *ResourceGroup) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.No
+	case 1:
+		return &t.Name
+	case 2:
+		return &t.Capacity
+	case 3:
+		return &t.Usage_qty
+	case 4:
+		return &t.Usage_cost
+	case 5:
+		return &t.Usage_price
+	case 6:
+		return &t.Sales_qty
+	case 7:
+		return &t.Sales_cost
+	case 8:
+		return &t.Sales_price
+	case 9:
+		return &t.Qty_on_order_project
+	case 10:
+		return &t.Qty_quoted_project
 	}
+	return nil
+}
+
+// resourceGroupFields describes the fields of Resource_Group for the record functions
+// written once in foundation/tables
+var resourceGroupFields = &tables.TableFields{
+	Table: ResourceGroupTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_No",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "name",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            23,
+				Name:          "capacity",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Capacity",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            27,
+				Name:          "usage_qty",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Usage_qty",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            28,
+				Name:          "usage_cost",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Usage_cost",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            29,
+				Name:          "usage_price",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Usage_price",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            30,
+				Name:          "sales_qty",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Sales_qty",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            31,
+				Name:          "sales_cost",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Sales_cost",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            32,
+				Name:          "sales_price",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Sales_price",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            24,
+				Name:          "qty_on_order_project",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Qty_on_order_project",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            25,
+				Name:          "qty_quoted_project",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Qty_quoted_project",
+		},
+	},
+	FlowFilters: []tables.FieldInfo{
+		{No: 22, Name: "date_filter"},
+		{No: 26, Name: "unit_of_measure_filter"},
+		{No: 33, Name: "chargeable_filter"},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

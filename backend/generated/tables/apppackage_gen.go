@@ -25,12 +25,11 @@ package tables
 
 import (
 	"database/sql"
-	"encoding/base64"
+
 	"fmt"
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -140,48 +139,12 @@ var AppPackage_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *AppPackage) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "app_id":
-		return 1
-	case "version":
-		return 2
-	case "name":
-		return 3
-	case "package":
-		return 4
-	case "sha256":
-		return 5
-	case "size":
-		return 6
-	case "uploaded_by":
-		return 7
-	case "uploaded_at":
-		return 8
-	}
-	return 0
+	return appPackageFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *AppPackage) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "app_id"
-	case 2:
-		return "version"
-	case 3:
-		return "name"
-	case 4:
-		return "package"
-	case 5:
-		return "sha256"
-	case 6:
-		return "size"
-	case 7:
-		return "uploaded_by"
-	case 8:
-		return "uploaded_at"
-	}
-	return ""
+	return appPackageFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -285,14 +248,6 @@ type (
 	AppPackageOnBeforeRename interface {
 		OnBeforeRename(rec *AppPackage, handled *bool) error
 	}
-	AppPackageOnValidate_App_id      interface{ OnValidate_App_id(rec *AppPackage) error }
-	AppPackageOnValidate_Version     interface{ OnValidate_Version(rec *AppPackage) error }
-	AppPackageOnValidate_Name        interface{ OnValidate_Name(rec *AppPackage) error }
-	AppPackageOnValidate_Package     interface{ OnValidate_Package(rec *AppPackage) error }
-	AppPackageOnValidate_Sha256      interface{ OnValidate_Sha256(rec *AppPackage) error }
-	AppPackageOnValidate_Size        interface{ OnValidate_Size(rec *AppPackage) error }
-	AppPackageOnValidate_Uploaded_by interface{ OnValidate_Uploaded_by(rec *AppPackage) error }
-	AppPackageOnValidate_Uploaded_at interface{ OnValidate_Uploaded_at(rec *AppPackage) error }
 )
 
 // appPackageLogic is the registered business logic of App_Package, in
@@ -335,24 +290,9 @@ func appPackageTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(AppPackageOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(AppPackageOnBeforeRename)
-	case "OnValidate_App_id":
-		_, ok = logic.(AppPackageOnValidate_App_id)
-	case "OnValidate_Version":
-		_, ok = logic.(AppPackageOnValidate_Version)
-	case "OnValidate_Name":
-		_, ok = logic.(AppPackageOnValidate_Name)
-	case "OnValidate_Package":
-		_, ok = logic.(AppPackageOnValidate_Package)
-	case "OnValidate_Sha256":
-		_, ok = logic.(AppPackageOnValidate_Sha256)
-	case "OnValidate_Size":
-		_, ok = logic.(AppPackageOnValidate_Size)
-	case "OnValidate_Uploaded_by":
-		_, ok = logic.(AppPackageOnValidate_Uploaded_by)
-	case "OnValidate_Uploaded_at":
-		_, ok = logic.(AppPackageOnValidate_Uploaded_at)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return appPackageFields.IsOnValidateTrigger(name, logic, (*AppPackage)(nil))
 	}
 	return true, ok
 }
@@ -666,15 +606,7 @@ func (t *AppPackage) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *AppPackage) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["app_id"] = t.App_id
-	t.oldValues["version"] = t.Version
-	t.oldValues["name"] = t.Name
-	t.oldValues["package"] = t.Package
-	t.oldValues["sha256"] = t.Sha256
-	t.oldValues["size"] = t.Size
-	t.oldValues["uploaded_by"] = t.Uploaded_by
-	t.oldValues["uploaded_at"] = t.Uploaded_at
+	t.oldValues = appPackageFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -689,30 +621,7 @@ func (t *AppPackage) OldValue(fieldName string) interface{} {
 func (t *AppPackage) XRec() *AppPackage {
 	x := &AppPackage{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["app_id"].(types.Text); ok {
-		x.App_id = v
-	}
-	if v, ok := t.oldValues["version"].(types.Text); ok {
-		x.Version = v
-	}
-	if v, ok := t.oldValues["name"].(types.Text); ok {
-		x.Name = v
-	}
-	if v, ok := t.oldValues["package"].([]byte); ok {
-		x.Package = v
-	}
-	if v, ok := t.oldValues["sha256"].(types.Text); ok {
-		x.Sha256 = v
-	}
-	if v, ok := t.oldValues["size"].(int); ok {
-		x.Size = v
-	}
-	if v, ok := t.oldValues["uploaded_by"].(types.Code); ok {
-		x.Uploaded_by = v
-	}
-	if v, ok := t.oldValues["uploaded_at"].(types.DateTime); ok {
-		x.Uploaded_at = v
-	}
+	appPackageFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1044,53 +953,7 @@ func (t *AppPackage) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *AppPackage) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "app_id":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.App_id.Equal(old)
-		}
-	case "version":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Version.Equal(old)
-		}
-	case "name":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Name.Equal(old)
-		}
-	case "package":
-		// Skip comparison for BLOB fields (too large, use always modified)
-		return true
-	case "sha256":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Sha256.Equal(old)
-		}
-	case "size":
-		if old, ok := oldValue.(int); ok {
-			return t.Size != old
-		}
-		return true // Type mismatch, assume changed
-	case "uploaded_by":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Uploaded_by.Equal(old)
-		}
-	case "uploaded_at":
-		if old, ok := oldValue.(types.DateTime); ok {
-			return !t.Uploaded_at.Equal(old)
-		}
-	}
-
-	return false
+	return appPackageFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1292,25 +1155,7 @@ func (t *AppPackage) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *AppPackage) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("app_id"):
-		return "app_id", true
-	case strings.ToLower("version"):
-		return "version", true
-	case strings.ToLower("name"):
-		return "name", true
-	case strings.ToLower("package"):
-		return "package", true
-	case strings.ToLower("sha256"):
-		return "sha256", true
-	case strings.ToLower("size"):
-		return "size", true
-	case strings.ToLower("uploaded_by"):
-		return "uploaded_by", true
-	case strings.ToLower("uploaded_at"):
-		return "uploaded_at", true
-	}
-	return "", false
+	return appPackageFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2181,183 +2026,20 @@ func (t *AppPackage) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *AppPackage) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "app_id":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.App_id = v
-		} else if v, ok := value.(string); ok {
-			t.App_id = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field app_id")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AppPackageOnValidate_App_id); ok {
-				if err := trg.OnValidate_App_id(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "version":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Version = v
-		} else if v, ok := value.(string); ok {
-			t.Version = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field version")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AppPackageOnValidate_Version); ok {
-				if err := trg.OnValidate_Version(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "name":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-		} else if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field name")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AppPackageOnValidate_Name); ok {
-				if err := trg.OnValidate_Name(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "package":
-		// Set field value
-		// Accept nil, []byte, or base64-encoded string
-		if value == nil {
-			t.Package = nil
-		} else if v, ok := value.([]byte); ok {
-			t.Package = v
-		} else if s, ok := value.(string); ok {
-			if s == "" {
-				t.Package = nil
-			} else {
-				// Try base64 decode
-				decoded, err := base64.StdEncoding.DecodeString(s)
-				if err != nil {
-					return fmt.Errorf("invalid base64 value for field package: %w", err)
-				}
-				t.Package = decoded
-			}
-		} else {
-			return fmt.Errorf("invalid type for field package (expected []byte, string, or nil)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AppPackageOnValidate_Package); ok {
-				if err := trg.OnValidate_Package(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "sha256":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Sha256 = v
-		} else if v, ok := value.(string); ok {
-			t.Sha256 = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field sha256")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AppPackageOnValidate_Sha256); ok {
-				if err := trg.OnValidate_Sha256(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "size":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Size = v
-		case float64:
-			t.Size = int(v)
-		case string:
-			if v == "" {
-				t.Size = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Size = i
-			} else {
-				return fmt.Errorf("invalid integer value for field size: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field size")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AppPackageOnValidate_Size); ok {
-				if err := trg.OnValidate_Size(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "uploaded_by":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Uploaded_by = v
-		} else if v, ok := value.(string); ok {
-			t.Uploaded_by = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field uploaded_by")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AppPackageOnValidate_Uploaded_by); ok {
-				if err := trg.OnValidate_Uploaded_by(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "uploaded_at":
-		// Set field value
-		if v, ok := value.(types.DateTime); ok {
-			t.Uploaded_at = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Uploaded_at, err = types.NewDateTimeFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid datetime value for field uploaded_at: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Uploaded_at = types.NewDateTimeFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field uploaded_at (expected DateTime, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(AppPackageOnValidate_Uploaded_at); ok {
-				if err := trg.OnValidate_Uploaded_at(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := appPackageFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &appPackageFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2366,100 +2048,18 @@ func (t *AppPackage) ValidateField(fieldName string, value interface{}) error {
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *AppPackage) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.App_id, true
-	case 2:
-		return t.Version, true
-	case 3:
-		return t.Name, true
-	case 4:
-		return t.Package, true
-	case 5:
-		return t.Sha256, true
-	case 6:
-		return t.Size, true
-	case 7:
-		return t.Uploaded_by, true
-	case 8:
-		return t.Uploaded_at, true
-	}
-	return nil, false
+	return appPackageFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *AppPackage) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return appPackageFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *AppPackage) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Text); ok {
-			t.App_id = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.App_id = types.NewText(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Text); ok {
-			t.Version = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Version = types.NewText(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Text); ok {
-			t.Name = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Name = types.NewText(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.([]byte); ok {
-			t.Package = v
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Text); ok {
-			t.Sha256 = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Sha256 = types.NewText(v)
-			return true
-		}
-	case 6:
-		if v, ok := value.(int); ok {
-			t.Size = v
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Code); ok {
-			t.Uploaded_by = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Uploaded_by = types.NewCode(v)
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.DateTime); ok {
-			t.Uploaded_at = v
-			return true
-		}
-	}
-	return false
+	return appPackageFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2930,25 +2530,7 @@ func (t *AppPackage) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *AppPackage) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "app_id":
-		return t.App_id, true
-	case "version":
-		return t.Version, true
-	case "name":
-		return t.Name, true
-	case "package":
-		return t.Package, true
-	case "sha256":
-		return t.Sha256, true
-	case "size":
-		return t.Size, true
-	case "uploaded_by":
-		return t.Uploaded_by, true
-	case "uploaded_at":
-		return t.Uploaded_at, true
-	}
-	return nil, false
+	return appPackageFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3044,65 +2626,12 @@ func (t *AppPackage) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *AppPackage) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"app_id":      t.App_id.String(),
-		"version":     t.Version.String(),
-		"name":        t.Name.String(),
-		"package":     t.Package,
-		"sha256":      t.Sha256.String(),
-		"size":        t.Size,
-		"uploaded_by": t.Uploaded_by.String(),
-		"uploaded_at": t.Uploaded_at.String(),
-	}
+	return appPackageFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *AppPackage) FromMap(data map[string]interface{}) {
-	if v, ok := data["app_id"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.App_id = types.NewText(s)
-		}
-	}
-	if v, ok := data["version"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Version = types.NewText(s)
-		}
-	}
-	if v, ok := data["name"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Name = types.NewText(s)
-		}
-	}
-	if v, ok := data["package"]; ok && v != nil {
-	}
-	if v, ok := data["sha256"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Sha256 = types.NewText(s)
-		}
-	}
-	if v, ok := data["size"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Size = int(val)
-		case int:
-			t.Size = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Size = n
-			}
-		}
-	}
-	if v, ok := data["uploaded_by"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Uploaded_by = types.NewCode(s)
-		}
-	}
-	if v, ok := data["uploaded_at"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Uploaded_at, _ = types.NewDateTimeFromString(s)
-		}
-	}
+	appPackageFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3123,93 +2652,155 @@ func (t *AppPackage) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *AppPackage) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "app_id",
-			Type:       tables.FieldTypeText,
-			Length:     36,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "version",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "name",
-			Type:       tables.FieldTypeText,
-			Length:     100,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         4,
-			Name:       "package",
-			Type:       tables.FieldTypeBlob,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "sha256",
-			Type:       tables.FieldTypeText,
-			Length:     64,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         6,
-			Name:       "size",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         7,
-			Name:       "uploaded_by",
-			Type:       tables.FieldTypeCode,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         8,
-			Name:       "uploaded_at",
-			Type:       tables.FieldTypeDateTime,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
+	return appPackageFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in appPackageFields.Fields
+func (t *AppPackage) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.App_id
+	case 1:
+		return &t.Version
+	case 2:
+		return &t.Name
+	case 3:
+		return &t.Package
+	case 4:
+		return &t.Sha256
+	case 5:
+		return &t.Size
+	case 6:
+		return &t.Uploaded_by
+	case 7:
+		return &t.Uploaded_at
 	}
+	return nil
+}
+
+// appPackageFields describes the fields of App_Package for the record functions
+// written once in foundation/tables
+var appPackageFields = &tables.TableFields{
+	Table: AppPackageTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "app_id",
+				Type:       tables.FieldTypeText,
+				Length:     36,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_App_id",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "version",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Version",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "name",
+				Type:       tables.FieldTypeText,
+				Length:     100,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "package",
+				Type:       tables.FieldTypeBlob,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBlob,
+			Trigger: "OnValidate_Package",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "sha256",
+				Type:       tables.FieldTypeText,
+				Length:     64,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Sha256",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "size",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Size",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "uploaded_by",
+				Type:       tables.FieldTypeCode,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Uploaded_by",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "uploaded_at",
+				Type:       tables.FieldTypeDateTime,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindDateTime,
+			Trigger: "OnValidate_Uploaded_at",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

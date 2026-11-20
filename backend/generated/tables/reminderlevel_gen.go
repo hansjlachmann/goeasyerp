@@ -130,40 +130,12 @@ var ReminderLevel_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *ReminderLevel) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "reminder_terms_code":
-		return 1
-	case "no":
-		return 2
-	case "grace_period":
-		return 3
-	case "additional_fee_lcy":
-		return 4
-	case "calculate_interest":
-		return 5
-	case "due_date_calculation":
-		return 6
-	}
-	return 0
+	return reminderLevelFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *ReminderLevel) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "reminder_terms_code"
-	case 2:
-		return "no"
-	case 3:
-		return "grace_period"
-	case 4:
-		return "additional_fee_lcy"
-	case 5:
-		return "calculate_interest"
-	case 6:
-		return "due_date_calculation"
-	}
-	return ""
+	return reminderLevelFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -275,24 +247,6 @@ type (
 	ReminderLevelOnBeforeRename interface {
 		OnBeforeRename(rec *ReminderLevel, handled *bool) error
 	}
-	ReminderLevelOnValidate_Reminder_terms_code interface {
-		OnValidate_Reminder_terms_code(rec *ReminderLevel) error
-	}
-	ReminderLevelOnValidate_No interface {
-		OnValidate_No(rec *ReminderLevel) error
-	}
-	ReminderLevelOnValidate_Grace_period interface {
-		OnValidate_Grace_period(rec *ReminderLevel) error
-	}
-	ReminderLevelOnValidate_Additional_fee_lcy interface {
-		OnValidate_Additional_fee_lcy(rec *ReminderLevel) error
-	}
-	ReminderLevelOnValidate_Calculate_interest interface {
-		OnValidate_Calculate_interest(rec *ReminderLevel) error
-	}
-	ReminderLevelOnValidate_Due_date_calculation interface {
-		OnValidate_Due_date_calculation(rec *ReminderLevel) error
-	}
 )
 
 // reminderLevelLogic is the registered business logic of Reminder_Level, in
@@ -335,20 +289,9 @@ func reminderLevelTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ReminderLevelOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(ReminderLevelOnBeforeRename)
-	case "OnValidate_Reminder_terms_code":
-		_, ok = logic.(ReminderLevelOnValidate_Reminder_terms_code)
-	case "OnValidate_No":
-		_, ok = logic.(ReminderLevelOnValidate_No)
-	case "OnValidate_Grace_period":
-		_, ok = logic.(ReminderLevelOnValidate_Grace_period)
-	case "OnValidate_Additional_fee_lcy":
-		_, ok = logic.(ReminderLevelOnValidate_Additional_fee_lcy)
-	case "OnValidate_Calculate_interest":
-		_, ok = logic.(ReminderLevelOnValidate_Calculate_interest)
-	case "OnValidate_Due_date_calculation":
-		_, ok = logic.(ReminderLevelOnValidate_Due_date_calculation)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return reminderLevelFields.IsOnValidateTrigger(name, logic, (*ReminderLevel)(nil))
 	}
 	return true, ok
 }
@@ -661,13 +604,7 @@ func (t *ReminderLevel) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *ReminderLevel) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["reminder_terms_code"] = t.Reminder_terms_code
-	t.oldValues["no"] = t.No
-	t.oldValues["grace_period"] = t.Grace_period
-	t.oldValues["additional_fee_lcy"] = t.Additional_fee_lcy
-	t.oldValues["calculate_interest"] = t.Calculate_interest
-	t.oldValues["due_date_calculation"] = t.Due_date_calculation
+	t.oldValues = reminderLevelFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -682,24 +619,7 @@ func (t *ReminderLevel) OldValue(fieldName string) interface{} {
 func (t *ReminderLevel) XRec() *ReminderLevel {
 	x := &ReminderLevel{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["reminder_terms_code"].(types.Code); ok {
-		x.Reminder_terms_code = v
-	}
-	if v, ok := t.oldValues["no"].(int); ok {
-		x.No = v
-	}
-	if v, ok := t.oldValues["grace_period"].(types.Code); ok {
-		x.Grace_period = v
-	}
-	if v, ok := t.oldValues["additional_fee_lcy"].(types.Decimal); ok {
-		x.Additional_fee_lcy = v
-	}
-	if v, ok := t.oldValues["calculate_interest"].(bool); ok {
-		x.Calculate_interest = v
-	}
-	if v, ok := t.oldValues["due_date_calculation"].(types.Code); ok {
-		x.Due_date_calculation = v
-	}
+	reminderLevelFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1014,47 +934,7 @@ func (t *ReminderLevel) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *ReminderLevel) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "reminder_terms_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Reminder_terms_code.Equal(old)
-		}
-	case "no":
-		if old, ok := oldValue.(int); ok {
-			return t.No != old
-		}
-		return true // Type mismatch, assume changed
-	case "grace_period":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Grace_period.Equal(old)
-		}
-	case "additional_fee_lcy":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Additional_fee_lcy.Equal(old)
-		}
-	case "calculate_interest":
-		if old, ok := oldValue.(bool); ok {
-			return t.Calculate_interest != old
-		}
-		return true // Type mismatch, assume changed
-	case "due_date_calculation":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Due_date_calculation.Equal(old)
-		}
-	}
-
-	return false
+	return reminderLevelFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1256,21 +1136,7 @@ func (t *ReminderLevel) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *ReminderLevel) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("reminder_terms_code"):
-		return "reminder_terms_code", true
-	case strings.ToLower("no"):
-		return "no", true
-	case strings.ToLower("grace_period"):
-		return "grace_period", true
-	case strings.ToLower("additional_fee_lcy"):
-		return "additional_fee_lcy", true
-	case strings.ToLower("calculate_interest"):
-		return "calculate_interest", true
-	case strings.ToLower("due_date_calculation"):
-		return "due_date_calculation", true
-	}
-	return "", false
+	return reminderLevelFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2127,150 +1993,20 @@ func (t *ReminderLevel) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *ReminderLevel) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "reminder_terms_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Reminder_terms_code = v
-		} else if v, ok := value.(string); ok {
-			t.Reminder_terms_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field reminder_terms_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "reminder_terms_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReminderLevelOnValidate_Reminder_terms_code); ok {
-				if err := trg.OnValidate_Reminder_terms_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.No = v
-		case float64:
-			t.No = int(v)
-		case string:
-			if v == "" {
-				t.No = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.No = i
-			} else {
-				return fmt.Errorf("invalid integer value for field no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReminderLevelOnValidate_No); ok {
-				if err := trg.OnValidate_No(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "grace_period":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Grace_period = v
-		} else if v, ok := value.(string); ok {
-			t.Grace_period = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field grace_period")
-		}
-		if err := tables.CheckDateFormula(ReminderLevelTableName, "grace_period", string(t.Grace_period)); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReminderLevelOnValidate_Grace_period); ok {
-				if err := trg.OnValidate_Grace_period(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "additional_fee_lcy":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Additional_fee_lcy = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Additional_fee_lcy, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field additional_fee_lcy: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Additional_fee_lcy = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Additional_fee_lcy = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Additional_fee_lcy = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field additional_fee_lcy (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReminderLevelOnValidate_Additional_fee_lcy); ok {
-				if err := trg.OnValidate_Additional_fee_lcy(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "calculate_interest":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Calculate_interest = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Calculate_interest = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field calculate_interest")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReminderLevelOnValidate_Calculate_interest); ok {
-				if err := trg.OnValidate_Calculate_interest(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "due_date_calculation":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Due_date_calculation = v
-		} else if v, ok := value.(string); ok {
-			t.Due_date_calculation = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field due_date_calculation")
-		}
-		if err := tables.CheckDateFormula(ReminderLevelTableName, "due_date_calculation", string(t.Due_date_calculation)); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReminderLevelOnValidate_Due_date_calculation); ok {
-				if err := trg.OnValidate_Due_date_calculation(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := reminderLevelFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &reminderLevelFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2279,78 +2015,18 @@ func (t *ReminderLevel) ValidateField(fieldName string, value interface{}) error
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *ReminderLevel) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Reminder_terms_code, true
-	case 2:
-		return t.No, true
-	case 3:
-		return t.Grace_period, true
-	case 4:
-		return t.Additional_fee_lcy, true
-	case 5:
-		return t.Calculate_interest, true
-	case 6:
-		return t.Due_date_calculation, true
-	}
-	return nil, false
+	return reminderLevelFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *ReminderLevel) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return reminderLevelFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *ReminderLevel) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Reminder_terms_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Reminder_terms_code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(int); ok {
-			t.No = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Code); ok {
-			t.Grace_period = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Grace_period = types.NewCode(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Decimal); ok {
-			t.Additional_fee_lcy = v
-			return true
-		}
-	case 5:
-		if v, ok := value.(bool); ok {
-			t.Calculate_interest = v
-			return true
-		}
-	case 6:
-		if v, ok := value.(types.Code); ok {
-			t.Due_date_calculation = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Due_date_calculation = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return reminderLevelFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2829,21 +2505,7 @@ func (t *ReminderLevel) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *ReminderLevel) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "reminder_terms_code":
-		return t.Reminder_terms_code, true
-	case "no":
-		return t.No, true
-	case "grace_period":
-		return t.Grace_period, true
-	case "additional_fee_lcy":
-		return t.Additional_fee_lcy, true
-	case "calculate_interest":
-		return t.Calculate_interest, true
-	case "due_date_calculation":
-		return t.Due_date_calculation, true
-	}
-	return nil, false
+	return reminderLevelFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2937,63 +2599,12 @@ func (t *ReminderLevel) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *ReminderLevel) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"reminder_terms_code":  t.Reminder_terms_code.String(),
-		"no":                   t.No,
-		"grace_period":         t.Grace_period.String(),
-		"additional_fee_lcy":   t.Additional_fee_lcy.String(),
-		"calculate_interest":   t.Calculate_interest,
-		"due_date_calculation": t.Due_date_calculation.String(),
-	}
+	return reminderLevelFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *ReminderLevel) FromMap(data map[string]interface{}) {
-	if v, ok := data["reminder_terms_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Reminder_terms_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.No = int(val)
-		case int:
-			t.No = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.No = n
-			}
-		}
-	}
-	if v, ok := data["grace_period"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Grace_period = types.NewCode(s)
-		}
-	}
-	if v, ok := data["additional_fee_lcy"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Additional_fee_lcy, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Additional_fee_lcy = types.NewDecimal(val)
-		case int:
-			t.Additional_fee_lcy = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Additional_fee_lcy = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["calculate_interest"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Calculate_interest = b
-		}
-	}
-	if v, ok := data["due_date_calculation"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Due_date_calculation = types.NewCode(s)
-		}
-	}
+	reminderLevelFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3014,69 +2625,122 @@ func (t *ReminderLevel) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *ReminderLevel) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "reminder_terms_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "grace_period",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            4,
-			Name:          "additional_fee_lcy",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         5,
-			Name:       "calculate_interest",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "due_date_calculation",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return reminderLevelFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in reminderLevelFields.Fields
+func (t *ReminderLevel) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Reminder_terms_code
+	case 1:
+		return &t.No
+	case 2:
+		return &t.Grace_period
+	case 3:
+		return &t.Additional_fee_lcy
+	case 4:
+		return &t.Calculate_interest
+	case 5:
+		return &t.Due_date_calculation
 	}
+	return nil
+}
+
+// reminderLevelFields describes the fields of Reminder_Level for the record functions
+// written once in foundation/tables
+var reminderLevelFields = &tables.TableFields{
+	Table: ReminderLevelTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "reminder_terms_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Reminder_terms_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_No",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "grace_period",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:        tables.KindCode,
+			Trigger:     "OnValidate_Grace_period",
+			DateFormula: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            4,
+				Name:          "additional_fee_lcy",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Additional_fee_lcy",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "calculate_interest",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Calculate_interest",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "due_date_calculation",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:        tables.KindCode,
+			Trigger:     "OnValidate_Due_date_calculation",
+			DateFormula: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

@@ -44,7 +44,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -299,108 +298,12 @@ var ReminderLine_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *ReminderLine) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "reminder_no":
-		return 1
-	case "line_no":
-		return 2
-	case "attached_to_line_no":
-		return 3
-	case "type":
-		return 4
-	case "entry_no":
-		return 5
-	case "reminder_level":
-		return 6
-	case "posting_date":
-		return 7
-	case "document_date":
-		return 8
-	case "due_date":
-		return 9
-	case "document_type":
-		return 10
-	case "document_no":
-		return 11
-	case "description":
-		return 12
-	case "original_amount":
-		return 13
-	case "remaining_amount":
-		return 14
-	case "no":
-		return 15
-	case "amount":
-		return 16
-	case "interest_rate":
-		return 17
-	case "gen_prod_posting_group":
-		return 18
-	case "tax_percent":
-		return 19
-	case "tax_calculation_type":
-		return 20
-	case "tax_amount":
-		return 21
-	case "tax_group_code":
-		return 22
-	case "tax_prod_posting_group":
-		return 23
-	}
-	return 0
+	return reminderLineFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *ReminderLine) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "reminder_no"
-	case 2:
-		return "line_no"
-	case 3:
-		return "attached_to_line_no"
-	case 4:
-		return "type"
-	case 5:
-		return "entry_no"
-	case 6:
-		return "reminder_level"
-	case 7:
-		return "posting_date"
-	case 8:
-		return "document_date"
-	case 9:
-		return "due_date"
-	case 10:
-		return "document_type"
-	case 11:
-		return "document_no"
-	case 12:
-		return "description"
-	case 13:
-		return "original_amount"
-	case 14:
-		return "remaining_amount"
-	case 15:
-		return "no"
-	case 16:
-		return "amount"
-	case 17:
-		return "interest_rate"
-	case 18:
-		return "gen_prod_posting_group"
-	case 19:
-		return "tax_percent"
-	case 20:
-		return "tax_calculation_type"
-	case 21:
-		return "tax_amount"
-	case 22:
-		return "tax_group_code"
-	case 23:
-		return "tax_prod_posting_group"
-	}
-	return ""
+	return reminderLineFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -504,29 +407,6 @@ type (
 	ReminderLineOnBeforeRename interface {
 		OnBeforeRename(rec *ReminderLine, handled *bool) error
 	}
-	ReminderLineOnValidate_Reminder_no            interface{ OnValidate_Reminder_no(rec *ReminderLine) error }
-	ReminderLineOnValidate_Line_no                interface{ OnValidate_Line_no(rec *ReminderLine) error }
-	ReminderLineOnValidate_Attached_to_line_no    interface{ OnValidate_Attached_to_line_no(rec *ReminderLine) error }
-	ReminderLineOnValidate_Type                   interface{ OnValidate_Type(rec *ReminderLine) error }
-	ReminderLineOnValidate_Entry_no               interface{ OnValidate_Entry_no(rec *ReminderLine) error }
-	ReminderLineOnValidate_Reminder_level         interface{ OnValidate_Reminder_level(rec *ReminderLine) error }
-	ReminderLineOnValidate_Posting_date           interface{ OnValidate_Posting_date(rec *ReminderLine) error }
-	ReminderLineOnValidate_Document_date          interface{ OnValidate_Document_date(rec *ReminderLine) error }
-	ReminderLineOnValidate_Due_date               interface{ OnValidate_Due_date(rec *ReminderLine) error }
-	ReminderLineOnValidate_Document_type          interface{ OnValidate_Document_type(rec *ReminderLine) error }
-	ReminderLineOnValidate_Document_no            interface{ OnValidate_Document_no(rec *ReminderLine) error }
-	ReminderLineOnValidate_Description            interface{ OnValidate_Description(rec *ReminderLine) error }
-	ReminderLineOnValidate_Original_amount        interface{ OnValidate_Original_amount(rec *ReminderLine) error }
-	ReminderLineOnValidate_Remaining_amount       interface{ OnValidate_Remaining_amount(rec *ReminderLine) error }
-	ReminderLineOnValidate_No                     interface{ OnValidate_No(rec *ReminderLine) error }
-	ReminderLineOnValidate_Amount                 interface{ OnValidate_Amount(rec *ReminderLine) error }
-	ReminderLineOnValidate_Interest_rate          interface{ OnValidate_Interest_rate(rec *ReminderLine) error }
-	ReminderLineOnValidate_Gen_prod_posting_group interface{ OnValidate_Gen_prod_posting_group(rec *ReminderLine) error }
-	ReminderLineOnValidate_Tax_percent            interface{ OnValidate_Tax_percent(rec *ReminderLine) error }
-	ReminderLineOnValidate_Tax_calculation_type   interface{ OnValidate_Tax_calculation_type(rec *ReminderLine) error }
-	ReminderLineOnValidate_Tax_amount             interface{ OnValidate_Tax_amount(rec *ReminderLine) error }
-	ReminderLineOnValidate_Tax_group_code         interface{ OnValidate_Tax_group_code(rec *ReminderLine) error }
-	ReminderLineOnValidate_Tax_prod_posting_group interface{ OnValidate_Tax_prod_posting_group(rec *ReminderLine) error }
 )
 
 // reminderLineLogic is the registered business logic of Reminder_Line, in
@@ -569,54 +449,9 @@ func reminderLineTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ReminderLineOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(ReminderLineOnBeforeRename)
-	case "OnValidate_Reminder_no":
-		_, ok = logic.(ReminderLineOnValidate_Reminder_no)
-	case "OnValidate_Line_no":
-		_, ok = logic.(ReminderLineOnValidate_Line_no)
-	case "OnValidate_Attached_to_line_no":
-		_, ok = logic.(ReminderLineOnValidate_Attached_to_line_no)
-	case "OnValidate_Type":
-		_, ok = logic.(ReminderLineOnValidate_Type)
-	case "OnValidate_Entry_no":
-		_, ok = logic.(ReminderLineOnValidate_Entry_no)
-	case "OnValidate_Reminder_level":
-		_, ok = logic.(ReminderLineOnValidate_Reminder_level)
-	case "OnValidate_Posting_date":
-		_, ok = logic.(ReminderLineOnValidate_Posting_date)
-	case "OnValidate_Document_date":
-		_, ok = logic.(ReminderLineOnValidate_Document_date)
-	case "OnValidate_Due_date":
-		_, ok = logic.(ReminderLineOnValidate_Due_date)
-	case "OnValidate_Document_type":
-		_, ok = logic.(ReminderLineOnValidate_Document_type)
-	case "OnValidate_Document_no":
-		_, ok = logic.(ReminderLineOnValidate_Document_no)
-	case "OnValidate_Description":
-		_, ok = logic.(ReminderLineOnValidate_Description)
-	case "OnValidate_Original_amount":
-		_, ok = logic.(ReminderLineOnValidate_Original_amount)
-	case "OnValidate_Remaining_amount":
-		_, ok = logic.(ReminderLineOnValidate_Remaining_amount)
-	case "OnValidate_No":
-		_, ok = logic.(ReminderLineOnValidate_No)
-	case "OnValidate_Amount":
-		_, ok = logic.(ReminderLineOnValidate_Amount)
-	case "OnValidate_Interest_rate":
-		_, ok = logic.(ReminderLineOnValidate_Interest_rate)
-	case "OnValidate_Gen_prod_posting_group":
-		_, ok = logic.(ReminderLineOnValidate_Gen_prod_posting_group)
-	case "OnValidate_Tax_percent":
-		_, ok = logic.(ReminderLineOnValidate_Tax_percent)
-	case "OnValidate_Tax_calculation_type":
-		_, ok = logic.(ReminderLineOnValidate_Tax_calculation_type)
-	case "OnValidate_Tax_amount":
-		_, ok = logic.(ReminderLineOnValidate_Tax_amount)
-	case "OnValidate_Tax_group_code":
-		_, ok = logic.(ReminderLineOnValidate_Tax_group_code)
-	case "OnValidate_Tax_prod_posting_group":
-		_, ok = logic.(ReminderLineOnValidate_Tax_prod_posting_group)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return reminderLineFields.IsOnValidateTrigger(name, logic, (*ReminderLine)(nil))
 	}
 	return true, ok
 }
@@ -972,30 +807,7 @@ func (t *ReminderLine) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *ReminderLine) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["reminder_no"] = t.Reminder_no
-	t.oldValues["line_no"] = t.Line_no
-	t.oldValues["attached_to_line_no"] = t.Attached_to_line_no
-	t.oldValues["type"] = t.Type
-	t.oldValues["entry_no"] = t.Entry_no
-	t.oldValues["reminder_level"] = t.Reminder_level
-	t.oldValues["posting_date"] = t.Posting_date
-	t.oldValues["document_date"] = t.Document_date
-	t.oldValues["due_date"] = t.Due_date
-	t.oldValues["document_type"] = t.Document_type
-	t.oldValues["document_no"] = t.Document_no
-	t.oldValues["description"] = t.Description
-	t.oldValues["original_amount"] = t.Original_amount
-	t.oldValues["remaining_amount"] = t.Remaining_amount
-	t.oldValues["no"] = t.No
-	t.oldValues["amount"] = t.Amount
-	t.oldValues["interest_rate"] = t.Interest_rate
-	t.oldValues["gen_prod_posting_group"] = t.Gen_prod_posting_group
-	t.oldValues["tax_percent"] = t.Tax_percent
-	t.oldValues["tax_calculation_type"] = t.Tax_calculation_type
-	t.oldValues["tax_amount"] = t.Tax_amount
-	t.oldValues["tax_group_code"] = t.Tax_group_code
-	t.oldValues["tax_prod_posting_group"] = t.Tax_prod_posting_group
+	t.oldValues = reminderLineFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -1010,75 +822,7 @@ func (t *ReminderLine) OldValue(fieldName string) interface{} {
 func (t *ReminderLine) XRec() *ReminderLine {
 	x := &ReminderLine{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["reminder_no"].(types.Code); ok {
-		x.Reminder_no = v
-	}
-	if v, ok := t.oldValues["line_no"].(int); ok {
-		x.Line_no = v
-	}
-	if v, ok := t.oldValues["attached_to_line_no"].(int); ok {
-		x.Attached_to_line_no = v
-	}
-	if v, ok := t.oldValues["type"].(ReminderLineType); ok {
-		x.Type = v
-	}
-	if v, ok := t.oldValues["entry_no"].(int); ok {
-		x.Entry_no = v
-	}
-	if v, ok := t.oldValues["reminder_level"].(int); ok {
-		x.Reminder_level = v
-	}
-	if v, ok := t.oldValues["posting_date"].(types.Date); ok {
-		x.Posting_date = v
-	}
-	if v, ok := t.oldValues["document_date"].(types.Date); ok {
-		x.Document_date = v
-	}
-	if v, ok := t.oldValues["due_date"].(types.Date); ok {
-		x.Due_date = v
-	}
-	if v, ok := t.oldValues["document_type"].(ReminderLineDocument_type); ok {
-		x.Document_type = v
-	}
-	if v, ok := t.oldValues["document_no"].(types.Code); ok {
-		x.Document_no = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["original_amount"].(types.Decimal); ok {
-		x.Original_amount = v
-	}
-	if v, ok := t.oldValues["remaining_amount"].(types.Decimal); ok {
-		x.Remaining_amount = v
-	}
-	if v, ok := t.oldValues["no"].(types.Code); ok {
-		x.No = v
-	}
-	if v, ok := t.oldValues["amount"].(types.Decimal); ok {
-		x.Amount = v
-	}
-	if v, ok := t.oldValues["interest_rate"].(types.Decimal); ok {
-		x.Interest_rate = v
-	}
-	if v, ok := t.oldValues["gen_prod_posting_group"].(types.Code); ok {
-		x.Gen_prod_posting_group = v
-	}
-	if v, ok := t.oldValues["tax_percent"].(types.Decimal); ok {
-		x.Tax_percent = v
-	}
-	if v, ok := t.oldValues["tax_calculation_type"].(ReminderLineTax_calculation_type); ok {
-		x.Tax_calculation_type = v
-	}
-	if v, ok := t.oldValues["tax_amount"].(types.Decimal); ok {
-		x.Tax_amount = v
-	}
-	if v, ok := t.oldValues["tax_group_code"].(types.Code); ok {
-		x.Tax_group_code = v
-	}
-	if v, ok := t.oldValues["tax_prod_posting_group"].(types.Code); ok {
-		x.Tax_prod_posting_group = v
-	}
+	reminderLineFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -1580,117 +1324,7 @@ func (t *ReminderLine) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *ReminderLine) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "reminder_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Reminder_no.Equal(old)
-		}
-	case "line_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Line_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "attached_to_line_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Attached_to_line_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "type":
-		if old, ok := oldValue.(ReminderLineType); ok {
-			return t.Type != old
-		}
-	case "entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "reminder_level":
-		if old, ok := oldValue.(int); ok {
-			return t.Reminder_level != old
-		}
-		return true // Type mismatch, assume changed
-	case "posting_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Posting_date.Equal(old)
-		}
-	case "document_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Document_date.Equal(old)
-		}
-	case "due_date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Due_date.Equal(old)
-		}
-	case "document_type":
-		if old, ok := oldValue.(ReminderLineDocument_type); ok {
-			return t.Document_type != old
-		}
-	case "document_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Document_no.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "original_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Original_amount.Equal(old)
-		}
-	case "remaining_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Remaining_amount.Equal(old)
-		}
-	case "no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.No.Equal(old)
-		}
-	case "amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Amount.Equal(old)
-		}
-	case "interest_rate":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Interest_rate.Equal(old)
-		}
-	case "gen_prod_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Gen_prod_posting_group.Equal(old)
-		}
-	case "tax_percent":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Tax_percent.Equal(old)
-		}
-	case "tax_calculation_type":
-		if old, ok := oldValue.(ReminderLineTax_calculation_type); ok {
-			return t.Tax_calculation_type != old
-		}
-	case "tax_amount":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Tax_amount.Equal(old)
-		}
-	case "tax_group_code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_group_code.Equal(old)
-		}
-	case "tax_prod_posting_group":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Tax_prod_posting_group.Equal(old)
-		}
-	}
-
-	return false
+	return reminderLineFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1892,55 +1526,7 @@ func (t *ReminderLine) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *ReminderLine) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("reminder_no"):
-		return "reminder_no", true
-	case strings.ToLower("line_no"):
-		return "line_no", true
-	case strings.ToLower("attached_to_line_no"):
-		return "attached_to_line_no", true
-	case strings.ToLower("type"):
-		return "type", true
-	case strings.ToLower("entry_no"):
-		return "entry_no", true
-	case strings.ToLower("reminder_level"):
-		return "reminder_level", true
-	case strings.ToLower("posting_date"):
-		return "posting_date", true
-	case strings.ToLower("document_date"):
-		return "document_date", true
-	case strings.ToLower("due_date"):
-		return "due_date", true
-	case strings.ToLower("document_type"):
-		return "document_type", true
-	case strings.ToLower("document_no"):
-		return "document_no", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("original_amount"):
-		return "original_amount", true
-	case strings.ToLower("remaining_amount"):
-		return "remaining_amount", true
-	case strings.ToLower("no"):
-		return "no", true
-	case strings.ToLower("amount"):
-		return "amount", true
-	case strings.ToLower("interest_rate"):
-		return "interest_rate", true
-	case strings.ToLower("gen_prod_posting_group"):
-		return "gen_prod_posting_group", true
-	case strings.ToLower("tax_percent"):
-		return "tax_percent", true
-	case strings.ToLower("tax_calculation_type"):
-		return "tax_calculation_type", true
-	case strings.ToLower("tax_amount"):
-		return "tax_amount", true
-	case strings.ToLower("tax_group_code"):
-		return "tax_group_code", true
-	case strings.ToLower("tax_prod_posting_group"):
-		return "tax_prod_posting_group", true
-	}
-	return "", false
+	return reminderLineFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -3008,657 +2594,20 @@ func (t *ReminderLine) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *ReminderLine) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "reminder_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Reminder_no = v
-		} else if v, ok := value.(string); ok {
-			t.Reminder_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field reminder_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "reminder_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReminderLineOnValidate_Reminder_no); ok {
-				if err := trg.OnValidate_Reminder_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "line_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Line_no = v
-		case float64:
-			t.Line_no = int(v)
-		case string:
-			if v == "" {
-				t.Line_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Line_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field line_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field line_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReminderLineOnValidate_Line_no); ok {
-				if err := trg.OnValidate_Line_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "attached_to_line_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Attached_to_line_no = v
-		case float64:
-			t.Attached_to_line_no = int(v)
-		case string:
-			if v == "" {
-				t.Attached_to_line_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Attached_to_line_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field attached_to_line_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field attached_to_line_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReminderLineOnValidate_Attached_to_line_no); ok {
-				if err := trg.OnValidate_Attached_to_line_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ReminderLineType); ok {
-			t.Type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 3 {
-				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", v, 3-1)
-			}
-			t.Type = ReminderLineType(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 3 {
-				return fmt.Errorf("invalid option value %d for field type (valid range: 0-%d)", intVal, 3-1)
-			}
-			t.Type = ReminderLineType(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Type = 0
-			} else {
-				options := []string{" ", "G/L Account", "Customer Ledger Entry"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Type = ReminderLineType(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field type (expected ReminderLineType, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReminderLineOnValidate_Type); ok {
-				if err := trg.OnValidate_Type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Entry_no = v
-		case float64:
-			t.Entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field entry_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "entry_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReminderLineOnValidate_Entry_no); ok {
-				if err := trg.OnValidate_Entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "reminder_level":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Reminder_level = v
-		case float64:
-			t.Reminder_level = int(v)
-		case string:
-			if v == "" {
-				t.Reminder_level = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Reminder_level = i
-			} else {
-				return fmt.Errorf("invalid integer value for field reminder_level: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field reminder_level")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReminderLineOnValidate_Reminder_level); ok {
-				if err := trg.OnValidate_Reminder_level(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "posting_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Posting_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Posting_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field posting_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Posting_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field posting_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReminderLineOnValidate_Posting_date); ok {
-				if err := trg.OnValidate_Posting_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Document_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Document_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field document_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Document_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field document_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReminderLineOnValidate_Document_date); ok {
-				if err := trg.OnValidate_Document_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "due_date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Due_date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Due_date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field due_date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Due_date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field due_date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReminderLineOnValidate_Due_date); ok {
-				if err := trg.OnValidate_Due_date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ReminderLineDocument_type); ok {
-			t.Document_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 6 {
-				return fmt.Errorf("invalid option value %d for field document_type (valid range: 0-%d)", v, 6-1)
-			}
-			t.Document_type = ReminderLineDocument_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 6 {
-				return fmt.Errorf("invalid option value %d for field document_type (valid range: 0-%d)", intVal, 6-1)
-			}
-			t.Document_type = ReminderLineDocument_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Document_type = 0
-			} else {
-				options := []string{" ", "Payment", "Invoice", "Credit Memo", "Finance Charge Memo", "Reminder"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Document_type = ReminderLineDocument_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field document_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field document_type (expected ReminderLineDocument_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReminderLineOnValidate_Document_type); ok {
-				if err := trg.OnValidate_Document_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "document_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Document_no = v
-		} else if v, ok := value.(string); ok {
-			t.Document_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field document_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReminderLineOnValidate_Document_no); ok {
-				if err := trg.OnValidate_Document_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReminderLineOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "original_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Original_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Original_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field original_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Original_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Original_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Original_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field original_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReminderLineOnValidate_Original_amount); ok {
-				if err := trg.OnValidate_Original_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "remaining_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Remaining_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Remaining_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field remaining_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Remaining_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Remaining_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Remaining_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field remaining_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReminderLineOnValidate_Remaining_amount); ok {
-				if err := trg.OnValidate_Remaining_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-		} else if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReminderLineOnValidate_No); ok {
-				if err := trg.OnValidate_No(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReminderLineOnValidate_Amount); ok {
-				if err := trg.OnValidate_Amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "interest_rate":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Interest_rate = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Interest_rate, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field interest_rate: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Interest_rate = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Interest_rate = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Interest_rate = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field interest_rate (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReminderLineOnValidate_Interest_rate); ok {
-				if err := trg.OnValidate_Interest_rate(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "gen_prod_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Gen_prod_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Gen_prod_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field gen_prod_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "gen_prod_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReminderLineOnValidate_Gen_prod_posting_group); ok {
-				if err := trg.OnValidate_Gen_prod_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_percent":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Tax_percent = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Tax_percent, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field tax_percent: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Tax_percent = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Tax_percent = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Tax_percent = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_percent (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReminderLineOnValidate_Tax_percent); ok {
-				if err := trg.OnValidate_Tax_percent(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_calculation_type":
-		// Set field value
-		// Accept enum type directly
-		if v, ok := value.(ReminderLineTax_calculation_type); ok {
-			t.Tax_calculation_type = v
-			// Accept int (convert to enum)
-		} else if v, ok := value.(int); ok {
-			if v < 0 || v >= 4 {
-				return fmt.Errorf("invalid option value %d for field tax_calculation_type (valid range: 0-%d)", v, 4-1)
-			}
-			t.Tax_calculation_type = ReminderLineTax_calculation_type(v)
-			// Accept float64 (JSON numbers decode as float64)
-		} else if v, ok := value.(float64); ok {
-			intVal := int(v)
-			if intVal < 0 || intVal >= 4 {
-				return fmt.Errorf("invalid option value %d for field tax_calculation_type (valid range: 0-%d)", intVal, 4-1)
-			}
-			t.Tax_calculation_type = ReminderLineTax_calculation_type(intVal)
-			// Accept string (lookup in options and convert)
-		} else if v, ok := value.(string); ok {
-			if v == "" {
-				// Empty string defaults to first option (behavior)
-				t.Tax_calculation_type = 0
-			} else {
-				options := []string{"Normal VAT", "Reverse Charge VAT", "Full VAT", "Sales Tax"}
-				found := false
-				for i, opt := range options {
-					if opt == v {
-						t.Tax_calculation_type = ReminderLineTax_calculation_type(i)
-						found = true
-						break
-					}
-				}
-				if !found {
-					return fmt.Errorf("invalid option '%s' for field tax_calculation_type (valid options: %v)", v, options)
-				}
-			}
-		} else {
-			return fmt.Errorf("invalid type for field tax_calculation_type (expected ReminderLineTax_calculation_type, int, or string)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReminderLineOnValidate_Tax_calculation_type); ok {
-				if err := trg.OnValidate_Tax_calculation_type(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_amount":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Tax_amount = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Tax_amount, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field tax_amount: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Tax_amount = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Tax_amount = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Tax_amount = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_amount (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReminderLineOnValidate_Tax_amount); ok {
-				if err := trg.OnValidate_Tax_amount(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_group_code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_group_code = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_group_code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_group_code")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_group_code"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReminderLineOnValidate_Tax_group_code); ok {
-				if err := trg.OnValidate_Tax_group_code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "tax_prod_posting_group":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Tax_prod_posting_group = v
-		} else if v, ok := value.(string); ok {
-			t.Tax_prod_posting_group = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field tax_prod_posting_group")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "tax_prod_posting_group"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ReminderLineOnValidate_Tax_prod_posting_group); ok {
-				if err := trg.OnValidate_Tax_prod_posting_group(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := reminderLineFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &reminderLineFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -3667,213 +2616,18 @@ func (t *ReminderLine) ValidateField(fieldName string, value interface{}) error 
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *ReminderLine) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Reminder_no, true
-	case 2:
-		return t.Line_no, true
-	case 3:
-		return t.Attached_to_line_no, true
-	case 4:
-		return t.Type, true
-	case 5:
-		return t.Entry_no, true
-	case 6:
-		return t.Reminder_level, true
-	case 7:
-		return t.Posting_date, true
-	case 8:
-		return t.Document_date, true
-	case 9:
-		return t.Due_date, true
-	case 10:
-		return t.Document_type, true
-	case 11:
-		return t.Document_no, true
-	case 12:
-		return t.Description, true
-	case 13:
-		return t.Original_amount, true
-	case 14:
-		return t.Remaining_amount, true
-	case 15:
-		return t.No, true
-	case 16:
-		return t.Amount, true
-	case 17:
-		return t.Interest_rate, true
-	case 18:
-		return t.Gen_prod_posting_group, true
-	case 19:
-		return t.Tax_percent, true
-	case 20:
-		return t.Tax_calculation_type, true
-	case 21:
-		return t.Tax_amount, true
-	case 22:
-		return t.Tax_group_code, true
-	case 23:
-		return t.Tax_prod_posting_group, true
-	}
-	return nil, false
+	return reminderLineFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *ReminderLine) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return reminderLineFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *ReminderLine) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Reminder_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Reminder_no = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(int); ok {
-			t.Line_no = v
-			return true
-		}
-	case 3:
-		if v, ok := value.(int); ok {
-			t.Attached_to_line_no = v
-			return true
-		}
-	case 4:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 3 {
-			t.Type = ReminderLineType(i)
-			return true
-		}
-	case 5:
-		if v, ok := value.(int); ok {
-			t.Entry_no = v
-			return true
-		}
-	case 6:
-		if v, ok := value.(int); ok {
-			t.Reminder_level = v
-			return true
-		}
-	case 7:
-		if v, ok := value.(types.Date); ok {
-			t.Posting_date = v
-			return true
-		}
-	case 8:
-		if v, ok := value.(types.Date); ok {
-			t.Document_date = v
-			return true
-		}
-	case 9:
-		if v, ok := value.(types.Date); ok {
-			t.Due_date = v
-			return true
-		}
-	case 10:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 6 {
-			t.Document_type = ReminderLineDocument_type(i)
-			return true
-		}
-	case 11:
-		if v, ok := value.(types.Code); ok {
-			t.Document_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Document_no = types.NewCode(v)
-			return true
-		}
-	case 12:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 13:
-		if v, ok := value.(types.Decimal); ok {
-			t.Original_amount = v
-			return true
-		}
-	case 14:
-		if v, ok := value.(types.Decimal); ok {
-			t.Remaining_amount = v
-			return true
-		}
-	case 15:
-		if v, ok := value.(types.Code); ok {
-			t.No = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.No = types.NewCode(v)
-			return true
-		}
-	case 16:
-		if v, ok := value.(types.Decimal); ok {
-			t.Amount = v
-			return true
-		}
-	case 17:
-		if v, ok := value.(types.Decimal); ok {
-			t.Interest_rate = v
-			return true
-		}
-	case 18:
-		if v, ok := value.(types.Code); ok {
-			t.Gen_prod_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Gen_prod_posting_group = types.NewCode(v)
-			return true
-		}
-	case 19:
-		if v, ok := value.(types.Decimal); ok {
-			t.Tax_percent = v
-			return true
-		}
-	case 20:
-		if i, ok := tables.OptionIndex(value); ok && i >= 0 && i < 4 {
-			t.Tax_calculation_type = ReminderLineTax_calculation_type(i)
-			return true
-		}
-	case 21:
-		if v, ok := value.(types.Decimal); ok {
-			t.Tax_amount = v
-			return true
-		}
-	case 22:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_group_code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_group_code = types.NewCode(v)
-			return true
-		}
-	case 23:
-		if v, ok := value.(types.Code); ok {
-			t.Tax_prod_posting_group = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Tax_prod_posting_group = types.NewCode(v)
-			return true
-		}
-	}
-	return false
+	return reminderLineFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -4416,55 +3170,7 @@ func (t *ReminderLine) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *ReminderLine) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "reminder_no":
-		return t.Reminder_no, true
-	case "line_no":
-		return t.Line_no, true
-	case "attached_to_line_no":
-		return t.Attached_to_line_no, true
-	case "type":
-		return int(t.Type), true
-	case "entry_no":
-		return t.Entry_no, true
-	case "reminder_level":
-		return t.Reminder_level, true
-	case "posting_date":
-		return t.Posting_date, true
-	case "document_date":
-		return t.Document_date, true
-	case "due_date":
-		return t.Due_date, true
-	case "document_type":
-		return int(t.Document_type), true
-	case "document_no":
-		return t.Document_no, true
-	case "description":
-		return t.Description, true
-	case "original_amount":
-		return t.Original_amount, true
-	case "remaining_amount":
-		return t.Remaining_amount, true
-	case "no":
-		return t.No, true
-	case "amount":
-		return t.Amount, true
-	case "interest_rate":
-		return t.Interest_rate, true
-	case "gen_prod_posting_group":
-		return t.Gen_prod_posting_group, true
-	case "tax_percent":
-		return t.Tax_percent, true
-	case "tax_calculation_type":
-		return int(t.Tax_calculation_type), true
-	case "tax_amount":
-		return t.Tax_amount, true
-	case "tax_group_code":
-		return t.Tax_group_code, true
-	case "tax_prod_posting_group":
-		return t.Tax_prod_posting_group, true
-	}
-	return nil, false
+	return reminderLineFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -4575,260 +3281,12 @@ func (t *ReminderLine) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *ReminderLine) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"reminder_no":            t.Reminder_no.String(),
-		"line_no":                t.Line_no,
-		"attached_to_line_no":    t.Attached_to_line_no,
-		"type":                   int(t.Type),
-		"entry_no":               t.Entry_no,
-		"reminder_level":         t.Reminder_level,
-		"posting_date":           t.Posting_date.String(),
-		"document_date":          t.Document_date.String(),
-		"due_date":               t.Due_date.String(),
-		"document_type":          int(t.Document_type),
-		"document_no":            t.Document_no.String(),
-		"description":            t.Description.String(),
-		"original_amount":        t.Original_amount.String(),
-		"remaining_amount":       t.Remaining_amount.String(),
-		"no":                     t.No.String(),
-		"amount":                 t.Amount.String(),
-		"interest_rate":          t.Interest_rate.String(),
-		"gen_prod_posting_group": t.Gen_prod_posting_group.String(),
-		"tax_percent":            t.Tax_percent.String(),
-		"tax_calculation_type":   int(t.Tax_calculation_type),
-		"tax_amount":             t.Tax_amount.String(),
-		"tax_group_code":         t.Tax_group_code.String(),
-		"tax_prod_posting_group": t.Tax_prod_posting_group.String(),
-	}
+	return reminderLineFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *ReminderLine) FromMap(data map[string]interface{}) {
-	if v, ok := data["reminder_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Reminder_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["line_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Line_no = int(val)
-		case int:
-			t.Line_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Line_no = n
-			}
-		}
-	}
-	if v, ok := data["attached_to_line_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Attached_to_line_no = int(val)
-		case int:
-			t.Attached_to_line_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Attached_to_line_no = n
-			}
-		}
-	}
-	if v, ok := data["type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Type = ReminderLineType(int(val))
-		case int:
-			t.Type = ReminderLineType(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "G/L Account", "Customer Ledger Entry"}
-			for i, opt := range options {
-				if opt == val {
-					t.Type = ReminderLineType(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Entry_no = int(val)
-		case int:
-			t.Entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Entry_no = n
-			}
-		}
-	}
-	if v, ok := data["reminder_level"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Reminder_level = int(val)
-		case int:
-			t.Reminder_level = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Reminder_level = n
-			}
-		}
-	}
-	if v, ok := data["posting_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Posting_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["document_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Document_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["due_date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Due_date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["document_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Document_type = ReminderLineDocument_type(int(val))
-		case int:
-			t.Document_type = ReminderLineDocument_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{" ", "Payment", "Invoice", "Credit Memo", "Finance Charge Memo", "Reminder"}
-			for i, opt := range options {
-				if opt == val {
-					t.Document_type = ReminderLineDocument_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["document_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Document_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["original_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Original_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Original_amount = types.NewDecimal(val)
-		case int:
-			t.Original_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Original_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["remaining_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Remaining_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Remaining_amount = types.NewDecimal(val)
-		case int:
-			t.Remaining_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Remaining_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.No = types.NewCode(s)
-		}
-	}
-	if v, ok := data["amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Amount = types.NewDecimal(val)
-		case int:
-			t.Amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["interest_rate"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Interest_rate, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Interest_rate = types.NewDecimal(val)
-		case int:
-			t.Interest_rate = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Interest_rate = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["gen_prod_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Gen_prod_posting_group = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_percent"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Tax_percent, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Tax_percent = types.NewDecimal(val)
-		case int:
-			t.Tax_percent = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Tax_percent = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["tax_calculation_type"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Tax_calculation_type = ReminderLineTax_calculation_type(int(val))
-		case int:
-			t.Tax_calculation_type = ReminderLineTax_calculation_type(val)
-		case string:
-			// Lookup string value in options
-			options := []string{"Normal VAT", "Reverse Charge VAT", "Full VAT", "Sales Tax"}
-			for i, opt := range options {
-				if opt == val {
-					t.Tax_calculation_type = ReminderLineTax_calculation_type(i)
-					break
-				}
-			}
-		}
-	}
-	if v, ok := data["tax_amount"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Tax_amount, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Tax_amount = types.NewDecimal(val)
-		case int:
-			t.Tax_amount = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Tax_amount = types.NewDecimalFromInt(val)
-		}
-	}
-	if v, ok := data["tax_group_code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_group_code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["tax_prod_posting_group"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Tax_prod_posting_group = types.NewCode(s)
-		}
-	}
+	reminderLineFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -4849,253 +3307,414 @@ func (t *ReminderLine) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *ReminderLine) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "reminder_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "line_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "attached_to_line_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         4,
-			Name:       "type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         6,
-			Name:       "reminder_level",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         7,
-			Name:       "posting_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         8,
-			Name:       "document_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         9,
-			Name:       "due_date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:         10,
-			Name:       "document_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         11,
-			Name:       "document_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         12,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     100,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            13,
-			Name:          "original_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            14,
-			Name:          "remaining_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         15,
-			Name:       "no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            16,
-			Name:          "amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:            17,
-			Name:          "interest_rate",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         18,
-			Name:       "gen_prod_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            19,
-			Name:          "tax_percent",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "0:5",
-		},
-		{
-			No:         20,
-			Name:       "tax_calculation_type",
-			Type:       tables.FieldTypeOption,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-			ReadOnly:   true,
-		},
-		{
-			No:            21,
-			Name:          "tax_amount",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			ReadOnly:      true,
-			DecimalPlaces: "2:2",
-		},
-		{
-			No:         22,
-			Name:       "tax_group_code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         23,
-			Name:       "tax_prod_posting_group",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
+	return reminderLineFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in reminderLineFields.Fields
+func (t *ReminderLine) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Reminder_no
+	case 1:
+		return &t.Line_no
+	case 2:
+		return &t.Attached_to_line_no
+	case 3:
+		return &t.Type
+	case 4:
+		return &t.Entry_no
+	case 5:
+		return &t.Reminder_level
+	case 6:
+		return &t.Posting_date
+	case 7:
+		return &t.Document_date
+	case 8:
+		return &t.Due_date
+	case 9:
+		return &t.Document_type
+	case 10:
+		return &t.Document_no
+	case 11:
+		return &t.Description
+	case 12:
+		return &t.Original_amount
+	case 13:
+		return &t.Remaining_amount
+	case 14:
+		return &t.No
+	case 15:
+		return &t.Amount
+	case 16:
+		return &t.Interest_rate
+	case 17:
+		return &t.Gen_prod_posting_group
+	case 18:
+		return &t.Tax_percent
+	case 19:
+		return &t.Tax_calculation_type
+	case 20:
+		return &t.Tax_amount
+	case 21:
+		return &t.Tax_group_code
+	case 22:
+		return &t.Tax_prod_posting_group
 	}
+	return nil
+}
+
+// reminderLineFields describes the fields of Reminder_Line for the record functions
+// written once in foundation/tables
+var reminderLineFields = &tables.TableFields{
+	Table: ReminderLineTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "reminder_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Reminder_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "line_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Line_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "attached_to_line_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Attached_to_line_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Type",
+			Options: []string{" ", "G/L Account", "Customer Ledger Entry"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindInt,
+			Trigger:  "OnValidate_Entry_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         6,
+				Name:       "reminder_level",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Reminder_level",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         7,
+				Name:       "posting_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Posting_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         8,
+				Name:       "document_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Document_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         9,
+				Name:       "due_date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Due_date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "document_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Document_type",
+			Options: []string{" ", "Payment", "Invoice", "Credit Memo", "Finance Charge Memo", "Reminder"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         11,
+				Name:       "document_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Document_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         12,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     100,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            13,
+				Name:          "original_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Original_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            14,
+				Name:          "remaining_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Remaining_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         15,
+				Name:       "no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_No",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            16,
+				Name:          "amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            17,
+				Name:          "interest_rate",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Interest_rate",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         18,
+				Name:       "gen_prod_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Gen_prod_posting_group",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            19,
+				Name:          "tax_percent",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Tax_percent",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         20,
+				Name:       "tax_calculation_type",
+				Type:       tables.FieldTypeOption,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindOption,
+			Trigger: "OnValidate_Tax_calculation_type",
+			Options: []string{"Normal VAT", "Reverse Charge VAT", "Full VAT", "Sales Tax"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            21,
+				Name:          "tax_amount",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				ReadOnly:      true,
+				DecimalPlaces: "2:2",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Tax_amount",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         22,
+				Name:       "tax_group_code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_group_code",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         23,
+				Name:       "tax_prod_posting_group",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Tax_prod_posting_group",
+			Relation: true,
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

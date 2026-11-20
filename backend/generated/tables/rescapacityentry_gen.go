@@ -26,7 +26,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -127,36 +126,12 @@ var ResCapacityEntry_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *ResCapacityEntry) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "entry_no":
-		return 1
-	case "resource_no":
-		return 2
-	case "resource_group_no":
-		return 3
-	case "date":
-		return 4
-	case "capacity":
-		return 5
-	}
-	return 0
+	return resCapacityEntryFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *ResCapacityEntry) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "entry_no"
-	case 2:
-		return "resource_no"
-	case 3:
-		return "resource_group_no"
-	case 4:
-		return "date"
-	case 5:
-		return "capacity"
-	}
-	return ""
+	return resCapacityEntryFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -268,21 +243,6 @@ type (
 	ResCapacityEntryOnBeforeRename interface {
 		OnBeforeRename(rec *ResCapacityEntry, handled *bool) error
 	}
-	ResCapacityEntryOnValidate_Entry_no interface {
-		OnValidate_Entry_no(rec *ResCapacityEntry) error
-	}
-	ResCapacityEntryOnValidate_Resource_no interface {
-		OnValidate_Resource_no(rec *ResCapacityEntry) error
-	}
-	ResCapacityEntryOnValidate_Resource_group_no interface {
-		OnValidate_Resource_group_no(rec *ResCapacityEntry) error
-	}
-	ResCapacityEntryOnValidate_Date interface {
-		OnValidate_Date(rec *ResCapacityEntry) error
-	}
-	ResCapacityEntryOnValidate_Capacity interface {
-		OnValidate_Capacity(rec *ResCapacityEntry) error
-	}
 )
 
 // resCapacityEntryLogic is the registered business logic of Res_Capacity_Entry, in
@@ -325,18 +285,9 @@ func resCapacityEntryTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(ResCapacityEntryOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(ResCapacityEntryOnBeforeRename)
-	case "OnValidate_Entry_no":
-		_, ok = logic.(ResCapacityEntryOnValidate_Entry_no)
-	case "OnValidate_Resource_no":
-		_, ok = logic.(ResCapacityEntryOnValidate_Resource_no)
-	case "OnValidate_Resource_group_no":
-		_, ok = logic.(ResCapacityEntryOnValidate_Resource_group_no)
-	case "OnValidate_Date":
-		_, ok = logic.(ResCapacityEntryOnValidate_Date)
-	case "OnValidate_Capacity":
-		_, ok = logic.(ResCapacityEntryOnValidate_Capacity)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return resCapacityEntryFields.IsOnValidateTrigger(name, logic, (*ResCapacityEntry)(nil))
 	}
 	return true, ok
 }
@@ -650,12 +601,7 @@ func (t *ResCapacityEntry) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *ResCapacityEntry) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["entry_no"] = t.Entry_no
-	t.oldValues["resource_no"] = t.Resource_no
-	t.oldValues["resource_group_no"] = t.Resource_group_no
-	t.oldValues["date"] = t.Date
-	t.oldValues["capacity"] = t.Capacity
+	t.oldValues = resCapacityEntryFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -670,21 +616,7 @@ func (t *ResCapacityEntry) OldValue(fieldName string) interface{} {
 func (t *ResCapacityEntry) XRec() *ResCapacityEntry {
 	x := &ResCapacityEntry{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["entry_no"].(int); ok {
-		x.Entry_no = v
-	}
-	if v, ok := t.oldValues["resource_no"].(types.Code); ok {
-		x.Resource_no = v
-	}
-	if v, ok := t.oldValues["resource_group_no"].(types.Code); ok {
-		x.Resource_group_no = v
-	}
-	if v, ok := t.oldValues["date"].(types.Date); ok {
-		x.Date = v
-	}
-	if v, ok := t.oldValues["capacity"].(types.Decimal); ok {
-		x.Capacity = v
-	}
+	resCapacityEntryFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -982,42 +914,7 @@ func (t *ResCapacityEntry) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *ResCapacityEntry) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "entry_no":
-		if old, ok := oldValue.(int); ok {
-			return t.Entry_no != old
-		}
-		return true // Type mismatch, assume changed
-	case "resource_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Resource_no.Equal(old)
-		}
-	case "resource_group_no":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Resource_group_no.Equal(old)
-		}
-	case "date":
-		if old, ok := oldValue.(types.Date); ok {
-			return !t.Date.Equal(old)
-		}
-	case "capacity":
-		if old, ok := oldValue.(types.Decimal); ok {
-			return !t.Capacity.Equal(old)
-		}
-	}
-
-	return false
+	return resCapacityEntryFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1218,19 +1115,7 @@ func (t *ResCapacityEntry) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *ResCapacityEntry) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("entry_no"):
-		return "entry_no", true
-	case strings.ToLower("resource_no"):
-		return "resource_no", true
-	case strings.ToLower("resource_group_no"):
-		return "resource_group_no", true
-	case strings.ToLower("date"):
-		return "date", true
-	case strings.ToLower("capacity"):
-		return "capacity", true
-	}
-	return "", false
+	return resCapacityEntryFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2074,135 +1959,20 @@ func (t *ResCapacityEntry) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *ResCapacityEntry) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "entry_no":
-		// Set field value
-		switch v := value.(type) {
-		case int:
-			t.Entry_no = v
-		case float64:
-			t.Entry_no = int(v)
-		case string:
-			if v == "" {
-				t.Entry_no = 0
-			} else if i, err := strconv.Atoi(v); err == nil {
-				t.Entry_no = i
-			} else {
-				return fmt.Errorf("invalid integer value for field entry_no: %s", v)
-			}
-		default:
-			return fmt.Errorf("invalid type for field entry_no")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ResCapacityEntryOnValidate_Entry_no); ok {
-				if err := trg.OnValidate_Entry_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "resource_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Resource_no = v
-		} else if v, ok := value.(string); ok {
-			t.Resource_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field resource_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "resource_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ResCapacityEntryOnValidate_Resource_no); ok {
-				if err := trg.OnValidate_Resource_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "resource_group_no":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Resource_group_no = v
-		} else if v, ok := value.(string); ok {
-			t.Resource_group_no = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field resource_group_no")
-		}
-		// TableRelation: the value must exist in the related table (before OnValidate)
-		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, "resource_group_no"); err != nil {
-			return err
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ResCapacityEntryOnValidate_Resource_group_no); ok {
-				if err := trg.OnValidate_Resource_group_no(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "date":
-		// Set field value
-		if v, ok := value.(types.Date); ok {
-			t.Date = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Date, err = types.NewDateFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid date value for field date: %w", err)
-			}
-		} else if v, ok := value.(time.Time); ok {
-			t.Date = types.NewDateFromTime(v)
-		} else {
-			return fmt.Errorf("invalid type for field date (expected Date, string, or time.Time)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ResCapacityEntryOnValidate_Date); ok {
-				if err := trg.OnValidate_Date(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "capacity":
-		// Set field value
-		if v, ok := value.(types.Decimal); ok {
-			t.Capacity = v
-		} else if v, ok := value.(string); ok {
-			var err error
-			t.Capacity, err = types.NewDecimalFromString(v)
-			if err != nil {
-				return fmt.Errorf("invalid decimal value for field capacity: %w", err)
-			}
-		} else if v, ok := value.(float64); ok {
-			t.Capacity = types.NewDecimal(v)
-		} else if v, ok := value.(int); ok {
-			t.Capacity = types.NewDecimalFromInt(int64(v))
-		} else if v, ok := value.(int64); ok {
-			t.Capacity = types.NewDecimalFromInt(v)
-		} else {
-			return fmt.Errorf("invalid type for field capacity (expected Decimal, string, float64, int, or int64)")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(ResCapacityEntryOnValidate_Capacity); ok {
-				if err := trg.OnValidate_Capacity(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := resCapacityEntryFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &resCapacityEntryFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2211,67 +1981,18 @@ func (t *ResCapacityEntry) ValidateField(fieldName string, value interface{}) er
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *ResCapacityEntry) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Entry_no, true
-	case 2:
-		return t.Resource_no, true
-	case 3:
-		return t.Resource_group_no, true
-	case 4:
-		return t.Date, true
-	case 5:
-		return t.Capacity, true
-	}
-	return nil, false
+	return resCapacityEntryFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *ResCapacityEntry) flowFieldValue(no int) (any, bool) {
-	switch no {
-	}
-	return nil, false
+	return resCapacityEntryFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *ResCapacityEntry) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(int); ok {
-			t.Entry_no = v
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Code); ok {
-			t.Resource_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Resource_no = types.NewCode(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(types.Code); ok {
-			t.Resource_group_no = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Resource_group_no = types.NewCode(v)
-			return true
-		}
-	case 4:
-		if v, ok := value.(types.Date); ok {
-			t.Date = v
-			return true
-		}
-	case 5:
-		if v, ok := value.(types.Decimal); ok {
-			t.Capacity = v
-			return true
-		}
-	}
-	return false
+	return resCapacityEntryFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -2749,19 +2470,7 @@ func (t *ResCapacityEntry) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *ResCapacityEntry) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "entry_no":
-		return t.Entry_no, true
-	case "resource_no":
-		return t.Resource_no, true
-	case "resource_group_no":
-		return t.Resource_group_no, true
-	case "date":
-		return t.Date, true
-	case "capacity":
-		return t.Capacity, true
-	}
-	return nil, false
+	return resCapacityEntryFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -2851,57 +2560,12 @@ func (t *ResCapacityEntry) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *ResCapacityEntry) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"entry_no":          t.Entry_no,
-		"resource_no":       t.Resource_no.String(),
-		"resource_group_no": t.Resource_group_no.String(),
-		"date":              t.Date.String(),
-		"capacity":          t.Capacity.String(),
-	}
+	return resCapacityEntryFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *ResCapacityEntry) FromMap(data map[string]interface{}) {
-	if v, ok := data["entry_no"]; ok && v != nil {
-		switch val := v.(type) {
-		case float64:
-			t.Entry_no = int(val)
-		case int:
-			t.Entry_no = val
-		case string:
-			// a record key from a URL or a list selection
-			if n, err := strconv.Atoi(val); err == nil {
-				t.Entry_no = n
-			}
-		}
-	}
-	if v, ok := data["resource_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Resource_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["resource_group_no"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Resource_group_no = types.NewCode(s)
-		}
-	}
-	if v, ok := data["date"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Date, _ = types.NewDateFromString(s)
-		}
-	}
-	if v, ok := data["capacity"]; ok && v != nil {
-		switch val := v.(type) {
-		case string:
-			t.Capacity, _ = types.NewDecimalFromString(val)
-		case float64:
-			t.Capacity = types.NewDecimal(val)
-		case int:
-			t.Capacity = types.NewDecimalFromInt(int64(val))
-		case int64:
-			t.Capacity = types.NewDecimalFromInt(val)
-		}
-	}
+	resCapacityEntryFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -2922,59 +2586,105 @@ func (t *ResCapacityEntry) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *ResCapacityEntry) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "entry_no",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "resource_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "resource_group_no",
-			Type:       tables.FieldTypeCode,
-			Length:     20,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "date",
-			Type:       tables.FieldTypeDate,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:            5,
-			Name:          "capacity",
-			Type:          tables.FieldTypeDecimal,
-			Length:        0,
-			Required:      false,
-			Editable:      true,
-			PrimaryKey:    false,
-			FlowField:     false,
-			DecimalPlaces: "0:5",
-		},
+	return resCapacityEntryFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in resCapacityEntryFields.Fields
+func (t *ResCapacityEntry) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Entry_no
+	case 1:
+		return &t.Resource_no
+	case 2:
+		return &t.Resource_group_no
+	case 3:
+		return &t.Date
+	case 4:
+		return &t.Capacity
 	}
+	return nil
+}
+
+// resCapacityEntryFields describes the fields of Res_Capacity_Entry for the record functions
+// written once in foundation/tables
+var resCapacityEntryFields = &tables.TableFields{
+	Table: ResCapacityEntryTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "entry_no",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_Entry_no",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "resource_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Resource_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "resource_group_no",
+				Type:       tables.FieldTypeCode,
+				Length:     20,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:     tables.KindCode,
+			Trigger:  "OnValidate_Resource_group_no",
+			Relation: true,
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "date",
+				Type:       tables.FieldTypeDate,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindDate,
+			Trigger: "OnValidate_Date",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:            5,
+				Name:          "capacity",
+				Type:          tables.FieldTypeDecimal,
+				Length:        0,
+				Required:      false,
+				Editable:      true,
+				PrimaryKey:    false,
+				FlowField:     false,
+				DecimalPlaces: "0:5",
+			},
+			Kind:    tables.KindDecimal,
+			Trigger: "OnValidate_Capacity",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a

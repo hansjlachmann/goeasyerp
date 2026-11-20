@@ -130,40 +130,12 @@ var NoSeries_FieldNo = struct {
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
 func (t *NoSeries) FieldNo(fieldName string) int {
-	switch strings.ToLower(fieldName) {
-	case "code":
-		return 1
-	case "description":
-		return 2
-	case "default_nos":
-		return 3
-	case "manual_nos":
-		return 4
-	case "date_order":
-		return 5
-	case "no_of_lines":
-		return 900
-	}
-	return 0
+	return noSeriesFields.FieldNo(fieldName)
 }
 
 // FieldName returns the name of the field with a number, "" for an unknown number
 func (t *NoSeries) FieldName(fieldNo int) string {
-	switch fieldNo {
-	case 1:
-		return "code"
-	case 2:
-		return "description"
-	case 3:
-		return "default_nos"
-	case 4:
-		return "manual_nos"
-	case 5:
-		return "date_order"
-	case 900:
-		return "no_of_lines"
-	}
-	return ""
+	return noSeriesFields.FieldName(fieldNo)
 }
 
 // GetTableID returns the table ID (for Object Registry)
@@ -267,11 +239,6 @@ type (
 	NoSeriesOnBeforeRename interface {
 		OnBeforeRename(rec *NoSeries, handled *bool) error
 	}
-	NoSeriesOnValidate_Code        interface{ OnValidate_Code(rec *NoSeries) error }
-	NoSeriesOnValidate_Description interface{ OnValidate_Description(rec *NoSeries) error }
-	NoSeriesOnValidate_Default_nos interface{ OnValidate_Default_nos(rec *NoSeries) error }
-	NoSeriesOnValidate_Manual_nos  interface{ OnValidate_Manual_nos(rec *NoSeries) error }
-	NoSeriesOnValidate_Date_order  interface{ OnValidate_Date_order(rec *NoSeries) error }
 )
 
 // noSeriesLogic is the registered business logic of No_Series, in
@@ -314,18 +281,9 @@ func noSeriesTrigger(name string, logic any) (known, ok bool) {
 		_, ok = logic.(NoSeriesOnBeforeDelete)
 	case "OnBeforeRename":
 		_, ok = logic.(NoSeriesOnBeforeRename)
-	case "OnValidate_Code":
-		_, ok = logic.(NoSeriesOnValidate_Code)
-	case "OnValidate_Description":
-		_, ok = logic.(NoSeriesOnValidate_Description)
-	case "OnValidate_Default_nos":
-		_, ok = logic.(NoSeriesOnValidate_Default_nos)
-	case "OnValidate_Manual_nos":
-		_, ok = logic.(NoSeriesOnValidate_Manual_nos)
-	case "OnValidate_Date_order":
-		_, ok = logic.(NoSeriesOnValidate_Date_order)
 	default:
-		return false, false
+		// OnValidate_<Field>(rec) of a stored field
+		return noSeriesFields.IsOnValidateTrigger(name, logic, (*NoSeries)(nil))
 	}
 	return true, ok
 }
@@ -621,12 +579,7 @@ func (t *NoSeries) applyDefaults() {
 // StoreOldValues stores current field values for change detection
 // Call this after loading a record from the database
 func (t *NoSeries) StoreOldValues() {
-	t.oldValues = make(map[string]interface{})
-	t.oldValues["code"] = t.Code
-	t.oldValues["description"] = t.Description
-	t.oldValues["default_nos"] = t.Default_nos
-	t.oldValues["manual_nos"] = t.Manual_nos
-	t.oldValues["date_order"] = t.Date_order
+	t.oldValues = noSeriesFields.OldValues(t.fieldRef)
 }
 
 // OldValue returns a field's value as last read from or written to the database (
@@ -641,21 +594,7 @@ func (t *NoSeries) OldValue(fieldName string) interface{} {
 func (t *NoSeries) XRec() *NoSeries {
 	x := &NoSeries{db: t.db, company: t.company, dbType: t.dbType, temp: t.temp}
 	x.InitRecord()
-	if v, ok := t.oldValues["code"].(types.Code); ok {
-		x.Code = v
-	}
-	if v, ok := t.oldValues["description"].(types.Text); ok {
-		x.Description = v
-	}
-	if v, ok := t.oldValues["default_nos"].(bool); ok {
-		x.Default_nos = v
-	}
-	if v, ok := t.oldValues["manual_nos"].(bool); ok {
-		x.Manual_nos = v
-	}
-	if v, ok := t.oldValues["date_order"].(bool); ok {
-		x.Date_order = v
-	}
+	noSeriesFields.SetOldValues(x.fieldRef, t.oldValues)
 	return x
 }
 
@@ -965,44 +904,7 @@ func (t *NoSeries) Modify(runTrigger bool) bool {
 
 // hasFieldChanged checks if a field value has changed from oldValues
 func (t *NoSeries) hasFieldChanged(fieldName string) bool {
-	if t.oldValues == nil {
-		return true // No old values, assume changed
-	}
-
-	oldValue, exists := t.oldValues[fieldName]
-	if !exists {
-		return true // Field not in old values, assume changed
-	}
-	_ = oldValue // Suppress unused variable when all fields are PKs
-
-	// Compare old vs new value based on field name (with type assertion)
-	switch fieldName {
-	case "code":
-		if old, ok := oldValue.(types.Code); ok {
-			return !t.Code.Equal(old)
-		}
-	case "description":
-		if old, ok := oldValue.(types.Text); ok {
-			return !t.Description.Equal(old)
-		}
-	case "default_nos":
-		if old, ok := oldValue.(bool); ok {
-			return t.Default_nos != old
-		}
-		return true // Type mismatch, assume changed
-	case "manual_nos":
-		if old, ok := oldValue.(bool); ok {
-			return t.Manual_nos != old
-		}
-		return true // Type mismatch, assume changed
-	case "date_order":
-		if old, ok := oldValue.(bool); ok {
-			return t.Date_order != old
-		}
-		return true // Type mismatch, assume changed
-	}
-
-	return false
+	return noSeriesFields.Changed(t.fieldRef, t.oldValues, fieldName)
 }
 
 // SetDB changes the database executor of the record without touching its values — e.g. to
@@ -1561,19 +1463,7 @@ func (t *NoSeries) HasColumn(fieldName string) bool {
 // columnName maps a field name (case-insensitive) to its database column. Field names
 // end up in SQL text (WHERE / ORDER BY / SET), so only names from this allowlist are used.
 func (t *NoSeries) columnName(fieldName string) (string, bool) {
-	switch strings.ToLower(fieldName) {
-	case strings.ToLower("code"):
-		return "code", true
-	case strings.ToLower("description"):
-		return "description", true
-	case strings.ToLower("default_nos"):
-		return "default_nos", true
-	case strings.ToLower("manual_nos"):
-		return "manual_nos", true
-	case strings.ToLower("date_order"):
-		return "date_order", true
-	}
-	return "", false
+	return noSeriesFields.ColumnName(fieldName)
 }
 
 // Reset clears all filters (of all filter groups; back to group 0)
@@ -2446,105 +2336,20 @@ func (t *NoSeries) GetFilters() string {
 // This is equivalent to the VALIDATE function
 // Usage: customer.ValidateField("Payment_terms_code", types.NewCode("30DAYS"))
 func (t *NoSeries) ValidateField(fieldName string, value interface{}) error {
-	fieldNameLower := strings.ToLower(fieldName)
-
-	switch fieldNameLower {
-	case "code":
-		// Set field value
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-		} else if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-		} else {
-			return fmt.Errorf("invalid type for field code")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(NoSeriesOnValidate_Code); ok {
-				if err := trg.OnValidate_Code(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "description":
-		// Set field value
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-		} else if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-		} else {
-			return fmt.Errorf("invalid type for field description")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(NoSeriesOnValidate_Description); ok {
-				if err := trg.OnValidate_Description(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "default_nos":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Default_nos = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Default_nos = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field default_nos")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(NoSeriesOnValidate_Default_nos); ok {
-				if err := trg.OnValidate_Default_nos(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "manual_nos":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Manual_nos = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Manual_nos = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field manual_nos")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(NoSeriesOnValidate_Manual_nos); ok {
-				if err := trg.OnValidate_Manual_nos(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	case "date_order":
-		// Set field value
-		if v, ok := value.(bool); ok {
-			t.Date_order = v
-		} else if v, ok := value.(string); ok {
-			// Handle string boolean values from JSON/frontend
-			t.Date_order = v == "true" || v == "1"
-		} else {
-			return fmt.Errorf("invalid type for field date_order")
-		}
-		// OnValidate trigger of the business logic (OnValidate of the field)
-		for _, l := range t.registeredLogic() {
-			if trg, ok := l.(NoSeriesOnValidate_Date_order); ok {
-				if err := trg.OnValidate_Date_order(t); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
+	i, err := noSeriesFields.ValidateSet(t.fieldRef, fieldName, value)
+	if err != nil {
+		return err
 	}
-
-	return fmt.Errorf("field '%s' not found", fieldName)
+	f := &noSeriesFields.Fields[i]
+	// TableRelation: the value must exist in the related table (before OnValidate) — a field
+	// of an extension app while the app is enabled
+	if f.Relation && (f.App == "" || extensions.Enabled(f.App)) {
+		if err := tables.CheckRelation(t, t.db, t.company, t.dbType, f.Info.Name); err != nil {
+			return err
+		}
+	}
+	// OnValidate trigger of the business logic (OnValidate of the field)
+	return tables.RunOnValidate(t.registeredLogic(), t, f.Trigger)
 }
 
 // ========================================
@@ -2553,69 +2358,18 @@ func (t *NoSeries) ValidateField(fieldName string, value interface{}) error {
 
 // FieldValue returns the value of a stored field by its number (FlowFields are not stored)
 func (t *NoSeries) FieldValue(no int) (any, bool) {
-	switch no {
-	case 1:
-		return t.Code, true
-	case 2:
-		return t.Description, true
-	case 3:
-		return t.Default_nos, true
-	case 4:
-		return t.Manual_nos, true
-	case 5:
-		return t.Date_order, true
-	}
-	return nil, false
+	return noSeriesFields.FieldValue(t.fieldRef, no)
 }
 
 // flowFieldValue returns the value of a FlowField by its number, as CalcFields left it
 func (t *NoSeries) flowFieldValue(no int) (any, bool) {
-	switch no {
-	case 900:
-		return t.No_of_lines, true
-	}
-	return nil, false
+	return noSeriesFields.FlowFieldValue(t.fieldRef, no)
 }
 
 // SetFieldValue sets a stored field by its number when the value has the field's type
 // (options: any option value or int); it reports whether the field was set
 func (t *NoSeries) SetFieldValue(no int, value any) bool {
-	switch no {
-	case 1:
-		if v, ok := value.(types.Code); ok {
-			t.Code = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Code = types.NewCode(v)
-			return true
-		}
-	case 2:
-		if v, ok := value.(types.Text); ok {
-			t.Description = v
-			return true
-		}
-		if v, ok := value.(string); ok {
-			t.Description = types.NewText(v)
-			return true
-		}
-	case 3:
-		if v, ok := value.(bool); ok {
-			t.Default_nos = v
-			return true
-		}
-	case 4:
-		if v, ok := value.(bool); ok {
-			t.Manual_nos = v
-			return true
-		}
-	case 5:
-		if v, ok := value.(bool); ok {
-			t.Date_order = v
-			return true
-		}
-	}
-	return false
+	return noSeriesFields.SetFieldValue(t.fieldRef, no, value)
 }
 
 // TransferFields copies the fields of another record that have the same field number and
@@ -3067,19 +2821,7 @@ func (t *NoSeries) keyColumns() []string {
 
 // columnValue returns the value of a stored field by its column, as an SQL argument
 func (t *NoSeries) columnValue(column string) (interface{}, bool) {
-	switch column {
-	case "code":
-		return t.Code, true
-	case "description":
-		return t.Description, true
-	case "default_nos":
-		return t.Default_nos, true
-	case "manual_nos":
-		return t.Manual_nos, true
-	case "date_order":
-		return t.Date_order, true
-	}
-	return nil, false
+	return noSeriesFields.ColumnValue(t.fieldRef, column)
 }
 
 // SetSelection keeps the records selected on the list a codeunit is run from (the API sets
@@ -3169,44 +2911,12 @@ func (t *NoSeries) ClearFilters() {
 
 // ToMap converts the current record to a map for JSON serialization
 func (t *NoSeries) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"code":        t.Code.String(),
-		"description": t.Description.String(),
-		"default_nos": t.Default_nos,
-		"manual_nos":  t.Manual_nos,
-		"date_order":  t.Date_order,
-		// FlowField: no_of_lines
-		"no_of_lines": t.No_of_lines,
-	}
+	return noSeriesFields.ToMap(t.fieldRef)
 }
 
 // FromMap populates the record fields from a map (for API POST/PUT)
 func (t *NoSeries) FromMap(data map[string]interface{}) {
-	if v, ok := data["code"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Code = types.NewCode(s)
-		}
-	}
-	if v, ok := data["description"]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			t.Description = types.NewText(s)
-		}
-	}
-	if v, ok := data["default_nos"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Default_nos = b
-		}
-	}
-	if v, ok := data["manual_nos"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Manual_nos = b
-		}
-	}
-	if v, ok := data["date_order"]; ok && v != nil {
-		if b, ok := v.(bool); ok {
-			t.Date_order = b
-		}
-	}
+	noSeriesFields.FromMap(t.fieldRef, data)
 }
 
 // UpdateFromMap updates only the provided fields (for PATCH-style updates)
@@ -3227,68 +2937,118 @@ func (t *NoSeries) GetPrimaryKeyValue() string {
 
 // GetFields returns metadata about all fields
 func (t *NoSeries) GetFields() []tables.FieldInfo {
-	return []tables.FieldInfo{
-		{
-			No:         1,
-			Name:       "code",
-			Type:       tables.FieldTypeCode,
-			Length:     10,
-			Required:   true,
-			Editable:   false,
-			PrimaryKey: true,
-			FlowField:  false,
-		},
-		{
-			No:         2,
-			Name:       "description",
-			Type:       tables.FieldTypeText,
-			Length:     50,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         3,
-			Name:       "default_nos",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         4,
-			Name:       "manual_nos",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         5,
-			Name:       "date_order",
-			Type:       tables.FieldTypeBoolean,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  false,
-		},
-		{
-			No:         900,
-			Name:       "no_of_lines",
-			Type:       tables.FieldTypeInteger,
-			Length:     0,
-			Required:   false,
-			Editable:   true,
-			PrimaryKey: false,
-			FlowField:  true,
-		},
+	return noSeriesFields.Infos()
+}
+
+// fieldRef returns a pointer to the field with index i in noSeriesFields.Fields
+func (t *NoSeries) fieldRef(i int) any {
+	switch i {
+	case 0:
+		return &t.Code
+	case 1:
+		return &t.Description
+	case 2:
+		return &t.Default_nos
+	case 3:
+		return &t.Manual_nos
+	case 4:
+		return &t.Date_order
+	case 5:
+		return &t.No_of_lines
 	}
+	return nil
+}
+
+// noSeriesFields describes the fields of No_Series for the record functions
+// written once in foundation/tables
+var noSeriesFields = &tables.TableFields{
+	Table: NoSeriesTableName,
+	Fields: []tables.FieldMeta{
+		{
+			Info: tables.FieldInfo{
+				No:         1,
+				Name:       "code",
+				Type:       tables.FieldTypeCode,
+				Length:     10,
+				Required:   true,
+				Editable:   false,
+				PrimaryKey: true,
+				FlowField:  false,
+			},
+			Kind:    tables.KindCode,
+			Trigger: "OnValidate_Code",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         2,
+				Name:       "description",
+				Type:       tables.FieldTypeText,
+				Length:     50,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Description",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         3,
+				Name:       "default_nos",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Default_nos",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "manual_nos",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Manual_nos",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "date_order",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Date_order",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         900,
+				Name:       "no_of_lines",
+				Type:       tables.FieldTypeInteger,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  true,
+			},
+			Kind:    tables.KindInt,
+			Trigger: "OnValidate_No_of_lines",
+		},
+	},
 }
 
 // SetFlowFilter sets a FlowFilter field's filter expression (SETFILTER on a
