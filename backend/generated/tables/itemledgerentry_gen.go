@@ -73,14 +73,12 @@
 //	OnValidate_Serial_no(rec *gtables.ItemLedgerEntry) error
 //	OnValidate_Lot_no(rec *gtables.ItemLedgerEntry) error
 //	OnValidate_Bin_code(rec *gtables.ItemLedgerEntry) error
-
 package tables
 
 import (
 	"database/sql"
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -1363,13 +1361,22 @@ func (t *ItemLedgerEntry) Delete(runTrigger bool) bool {
 	return t.rec().Delete()
 }
 
-// CalcFields is a no-op for tables without FlowFields
-// Implemented for tables.Table interface compliance
+// ========================================
+// FlowField Calculations
+// ========================================
+
+// CalcFields calculates FlowField values
+// Usage:
+//
+//	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
+//	customer.CalcFields() - Calculate all FlowFields
 func (t *ItemLedgerEntry) CalcFields(fieldNames ...string) {
-	// This table has no FlowFields to calculate
 }
 
-// CalcFieldsForRecords is a no-op for tables without FlowFields
+// CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
+// one grouped query per FlowField instead of one query per record. records are
+// ToMap() results; each gets its FlowField values under the field name. With no
+// field names, all FlowFields are calculated.
 func (t *ItemLedgerEntry) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
 }
 
@@ -1688,199 +1695,7 @@ func (t *ItemLedgerEntry) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *ItemLedgerEntry) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, ItemLedgerEntryTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "entry_no":
-			column = "entry_no"
-		case "quantity":
-			column = "quantity"
-		case "remaining_quantity":
-			column = "remaining_quantity"
-		case "invoiced_quantity":
-			column = "invoiced_quantity"
-		case "unit_amount":
-			column = "unit_amount"
-		case "unit_cost":
-			column = "unit_cost"
-		case "amount":
-			column = "amount"
-		case "discount_amount":
-			column = "discount_amount"
-		case "applies_to_entry":
-			column = "applies_to_entry"
-		case "closed_by_entry_no":
-			column = "closed_by_entry_no"
-		case "closed_by_quantity":
-			column = "closed_by_quantity"
-		case "adjusted_cost_qty":
-			column = "adjusted_cost_qty"
-		case "adjusted_cost_invoiced_qty":
-			column = "adjusted_cost_invoiced_qty"
-		case "cost_posted_to_gl":
-			column = "cost_posted_to_gl"
-		case "invt_qty_not_adjusted":
-			column = "invt_qty_not_adjusted"
-		case "transferred_from_entry_no":
-			column = "transferred_from_entry_no"
-		case "reserved_quantity":
-			column = "reserved_quantity"
-		case "add_currency_adj_cost_qty":
-			column = "add_currency_adj_cost_qty"
-		case "add_curr_adj_cost_inv_qty":
-			column = "add_curr_adj_cost_inv_qty"
-		case "add_curr_cost_posted_to_gl":
-			column = "add_curr_cost_posted_to_gl"
-		case "additional_currency_unit_cost":
-			column = "additional_currency_unit_cost"
-		case "qty_per_unit_of_measure":
-			column = "qty_per_unit_of_measure"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Item_Ledger_Entry", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Item_Ledger_Entry.%s: %w", column, err)
-		}
-		switch column {
-		case "entry_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Entry_no = int(f)
-		case "quantity":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Quantity = d
-		case "remaining_quantity":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Remaining_quantity = d
-		case "invoiced_quantity":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Invoiced_quantity = d
-		case "unit_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Unit_amount = d
-		case "unit_cost":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Unit_cost = d
-		case "amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Amount = d
-		case "discount_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Discount_amount = d
-		case "applies_to_entry":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Applies_to_entry = int(f)
-		case "closed_by_entry_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Closed_by_entry_no = int(f)
-		case "closed_by_quantity":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Closed_by_quantity = d
-		case "adjusted_cost_qty":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Adjusted_cost_qty = d
-		case "adjusted_cost_invoiced_qty":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Adjusted_cost_invoiced_qty = d
-		case "cost_posted_to_gl":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Cost_posted_to_gl = d
-		case "invt_qty_not_adjusted":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Invt_qty_not_adjusted = d
-		case "transferred_from_entry_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Transferred_from_entry_no = int(f)
-		case "reserved_quantity":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Reserved_quantity = d
-		case "add_currency_adj_cost_qty":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Add_currency_adj_cost_qty = d
-		case "add_curr_adj_cost_inv_qty":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Add_curr_adj_cost_inv_qty = d
-		case "add_curr_cost_posted_to_gl":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Add_curr_cost_posted_to_gl = d
-		case "additional_currency_unit_cost":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Additional_currency_unit_cost = d
-		case "qty_per_unit_of_measure":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Qty_per_unit_of_measure = d
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a

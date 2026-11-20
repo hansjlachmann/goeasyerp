@@ -75,14 +75,12 @@
 //	OnValidate_Variant_code(rec *gtables.ProjectLedgerEntry) error
 //	OnValidate_Bin_code(rec *gtables.ProjectLedgerEntry) error
 //	OnValidate_Qty_per_unit_of_measure(rec *gtables.ProjectLedgerEntry) error
-
 package tables
 
 import (
 	"database/sql"
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -1313,13 +1311,22 @@ func (t *ProjectLedgerEntry) Delete(runTrigger bool) bool {
 	return t.rec().Delete()
 }
 
-// CalcFields is a no-op for tables without FlowFields
-// Implemented for tables.Table interface compliance
+// ========================================
+// FlowField Calculations
+// ========================================
+
+// CalcFields calculates FlowField values
+// Usage:
+//
+//	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
+//	customer.CalcFields() - Calculate all FlowFields
 func (t *ProjectLedgerEntry) CalcFields(fieldNames ...string) {
-	// This table has no FlowFields to calculate
 }
 
-// CalcFieldsForRecords is a no-op for tables without FlowFields
+// CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
+// one grouped query per FlowField instead of one query per record. records are
+// ToMap() results; each gets its FlowField values under the field name. With no
+// field names, all FlowFields are calculated.
 func (t *ProjectLedgerEntry) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
 }
 
@@ -1638,191 +1645,7 @@ func (t *ProjectLedgerEntry) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *ProjectLedgerEntry) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, ProjectLedgerEntryTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "entry_no":
-			column = "entry_no"
-		case "quantity":
-			column = "quantity"
-		case "direct_unit_cost":
-			column = "direct_unit_cost"
-		case "unit_cost":
-			column = "unit_cost"
-		case "total_cost":
-			column = "total_cost"
-		case "unit_price":
-			column = "unit_price"
-		case "total_price":
-			column = "total_price"
-		case "amt_to_post_to_g_l":
-			column = "amt_to_post_to_g_l"
-		case "amt_posted_to_g_l":
-			column = "amt_posted_to_g_l"
-		case "amt_to_recognize":
-			column = "amt_to_recognize"
-		case "amt_recognized":
-			column = "amt_recognized"
-		case "remaining_amount":
-			column = "remaining_amount"
-		case "closed_by_entry_no":
-			column = "closed_by_entry_no"
-		case "closed_by_amount":
-			column = "closed_by_amount"
-		case "additional_currency_total_cost":
-			column = "additional_currency_total_cost"
-		case "add_currency_total_price":
-			column = "add_currency_total_price"
-		case "add_curr_amount_to_recognize":
-			column = "add_curr_amount_to_recognize"
-		case "add_curr_amt_to_post_to_g_l":
-			column = "add_curr_amt_to_post_to_g_l"
-		case "add_curr_amount_recognized":
-			column = "add_curr_amount_recognized"
-		case "add_curr_amt_posted_to_g_l":
-			column = "add_curr_amt_posted_to_g_l"
-		case "qty_per_unit_of_measure":
-			column = "qty_per_unit_of_measure"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Project_Ledger_Entry", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Project_Ledger_Entry.%s: %w", column, err)
-		}
-		switch column {
-		case "entry_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Entry_no = int(f)
-		case "quantity":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Quantity = d
-		case "direct_unit_cost":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Direct_unit_cost = d
-		case "unit_cost":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Unit_cost = d
-		case "total_cost":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Total_cost = d
-		case "unit_price":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Unit_price = d
-		case "total_price":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Total_price = d
-		case "amt_to_post_to_g_l":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Amt_to_post_to_g_l = d
-		case "amt_posted_to_g_l":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Amt_posted_to_g_l = d
-		case "amt_to_recognize":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Amt_to_recognize = d
-		case "amt_recognized":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Amt_recognized = d
-		case "remaining_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Remaining_amount = d
-		case "closed_by_entry_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Closed_by_entry_no = int(f)
-		case "closed_by_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Closed_by_amount = d
-		case "additional_currency_total_cost":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Additional_currency_total_cost = d
-		case "add_currency_total_price":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Add_currency_total_price = d
-		case "add_curr_amount_to_recognize":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Add_curr_amount_to_recognize = d
-		case "add_curr_amt_to_post_to_g_l":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Add_curr_amt_to_post_to_g_l = d
-		case "add_curr_amount_recognized":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Add_curr_amount_recognized = d
-		case "add_curr_amt_posted_to_g_l":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Add_curr_amt_posted_to_g_l = d
-		case "qty_per_unit_of_measure":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Ledger_Entry.%s: %w", column, err)
-			}
-			t.Qty_per_unit_of_measure = d
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a

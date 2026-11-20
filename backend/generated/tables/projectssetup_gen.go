@@ -14,7 +14,6 @@
 //	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Primary_key(rec *gtables.ProjectsSetup) error
 //	OnValidate_Project_nos(rec *gtables.ProjectsSetup) error
-
 package tables
 
 import (
@@ -730,13 +729,22 @@ func (t *ProjectsSetup) Delete(runTrigger bool) bool {
 	return t.rec().Delete()
 }
 
-// CalcFields is a no-op for tables without FlowFields
-// Implemented for tables.Table interface compliance
+// ========================================
+// FlowField Calculations
+// ========================================
+
+// CalcFields calculates FlowField values
+// Usage:
+//
+//	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
+//	customer.CalcFields() - Calculate all FlowFields
 func (t *ProjectsSetup) CalcFields(fieldNames ...string) {
-	// This table has no FlowFields to calculate
 }
 
-// CalcFieldsForRecords is a no-op for tables without FlowFields
+// CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
+// one grouped query per FlowField instead of one query per record. records are
+// ToMap() results; each gets its FlowField values under the field name. With no
+// field names, all FlowFields are calculated.
 func (t *ProjectsSetup) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
 }
 
@@ -1055,10 +1063,7 @@ func (t *ProjectsSetup) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *ProjectsSetup) CalcSums(fieldNames ...string) error {
-	if len(fieldNames) > 0 {
-		return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Projects_Setup", fieldNames[0])
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a

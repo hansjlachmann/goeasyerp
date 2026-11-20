@@ -37,7 +37,6 @@
 //	OnValidate_Next_service_date(rec *gtables.FixedAsset) error
 //	OnValidate_Inactive(rec *gtables.FixedAsset) error
 //	OnValidate_No_series(rec *gtables.FixedAsset) error
-
 package tables
 
 import (
@@ -1108,34 +1107,7 @@ func (t *FixedAsset) Delete(runTrigger bool) bool {
 //	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
 //	customer.CalcFields() - Calculate all FlowFields
 func (t *FixedAsset) CalcFields(fieldNames ...string) {
-	// If no field names specified, calculate all FlowFields
-	if len(fieldNames) == 0 {
-		t.calcFlowField_insured()
-		t.calcFlowField_comment()
-		return
-	}
-
-	// Calculate only specified fields
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "insured":
-			t.calcFlowField_insured()
-		case "comment":
-			t.calcFlowField_comment()
-		}
-	}
-}
-
-// calcFlowField_insured calculates the insured FlowField
-// CalcFormula: Exist(InsCoverageLedgerEntry.entry_no)
-func (t *FixedAsset) calcFlowField_insured() {
-	t.Insured = t.calcCount_insured() > 0
-}
-
-// calcFlowField_comment calculates the comment FlowField
-// CalcFormula: Exist(CommentLine.line_no)
-func (t *FixedAsset) calcFlowField_comment() {
-	t.Comment = t.calcCount_comment() > 0
+	t.flow().CalcFields(fieldNames)
 }
 
 // CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
@@ -1143,236 +1115,44 @@ func (t *FixedAsset) calcFlowField_comment() {
 // ToMap() results; each gets its FlowField values under the field name. With no
 // field names, all FlowFields are calculated.
 func (t *FixedAsset) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
-	if len(records) == 0 {
-		return
-	}
-	if len(fieldNames) == 0 {
-		fieldNames = t.GetFlowFields()
-	}
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "insured":
-			t.calcForRecords_insured(records)
-		case "comment":
-			t.calcForRecords_comment(records)
-		}
+	t.flow().CalcFieldsForRecords(records, fieldNames)
+}
+
+// flow is what the FlowField functions of foundation/tables need of the record
+func (t *FixedAsset) flow() *tables.FlowRec {
+	return &tables.FlowRec{
+		Fields:     fixedAssetFields,
+		Ref:        t.fieldRef,
+		FlowFilter: t.flowFilterRef,
+		DB:         t.db,
+		Company:    t.company,
+		Postgres:   t.dbType == database.DBTypePostgres,
+		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, FixedAssetTableName) + "\"",
+		One:        t.flowFieldOf,
 	}
 }
 
-// calcForRecords_insured calculates the insured FlowField for a set of records
-// CalcFormula: Exist(InsCoverageLedgerEntry.entry_no)
-func (t *FixedAsset) calcForRecords_insured(records []map[string]interface{}) {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, InsCoverageLedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, InsCoverageLedgerEntryTableName, "fa_insurance"), true
-	_ = useSIFT
-
-	// Distinct key values of the records
-	seen := make(map[string]bool, len(records))
-	var keys []interface{}
-	for _, rec := range records {
-		k := fmt.Sprint(rec["no"])
-		if !seen[k] {
-			seen[k] = true
-			keys = append(keys, rec["no"])
-		}
+// flowFieldOf calculates a FlowField for one record of a list (a record from the map, with
+// this record's FlowFilters), in its map form
+func (t *FixedAsset) flowFieldOf(rec map[string]any, flowField int) any {
+	one := &FixedAsset{}
+	one.InitWithDBType(t.db, t.company, t.dbType)
+	for i := range fixedAssetFields.FlowFilters {
+		*one.flowFilterRef(i) = *t.flowFilterRef(i)
 	}
-
-	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
-	// list) one grouped query over the whole source table instead: much cheaper than
-	// many IN queries, and it keeps the bind parameters bounded.
-	values := make(map[string]int, len(keys))
-	const chunkSize = 500
-	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
-	if len(keys) <= chunkSize {
-		chunks = [][]interface{}{keys}
-	}
-	for _, chunk := range chunks {
-
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "disposed_fa = ?")
-		args = append(args, false)
-		if chunk != nil {
-			whereClauses = append(whereClauses, "fa_no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
-			args = append(args, chunk...)
-		}
-		whereClause := "1=1"
-		if len(whereClauses) > 0 {
-			whereClause = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COUNT(*)"
-		if useSIFT {
-			agg = "COALESCE(SUM(cnt), 0)" // the totals hold the entry count per key value
-		}
-		query := fmt.Sprintf(`SELECT fa_no, %s FROM "%s" WHERE %s GROUP BY fa_no`, agg, tableName, whereClause)
-		query = t.convertPlaceholders(query, len(args))
-
-		rows, err := t.db.Query(query, args...)
-		if err != nil {
-			fmt.Printf("Error: Failed to calculate insured: %v\n", err)
-			return
-		}
-		for rows.Next() {
-			var key string
-			var count int
-			if err := rows.Scan(&key, &count); err == nil {
-				values[key] = count
-			}
-		}
-		_ = rows.Close()
-	}
-
-	// Records without matching entries get zero
-	for _, rec := range records {
-		rec["insured"] = values[fmt.Sprint(rec["no"])] > 0
-	}
+	one.FromMap(rec)
+	f := one.flow()
+	f.Calc(flowField)
+	return f.MapValue(flowField)
 }
 
-// calcForRecords_comment calculates the comment FlowField for a set of records
-// CalcFormula: Exist(CommentLine.line_no)
-func (t *FixedAsset) calcForRecords_comment(records []map[string]interface{}) {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CommentLineTableName), false
-	_ = useSIFT
-
-	// Distinct key values of the records
-	seen := make(map[string]bool, len(records))
-	var keys []interface{}
-	for _, rec := range records {
-		k := fmt.Sprint(rec["no"])
-		if !seen[k] {
-			seen[k] = true
-			keys = append(keys, rec["no"])
-		}
+// flowFilterRef returns a pointer to the FlowFilter field with index i in fixedAssetFields.FlowFilters
+func (t *FixedAsset) flowFilterRef(i int) *string {
+	switch i {
+	case 0:
+		return &t.Fa_posting_date_filter
 	}
-
-	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
-	// list) one grouped query over the whole source table instead: much cheaper than
-	// many IN queries, and it keeps the bind parameters bounded.
-	values := make(map[string]int, len(keys))
-	const chunkSize = 500
-	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
-	if len(keys) <= chunkSize {
-		chunks = [][]interface{}{keys}
-	}
-	for _, chunk := range chunks {
-
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "table_name = ?")
-		args = append(args, 10)
-		if chunk != nil {
-			whereClauses = append(whereClauses, "no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
-			args = append(args, chunk...)
-		}
-		whereClause := "1=1"
-		if len(whereClauses) > 0 {
-			whereClause = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COUNT(*)"
-		if useSIFT {
-			agg = "COALESCE(SUM(cnt), 0)" // the totals hold the entry count per key value
-		}
-		query := fmt.Sprintf(`SELECT no, %s FROM "%s" WHERE %s GROUP BY no`, agg, tableName, whereClause)
-		query = t.convertPlaceholders(query, len(args))
-
-		rows, err := t.db.Query(query, args...)
-		if err != nil {
-			fmt.Printf("Error: Failed to calculate comment: %v\n", err)
-			return
-		}
-		for rows.Next() {
-			var key string
-			var count int
-			if err := rows.Scan(&key, &count); err == nil {
-				values[key] = count
-			}
-		}
-		_ = rows.Close()
-	}
-
-	// Records without matching entries get zero
-	for _, rec := range records {
-		rec["comment"] = values[fmt.Sprint(rec["no"])] > 0
-	}
-}
-
-// Helper methods for FlowField calculations
-
-func (t *FixedAsset) calcCount_insured() int {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, InsCoverageLedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, InsCoverageLedgerEntryTableName, "fa_insurance"), true
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "fa_no = ?")
-	args = append(args, t.No)
-	whereClauses = append(whereClauses, "disposed_fa = ?")
-	args = append(args, false)
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	agg := "COUNT(*)"
-	if useSIFT {
-		agg = "COALESCE(SUM(cnt), 0)" // the totals hold the entry count per key value
-	}
-	query := fmt.Sprintf(`SELECT %s FROM "%s" WHERE %s`, agg, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var count int
-	err := t.db.QueryRow(query, args...).Scan(&count)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate count for insured: %v\n", err)
-		return 0
-	}
-
-	return count
-}
-
-func (t *FixedAsset) calcCount_comment() int {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CommentLineTableName), false
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "table_name = ?")
-	args = append(args, 10)
-	whereClauses = append(whereClauses, "no = ?")
-	args = append(args, t.No)
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	agg := "COUNT(*)"
-	if useSIFT {
-		agg = "COALESCE(SUM(cnt), 0)" // the totals hold the entry count per key value
-	}
-	query := fmt.Sprintf(`SELECT %s FROM "%s" WHERE %s`, agg, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var count int
-	err := t.db.QueryRow(query, args...).Scan(&count)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate count for comment: %v\n", err)
-		return 0
-	}
-
-	return count
+	return nil
 }
 
 // ========================================
@@ -1690,10 +1470,7 @@ func (t *FixedAsset) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *FixedAsset) CalcSums(fieldNames ...string) error {
-	if len(fieldNames) > 0 {
-		return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Fixed_Asset", fieldNames[0])
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a
@@ -2520,6 +2297,33 @@ var fixedAssetFields = &tables.TableFields{
 			Kind:     tables.KindCode,
 			Trigger:  "OnValidate_No_series",
 			Relation: true,
+		},
+	},
+	FlowFields: []tables.FlowFieldMeta{
+		{
+			Field:         "insured",
+			Formula:       "Exist",
+			Source:        InsCoverageLedgerEntryTableName,
+			SourceField:   "entry_no",
+			SIFTKey:       "fa_insurance",
+			BatchKeyField: "fa_no",
+			BatchKeyValue: "no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "fa_no", Value: "no", ValueColumn: "no"},
+				{Type: tables.FlowConst, Column: "disposed_fa", Const: false},
+			},
+		},
+		{
+			Field:         "comment",
+			Formula:       "Exist",
+			Source:        CommentLineTableName,
+			SourceField:   "line_no",
+			BatchKeyField: "no",
+			BatchKeyValue: "no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowConst, Column: "table_name", Const: 10},
+				{Type: tables.FlowFieldValue, Column: "no", Value: "no", ValueColumn: "no"},
+			},
 		},
 	},
 	FlowFilters: []tables.FieldInfo{

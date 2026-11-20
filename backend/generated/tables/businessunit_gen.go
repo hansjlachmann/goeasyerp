@@ -26,7 +26,6 @@
 //	OnValidate_Name(rec *gtables.BusinessUnit) error
 //	OnValidate_Company_name(rec *gtables.BusinessUnit) error
 //	OnValidate_Currency_code(rec *gtables.BusinessUnit) error
-
 package tables
 
 import (
@@ -882,13 +881,22 @@ func (t *BusinessUnit) Delete(runTrigger bool) bool {
 	return t.rec().Delete()
 }
 
-// CalcFields is a no-op for tables without FlowFields
-// Implemented for tables.Table interface compliance
+// ========================================
+// FlowField Calculations
+// ========================================
+
+// CalcFields calculates FlowField values
+// Usage:
+//
+//	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
+//	customer.CalcFields() - Calculate all FlowFields
 func (t *BusinessUnit) CalcFields(fieldNames ...string) {
-	// This table has no FlowFields to calculate
 }
 
-// CalcFieldsForRecords is a no-op for tables without FlowFields
+// CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
+// one grouped query per FlowField instead of one query per record. records are
+// ToMap() results; each gets its FlowField values under the field name. With no
+// field names, all FlowFields are calculated.
 func (t *BusinessUnit) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
 }
 
@@ -1207,55 +1215,7 @@ func (t *BusinessUnit) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *BusinessUnit) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, BusinessUnitTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "consolidation_pct":
-			column = "consolidation_pct"
-		case "income_currency_factor":
-			column = "income_currency_factor"
-		case "balance_currency_factor":
-			column = "balance_currency_factor"
-		case "last_balance_currency_factor":
-			column = "last_balance_currency_factor"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Business_Unit", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Business_Unit.%s: %w", column, err)
-		}
-		switch column {
-		case "consolidation_pct":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Business_Unit.%s: %w", column, err)
-			}
-			t.Consolidation_pct = d
-		case "income_currency_factor":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Business_Unit.%s: %w", column, err)
-			}
-			t.Income_currency_factor = d
-		case "balance_currency_factor":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Business_Unit.%s: %w", column, err)
-			}
-			t.Balance_currency_factor = d
-		case "last_balance_currency_factor":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Business_Unit.%s: %w", column, err)
-			}
-			t.Last_balance_currency_factor = d
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a

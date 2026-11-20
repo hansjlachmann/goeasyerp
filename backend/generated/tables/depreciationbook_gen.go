@@ -48,14 +48,12 @@
 //	OnValidate_Add_curr_exch_rate_custom_2(rec *gtables.DepreciationBook) error
 //	OnValidate_Add_curr_exch_rate_disp(rec *gtables.DepreciationBook) error
 //	OnValidate_Add_curr_exch_rate_maint(rec *gtables.DepreciationBook) error
-
 package tables
 
 import (
 	"database/sql"
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -1056,13 +1054,22 @@ func (t *DepreciationBook) Delete(runTrigger bool) bool {
 	return t.rec().Delete()
 }
 
-// CalcFields is a no-op for tables without FlowFields
-// Implemented for tables.Table interface compliance
+// ========================================
+// FlowField Calculations
+// ========================================
+
+// CalcFields calculates FlowField values
+// Usage:
+//
+//	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
+//	customer.CalcFields() - Calculate all FlowFields
 func (t *DepreciationBook) CalcFields(fieldNames ...string) {
-	// This table has no FlowFields to calculate
 }
 
-// CalcFieldsForRecords is a no-op for tables without FlowFields
+// CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
+// one grouped query per FlowField instead of one query per record. records are
+// ToMap() results; each gets its FlowField values under the field name. With no
+// field names, all FlowFields are calculated.
 func (t *DepreciationBook) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
 }
 
@@ -1381,55 +1388,7 @@ func (t *DepreciationBook) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *DepreciationBook) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, DepreciationBookTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "default_exchange_rate":
-			column = "default_exchange_rate"
-		case "no_of_days_in_fiscal_year":
-			column = "no_of_days_in_fiscal_year"
-		case "default_final_rounding_amount":
-			column = "default_final_rounding_amount"
-		case "default_ending_book_value":
-			column = "default_ending_book_value"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Depreciation_Book", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Depreciation_Book.%s: %w", column, err)
-		}
-		switch column {
-		case "default_exchange_rate":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Depreciation_Book.%s: %w", column, err)
-			}
-			t.Default_exchange_rate = d
-		case "no_of_days_in_fiscal_year":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Depreciation_Book.%s: %w", column, err)
-			}
-			t.No_of_days_in_fiscal_year = int(f)
-		case "default_final_rounding_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Depreciation_Book.%s: %w", column, err)
-			}
-			t.Default_final_rounding_amount = d
-		case "default_ending_book_value":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Depreciation_Book.%s: %w", column, err)
-			}
-			t.Default_ending_book_value = d
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a

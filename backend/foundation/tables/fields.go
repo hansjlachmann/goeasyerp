@@ -46,9 +46,10 @@ type FieldMeta struct {
 
 // TableFields describes a table's fields (generated per table, static data)
 type TableFields struct {
-	Table       string      // the table's name (messages)
-	Fields      []FieldMeta // the table's fields in definition order, FlowFields too
-	FlowFilters []FieldInfo // the FlowFilter fields (number and name only)
+	Table       string          // the table's name (messages)
+	Fields      []FieldMeta     // the table's fields in definition order, FlowFields too
+	FlowFilters []FieldInfo     // the FlowFilter fields (number and name only)
+	FlowFields  []FlowFieldMeta // the FlowFields' calculation (flowfields.go)
 
 	once       sync.Once
 	byName     map[string]int // lower case name → index in Fields

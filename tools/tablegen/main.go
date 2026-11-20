@@ -1963,43 +1963,6 @@ func (t *{{ .StructName }}) CheckFields() error {
 	return nil
 }
 {{- end }}
-{{- define "flowSource" }}
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := {{ if .SourceGlobal }}{{ toPascalCase .SourceTable }}TableName{{ else }}fmt.Sprintf("%s$%s", t.company, {{ toPascalCase .SourceTable }}TableName){{ end }}, false
-{{- if .SIFTKey }}
-	tableName, useSIFT = sift.TableName(t.company, {{ toPascalCase .SourceTable }}TableName, "{{ .SIFTKey }}"), true
-{{- end }}
-{{- if .FilterRefs }}
-	if {{ filterSetExpr .FilterRefs }} {
-		// A FlowFilter is set: the key must contain the filtered fields too
-{{- if .SIFTKeyFiltered }}
-		tableName, useSIFT = sift.TableName(t.company, {{ toPascalCase .SourceTable }}TableName, "{{ .SIFTKeyFiltered }}"), true
-{{- else }}
-		tableName, useSIFT = {{ if .SourceGlobal }}{{ toPascalCase .SourceTable }}TableName{{ else }}fmt.Sprintf("%s$%s", t.company, {{ toPascalCase .SourceTable }}TableName){{ end }}, false
-{{- end }}
-	}
-{{- end }}
-	_ = useSIFT
-{{- end }}
-{{- define "flowFilterWhere" }}
-{{- range .FlowFilters }}
-{{- if eq .Type "filter" }}
-	if t.{{ .FilterField }} != "" {
-{{- if .UpperLimit }}
-		// The upper end of FlowFilter {{ .Value }} applied to {{ .Field }} (UpperLimit)
-		if clause, filterArgs, _ := flowfilter.Clause("{{ .Field }}", flowfilter.{{ .Kind }}, flowfilter.UpperLimit(flowfilter.{{ .Kind }}, t.{{ .FilterField }})); clause != "" {
-{{- else }}
-		// FlowFilter {{ .Value }} applied to {{ .Field }} (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("{{ .Field }}", flowfilter.{{ .Kind }}, t.{{ .FilterField }}); clause != "" {
-{{- end }}
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-{{- end }}
-{{- end }}
-{{- end }}
-
 package {{ .PackageName }}
 
 import (
@@ -2933,8 +2896,6 @@ func (t *{{ .StructName }}) Delete(runTrigger bool) bool {
 	return t.rec().Delete()
 }
 
-{{- if .HasFlowField }}
-
 // ========================================
 // FlowField Calculations
 // ========================================
@@ -2944,384 +2905,60 @@ func (t *{{ .StructName }}) Delete(runTrigger bool) bool {
 //   customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
 //   customer.CalcFields() - Calculate all FlowFields
 func (t *{{ .StructName }}) CalcFields(fieldNames ...string) {
-	// If no field names specified, calculate all FlowFields
-	if len(fieldNames) == 0 {
-		{{- range .Table.Fields }}
-		{{- if .FlowField }}
-		t.calcFlowField_{{ .Name }}()
-		{{- end }}
-		{{- end }}
-		return
-	}
-
-	// Calculate only specified fields
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		{{- range .Table.Fields }}
-		{{- if .FlowField }}
-		case "{{ .Name }}":
-			t.calcFlowField_{{ .Name }}()
-		{{- end }}
-		{{- end }}
-		}
-	}
-}
-
-{{- range .Table.Fields }}
-{{- if .FlowField }}
-
-// calcFlowField_{{ .Name }} calculates the {{ .Name }} FlowField
-// CalcFormula: {{ .CalcFormula }}({{ .SourceTable }}.{{ .SourceField }})
-func (t *{{ $.StructName }}) calcFlowField_{{ .Name }}() {
-	{{- if eq .CalcFormula "Sum" }}
-	t.{{ upperFirst .Name }} = t.calcSum_{{ .Name }}()
-	{{- else if eq .CalcFormula "Count" }}
-	t.{{ upperFirst .Name }} = t.calcCount_{{ .Name }}()
-	{{- else if eq .CalcFormula "Average" }}
-	t.{{ upperFirst .Name }} = t.calcAverage{{ upperFirst .SourceTable }}{{ upperFirst .SourceField }}()
-	{{- else if eq .CalcFormula "Min" }}
-	t.{{ upperFirst .Name }} = t.calcMin{{ upperFirst .SourceTable }}{{ upperFirst .SourceField }}()
-	{{- else if eq .CalcFormula "Max" }}
-	t.{{ upperFirst .Name }} = t.calcMax{{ upperFirst .SourceTable }}{{ upperFirst .SourceField }}()
-	{{- else if eq .CalcFormula "Lookup" }}
-	t.{{ upperFirst .Name }} = t.calcLookup_{{ .Name }}()
-	{{- else if eq .CalcFormula "Exist" }}
-	t.{{ upperFirst .Name }} = t.calcCount_{{ .Name }}() > 0
-	{{- end }}
-}
+{{- if .HasFlowField }}
+	t.flow().CalcFields(fieldNames)
 {{- end }}
-{{- end }}
+}
 
 // CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
 // one grouped query per FlowField instead of one query per record. records are
 // ToMap() results; each gets its FlowField values under the field name. With no
 // field names, all FlowFields are calculated.
 func (t *{{ .StructName }}) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
-	if len(records) == 0 {
-		return
-	}
-	if len(fieldNames) == 0 {
-		fieldNames = t.GetFlowFields()
-	}
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		{{- range .Table.Fields }}
-		{{- if .FlowField }}
-		case "{{ .DBName }}":
-			t.calcForRecords_{{ .Name }}(records)
-		{{- end }}
-		{{- end }}
-		}
+{{- if .HasFlowField }}
+	t.flow().CalcFieldsForRecords(records, fieldNames)
+{{- end }}
+}
+{{- if .HasFlowField }}
+
+// flow is what the FlowField functions of foundation/tables need of the record
+func (t *{{ .StructName }}) flow() *tables.FlowRec {
+	return &tables.FlowRec{
+		Fields:     {{ lowerFirst .StructName }}Fields,
+		Ref:        t.fieldRef,
+		FlowFilter: t.flowFilterRef,
+		DB:         t.db,
+		Company:    t.company,
+		Postgres:   t.dbType == database.DBTypePostgres,
+		Outer:      "\"" + {{- if .Table.Global }}{{ .StructName }}TableName{{- else }}fmt.Sprintf("%s$%s", t.company, {{ .StructName }}TableName){{- end }} + "\"",
+		One:        t.flowFieldOf,
 	}
 }
 
-{{- range .Table.Fields }}
-{{- if .FlowField }}
-
-// calcForRecords_{{ .Name }} calculates the {{ .Name }} FlowField for a set of records
-// CalcFormula: {{ .CalcFormula }}({{ .SourceTable }}.{{ .SourceField }})
-func (t *{{ $.StructName }}) calcForRecords_{{ .Name }}(records []map[string]interface{}) {
-{{- if .HasFieldFilter }}
-	// Records whose {{ .FieldFilterColumn }} holds a filter (total accounts) are calculated one by
-	// one, with this record's FlowFilters; the others in the grouped query below
-	var grouped []map[string]interface{}
-	for _, rec := range records {
-		if s := strings.TrimSpace(fmt.Sprint(rec["{{ .FieldFilterColumn }}"])); s == "" || s == "<nil>" {
-			grouped = append(grouped, rec)
-			continue
-		}
-		one := &{{ $.StructName }}{}
-		one.InitWithDBType(t.db, t.company, t.dbType)
-{{- range $.FlowFilterFields }}
-		one.{{ upperFirst .Name }} = t.{{ upperFirst .Name }}
-{{- end }}
-		one.FromMap(rec)
-{{- if (or (eq .CalcFormula "Count") (eq .CalcFormula "Exist")) }}
-		rec["{{ .DBName }}"] = one.calcCount_{{ .Name }}(){{ if eq .CalcFormula "Exist" }} > 0{{ end }}
-{{- else }}
-		rec["{{ .DBName }}"] = one.calcSum_{{ .Name }}().String()
-{{- end }}
+// flowFieldOf calculates a FlowField for one record of a list (a record from the map, with
+// this record's FlowFilters), in its map form
+func (t *{{ .StructName }}) flowFieldOf(rec map[string]any, flowField int) any {
+	one := &{{ .StructName }}{}
+	one.InitWithDBType(t.db, t.company, t.dbType)
+	for i := range {{ lowerFirst .StructName }}Fields.FlowFilters {
+		*one.flowFilterRef(i) = *t.flowFilterRef(i)
 	}
-	records = grouped
-	if len(records) == 0 {
-		return
-	}
-{{- end }}
-{{- if and .BatchKeyField (or (eq .CalcFormula "Sum") (eq .CalcFormula "Count") (eq .CalcFormula "Exist")) }}
-{{- template "flowSource" . }}
-
-	// Distinct key values of the records
-	seen := make(map[string]bool, len(records))
-	var keys []interface{}
-	for _, rec := range records {
-		k := fmt.Sprint(rec["{{ .BatchKeyValue }}"])
-		if !seen[k] {
-			seen[k] = true
-			keys = append(keys, rec["{{ .BatchKeyValue }}"])
-		}
-	}
-
-	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
-	// list) one grouped query over the whole source table instead: much cheaper than
-	// many IN queries, and it keeps the bind parameters bounded.
-	{{- if (or (eq .CalcFormula "Count") (eq .CalcFormula "Exist")) }}
-	values := make(map[string]int, len(keys))
-	{{- else }}
-	values := make(map[string]{{ .Type }}, len(keys))
-	{{- end }}
-	const chunkSize = 500
-	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
-	if len(keys) <= chunkSize {
-		chunks = [][]interface{}{keys}
-	}
-	for _, chunk := range chunks {
-
-		var whereClauses []string
-		var args []interface{}
-		{{- range .FlowFilters }}
-		{{- if eq .Type "const" }}
-		whereClauses = append(whereClauses, "{{ .Field }} = ?")
-		args = append(args, {{ .Value }})
-		{{- end }}
-		{{- end }}
-		{{- template "flowFilterWhere" . }}
-		if chunk != nil {
-			whereClauses = append(whereClauses, "{{ .BatchKeyField }} IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
-			args = append(args, chunk...)
-		}
-		whereClause := "1=1"
-		if len(whereClauses) > 0 {
-			whereClause = strings.Join(whereClauses, " AND ")
-		}
-
-		{{- if (or (eq .CalcFormula "Count") (eq .CalcFormula "Exist")) }}
-		agg := "COUNT(*)"
-		if useSIFT {
-			agg = "COALESCE(SUM(cnt), 0)" // the totals hold the entry count per key value
-		}
-		query := fmt.Sprintf(` + "`SELECT {{ .BatchKeyField }}, %s FROM \"%s\" WHERE %s GROUP BY {{ .BatchKeyField }}`" + `, agg, tableName, whereClause)
-		{{- else }}
-		query := fmt.Sprintf(` + "`SELECT {{ .BatchKeyField }}, {{ if .ReverseSign }}-{{ end }}COALESCE(SUM({{ .SourceField }}), 0) FROM \"%s\" WHERE %s GROUP BY {{ .BatchKeyField }}`" + `, tableName, whereClause)
-		{{- end }}
-		query = t.convertPlaceholders(query, len(args))
-
-		rows, err := t.db.Query(query, args...)
-		if err != nil {
-			fmt.Printf("Error: Failed to calculate {{ .Name }}: %v\n", err)
-			return
-		}
-		for rows.Next() {
-			var key string
-			{{- if (or (eq .CalcFormula "Count") (eq .CalcFormula "Exist")) }}
-			var count int
-			if err := rows.Scan(&key, &count); err == nil {
-				values[key] = count
-			}
-			{{- else }}
-			var sumStr string
-			if err := rows.Scan(&key, &sumStr); err == nil {
-				values[key], _ = types.NewDecimalFromString(sumStr)
-			}
-			{{- end }}
-		}
-		_ = rows.Close()
-	}
-
-	// Records without matching entries get zero
-	for _, rec := range records {
-		{{- if (or (eq .CalcFormula "Count") (eq .CalcFormula "Exist")) }}
-		rec["{{ .DBName }}"] = values[fmt.Sprint(rec["{{ .BatchKeyValue }}"])]{{ if eq .CalcFormula "Exist" }} > 0{{ end }}
-		{{- else }}
-		v, ok := values[fmt.Sprint(rec["{{ .BatchKeyValue }}"])]
-		if !ok {
-			v = types.ZeroDecimal()
-		}
-		rec["{{ .DBName }}"] = v.String()
-		{{- end }}
-	}
-{{- else }}
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &{{ $.StructName }}{db: t.db, company: t.company, dbType: t.dbType}
-{{- range $.FlowFilterFields }}
-		r.{{ upperFirst .Name }} = t.{{ upperFirst .Name }}
-{{- end }}
-		r.FromMap(rec)
-		r.calcFlowField_{{ .Name }}()
-		{{- if eq .Type "types.Decimal" }}
-		rec["{{ .DBName }}"] = r.{{ upperFirst .Name }}.String()
-		{{- else }}
-		rec["{{ .DBName }}"] = r.{{ upperFirst .Name }}
-		{{- end }}
-	}
-{{- end }}
-}
-{{- end }}
-{{- end }}
-
-// Helper methods for FlowField calculations
-{{- range .Table.Fields }}
-{{- if and .FlowField (eq .CalcFormula "Sum") }}
-
-func (t *{{ $.StructName }}) calcSum_{{ .Name }}() {{ .Type }} {
-{{- template "flowSource" . }}
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-
-	{{- range .FlowFilters }}
-	{{- if eq .Type "const" }}
-	whereClauses = append(whereClauses, "{{ .Field }} = ?")
-	args = append(args, {{ .Value }})
-	{{- else if and (eq .Type "field") .OverrideField }}
-	if s := strings.TrimSpace(t.{{ .OverrideField }}.String()); s != "" {
-		// {{ .OverrideField }} holds a filter of {{ .Field }} (a total account sums its range)
-		if clause, filterArgs, err := flowfilter.Clause("{{ .Field }}", flowfilter.{{ .OverrideKind }}, s); err == nil && clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		} else {
-			whereClauses = append(whereClauses, "1=0")
-		}
-	} else {
-		whereClauses = append(whereClauses, "{{ .Field }} = ?")
-		args = append(args, t.{{ upperFirst .Value }})
-	}
-	{{- else if eq .Type "field" }}
-	whereClauses = append(whereClauses, "{{ .Field }} = ?")
-	args = append(args, t.{{ upperFirst .Value }})
-	{{- end }}
-	{{- end }}
-	{{- template "flowFilterWhere" . }}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(` + "`SELECT {{ if .ReverseSign }}-{{ end }}COALESCE(SUM({{ .SourceField }}), 0) FROM \"%s\" WHERE %s`" + `, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for {{ .Name }}: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-{{- end }}
-{{- if and .FlowField ((or (eq .CalcFormula "Count") (eq .CalcFormula "Exist"))) }}
-
-func (t *{{ $.StructName }}) calcCount_{{ .Name }}() int {
-{{- template "flowSource" . }}
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-
-	{{- range .FlowFilters }}
-	{{- if eq .Type "const" }}
-	whereClauses = append(whereClauses, "{{ .Field }} = ?")
-	args = append(args, {{ .Value }})
-	{{- else if and (eq .Type "field") .OverrideField }}
-	if s := strings.TrimSpace(t.{{ .OverrideField }}.String()); s != "" {
-		// {{ .OverrideField }} holds a filter of {{ .Field }} (a total account sums its range)
-		if clause, filterArgs, err := flowfilter.Clause("{{ .Field }}", flowfilter.{{ .OverrideKind }}, s); err == nil && clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		} else {
-			whereClauses = append(whereClauses, "1=0")
-		}
-	} else {
-		whereClauses = append(whereClauses, "{{ .Field }} = ?")
-		args = append(args, t.{{ upperFirst .Value }})
-	}
-	{{- else if eq .Type "field" }}
-	whereClauses = append(whereClauses, "{{ .Field }} = ?")
-	args = append(args, t.{{ upperFirst .Value }})
-	{{- end }}
-	{{- end }}
-	{{- template "flowFilterWhere" . }}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	agg := "COUNT(*)"
-	if useSIFT {
-		agg = "COALESCE(SUM(cnt), 0)" // the totals hold the entry count per key value
-	}
-	query := fmt.Sprintf(` + "`SELECT %s FROM \"%s\" WHERE %s`" + `, agg, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var count int
-	err := t.db.QueryRow(query, args...).Scan(&count)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate count for {{ .Name }}: %v\n", err)
-		return 0
-	}
-
-	return count
-}
-{{- end }}
-{{- if and .FlowField (eq .CalcFormula "Lookup") }}
-
-// calcLookup_{{ .Name }} reads {{ .SourceTable }}.{{ .SourceField }} of the first record matching the
-// flow filters (CalcFormula Lookup); blank when there is none
-func (t *{{ $.StructName }}) calcLookup_{{ .Name }}() {{ .Type }} {
-	tableName := {{ if .SourceGlobal }}{{ toPascalCase .SourceTable }}TableName{{ else }}fmt.Sprintf("%s$%s", t.company, {{ toPascalCase .SourceTable }}TableName){{ end }}
-	var whereClauses []string
-	var args []interface{}
-	{{- range .FlowFilters }}
-	{{- if eq .Type "const" }}
-	whereClauses = append(whereClauses, "{{ .Field }} = ?")
-	args = append(args, {{ .Value }})
-	{{- else if eq .Type "field" }}
-	whereClauses = append(whereClauses, "{{ .Field }} = ?")
-	args = append(args, t.{{ upperFirst .Value }})
-	{{- end }}
-	{{- end }}
-	{{- template "flowFilterWhere" . }}
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-	query := t.convertPlaceholders(fmt.Sprintf(` + "`SELECT {{ .SourceField }} FROM \"%s\" WHERE %s LIMIT 1`" + `, tableName, whereClause), len(args))
-	var value sql.NullString
-	if err := t.db.QueryRow(query, args...).Scan(&value); err != nil && err != sql.ErrNoRows {
-		fmt.Printf("Error: Failed to look up {{ .Name }}: %v\n", err)
-	}
-{{- if eq .Type "types.Code" }}
-	return types.NewCode(value.String)
-{{- else if eq .Type "types.Text" }}
-	return types.NewText(value.String)
-{{- else }}
-	return value.String
-{{- end }}
-}
-{{- end }}
-{{- end }}
-
-{{- else }}
-
-// CalcFields is a no-op for tables without FlowFields
-// Implemented for tables.Table interface compliance
-func (t *{{ .StructName }}) CalcFields(fieldNames ...string) {
-	// This table has no FlowFields to calculate
+	one.FromMap(rec)
+	f := one.flow()
+	f.Calc(flowField)
+	return f.MapValue(flowField)
 }
 
-// CalcFieldsForRecords is a no-op for tables without FlowFields
-func (t *{{ .StructName }}) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
+// flowFilterRef returns a pointer to the FlowFilter field with index i in {{ lowerFirst .StructName }}Fields.FlowFilters
+func (t *{{ .StructName }}) flowFilterRef(i int) *string {
+	switch i {
+{{- range $i, $f := .FlowFilterFields }}
+	case {{ $i }}:
+		return &t.{{ upperFirst $f.Name }}
+{{- end }}
+	}
+	return nil
 }
-
 {{- end }}
 
 // ========================================
@@ -3361,64 +2998,14 @@ func (t *{{ .StructName }}) SetFilter(fieldName, filterExpr string) {
 // FlowFieldFilterKind reports whether a list can be filtered on FlowField field (Sum and
 // Count FlowFields: SETFILTER on a FlowField) and the kind of its values.
 func (t *{{ .StructName }}) FlowFieldFilterKind(field string) (flowfilter.Kind, bool) {
-	switch strings.ToLower(field) {
-{{- range .Table.Fields }}
-{{- if and .FlowField (or (eq .CalcFormula "Sum") (eq .CalcFormula "Count")) (not .HasFieldFilter) }}
-	case "{{ .DBName }}":
-{{- if eq .CalcFormula "Count" }}
-		return flowfilter.KindInt, true
-{{- else }}
-		return flowfilter.KindDecimal, true
-{{- end }}
-{{- end }}
-{{- end }}
-	}
-	return "", false
+	return {{ lowerFirst .StructName }}Fields.FlowFieldFilterKind(field)
 }
 
 // flowFieldExpr is the SQL expression computing FlowField field for each row of a query
 // on this table: a correlated subquery reading the source like CalcFieldsForRecords (the
 // SIFT totals of a covering key, else the entries), with the FlowFilters set on t.
 func (t *{{ .StructName }}) flowFieldExpr(field string) (string, []interface{}) {
-{{- if .Table.Global }}
-	outer := "\"" + {{ .StructName }}TableName + "\""
-{{- else }}
-	outer := "\"" + fmt.Sprintf("%s$%s", t.company, {{ .StructName }}TableName) + "\""
-{{- end }}
-	_ = outer
-	switch strings.ToLower(field) {
-{{- range .Table.Fields }}
-{{- if and .FlowField (or (eq .CalcFormula "Sum") (eq .CalcFormula "Count")) (not .HasFieldFilter) }}
-	case "{{ .DBName }}":
-{{- template "flowSource" . }}
-		var whereClauses []string
-		var args []interface{}
-		{{- range .FlowFilters }}
-		{{- if eq .Type "const" }}
-		whereClauses = append(whereClauses, "{{ .Field }} = ?")
-		args = append(args, {{ .Value }})
-		{{- else if eq .Type "field" }}
-		whereClauses = append(whereClauses, "{{ .Field }} = "+outer+".{{ .ValueColumn }}")
-		{{- end }}
-		{{- end }}
-		{{- template "flowFilterWhere" . }}
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		{{- if eq .CalcFormula "Count" }}
-		agg := "COUNT(*)"
-		if useSIFT {
-			agg = "COALESCE(SUM(cnt), 0)"
-		}
-		{{- else }}
-		agg := "{{ if .ReverseSign }}-{{ end }}COALESCE(SUM({{ .SourceField }}), 0)"
-		{{- end }}
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-{{- end }}
-{{- end }}
-	}
-	return "NULL", nil
+	return t.flow().Expr(field)
 }
 
 {{ end -}}
@@ -3709,59 +3296,8 @@ func (t *{{ .StructName }}) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *{{ .StructName }}) CalcSums(fieldNames ...string) error {
-{{- if not .HasSumFields }}
-	if len(fieldNames) > 0 {
-		return fmt.Errorf("CalcSums: %s is not a decimal or integer field of {{ .Table.Name }}", fieldNames[0])
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
-{{- else }}
-{{- if .Table.Global }}
-	tableName := {{ .StructName }}TableName
-{{- else }}
-	tableName := fmt.Sprintf("%s$%s", t.company, {{ .StructName }}TableName)
-{{- end }}
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-{{- range .Table.Fields }}
-{{- if and (not .FlowField) (or (eq .Type "types.Decimal") (eq .Type "int")) }}
-		case "{{ .DBName }}":
-			column = "{{ .DBName }}"
-{{- end }}
-{{- end }}
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of {{ .Table.Name }}", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(` + "`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM \"%s\" WHERE %s`" + `, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums {{ .Table.Name }}.%s: %w", column, err)
-		}
-		switch column {
-{{- range .Table.Fields }}
-{{- if and (not .FlowField) (eq .Type "types.Decimal") }}
-		case "{{ .DBName }}":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums {{ $.Table.Name }}.%s: %w", column, err)
-			}
-			t.{{ upperFirst .Name }} = d
-{{- else if and (not .FlowField) (eq .Type "int") }}
-		case "{{ .DBName }}":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums {{ $.Table.Name }}.%s: %w", column, err)
-			}
-			t.{{ upperFirst .Name }} = int(f)
-{{- end }}
-{{- end }}
-		}
-	}
-	return nil
-}
-{{- end }}
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a
 // table lock (tables.LockTable) and the following reads (Get, FindFirst, FindLast, FindSet)
@@ -4199,6 +3735,50 @@ var {{ lowerFirst .StructName }}Fields = &tables.TableFields{
 		},
 {{- end }}
 	},
+{{- if .HasFlowField }}
+	FlowFields: []tables.FlowFieldMeta{
+{{- range .Table.Fields }}
+{{- if .FlowField }}
+		{
+			Field:        "{{ .DBName }}",
+			Formula:      "{{ .CalcFormula }}",
+			Source:       {{ toPascalCase .SourceTable }}TableName,
+{{- if .SourceGlobal }}
+			SourceGlobal: true,
+{{- end }}
+			SourceField:  "{{ .SourceField }}",
+{{- if .ReverseSign }}
+			ReverseSign:  true,
+{{- end }}
+{{- if .SIFTKey }}
+			SIFTKey:      "{{ .SIFTKey }}",
+{{- end }}
+{{- if .SIFTKeyFiltered }}
+			SIFTKeyFiltered: "{{ .SIFTKeyFiltered }}",
+{{- end }}
+{{- if .BatchKeyField }}
+			BatchKeyField: "{{ .BatchKeyField }}",
+			BatchKeyValue: "{{ .BatchKeyValue }}",
+{{- end }}
+{{- if .HasFieldFilter }}
+			FieldFilterColumn: "{{ .FieldFilterColumn }}",
+{{- end }}
+			Filters: []tables.FlowFilterMeta{
+{{- range .FlowFilters }}
+{{- if eq .Type "const" }}
+				{Type: tables.FlowConst, Column: "{{ .Field }}", {{ if eq .Value "i18n.SessionLanguageID()" }}Language: true{{ else }}Const: {{ .Value }}{{ end }}},
+{{- else if eq .Type "field" }}
+				{Type: tables.FlowFieldValue, Column: "{{ .Field }}", Value: "{{ .Value }}", ValueColumn: "{{ .ValueColumn }}"{{ if .OverrideField }}, Override: "{{ lowerFirst .OverrideField }}", OverrideKind: flowfilter.{{ .OverrideKind }}{{ end }}},
+{{- else if eq .Type "filter" }}
+				{Type: tables.FlowFilterSet, Column: "{{ .Field }}", Value: "{{ .Value }}", Kind: flowfilter.{{ .Kind }}{{ if .UpperLimit }}, UpperLimit: true{{ end }}},
+{{- end }}
+{{- end }}
+			},
+		},
+{{- end }}
+{{- end }}
+	},
+{{- end }}
 {{- if .FlowFilterFields }}
 	FlowFilters: []tables.FieldInfo{
 {{- range .FlowFilterFields }}

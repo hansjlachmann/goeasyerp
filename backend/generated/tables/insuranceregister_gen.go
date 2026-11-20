@@ -19,14 +19,12 @@
 //	OnValidate_Source_code(rec *gtables.InsuranceRegister) error
 //	OnValidate_User_id(rec *gtables.InsuranceRegister) error
 //	OnValidate_Journal_batch_name(rec *gtables.InsuranceRegister) error
-
 package tables
 
 import (
 	"database/sql"
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -826,13 +824,22 @@ func (t *InsuranceRegister) Delete(runTrigger bool) bool {
 	return t.rec().Delete()
 }
 
-// CalcFields is a no-op for tables without FlowFields
-// Implemented for tables.Table interface compliance
+// ========================================
+// FlowField Calculations
+// ========================================
+
+// CalcFields calculates FlowField values
+// Usage:
+//
+//	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
+//	customer.CalcFields() - Calculate all FlowFields
 func (t *InsuranceRegister) CalcFields(fieldNames ...string) {
-	// This table has no FlowFields to calculate
 }
 
-// CalcFieldsForRecords is a no-op for tables without FlowFields
+// CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
+// one grouped query per FlowField instead of one query per record. records are
+// ToMap() results; each gets its FlowField values under the field name. With no
+// field names, all FlowFields are calculated.
 func (t *InsuranceRegister) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
 }
 
@@ -1151,47 +1158,7 @@ func (t *InsuranceRegister) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *InsuranceRegister) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, InsuranceRegisterTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "no":
-			column = "no"
-		case "from_entry_no":
-			column = "from_entry_no"
-		case "to_entry_no":
-			column = "to_entry_no"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Insurance_Register", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Insurance_Register.%s: %w", column, err)
-		}
-		switch column {
-		case "no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Insurance_Register.%s: %w", column, err)
-			}
-			t.No = int(f)
-		case "from_entry_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Insurance_Register.%s: %w", column, err)
-			}
-			t.From_entry_no = int(f)
-		case "to_entry_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Insurance_Register.%s: %w", column, err)
-			}
-			t.To_entry_no = int(f)
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a

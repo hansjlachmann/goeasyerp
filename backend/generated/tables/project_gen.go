@@ -36,7 +36,6 @@
 //	OnValidate_Project_usage_posting(rec *gtables.Project) error
 //	OnValidate_Picture(rec *gtables.Project) error
 //	OnValidate_No_series(rec *gtables.Project) error
-
 package tables
 
 import (
@@ -1234,151 +1233,7 @@ func (t *Project) Delete(runTrigger bool) bool {
 //	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
 //	customer.CalcFields() - Calculate all FlowFields
 func (t *Project) CalcFields(fieldNames ...string) {
-	// If no field names specified, calculate all FlowFields
-	if len(fieldNames) == 0 {
-		t.calcFlowField_comment()
-		t.calcFlowField_budgeted_cost()
-		t.calcFlowField_budgeted_price()
-		t.calcFlowField_usage_cost()
-		t.calcFlowField_usage_price()
-		t.calcFlowField_invoiced_price()
-		t.calcFlowField_budgeted_res_qty()
-		t.calcFlowField_budgeted_res_gr_qty()
-		t.calcFlowField_name()
-		t.calcFlowField_address()
-		t.calcFlowField_address_2()
-		t.calcFlowField_city()
-		t.calcFlowField_contact()
-		t.calcFlowField_state()
-		t.calcFlowField_post_code()
-		return
-	}
-
-	// Calculate only specified fields
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "comment":
-			t.calcFlowField_comment()
-		case "budgeted_cost":
-			t.calcFlowField_budgeted_cost()
-		case "budgeted_price":
-			t.calcFlowField_budgeted_price()
-		case "usage_cost":
-			t.calcFlowField_usage_cost()
-		case "usage_price":
-			t.calcFlowField_usage_price()
-		case "invoiced_price":
-			t.calcFlowField_invoiced_price()
-		case "budgeted_res_qty":
-			t.calcFlowField_budgeted_res_qty()
-		case "budgeted_res_gr_qty":
-			t.calcFlowField_budgeted_res_gr_qty()
-		case "name":
-			t.calcFlowField_name()
-		case "address":
-			t.calcFlowField_address()
-		case "address_2":
-			t.calcFlowField_address_2()
-		case "city":
-			t.calcFlowField_city()
-		case "contact":
-			t.calcFlowField_contact()
-		case "state":
-			t.calcFlowField_state()
-		case "post_code":
-			t.calcFlowField_post_code()
-		}
-	}
-}
-
-// calcFlowField_comment calculates the comment FlowField
-// CalcFormula: Exist(CommentLine.line_no)
-func (t *Project) calcFlowField_comment() {
-	t.Comment = t.calcCount_comment() > 0
-}
-
-// calcFlowField_budgeted_cost calculates the budgeted_cost FlowField
-// CalcFormula: Sum(ProjectBudgetEntry.total_cost)
-func (t *Project) calcFlowField_budgeted_cost() {
-	t.Budgeted_cost = t.calcSum_budgeted_cost()
-}
-
-// calcFlowField_budgeted_price calculates the budgeted_price FlowField
-// CalcFormula: Sum(ProjectBudgetEntry.total_price)
-func (t *Project) calcFlowField_budgeted_price() {
-	t.Budgeted_price = t.calcSum_budgeted_price()
-}
-
-// calcFlowField_usage_cost calculates the usage_cost FlowField
-// CalcFormula: Sum(ProjectLedgerEntry.total_cost)
-func (t *Project) calcFlowField_usage_cost() {
-	t.Usage_cost = t.calcSum_usage_cost()
-}
-
-// calcFlowField_usage_price calculates the usage_price FlowField
-// CalcFormula: Sum(ProjectLedgerEntry.total_price)
-func (t *Project) calcFlowField_usage_price() {
-	t.Usage_price = t.calcSum_usage_price()
-}
-
-// calcFlowField_invoiced_price calculates the invoiced_price FlowField
-// CalcFormula: Sum(ProjectLedgerEntry.total_price)
-func (t *Project) calcFlowField_invoiced_price() {
-	t.Invoiced_price = t.calcSum_invoiced_price()
-}
-
-// calcFlowField_budgeted_res_qty calculates the budgeted_res_qty FlowField
-// CalcFormula: Sum(ProjectBudgetEntry.quantity)
-func (t *Project) calcFlowField_budgeted_res_qty() {
-	t.Budgeted_res_qty = t.calcSum_budgeted_res_qty()
-}
-
-// calcFlowField_budgeted_res_gr_qty calculates the budgeted_res_gr_qty FlowField
-// CalcFormula: Sum(ProjectBudgetEntry.quantity)
-func (t *Project) calcFlowField_budgeted_res_gr_qty() {
-	t.Budgeted_res_gr_qty = t.calcSum_budgeted_res_gr_qty()
-}
-
-// calcFlowField_name calculates the name FlowField
-// CalcFormula: Lookup(Customer.name)
-func (t *Project) calcFlowField_name() {
-	t.Name = t.calcLookup_name()
-}
-
-// calcFlowField_address calculates the address FlowField
-// CalcFormula: Lookup(Customer.address)
-func (t *Project) calcFlowField_address() {
-	t.Address = t.calcLookup_address()
-}
-
-// calcFlowField_address_2 calculates the address_2 FlowField
-// CalcFormula: Lookup(Customer.address_2)
-func (t *Project) calcFlowField_address_2() {
-	t.Address_2 = t.calcLookup_address_2()
-}
-
-// calcFlowField_city calculates the city FlowField
-// CalcFormula: Lookup(Customer.city)
-func (t *Project) calcFlowField_city() {
-	t.City = t.calcLookup_city()
-}
-
-// calcFlowField_contact calculates the contact FlowField
-// CalcFormula: Lookup(Customer.contact)
-func (t *Project) calcFlowField_contact() {
-	t.Contact = t.calcLookup_contact()
-}
-
-// calcFlowField_state calculates the state FlowField
-// CalcFormula: Lookup(Customer.state)
-func (t *Project) calcFlowField_state() {
-	t.State = t.calcLookup_state()
-}
-
-// calcFlowField_post_code calculates the post_code FlowField
-// CalcFormula: Lookup(Customer.post_code)
-func (t *Project) calcFlowField_post_code() {
-	t.Post_code = t.calcLookup_post_code()
+	t.flow().CalcFields(fieldNames)
 }
 
 // CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
@@ -1386,1612 +1241,56 @@ func (t *Project) calcFlowField_post_code() {
 // ToMap() results; each gets its FlowField values under the field name. With no
 // field names, all FlowFields are calculated.
 func (t *Project) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
-	if len(records) == 0 {
-		return
-	}
-	if len(fieldNames) == 0 {
-		fieldNames = t.GetFlowFields()
-	}
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "comment":
-			t.calcForRecords_comment(records)
-		case "budgeted_cost":
-			t.calcForRecords_budgeted_cost(records)
-		case "budgeted_price":
-			t.calcForRecords_budgeted_price(records)
-		case "usage_cost":
-			t.calcForRecords_usage_cost(records)
-		case "usage_price":
-			t.calcForRecords_usage_price(records)
-		case "invoiced_price":
-			t.calcForRecords_invoiced_price(records)
-		case "budgeted_res_qty":
-			t.calcForRecords_budgeted_res_qty(records)
-		case "budgeted_res_gr_qty":
-			t.calcForRecords_budgeted_res_gr_qty(records)
-		case "name":
-			t.calcForRecords_name(records)
-		case "address":
-			t.calcForRecords_address(records)
-		case "address_2":
-			t.calcForRecords_address_2(records)
-		case "city":
-			t.calcForRecords_city(records)
-		case "contact":
-			t.calcForRecords_contact(records)
-		case "state":
-			t.calcForRecords_state(records)
-		case "post_code":
-			t.calcForRecords_post_code(records)
-		}
+	t.flow().CalcFieldsForRecords(records, fieldNames)
+}
+
+// flow is what the FlowField functions of foundation/tables need of the record
+func (t *Project) flow() *tables.FlowRec {
+	return &tables.FlowRec{
+		Fields:     projectFields,
+		Ref:        t.fieldRef,
+		FlowFilter: t.flowFilterRef,
+		DB:         t.db,
+		Company:    t.company,
+		Postgres:   t.dbType == database.DBTypePostgres,
+		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, ProjectTableName) + "\"",
+		One:        t.flowFieldOf,
 	}
 }
 
-// calcForRecords_comment calculates the comment FlowField for a set of records
-// CalcFormula: Exist(CommentLine.line_no)
-func (t *Project) calcForRecords_comment(records []map[string]interface{}) {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CommentLineTableName), false
-	_ = useSIFT
-
-	// Distinct key values of the records
-	seen := make(map[string]bool, len(records))
-	var keys []interface{}
-	for _, rec := range records {
-		k := fmt.Sprint(rec["no"])
-		if !seen[k] {
-			seen[k] = true
-			keys = append(keys, rec["no"])
-		}
+// flowFieldOf calculates a FlowField for one record of a list (a record from the map, with
+// this record's FlowFilters), in its map form
+func (t *Project) flowFieldOf(rec map[string]any, flowField int) any {
+	one := &Project{}
+	one.InitWithDBType(t.db, t.company, t.dbType)
+	for i := range projectFields.FlowFilters {
+		*one.flowFilterRef(i) = *t.flowFilterRef(i)
 	}
-
-	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
-	// list) one grouped query over the whole source table instead: much cheaper than
-	// many IN queries, and it keeps the bind parameters bounded.
-	values := make(map[string]int, len(keys))
-	const chunkSize = 500
-	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
-	if len(keys) <= chunkSize {
-		chunks = [][]interface{}{keys}
-	}
-	for _, chunk := range chunks {
-
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "table_name = ?")
-		args = append(args, 5)
-		if chunk != nil {
-			whereClauses = append(whereClauses, "no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
-			args = append(args, chunk...)
-		}
-		whereClause := "1=1"
-		if len(whereClauses) > 0 {
-			whereClause = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COUNT(*)"
-		if useSIFT {
-			agg = "COALESCE(SUM(cnt), 0)" // the totals hold the entry count per key value
-		}
-		query := fmt.Sprintf(`SELECT no, %s FROM "%s" WHERE %s GROUP BY no`, agg, tableName, whereClause)
-		query = t.convertPlaceholders(query, len(args))
-
-		rows, err := t.db.Query(query, args...)
-		if err != nil {
-			fmt.Printf("Error: Failed to calculate comment: %v\n", err)
-			return
-		}
-		for rows.Next() {
-			var key string
-			var count int
-			if err := rows.Scan(&key, &count); err == nil {
-				values[key] = count
-			}
-		}
-		_ = rows.Close()
-	}
-
-	// Records without matching entries get zero
-	for _, rec := range records {
-		rec["comment"] = values[fmt.Sprint(rec["no"])] > 0
-	}
+	one.FromMap(rec)
+	f := one.flow()
+	f.Calc(flowField)
+	return f.MapValue(flowField)
 }
 
-// calcForRecords_budgeted_cost calculates the budgeted_cost FlowField for a set of records
-// CalcFormula: Sum(ProjectBudgetEntry.total_cost)
-func (t *Project) calcForRecords_budgeted_cost(records []map[string]interface{}) {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, ProjectBudgetEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, ProjectBudgetEntryTableName, "budget_line_date"), true
-	if t.Phase_filter != "" || t.Task_filter != "" || t.Step_filter != "" || t.Type_filter != "" || t.Date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, ProjectBudgetEntryTableName, "budget_line_date"), true
-	}
-	_ = useSIFT
-
-	// Distinct key values of the records
-	seen := make(map[string]bool, len(records))
-	var keys []interface{}
-	for _, rec := range records {
-		k := fmt.Sprint(rec["no"])
-		if !seen[k] {
-			seen[k] = true
-			keys = append(keys, rec["no"])
-		}
-	}
-
-	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
-	// list) one grouped query over the whole source table instead: much cheaper than
-	// many IN queries, and it keeps the bind parameters bounded.
-	values := make(map[string]types.Decimal, len(keys))
-	const chunkSize = 500
-	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
-	if len(keys) <= chunkSize {
-		chunks = [][]interface{}{keys}
-	}
-	for _, chunk := range chunks {
-
-		var whereClauses []string
-		var args []interface{}
-		if t.Phase_filter != "" {
-			// FlowFilter phase_filter applied to phase_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("phase_code", flowfilter.KindCode, t.Phase_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Task_filter != "" {
-			// FlowFilter task_filter applied to task_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("task_code", flowfilter.KindCode, t.Task_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Step_filter != "" {
-			// FlowFilter step_filter applied to step_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("step_code", flowfilter.KindCode, t.Step_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Type_filter != "" {
-			// FlowFilter type_filter applied to type (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("type", flowfilter.KindInt, t.Type_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Date_filter != "" {
-			// FlowFilter date_filter applied to date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("date", flowfilter.KindDate, t.Date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if chunk != nil {
-			whereClauses = append(whereClauses, "project_no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
-			args = append(args, chunk...)
-		}
-		whereClause := "1=1"
-		if len(whereClauses) > 0 {
-			whereClause = strings.Join(whereClauses, " AND ")
-		}
-		query := fmt.Sprintf(`SELECT project_no, COALESCE(SUM(total_cost), 0) FROM "%s" WHERE %s GROUP BY project_no`, tableName, whereClause)
-		query = t.convertPlaceholders(query, len(args))
-
-		rows, err := t.db.Query(query, args...)
-		if err != nil {
-			fmt.Printf("Error: Failed to calculate budgeted_cost: %v\n", err)
-			return
-		}
-		for rows.Next() {
-			var key string
-			var sumStr string
-			if err := rows.Scan(&key, &sumStr); err == nil {
-				values[key], _ = types.NewDecimalFromString(sumStr)
-			}
-		}
-		_ = rows.Close()
-	}
-
-	// Records without matching entries get zero
-	for _, rec := range records {
-		v, ok := values[fmt.Sprint(rec["no"])]
-		if !ok {
-			v = types.ZeroDecimal()
-		}
-		rec["budgeted_cost"] = v.String()
-	}
-}
-
-// calcForRecords_budgeted_price calculates the budgeted_price FlowField for a set of records
-// CalcFormula: Sum(ProjectBudgetEntry.total_price)
-func (t *Project) calcForRecords_budgeted_price(records []map[string]interface{}) {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, ProjectBudgetEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, ProjectBudgetEntryTableName, "budget_line_date"), true
-	if t.Phase_filter != "" || t.Task_filter != "" || t.Step_filter != "" || t.Type_filter != "" || t.Date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, ProjectBudgetEntryTableName, "budget_line_date"), true
-	}
-	_ = useSIFT
-
-	// Distinct key values of the records
-	seen := make(map[string]bool, len(records))
-	var keys []interface{}
-	for _, rec := range records {
-		k := fmt.Sprint(rec["no"])
-		if !seen[k] {
-			seen[k] = true
-			keys = append(keys, rec["no"])
-		}
-	}
-
-	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
-	// list) one grouped query over the whole source table instead: much cheaper than
-	// many IN queries, and it keeps the bind parameters bounded.
-	values := make(map[string]types.Decimal, len(keys))
-	const chunkSize = 500
-	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
-	if len(keys) <= chunkSize {
-		chunks = [][]interface{}{keys}
-	}
-	for _, chunk := range chunks {
-
-		var whereClauses []string
-		var args []interface{}
-		if t.Phase_filter != "" {
-			// FlowFilter phase_filter applied to phase_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("phase_code", flowfilter.KindCode, t.Phase_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Task_filter != "" {
-			// FlowFilter task_filter applied to task_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("task_code", flowfilter.KindCode, t.Task_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Step_filter != "" {
-			// FlowFilter step_filter applied to step_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("step_code", flowfilter.KindCode, t.Step_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Type_filter != "" {
-			// FlowFilter type_filter applied to type (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("type", flowfilter.KindInt, t.Type_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Date_filter != "" {
-			// FlowFilter date_filter applied to date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("date", flowfilter.KindDate, t.Date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if chunk != nil {
-			whereClauses = append(whereClauses, "project_no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
-			args = append(args, chunk...)
-		}
-		whereClause := "1=1"
-		if len(whereClauses) > 0 {
-			whereClause = strings.Join(whereClauses, " AND ")
-		}
-		query := fmt.Sprintf(`SELECT project_no, COALESCE(SUM(total_price), 0) FROM "%s" WHERE %s GROUP BY project_no`, tableName, whereClause)
-		query = t.convertPlaceholders(query, len(args))
-
-		rows, err := t.db.Query(query, args...)
-		if err != nil {
-			fmt.Printf("Error: Failed to calculate budgeted_price: %v\n", err)
-			return
-		}
-		for rows.Next() {
-			var key string
-			var sumStr string
-			if err := rows.Scan(&key, &sumStr); err == nil {
-				values[key], _ = types.NewDecimalFromString(sumStr)
-			}
-		}
-		_ = rows.Close()
-	}
-
-	// Records without matching entries get zero
-	for _, rec := range records {
-		v, ok := values[fmt.Sprint(rec["no"])]
-		if !ok {
-			v = types.ZeroDecimal()
-		}
-		rec["budgeted_price"] = v.String()
-	}
-}
-
-// calcForRecords_usage_cost calculates the usage_cost FlowField for a set of records
-// CalcFormula: Sum(ProjectLedgerEntry.total_cost)
-func (t *Project) calcForRecords_usage_cost(records []map[string]interface{}) {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, ProjectLedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, ProjectLedgerEntryTableName, "budget_line_date"), true
-	if t.Phase_filter != "" || t.Task_filter != "" || t.Step_filter != "" || t.Type_filter != "" || t.Date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, ProjectLedgerEntryTableName, "budget_line_date"), true
-	}
-	_ = useSIFT
-
-	// Distinct key values of the records
-	seen := make(map[string]bool, len(records))
-	var keys []interface{}
-	for _, rec := range records {
-		k := fmt.Sprint(rec["no"])
-		if !seen[k] {
-			seen[k] = true
-			keys = append(keys, rec["no"])
-		}
-	}
-
-	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
-	// list) one grouped query over the whole source table instead: much cheaper than
-	// many IN queries, and it keeps the bind parameters bounded.
-	values := make(map[string]types.Decimal, len(keys))
-	const chunkSize = 500
-	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
-	if len(keys) <= chunkSize {
-		chunks = [][]interface{}{keys}
-	}
-	for _, chunk := range chunks {
-
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "entry_type = ?")
-		args = append(args, 0)
-		if t.Phase_filter != "" {
-			// FlowFilter phase_filter applied to phase_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("phase_code", flowfilter.KindCode, t.Phase_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Task_filter != "" {
-			// FlowFilter task_filter applied to task_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("task_code", flowfilter.KindCode, t.Task_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Step_filter != "" {
-			// FlowFilter step_filter applied to step_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("step_code", flowfilter.KindCode, t.Step_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Type_filter != "" {
-			// FlowFilter type_filter applied to type (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("type", flowfilter.KindInt, t.Type_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Date_filter != "" {
-			// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if chunk != nil {
-			whereClauses = append(whereClauses, "project_no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
-			args = append(args, chunk...)
-		}
-		whereClause := "1=1"
-		if len(whereClauses) > 0 {
-			whereClause = strings.Join(whereClauses, " AND ")
-		}
-		query := fmt.Sprintf(`SELECT project_no, COALESCE(SUM(total_cost), 0) FROM "%s" WHERE %s GROUP BY project_no`, tableName, whereClause)
-		query = t.convertPlaceholders(query, len(args))
-
-		rows, err := t.db.Query(query, args...)
-		if err != nil {
-			fmt.Printf("Error: Failed to calculate usage_cost: %v\n", err)
-			return
-		}
-		for rows.Next() {
-			var key string
-			var sumStr string
-			if err := rows.Scan(&key, &sumStr); err == nil {
-				values[key], _ = types.NewDecimalFromString(sumStr)
-			}
-		}
-		_ = rows.Close()
-	}
-
-	// Records without matching entries get zero
-	for _, rec := range records {
-		v, ok := values[fmt.Sprint(rec["no"])]
-		if !ok {
-			v = types.ZeroDecimal()
-		}
-		rec["usage_cost"] = v.String()
-	}
-}
-
-// calcForRecords_usage_price calculates the usage_price FlowField for a set of records
-// CalcFormula: Sum(ProjectLedgerEntry.total_price)
-func (t *Project) calcForRecords_usage_price(records []map[string]interface{}) {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, ProjectLedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, ProjectLedgerEntryTableName, "budget_line_date"), true
-	if t.Phase_filter != "" || t.Task_filter != "" || t.Step_filter != "" || t.Type_filter != "" || t.Date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, ProjectLedgerEntryTableName, "budget_line_date"), true
-	}
-	_ = useSIFT
-
-	// Distinct key values of the records
-	seen := make(map[string]bool, len(records))
-	var keys []interface{}
-	for _, rec := range records {
-		k := fmt.Sprint(rec["no"])
-		if !seen[k] {
-			seen[k] = true
-			keys = append(keys, rec["no"])
-		}
-	}
-
-	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
-	// list) one grouped query over the whole source table instead: much cheaper than
-	// many IN queries, and it keeps the bind parameters bounded.
-	values := make(map[string]types.Decimal, len(keys))
-	const chunkSize = 500
-	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
-	if len(keys) <= chunkSize {
-		chunks = [][]interface{}{keys}
-	}
-	for _, chunk := range chunks {
-
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "entry_type = ?")
-		args = append(args, 0)
-		if t.Phase_filter != "" {
-			// FlowFilter phase_filter applied to phase_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("phase_code", flowfilter.KindCode, t.Phase_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Task_filter != "" {
-			// FlowFilter task_filter applied to task_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("task_code", flowfilter.KindCode, t.Task_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Step_filter != "" {
-			// FlowFilter step_filter applied to step_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("step_code", flowfilter.KindCode, t.Step_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Type_filter != "" {
-			// FlowFilter type_filter applied to type (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("type", flowfilter.KindInt, t.Type_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Date_filter != "" {
-			// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if chunk != nil {
-			whereClauses = append(whereClauses, "project_no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
-			args = append(args, chunk...)
-		}
-		whereClause := "1=1"
-		if len(whereClauses) > 0 {
-			whereClause = strings.Join(whereClauses, " AND ")
-		}
-		query := fmt.Sprintf(`SELECT project_no, COALESCE(SUM(total_price), 0) FROM "%s" WHERE %s GROUP BY project_no`, tableName, whereClause)
-		query = t.convertPlaceholders(query, len(args))
-
-		rows, err := t.db.Query(query, args...)
-		if err != nil {
-			fmt.Printf("Error: Failed to calculate usage_price: %v\n", err)
-			return
-		}
-		for rows.Next() {
-			var key string
-			var sumStr string
-			if err := rows.Scan(&key, &sumStr); err == nil {
-				values[key], _ = types.NewDecimalFromString(sumStr)
-			}
-		}
-		_ = rows.Close()
-	}
-
-	// Records without matching entries get zero
-	for _, rec := range records {
-		v, ok := values[fmt.Sprint(rec["no"])]
-		if !ok {
-			v = types.ZeroDecimal()
-		}
-		rec["usage_price"] = v.String()
-	}
-}
-
-// calcForRecords_invoiced_price calculates the invoiced_price FlowField for a set of records
-// CalcFormula: Sum(ProjectLedgerEntry.total_price)
-func (t *Project) calcForRecords_invoiced_price(records []map[string]interface{}) {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, ProjectLedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, ProjectLedgerEntryTableName, "budget_line_date"), true
-	if t.Phase_filter != "" || t.Task_filter != "" || t.Step_filter != "" || t.Type_filter != "" || t.Date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, ProjectLedgerEntryTableName, "budget_line_date"), true
-	}
-	_ = useSIFT
-
-	// Distinct key values of the records
-	seen := make(map[string]bool, len(records))
-	var keys []interface{}
-	for _, rec := range records {
-		k := fmt.Sprint(rec["no"])
-		if !seen[k] {
-			seen[k] = true
-			keys = append(keys, rec["no"])
-		}
-	}
-
-	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
-	// list) one grouped query over the whole source table instead: much cheaper than
-	// many IN queries, and it keeps the bind parameters bounded.
-	values := make(map[string]types.Decimal, len(keys))
-	const chunkSize = 500
-	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
-	if len(keys) <= chunkSize {
-		chunks = [][]interface{}{keys}
-	}
-	for _, chunk := range chunks {
-
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "entry_type = ?")
-		args = append(args, 1)
-		if t.Phase_filter != "" {
-			// FlowFilter phase_filter applied to phase_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("phase_code", flowfilter.KindCode, t.Phase_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Task_filter != "" {
-			// FlowFilter task_filter applied to task_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("task_code", flowfilter.KindCode, t.Task_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Step_filter != "" {
-			// FlowFilter step_filter applied to step_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("step_code", flowfilter.KindCode, t.Step_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Type_filter != "" {
-			// FlowFilter type_filter applied to type (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("type", flowfilter.KindInt, t.Type_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Date_filter != "" {
-			// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if chunk != nil {
-			whereClauses = append(whereClauses, "project_no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
-			args = append(args, chunk...)
-		}
-		whereClause := "1=1"
-		if len(whereClauses) > 0 {
-			whereClause = strings.Join(whereClauses, " AND ")
-		}
-		query := fmt.Sprintf(`SELECT project_no, -COALESCE(SUM(total_price), 0) FROM "%s" WHERE %s GROUP BY project_no`, tableName, whereClause)
-		query = t.convertPlaceholders(query, len(args))
-
-		rows, err := t.db.Query(query, args...)
-		if err != nil {
-			fmt.Printf("Error: Failed to calculate invoiced_price: %v\n", err)
-			return
-		}
-		for rows.Next() {
-			var key string
-			var sumStr string
-			if err := rows.Scan(&key, &sumStr); err == nil {
-				values[key], _ = types.NewDecimalFromString(sumStr)
-			}
-		}
-		_ = rows.Close()
-	}
-
-	// Records without matching entries get zero
-	for _, rec := range records {
-		v, ok := values[fmt.Sprint(rec["no"])]
-		if !ok {
-			v = types.ZeroDecimal()
-		}
-		rec["invoiced_price"] = v.String()
-	}
-}
-
-// calcForRecords_budgeted_res_qty calculates the budgeted_res_qty FlowField for a set of records
-// CalcFormula: Sum(ProjectBudgetEntry.quantity)
-func (t *Project) calcForRecords_budgeted_res_qty(records []map[string]interface{}) {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, ProjectBudgetEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, ProjectBudgetEntryTableName, "project_type_no_date"), true
-	if t.Resource_filter != "" || t.Date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, ProjectBudgetEntryTableName, "project_type_no_date"), true
-	}
-	_ = useSIFT
-
-	// Distinct key values of the records
-	seen := make(map[string]bool, len(records))
-	var keys []interface{}
-	for _, rec := range records {
-		k := fmt.Sprint(rec["no"])
-		if !seen[k] {
-			seen[k] = true
-			keys = append(keys, rec["no"])
-		}
-	}
-
-	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
-	// list) one grouped query over the whole source table instead: much cheaper than
-	// many IN queries, and it keeps the bind parameters bounded.
-	values := make(map[string]types.Decimal, len(keys))
-	const chunkSize = 500
-	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
-	if len(keys) <= chunkSize {
-		chunks = [][]interface{}{keys}
-	}
-	for _, chunk := range chunks {
-
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "type = ?")
-		args = append(args, 0)
-		if t.Resource_filter != "" {
-			// FlowFilter resource_filter applied to no (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("no", flowfilter.KindCode, t.Resource_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Date_filter != "" {
-			// FlowFilter date_filter applied to date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("date", flowfilter.KindDate, t.Date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if chunk != nil {
-			whereClauses = append(whereClauses, "project_no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
-			args = append(args, chunk...)
-		}
-		whereClause := "1=1"
-		if len(whereClauses) > 0 {
-			whereClause = strings.Join(whereClauses, " AND ")
-		}
-		query := fmt.Sprintf(`SELECT project_no, COALESCE(SUM(quantity), 0) FROM "%s" WHERE %s GROUP BY project_no`, tableName, whereClause)
-		query = t.convertPlaceholders(query, len(args))
-
-		rows, err := t.db.Query(query, args...)
-		if err != nil {
-			fmt.Printf("Error: Failed to calculate budgeted_res_qty: %v\n", err)
-			return
-		}
-		for rows.Next() {
-			var key string
-			var sumStr string
-			if err := rows.Scan(&key, &sumStr); err == nil {
-				values[key], _ = types.NewDecimalFromString(sumStr)
-			}
-		}
-		_ = rows.Close()
-	}
-
-	// Records without matching entries get zero
-	for _, rec := range records {
-		v, ok := values[fmt.Sprint(rec["no"])]
-		if !ok {
-			v = types.ZeroDecimal()
-		}
-		rec["budgeted_res_qty"] = v.String()
-	}
-}
-
-// calcForRecords_budgeted_res_gr_qty calculates the budgeted_res_gr_qty FlowField for a set of records
-// CalcFormula: Sum(ProjectBudgetEntry.quantity)
-func (t *Project) calcForRecords_budgeted_res_gr_qty(records []map[string]interface{}) {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, ProjectBudgetEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, ProjectBudgetEntryTableName, "project_group_date"), true
-	if t.Resource_gr_filter != "" || t.Date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, ProjectBudgetEntryTableName, "project_group_date"), true
-	}
-	_ = useSIFT
-
-	// Distinct key values of the records
-	seen := make(map[string]bool, len(records))
-	var keys []interface{}
-	for _, rec := range records {
-		k := fmt.Sprint(rec["no"])
-		if !seen[k] {
-			seen[k] = true
-			keys = append(keys, rec["no"])
-		}
-	}
-
-	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
-	// list) one grouped query over the whole source table instead: much cheaper than
-	// many IN queries, and it keeps the bind parameters bounded.
-	values := make(map[string]types.Decimal, len(keys))
-	const chunkSize = 500
-	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
-	if len(keys) <= chunkSize {
-		chunks = [][]interface{}{keys}
-	}
-	for _, chunk := range chunks {
-
-		var whereClauses []string
-		var args []interface{}
-		if t.Resource_gr_filter != "" {
-			// FlowFilter resource_gr_filter applied to resource_group_no (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("resource_group_no", flowfilter.KindCode, t.Resource_gr_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Date_filter != "" {
-			// FlowFilter date_filter applied to date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("date", flowfilter.KindDate, t.Date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if chunk != nil {
-			whereClauses = append(whereClauses, "project_no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
-			args = append(args, chunk...)
-		}
-		whereClause := "1=1"
-		if len(whereClauses) > 0 {
-			whereClause = strings.Join(whereClauses, " AND ")
-		}
-		query := fmt.Sprintf(`SELECT project_no, COALESCE(SUM(quantity), 0) FROM "%s" WHERE %s GROUP BY project_no`, tableName, whereClause)
-		query = t.convertPlaceholders(query, len(args))
-
-		rows, err := t.db.Query(query, args...)
-		if err != nil {
-			fmt.Printf("Error: Failed to calculate budgeted_res_gr_qty: %v\n", err)
-			return
-		}
-		for rows.Next() {
-			var key string
-			var sumStr string
-			if err := rows.Scan(&key, &sumStr); err == nil {
-				values[key], _ = types.NewDecimalFromString(sumStr)
-			}
-		}
-		_ = rows.Close()
-	}
-
-	// Records without matching entries get zero
-	for _, rec := range records {
-		v, ok := values[fmt.Sprint(rec["no"])]
-		if !ok {
-			v = types.ZeroDecimal()
-		}
-		rec["budgeted_res_gr_qty"] = v.String()
-	}
-}
-
-// calcForRecords_name calculates the name FlowField for a set of records
-// CalcFormula: Lookup(Customer.name)
-func (t *Project) calcForRecords_name(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &Project{db: t.db, company: t.company, dbType: t.dbType}
-		r.Type_filter = t.Type_filter
-		r.Resource_filter = t.Resource_filter
-		r.Date_filter = t.Date_filter
-		r.Phase_filter = t.Phase_filter
-		r.Task_filter = t.Task_filter
-		r.Step_filter = t.Step_filter
-		r.Resource_gr_filter = t.Resource_gr_filter
-		r.FromMap(rec)
-		r.calcFlowField_name()
-		rec["name"] = r.Name
-	}
-}
-
-// calcForRecords_address calculates the address FlowField for a set of records
-// CalcFormula: Lookup(Customer.address)
-func (t *Project) calcForRecords_address(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &Project{db: t.db, company: t.company, dbType: t.dbType}
-		r.Type_filter = t.Type_filter
-		r.Resource_filter = t.Resource_filter
-		r.Date_filter = t.Date_filter
-		r.Phase_filter = t.Phase_filter
-		r.Task_filter = t.Task_filter
-		r.Step_filter = t.Step_filter
-		r.Resource_gr_filter = t.Resource_gr_filter
-		r.FromMap(rec)
-		r.calcFlowField_address()
-		rec["address"] = r.Address
-	}
-}
-
-// calcForRecords_address_2 calculates the address_2 FlowField for a set of records
-// CalcFormula: Lookup(Customer.address_2)
-func (t *Project) calcForRecords_address_2(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &Project{db: t.db, company: t.company, dbType: t.dbType}
-		r.Type_filter = t.Type_filter
-		r.Resource_filter = t.Resource_filter
-		r.Date_filter = t.Date_filter
-		r.Phase_filter = t.Phase_filter
-		r.Task_filter = t.Task_filter
-		r.Step_filter = t.Step_filter
-		r.Resource_gr_filter = t.Resource_gr_filter
-		r.FromMap(rec)
-		r.calcFlowField_address_2()
-		rec["address_2"] = r.Address_2
-	}
-}
-
-// calcForRecords_city calculates the city FlowField for a set of records
-// CalcFormula: Lookup(Customer.city)
-func (t *Project) calcForRecords_city(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &Project{db: t.db, company: t.company, dbType: t.dbType}
-		r.Type_filter = t.Type_filter
-		r.Resource_filter = t.Resource_filter
-		r.Date_filter = t.Date_filter
-		r.Phase_filter = t.Phase_filter
-		r.Task_filter = t.Task_filter
-		r.Step_filter = t.Step_filter
-		r.Resource_gr_filter = t.Resource_gr_filter
-		r.FromMap(rec)
-		r.calcFlowField_city()
-		rec["city"] = r.City
-	}
-}
-
-// calcForRecords_contact calculates the contact FlowField for a set of records
-// CalcFormula: Lookup(Customer.contact)
-func (t *Project) calcForRecords_contact(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &Project{db: t.db, company: t.company, dbType: t.dbType}
-		r.Type_filter = t.Type_filter
-		r.Resource_filter = t.Resource_filter
-		r.Date_filter = t.Date_filter
-		r.Phase_filter = t.Phase_filter
-		r.Task_filter = t.Task_filter
-		r.Step_filter = t.Step_filter
-		r.Resource_gr_filter = t.Resource_gr_filter
-		r.FromMap(rec)
-		r.calcFlowField_contact()
-		rec["contact"] = r.Contact
-	}
-}
-
-// calcForRecords_state calculates the state FlowField for a set of records
-// CalcFormula: Lookup(Customer.state)
-func (t *Project) calcForRecords_state(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &Project{db: t.db, company: t.company, dbType: t.dbType}
-		r.Type_filter = t.Type_filter
-		r.Resource_filter = t.Resource_filter
-		r.Date_filter = t.Date_filter
-		r.Phase_filter = t.Phase_filter
-		r.Task_filter = t.Task_filter
-		r.Step_filter = t.Step_filter
-		r.Resource_gr_filter = t.Resource_gr_filter
-		r.FromMap(rec)
-		r.calcFlowField_state()
-		rec["state"] = r.State
-	}
-}
-
-// calcForRecords_post_code calculates the post_code FlowField for a set of records
-// CalcFormula: Lookup(Customer.post_code)
-func (t *Project) calcForRecords_post_code(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &Project{db: t.db, company: t.company, dbType: t.dbType}
-		r.Type_filter = t.Type_filter
-		r.Resource_filter = t.Resource_filter
-		r.Date_filter = t.Date_filter
-		r.Phase_filter = t.Phase_filter
-		r.Task_filter = t.Task_filter
-		r.Step_filter = t.Step_filter
-		r.Resource_gr_filter = t.Resource_gr_filter
-		r.FromMap(rec)
-		r.calcFlowField_post_code()
-		rec["post_code"] = r.Post_code
-	}
-}
-
-// Helper methods for FlowField calculations
-
-func (t *Project) calcCount_comment() int {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CommentLineTableName), false
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "table_name = ?")
-	args = append(args, 5)
-	whereClauses = append(whereClauses, "no = ?")
-	args = append(args, t.No)
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	agg := "COUNT(*)"
-	if useSIFT {
-		agg = "COALESCE(SUM(cnt), 0)" // the totals hold the entry count per key value
-	}
-	query := fmt.Sprintf(`SELECT %s FROM "%s" WHERE %s`, agg, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var count int
-	err := t.db.QueryRow(query, args...).Scan(&count)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate count for comment: %v\n", err)
-		return 0
-	}
-
-	return count
-}
-
-func (t *Project) calcSum_budgeted_cost() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, ProjectBudgetEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, ProjectBudgetEntryTableName, "budget_line_date"), true
-	if t.Phase_filter != "" || t.Task_filter != "" || t.Step_filter != "" || t.Type_filter != "" || t.Date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, ProjectBudgetEntryTableName, "budget_line_date"), true
-	}
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "project_no = ?")
-	args = append(args, t.No)
-	if t.Phase_filter != "" {
-		// FlowFilter phase_filter applied to phase_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("phase_code", flowfilter.KindCode, t.Phase_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Task_filter != "" {
-		// FlowFilter task_filter applied to task_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("task_code", flowfilter.KindCode, t.Task_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Step_filter != "" {
-		// FlowFilter step_filter applied to step_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("step_code", flowfilter.KindCode, t.Step_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Type_filter != "" {
-		// FlowFilter type_filter applied to type (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("type", flowfilter.KindInt, t.Type_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Date_filter != "" {
-		// FlowFilter date_filter applied to date (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("date", flowfilter.KindDate, t.Date_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(total_cost), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for budgeted_cost: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-func (t *Project) calcSum_budgeted_price() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, ProjectBudgetEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, ProjectBudgetEntryTableName, "budget_line_date"), true
-	if t.Phase_filter != "" || t.Task_filter != "" || t.Step_filter != "" || t.Type_filter != "" || t.Date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, ProjectBudgetEntryTableName, "budget_line_date"), true
-	}
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "project_no = ?")
-	args = append(args, t.No)
-	if t.Phase_filter != "" {
-		// FlowFilter phase_filter applied to phase_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("phase_code", flowfilter.KindCode, t.Phase_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Task_filter != "" {
-		// FlowFilter task_filter applied to task_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("task_code", flowfilter.KindCode, t.Task_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Step_filter != "" {
-		// FlowFilter step_filter applied to step_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("step_code", flowfilter.KindCode, t.Step_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Type_filter != "" {
-		// FlowFilter type_filter applied to type (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("type", flowfilter.KindInt, t.Type_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Date_filter != "" {
-		// FlowFilter date_filter applied to date (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("date", flowfilter.KindDate, t.Date_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(total_price), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for budgeted_price: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-func (t *Project) calcSum_usage_cost() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, ProjectLedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, ProjectLedgerEntryTableName, "budget_line_date"), true
-	if t.Phase_filter != "" || t.Task_filter != "" || t.Step_filter != "" || t.Type_filter != "" || t.Date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, ProjectLedgerEntryTableName, "budget_line_date"), true
-	}
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "entry_type = ?")
-	args = append(args, 0)
-	whereClauses = append(whereClauses, "project_no = ?")
-	args = append(args, t.No)
-	if t.Phase_filter != "" {
-		// FlowFilter phase_filter applied to phase_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("phase_code", flowfilter.KindCode, t.Phase_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Task_filter != "" {
-		// FlowFilter task_filter applied to task_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("task_code", flowfilter.KindCode, t.Task_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Step_filter != "" {
-		// FlowFilter step_filter applied to step_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("step_code", flowfilter.KindCode, t.Step_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Type_filter != "" {
-		// FlowFilter type_filter applied to type (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("type", flowfilter.KindInt, t.Type_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Date_filter != "" {
-		// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(total_cost), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for usage_cost: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-func (t *Project) calcSum_usage_price() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, ProjectLedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, ProjectLedgerEntryTableName, "budget_line_date"), true
-	if t.Phase_filter != "" || t.Task_filter != "" || t.Step_filter != "" || t.Type_filter != "" || t.Date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, ProjectLedgerEntryTableName, "budget_line_date"), true
-	}
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "entry_type = ?")
-	args = append(args, 0)
-	whereClauses = append(whereClauses, "project_no = ?")
-	args = append(args, t.No)
-	if t.Phase_filter != "" {
-		// FlowFilter phase_filter applied to phase_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("phase_code", flowfilter.KindCode, t.Phase_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Task_filter != "" {
-		// FlowFilter task_filter applied to task_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("task_code", flowfilter.KindCode, t.Task_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Step_filter != "" {
-		// FlowFilter step_filter applied to step_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("step_code", flowfilter.KindCode, t.Step_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Type_filter != "" {
-		// FlowFilter type_filter applied to type (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("type", flowfilter.KindInt, t.Type_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Date_filter != "" {
-		// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(total_price), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for usage_price: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-func (t *Project) calcSum_invoiced_price() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, ProjectLedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, ProjectLedgerEntryTableName, "budget_line_date"), true
-	if t.Phase_filter != "" || t.Task_filter != "" || t.Step_filter != "" || t.Type_filter != "" || t.Date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, ProjectLedgerEntryTableName, "budget_line_date"), true
-	}
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "entry_type = ?")
-	args = append(args, 1)
-	whereClauses = append(whereClauses, "project_no = ?")
-	args = append(args, t.No)
-	if t.Phase_filter != "" {
-		// FlowFilter phase_filter applied to phase_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("phase_code", flowfilter.KindCode, t.Phase_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Task_filter != "" {
-		// FlowFilter task_filter applied to task_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("task_code", flowfilter.KindCode, t.Task_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Step_filter != "" {
-		// FlowFilter step_filter applied to step_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("step_code", flowfilter.KindCode, t.Step_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Type_filter != "" {
-		// FlowFilter type_filter applied to type (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("type", flowfilter.KindInt, t.Type_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Date_filter != "" {
-		// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT -COALESCE(SUM(total_price), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for invoiced_price: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-func (t *Project) calcSum_budgeted_res_qty() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, ProjectBudgetEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, ProjectBudgetEntryTableName, "project_type_no_date"), true
-	if t.Resource_filter != "" || t.Date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, ProjectBudgetEntryTableName, "project_type_no_date"), true
-	}
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "type = ?")
-	args = append(args, 0)
-	whereClauses = append(whereClauses, "project_no = ?")
-	args = append(args, t.No)
-	if t.Resource_filter != "" {
-		// FlowFilter resource_filter applied to no (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("no", flowfilter.KindCode, t.Resource_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Date_filter != "" {
-		// FlowFilter date_filter applied to date (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("date", flowfilter.KindDate, t.Date_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(quantity), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for budgeted_res_qty: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-func (t *Project) calcSum_budgeted_res_gr_qty() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, ProjectBudgetEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, ProjectBudgetEntryTableName, "project_group_date"), true
-	if t.Resource_gr_filter != "" || t.Date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, ProjectBudgetEntryTableName, "project_group_date"), true
-	}
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "project_no = ?")
-	args = append(args, t.No)
-	if t.Resource_gr_filter != "" {
-		// FlowFilter resource_gr_filter applied to resource_group_no (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("resource_group_no", flowfilter.KindCode, t.Resource_gr_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Date_filter != "" {
-		// FlowFilter date_filter applied to date (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("date", flowfilter.KindDate, t.Date_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(quantity), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for budgeted_res_gr_qty: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-// calcLookup_name reads Customer.name of the first record matching the
-// flow filters (CalcFormula Lookup); blank when there is none
-func (t *Project) calcLookup_name() types.Text {
-	tableName := fmt.Sprintf("%s$%s", t.company, CustomerTableName)
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "no = ?")
-	args = append(args, t.Bill_to_customer_no)
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-	query := t.convertPlaceholders(fmt.Sprintf(`SELECT name FROM "%s" WHERE %s LIMIT 1`, tableName, whereClause), len(args))
-	var value sql.NullString
-	if err := t.db.QueryRow(query, args...).Scan(&value); err != nil && err != sql.ErrNoRows {
-		fmt.Printf("Error: Failed to look up name: %v\n", err)
-	}
-	return types.NewText(value.String)
-}
-
-// calcLookup_address reads Customer.address of the first record matching the
-// flow filters (CalcFormula Lookup); blank when there is none
-func (t *Project) calcLookup_address() types.Text {
-	tableName := fmt.Sprintf("%s$%s", t.company, CustomerTableName)
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "no = ?")
-	args = append(args, t.Bill_to_customer_no)
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-	query := t.convertPlaceholders(fmt.Sprintf(`SELECT address FROM "%s" WHERE %s LIMIT 1`, tableName, whereClause), len(args))
-	var value sql.NullString
-	if err := t.db.QueryRow(query, args...).Scan(&value); err != nil && err != sql.ErrNoRows {
-		fmt.Printf("Error: Failed to look up address: %v\n", err)
-	}
-	return types.NewText(value.String)
-}
-
-// calcLookup_address_2 reads Customer.address_2 of the first record matching the
-// flow filters (CalcFormula Lookup); blank when there is none
-func (t *Project) calcLookup_address_2() types.Text {
-	tableName := fmt.Sprintf("%s$%s", t.company, CustomerTableName)
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "no = ?")
-	args = append(args, t.Bill_to_customer_no)
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-	query := t.convertPlaceholders(fmt.Sprintf(`SELECT address_2 FROM "%s" WHERE %s LIMIT 1`, tableName, whereClause), len(args))
-	var value sql.NullString
-	if err := t.db.QueryRow(query, args...).Scan(&value); err != nil && err != sql.ErrNoRows {
-		fmt.Printf("Error: Failed to look up address_2: %v\n", err)
-	}
-	return types.NewText(value.String)
-}
-
-// calcLookup_city reads Customer.city of the first record matching the
-// flow filters (CalcFormula Lookup); blank when there is none
-func (t *Project) calcLookup_city() types.Text {
-	tableName := fmt.Sprintf("%s$%s", t.company, CustomerTableName)
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "no = ?")
-	args = append(args, t.Bill_to_customer_no)
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-	query := t.convertPlaceholders(fmt.Sprintf(`SELECT city FROM "%s" WHERE %s LIMIT 1`, tableName, whereClause), len(args))
-	var value sql.NullString
-	if err := t.db.QueryRow(query, args...).Scan(&value); err != nil && err != sql.ErrNoRows {
-		fmt.Printf("Error: Failed to look up city: %v\n", err)
-	}
-	return types.NewText(value.String)
-}
-
-// calcLookup_contact reads Customer.contact of the first record matching the
-// flow filters (CalcFormula Lookup); blank when there is none
-func (t *Project) calcLookup_contact() types.Text {
-	tableName := fmt.Sprintf("%s$%s", t.company, CustomerTableName)
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "no = ?")
-	args = append(args, t.Bill_to_customer_no)
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-	query := t.convertPlaceholders(fmt.Sprintf(`SELECT contact FROM "%s" WHERE %s LIMIT 1`, tableName, whereClause), len(args))
-	var value sql.NullString
-	if err := t.db.QueryRow(query, args...).Scan(&value); err != nil && err != sql.ErrNoRows {
-		fmt.Printf("Error: Failed to look up contact: %v\n", err)
-	}
-	return types.NewText(value.String)
-}
-
-// calcLookup_state reads Customer.state of the first record matching the
-// flow filters (CalcFormula Lookup); blank when there is none
-func (t *Project) calcLookup_state() types.Text {
-	tableName := fmt.Sprintf("%s$%s", t.company, CustomerTableName)
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "no = ?")
-	args = append(args, t.Bill_to_customer_no)
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-	query := t.convertPlaceholders(fmt.Sprintf(`SELECT state FROM "%s" WHERE %s LIMIT 1`, tableName, whereClause), len(args))
-	var value sql.NullString
-	if err := t.db.QueryRow(query, args...).Scan(&value); err != nil && err != sql.ErrNoRows {
-		fmt.Printf("Error: Failed to look up state: %v\n", err)
-	}
-	return types.NewText(value.String)
-}
-
-// calcLookup_post_code reads Customer.post_code of the first record matching the
-// flow filters (CalcFormula Lookup); blank when there is none
-func (t *Project) calcLookup_post_code() types.Code {
-	tableName := fmt.Sprintf("%s$%s", t.company, CustomerTableName)
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "no = ?")
-	args = append(args, t.Bill_to_customer_no)
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-	query := t.convertPlaceholders(fmt.Sprintf(`SELECT post_code FROM "%s" WHERE %s LIMIT 1`, tableName, whereClause), len(args))
-	var value sql.NullString
-	if err := t.db.QueryRow(query, args...).Scan(&value); err != nil && err != sql.ErrNoRows {
-		fmt.Printf("Error: Failed to look up post_code: %v\n", err)
-	}
-	return types.NewCode(value.String)
+// flowFilterRef returns a pointer to the FlowFilter field with index i in projectFields.FlowFilters
+func (t *Project) flowFilterRef(i int) *string {
+	switch i {
+	case 0:
+		return &t.Type_filter
+	case 1:
+		return &t.Resource_filter
+	case 2:
+		return &t.Date_filter
+	case 3:
+		return &t.Phase_filter
+	case 4:
+		return &t.Task_filter
+	case 5:
+		return &t.Step_filter
+	case 6:
+		return &t.Resource_gr_filter
+	}
+	return nil
 }
 
 // ========================================
@@ -3029,371 +1328,14 @@ func (t *Project) SetFilter(fieldName, filterExpr string) {
 // FlowFieldFilterKind reports whether a list can be filtered on FlowField field (Sum and
 // Count FlowFields: SETFILTER on a FlowField) and the kind of its values.
 func (t *Project) FlowFieldFilterKind(field string) (flowfilter.Kind, bool) {
-	switch strings.ToLower(field) {
-	case "budgeted_cost":
-		return flowfilter.KindDecimal, true
-	case "budgeted_price":
-		return flowfilter.KindDecimal, true
-	case "usage_cost":
-		return flowfilter.KindDecimal, true
-	case "usage_price":
-		return flowfilter.KindDecimal, true
-	case "invoiced_price":
-		return flowfilter.KindDecimal, true
-	case "budgeted_res_qty":
-		return flowfilter.KindDecimal, true
-	case "budgeted_res_gr_qty":
-		return flowfilter.KindDecimal, true
-	}
-	return "", false
+	return projectFields.FlowFieldFilterKind(field)
 }
 
 // flowFieldExpr is the SQL expression computing FlowField field for each row of a query
 // on this table: a correlated subquery reading the source like CalcFieldsForRecords (the
 // SIFT totals of a covering key, else the entries), with the FlowFilters set on t.
 func (t *Project) flowFieldExpr(field string) (string, []interface{}) {
-	outer := "\"" + fmt.Sprintf("%s$%s", t.company, ProjectTableName) + "\""
-	_ = outer
-	switch strings.ToLower(field) {
-	case "budgeted_cost":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, ProjectBudgetEntryTableName), false
-		tableName, useSIFT = sift.TableName(t.company, ProjectBudgetEntryTableName, "budget_line_date"), true
-		if t.Phase_filter != "" || t.Task_filter != "" || t.Step_filter != "" || t.Type_filter != "" || t.Date_filter != "" {
-			// A FlowFilter is set: the key must contain the filtered fields too
-			tableName, useSIFT = sift.TableName(t.company, ProjectBudgetEntryTableName, "budget_line_date"), true
-		}
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "project_no = "+outer+".no")
-		if t.Phase_filter != "" {
-			// FlowFilter phase_filter applied to phase_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("phase_code", flowfilter.KindCode, t.Phase_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Task_filter != "" {
-			// FlowFilter task_filter applied to task_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("task_code", flowfilter.KindCode, t.Task_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Step_filter != "" {
-			// FlowFilter step_filter applied to step_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("step_code", flowfilter.KindCode, t.Step_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Type_filter != "" {
-			// FlowFilter type_filter applied to type (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("type", flowfilter.KindInt, t.Type_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Date_filter != "" {
-			// FlowFilter date_filter applied to date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("date", flowfilter.KindDate, t.Date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(total_cost), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	case "budgeted_price":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, ProjectBudgetEntryTableName), false
-		tableName, useSIFT = sift.TableName(t.company, ProjectBudgetEntryTableName, "budget_line_date"), true
-		if t.Phase_filter != "" || t.Task_filter != "" || t.Step_filter != "" || t.Type_filter != "" || t.Date_filter != "" {
-			// A FlowFilter is set: the key must contain the filtered fields too
-			tableName, useSIFT = sift.TableName(t.company, ProjectBudgetEntryTableName, "budget_line_date"), true
-		}
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "project_no = "+outer+".no")
-		if t.Phase_filter != "" {
-			// FlowFilter phase_filter applied to phase_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("phase_code", flowfilter.KindCode, t.Phase_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Task_filter != "" {
-			// FlowFilter task_filter applied to task_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("task_code", flowfilter.KindCode, t.Task_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Step_filter != "" {
-			// FlowFilter step_filter applied to step_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("step_code", flowfilter.KindCode, t.Step_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Type_filter != "" {
-			// FlowFilter type_filter applied to type (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("type", flowfilter.KindInt, t.Type_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Date_filter != "" {
-			// FlowFilter date_filter applied to date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("date", flowfilter.KindDate, t.Date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(total_price), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	case "usage_cost":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, ProjectLedgerEntryTableName), false
-		tableName, useSIFT = sift.TableName(t.company, ProjectLedgerEntryTableName, "budget_line_date"), true
-		if t.Phase_filter != "" || t.Task_filter != "" || t.Step_filter != "" || t.Type_filter != "" || t.Date_filter != "" {
-			// A FlowFilter is set: the key must contain the filtered fields too
-			tableName, useSIFT = sift.TableName(t.company, ProjectLedgerEntryTableName, "budget_line_date"), true
-		}
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "entry_type = ?")
-		args = append(args, 0)
-		whereClauses = append(whereClauses, "project_no = "+outer+".no")
-		if t.Phase_filter != "" {
-			// FlowFilter phase_filter applied to phase_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("phase_code", flowfilter.KindCode, t.Phase_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Task_filter != "" {
-			// FlowFilter task_filter applied to task_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("task_code", flowfilter.KindCode, t.Task_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Step_filter != "" {
-			// FlowFilter step_filter applied to step_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("step_code", flowfilter.KindCode, t.Step_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Type_filter != "" {
-			// FlowFilter type_filter applied to type (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("type", flowfilter.KindInt, t.Type_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Date_filter != "" {
-			// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(total_cost), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	case "usage_price":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, ProjectLedgerEntryTableName), false
-		tableName, useSIFT = sift.TableName(t.company, ProjectLedgerEntryTableName, "budget_line_date"), true
-		if t.Phase_filter != "" || t.Task_filter != "" || t.Step_filter != "" || t.Type_filter != "" || t.Date_filter != "" {
-			// A FlowFilter is set: the key must contain the filtered fields too
-			tableName, useSIFT = sift.TableName(t.company, ProjectLedgerEntryTableName, "budget_line_date"), true
-		}
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "entry_type = ?")
-		args = append(args, 0)
-		whereClauses = append(whereClauses, "project_no = "+outer+".no")
-		if t.Phase_filter != "" {
-			// FlowFilter phase_filter applied to phase_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("phase_code", flowfilter.KindCode, t.Phase_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Task_filter != "" {
-			// FlowFilter task_filter applied to task_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("task_code", flowfilter.KindCode, t.Task_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Step_filter != "" {
-			// FlowFilter step_filter applied to step_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("step_code", flowfilter.KindCode, t.Step_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Type_filter != "" {
-			// FlowFilter type_filter applied to type (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("type", flowfilter.KindInt, t.Type_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Date_filter != "" {
-			// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(total_price), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	case "invoiced_price":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, ProjectLedgerEntryTableName), false
-		tableName, useSIFT = sift.TableName(t.company, ProjectLedgerEntryTableName, "budget_line_date"), true
-		if t.Phase_filter != "" || t.Task_filter != "" || t.Step_filter != "" || t.Type_filter != "" || t.Date_filter != "" {
-			// A FlowFilter is set: the key must contain the filtered fields too
-			tableName, useSIFT = sift.TableName(t.company, ProjectLedgerEntryTableName, "budget_line_date"), true
-		}
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "entry_type = ?")
-		args = append(args, 1)
-		whereClauses = append(whereClauses, "project_no = "+outer+".no")
-		if t.Phase_filter != "" {
-			// FlowFilter phase_filter applied to phase_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("phase_code", flowfilter.KindCode, t.Phase_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Task_filter != "" {
-			// FlowFilter task_filter applied to task_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("task_code", flowfilter.KindCode, t.Task_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Step_filter != "" {
-			// FlowFilter step_filter applied to step_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("step_code", flowfilter.KindCode, t.Step_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Type_filter != "" {
-			// FlowFilter type_filter applied to type (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("type", flowfilter.KindInt, t.Type_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Date_filter != "" {
-			// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "-COALESCE(SUM(total_price), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	case "budgeted_res_qty":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, ProjectBudgetEntryTableName), false
-		tableName, useSIFT = sift.TableName(t.company, ProjectBudgetEntryTableName, "project_type_no_date"), true
-		if t.Resource_filter != "" || t.Date_filter != "" {
-			// A FlowFilter is set: the key must contain the filtered fields too
-			tableName, useSIFT = sift.TableName(t.company, ProjectBudgetEntryTableName, "project_type_no_date"), true
-		}
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "type = ?")
-		args = append(args, 0)
-		whereClauses = append(whereClauses, "project_no = "+outer+".no")
-		if t.Resource_filter != "" {
-			// FlowFilter resource_filter applied to no (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("no", flowfilter.KindCode, t.Resource_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Date_filter != "" {
-			// FlowFilter date_filter applied to date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("date", flowfilter.KindDate, t.Date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(quantity), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	case "budgeted_res_gr_qty":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, ProjectBudgetEntryTableName), false
-		tableName, useSIFT = sift.TableName(t.company, ProjectBudgetEntryTableName, "project_group_date"), true
-		if t.Resource_gr_filter != "" || t.Date_filter != "" {
-			// A FlowFilter is set: the key must contain the filtered fields too
-			tableName, useSIFT = sift.TableName(t.company, ProjectBudgetEntryTableName, "project_group_date"), true
-		}
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "project_no = "+outer+".no")
-		if t.Resource_gr_filter != "" {
-			// FlowFilter resource_gr_filter applied to resource_group_no (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("resource_group_no", flowfilter.KindCode, t.Resource_gr_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Date_filter != "" {
-			// FlowFilter date_filter applied to date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("date", flowfilter.KindDate, t.Date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(quantity), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	}
-	return "NULL", nil
+	return t.flow().Expr(field)
 }
 
 // SetCurrentKey sets the sort order for queries
@@ -3681,31 +1623,7 @@ func (t *Project) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *Project) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, ProjectTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "completion_percent":
-			column = "completion_percent"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Project", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Project.%s: %w", column, err)
-		}
-		switch column {
-		case "completion_percent":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project.%s: %w", column, err)
-			}
-			t.Completion_percent = d
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a
@@ -4731,6 +2649,222 @@ var projectFields = &tables.TableFields{
 			Kind:     tables.KindCode,
 			Trigger:  "OnValidate_No_series",
 			Relation: true,
+		},
+	},
+	FlowFields: []tables.FlowFieldMeta{
+		{
+			Field:         "comment",
+			Formula:       "Exist",
+			Source:        CommentLineTableName,
+			SourceField:   "line_no",
+			BatchKeyField: "no",
+			BatchKeyValue: "no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowConst, Column: "table_name", Const: 5},
+				{Type: tables.FlowFieldValue, Column: "no", Value: "no", ValueColumn: "no"},
+			},
+		},
+		{
+			Field:           "budgeted_cost",
+			Formula:         "Sum",
+			Source:          ProjectBudgetEntryTableName,
+			SourceField:     "total_cost",
+			SIFTKey:         "budget_line_date",
+			SIFTKeyFiltered: "budget_line_date",
+			BatchKeyField:   "project_no",
+			BatchKeyValue:   "no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "project_no", Value: "no", ValueColumn: "no"},
+				{Type: tables.FlowFilterSet, Column: "phase_code", Value: "phase_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "task_code", Value: "task_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "step_code", Value: "step_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "type", Value: "type_filter", Kind: flowfilter.KindInt},
+				{Type: tables.FlowFilterSet, Column: "date", Value: "date_filter", Kind: flowfilter.KindDate},
+			},
+		},
+		{
+			Field:           "budgeted_price",
+			Formula:         "Sum",
+			Source:          ProjectBudgetEntryTableName,
+			SourceField:     "total_price",
+			SIFTKey:         "budget_line_date",
+			SIFTKeyFiltered: "budget_line_date",
+			BatchKeyField:   "project_no",
+			BatchKeyValue:   "no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "project_no", Value: "no", ValueColumn: "no"},
+				{Type: tables.FlowFilterSet, Column: "phase_code", Value: "phase_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "task_code", Value: "task_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "step_code", Value: "step_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "type", Value: "type_filter", Kind: flowfilter.KindInt},
+				{Type: tables.FlowFilterSet, Column: "date", Value: "date_filter", Kind: flowfilter.KindDate},
+			},
+		},
+		{
+			Field:           "usage_cost",
+			Formula:         "Sum",
+			Source:          ProjectLedgerEntryTableName,
+			SourceField:     "total_cost",
+			SIFTKey:         "budget_line_date",
+			SIFTKeyFiltered: "budget_line_date",
+			BatchKeyField:   "project_no",
+			BatchKeyValue:   "no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowConst, Column: "entry_type", Const: 0},
+				{Type: tables.FlowFieldValue, Column: "project_no", Value: "no", ValueColumn: "no"},
+				{Type: tables.FlowFilterSet, Column: "phase_code", Value: "phase_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "task_code", Value: "task_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "step_code", Value: "step_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "type", Value: "type_filter", Kind: flowfilter.KindInt},
+				{Type: tables.FlowFilterSet, Column: "posting_date", Value: "date_filter", Kind: flowfilter.KindDate},
+			},
+		},
+		{
+			Field:           "usage_price",
+			Formula:         "Sum",
+			Source:          ProjectLedgerEntryTableName,
+			SourceField:     "total_price",
+			SIFTKey:         "budget_line_date",
+			SIFTKeyFiltered: "budget_line_date",
+			BatchKeyField:   "project_no",
+			BatchKeyValue:   "no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowConst, Column: "entry_type", Const: 0},
+				{Type: tables.FlowFieldValue, Column: "project_no", Value: "no", ValueColumn: "no"},
+				{Type: tables.FlowFilterSet, Column: "phase_code", Value: "phase_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "task_code", Value: "task_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "step_code", Value: "step_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "type", Value: "type_filter", Kind: flowfilter.KindInt},
+				{Type: tables.FlowFilterSet, Column: "posting_date", Value: "date_filter", Kind: flowfilter.KindDate},
+			},
+		},
+		{
+			Field:           "invoiced_price",
+			Formula:         "Sum",
+			Source:          ProjectLedgerEntryTableName,
+			SourceField:     "total_price",
+			ReverseSign:     true,
+			SIFTKey:         "budget_line_date",
+			SIFTKeyFiltered: "budget_line_date",
+			BatchKeyField:   "project_no",
+			BatchKeyValue:   "no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowConst, Column: "entry_type", Const: 1},
+				{Type: tables.FlowFieldValue, Column: "project_no", Value: "no", ValueColumn: "no"},
+				{Type: tables.FlowFilterSet, Column: "phase_code", Value: "phase_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "task_code", Value: "task_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "step_code", Value: "step_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "type", Value: "type_filter", Kind: flowfilter.KindInt},
+				{Type: tables.FlowFilterSet, Column: "posting_date", Value: "date_filter", Kind: flowfilter.KindDate},
+			},
+		},
+		{
+			Field:           "budgeted_res_qty",
+			Formula:         "Sum",
+			Source:          ProjectBudgetEntryTableName,
+			SourceField:     "quantity",
+			SIFTKey:         "project_type_no_date",
+			SIFTKeyFiltered: "project_type_no_date",
+			BatchKeyField:   "project_no",
+			BatchKeyValue:   "no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowConst, Column: "type", Const: 0},
+				{Type: tables.FlowFieldValue, Column: "project_no", Value: "no", ValueColumn: "no"},
+				{Type: tables.FlowFilterSet, Column: "no", Value: "resource_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "date", Value: "date_filter", Kind: flowfilter.KindDate},
+			},
+		},
+		{
+			Field:           "budgeted_res_gr_qty",
+			Formula:         "Sum",
+			Source:          ProjectBudgetEntryTableName,
+			SourceField:     "quantity",
+			SIFTKey:         "project_group_date",
+			SIFTKeyFiltered: "project_group_date",
+			BatchKeyField:   "project_no",
+			BatchKeyValue:   "no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "project_no", Value: "no", ValueColumn: "no"},
+				{Type: tables.FlowFilterSet, Column: "resource_group_no", Value: "resource_gr_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "date", Value: "date_filter", Kind: flowfilter.KindDate},
+			},
+		},
+		{
+			Field:         "name",
+			Formula:       "Lookup",
+			Source:        CustomerTableName,
+			SourceField:   "name",
+			BatchKeyField: "no",
+			BatchKeyValue: "bill_to_customer_no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "no", Value: "bill_to_customer_no", ValueColumn: "bill_to_customer_no"},
+			},
+		},
+		{
+			Field:         "address",
+			Formula:       "Lookup",
+			Source:        CustomerTableName,
+			SourceField:   "address",
+			BatchKeyField: "no",
+			BatchKeyValue: "bill_to_customer_no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "no", Value: "bill_to_customer_no", ValueColumn: "bill_to_customer_no"},
+			},
+		},
+		{
+			Field:         "address_2",
+			Formula:       "Lookup",
+			Source:        CustomerTableName,
+			SourceField:   "address_2",
+			BatchKeyField: "no",
+			BatchKeyValue: "bill_to_customer_no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "no", Value: "bill_to_customer_no", ValueColumn: "bill_to_customer_no"},
+			},
+		},
+		{
+			Field:         "city",
+			Formula:       "Lookup",
+			Source:        CustomerTableName,
+			SourceField:   "city",
+			BatchKeyField: "no",
+			BatchKeyValue: "bill_to_customer_no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "no", Value: "bill_to_customer_no", ValueColumn: "bill_to_customer_no"},
+			},
+		},
+		{
+			Field:         "contact",
+			Formula:       "Lookup",
+			Source:        CustomerTableName,
+			SourceField:   "contact",
+			BatchKeyField: "no",
+			BatchKeyValue: "bill_to_customer_no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "no", Value: "bill_to_customer_no", ValueColumn: "bill_to_customer_no"},
+			},
+		},
+		{
+			Field:         "state",
+			Formula:       "Lookup",
+			Source:        CustomerTableName,
+			SourceField:   "state",
+			BatchKeyField: "no",
+			BatchKeyValue: "bill_to_customer_no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "no", Value: "bill_to_customer_no", ValueColumn: "bill_to_customer_no"},
+			},
+		},
+		{
+			Field:         "post_code",
+			Formula:       "Lookup",
+			Source:        CustomerTableName,
+			SourceField:   "post_code",
+			BatchKeyField: "no",
+			BatchKeyValue: "bill_to_customer_no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "no", Value: "bill_to_customer_no", ValueColumn: "bill_to_customer_no"},
+			},
 		},
 	},
 	FlowFilters: []tables.FieldInfo{

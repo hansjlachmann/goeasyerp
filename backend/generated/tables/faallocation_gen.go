@@ -20,14 +20,12 @@
 //	OnValidate_Dimension_2_code(rec *gtables.FAAllocation) error
 //	OnValidate_Allocation_percent(rec *gtables.FAAllocation) error
 //	OnValidate_Allocation_type(rec *gtables.FAAllocation) error
-
 package tables
 
 import (
 	"database/sql"
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -848,25 +846,7 @@ func (t *FAAllocation) Delete(runTrigger bool) bool {
 //	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
 //	customer.CalcFields() - Calculate all FlowFields
 func (t *FAAllocation) CalcFields(fieldNames ...string) {
-	// If no field names specified, calculate all FlowFields
-	if len(fieldNames) == 0 {
-		t.calcFlowField_account_name()
-		return
-	}
-
-	// Calculate only specified fields
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "account_name":
-			t.calcFlowField_account_name()
-		}
-	}
-}
-
-// calcFlowField_account_name calculates the account_name FlowField
-// CalcFormula: Lookup(GLAccount.name)
-func (t *FAAllocation) calcFlowField_account_name() {
-	t.Account_name = t.calcLookup_account_name()
+	t.flow().CalcFields(fieldNames)
 }
 
 // CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
@@ -874,52 +854,42 @@ func (t *FAAllocation) calcFlowField_account_name() {
 // ToMap() results; each gets its FlowField values under the field name. With no
 // field names, all FlowFields are calculated.
 func (t *FAAllocation) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
-	if len(records) == 0 {
-		return
-	}
-	if len(fieldNames) == 0 {
-		fieldNames = t.GetFlowFields()
-	}
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "account_name":
-			t.calcForRecords_account_name(records)
-		}
+	t.flow().CalcFieldsForRecords(records, fieldNames)
+}
+
+// flow is what the FlowField functions of foundation/tables need of the record
+func (t *FAAllocation) flow() *tables.FlowRec {
+	return &tables.FlowRec{
+		Fields:     fAAllocationFields,
+		Ref:        t.fieldRef,
+		FlowFilter: t.flowFilterRef,
+		DB:         t.db,
+		Company:    t.company,
+		Postgres:   t.dbType == database.DBTypePostgres,
+		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, FAAllocationTableName) + "\"",
+		One:        t.flowFieldOf,
 	}
 }
 
-// calcForRecords_account_name calculates the account_name FlowField for a set of records
-// CalcFormula: Lookup(GLAccount.name)
-func (t *FAAllocation) calcForRecords_account_name(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &FAAllocation{db: t.db, company: t.company, dbType: t.dbType}
-		r.FromMap(rec)
-		r.calcFlowField_account_name()
-		rec["account_name"] = r.Account_name
+// flowFieldOf calculates a FlowField for one record of a list (a record from the map, with
+// this record's FlowFilters), in its map form
+func (t *FAAllocation) flowFieldOf(rec map[string]any, flowField int) any {
+	one := &FAAllocation{}
+	one.InitWithDBType(t.db, t.company, t.dbType)
+	for i := range fAAllocationFields.FlowFilters {
+		*one.flowFilterRef(i) = *t.flowFilterRef(i)
 	}
+	one.FromMap(rec)
+	f := one.flow()
+	f.Calc(flowField)
+	return f.MapValue(flowField)
 }
 
-// Helper methods for FlowField calculations
-
-// calcLookup_account_name reads GLAccount.name of the first record matching the
-// flow filters (CalcFormula Lookup); blank when there is none
-func (t *FAAllocation) calcLookup_account_name() types.Text {
-	tableName := fmt.Sprintf("%s$%s", t.company, GLAccountTableName)
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "no = ?")
-	args = append(args, t.Account_no)
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
+// flowFilterRef returns a pointer to the FlowFilter field with index i in fAAllocationFields.FlowFilters
+func (t *FAAllocation) flowFilterRef(i int) *string {
+	switch i {
 	}
-	query := t.convertPlaceholders(fmt.Sprintf(`SELECT name FROM "%s" WHERE %s LIMIT 1`, tableName, whereClause), len(args))
-	var value sql.NullString
-	if err := t.db.QueryRow(query, args...).Scan(&value); err != nil && err != sql.ErrNoRows {
-		fmt.Printf("Error: Failed to look up account_name: %v\n", err)
-	}
-	return types.NewText(value.String)
+	return nil
 }
 
 // ========================================
@@ -1237,39 +1207,7 @@ func (t *FAAllocation) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *FAAllocation) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "line_no":
-			column = "line_no"
-		case "allocation_percent":
-			column = "allocation_percent"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of FA_Allocation", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums FA_Allocation.%s: %w", column, err)
-		}
-		switch column {
-		case "line_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums FA_Allocation.%s: %w", column, err)
-			}
-			t.Line_no = int(f)
-		case "allocation_percent":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums FA_Allocation.%s: %w", column, err)
-			}
-			t.Allocation_percent = d
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a
@@ -1790,6 +1728,19 @@ var fAAllocationFields = &tables.TableFields{
 			},
 			Kind:    tables.KindText,
 			Trigger: "OnValidate_Account_name",
+		},
+	},
+	FlowFields: []tables.FlowFieldMeta{
+		{
+			Field:         "account_name",
+			Formula:       "Lookup",
+			Source:        GLAccountTableName,
+			SourceField:   "name",
+			BatchKeyField: "no",
+			BatchKeyValue: "account_no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "no", Value: "account_no", ValueColumn: "account_no"},
+			},
 		},
 	},
 }

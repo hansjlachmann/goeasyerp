@@ -106,14 +106,12 @@
 //	OnValidate_Purchase_order_no(rec *gtables.SalesLine) error
 //	OnValidate_Purch_order_line_no(rec *gtables.SalesLine) error
 //	OnValidate_Drop_shipment(rec *gtables.SalesLine) error
-
 package tables
 
 import (
 	"database/sql"
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -1532,13 +1530,22 @@ func (t *SalesLine) Delete(runTrigger bool) bool {
 	return t.rec().Delete()
 }
 
-// CalcFields is a no-op for tables without FlowFields
-// Implemented for tables.Table interface compliance
+// ========================================
+// FlowField Calculations
+// ========================================
+
+// CalcFields calculates FlowField values
+// Usage:
+//
+//	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
+//	customer.CalcFields() - Calculate all FlowFields
 func (t *SalesLine) CalcFields(fieldNames ...string) {
-	// This table has no FlowFields to calculate
 }
 
-// CalcFieldsForRecords is a no-op for tables without FlowFields
+// CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
+// one grouped query per FlowField instead of one query per record. records are
+// ToMap() results; each gets its FlowField values under the field name. With no
+// field names, all FlowFields are calculated.
 func (t *SalesLine) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
 }
 
@@ -1857,375 +1864,7 @@ func (t *SalesLine) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *SalesLine) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, SalesLineTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "line_no":
-			column = "line_no"
-		case "quantity":
-			column = "quantity"
-		case "outstanding_quantity":
-			column = "outstanding_quantity"
-		case "qty_to_invoice":
-			column = "qty_to_invoice"
-		case "qty_to_ship":
-			column = "qty_to_ship"
-		case "unit_price":
-			column = "unit_price"
-		case "unit_cost_lcy":
-			column = "unit_cost_lcy"
-		case "tax_percent":
-			column = "tax_percent"
-		case "quantity_disc_percent":
-			column = "quantity_disc_percent"
-		case "line_discount_percent":
-			column = "line_discount_percent"
-		case "line_discount_amount":
-			column = "line_discount_amount"
-		case "amount":
-			column = "amount"
-		case "amount_including_tax":
-			column = "amount_including_tax"
-		case "gross_weight":
-			column = "gross_weight"
-		case "net_weight":
-			column = "net_weight"
-		case "units_per_parcel":
-			column = "units_per_parcel"
-		case "unit_volume":
-			column = "unit_volume"
-		case "cust_item_disc_percent":
-			column = "cust_item_disc_percent"
-		case "outstanding_amount":
-			column = "outstanding_amount"
-		case "qty_shipped_not_invoiced":
-			column = "qty_shipped_not_invoiced"
-		case "shipped_not_invoiced":
-			column = "shipped_not_invoiced"
-		case "quantity_shipped":
-			column = "quantity_shipped"
-		case "quantity_invoiced":
-			column = "quantity_invoiced"
-		case "shipment_line_no":
-			column = "shipment_line_no"
-		case "profit_percent":
-			column = "profit_percent"
-		case "inv_discount_amount":
-			column = "inv_discount_amount"
-		case "outstanding_amount_lcy":
-			column = "outstanding_amount_lcy"
-		case "shipped_not_invoiced_lcy":
-			column = "shipped_not_invoiced_lcy"
-		case "blanket_order_line_no":
-			column = "blanket_order_line_no"
-		case "tax_base_amount":
-			column = "tax_base_amount"
-		case "unit_cost":
-			column = "unit_cost"
-		case "qty_per_unit_of_measure":
-			column = "qty_per_unit_of_measure"
-		case "quantity_base":
-			column = "quantity_base"
-		case "outstanding_qty_base":
-			column = "outstanding_qty_base"
-		case "qty_to_invoice_base":
-			column = "qty_to_invoice_base"
-		case "qty_to_ship_base":
-			column = "qty_to_ship_base"
-		case "qty_shpd_not_invd_base":
-			column = "qty_shpd_not_invd_base"
-		case "qty_shipped_base":
-			column = "qty_shipped_base"
-		case "qty_invoiced_base":
-			column = "qty_invoiced_base"
-		case "reserved_quantity":
-			column = "reserved_quantity"
-		case "reserved_qty_base":
-			column = "reserved_qty_base"
-		case "appl_to_project_entry":
-			column = "appl_to_project_entry"
-		case "attached_to_line_no":
-			column = "attached_to_line_no"
-		case "purch_order_line_no":
-			column = "purch_order_line_no"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Sales_Line", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-		}
-		switch column {
-		case "line_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Line_no = int(f)
-		case "quantity":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Quantity = d
-		case "outstanding_quantity":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Outstanding_quantity = d
-		case "qty_to_invoice":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Qty_to_invoice = d
-		case "qty_to_ship":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Qty_to_ship = d
-		case "unit_price":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Unit_price = d
-		case "unit_cost_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Unit_cost_lcy = d
-		case "tax_percent":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Tax_percent = d
-		case "quantity_disc_percent":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Quantity_disc_percent = d
-		case "line_discount_percent":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Line_discount_percent = d
-		case "line_discount_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Line_discount_amount = d
-		case "amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Amount = d
-		case "amount_including_tax":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Amount_including_tax = d
-		case "gross_weight":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Gross_weight = d
-		case "net_weight":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Net_weight = d
-		case "units_per_parcel":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Units_per_parcel = d
-		case "unit_volume":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Unit_volume = d
-		case "cust_item_disc_percent":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Cust_item_disc_percent = d
-		case "outstanding_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Outstanding_amount = d
-		case "qty_shipped_not_invoiced":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Qty_shipped_not_invoiced = d
-		case "shipped_not_invoiced":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Shipped_not_invoiced = d
-		case "quantity_shipped":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Quantity_shipped = d
-		case "quantity_invoiced":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Quantity_invoiced = d
-		case "shipment_line_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Shipment_line_no = int(f)
-		case "profit_percent":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Profit_percent = d
-		case "inv_discount_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Inv_discount_amount = d
-		case "outstanding_amount_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Outstanding_amount_lcy = d
-		case "shipped_not_invoiced_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Shipped_not_invoiced_lcy = d
-		case "blanket_order_line_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Blanket_order_line_no = int(f)
-		case "tax_base_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Tax_base_amount = d
-		case "unit_cost":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Unit_cost = d
-		case "qty_per_unit_of_measure":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Qty_per_unit_of_measure = d
-		case "quantity_base":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Quantity_base = d
-		case "outstanding_qty_base":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Outstanding_qty_base = d
-		case "qty_to_invoice_base":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Qty_to_invoice_base = d
-		case "qty_to_ship_base":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Qty_to_ship_base = d
-		case "qty_shpd_not_invd_base":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Qty_shpd_not_invd_base = d
-		case "qty_shipped_base":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Qty_shipped_base = d
-		case "qty_invoiced_base":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Qty_invoiced_base = d
-		case "reserved_quantity":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Reserved_quantity = d
-		case "reserved_qty_base":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Reserved_qty_base = d
-		case "appl_to_project_entry":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Appl_to_project_entry = int(f)
-		case "attached_to_line_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Attached_to_line_no = int(f)
-		case "purch_order_line_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Line.%s: %w", column, err)
-			}
-			t.Purch_order_line_no = int(f)
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a

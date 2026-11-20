@@ -17,14 +17,12 @@
 //	OnValidate_Date(rec *gtables.SetupChecklistComment) error
 //	OnValidate_Code(rec *gtables.SetupChecklistComment) error
 //	OnValidate_Comment(rec *gtables.SetupChecklistComment) error
-
 package tables
 
 import (
 	"database/sql"
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -752,25 +750,7 @@ func (t *SetupChecklistComment) Delete(runTrigger bool) bool {
 //	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
 //	customer.CalcFields() - Calculate all FlowFields
 func (t *SetupChecklistComment) CalcFields(fieldNames ...string) {
-	// If no field names specified, calculate all FlowFields
-	if len(fieldNames) == 0 {
-		t.calcFlowField_table_name()
-		return
-	}
-
-	// Calculate only specified fields
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "table_name":
-			t.calcFlowField_table_name()
-		}
-	}
-}
-
-// calcFlowField_table_name calculates the table_name FlowField
-// CalcFormula: Lookup(SetupChecklistLine.table_name)
-func (t *SetupChecklistComment) calcFlowField_table_name() {
-	t.Table_name = t.calcLookup_table_name()
+	t.flow().CalcFields(fieldNames)
 }
 
 // CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
@@ -778,52 +758,42 @@ func (t *SetupChecklistComment) calcFlowField_table_name() {
 // ToMap() results; each gets its FlowField values under the field name. With no
 // field names, all FlowFields are calculated.
 func (t *SetupChecklistComment) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
-	if len(records) == 0 {
-		return
-	}
-	if len(fieldNames) == 0 {
-		fieldNames = t.GetFlowFields()
-	}
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "table_name":
-			t.calcForRecords_table_name(records)
-		}
+	t.flow().CalcFieldsForRecords(records, fieldNames)
+}
+
+// flow is what the FlowField functions of foundation/tables need of the record
+func (t *SetupChecklistComment) flow() *tables.FlowRec {
+	return &tables.FlowRec{
+		Fields:     setupChecklistCommentFields,
+		Ref:        t.fieldRef,
+		FlowFilter: t.flowFilterRef,
+		DB:         t.db,
+		Company:    t.company,
+		Postgres:   t.dbType == database.DBTypePostgres,
+		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, SetupChecklistCommentTableName) + "\"",
+		One:        t.flowFieldOf,
 	}
 }
 
-// calcForRecords_table_name calculates the table_name FlowField for a set of records
-// CalcFormula: Lookup(SetupChecklistLine.table_name)
-func (t *SetupChecklistComment) calcForRecords_table_name(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &SetupChecklistComment{db: t.db, company: t.company, dbType: t.dbType}
-		r.FromMap(rec)
-		r.calcFlowField_table_name()
-		rec["table_name"] = r.Table_name
+// flowFieldOf calculates a FlowField for one record of a list (a record from the map, with
+// this record's FlowFilters), in its map form
+func (t *SetupChecklistComment) flowFieldOf(rec map[string]any, flowField int) any {
+	one := &SetupChecklistComment{}
+	one.InitWithDBType(t.db, t.company, t.dbType)
+	for i := range setupChecklistCommentFields.FlowFilters {
+		*one.flowFilterRef(i) = *t.flowFilterRef(i)
 	}
+	one.FromMap(rec)
+	f := one.flow()
+	f.Calc(flowField)
+	return f.MapValue(flowField)
 }
 
-// Helper methods for FlowField calculations
-
-// calcLookup_table_name reads SetupChecklistLine.table_name of the first record matching the
-// flow filters (CalcFormula Lookup); blank when there is none
-func (t *SetupChecklistComment) calcLookup_table_name() types.Text {
-	tableName := fmt.Sprintf("%s$%s", t.company, SetupChecklistLineTableName)
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "table_id = ?")
-	args = append(args, t.Table_id)
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
+// flowFilterRef returns a pointer to the FlowFilter field with index i in setupChecklistCommentFields.FlowFilters
+func (t *SetupChecklistComment) flowFilterRef(i int) *string {
+	switch i {
 	}
-	query := t.convertPlaceholders(fmt.Sprintf(`SELECT table_name FROM "%s" WHERE %s LIMIT 1`, tableName, whereClause), len(args))
-	var value sql.NullString
-	if err := t.db.QueryRow(query, args...).Scan(&value); err != nil && err != sql.ErrNoRows {
-		fmt.Printf("Error: Failed to look up table_name: %v\n", err)
-	}
-	return types.NewText(value.String)
+	return nil
 }
 
 // ========================================
@@ -1141,39 +1111,7 @@ func (t *SetupChecklistComment) FieldError(fieldName string, text string) error 
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *SetupChecklistComment) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, SetupChecklistCommentTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "table_id":
-			column = "table_id"
-		case "line_no":
-			column = "line_no"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Setup_Checklist_Comment", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Setup_Checklist_Comment.%s: %w", column, err)
-		}
-		switch column {
-		case "table_id":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Setup_Checklist_Comment.%s: %w", column, err)
-			}
-			t.Table_id = int(f)
-		case "line_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Setup_Checklist_Comment.%s: %w", column, err)
-			}
-			t.Line_no = int(f)
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a
@@ -1634,6 +1572,19 @@ var setupChecklistCommentFields = &tables.TableFields{
 			},
 			Kind:    tables.KindText,
 			Trigger: "OnValidate_Comment",
+		},
+	},
+	FlowFields: []tables.FlowFieldMeta{
+		{
+			Field:         "table_name",
+			Formula:       "Lookup",
+			Source:        SetupChecklistLineTableName,
+			SourceField:   "table_name",
+			BatchKeyField: "table_id",
+			BatchKeyValue: "table_id",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "table_id", Value: "table_id", ValueColumn: "table_id"},
+			},
 		},
 	},
 }

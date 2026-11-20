@@ -54,7 +54,6 @@
 //	OnValidate_Main_asset_component(rec *gtables.FADepreciationBook) error
 //	OnValidate_Component_of_main_asset(rec *gtables.FADepreciationBook) error
 //	OnValidate_Fa_add_currency_factor(rec *gtables.FADepreciationBook) error
-
 package tables
 
 import (
@@ -1197,133 +1196,7 @@ func (t *FADepreciationBook) Delete(runTrigger bool) bool {
 //	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
 //	customer.CalcFields() - Calculate all FlowFields
 func (t *FADepreciationBook) CalcFields(fieldNames ...string) {
-	// If no field names specified, calculate all FlowFields
-	if len(fieldNames) == 0 {
-		t.calcFlowField_acquisition_cost()
-		t.calcFlowField_depreciation()
-		t.calcFlowField_book_value()
-		t.calcFlowField_proceeds_on_disposal()
-		t.calcFlowField_gain_loss()
-		t.calcFlowField_write_down()
-		t.calcFlowField_appreciation()
-		t.calcFlowField_custom_1()
-		t.calcFlowField_custom_2()
-		t.calcFlowField_depreciable_basis()
-		t.calcFlowField_salvage_value()
-		t.calcFlowField_book_value_on_disposal()
-		t.calcFlowField_maintenance()
-		return
-	}
-
-	// Calculate only specified fields
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "acquisition_cost":
-			t.calcFlowField_acquisition_cost()
-		case "depreciation":
-			t.calcFlowField_depreciation()
-		case "book_value":
-			t.calcFlowField_book_value()
-		case "proceeds_on_disposal":
-			t.calcFlowField_proceeds_on_disposal()
-		case "gain_loss":
-			t.calcFlowField_gain_loss()
-		case "write_down":
-			t.calcFlowField_write_down()
-		case "appreciation":
-			t.calcFlowField_appreciation()
-		case "custom_1":
-			t.calcFlowField_custom_1()
-		case "custom_2":
-			t.calcFlowField_custom_2()
-		case "depreciable_basis":
-			t.calcFlowField_depreciable_basis()
-		case "salvage_value":
-			t.calcFlowField_salvage_value()
-		case "book_value_on_disposal":
-			t.calcFlowField_book_value_on_disposal()
-		case "maintenance":
-			t.calcFlowField_maintenance()
-		}
-	}
-}
-
-// calcFlowField_acquisition_cost calculates the acquisition_cost FlowField
-// CalcFormula: Sum(FALedgerEntry.amount)
-func (t *FADepreciationBook) calcFlowField_acquisition_cost() {
-	t.Acquisition_cost = t.calcSum_acquisition_cost()
-}
-
-// calcFlowField_depreciation calculates the depreciation FlowField
-// CalcFormula: Sum(FALedgerEntry.amount)
-func (t *FADepreciationBook) calcFlowField_depreciation() {
-	t.Depreciation = t.calcSum_depreciation()
-}
-
-// calcFlowField_book_value calculates the book_value FlowField
-// CalcFormula: Sum(FALedgerEntry.amount)
-func (t *FADepreciationBook) calcFlowField_book_value() {
-	t.Book_value = t.calcSum_book_value()
-}
-
-// calcFlowField_proceeds_on_disposal calculates the proceeds_on_disposal FlowField
-// CalcFormula: Sum(FALedgerEntry.amount)
-func (t *FADepreciationBook) calcFlowField_proceeds_on_disposal() {
-	t.Proceeds_on_disposal = t.calcSum_proceeds_on_disposal()
-}
-
-// calcFlowField_gain_loss calculates the gain_loss FlowField
-// CalcFormula: Sum(FALedgerEntry.amount)
-func (t *FADepreciationBook) calcFlowField_gain_loss() {
-	t.Gain_loss = t.calcSum_gain_loss()
-}
-
-// calcFlowField_write_down calculates the write_down FlowField
-// CalcFormula: Sum(FALedgerEntry.amount)
-func (t *FADepreciationBook) calcFlowField_write_down() {
-	t.Write_down = t.calcSum_write_down()
-}
-
-// calcFlowField_appreciation calculates the appreciation FlowField
-// CalcFormula: Sum(FALedgerEntry.amount)
-func (t *FADepreciationBook) calcFlowField_appreciation() {
-	t.Appreciation = t.calcSum_appreciation()
-}
-
-// calcFlowField_custom_1 calculates the custom_1 FlowField
-// CalcFormula: Sum(FALedgerEntry.amount)
-func (t *FADepreciationBook) calcFlowField_custom_1() {
-	t.Custom_1 = t.calcSum_custom_1()
-}
-
-// calcFlowField_custom_2 calculates the custom_2 FlowField
-// CalcFormula: Sum(FALedgerEntry.amount)
-func (t *FADepreciationBook) calcFlowField_custom_2() {
-	t.Custom_2 = t.calcSum_custom_2()
-}
-
-// calcFlowField_depreciable_basis calculates the depreciable_basis FlowField
-// CalcFormula: Sum(FALedgerEntry.amount)
-func (t *FADepreciationBook) calcFlowField_depreciable_basis() {
-	t.Depreciable_basis = t.calcSum_depreciable_basis()
-}
-
-// calcFlowField_salvage_value calculates the salvage_value FlowField
-// CalcFormula: Sum(FALedgerEntry.amount)
-func (t *FADepreciationBook) calcFlowField_salvage_value() {
-	t.Salvage_value = t.calcSum_salvage_value()
-}
-
-// calcFlowField_book_value_on_disposal calculates the book_value_on_disposal FlowField
-// CalcFormula: Sum(FALedgerEntry.amount)
-func (t *FADepreciationBook) calcFlowField_book_value_on_disposal() {
-	t.Book_value_on_disposal = t.calcSum_book_value_on_disposal()
-}
-
-// calcFlowField_maintenance calculates the maintenance FlowField
-// CalcFormula: Sum(MaintenanceLedgerEntry.amount)
-func (t *FADepreciationBook) calcFlowField_maintenance() {
-	t.Maintenance = t.calcSum_maintenance()
+	t.flow().CalcFields(fieldNames)
 }
 
 // CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
@@ -1331,875 +1204,46 @@ func (t *FADepreciationBook) calcFlowField_maintenance() {
 // ToMap() results; each gets its FlowField values under the field name. With no
 // field names, all FlowFields are calculated.
 func (t *FADepreciationBook) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
-	if len(records) == 0 {
-		return
-	}
-	if len(fieldNames) == 0 {
-		fieldNames = t.GetFlowFields()
-	}
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "acquisition_cost":
-			t.calcForRecords_acquisition_cost(records)
-		case "depreciation":
-			t.calcForRecords_depreciation(records)
-		case "book_value":
-			t.calcForRecords_book_value(records)
-		case "proceeds_on_disposal":
-			t.calcForRecords_proceeds_on_disposal(records)
-		case "gain_loss":
-			t.calcForRecords_gain_loss(records)
-		case "write_down":
-			t.calcForRecords_write_down(records)
-		case "appreciation":
-			t.calcForRecords_appreciation(records)
-		case "custom_1":
-			t.calcForRecords_custom_1(records)
-		case "custom_2":
-			t.calcForRecords_custom_2(records)
-		case "depreciable_basis":
-			t.calcForRecords_depreciable_basis(records)
-		case "salvage_value":
-			t.calcForRecords_salvage_value(records)
-		case "book_value_on_disposal":
-			t.calcForRecords_book_value_on_disposal(records)
-		case "maintenance":
-			t.calcForRecords_maintenance(records)
-		}
+	t.flow().CalcFieldsForRecords(records, fieldNames)
+}
+
+// flow is what the FlowField functions of foundation/tables need of the record
+func (t *FADepreciationBook) flow() *tables.FlowRec {
+	return &tables.FlowRec{
+		Fields:     fADepreciationBookFields,
+		Ref:        t.fieldRef,
+		FlowFilter: t.flowFilterRef,
+		DB:         t.db,
+		Company:    t.company,
+		Postgres:   t.dbType == database.DBTypePostgres,
+		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, FADepreciationBookTableName) + "\"",
+		One:        t.flowFieldOf,
 	}
 }
 
-// calcForRecords_acquisition_cost calculates the acquisition_cost FlowField for a set of records
-// CalcFormula: Sum(FALedgerEntry.amount)
-func (t *FADepreciationBook) calcForRecords_acquisition_cost(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &FADepreciationBook{db: t.db, company: t.company, dbType: t.dbType}
-		r.Maintenance_code_filter = t.Maintenance_code_filter
-		r.Fa_posting_date_filter = t.Fa_posting_date_filter
-		r.FromMap(rec)
-		r.calcFlowField_acquisition_cost()
-		rec["acquisition_cost"] = r.Acquisition_cost.String()
+// flowFieldOf calculates a FlowField for one record of a list (a record from the map, with
+// this record's FlowFilters), in its map form
+func (t *FADepreciationBook) flowFieldOf(rec map[string]any, flowField int) any {
+	one := &FADepreciationBook{}
+	one.InitWithDBType(t.db, t.company, t.dbType)
+	for i := range fADepreciationBookFields.FlowFilters {
+		*one.flowFilterRef(i) = *t.flowFilterRef(i)
 	}
+	one.FromMap(rec)
+	f := one.flow()
+	f.Calc(flowField)
+	return f.MapValue(flowField)
 }
 
-// calcForRecords_depreciation calculates the depreciation FlowField for a set of records
-// CalcFormula: Sum(FALedgerEntry.amount)
-func (t *FADepreciationBook) calcForRecords_depreciation(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &FADepreciationBook{db: t.db, company: t.company, dbType: t.dbType}
-		r.Maintenance_code_filter = t.Maintenance_code_filter
-		r.Fa_posting_date_filter = t.Fa_posting_date_filter
-		r.FromMap(rec)
-		r.calcFlowField_depreciation()
-		rec["depreciation"] = r.Depreciation.String()
-	}
-}
-
-// calcForRecords_book_value calculates the book_value FlowField for a set of records
-// CalcFormula: Sum(FALedgerEntry.amount)
-func (t *FADepreciationBook) calcForRecords_book_value(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &FADepreciationBook{db: t.db, company: t.company, dbType: t.dbType}
-		r.Maintenance_code_filter = t.Maintenance_code_filter
-		r.Fa_posting_date_filter = t.Fa_posting_date_filter
-		r.FromMap(rec)
-		r.calcFlowField_book_value()
-		rec["book_value"] = r.Book_value.String()
-	}
-}
-
-// calcForRecords_proceeds_on_disposal calculates the proceeds_on_disposal FlowField for a set of records
-// CalcFormula: Sum(FALedgerEntry.amount)
-func (t *FADepreciationBook) calcForRecords_proceeds_on_disposal(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &FADepreciationBook{db: t.db, company: t.company, dbType: t.dbType}
-		r.Maintenance_code_filter = t.Maintenance_code_filter
-		r.Fa_posting_date_filter = t.Fa_posting_date_filter
-		r.FromMap(rec)
-		r.calcFlowField_proceeds_on_disposal()
-		rec["proceeds_on_disposal"] = r.Proceeds_on_disposal.String()
-	}
-}
-
-// calcForRecords_gain_loss calculates the gain_loss FlowField for a set of records
-// CalcFormula: Sum(FALedgerEntry.amount)
-func (t *FADepreciationBook) calcForRecords_gain_loss(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &FADepreciationBook{db: t.db, company: t.company, dbType: t.dbType}
-		r.Maintenance_code_filter = t.Maintenance_code_filter
-		r.Fa_posting_date_filter = t.Fa_posting_date_filter
-		r.FromMap(rec)
-		r.calcFlowField_gain_loss()
-		rec["gain_loss"] = r.Gain_loss.String()
-	}
-}
-
-// calcForRecords_write_down calculates the write_down FlowField for a set of records
-// CalcFormula: Sum(FALedgerEntry.amount)
-func (t *FADepreciationBook) calcForRecords_write_down(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &FADepreciationBook{db: t.db, company: t.company, dbType: t.dbType}
-		r.Maintenance_code_filter = t.Maintenance_code_filter
-		r.Fa_posting_date_filter = t.Fa_posting_date_filter
-		r.FromMap(rec)
-		r.calcFlowField_write_down()
-		rec["write_down"] = r.Write_down.String()
-	}
-}
-
-// calcForRecords_appreciation calculates the appreciation FlowField for a set of records
-// CalcFormula: Sum(FALedgerEntry.amount)
-func (t *FADepreciationBook) calcForRecords_appreciation(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &FADepreciationBook{db: t.db, company: t.company, dbType: t.dbType}
-		r.Maintenance_code_filter = t.Maintenance_code_filter
-		r.Fa_posting_date_filter = t.Fa_posting_date_filter
-		r.FromMap(rec)
-		r.calcFlowField_appreciation()
-		rec["appreciation"] = r.Appreciation.String()
-	}
-}
-
-// calcForRecords_custom_1 calculates the custom_1 FlowField for a set of records
-// CalcFormula: Sum(FALedgerEntry.amount)
-func (t *FADepreciationBook) calcForRecords_custom_1(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &FADepreciationBook{db: t.db, company: t.company, dbType: t.dbType}
-		r.Maintenance_code_filter = t.Maintenance_code_filter
-		r.Fa_posting_date_filter = t.Fa_posting_date_filter
-		r.FromMap(rec)
-		r.calcFlowField_custom_1()
-		rec["custom_1"] = r.Custom_1.String()
-	}
-}
-
-// calcForRecords_custom_2 calculates the custom_2 FlowField for a set of records
-// CalcFormula: Sum(FALedgerEntry.amount)
-func (t *FADepreciationBook) calcForRecords_custom_2(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &FADepreciationBook{db: t.db, company: t.company, dbType: t.dbType}
-		r.Maintenance_code_filter = t.Maintenance_code_filter
-		r.Fa_posting_date_filter = t.Fa_posting_date_filter
-		r.FromMap(rec)
-		r.calcFlowField_custom_2()
-		rec["custom_2"] = r.Custom_2.String()
-	}
-}
-
-// calcForRecords_depreciable_basis calculates the depreciable_basis FlowField for a set of records
-// CalcFormula: Sum(FALedgerEntry.amount)
-func (t *FADepreciationBook) calcForRecords_depreciable_basis(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &FADepreciationBook{db: t.db, company: t.company, dbType: t.dbType}
-		r.Maintenance_code_filter = t.Maintenance_code_filter
-		r.Fa_posting_date_filter = t.Fa_posting_date_filter
-		r.FromMap(rec)
-		r.calcFlowField_depreciable_basis()
-		rec["depreciable_basis"] = r.Depreciable_basis.String()
-	}
-}
-
-// calcForRecords_salvage_value calculates the salvage_value FlowField for a set of records
-// CalcFormula: Sum(FALedgerEntry.amount)
-func (t *FADepreciationBook) calcForRecords_salvage_value(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &FADepreciationBook{db: t.db, company: t.company, dbType: t.dbType}
-		r.Maintenance_code_filter = t.Maintenance_code_filter
-		r.Fa_posting_date_filter = t.Fa_posting_date_filter
-		r.FromMap(rec)
-		r.calcFlowField_salvage_value()
-		rec["salvage_value"] = r.Salvage_value.String()
-	}
-}
-
-// calcForRecords_book_value_on_disposal calculates the book_value_on_disposal FlowField for a set of records
-// CalcFormula: Sum(FALedgerEntry.amount)
-func (t *FADepreciationBook) calcForRecords_book_value_on_disposal(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &FADepreciationBook{db: t.db, company: t.company, dbType: t.dbType}
-		r.Maintenance_code_filter = t.Maintenance_code_filter
-		r.Fa_posting_date_filter = t.Fa_posting_date_filter
-		r.FromMap(rec)
-		r.calcFlowField_book_value_on_disposal()
-		rec["book_value_on_disposal"] = r.Book_value_on_disposal.String()
-	}
-}
-
-// calcForRecords_maintenance calculates the maintenance FlowField for a set of records
-// CalcFormula: Sum(MaintenanceLedgerEntry.amount)
-func (t *FADepreciationBook) calcForRecords_maintenance(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &FADepreciationBook{db: t.db, company: t.company, dbType: t.dbType}
-		r.Maintenance_code_filter = t.Maintenance_code_filter
-		r.Fa_posting_date_filter = t.Fa_posting_date_filter
-		r.FromMap(rec)
-		r.calcFlowField_maintenance()
-		rec["maintenance"] = r.Maintenance.String()
-	}
-}
-
-// Helper methods for FlowField calculations
-
-func (t *FADepreciationBook) calcSum_acquisition_cost() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FALedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type_posting_date"), true
-	if t.Fa_posting_date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type"), true
-	}
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "fa_no = ?")
-	args = append(args, t.Fa_no)
-	whereClauses = append(whereClauses, "depreciation_book_code = ?")
-	args = append(args, t.Depreciation_book_code)
-	whereClauses = append(whereClauses, "fa_posting_category = ?")
-	args = append(args, 0)
-	whereClauses = append(whereClauses, "fa_posting_type = ?")
-	args = append(args, 0)
-	if t.Fa_posting_date_filter != "" {
-		// FlowFilter fa_posting_date_filter applied to fa_posting_date (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("fa_posting_date", flowfilter.KindDate, t.Fa_posting_date_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for acquisition_cost: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-func (t *FADepreciationBook) calcSum_depreciation() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FALedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type_posting_date"), true
-	if t.Fa_posting_date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type"), true
-	}
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "fa_no = ?")
-	args = append(args, t.Fa_no)
-	whereClauses = append(whereClauses, "depreciation_book_code = ?")
-	args = append(args, t.Depreciation_book_code)
-	whereClauses = append(whereClauses, "fa_posting_category = ?")
-	args = append(args, 0)
-	whereClauses = append(whereClauses, "fa_posting_type = ?")
-	args = append(args, 1)
-	if t.Fa_posting_date_filter != "" {
-		// FlowFilter fa_posting_date_filter applied to fa_posting_date (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("fa_posting_date", flowfilter.KindDate, t.Fa_posting_date_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for depreciation: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-func (t *FADepreciationBook) calcSum_book_value() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FALedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_value"), true
-	if t.Fa_posting_date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_value"), true
-	}
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "fa_no = ?")
-	args = append(args, t.Fa_no)
-	whereClauses = append(whereClauses, "depreciation_book_code = ?")
-	args = append(args, t.Depreciation_book_code)
-	whereClauses = append(whereClauses, "part_of_book_value = ?")
-	args = append(args, true)
-	if t.Fa_posting_date_filter != "" {
-		// FlowFilter fa_posting_date_filter applied to fa_posting_date (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("fa_posting_date", flowfilter.KindDate, t.Fa_posting_date_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for book_value: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-func (t *FADepreciationBook) calcSum_proceeds_on_disposal() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FALedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type_posting_date"), true
-	if t.Fa_posting_date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type"), true
-	}
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "fa_no = ?")
-	args = append(args, t.Fa_no)
-	whereClauses = append(whereClauses, "depreciation_book_code = ?")
-	args = append(args, t.Depreciation_book_code)
-	whereClauses = append(whereClauses, "fa_posting_category = ?")
-	args = append(args, 0)
-	whereClauses = append(whereClauses, "fa_posting_type = ?")
-	args = append(args, 6)
-	if t.Fa_posting_date_filter != "" {
-		// FlowFilter fa_posting_date_filter applied to fa_posting_date (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("fa_posting_date", flowfilter.KindDate, t.Fa_posting_date_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for proceeds_on_disposal: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-func (t *FADepreciationBook) calcSum_gain_loss() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FALedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type_posting_date"), true
-	if t.Fa_posting_date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type"), true
-	}
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "fa_no = ?")
-	args = append(args, t.Fa_no)
-	whereClauses = append(whereClauses, "depreciation_book_code = ?")
-	args = append(args, t.Depreciation_book_code)
-	whereClauses = append(whereClauses, "fa_posting_category = ?")
-	args = append(args, 0)
-	whereClauses = append(whereClauses, "fa_posting_type = ?")
-	args = append(args, 8)
-	if t.Fa_posting_date_filter != "" {
-		// FlowFilter fa_posting_date_filter applied to fa_posting_date (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("fa_posting_date", flowfilter.KindDate, t.Fa_posting_date_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for gain_loss: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-func (t *FADepreciationBook) calcSum_write_down() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FALedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type_posting_date"), true
-	if t.Fa_posting_date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type"), true
-	}
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "fa_no = ?")
-	args = append(args, t.Fa_no)
-	whereClauses = append(whereClauses, "depreciation_book_code = ?")
-	args = append(args, t.Depreciation_book_code)
-	whereClauses = append(whereClauses, "fa_posting_category = ?")
-	args = append(args, 0)
-	whereClauses = append(whereClauses, "fa_posting_type = ?")
-	args = append(args, 2)
-	if t.Fa_posting_date_filter != "" {
-		// FlowFilter fa_posting_date_filter applied to fa_posting_date (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("fa_posting_date", flowfilter.KindDate, t.Fa_posting_date_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for write_down: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-func (t *FADepreciationBook) calcSum_appreciation() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FALedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type_posting_date"), true
-	if t.Fa_posting_date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type"), true
-	}
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "fa_no = ?")
-	args = append(args, t.Fa_no)
-	whereClauses = append(whereClauses, "depreciation_book_code = ?")
-	args = append(args, t.Depreciation_book_code)
-	whereClauses = append(whereClauses, "fa_posting_category = ?")
-	args = append(args, 0)
-	whereClauses = append(whereClauses, "fa_posting_type = ?")
-	args = append(args, 3)
-	if t.Fa_posting_date_filter != "" {
-		// FlowFilter fa_posting_date_filter applied to fa_posting_date (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("fa_posting_date", flowfilter.KindDate, t.Fa_posting_date_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for appreciation: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-func (t *FADepreciationBook) calcSum_custom_1() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FALedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type_posting_date"), true
-	if t.Fa_posting_date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type"), true
-	}
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "fa_no = ?")
-	args = append(args, t.Fa_no)
-	whereClauses = append(whereClauses, "depreciation_book_code = ?")
-	args = append(args, t.Depreciation_book_code)
-	whereClauses = append(whereClauses, "fa_posting_category = ?")
-	args = append(args, 0)
-	whereClauses = append(whereClauses, "fa_posting_type = ?")
-	args = append(args, 4)
-	if t.Fa_posting_date_filter != "" {
-		// FlowFilter fa_posting_date_filter applied to fa_posting_date (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("fa_posting_date", flowfilter.KindDate, t.Fa_posting_date_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for custom_1: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-func (t *FADepreciationBook) calcSum_custom_2() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FALedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type_posting_date"), true
-	if t.Fa_posting_date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type"), true
-	}
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "fa_no = ?")
-	args = append(args, t.Fa_no)
-	whereClauses = append(whereClauses, "depreciation_book_code = ?")
-	args = append(args, t.Depreciation_book_code)
-	whereClauses = append(whereClauses, "fa_posting_category = ?")
-	args = append(args, 0)
-	whereClauses = append(whereClauses, "fa_posting_type = ?")
-	args = append(args, 5)
-	if t.Fa_posting_date_filter != "" {
-		// FlowFilter fa_posting_date_filter applied to fa_posting_date (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("fa_posting_date", flowfilter.KindDate, t.Fa_posting_date_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for custom_2: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-func (t *FADepreciationBook) calcSum_depreciable_basis() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FALedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_basis"), true
-	if t.Fa_posting_date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_basis"), true
-	}
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "fa_no = ?")
-	args = append(args, t.Fa_no)
-	whereClauses = append(whereClauses, "depreciation_book_code = ?")
-	args = append(args, t.Depreciation_book_code)
-	whereClauses = append(whereClauses, "part_of_depreciable_basis = ?")
-	args = append(args, true)
-	if t.Fa_posting_date_filter != "" {
-		// FlowFilter fa_posting_date_filter applied to fa_posting_date (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("fa_posting_date", flowfilter.KindDate, t.Fa_posting_date_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for depreciable_basis: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-func (t *FADepreciationBook) calcSum_salvage_value() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FALedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type_posting_date"), true
-	if t.Fa_posting_date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type"), true
-	}
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "fa_no = ?")
-	args = append(args, t.Fa_no)
-	whereClauses = append(whereClauses, "depreciation_book_code = ?")
-	args = append(args, t.Depreciation_book_code)
-	whereClauses = append(whereClauses, "fa_posting_category = ?")
-	args = append(args, 0)
-	whereClauses = append(whereClauses, "fa_posting_type = ?")
-	args = append(args, 7)
-	if t.Fa_posting_date_filter != "" {
-		// FlowFilter fa_posting_date_filter applied to fa_posting_date (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("fa_posting_date", flowfilter.KindDate, t.Fa_posting_date_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for salvage_value: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-func (t *FADepreciationBook) calcSum_book_value_on_disposal() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FALedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type_posting_date"), true
-	if t.Fa_posting_date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type"), true
-	}
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "fa_no = ?")
-	args = append(args, t.Fa_no)
-	whereClauses = append(whereClauses, "depreciation_book_code = ?")
-	args = append(args, t.Depreciation_book_code)
-	whereClauses = append(whereClauses, "fa_posting_category = ?")
-	args = append(args, 1)
-	whereClauses = append(whereClauses, "fa_posting_type = ?")
-	args = append(args, 9)
-	if t.Fa_posting_date_filter != "" {
-		// FlowFilter fa_posting_date_filter applied to fa_posting_date (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("fa_posting_date", flowfilter.KindDate, t.Fa_posting_date_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for book_value_on_disposal: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-func (t *FADepreciationBook) calcSum_maintenance() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, MaintenanceLedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, MaintenanceLedgerEntryTableName, "fa_book_date"), true
-	if t.Maintenance_code_filter != "" || t.Fa_posting_date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, MaintenanceLedgerEntryTableName, "fa_book_code_date"), true
-	}
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "fa_no = ?")
-	args = append(args, t.Fa_no)
-	whereClauses = append(whereClauses, "depreciation_book_code = ?")
-	args = append(args, t.Depreciation_book_code)
-	if t.Maintenance_code_filter != "" {
-		// FlowFilter maintenance_code_filter applied to maintenance_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("maintenance_code", flowfilter.KindCode, t.Maintenance_code_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Fa_posting_date_filter != "" {
-		// FlowFilter fa_posting_date_filter applied to fa_posting_date (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("fa_posting_date", flowfilter.KindDate, t.Fa_posting_date_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for maintenance: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
+// flowFilterRef returns a pointer to the FlowFilter field with index i in fADepreciationBookFields.FlowFilters
+func (t *FADepreciationBook) flowFilterRef(i int) *string {
+	switch i {
+	case 0:
+		return &t.Maintenance_code_filter
+	case 1:
+		return &t.Fa_posting_date_filter
+	}
+	return nil
 }
 
 // ========================================
@@ -2237,435 +1281,14 @@ func (t *FADepreciationBook) SetFilter(fieldName, filterExpr string) {
 // FlowFieldFilterKind reports whether a list can be filtered on FlowField field (Sum and
 // Count FlowFields: SETFILTER on a FlowField) and the kind of its values.
 func (t *FADepreciationBook) FlowFieldFilterKind(field string) (flowfilter.Kind, bool) {
-	switch strings.ToLower(field) {
-	case "acquisition_cost":
-		return flowfilter.KindDecimal, true
-	case "depreciation":
-		return flowfilter.KindDecimal, true
-	case "book_value":
-		return flowfilter.KindDecimal, true
-	case "proceeds_on_disposal":
-		return flowfilter.KindDecimal, true
-	case "gain_loss":
-		return flowfilter.KindDecimal, true
-	case "write_down":
-		return flowfilter.KindDecimal, true
-	case "appreciation":
-		return flowfilter.KindDecimal, true
-	case "custom_1":
-		return flowfilter.KindDecimal, true
-	case "custom_2":
-		return flowfilter.KindDecimal, true
-	case "depreciable_basis":
-		return flowfilter.KindDecimal, true
-	case "salvage_value":
-		return flowfilter.KindDecimal, true
-	case "book_value_on_disposal":
-		return flowfilter.KindDecimal, true
-	case "maintenance":
-		return flowfilter.KindDecimal, true
-	}
-	return "", false
+	return fADepreciationBookFields.FlowFieldFilterKind(field)
 }
 
 // flowFieldExpr is the SQL expression computing FlowField field for each row of a query
 // on this table: a correlated subquery reading the source like CalcFieldsForRecords (the
 // SIFT totals of a covering key, else the entries), with the FlowFilters set on t.
 func (t *FADepreciationBook) flowFieldExpr(field string) (string, []interface{}) {
-	outer := "\"" + fmt.Sprintf("%s$%s", t.company, FADepreciationBookTableName) + "\""
-	_ = outer
-	switch strings.ToLower(field) {
-	case "acquisition_cost":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FALedgerEntryTableName), false
-		tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type_posting_date"), true
-		if t.Fa_posting_date_filter != "" {
-			// A FlowFilter is set: the key must contain the filtered fields too
-			tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type"), true
-		}
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "fa_no = "+outer+".fa_no")
-		whereClauses = append(whereClauses, "depreciation_book_code = "+outer+".depreciation_book_code")
-		whereClauses = append(whereClauses, "fa_posting_category = ?")
-		args = append(args, 0)
-		whereClauses = append(whereClauses, "fa_posting_type = ?")
-		args = append(args, 0)
-		if t.Fa_posting_date_filter != "" {
-			// FlowFilter fa_posting_date_filter applied to fa_posting_date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("fa_posting_date", flowfilter.KindDate, t.Fa_posting_date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(amount), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	case "depreciation":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FALedgerEntryTableName), false
-		tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type_posting_date"), true
-		if t.Fa_posting_date_filter != "" {
-			// A FlowFilter is set: the key must contain the filtered fields too
-			tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type"), true
-		}
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "fa_no = "+outer+".fa_no")
-		whereClauses = append(whereClauses, "depreciation_book_code = "+outer+".depreciation_book_code")
-		whereClauses = append(whereClauses, "fa_posting_category = ?")
-		args = append(args, 0)
-		whereClauses = append(whereClauses, "fa_posting_type = ?")
-		args = append(args, 1)
-		if t.Fa_posting_date_filter != "" {
-			// FlowFilter fa_posting_date_filter applied to fa_posting_date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("fa_posting_date", flowfilter.KindDate, t.Fa_posting_date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(amount), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	case "book_value":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FALedgerEntryTableName), false
-		tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_value"), true
-		if t.Fa_posting_date_filter != "" {
-			// A FlowFilter is set: the key must contain the filtered fields too
-			tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_value"), true
-		}
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "fa_no = "+outer+".fa_no")
-		whereClauses = append(whereClauses, "depreciation_book_code = "+outer+".depreciation_book_code")
-		whereClauses = append(whereClauses, "part_of_book_value = ?")
-		args = append(args, true)
-		if t.Fa_posting_date_filter != "" {
-			// FlowFilter fa_posting_date_filter applied to fa_posting_date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("fa_posting_date", flowfilter.KindDate, t.Fa_posting_date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(amount), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	case "proceeds_on_disposal":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FALedgerEntryTableName), false
-		tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type_posting_date"), true
-		if t.Fa_posting_date_filter != "" {
-			// A FlowFilter is set: the key must contain the filtered fields too
-			tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type"), true
-		}
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "fa_no = "+outer+".fa_no")
-		whereClauses = append(whereClauses, "depreciation_book_code = "+outer+".depreciation_book_code")
-		whereClauses = append(whereClauses, "fa_posting_category = ?")
-		args = append(args, 0)
-		whereClauses = append(whereClauses, "fa_posting_type = ?")
-		args = append(args, 6)
-		if t.Fa_posting_date_filter != "" {
-			// FlowFilter fa_posting_date_filter applied to fa_posting_date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("fa_posting_date", flowfilter.KindDate, t.Fa_posting_date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(amount), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	case "gain_loss":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FALedgerEntryTableName), false
-		tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type_posting_date"), true
-		if t.Fa_posting_date_filter != "" {
-			// A FlowFilter is set: the key must contain the filtered fields too
-			tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type"), true
-		}
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "fa_no = "+outer+".fa_no")
-		whereClauses = append(whereClauses, "depreciation_book_code = "+outer+".depreciation_book_code")
-		whereClauses = append(whereClauses, "fa_posting_category = ?")
-		args = append(args, 0)
-		whereClauses = append(whereClauses, "fa_posting_type = ?")
-		args = append(args, 8)
-		if t.Fa_posting_date_filter != "" {
-			// FlowFilter fa_posting_date_filter applied to fa_posting_date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("fa_posting_date", flowfilter.KindDate, t.Fa_posting_date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(amount), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	case "write_down":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FALedgerEntryTableName), false
-		tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type_posting_date"), true
-		if t.Fa_posting_date_filter != "" {
-			// A FlowFilter is set: the key must contain the filtered fields too
-			tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type"), true
-		}
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "fa_no = "+outer+".fa_no")
-		whereClauses = append(whereClauses, "depreciation_book_code = "+outer+".depreciation_book_code")
-		whereClauses = append(whereClauses, "fa_posting_category = ?")
-		args = append(args, 0)
-		whereClauses = append(whereClauses, "fa_posting_type = ?")
-		args = append(args, 2)
-		if t.Fa_posting_date_filter != "" {
-			// FlowFilter fa_posting_date_filter applied to fa_posting_date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("fa_posting_date", flowfilter.KindDate, t.Fa_posting_date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(amount), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	case "appreciation":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FALedgerEntryTableName), false
-		tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type_posting_date"), true
-		if t.Fa_posting_date_filter != "" {
-			// A FlowFilter is set: the key must contain the filtered fields too
-			tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type"), true
-		}
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "fa_no = "+outer+".fa_no")
-		whereClauses = append(whereClauses, "depreciation_book_code = "+outer+".depreciation_book_code")
-		whereClauses = append(whereClauses, "fa_posting_category = ?")
-		args = append(args, 0)
-		whereClauses = append(whereClauses, "fa_posting_type = ?")
-		args = append(args, 3)
-		if t.Fa_posting_date_filter != "" {
-			// FlowFilter fa_posting_date_filter applied to fa_posting_date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("fa_posting_date", flowfilter.KindDate, t.Fa_posting_date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(amount), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	case "custom_1":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FALedgerEntryTableName), false
-		tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type_posting_date"), true
-		if t.Fa_posting_date_filter != "" {
-			// A FlowFilter is set: the key must contain the filtered fields too
-			tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type"), true
-		}
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "fa_no = "+outer+".fa_no")
-		whereClauses = append(whereClauses, "depreciation_book_code = "+outer+".depreciation_book_code")
-		whereClauses = append(whereClauses, "fa_posting_category = ?")
-		args = append(args, 0)
-		whereClauses = append(whereClauses, "fa_posting_type = ?")
-		args = append(args, 4)
-		if t.Fa_posting_date_filter != "" {
-			// FlowFilter fa_posting_date_filter applied to fa_posting_date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("fa_posting_date", flowfilter.KindDate, t.Fa_posting_date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(amount), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	case "custom_2":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FALedgerEntryTableName), false
-		tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type_posting_date"), true
-		if t.Fa_posting_date_filter != "" {
-			// A FlowFilter is set: the key must contain the filtered fields too
-			tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type"), true
-		}
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "fa_no = "+outer+".fa_no")
-		whereClauses = append(whereClauses, "depreciation_book_code = "+outer+".depreciation_book_code")
-		whereClauses = append(whereClauses, "fa_posting_category = ?")
-		args = append(args, 0)
-		whereClauses = append(whereClauses, "fa_posting_type = ?")
-		args = append(args, 5)
-		if t.Fa_posting_date_filter != "" {
-			// FlowFilter fa_posting_date_filter applied to fa_posting_date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("fa_posting_date", flowfilter.KindDate, t.Fa_posting_date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(amount), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	case "depreciable_basis":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FALedgerEntryTableName), false
-		tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_basis"), true
-		if t.Fa_posting_date_filter != "" {
-			// A FlowFilter is set: the key must contain the filtered fields too
-			tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_basis"), true
-		}
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "fa_no = "+outer+".fa_no")
-		whereClauses = append(whereClauses, "depreciation_book_code = "+outer+".depreciation_book_code")
-		whereClauses = append(whereClauses, "part_of_depreciable_basis = ?")
-		args = append(args, true)
-		if t.Fa_posting_date_filter != "" {
-			// FlowFilter fa_posting_date_filter applied to fa_posting_date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("fa_posting_date", flowfilter.KindDate, t.Fa_posting_date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(amount), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	case "salvage_value":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FALedgerEntryTableName), false
-		tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type_posting_date"), true
-		if t.Fa_posting_date_filter != "" {
-			// A FlowFilter is set: the key must contain the filtered fields too
-			tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type"), true
-		}
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "fa_no = "+outer+".fa_no")
-		whereClauses = append(whereClauses, "depreciation_book_code = "+outer+".depreciation_book_code")
-		whereClauses = append(whereClauses, "fa_posting_category = ?")
-		args = append(args, 0)
-		whereClauses = append(whereClauses, "fa_posting_type = ?")
-		args = append(args, 7)
-		if t.Fa_posting_date_filter != "" {
-			// FlowFilter fa_posting_date_filter applied to fa_posting_date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("fa_posting_date", flowfilter.KindDate, t.Fa_posting_date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(amount), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	case "book_value_on_disposal":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FALedgerEntryTableName), false
-		tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type_posting_date"), true
-		if t.Fa_posting_date_filter != "" {
-			// A FlowFilter is set: the key must contain the filtered fields too
-			tableName, useSIFT = sift.TableName(t.company, FALedgerEntryTableName, "fa_book_type"), true
-		}
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "fa_no = "+outer+".fa_no")
-		whereClauses = append(whereClauses, "depreciation_book_code = "+outer+".depreciation_book_code")
-		whereClauses = append(whereClauses, "fa_posting_category = ?")
-		args = append(args, 1)
-		whereClauses = append(whereClauses, "fa_posting_type = ?")
-		args = append(args, 9)
-		if t.Fa_posting_date_filter != "" {
-			// FlowFilter fa_posting_date_filter applied to fa_posting_date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("fa_posting_date", flowfilter.KindDate, t.Fa_posting_date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(amount), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	case "maintenance":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, MaintenanceLedgerEntryTableName), false
-		tableName, useSIFT = sift.TableName(t.company, MaintenanceLedgerEntryTableName, "fa_book_date"), true
-		if t.Maintenance_code_filter != "" || t.Fa_posting_date_filter != "" {
-			// A FlowFilter is set: the key must contain the filtered fields too
-			tableName, useSIFT = sift.TableName(t.company, MaintenanceLedgerEntryTableName, "fa_book_code_date"), true
-		}
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "fa_no = "+outer+".fa_no")
-		whereClauses = append(whereClauses, "depreciation_book_code = "+outer+".depreciation_book_code")
-		if t.Maintenance_code_filter != "" {
-			// FlowFilter maintenance_code_filter applied to maintenance_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("maintenance_code", flowfilter.KindCode, t.Maintenance_code_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Fa_posting_date_filter != "" {
-			// FlowFilter fa_posting_date_filter applied to fa_posting_date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("fa_posting_date", flowfilter.KindDate, t.Fa_posting_date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(amount), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	}
-	return "NULL", nil
+	return t.flow().Expr(field)
 }
 
 // SetCurrentKey sets the sort order for queries
@@ -2953,135 +1576,7 @@ func (t *FADepreciationBook) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *FADepreciationBook) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, FADepreciationBookTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "straight_line_percent":
-			column = "straight_line_percent"
-		case "no_of_depreciation_years":
-			column = "no_of_depreciation_years"
-		case "no_of_depreciation_months":
-			column = "no_of_depreciation_months"
-		case "fixed_depr_amount":
-			column = "fixed_depr_amount"
-		case "declining_balance_percent":
-			column = "declining_balance_percent"
-		case "final_rounding_amount":
-			column = "final_rounding_amount"
-		case "ending_book_value":
-			column = "ending_book_value"
-		case "fa_exchange_rate":
-			column = "fa_exchange_rate"
-		case "fixed_depr_amount_below_zero":
-			column = "fixed_depr_amount_below_zero"
-		case "depr_below_zero_percent":
-			column = "depr_below_zero_percent"
-		case "projected_proceeds_on_disposal":
-			column = "projected_proceeds_on_disposal"
-		case "accum_depr_percent_custom_1":
-			column = "accum_depr_percent_custom_1"
-		case "depr_this_year_percent_custom_1":
-			column = "depr_this_year_percent_custom_1"
-		case "fa_add_currency_factor":
-			column = "fa_add_currency_factor"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of FA_Depreciation_Book", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums FA_Depreciation_Book.%s: %w", column, err)
-		}
-		switch column {
-		case "straight_line_percent":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums FA_Depreciation_Book.%s: %w", column, err)
-			}
-			t.Straight_line_percent = d
-		case "no_of_depreciation_years":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums FA_Depreciation_Book.%s: %w", column, err)
-			}
-			t.No_of_depreciation_years = d
-		case "no_of_depreciation_months":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums FA_Depreciation_Book.%s: %w", column, err)
-			}
-			t.No_of_depreciation_months = d
-		case "fixed_depr_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums FA_Depreciation_Book.%s: %w", column, err)
-			}
-			t.Fixed_depr_amount = d
-		case "declining_balance_percent":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums FA_Depreciation_Book.%s: %w", column, err)
-			}
-			t.Declining_balance_percent = d
-		case "final_rounding_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums FA_Depreciation_Book.%s: %w", column, err)
-			}
-			t.Final_rounding_amount = d
-		case "ending_book_value":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums FA_Depreciation_Book.%s: %w", column, err)
-			}
-			t.Ending_book_value = d
-		case "fa_exchange_rate":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums FA_Depreciation_Book.%s: %w", column, err)
-			}
-			t.Fa_exchange_rate = d
-		case "fixed_depr_amount_below_zero":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums FA_Depreciation_Book.%s: %w", column, err)
-			}
-			t.Fixed_depr_amount_below_zero = d
-		case "depr_below_zero_percent":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums FA_Depreciation_Book.%s: %w", column, err)
-			}
-			t.Depr_below_zero_percent = d
-		case "projected_proceeds_on_disposal":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums FA_Depreciation_Book.%s: %w", column, err)
-			}
-			t.Projected_proceeds_on_disposal = d
-		case "accum_depr_percent_custom_1":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums FA_Depreciation_Book.%s: %w", column, err)
-			}
-			t.Accum_depr_percent_custom_1 = d
-		case "depr_this_year_percent_custom_1":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums FA_Depreciation_Book.%s: %w", column, err)
-			}
-			t.Depr_this_year_percent_custom_1 = d
-		case "fa_add_currency_factor":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums FA_Depreciation_Book.%s: %w", column, err)
-			}
-			t.Fa_add_currency_factor = d
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a
@@ -4412,6 +2907,200 @@ var fADepreciationBookFields = &tables.TableFields{
 			},
 			Kind:    tables.KindDecimal,
 			Trigger: "OnValidate_Fa_add_currency_factor",
+		},
+	},
+	FlowFields: []tables.FlowFieldMeta{
+		{
+			Field:           "acquisition_cost",
+			Formula:         "Sum",
+			Source:          FALedgerEntryTableName,
+			SourceField:     "amount",
+			SIFTKey:         "fa_book_type_posting_date",
+			SIFTKeyFiltered: "fa_book_type",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "fa_no", Value: "fa_no", ValueColumn: "fa_no"},
+				{Type: tables.FlowFieldValue, Column: "depreciation_book_code", Value: "depreciation_book_code", ValueColumn: "depreciation_book_code"},
+				{Type: tables.FlowConst, Column: "fa_posting_category", Const: 0},
+				{Type: tables.FlowConst, Column: "fa_posting_type", Const: 0},
+				{Type: tables.FlowFilterSet, Column: "fa_posting_date", Value: "fa_posting_date_filter", Kind: flowfilter.KindDate},
+			},
+		},
+		{
+			Field:           "depreciation",
+			Formula:         "Sum",
+			Source:          FALedgerEntryTableName,
+			SourceField:     "amount",
+			SIFTKey:         "fa_book_type_posting_date",
+			SIFTKeyFiltered: "fa_book_type",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "fa_no", Value: "fa_no", ValueColumn: "fa_no"},
+				{Type: tables.FlowFieldValue, Column: "depreciation_book_code", Value: "depreciation_book_code", ValueColumn: "depreciation_book_code"},
+				{Type: tables.FlowConst, Column: "fa_posting_category", Const: 0},
+				{Type: tables.FlowConst, Column: "fa_posting_type", Const: 1},
+				{Type: tables.FlowFilterSet, Column: "fa_posting_date", Value: "fa_posting_date_filter", Kind: flowfilter.KindDate},
+			},
+		},
+		{
+			Field:           "book_value",
+			Formula:         "Sum",
+			Source:          FALedgerEntryTableName,
+			SourceField:     "amount",
+			SIFTKey:         "fa_book_value",
+			SIFTKeyFiltered: "fa_book_value",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "fa_no", Value: "fa_no", ValueColumn: "fa_no"},
+				{Type: tables.FlowFieldValue, Column: "depreciation_book_code", Value: "depreciation_book_code", ValueColumn: "depreciation_book_code"},
+				{Type: tables.FlowConst, Column: "part_of_book_value", Const: true},
+				{Type: tables.FlowFilterSet, Column: "fa_posting_date", Value: "fa_posting_date_filter", Kind: flowfilter.KindDate},
+			},
+		},
+		{
+			Field:           "proceeds_on_disposal",
+			Formula:         "Sum",
+			Source:          FALedgerEntryTableName,
+			SourceField:     "amount",
+			SIFTKey:         "fa_book_type_posting_date",
+			SIFTKeyFiltered: "fa_book_type",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "fa_no", Value: "fa_no", ValueColumn: "fa_no"},
+				{Type: tables.FlowFieldValue, Column: "depreciation_book_code", Value: "depreciation_book_code", ValueColumn: "depreciation_book_code"},
+				{Type: tables.FlowConst, Column: "fa_posting_category", Const: 0},
+				{Type: tables.FlowConst, Column: "fa_posting_type", Const: 6},
+				{Type: tables.FlowFilterSet, Column: "fa_posting_date", Value: "fa_posting_date_filter", Kind: flowfilter.KindDate},
+			},
+		},
+		{
+			Field:           "gain_loss",
+			Formula:         "Sum",
+			Source:          FALedgerEntryTableName,
+			SourceField:     "amount",
+			SIFTKey:         "fa_book_type_posting_date",
+			SIFTKeyFiltered: "fa_book_type",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "fa_no", Value: "fa_no", ValueColumn: "fa_no"},
+				{Type: tables.FlowFieldValue, Column: "depreciation_book_code", Value: "depreciation_book_code", ValueColumn: "depreciation_book_code"},
+				{Type: tables.FlowConst, Column: "fa_posting_category", Const: 0},
+				{Type: tables.FlowConst, Column: "fa_posting_type", Const: 8},
+				{Type: tables.FlowFilterSet, Column: "fa_posting_date", Value: "fa_posting_date_filter", Kind: flowfilter.KindDate},
+			},
+		},
+		{
+			Field:           "write_down",
+			Formula:         "Sum",
+			Source:          FALedgerEntryTableName,
+			SourceField:     "amount",
+			SIFTKey:         "fa_book_type_posting_date",
+			SIFTKeyFiltered: "fa_book_type",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "fa_no", Value: "fa_no", ValueColumn: "fa_no"},
+				{Type: tables.FlowFieldValue, Column: "depreciation_book_code", Value: "depreciation_book_code", ValueColumn: "depreciation_book_code"},
+				{Type: tables.FlowConst, Column: "fa_posting_category", Const: 0},
+				{Type: tables.FlowConst, Column: "fa_posting_type", Const: 2},
+				{Type: tables.FlowFilterSet, Column: "fa_posting_date", Value: "fa_posting_date_filter", Kind: flowfilter.KindDate},
+			},
+		},
+		{
+			Field:           "appreciation",
+			Formula:         "Sum",
+			Source:          FALedgerEntryTableName,
+			SourceField:     "amount",
+			SIFTKey:         "fa_book_type_posting_date",
+			SIFTKeyFiltered: "fa_book_type",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "fa_no", Value: "fa_no", ValueColumn: "fa_no"},
+				{Type: tables.FlowFieldValue, Column: "depreciation_book_code", Value: "depreciation_book_code", ValueColumn: "depreciation_book_code"},
+				{Type: tables.FlowConst, Column: "fa_posting_category", Const: 0},
+				{Type: tables.FlowConst, Column: "fa_posting_type", Const: 3},
+				{Type: tables.FlowFilterSet, Column: "fa_posting_date", Value: "fa_posting_date_filter", Kind: flowfilter.KindDate},
+			},
+		},
+		{
+			Field:           "custom_1",
+			Formula:         "Sum",
+			Source:          FALedgerEntryTableName,
+			SourceField:     "amount",
+			SIFTKey:         "fa_book_type_posting_date",
+			SIFTKeyFiltered: "fa_book_type",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "fa_no", Value: "fa_no", ValueColumn: "fa_no"},
+				{Type: tables.FlowFieldValue, Column: "depreciation_book_code", Value: "depreciation_book_code", ValueColumn: "depreciation_book_code"},
+				{Type: tables.FlowConst, Column: "fa_posting_category", Const: 0},
+				{Type: tables.FlowConst, Column: "fa_posting_type", Const: 4},
+				{Type: tables.FlowFilterSet, Column: "fa_posting_date", Value: "fa_posting_date_filter", Kind: flowfilter.KindDate},
+			},
+		},
+		{
+			Field:           "custom_2",
+			Formula:         "Sum",
+			Source:          FALedgerEntryTableName,
+			SourceField:     "amount",
+			SIFTKey:         "fa_book_type_posting_date",
+			SIFTKeyFiltered: "fa_book_type",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "fa_no", Value: "fa_no", ValueColumn: "fa_no"},
+				{Type: tables.FlowFieldValue, Column: "depreciation_book_code", Value: "depreciation_book_code", ValueColumn: "depreciation_book_code"},
+				{Type: tables.FlowConst, Column: "fa_posting_category", Const: 0},
+				{Type: tables.FlowConst, Column: "fa_posting_type", Const: 5},
+				{Type: tables.FlowFilterSet, Column: "fa_posting_date", Value: "fa_posting_date_filter", Kind: flowfilter.KindDate},
+			},
+		},
+		{
+			Field:           "depreciable_basis",
+			Formula:         "Sum",
+			Source:          FALedgerEntryTableName,
+			SourceField:     "amount",
+			SIFTKey:         "fa_book_basis",
+			SIFTKeyFiltered: "fa_book_basis",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "fa_no", Value: "fa_no", ValueColumn: "fa_no"},
+				{Type: tables.FlowFieldValue, Column: "depreciation_book_code", Value: "depreciation_book_code", ValueColumn: "depreciation_book_code"},
+				{Type: tables.FlowConst, Column: "part_of_depreciable_basis", Const: true},
+				{Type: tables.FlowFilterSet, Column: "fa_posting_date", Value: "fa_posting_date_filter", Kind: flowfilter.KindDate},
+			},
+		},
+		{
+			Field:           "salvage_value",
+			Formula:         "Sum",
+			Source:          FALedgerEntryTableName,
+			SourceField:     "amount",
+			SIFTKey:         "fa_book_type_posting_date",
+			SIFTKeyFiltered: "fa_book_type",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "fa_no", Value: "fa_no", ValueColumn: "fa_no"},
+				{Type: tables.FlowFieldValue, Column: "depreciation_book_code", Value: "depreciation_book_code", ValueColumn: "depreciation_book_code"},
+				{Type: tables.FlowConst, Column: "fa_posting_category", Const: 0},
+				{Type: tables.FlowConst, Column: "fa_posting_type", Const: 7},
+				{Type: tables.FlowFilterSet, Column: "fa_posting_date", Value: "fa_posting_date_filter", Kind: flowfilter.KindDate},
+			},
+		},
+		{
+			Field:           "book_value_on_disposal",
+			Formula:         "Sum",
+			Source:          FALedgerEntryTableName,
+			SourceField:     "amount",
+			SIFTKey:         "fa_book_type_posting_date",
+			SIFTKeyFiltered: "fa_book_type",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "fa_no", Value: "fa_no", ValueColumn: "fa_no"},
+				{Type: tables.FlowFieldValue, Column: "depreciation_book_code", Value: "depreciation_book_code", ValueColumn: "depreciation_book_code"},
+				{Type: tables.FlowConst, Column: "fa_posting_category", Const: 1},
+				{Type: tables.FlowConst, Column: "fa_posting_type", Const: 9},
+				{Type: tables.FlowFilterSet, Column: "fa_posting_date", Value: "fa_posting_date_filter", Kind: flowfilter.KindDate},
+			},
+		},
+		{
+			Field:           "maintenance",
+			Formula:         "Sum",
+			Source:          MaintenanceLedgerEntryTableName,
+			SourceField:     "amount",
+			SIFTKey:         "fa_book_date",
+			SIFTKeyFiltered: "fa_book_code_date",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "fa_no", Value: "fa_no", ValueColumn: "fa_no"},
+				{Type: tables.FlowFieldValue, Column: "depreciation_book_code", Value: "depreciation_book_code", ValueColumn: "depreciation_book_code"},
+				{Type: tables.FlowFilterSet, Column: "maintenance_code", Value: "maintenance_code_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "fa_posting_date", Value: "fa_posting_date_filter", Kind: flowfilter.KindDate},
+			},
 		},
 	},
 	FlowFilters: []tables.FieldInfo{

@@ -26,14 +26,12 @@
 //	OnValidate_Machine_no(rec *gtables.BOMComponent) error
 //	OnValidate_Production_lead_time(rec *gtables.BOMComponent) error
 //	OnValidate_Variant_code(rec *gtables.BOMComponent) error
-
 package tables
 
 import (
 	"database/sql"
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -873,25 +871,7 @@ func (t *BOMComponent) Delete(runTrigger bool) bool {
 //	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
 //	customer.CalcFields() - Calculate all FlowFields
 func (t *BOMComponent) CalcFields(fieldNames ...string) {
-	// If no field names specified, calculate all FlowFields
-	if len(fieldNames) == 0 {
-		t.calcFlowField_bom_description()
-		return
-	}
-
-	// Calculate only specified fields
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "bom_description":
-			t.calcFlowField_bom_description()
-		}
-	}
-}
-
-// calcFlowField_bom_description calculates the bom_description FlowField
-// CalcFormula: Lookup(Item.description)
-func (t *BOMComponent) calcFlowField_bom_description() {
-	t.Bom_description = t.calcLookup_bom_description()
+	t.flow().CalcFields(fieldNames)
 }
 
 // CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
@@ -899,52 +879,42 @@ func (t *BOMComponent) calcFlowField_bom_description() {
 // ToMap() results; each gets its FlowField values under the field name. With no
 // field names, all FlowFields are calculated.
 func (t *BOMComponent) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
-	if len(records) == 0 {
-		return
-	}
-	if len(fieldNames) == 0 {
-		fieldNames = t.GetFlowFields()
-	}
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "bom_description":
-			t.calcForRecords_bom_description(records)
-		}
+	t.flow().CalcFieldsForRecords(records, fieldNames)
+}
+
+// flow is what the FlowField functions of foundation/tables need of the record
+func (t *BOMComponent) flow() *tables.FlowRec {
+	return &tables.FlowRec{
+		Fields:     bOMComponentFields,
+		Ref:        t.fieldRef,
+		FlowFilter: t.flowFilterRef,
+		DB:         t.db,
+		Company:    t.company,
+		Postgres:   t.dbType == database.DBTypePostgres,
+		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, BOMComponentTableName) + "\"",
+		One:        t.flowFieldOf,
 	}
 }
 
-// calcForRecords_bom_description calculates the bom_description FlowField for a set of records
-// CalcFormula: Lookup(Item.description)
-func (t *BOMComponent) calcForRecords_bom_description(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &BOMComponent{db: t.db, company: t.company, dbType: t.dbType}
-		r.FromMap(rec)
-		r.calcFlowField_bom_description()
-		rec["bom_description"] = r.Bom_description
+// flowFieldOf calculates a FlowField for one record of a list (a record from the map, with
+// this record's FlowFilters), in its map form
+func (t *BOMComponent) flowFieldOf(rec map[string]any, flowField int) any {
+	one := &BOMComponent{}
+	one.InitWithDBType(t.db, t.company, t.dbType)
+	for i := range bOMComponentFields.FlowFilters {
+		*one.flowFilterRef(i) = *t.flowFilterRef(i)
 	}
+	one.FromMap(rec)
+	f := one.flow()
+	f.Calc(flowField)
+	return f.MapValue(flowField)
 }
 
-// Helper methods for FlowField calculations
-
-// calcLookup_bom_description reads Item.description of the first record matching the
-// flow filters (CalcFormula Lookup); blank when there is none
-func (t *BOMComponent) calcLookup_bom_description() types.Text {
-	tableName := fmt.Sprintf("%s$%s", t.company, ItemTableName)
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "no = ?")
-	args = append(args, t.Parent_item_no)
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
+// flowFilterRef returns a pointer to the FlowFilter field with index i in bOMComponentFields.FlowFilters
+func (t *BOMComponent) flowFilterRef(i int) *string {
+	switch i {
 	}
-	query := t.convertPlaceholders(fmt.Sprintf(`SELECT description FROM "%s" WHERE %s LIMIT 1`, tableName, whereClause), len(args))
-	var value sql.NullString
-	if err := t.db.QueryRow(query, args...).Scan(&value); err != nil && err != sql.ErrNoRows {
-		fmt.Printf("Error: Failed to look up bom_description: %v\n", err)
-	}
-	return types.NewText(value.String)
+	return nil
 }
 
 // ========================================
@@ -1262,47 +1232,7 @@ func (t *BOMComponent) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *BOMComponent) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, BOMComponentTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "line_no":
-			column = "line_no"
-		case "quantity_per":
-			column = "quantity_per"
-		case "production_lead_time":
-			column = "production_lead_time"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of BOM_Component", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums BOM_Component.%s: %w", column, err)
-		}
-		switch column {
-		case "line_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums BOM_Component.%s: %w", column, err)
-			}
-			t.Line_no = int(f)
-		case "quantity_per":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums BOM_Component.%s: %w", column, err)
-			}
-			t.Quantity_per = d
-		case "production_lead_time":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums BOM_Component.%s: %w", column, err)
-			}
-			t.Production_lead_time = int(f)
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a
@@ -1922,6 +1852,19 @@ var bOMComponentFields = &tables.TableFields{
 			Kind:     tables.KindCode,
 			Trigger:  "OnValidate_Variant_code",
 			Relation: true,
+		},
+	},
+	FlowFields: []tables.FlowFieldMeta{
+		{
+			Field:         "bom_description",
+			Formula:       "Lookup",
+			Source:        ItemTableName,
+			SourceField:   "description",
+			BatchKeyField: "no",
+			BatchKeyValue: "parent_item_no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "no", Value: "parent_item_no", ValueColumn: "parent_item_no"},
+			},
 		},
 	},
 }

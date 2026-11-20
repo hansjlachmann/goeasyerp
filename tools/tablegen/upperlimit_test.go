@@ -40,8 +40,9 @@ func TestUpperLimitFlowFilter(t *testing.T) {
 		t.Fatal(err) // generateFile formats the code: a template mistake fails here
 	}
 	code, _ := os.ReadFile(out)
-	if !strings.Contains(string(code), "flowfilter.UpperLimit(flowfilter.KindDate, t.Date_filter)") {
-		t.Error("the generated FlowField does not apply the upper limit of the Date Filter")
+	// foundation/tables applies the upper end of the Date Filter from the description
+	if !strings.Contains(string(code), `Value: "date_filter", Kind: flowfilter.KindDate, UpperLimit: true}`) {
+		t.Error("the FlowField's Date Filter is not described with its upper limit")
 	}
 
 	bad := account.Table.Fields[1].FlowFilters

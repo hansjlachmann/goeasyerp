@@ -17,7 +17,6 @@
 //	OnValidate_Default_nos(rec *gtables.NoSeries) error
 //	OnValidate_Manual_nos(rec *gtables.NoSeries) error
 //	OnValidate_Date_order(rec *gtables.NoSeries) error
-
 package tables
 
 import (
@@ -931,25 +930,7 @@ func (t *NoSeries) Delete(runTrigger bool) bool {
 //	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
 //	customer.CalcFields() - Calculate all FlowFields
 func (t *NoSeries) CalcFields(fieldNames ...string) {
-	// If no field names specified, calculate all FlowFields
-	if len(fieldNames) == 0 {
-		t.calcFlowField_no_of_lines()
-		return
-	}
-
-	// Calculate only specified fields
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "no_of_lines":
-			t.calcFlowField_no_of_lines()
-		}
-	}
-}
-
-// calcFlowField_no_of_lines calculates the no_of_lines FlowField
-// CalcFormula: Count(No_Series_Line.line_no)
-func (t *NoSeries) calcFlowField_no_of_lines() {
-	t.No_of_lines = t.calcCount_no_of_lines()
+	t.flow().CalcFields(fieldNames)
 }
 
 // CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
@@ -957,122 +938,42 @@ func (t *NoSeries) calcFlowField_no_of_lines() {
 // ToMap() results; each gets its FlowField values under the field name. With no
 // field names, all FlowFields are calculated.
 func (t *NoSeries) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
-	if len(records) == 0 {
-		return
-	}
-	if len(fieldNames) == 0 {
-		fieldNames = t.GetFlowFields()
-	}
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "no_of_lines":
-			t.calcForRecords_no_of_lines(records)
-		}
+	t.flow().CalcFieldsForRecords(records, fieldNames)
+}
+
+// flow is what the FlowField functions of foundation/tables need of the record
+func (t *NoSeries) flow() *tables.FlowRec {
+	return &tables.FlowRec{
+		Fields:     noSeriesFields,
+		Ref:        t.fieldRef,
+		FlowFilter: t.flowFilterRef,
+		DB:         t.db,
+		Company:    t.company,
+		Postgres:   t.dbType == database.DBTypePostgres,
+		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, NoSeriesTableName) + "\"",
+		One:        t.flowFieldOf,
 	}
 }
 
-// calcForRecords_no_of_lines calculates the no_of_lines FlowField for a set of records
-// CalcFormula: Count(No_Series_Line.line_no)
-func (t *NoSeries) calcForRecords_no_of_lines(records []map[string]interface{}) {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, NoSeriesLineTableName), false
-	_ = useSIFT
-
-	// Distinct key values of the records
-	seen := make(map[string]bool, len(records))
-	var keys []interface{}
-	for _, rec := range records {
-		k := fmt.Sprint(rec["code"])
-		if !seen[k] {
-			seen[k] = true
-			keys = append(keys, rec["code"])
-		}
+// flowFieldOf calculates a FlowField for one record of a list (a record from the map, with
+// this record's FlowFilters), in its map form
+func (t *NoSeries) flowFieldOf(rec map[string]any, flowField int) any {
+	one := &NoSeries{}
+	one.InitWithDBType(t.db, t.company, t.dbType)
+	for i := range noSeriesFields.FlowFilters {
+		*one.flowFilterRef(i) = *t.flowFilterRef(i)
 	}
-
-	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
-	// list) one grouped query over the whole source table instead: much cheaper than
-	// many IN queries, and it keeps the bind parameters bounded.
-	values := make(map[string]int, len(keys))
-	const chunkSize = 500
-	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
-	if len(keys) <= chunkSize {
-		chunks = [][]interface{}{keys}
-	}
-	for _, chunk := range chunks {
-
-		var whereClauses []string
-		var args []interface{}
-		if chunk != nil {
-			whereClauses = append(whereClauses, "series_code IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
-			args = append(args, chunk...)
-		}
-		whereClause := "1=1"
-		if len(whereClauses) > 0 {
-			whereClause = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COUNT(*)"
-		if useSIFT {
-			agg = "COALESCE(SUM(cnt), 0)" // the totals hold the entry count per key value
-		}
-		query := fmt.Sprintf(`SELECT series_code, %s FROM "%s" WHERE %s GROUP BY series_code`, agg, tableName, whereClause)
-		query = t.convertPlaceholders(query, len(args))
-
-		rows, err := t.db.Query(query, args...)
-		if err != nil {
-			fmt.Printf("Error: Failed to calculate no_of_lines: %v\n", err)
-			return
-		}
-		for rows.Next() {
-			var key string
-			var count int
-			if err := rows.Scan(&key, &count); err == nil {
-				values[key] = count
-			}
-		}
-		_ = rows.Close()
-	}
-
-	// Records without matching entries get zero
-	for _, rec := range records {
-		rec["no_of_lines"] = values[fmt.Sprint(rec["code"])]
-	}
+	one.FromMap(rec)
+	f := one.flow()
+	f.Calc(flowField)
+	return f.MapValue(flowField)
 }
 
-// Helper methods for FlowField calculations
-
-func (t *NoSeries) calcCount_no_of_lines() int {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, NoSeriesLineTableName), false
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "series_code = ?")
-	args = append(args, t.Code)
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
+// flowFilterRef returns a pointer to the FlowFilter field with index i in noSeriesFields.FlowFilters
+func (t *NoSeries) flowFilterRef(i int) *string {
+	switch i {
 	}
-
-	agg := "COUNT(*)"
-	if useSIFT {
-		agg = "COALESCE(SUM(cnt), 0)" // the totals hold the entry count per key value
-	}
-	query := fmt.Sprintf(`SELECT %s FROM "%s" WHERE %s`, agg, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var count int
-	err := t.db.QueryRow(query, args...).Scan(&count)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate count for no_of_lines: %v\n", err)
-		return 0
-	}
-
-	return count
+	return nil
 }
 
 // ========================================
@@ -1110,38 +1011,14 @@ func (t *NoSeries) SetFilter(fieldName, filterExpr string) {
 // FlowFieldFilterKind reports whether a list can be filtered on FlowField field (Sum and
 // Count FlowFields: SETFILTER on a FlowField) and the kind of its values.
 func (t *NoSeries) FlowFieldFilterKind(field string) (flowfilter.Kind, bool) {
-	switch strings.ToLower(field) {
-	case "no_of_lines":
-		return flowfilter.KindInt, true
-	}
-	return "", false
+	return noSeriesFields.FlowFieldFilterKind(field)
 }
 
 // flowFieldExpr is the SQL expression computing FlowField field for each row of a query
 // on this table: a correlated subquery reading the source like CalcFieldsForRecords (the
 // SIFT totals of a covering key, else the entries), with the FlowFilters set on t.
 func (t *NoSeries) flowFieldExpr(field string) (string, []interface{}) {
-	outer := "\"" + fmt.Sprintf("%s$%s", t.company, NoSeriesTableName) + "\""
-	_ = outer
-	switch strings.ToLower(field) {
-	case "no_of_lines":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, NoSeriesLineTableName), false
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "series_code = "+outer+".code")
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COUNT(*)"
-		if useSIFT {
-			agg = "COALESCE(SUM(cnt), 0)"
-		}
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	}
-	return "NULL", nil
+	return t.flow().Expr(field)
 }
 
 // SetCurrentKey sets the sort order for queries
@@ -1429,10 +1306,7 @@ func (t *NoSeries) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *NoSeries) CalcSums(fieldNames ...string) error {
-	if len(fieldNames) > 0 {
-		return fmt.Errorf("CalcSums: %s is not a decimal or integer field of No_Series", fieldNames[0])
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a
@@ -1888,6 +1762,19 @@ var noSeriesFields = &tables.TableFields{
 			},
 			Kind:    tables.KindInt,
 			Trigger: "OnValidate_No_of_lines",
+		},
+	},
+	FlowFields: []tables.FlowFieldMeta{
+		{
+			Field:         "no_of_lines",
+			Formula:       "Count",
+			Source:        NoSeriesLineTableName,
+			SourceField:   "line_no",
+			BatchKeyField: "series_code",
+			BatchKeyValue: "code",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "series_code", Value: "code", ValueColumn: "code"},
+			},
 		},
 	},
 }

@@ -27,14 +27,12 @@
 //	OnValidate_Notify_on(rec *gtables.JobQueue) error
 //	OnValidate_Notification_language(rec *gtables.JobQueue) error
 //	OnValidate_User_id(rec *gtables.JobQueue) error
-
 package tables
 
 import (
 	"database/sql"
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -1011,25 +1009,7 @@ func (t *JobQueue) Delete(runTrigger bool) bool {
 //	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
 //	customer.CalcFields() - Calculate all FlowFields
 func (t *JobQueue) CalcFields(fieldNames ...string) {
-	// If no field names specified, calculate all FlowFields
-	if len(fieldNames) == 0 {
-		t.calcFlowField_number_of_entries()
-		return
-	}
-
-	// Calculate only specified fields
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "number_of_entries":
-			t.calcFlowField_number_of_entries()
-		}
-	}
-}
-
-// calcFlowField_number_of_entries calculates the number_of_entries FlowField
-// CalcFormula: Count(Job_Queue_Entry.entry_no)
-func (t *JobQueue) calcFlowField_number_of_entries() {
-	t.Number_of_entries = t.calcCount_number_of_entries()
+	t.flow().CalcFields(fieldNames)
 }
 
 // CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
@@ -1037,122 +1017,42 @@ func (t *JobQueue) calcFlowField_number_of_entries() {
 // ToMap() results; each gets its FlowField values under the field name. With no
 // field names, all FlowFields are calculated.
 func (t *JobQueue) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
-	if len(records) == 0 {
-		return
-	}
-	if len(fieldNames) == 0 {
-		fieldNames = t.GetFlowFields()
-	}
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "number_of_entries":
-			t.calcForRecords_number_of_entries(records)
-		}
+	t.flow().CalcFieldsForRecords(records, fieldNames)
+}
+
+// flow is what the FlowField functions of foundation/tables need of the record
+func (t *JobQueue) flow() *tables.FlowRec {
+	return &tables.FlowRec{
+		Fields:     jobQueueFields,
+		Ref:        t.fieldRef,
+		FlowFilter: t.flowFilterRef,
+		DB:         t.db,
+		Company:    t.company,
+		Postgres:   t.dbType == database.DBTypePostgres,
+		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, JobQueueTableName) + "\"",
+		One:        t.flowFieldOf,
 	}
 }
 
-// calcForRecords_number_of_entries calculates the number_of_entries FlowField for a set of records
-// CalcFormula: Count(Job_Queue_Entry.entry_no)
-func (t *JobQueue) calcForRecords_number_of_entries(records []map[string]interface{}) {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, JobQueueEntryTableName), false
-	_ = useSIFT
-
-	// Distinct key values of the records
-	seen := make(map[string]bool, len(records))
-	var keys []interface{}
-	for _, rec := range records {
-		k := fmt.Sprint(rec["no"])
-		if !seen[k] {
-			seen[k] = true
-			keys = append(keys, rec["no"])
-		}
+// flowFieldOf calculates a FlowField for one record of a list (a record from the map, with
+// this record's FlowFilters), in its map form
+func (t *JobQueue) flowFieldOf(rec map[string]any, flowField int) any {
+	one := &JobQueue{}
+	one.InitWithDBType(t.db, t.company, t.dbType)
+	for i := range jobQueueFields.FlowFilters {
+		*one.flowFilterRef(i) = *t.flowFilterRef(i)
 	}
-
-	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
-	// list) one grouped query over the whole source table instead: much cheaper than
-	// many IN queries, and it keeps the bind parameters bounded.
-	values := make(map[string]int, len(keys))
-	const chunkSize = 500
-	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
-	if len(keys) <= chunkSize {
-		chunks = [][]interface{}{keys}
-	}
-	for _, chunk := range chunks {
-
-		var whereClauses []string
-		var args []interface{}
-		if chunk != nil {
-			whereClauses = append(whereClauses, "job_queue_no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
-			args = append(args, chunk...)
-		}
-		whereClause := "1=1"
-		if len(whereClauses) > 0 {
-			whereClause = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COUNT(*)"
-		if useSIFT {
-			agg = "COALESCE(SUM(cnt), 0)" // the totals hold the entry count per key value
-		}
-		query := fmt.Sprintf(`SELECT job_queue_no, %s FROM "%s" WHERE %s GROUP BY job_queue_no`, agg, tableName, whereClause)
-		query = t.convertPlaceholders(query, len(args))
-
-		rows, err := t.db.Query(query, args...)
-		if err != nil {
-			fmt.Printf("Error: Failed to calculate number_of_entries: %v\n", err)
-			return
-		}
-		for rows.Next() {
-			var key string
-			var count int
-			if err := rows.Scan(&key, &count); err == nil {
-				values[key] = count
-			}
-		}
-		_ = rows.Close()
-	}
-
-	// Records without matching entries get zero
-	for _, rec := range records {
-		rec["number_of_entries"] = values[fmt.Sprint(rec["no"])]
-	}
+	one.FromMap(rec)
+	f := one.flow()
+	f.Calc(flowField)
+	return f.MapValue(flowField)
 }
 
-// Helper methods for FlowField calculations
-
-func (t *JobQueue) calcCount_number_of_entries() int {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, JobQueueEntryTableName), false
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "job_queue_no = ?")
-	args = append(args, t.No)
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
+// flowFilterRef returns a pointer to the FlowFilter field with index i in jobQueueFields.FlowFilters
+func (t *JobQueue) flowFilterRef(i int) *string {
+	switch i {
 	}
-
-	agg := "COUNT(*)"
-	if useSIFT {
-		agg = "COALESCE(SUM(cnt), 0)" // the totals hold the entry count per key value
-	}
-	query := fmt.Sprintf(`SELECT %s FROM "%s" WHERE %s`, agg, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var count int
-	err := t.db.QueryRow(query, args...).Scan(&count)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate count for number_of_entries: %v\n", err)
-		return 0
-	}
-
-	return count
+	return nil
 }
 
 // ========================================
@@ -1190,38 +1090,14 @@ func (t *JobQueue) SetFilter(fieldName, filterExpr string) {
 // FlowFieldFilterKind reports whether a list can be filtered on FlowField field (Sum and
 // Count FlowFields: SETFILTER on a FlowField) and the kind of its values.
 func (t *JobQueue) FlowFieldFilterKind(field string) (flowfilter.Kind, bool) {
-	switch strings.ToLower(field) {
-	case "number_of_entries":
-		return flowfilter.KindInt, true
-	}
-	return "", false
+	return jobQueueFields.FlowFieldFilterKind(field)
 }
 
 // flowFieldExpr is the SQL expression computing FlowField field for each row of a query
 // on this table: a correlated subquery reading the source like CalcFieldsForRecords (the
 // SIFT totals of a covering key, else the entries), with the FlowFilters set on t.
 func (t *JobQueue) flowFieldExpr(field string) (string, []interface{}) {
-	outer := "\"" + fmt.Sprintf("%s$%s", t.company, JobQueueTableName) + "\""
-	_ = outer
-	switch strings.ToLower(field) {
-	case "number_of_entries":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, JobQueueEntryTableName), false
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "job_queue_no = "+outer+".no")
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COUNT(*)"
-		if useSIFT {
-			agg = "COALESCE(SUM(cnt), 0)"
-		}
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	}
-	return "NULL", nil
+	return t.flow().Expr(field)
 }
 
 // SetCurrentKey sets the sort order for queries
@@ -1509,39 +1385,7 @@ func (t *JobQueue) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *JobQueue) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, JobQueueTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "object_id_to_run":
-			column = "object_id_to_run"
-		case "minutes_between_run":
-			column = "minutes_between_run"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Job_Queue", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Job_Queue.%s: %w", column, err)
-		}
-		switch column {
-		case "object_id_to_run":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Job_Queue.%s: %w", column, err)
-			}
-			t.Object_id_to_run = int(f)
-		case "minutes_between_run":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Job_Queue.%s: %w", column, err)
-			}
-			t.Minutes_between_run = int(f)
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a
@@ -2175,6 +2019,19 @@ var jobQueueFields = &tables.TableFields{
 			Kind:     tables.KindCode,
 			Trigger:  "OnValidate_User_id",
 			Relation: true,
+		},
+	},
+	FlowFields: []tables.FlowFieldMeta{
+		{
+			Field:         "number_of_entries",
+			Formula:       "Count",
+			Source:        JobQueueEntryTableName,
+			SourceField:   "entry_no",
+			BatchKeyField: "job_queue_no",
+			BatchKeyValue: "no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "job_queue_no", Value: "no", ValueColumn: "no"},
+			},
 		},
 	},
 }

@@ -55,14 +55,12 @@
 //	OnValidate_Add_currency_credit_amount(rec *gtables.GLEntry) error
 //	OnValidate_Fa_entry_type(rec *gtables.GLEntry) error
 //	OnValidate_Fa_entry_no(rec *gtables.GLEntry) error
-
 package tables
 
 import (
 	"database/sql"
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -1229,13 +1227,22 @@ func (t *GLEntry) Delete(runTrigger bool) bool {
 	return t.rec().Delete()
 }
 
-// CalcFields is a no-op for tables without FlowFields
-// Implemented for tables.Table interface compliance
+// ========================================
+// FlowField Calculations
+// ========================================
+
+// CalcFields calculates FlowField values
+// Usage:
+//
+//	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
+//	customer.CalcFields() - Calculate all FlowFields
 func (t *GLEntry) CalcFields(fieldNames ...string) {
-	// This table has no FlowFields to calculate
 }
 
-// CalcFieldsForRecords is a no-op for tables without FlowFields
+// CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
+// one grouped query per FlowField instead of one query per record. records are
+// ToMap() results; each gets its FlowField values under the field name. With no
+// field names, all FlowFields are calculated.
 func (t *GLEntry) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
 }
 
@@ -1554,111 +1561,7 @@ func (t *GLEntry) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *GLEntry) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, GLEntryTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "entry_no":
-			column = "entry_no"
-		case "amount":
-			column = "amount"
-		case "quantity":
-			column = "quantity"
-		case "tax_amount":
-			column = "tax_amount"
-		case "transaction_no":
-			column = "transaction_no"
-		case "debit_amount":
-			column = "debit_amount"
-		case "credit_amount":
-			column = "credit_amount"
-		case "additional_currency_amount":
-			column = "additional_currency_amount"
-		case "add_currency_debit_amount":
-			column = "add_currency_debit_amount"
-		case "add_currency_credit_amount":
-			column = "add_currency_credit_amount"
-		case "fa_entry_no":
-			column = "fa_entry_no"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of G_L_Entry", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums G_L_Entry.%s: %w", column, err)
-		}
-		switch column {
-		case "entry_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums G_L_Entry.%s: %w", column, err)
-			}
-			t.Entry_no = int(f)
-		case "amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums G_L_Entry.%s: %w", column, err)
-			}
-			t.Amount = d
-		case "quantity":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums G_L_Entry.%s: %w", column, err)
-			}
-			t.Quantity = d
-		case "tax_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums G_L_Entry.%s: %w", column, err)
-			}
-			t.Tax_amount = d
-		case "transaction_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums G_L_Entry.%s: %w", column, err)
-			}
-			t.Transaction_no = int(f)
-		case "debit_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums G_L_Entry.%s: %w", column, err)
-			}
-			t.Debit_amount = d
-		case "credit_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums G_L_Entry.%s: %w", column, err)
-			}
-			t.Credit_amount = d
-		case "additional_currency_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums G_L_Entry.%s: %w", column, err)
-			}
-			t.Additional_currency_amount = d
-		case "add_currency_debit_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums G_L_Entry.%s: %w", column, err)
-			}
-			t.Add_currency_debit_amount = d
-		case "add_currency_credit_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums G_L_Entry.%s: %w", column, err)
-			}
-			t.Add_currency_credit_amount = d
-		case "fa_entry_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums G_L_Entry.%s: %w", column, err)
-			}
-			t.Fa_entry_no = int(f)
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a

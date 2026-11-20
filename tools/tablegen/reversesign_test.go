@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 	"path/filepath"
-	"strings"
+	"regexp"
 	"testing"
 )
 
@@ -34,8 +34,9 @@ func TestReverseSignFlowField(t *testing.T) {
 		t.Fatal(err)
 	}
 	code, _ := os.ReadFile(out)
-	if n := strings.Count(string(code), "-COALESCE(SUM(amount), 0)"); n < 3 {
-		t.Errorf("the reversed sum appears %d times, want the card, list and filter queries", n)
+	// foundation/tables sums with the opposite sign for the card, the list and the filter
+	if !regexp.MustCompile(`ReverseSign:\s+true,`).Match(code) {
+		t.Error("the FlowField is not described with the reversed sign")
 	}
 
 	cust.Table.Fields[1].CalcFormula = "Count"

@@ -67,14 +67,12 @@
 //	OnValidate_Rounding_amount_lcy(rec *gtables.CustomerLedgerEntry) error
 //	OnValidate_Calculate_interest(rec *gtables.CustomerLedgerEntry) error
 //	OnValidate_Closing_interest_calculated(rec *gtables.CustomerLedgerEntry) error
-
 package tables
 
 import (
 	"database/sql"
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -1300,13 +1298,22 @@ func (t *CustomerLedgerEntry) Delete(runTrigger bool) bool {
 	return t.rec().Delete()
 }
 
-// CalcFields is a no-op for tables without FlowFields
-// Implemented for tables.Table interface compliance
+// ========================================
+// FlowField Calculations
+// ========================================
+
+// CalcFields calculates FlowField values
+// Usage:
+//
+//	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
+//	customer.CalcFields() - Calculate all FlowFields
 func (t *CustomerLedgerEntry) CalcFields(fieldNames ...string) {
-	// This table has no FlowFields to calculate
 }
 
-// CalcFieldsForRecords is a no-op for tables without FlowFields
+// CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
+// one grouped query per FlowField instead of one query per record. records are
+// ToMap() results; each gets its FlowField values under the field name. With no
+// field names, all FlowFields are calculated.
 func (t *CustomerLedgerEntry) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
 }
 
@@ -1625,199 +1632,7 @@ func (t *CustomerLedgerEntry) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *CustomerLedgerEntry) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "entry_no":
-			column = "entry_no"
-		case "amount":
-			column = "amount"
-		case "remaining_amount":
-			column = "remaining_amount"
-		case "closed_by_amount":
-			column = "closed_by_amount"
-		case "original_amount_lcy":
-			column = "original_amount_lcy"
-		case "remaining_amt_lcy":
-			column = "remaining_amt_lcy"
-		case "amount_lcy":
-			column = "amount_lcy"
-		case "closed_by_amount_lcy":
-			column = "closed_by_amount_lcy"
-		case "debit_amount":
-			column = "debit_amount"
-		case "credit_amount":
-			column = "credit_amount"
-		case "debit_amount_lcy":
-			column = "debit_amount_lcy"
-		case "credit_amount_lcy":
-			column = "credit_amount_lcy"
-		case "sales_lcy":
-			column = "sales_lcy"
-		case "profit_lcy":
-			column = "profit_lcy"
-		case "inv_discount_lcy":
-			column = "inv_discount_lcy"
-		case "pmt_disc_possible":
-			column = "pmt_disc_possible"
-		case "pmt_disc_given_lcy":
-			column = "pmt_disc_given_lcy"
-		case "transaction_no":
-			column = "transaction_no"
-		case "closed_by_entry_no":
-			column = "closed_by_entry_no"
-		case "closed_by_currency_amount":
-			column = "closed_by_currency_amount"
-		case "rounding_amount":
-			column = "rounding_amount"
-		case "rounding_amount_lcy":
-			column = "rounding_amount_lcy"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Customer Ledger Entry", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Customer Ledger Entry.%s: %w", column, err)
-		}
-		switch column {
-		case "entry_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Customer Ledger Entry.%s: %w", column, err)
-			}
-			t.Entry_no = int(f)
-		case "amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Customer Ledger Entry.%s: %w", column, err)
-			}
-			t.Amount = d
-		case "remaining_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Customer Ledger Entry.%s: %w", column, err)
-			}
-			t.Remaining_amount = d
-		case "closed_by_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Customer Ledger Entry.%s: %w", column, err)
-			}
-			t.Closed_by_amount = d
-		case "original_amount_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Customer Ledger Entry.%s: %w", column, err)
-			}
-			t.Original_amount_lcy = d
-		case "remaining_amt_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Customer Ledger Entry.%s: %w", column, err)
-			}
-			t.Remaining_amt_lcy = d
-		case "amount_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Customer Ledger Entry.%s: %w", column, err)
-			}
-			t.Amount_lcy = d
-		case "closed_by_amount_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Customer Ledger Entry.%s: %w", column, err)
-			}
-			t.Closed_by_amount_lcy = d
-		case "debit_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Customer Ledger Entry.%s: %w", column, err)
-			}
-			t.Debit_amount = d
-		case "credit_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Customer Ledger Entry.%s: %w", column, err)
-			}
-			t.Credit_amount = d
-		case "debit_amount_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Customer Ledger Entry.%s: %w", column, err)
-			}
-			t.Debit_amount_lcy = d
-		case "credit_amount_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Customer Ledger Entry.%s: %w", column, err)
-			}
-			t.Credit_amount_lcy = d
-		case "sales_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Customer Ledger Entry.%s: %w", column, err)
-			}
-			t.Sales_lcy = d
-		case "profit_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Customer Ledger Entry.%s: %w", column, err)
-			}
-			t.Profit_lcy = d
-		case "inv_discount_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Customer Ledger Entry.%s: %w", column, err)
-			}
-			t.Inv_discount_lcy = d
-		case "pmt_disc_possible":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Customer Ledger Entry.%s: %w", column, err)
-			}
-			t.Pmt_disc_possible = d
-		case "pmt_disc_given_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Customer Ledger Entry.%s: %w", column, err)
-			}
-			t.Pmt_disc_given_lcy = d
-		case "transaction_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Customer Ledger Entry.%s: %w", column, err)
-			}
-			t.Transaction_no = int(f)
-		case "closed_by_entry_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Customer Ledger Entry.%s: %w", column, err)
-			}
-			t.Closed_by_entry_no = int(f)
-		case "closed_by_currency_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Customer Ledger Entry.%s: %w", column, err)
-			}
-			t.Closed_by_currency_amount = d
-		case "rounding_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Customer Ledger Entry.%s: %w", column, err)
-			}
-			t.Rounding_amount = d
-		case "rounding_amount_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Customer Ledger Entry.%s: %w", column, err)
-			}
-			t.Rounding_amount_lcy = d
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a

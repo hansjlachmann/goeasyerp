@@ -15,14 +15,12 @@
 //	OnValidate_Usage(rec *gtables.ReportSelections) error
 //	OnValidate_Sequence(rec *gtables.ReportSelections) error
 //	OnValidate_Report_id(rec *gtables.ReportSelections) error
-
 package tables
 
 import (
 	"database/sql"
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -817,25 +815,7 @@ func (t *ReportSelections) Delete(runTrigger bool) bool {
 //	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
 //	customer.CalcFields() - Calculate all FlowFields
 func (t *ReportSelections) CalcFields(fieldNames ...string) {
-	// If no field names specified, calculate all FlowFields
-	if len(fieldNames) == 0 {
-		t.calcFlowField_report_name()
-		return
-	}
-
-	// Calculate only specified fields
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "report_name":
-			t.calcFlowField_report_name()
-		}
-	}
-}
-
-// calcFlowField_report_name calculates the report_name FlowField
-// CalcFormula: Lookup(Object_Translation.object_name)
-func (t *ReportSelections) calcFlowField_report_name() {
-	t.Report_name = t.calcLookup_report_name()
+	t.flow().CalcFields(fieldNames)
 }
 
 // CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
@@ -843,56 +823,42 @@ func (t *ReportSelections) calcFlowField_report_name() {
 // ToMap() results; each gets its FlowField values under the field name. With no
 // field names, all FlowFields are calculated.
 func (t *ReportSelections) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
-	if len(records) == 0 {
-		return
-	}
-	if len(fieldNames) == 0 {
-		fieldNames = t.GetFlowFields()
-	}
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "report_name":
-			t.calcForRecords_report_name(records)
-		}
+	t.flow().CalcFieldsForRecords(records, fieldNames)
+}
+
+// flow is what the FlowField functions of foundation/tables need of the record
+func (t *ReportSelections) flow() *tables.FlowRec {
+	return &tables.FlowRec{
+		Fields:     reportSelectionsFields,
+		Ref:        t.fieldRef,
+		FlowFilter: t.flowFilterRef,
+		DB:         t.db,
+		Company:    t.company,
+		Postgres:   t.dbType == database.DBTypePostgres,
+		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, ReportSelectionsTableName) + "\"",
+		One:        t.flowFieldOf,
 	}
 }
 
-// calcForRecords_report_name calculates the report_name FlowField for a set of records
-// CalcFormula: Lookup(Object_Translation.object_name)
-func (t *ReportSelections) calcForRecords_report_name(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &ReportSelections{db: t.db, company: t.company, dbType: t.dbType}
-		r.FromMap(rec)
-		r.calcFlowField_report_name()
-		rec["report_name"] = r.Report_name
+// flowFieldOf calculates a FlowField for one record of a list (a record from the map, with
+// this record's FlowFilters), in its map form
+func (t *ReportSelections) flowFieldOf(rec map[string]any, flowField int) any {
+	one := &ReportSelections{}
+	one.InitWithDBType(t.db, t.company, t.dbType)
+	for i := range reportSelectionsFields.FlowFilters {
+		*one.flowFilterRef(i) = *t.flowFilterRef(i)
 	}
+	one.FromMap(rec)
+	f := one.flow()
+	f.Calc(flowField)
+	return f.MapValue(flowField)
 }
 
-// Helper methods for FlowField calculations
-
-// calcLookup_report_name reads Object_Translation.object_name of the first record matching the
-// flow filters (CalcFormula Lookup); blank when there is none
-func (t *ReportSelections) calcLookup_report_name() types.Text {
-	tableName := ObjectTranslationTableName
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "object_type = ?")
-	args = append(args, 3)
-	whereClauses = append(whereClauses, "object_id = ?")
-	args = append(args, t.Report_id)
-	whereClauses = append(whereClauses, "language_id = ?")
-	args = append(args, i18n.SessionLanguageID())
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
+// flowFilterRef returns a pointer to the FlowFilter field with index i in reportSelectionsFields.FlowFilters
+func (t *ReportSelections) flowFilterRef(i int) *string {
+	switch i {
 	}
-	query := t.convertPlaceholders(fmt.Sprintf(`SELECT object_name FROM "%s" WHERE %s LIMIT 1`, tableName, whereClause), len(args))
-	var value sql.NullString
-	if err := t.db.QueryRow(query, args...).Scan(&value); err != nil && err != sql.ErrNoRows {
-		fmt.Printf("Error: Failed to look up report_name: %v\n", err)
-	}
-	return types.NewText(value.String)
+	return nil
 }
 
 // ========================================
@@ -1210,31 +1176,7 @@ func (t *ReportSelections) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *ReportSelections) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, ReportSelectionsTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "report_id":
-			column = "report_id"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Report_Selections", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Report_Selections.%s: %w", column, err)
-		}
-		switch column {
-		case "report_id":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Report_Selections.%s: %w", column, err)
-			}
-			t.Report_id = int(f)
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a
@@ -1662,6 +1604,22 @@ var reportSelectionsFields = &tables.TableFields{
 			},
 			Kind:    tables.KindText,
 			Trigger: "OnValidate_Report_name",
+		},
+	},
+	FlowFields: []tables.FlowFieldMeta{
+		{
+			Field:         "report_name",
+			Formula:       "Lookup",
+			Source:        ObjectTranslationTableName,
+			SourceGlobal:  true,
+			SourceField:   "object_name",
+			BatchKeyField: "object_id",
+			BatchKeyValue: "report_id",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowConst, Column: "object_type", Const: 3},
+				{Type: tables.FlowFieldValue, Column: "object_id", Value: "report_id", ValueColumn: "report_id"},
+				{Type: tables.FlowConst, Column: "language_id", Language: true},
+			},
 		},
 	},
 }

@@ -15,14 +15,12 @@
 //	OnValidate_Tax_area(rec *gtables.TaxAreaLine) error
 //	OnValidate_Tax_jurisdiction_code(rec *gtables.TaxAreaLine) error
 //	OnValidate_Calculation_order(rec *gtables.TaxAreaLine) error
-
 package tables
 
 import (
 	"database/sql"
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -750,25 +748,7 @@ func (t *TaxAreaLine) Delete(runTrigger bool) bool {
 //	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
 //	customer.CalcFields() - Calculate all FlowFields
 func (t *TaxAreaLine) CalcFields(fieldNames ...string) {
-	// If no field names specified, calculate all FlowFields
-	if len(fieldNames) == 0 {
-		t.calcFlowField_jurisdiction_description()
-		return
-	}
-
-	// Calculate only specified fields
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "jurisdiction_description":
-			t.calcFlowField_jurisdiction_description()
-		}
-	}
-}
-
-// calcFlowField_jurisdiction_description calculates the jurisdiction_description FlowField
-// CalcFormula: Lookup(TaxJurisdiction.description)
-func (t *TaxAreaLine) calcFlowField_jurisdiction_description() {
-	t.Jurisdiction_description = t.calcLookup_jurisdiction_description()
+	t.flow().CalcFields(fieldNames)
 }
 
 // CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
@@ -776,52 +756,42 @@ func (t *TaxAreaLine) calcFlowField_jurisdiction_description() {
 // ToMap() results; each gets its FlowField values under the field name. With no
 // field names, all FlowFields are calculated.
 func (t *TaxAreaLine) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
-	if len(records) == 0 {
-		return
-	}
-	if len(fieldNames) == 0 {
-		fieldNames = t.GetFlowFields()
-	}
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "jurisdiction_description":
-			t.calcForRecords_jurisdiction_description(records)
-		}
+	t.flow().CalcFieldsForRecords(records, fieldNames)
+}
+
+// flow is what the FlowField functions of foundation/tables need of the record
+func (t *TaxAreaLine) flow() *tables.FlowRec {
+	return &tables.FlowRec{
+		Fields:     taxAreaLineFields,
+		Ref:        t.fieldRef,
+		FlowFilter: t.flowFilterRef,
+		DB:         t.db,
+		Company:    t.company,
+		Postgres:   t.dbType == database.DBTypePostgres,
+		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, TaxAreaLineTableName) + "\"",
+		One:        t.flowFieldOf,
 	}
 }
 
-// calcForRecords_jurisdiction_description calculates the jurisdiction_description FlowField for a set of records
-// CalcFormula: Lookup(TaxJurisdiction.description)
-func (t *TaxAreaLine) calcForRecords_jurisdiction_description(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &TaxAreaLine{db: t.db, company: t.company, dbType: t.dbType}
-		r.FromMap(rec)
-		r.calcFlowField_jurisdiction_description()
-		rec["jurisdiction_description"] = r.Jurisdiction_description
+// flowFieldOf calculates a FlowField for one record of a list (a record from the map, with
+// this record's FlowFilters), in its map form
+func (t *TaxAreaLine) flowFieldOf(rec map[string]any, flowField int) any {
+	one := &TaxAreaLine{}
+	one.InitWithDBType(t.db, t.company, t.dbType)
+	for i := range taxAreaLineFields.FlowFilters {
+		*one.flowFilterRef(i) = *t.flowFilterRef(i)
 	}
+	one.FromMap(rec)
+	f := one.flow()
+	f.Calc(flowField)
+	return f.MapValue(flowField)
 }
 
-// Helper methods for FlowField calculations
-
-// calcLookup_jurisdiction_description reads TaxJurisdiction.description of the first record matching the
-// flow filters (CalcFormula Lookup); blank when there is none
-func (t *TaxAreaLine) calcLookup_jurisdiction_description() types.Text {
-	tableName := fmt.Sprintf("%s$%s", t.company, TaxJurisdictionTableName)
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "code = ?")
-	args = append(args, t.Tax_jurisdiction_code)
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
+// flowFilterRef returns a pointer to the FlowFilter field with index i in taxAreaLineFields.FlowFilters
+func (t *TaxAreaLine) flowFilterRef(i int) *string {
+	switch i {
 	}
-	query := t.convertPlaceholders(fmt.Sprintf(`SELECT description FROM "%s" WHERE %s LIMIT 1`, tableName, whereClause), len(args))
-	var value sql.NullString
-	if err := t.db.QueryRow(query, args...).Scan(&value); err != nil && err != sql.ErrNoRows {
-		fmt.Printf("Error: Failed to look up jurisdiction_description: %v\n", err)
-	}
-	return types.NewText(value.String)
+	return nil
 }
 
 // ========================================
@@ -1139,31 +1109,7 @@ func (t *TaxAreaLine) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *TaxAreaLine) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, TaxAreaLineTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "calculation_order":
-			column = "calculation_order"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Tax_Area_Line", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Tax_Area_Line.%s: %w", column, err)
-		}
-		switch column {
-		case "calculation_order":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Tax_Area_Line.%s: %w", column, err)
-			}
-			t.Calculation_order = int(f)
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a
@@ -1591,6 +1537,19 @@ var taxAreaLineFields = &tables.TableFields{
 			},
 			Kind:    tables.KindInt,
 			Trigger: "OnValidate_Calculation_order",
+		},
+	},
+	FlowFields: []tables.FlowFieldMeta{
+		{
+			Field:         "jurisdiction_description",
+			Formula:       "Lookup",
+			Source:        TaxJurisdictionTableName,
+			SourceField:   "description",
+			BatchKeyField: "code",
+			BatchKeyValue: "tax_jurisdiction_code",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "code", Value: "tax_jurisdiction_code", ValueColumn: "tax_jurisdiction_code"},
+			},
 		},
 	},
 }

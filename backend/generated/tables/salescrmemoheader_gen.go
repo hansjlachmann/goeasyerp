@@ -86,14 +86,12 @@
 //	OnValidate_Tax_exemption_no(rec *gtables.SalesCrMemoHeader) error
 //	OnValidate_Project_no(rec *gtables.SalesCrMemoHeader) error
 //	OnValidate_Eu_3_party_trade(rec *gtables.SalesCrMemoHeader) error
-
 package tables
 
 import (
 	"database/sql"
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -1417,43 +1415,7 @@ func (t *SalesCrMemoHeader) Delete(runTrigger bool) bool {
 //	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
 //	customer.CalcFields() - Calculate all FlowFields
 func (t *SalesCrMemoHeader) CalcFields(fieldNames ...string) {
-	// If no field names specified, calculate all FlowFields
-	if len(fieldNames) == 0 {
-		t.calcFlowField_comment()
-		t.calcFlowField_amount()
-		t.calcFlowField_amount_including_tax()
-		return
-	}
-
-	// Calculate only specified fields
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "comment":
-			t.calcFlowField_comment()
-		case "amount":
-			t.calcFlowField_amount()
-		case "amount_including_tax":
-			t.calcFlowField_amount_including_tax()
-		}
-	}
-}
-
-// calcFlowField_comment calculates the comment FlowField
-// CalcFormula: Exist(SalesCommentLine.line_no)
-func (t *SalesCrMemoHeader) calcFlowField_comment() {
-	t.Comment = t.calcCount_comment() > 0
-}
-
-// calcFlowField_amount calculates the amount FlowField
-// CalcFormula: Sum(SalesCrMemoLine.amount)
-func (t *SalesCrMemoHeader) calcFlowField_amount() {
-	t.Amount = t.calcSum_amount()
-}
-
-// calcFlowField_amount_including_tax calculates the amount_including_tax FlowField
-// CalcFormula: Sum(SalesCrMemoLine.amount_including_tax)
-func (t *SalesCrMemoHeader) calcFlowField_amount_including_tax() {
-	t.Amount_including_tax = t.calcSum_amount_including_tax()
+	t.flow().CalcFields(fieldNames)
 }
 
 // CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
@@ -1461,328 +1423,42 @@ func (t *SalesCrMemoHeader) calcFlowField_amount_including_tax() {
 // ToMap() results; each gets its FlowField values under the field name. With no
 // field names, all FlowFields are calculated.
 func (t *SalesCrMemoHeader) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
-	if len(records) == 0 {
-		return
-	}
-	if len(fieldNames) == 0 {
-		fieldNames = t.GetFlowFields()
-	}
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "comment":
-			t.calcForRecords_comment(records)
-		case "amount":
-			t.calcForRecords_amount(records)
-		case "amount_including_tax":
-			t.calcForRecords_amount_including_tax(records)
-		}
+	t.flow().CalcFieldsForRecords(records, fieldNames)
+}
+
+// flow is what the FlowField functions of foundation/tables need of the record
+func (t *SalesCrMemoHeader) flow() *tables.FlowRec {
+	return &tables.FlowRec{
+		Fields:     salesCrMemoHeaderFields,
+		Ref:        t.fieldRef,
+		FlowFilter: t.flowFilterRef,
+		DB:         t.db,
+		Company:    t.company,
+		Postgres:   t.dbType == database.DBTypePostgres,
+		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, SalesCrMemoHeaderTableName) + "\"",
+		One:        t.flowFieldOf,
 	}
 }
 
-// calcForRecords_comment calculates the comment FlowField for a set of records
-// CalcFormula: Exist(SalesCommentLine.line_no)
-func (t *SalesCrMemoHeader) calcForRecords_comment(records []map[string]interface{}) {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesCommentLineTableName), false
-	_ = useSIFT
-
-	// Distinct key values of the records
-	seen := make(map[string]bool, len(records))
-	var keys []interface{}
-	for _, rec := range records {
-		k := fmt.Sprint(rec["no"])
-		if !seen[k] {
-			seen[k] = true
-			keys = append(keys, rec["no"])
-		}
+// flowFieldOf calculates a FlowField for one record of a list (a record from the map, with
+// this record's FlowFilters), in its map form
+func (t *SalesCrMemoHeader) flowFieldOf(rec map[string]any, flowField int) any {
+	one := &SalesCrMemoHeader{}
+	one.InitWithDBType(t.db, t.company, t.dbType)
+	for i := range salesCrMemoHeaderFields.FlowFilters {
+		*one.flowFilterRef(i) = *t.flowFilterRef(i)
 	}
-
-	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
-	// list) one grouped query over the whole source table instead: much cheaper than
-	// many IN queries, and it keeps the bind parameters bounded.
-	values := make(map[string]int, len(keys))
-	const chunkSize = 500
-	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
-	if len(keys) <= chunkSize {
-		chunks = [][]interface{}{keys}
-	}
-	for _, chunk := range chunks {
-
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "document_type = ?")
-		args = append(args, 7)
-		if chunk != nil {
-			whereClauses = append(whereClauses, "no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
-			args = append(args, chunk...)
-		}
-		whereClause := "1=1"
-		if len(whereClauses) > 0 {
-			whereClause = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COUNT(*)"
-		if useSIFT {
-			agg = "COALESCE(SUM(cnt), 0)" // the totals hold the entry count per key value
-		}
-		query := fmt.Sprintf(`SELECT no, %s FROM "%s" WHERE %s GROUP BY no`, agg, tableName, whereClause)
-		query = t.convertPlaceholders(query, len(args))
-
-		rows, err := t.db.Query(query, args...)
-		if err != nil {
-			fmt.Printf("Error: Failed to calculate comment: %v\n", err)
-			return
-		}
-		for rows.Next() {
-			var key string
-			var count int
-			if err := rows.Scan(&key, &count); err == nil {
-				values[key] = count
-			}
-		}
-		_ = rows.Close()
-	}
-
-	// Records without matching entries get zero
-	for _, rec := range records {
-		rec["comment"] = values[fmt.Sprint(rec["no"])] > 0
-	}
+	one.FromMap(rec)
+	f := one.flow()
+	f.Calc(flowField)
+	return f.MapValue(flowField)
 }
 
-// calcForRecords_amount calculates the amount FlowField for a set of records
-// CalcFormula: Sum(SalesCrMemoLine.amount)
-func (t *SalesCrMemoHeader) calcForRecords_amount(records []map[string]interface{}) {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesCrMemoLineTableName), false
-	_ = useSIFT
-
-	// Distinct key values of the records
-	seen := make(map[string]bool, len(records))
-	var keys []interface{}
-	for _, rec := range records {
-		k := fmt.Sprint(rec["no"])
-		if !seen[k] {
-			seen[k] = true
-			keys = append(keys, rec["no"])
-		}
+// flowFilterRef returns a pointer to the FlowFilter field with index i in salesCrMemoHeaderFields.FlowFilters
+func (t *SalesCrMemoHeader) flowFilterRef(i int) *string {
+	switch i {
 	}
-
-	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
-	// list) one grouped query over the whole source table instead: much cheaper than
-	// many IN queries, and it keeps the bind parameters bounded.
-	values := make(map[string]types.Decimal, len(keys))
-	const chunkSize = 500
-	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
-	if len(keys) <= chunkSize {
-		chunks = [][]interface{}{keys}
-	}
-	for _, chunk := range chunks {
-
-		var whereClauses []string
-		var args []interface{}
-		if chunk != nil {
-			whereClauses = append(whereClauses, "document_no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
-			args = append(args, chunk...)
-		}
-		whereClause := "1=1"
-		if len(whereClauses) > 0 {
-			whereClause = strings.Join(whereClauses, " AND ")
-		}
-		query := fmt.Sprintf(`SELECT document_no, COALESCE(SUM(amount), 0) FROM "%s" WHERE %s GROUP BY document_no`, tableName, whereClause)
-		query = t.convertPlaceholders(query, len(args))
-
-		rows, err := t.db.Query(query, args...)
-		if err != nil {
-			fmt.Printf("Error: Failed to calculate amount: %v\n", err)
-			return
-		}
-		for rows.Next() {
-			var key string
-			var sumStr string
-			if err := rows.Scan(&key, &sumStr); err == nil {
-				values[key], _ = types.NewDecimalFromString(sumStr)
-			}
-		}
-		_ = rows.Close()
-	}
-
-	// Records without matching entries get zero
-	for _, rec := range records {
-		v, ok := values[fmt.Sprint(rec["no"])]
-		if !ok {
-			v = types.ZeroDecimal()
-		}
-		rec["amount"] = v.String()
-	}
-}
-
-// calcForRecords_amount_including_tax calculates the amount_including_tax FlowField for a set of records
-// CalcFormula: Sum(SalesCrMemoLine.amount_including_tax)
-func (t *SalesCrMemoHeader) calcForRecords_amount_including_tax(records []map[string]interface{}) {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesCrMemoLineTableName), false
-	_ = useSIFT
-
-	// Distinct key values of the records
-	seen := make(map[string]bool, len(records))
-	var keys []interface{}
-	for _, rec := range records {
-		k := fmt.Sprint(rec["no"])
-		if !seen[k] {
-			seen[k] = true
-			keys = append(keys, rec["no"])
-		}
-	}
-
-	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
-	// list) one grouped query over the whole source table instead: much cheaper than
-	// many IN queries, and it keeps the bind parameters bounded.
-	values := make(map[string]types.Decimal, len(keys))
-	const chunkSize = 500
-	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
-	if len(keys) <= chunkSize {
-		chunks = [][]interface{}{keys}
-	}
-	for _, chunk := range chunks {
-
-		var whereClauses []string
-		var args []interface{}
-		if chunk != nil {
-			whereClauses = append(whereClauses, "document_no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
-			args = append(args, chunk...)
-		}
-		whereClause := "1=1"
-		if len(whereClauses) > 0 {
-			whereClause = strings.Join(whereClauses, " AND ")
-		}
-		query := fmt.Sprintf(`SELECT document_no, COALESCE(SUM(amount_including_tax), 0) FROM "%s" WHERE %s GROUP BY document_no`, tableName, whereClause)
-		query = t.convertPlaceholders(query, len(args))
-
-		rows, err := t.db.Query(query, args...)
-		if err != nil {
-			fmt.Printf("Error: Failed to calculate amount_including_tax: %v\n", err)
-			return
-		}
-		for rows.Next() {
-			var key string
-			var sumStr string
-			if err := rows.Scan(&key, &sumStr); err == nil {
-				values[key], _ = types.NewDecimalFromString(sumStr)
-			}
-		}
-		_ = rows.Close()
-	}
-
-	// Records without matching entries get zero
-	for _, rec := range records {
-		v, ok := values[fmt.Sprint(rec["no"])]
-		if !ok {
-			v = types.ZeroDecimal()
-		}
-		rec["amount_including_tax"] = v.String()
-	}
-}
-
-// Helper methods for FlowField calculations
-
-func (t *SalesCrMemoHeader) calcCount_comment() int {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesCommentLineTableName), false
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "document_type = ?")
-	args = append(args, 7)
-	whereClauses = append(whereClauses, "no = ?")
-	args = append(args, t.No)
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	agg := "COUNT(*)"
-	if useSIFT {
-		agg = "COALESCE(SUM(cnt), 0)" // the totals hold the entry count per key value
-	}
-	query := fmt.Sprintf(`SELECT %s FROM "%s" WHERE %s`, agg, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var count int
-	err := t.db.QueryRow(query, args...).Scan(&count)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate count for comment: %v\n", err)
-		return 0
-	}
-
-	return count
-}
-
-func (t *SalesCrMemoHeader) calcSum_amount() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesCrMemoLineTableName), false
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "document_no = ?")
-	args = append(args, t.No)
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for amount: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-func (t *SalesCrMemoHeader) calcSum_amount_including_tax() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesCrMemoLineTableName), false
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "document_no = ?")
-	args = append(args, t.No)
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(amount_including_tax), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for amount_including_tax: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
+	return nil
 }
 
 // ========================================
@@ -1820,50 +1496,14 @@ func (t *SalesCrMemoHeader) SetFilter(fieldName, filterExpr string) {
 // FlowFieldFilterKind reports whether a list can be filtered on FlowField field (Sum and
 // Count FlowFields: SETFILTER on a FlowField) and the kind of its values.
 func (t *SalesCrMemoHeader) FlowFieldFilterKind(field string) (flowfilter.Kind, bool) {
-	switch strings.ToLower(field) {
-	case "amount":
-		return flowfilter.KindDecimal, true
-	case "amount_including_tax":
-		return flowfilter.KindDecimal, true
-	}
-	return "", false
+	return salesCrMemoHeaderFields.FlowFieldFilterKind(field)
 }
 
 // flowFieldExpr is the SQL expression computing FlowField field for each row of a query
 // on this table: a correlated subquery reading the source like CalcFieldsForRecords (the
 // SIFT totals of a covering key, else the entries), with the FlowFilters set on t.
 func (t *SalesCrMemoHeader) flowFieldExpr(field string) (string, []interface{}) {
-	outer := "\"" + fmt.Sprintf("%s$%s", t.company, SalesCrMemoHeaderTableName) + "\""
-	_ = outer
-	switch strings.ToLower(field) {
-	case "amount":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesCrMemoLineTableName), false
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "document_no = "+outer+".no")
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(amount), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	case "amount_including_tax":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesCrMemoLineTableName), false
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "document_no = "+outer+".no")
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(amount_including_tax), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	}
-	return "NULL", nil
+	return t.flow().Expr(field)
 }
 
 // SetCurrentKey sets the sort order for queries
@@ -2151,47 +1791,7 @@ func (t *SalesCrMemoHeader) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *SalesCrMemoHeader) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, SalesCrMemoHeaderTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "payment_discount_percent":
-			column = "payment_discount_percent"
-		case "currency_factor":
-			column = "currency_factor"
-		case "no_printed":
-			column = "no_printed"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Sales_Cr_Memo_Header", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Sales_Cr_Memo_Header.%s: %w", column, err)
-		}
-		switch column {
-		case "payment_discount_percent":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Cr_Memo_Header.%s: %w", column, err)
-			}
-			t.Payment_discount_percent = d
-		case "currency_factor":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Cr_Memo_Header.%s: %w", column, err)
-			}
-			t.Currency_factor = d
-		case "no_printed":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Cr_Memo_Header.%s: %w", column, err)
-			}
-			t.No_printed = int(f)
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a
@@ -3891,6 +3491,42 @@ var salesCrMemoHeaderFields = &tables.TableFields{
 			},
 			Kind:    tables.KindBool,
 			Trigger: "OnValidate_Eu_3_party_trade",
+		},
+	},
+	FlowFields: []tables.FlowFieldMeta{
+		{
+			Field:         "comment",
+			Formula:       "Exist",
+			Source:        SalesCommentLineTableName,
+			SourceField:   "line_no",
+			BatchKeyField: "no",
+			BatchKeyValue: "no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowConst, Column: "document_type", Const: 7},
+				{Type: tables.FlowFieldValue, Column: "no", Value: "no", ValueColumn: "no"},
+			},
+		},
+		{
+			Field:         "amount",
+			Formula:       "Sum",
+			Source:        SalesCrMemoLineTableName,
+			SourceField:   "amount",
+			BatchKeyField: "document_no",
+			BatchKeyValue: "no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "document_no", Value: "no", ValueColumn: "no"},
+			},
+		},
+		{
+			Field:         "amount_including_tax",
+			Formula:       "Sum",
+			Source:        SalesCrMemoLineTableName,
+			SourceField:   "amount_including_tax",
+			BatchKeyField: "document_no",
+			BatchKeyValue: "no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "document_no", Value: "no", ValueColumn: "no"},
+			},
 		},
 	},
 }

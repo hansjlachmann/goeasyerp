@@ -39,7 +39,6 @@
 //	OnValidate_Bank_account_nos(rec *gtables.GeneralLedgerSetup) error
 //	OnValidate_Dimension_1(rec *gtables.GeneralLedgerSetup) error
 //	OnValidate_Dimension_2(rec *gtables.GeneralLedgerSetup) error
-
 package tables
 
 import (
@@ -1076,34 +1075,7 @@ func (t *GeneralLedgerSetup) Delete(runTrigger bool) bool {
 //	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
 //	customer.CalcFields() - Calculate all FlowFields
 func (t *GeneralLedgerSetup) CalcFields(fieldNames ...string) {
-	// If no field names specified, calculate all FlowFields
-	if len(fieldNames) == 0 {
-		t.calcFlowField_cust_balances_due()
-		t.calcFlowField_vendor_balances_due()
-		return
-	}
-
-	// Calculate only specified fields
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "cust_balances_due":
-			t.calcFlowField_cust_balances_due()
-		case "vendor_balances_due":
-			t.calcFlowField_vendor_balances_due()
-		}
-	}
-}
-
-// calcFlowField_cust_balances_due calculates the cust_balances_due FlowField
-// CalcFormula: Sum(CustomerLedgerEntry.remaining_amt_lcy)
-func (t *GeneralLedgerSetup) calcFlowField_cust_balances_due() {
-	t.Cust_balances_due = t.calcSum_cust_balances_due()
-}
-
-// calcFlowField_vendor_balances_due calculates the vendor_balances_due FlowField
-// CalcFormula: Sum(VendorLedgerEntry.remaining_amt_lcy)
-func (t *GeneralLedgerSetup) calcFlowField_vendor_balances_due() {
-	t.Vendor_balances_due = t.calcSum_vendor_balances_due()
+	t.flow().CalcFields(fieldNames)
 }
 
 // CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
@@ -1111,168 +1083,48 @@ func (t *GeneralLedgerSetup) calcFlowField_vendor_balances_due() {
 // ToMap() results; each gets its FlowField values under the field name. With no
 // field names, all FlowFields are calculated.
 func (t *GeneralLedgerSetup) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
-	if len(records) == 0 {
-		return
-	}
-	if len(fieldNames) == 0 {
-		fieldNames = t.GetFlowFields()
-	}
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "cust_balances_due":
-			t.calcForRecords_cust_balances_due(records)
-		case "vendor_balances_due":
-			t.calcForRecords_vendor_balances_due(records)
-		}
+	t.flow().CalcFieldsForRecords(records, fieldNames)
+}
+
+// flow is what the FlowField functions of foundation/tables need of the record
+func (t *GeneralLedgerSetup) flow() *tables.FlowRec {
+	return &tables.FlowRec{
+		Fields:     generalLedgerSetupFields,
+		Ref:        t.fieldRef,
+		FlowFilter: t.flowFilterRef,
+		DB:         t.db,
+		Company:    t.company,
+		Postgres:   t.dbType == database.DBTypePostgres,
+		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, GeneralLedgerSetupTableName) + "\"",
+		One:        t.flowFieldOf,
 	}
 }
 
-// calcForRecords_cust_balances_due calculates the cust_balances_due FlowField for a set of records
-// CalcFormula: Sum(CustomerLedgerEntry.remaining_amt_lcy)
-func (t *GeneralLedgerSetup) calcForRecords_cust_balances_due(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &GeneralLedgerSetup{db: t.db, company: t.company, dbType: t.dbType}
-		r.Date_filter = t.Date_filter
-		r.Dimension_1_filter = t.Dimension_1_filter
-		r.Dimension_2_filter = t.Dimension_2_filter
-		r.FromMap(rec)
-		r.calcFlowField_cust_balances_due()
-		rec["cust_balances_due"] = r.Cust_balances_due.String()
+// flowFieldOf calculates a FlowField for one record of a list (a record from the map, with
+// this record's FlowFilters), in its map form
+func (t *GeneralLedgerSetup) flowFieldOf(rec map[string]any, flowField int) any {
+	one := &GeneralLedgerSetup{}
+	one.InitWithDBType(t.db, t.company, t.dbType)
+	for i := range generalLedgerSetupFields.FlowFilters {
+		*one.flowFilterRef(i) = *t.flowFilterRef(i)
 	}
+	one.FromMap(rec)
+	f := one.flow()
+	f.Calc(flowField)
+	return f.MapValue(flowField)
 }
 
-// calcForRecords_vendor_balances_due calculates the vendor_balances_due FlowField for a set of records
-// CalcFormula: Sum(VendorLedgerEntry.remaining_amt_lcy)
-func (t *GeneralLedgerSetup) calcForRecords_vendor_balances_due(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &GeneralLedgerSetup{db: t.db, company: t.company, dbType: t.dbType}
-		r.Date_filter = t.Date_filter
-		r.Dimension_1_filter = t.Dimension_1_filter
-		r.Dimension_2_filter = t.Dimension_2_filter
-		r.FromMap(rec)
-		r.calcFlowField_vendor_balances_due()
-		rec["vendor_balances_due"] = r.Vendor_balances_due.String()
+// flowFilterRef returns a pointer to the FlowFilter field with index i in generalLedgerSetupFields.FlowFilters
+func (t *GeneralLedgerSetup) flowFilterRef(i int) *string {
+	switch i {
+	case 0:
+		return &t.Date_filter
+	case 1:
+		return &t.Dimension_1_filter
+	case 2:
+		return &t.Dimension_2_filter
 	}
-}
-
-// Helper methods for FlowField calculations
-
-func (t *GeneralLedgerSetup) calcSum_cust_balances_due() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, CustomerLedgerEntryTableName, "customer_open"), true
-	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-	}
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "open = ?")
-	args = append(args, true)
-	if t.Dimension_1_filter != "" {
-		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Dimension_2_filter != "" {
-		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Date_filter != "" {
-		// FlowFilter date_filter applied to due_date (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("due_date", flowfilter.KindDate, t.Date_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(remaining_amt_lcy), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for cust_balances_due: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-func (t *GeneralLedgerSetup) calcSum_vendor_balances_due() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, VendorLedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, VendorLedgerEntryTableName, "vendor_open"), true
-	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, VendorLedgerEntryTableName), false
-	}
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "open = ?")
-	args = append(args, true)
-	if t.Dimension_1_filter != "" {
-		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Dimension_2_filter != "" {
-		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Date_filter != "" {
-		// FlowFilter date_filter applied to due_date (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("due_date", flowfilter.KindDate, t.Date_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT -COALESCE(SUM(remaining_amt_lcy), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for vendor_balances_due: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
+	return nil
 }
 
 // ========================================
@@ -1310,104 +1162,14 @@ func (t *GeneralLedgerSetup) SetFilter(fieldName, filterExpr string) {
 // FlowFieldFilterKind reports whether a list can be filtered on FlowField field (Sum and
 // Count FlowFields: SETFILTER on a FlowField) and the kind of its values.
 func (t *GeneralLedgerSetup) FlowFieldFilterKind(field string) (flowfilter.Kind, bool) {
-	switch strings.ToLower(field) {
-	case "cust_balances_due":
-		return flowfilter.KindDecimal, true
-	case "vendor_balances_due":
-		return flowfilter.KindDecimal, true
-	}
-	return "", false
+	return generalLedgerSetupFields.FlowFieldFilterKind(field)
 }
 
 // flowFieldExpr is the SQL expression computing FlowField field for each row of a query
 // on this table: a correlated subquery reading the source like CalcFieldsForRecords (the
 // SIFT totals of a covering key, else the entries), with the FlowFilters set on t.
 func (t *GeneralLedgerSetup) flowFieldExpr(field string) (string, []interface{}) {
-	outer := "\"" + fmt.Sprintf("%s$%s", t.company, GeneralLedgerSetupTableName) + "\""
-	_ = outer
-	switch strings.ToLower(field) {
-	case "cust_balances_due":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-		tableName, useSIFT = sift.TableName(t.company, CustomerLedgerEntryTableName, "customer_open"), true
-		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
-			// A FlowFilter is set: the key must contain the filtered fields too
-			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, CustomerLedgerEntryTableName), false
-		}
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "open = ?")
-		args = append(args, true)
-		if t.Dimension_1_filter != "" {
-			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Dimension_2_filter != "" {
-			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Date_filter != "" {
-			// FlowFilter date_filter applied to due_date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("due_date", flowfilter.KindDate, t.Date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(remaining_amt_lcy), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	case "vendor_balances_due":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, VendorLedgerEntryTableName), false
-		tableName, useSIFT = sift.TableName(t.company, VendorLedgerEntryTableName, "vendor_open"), true
-		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
-			// A FlowFilter is set: the key must contain the filtered fields too
-			tableName, useSIFT = fmt.Sprintf("%s$%s", t.company, VendorLedgerEntryTableName), false
-		}
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "open = ?")
-		args = append(args, true)
-		if t.Dimension_1_filter != "" {
-			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Dimension_2_filter != "" {
-			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Date_filter != "" {
-			// FlowFilter date_filter applied to due_date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("due_date", flowfilter.KindDate, t.Date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "-COALESCE(SUM(remaining_amt_lcy), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	}
-	return "NULL", nil
+	return t.flow().Expr(field)
 }
 
 // SetCurrentKey sets the sort order for queries
@@ -1695,63 +1457,7 @@ func (t *GeneralLedgerSetup) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *GeneralLedgerSetup) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, GeneralLedgerSetupTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "inv_rounding_precision_lcy":
-			column = "inv_rounding_precision_lcy"
-		case "vat_tolerance_percent":
-			column = "vat_tolerance_percent"
-		case "amount_rounding_precision":
-			column = "amount_rounding_precision"
-		case "unit_amount_rounding_precision":
-			column = "unit_amount_rounding_precision"
-		case "appln_rounding_precision":
-			column = "appln_rounding_precision"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of General_Ledger_Setup", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums General_Ledger_Setup.%s: %w", column, err)
-		}
-		switch column {
-		case "inv_rounding_precision_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums General_Ledger_Setup.%s: %w", column, err)
-			}
-			t.Inv_rounding_precision_lcy = d
-		case "vat_tolerance_percent":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums General_Ledger_Setup.%s: %w", column, err)
-			}
-			t.Vat_tolerance_percent = d
-		case "amount_rounding_precision":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums General_Ledger_Setup.%s: %w", column, err)
-			}
-			t.Amount_rounding_precision = d
-		case "unit_amount_rounding_precision":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums General_Ledger_Setup.%s: %w", column, err)
-			}
-			t.Unit_amount_rounding_precision = d
-		case "appln_rounding_precision":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums General_Ledger_Setup.%s: %w", column, err)
-			}
-			t.Appln_rounding_precision = d
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a
@@ -2611,6 +2317,35 @@ var generalLedgerSetupFields = &tables.TableFields{
 			},
 			Kind:    tables.KindText,
 			Trigger: "OnValidate_Dimension_2",
+		},
+	},
+	FlowFields: []tables.FlowFieldMeta{
+		{
+			Field:       "cust_balances_due",
+			Formula:     "Sum",
+			Source:      CustomerLedgerEntryTableName,
+			SourceField: "remaining_amt_lcy",
+			SIFTKey:     "customer_open",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowConst, Column: "open", Const: true},
+				{Type: tables.FlowFilterSet, Column: "dimension_1_code", Value: "dimension_1_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "dimension_2_code", Value: "dimension_2_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "due_date", Value: "date_filter", Kind: flowfilter.KindDate},
+			},
+		},
+		{
+			Field:       "vendor_balances_due",
+			Formula:     "Sum",
+			Source:      VendorLedgerEntryTableName,
+			SourceField: "remaining_amt_lcy",
+			ReverseSign: true,
+			SIFTKey:     "vendor_open",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowConst, Column: "open", Const: true},
+				{Type: tables.FlowFilterSet, Column: "dimension_1_code", Value: "dimension_1_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "dimension_2_code", Value: "dimension_2_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "due_date", Value: "date_filter", Kind: flowfilter.KindDate},
+			},
 		},
 	},
 	FlowFilters: []tables.FieldInfo{

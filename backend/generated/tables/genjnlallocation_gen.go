@@ -35,14 +35,12 @@
 //	OnValidate_Tax_bus_posting_group(rec *gtables.GenJnlAllocation) error
 //	OnValidate_Tax_prod_posting_group(rec *gtables.GenJnlAllocation) error
 //	OnValidate_Additional_currency_amount(rec *gtables.GenJnlAllocation) error
-
 package tables
 
 import (
 	"database/sql"
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -979,25 +977,7 @@ func (t *GenJnlAllocation) Delete(runTrigger bool) bool {
 //	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
 //	customer.CalcFields() - Calculate all FlowFields
 func (t *GenJnlAllocation) CalcFields(fieldNames ...string) {
-	// If no field names specified, calculate all FlowFields
-	if len(fieldNames) == 0 {
-		t.calcFlowField_account_name()
-		return
-	}
-
-	// Calculate only specified fields
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "account_name":
-			t.calcFlowField_account_name()
-		}
-	}
-}
-
-// calcFlowField_account_name calculates the account_name FlowField
-// CalcFormula: Lookup(GLAccount.name)
-func (t *GenJnlAllocation) calcFlowField_account_name() {
-	t.Account_name = t.calcLookup_account_name()
+	t.flow().CalcFields(fieldNames)
 }
 
 // CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
@@ -1005,52 +985,42 @@ func (t *GenJnlAllocation) calcFlowField_account_name() {
 // ToMap() results; each gets its FlowField values under the field name. With no
 // field names, all FlowFields are calculated.
 func (t *GenJnlAllocation) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
-	if len(records) == 0 {
-		return
-	}
-	if len(fieldNames) == 0 {
-		fieldNames = t.GetFlowFields()
-	}
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "account_name":
-			t.calcForRecords_account_name(records)
-		}
+	t.flow().CalcFieldsForRecords(records, fieldNames)
+}
+
+// flow is what the FlowField functions of foundation/tables need of the record
+func (t *GenJnlAllocation) flow() *tables.FlowRec {
+	return &tables.FlowRec{
+		Fields:     genJnlAllocationFields,
+		Ref:        t.fieldRef,
+		FlowFilter: t.flowFilterRef,
+		DB:         t.db,
+		Company:    t.company,
+		Postgres:   t.dbType == database.DBTypePostgres,
+		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, GenJnlAllocationTableName) + "\"",
+		One:        t.flowFieldOf,
 	}
 }
 
-// calcForRecords_account_name calculates the account_name FlowField for a set of records
-// CalcFormula: Lookup(GLAccount.name)
-func (t *GenJnlAllocation) calcForRecords_account_name(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &GenJnlAllocation{db: t.db, company: t.company, dbType: t.dbType}
-		r.FromMap(rec)
-		r.calcFlowField_account_name()
-		rec["account_name"] = r.Account_name
+// flowFieldOf calculates a FlowField for one record of a list (a record from the map, with
+// this record's FlowFilters), in its map form
+func (t *GenJnlAllocation) flowFieldOf(rec map[string]any, flowField int) any {
+	one := &GenJnlAllocation{}
+	one.InitWithDBType(t.db, t.company, t.dbType)
+	for i := range genJnlAllocationFields.FlowFilters {
+		*one.flowFilterRef(i) = *t.flowFilterRef(i)
 	}
+	one.FromMap(rec)
+	f := one.flow()
+	f.Calc(flowField)
+	return f.MapValue(flowField)
 }
 
-// Helper methods for FlowField calculations
-
-// calcLookup_account_name reads GLAccount.name of the first record matching the
-// flow filters (CalcFormula Lookup); blank when there is none
-func (t *GenJnlAllocation) calcLookup_account_name() types.Text {
-	tableName := fmt.Sprintf("%s$%s", t.company, GLAccountTableName)
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "no = ?")
-	args = append(args, t.Account_no)
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
+// flowFilterRef returns a pointer to the FlowFilter field with index i in genJnlAllocationFields.FlowFilters
+func (t *GenJnlAllocation) flowFilterRef(i int) *string {
+	switch i {
 	}
-	query := t.convertPlaceholders(fmt.Sprintf(`SELECT name FROM "%s" WHERE %s LIMIT 1`, tableName, whereClause), len(args))
-	var value sql.NullString
-	if err := t.db.QueryRow(query, args...).Scan(&value); err != nil && err != sql.ErrNoRows {
-		fmt.Printf("Error: Failed to look up account_name: %v\n", err)
-	}
-	return types.NewText(value.String)
+	return nil
 }
 
 // ========================================
@@ -1368,87 +1338,7 @@ func (t *GenJnlAllocation) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *GenJnlAllocation) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, GenJnlAllocationTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "journal_line_no":
-			column = "journal_line_no"
-		case "line_no":
-			column = "line_no"
-		case "allocation_quantity":
-			column = "allocation_quantity"
-		case "allocation_percent":
-			column = "allocation_percent"
-		case "amount":
-			column = "amount"
-		case "tax_amount":
-			column = "tax_amount"
-		case "tax_percent":
-			column = "tax_percent"
-		case "additional_currency_amount":
-			column = "additional_currency_amount"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Gen_Jnl_Allocation", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Gen_Jnl_Allocation.%s: %w", column, err)
-		}
-		switch column {
-		case "journal_line_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Jnl_Allocation.%s: %w", column, err)
-			}
-			t.Journal_line_no = int(f)
-		case "line_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Jnl_Allocation.%s: %w", column, err)
-			}
-			t.Line_no = int(f)
-		case "allocation_quantity":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Jnl_Allocation.%s: %w", column, err)
-			}
-			t.Allocation_quantity = d
-		case "allocation_percent":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Jnl_Allocation.%s: %w", column, err)
-			}
-			t.Allocation_percent = d
-		case "amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Jnl_Allocation.%s: %w", column, err)
-			}
-			t.Amount = d
-		case "tax_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Jnl_Allocation.%s: %w", column, err)
-			}
-			t.Tax_amount = d
-		case "tax_percent":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Jnl_Allocation.%s: %w", column, err)
-			}
-			t.Tax_percent = d
-		case "additional_currency_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Jnl_Allocation.%s: %w", column, err)
-			}
-			t.Additional_currency_amount = d
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a
@@ -2245,6 +2135,19 @@ var genJnlAllocationFields = &tables.TableFields{
 			},
 			Kind:    tables.KindDecimal,
 			Trigger: "OnValidate_Additional_currency_amount",
+		},
+	},
+	FlowFields: []tables.FlowFieldMeta{
+		{
+			Field:         "account_name",
+			Formula:       "Lookup",
+			Source:        GLAccountTableName,
+			SourceField:   "name",
+			BatchKeyField: "no",
+			BatchKeyValue: "account_no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "no", Value: "account_no", ValueColumn: "account_no"},
+			},
 		},
 	},
 }

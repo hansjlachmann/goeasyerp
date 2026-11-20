@@ -102,14 +102,12 @@
 //	OnValidate_Reserve(rec *gtables.SalesHeader) error
 //	OnValidate_Project_no(rec *gtables.SalesHeader) error
 //	OnValidate_Eu_3_party_trade(rec *gtables.SalesHeader) error
-
 package tables
 
 import (
 	"database/sql"
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -1665,43 +1663,7 @@ func (t *SalesHeader) Delete(runTrigger bool) bool {
 //	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
 //	customer.CalcFields() - Calculate all FlowFields
 func (t *SalesHeader) CalcFields(fieldNames ...string) {
-	// If no field names specified, calculate all FlowFields
-	if len(fieldNames) == 0 {
-		t.calcFlowField_comment()
-		t.calcFlowField_amount()
-		t.calcFlowField_amount_including_tax()
-		return
-	}
-
-	// Calculate only specified fields
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "comment":
-			t.calcFlowField_comment()
-		case "amount":
-			t.calcFlowField_amount()
-		case "amount_including_tax":
-			t.calcFlowField_amount_including_tax()
-		}
-	}
-}
-
-// calcFlowField_comment calculates the comment FlowField
-// CalcFormula: Exist(SalesCommentLine.line_no)
-func (t *SalesHeader) calcFlowField_comment() {
-	t.Comment = t.calcCount_comment() > 0
-}
-
-// calcFlowField_amount calculates the amount FlowField
-// CalcFormula: Sum(SalesLine.amount)
-func (t *SalesHeader) calcFlowField_amount() {
-	t.Amount = t.calcSum_amount()
-}
-
-// calcFlowField_amount_including_tax calculates the amount_including_tax FlowField
-// CalcFormula: Sum(SalesLine.amount_including_tax)
-func (t *SalesHeader) calcFlowField_amount_including_tax() {
-	t.Amount_including_tax = t.calcSum_amount_including_tax()
+	t.flow().CalcFields(fieldNames)
 }
 
 // CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
@@ -1709,165 +1671,42 @@ func (t *SalesHeader) calcFlowField_amount_including_tax() {
 // ToMap() results; each gets its FlowField values under the field name. With no
 // field names, all FlowFields are calculated.
 func (t *SalesHeader) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
-	if len(records) == 0 {
-		return
-	}
-	if len(fieldNames) == 0 {
-		fieldNames = t.GetFlowFields()
-	}
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "comment":
-			t.calcForRecords_comment(records)
-		case "amount":
-			t.calcForRecords_amount(records)
-		case "amount_including_tax":
-			t.calcForRecords_amount_including_tax(records)
-		}
+	t.flow().CalcFieldsForRecords(records, fieldNames)
+}
+
+// flow is what the FlowField functions of foundation/tables need of the record
+func (t *SalesHeader) flow() *tables.FlowRec {
+	return &tables.FlowRec{
+		Fields:     salesHeaderFields,
+		Ref:        t.fieldRef,
+		FlowFilter: t.flowFilterRef,
+		DB:         t.db,
+		Company:    t.company,
+		Postgres:   t.dbType == database.DBTypePostgres,
+		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, SalesHeaderTableName) + "\"",
+		One:        t.flowFieldOf,
 	}
 }
 
-// calcForRecords_comment calculates the comment FlowField for a set of records
-// CalcFormula: Exist(SalesCommentLine.line_no)
-func (t *SalesHeader) calcForRecords_comment(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &SalesHeader{db: t.db, company: t.company, dbType: t.dbType}
-		r.FromMap(rec)
-		r.calcFlowField_comment()
-		rec["comment"] = r.Comment
+// flowFieldOf calculates a FlowField for one record of a list (a record from the map, with
+// this record's FlowFilters), in its map form
+func (t *SalesHeader) flowFieldOf(rec map[string]any, flowField int) any {
+	one := &SalesHeader{}
+	one.InitWithDBType(t.db, t.company, t.dbType)
+	for i := range salesHeaderFields.FlowFilters {
+		*one.flowFilterRef(i) = *t.flowFilterRef(i)
 	}
+	one.FromMap(rec)
+	f := one.flow()
+	f.Calc(flowField)
+	return f.MapValue(flowField)
 }
 
-// calcForRecords_amount calculates the amount FlowField for a set of records
-// CalcFormula: Sum(SalesLine.amount)
-func (t *SalesHeader) calcForRecords_amount(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &SalesHeader{db: t.db, company: t.company, dbType: t.dbType}
-		r.FromMap(rec)
-		r.calcFlowField_amount()
-		rec["amount"] = r.Amount.String()
+// flowFilterRef returns a pointer to the FlowFilter field with index i in salesHeaderFields.FlowFilters
+func (t *SalesHeader) flowFilterRef(i int) *string {
+	switch i {
 	}
-}
-
-// calcForRecords_amount_including_tax calculates the amount_including_tax FlowField for a set of records
-// CalcFormula: Sum(SalesLine.amount_including_tax)
-func (t *SalesHeader) calcForRecords_amount_including_tax(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &SalesHeader{db: t.db, company: t.company, dbType: t.dbType}
-		r.FromMap(rec)
-		r.calcFlowField_amount_including_tax()
-		rec["amount_including_tax"] = r.Amount_including_tax.String()
-	}
-}
-
-// Helper methods for FlowField calculations
-
-func (t *SalesHeader) calcCount_comment() int {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesCommentLineTableName), false
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "document_type = ?")
-	args = append(args, t.Document_type)
-	whereClauses = append(whereClauses, "no = ?")
-	args = append(args, t.No)
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	agg := "COUNT(*)"
-	if useSIFT {
-		agg = "COALESCE(SUM(cnt), 0)" // the totals hold the entry count per key value
-	}
-	query := fmt.Sprintf(`SELECT %s FROM "%s" WHERE %s`, agg, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var count int
-	err := t.db.QueryRow(query, args...).Scan(&count)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate count for comment: %v\n", err)
-		return 0
-	}
-
-	return count
-}
-
-func (t *SalesHeader) calcSum_amount() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "document_type = ?")
-	args = append(args, t.Document_type)
-	whereClauses = append(whereClauses, "document_no = ?")
-	args = append(args, t.No)
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for amount: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-func (t *SalesHeader) calcSum_amount_including_tax() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "document_type = ?")
-	args = append(args, t.Document_type)
-	whereClauses = append(whereClauses, "document_no = ?")
-	args = append(args, t.No)
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(amount_including_tax), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for amount_including_tax: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
+	return nil
 }
 
 // ========================================
@@ -1905,52 +1744,14 @@ func (t *SalesHeader) SetFilter(fieldName, filterExpr string) {
 // FlowFieldFilterKind reports whether a list can be filtered on FlowField field (Sum and
 // Count FlowFields: SETFILTER on a FlowField) and the kind of its values.
 func (t *SalesHeader) FlowFieldFilterKind(field string) (flowfilter.Kind, bool) {
-	switch strings.ToLower(field) {
-	case "amount":
-		return flowfilter.KindDecimal, true
-	case "amount_including_tax":
-		return flowfilter.KindDecimal, true
-	}
-	return "", false
+	return salesHeaderFields.FlowFieldFilterKind(field)
 }
 
 // flowFieldExpr is the SQL expression computing FlowField field for each row of a query
 // on this table: a correlated subquery reading the source like CalcFieldsForRecords (the
 // SIFT totals of a covering key, else the entries), with the FlowFilters set on t.
 func (t *SalesHeader) flowFieldExpr(field string) (string, []interface{}) {
-	outer := "\"" + fmt.Sprintf("%s$%s", t.company, SalesHeaderTableName) + "\""
-	_ = outer
-	switch strings.ToLower(field) {
-	case "amount":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "document_type = "+outer+".document_type")
-		whereClauses = append(whereClauses, "document_no = "+outer+".no")
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(amount), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	case "amount_including_tax":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SalesLineTableName), false
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "document_type = "+outer+".document_type")
-		whereClauses = append(whereClauses, "document_no = "+outer+".no")
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(amount_including_tax), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	}
-	return "NULL", nil
+	return t.flow().Expr(field)
 }
 
 // SetCurrentKey sets the sort order for queries
@@ -2238,47 +2039,7 @@ func (t *SalesHeader) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *SalesHeader) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, SalesHeaderTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "payment_discount_percent":
-			column = "payment_discount_percent"
-		case "currency_factor":
-			column = "currency_factor"
-		case "no_printed":
-			column = "no_printed"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Sales_Header", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Sales_Header.%s: %w", column, err)
-		}
-		switch column {
-		case "payment_discount_percent":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Header.%s: %w", column, err)
-			}
-			t.Payment_discount_percent = d
-		case "currency_factor":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Header.%s: %w", column, err)
-			}
-			t.Currency_factor = d
-		case "no_printed":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Sales_Header.%s: %w", column, err)
-			}
-			t.No_printed = int(f)
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a
@@ -4267,6 +4028,38 @@ var salesHeaderFields = &tables.TableFields{
 			},
 			Kind:    tables.KindBool,
 			Trigger: "OnValidate_Eu_3_party_trade",
+		},
+	},
+	FlowFields: []tables.FlowFieldMeta{
+		{
+			Field:       "comment",
+			Formula:     "Exist",
+			Source:      SalesCommentLineTableName,
+			SourceField: "line_no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "document_type", Value: "document_type", ValueColumn: "document_type"},
+				{Type: tables.FlowFieldValue, Column: "no", Value: "no", ValueColumn: "no"},
+			},
+		},
+		{
+			Field:       "amount",
+			Formula:     "Sum",
+			Source:      SalesLineTableName,
+			SourceField: "amount",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "document_type", Value: "document_type", ValueColumn: "document_type"},
+				{Type: tables.FlowFieldValue, Column: "document_no", Value: "no", ValueColumn: "no"},
+			},
+		},
+		{
+			Field:       "amount_including_tax",
+			Formula:     "Sum",
+			Source:      SalesLineTableName,
+			SourceField: "amount_including_tax",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "document_type", Value: "document_type", ValueColumn: "document_type"},
+				{Type: tables.FlowFieldValue, Column: "document_no", Value: "no", ValueColumn: "no"},
+			},
 		},
 	},
 }

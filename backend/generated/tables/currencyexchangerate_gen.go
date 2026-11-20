@@ -20,7 +20,6 @@
 //	OnValidate_Relational_exch_rate_amount(rec *gtables.CurrencyExchangeRate) error
 //	OnValidate_Fix_exchange_rate_amount(rec *gtables.CurrencyExchangeRate) error
 //	OnValidate_Relational_adjmt_exch_rate_amt(rec *gtables.CurrencyExchangeRate) error
-
 package tables
 
 import (
@@ -810,13 +809,22 @@ func (t *CurrencyExchangeRate) Delete(runTrigger bool) bool {
 	return t.rec().Delete()
 }
 
-// CalcFields is a no-op for tables without FlowFields
-// Implemented for tables.Table interface compliance
+// ========================================
+// FlowField Calculations
+// ========================================
+
+// CalcFields calculates FlowField values
+// Usage:
+//
+//	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
+//	customer.CalcFields() - Calculate all FlowFields
 func (t *CurrencyExchangeRate) CalcFields(fieldNames ...string) {
-	// This table has no FlowFields to calculate
 }
 
-// CalcFieldsForRecords is a no-op for tables without FlowFields
+// CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
+// one grouped query per FlowField instead of one query per record. records are
+// ToMap() results; each gets its FlowField values under the field name. With no
+// field names, all FlowFields are calculated.
 func (t *CurrencyExchangeRate) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
 }
 
@@ -1135,55 +1143,7 @@ func (t *CurrencyExchangeRate) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *CurrencyExchangeRate) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, CurrencyExchangeRateTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "exchange_rate_amount":
-			column = "exchange_rate_amount"
-		case "adjustment_exch_rate_amount":
-			column = "adjustment_exch_rate_amount"
-		case "relational_exch_rate_amount":
-			column = "relational_exch_rate_amount"
-		case "relational_adjmt_exch_rate_amt":
-			column = "relational_adjmt_exch_rate_amt"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Currency_Exchange_Rate", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Currency_Exchange_Rate.%s: %w", column, err)
-		}
-		switch column {
-		case "exchange_rate_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Currency_Exchange_Rate.%s: %w", column, err)
-			}
-			t.Exchange_rate_amount = d
-		case "adjustment_exch_rate_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Currency_Exchange_Rate.%s: %w", column, err)
-			}
-			t.Adjustment_exch_rate_amount = d
-		case "relational_exch_rate_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Currency_Exchange_Rate.%s: %w", column, err)
-			}
-			t.Relational_exch_rate_amount = d
-		case "relational_adjmt_exch_rate_amt":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Currency_Exchange_Rate.%s: %w", column, err)
-			}
-			t.Relational_adjmt_exch_rate_amt = d
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a

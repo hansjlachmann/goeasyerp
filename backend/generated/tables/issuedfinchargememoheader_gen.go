@@ -48,14 +48,12 @@
 //	OnValidate_Tax_area_code(rec *gtables.IssuedFinChargeMemoHeader) error
 //	OnValidate_Tax_liable(rec *gtables.IssuedFinChargeMemoHeader) error
 //	OnValidate_Tax_bus_posting_group(rec *gtables.IssuedFinChargeMemoHeader) error
-
 package tables
 
 import (
 	"database/sql"
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -1122,61 +1120,7 @@ func (t *IssuedFinChargeMemoHeader) Delete(runTrigger bool) bool {
 //	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
 //	customer.CalcFields() - Calculate all FlowFields
 func (t *IssuedFinChargeMemoHeader) CalcFields(fieldNames ...string) {
-	// If no field names specified, calculate all FlowFields
-	if len(fieldNames) == 0 {
-		t.calcFlowField_comment()
-		t.calcFlowField_remaining_amount()
-		t.calcFlowField_interest_amount()
-		t.calcFlowField_additional_fee()
-		t.calcFlowField_tax_amount()
-		return
-	}
-
-	// Calculate only specified fields
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "comment":
-			t.calcFlowField_comment()
-		case "remaining_amount":
-			t.calcFlowField_remaining_amount()
-		case "interest_amount":
-			t.calcFlowField_interest_amount()
-		case "additional_fee":
-			t.calcFlowField_additional_fee()
-		case "tax_amount":
-			t.calcFlowField_tax_amount()
-		}
-	}
-}
-
-// calcFlowField_comment calculates the comment FlowField
-// CalcFormula: Exist(FinChargeCommentLine.line_no)
-func (t *IssuedFinChargeMemoHeader) calcFlowField_comment() {
-	t.Comment = t.calcCount_comment() > 0
-}
-
-// calcFlowField_remaining_amount calculates the remaining_amount FlowField
-// CalcFormula: Sum(IssuedFinChargeMemoLine.remaining_amount)
-func (t *IssuedFinChargeMemoHeader) calcFlowField_remaining_amount() {
-	t.Remaining_amount = t.calcSum_remaining_amount()
-}
-
-// calcFlowField_interest_amount calculates the interest_amount FlowField
-// CalcFormula: Sum(IssuedFinChargeMemoLine.amount)
-func (t *IssuedFinChargeMemoHeader) calcFlowField_interest_amount() {
-	t.Interest_amount = t.calcSum_interest_amount()
-}
-
-// calcFlowField_additional_fee calculates the additional_fee FlowField
-// CalcFormula: Sum(IssuedFinChargeMemoLine.amount)
-func (t *IssuedFinChargeMemoHeader) calcFlowField_additional_fee() {
-	t.Additional_fee = t.calcSum_additional_fee()
-}
-
-// calcFlowField_tax_amount calculates the tax_amount FlowField
-// CalcFormula: Sum(IssuedFinChargeMemoLine.tax_amount)
-func (t *IssuedFinChargeMemoHeader) calcFlowField_tax_amount() {
-	t.Tax_amount = t.calcSum_tax_amount()
+	t.flow().CalcFields(fieldNames)
 }
 
 // CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
@@ -1184,538 +1128,42 @@ func (t *IssuedFinChargeMemoHeader) calcFlowField_tax_amount() {
 // ToMap() results; each gets its FlowField values under the field name. With no
 // field names, all FlowFields are calculated.
 func (t *IssuedFinChargeMemoHeader) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
-	if len(records) == 0 {
-		return
-	}
-	if len(fieldNames) == 0 {
-		fieldNames = t.GetFlowFields()
-	}
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "comment":
-			t.calcForRecords_comment(records)
-		case "remaining_amount":
-			t.calcForRecords_remaining_amount(records)
-		case "interest_amount":
-			t.calcForRecords_interest_amount(records)
-		case "additional_fee":
-			t.calcForRecords_additional_fee(records)
-		case "tax_amount":
-			t.calcForRecords_tax_amount(records)
-		}
+	t.flow().CalcFieldsForRecords(records, fieldNames)
+}
+
+// flow is what the FlowField functions of foundation/tables need of the record
+func (t *IssuedFinChargeMemoHeader) flow() *tables.FlowRec {
+	return &tables.FlowRec{
+		Fields:     issuedFinChargeMemoHeaderFields,
+		Ref:        t.fieldRef,
+		FlowFilter: t.flowFilterRef,
+		DB:         t.db,
+		Company:    t.company,
+		Postgres:   t.dbType == database.DBTypePostgres,
+		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, IssuedFinChargeMemoHeaderTableName) + "\"",
+		One:        t.flowFieldOf,
 	}
 }
 
-// calcForRecords_comment calculates the comment FlowField for a set of records
-// CalcFormula: Exist(FinChargeCommentLine.line_no)
-func (t *IssuedFinChargeMemoHeader) calcForRecords_comment(records []map[string]interface{}) {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FinChargeCommentLineTableName), false
-	_ = useSIFT
-
-	// Distinct key values of the records
-	seen := make(map[string]bool, len(records))
-	var keys []interface{}
-	for _, rec := range records {
-		k := fmt.Sprint(rec["no"])
-		if !seen[k] {
-			seen[k] = true
-			keys = append(keys, rec["no"])
-		}
+// flowFieldOf calculates a FlowField for one record of a list (a record from the map, with
+// this record's FlowFilters), in its map form
+func (t *IssuedFinChargeMemoHeader) flowFieldOf(rec map[string]any, flowField int) any {
+	one := &IssuedFinChargeMemoHeader{}
+	one.InitWithDBType(t.db, t.company, t.dbType)
+	for i := range issuedFinChargeMemoHeaderFields.FlowFilters {
+		*one.flowFilterRef(i) = *t.flowFilterRef(i)
 	}
-
-	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
-	// list) one grouped query over the whole source table instead: much cheaper than
-	// many IN queries, and it keeps the bind parameters bounded.
-	values := make(map[string]int, len(keys))
-	const chunkSize = 500
-	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
-	if len(keys) <= chunkSize {
-		chunks = [][]interface{}{keys}
-	}
-	for _, chunk := range chunks {
-
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "type = ?")
-		args = append(args, 1)
-		if chunk != nil {
-			whereClauses = append(whereClauses, "no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
-			args = append(args, chunk...)
-		}
-		whereClause := "1=1"
-		if len(whereClauses) > 0 {
-			whereClause = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COUNT(*)"
-		if useSIFT {
-			agg = "COALESCE(SUM(cnt), 0)" // the totals hold the entry count per key value
-		}
-		query := fmt.Sprintf(`SELECT no, %s FROM "%s" WHERE %s GROUP BY no`, agg, tableName, whereClause)
-		query = t.convertPlaceholders(query, len(args))
-
-		rows, err := t.db.Query(query, args...)
-		if err != nil {
-			fmt.Printf("Error: Failed to calculate comment: %v\n", err)
-			return
-		}
-		for rows.Next() {
-			var key string
-			var count int
-			if err := rows.Scan(&key, &count); err == nil {
-				values[key] = count
-			}
-		}
-		_ = rows.Close()
-	}
-
-	// Records without matching entries get zero
-	for _, rec := range records {
-		rec["comment"] = values[fmt.Sprint(rec["no"])] > 0
-	}
+	one.FromMap(rec)
+	f := one.flow()
+	f.Calc(flowField)
+	return f.MapValue(flowField)
 }
 
-// calcForRecords_remaining_amount calculates the remaining_amount FlowField for a set of records
-// CalcFormula: Sum(IssuedFinChargeMemoLine.remaining_amount)
-func (t *IssuedFinChargeMemoHeader) calcForRecords_remaining_amount(records []map[string]interface{}) {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, IssuedFinChargeMemoLineTableName), false
-	_ = useSIFT
-
-	// Distinct key values of the records
-	seen := make(map[string]bool, len(records))
-	var keys []interface{}
-	for _, rec := range records {
-		k := fmt.Sprint(rec["no"])
-		if !seen[k] {
-			seen[k] = true
-			keys = append(keys, rec["no"])
-		}
+// flowFilterRef returns a pointer to the FlowFilter field with index i in issuedFinChargeMemoHeaderFields.FlowFilters
+func (t *IssuedFinChargeMemoHeader) flowFilterRef(i int) *string {
+	switch i {
 	}
-
-	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
-	// list) one grouped query over the whole source table instead: much cheaper than
-	// many IN queries, and it keeps the bind parameters bounded.
-	values := make(map[string]types.Decimal, len(keys))
-	const chunkSize = 500
-	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
-	if len(keys) <= chunkSize {
-		chunks = [][]interface{}{keys}
-	}
-	for _, chunk := range chunks {
-
-		var whereClauses []string
-		var args []interface{}
-		if chunk != nil {
-			whereClauses = append(whereClauses, "finance_charge_memo_no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
-			args = append(args, chunk...)
-		}
-		whereClause := "1=1"
-		if len(whereClauses) > 0 {
-			whereClause = strings.Join(whereClauses, " AND ")
-		}
-		query := fmt.Sprintf(`SELECT finance_charge_memo_no, COALESCE(SUM(remaining_amount), 0) FROM "%s" WHERE %s GROUP BY finance_charge_memo_no`, tableName, whereClause)
-		query = t.convertPlaceholders(query, len(args))
-
-		rows, err := t.db.Query(query, args...)
-		if err != nil {
-			fmt.Printf("Error: Failed to calculate remaining_amount: %v\n", err)
-			return
-		}
-		for rows.Next() {
-			var key string
-			var sumStr string
-			if err := rows.Scan(&key, &sumStr); err == nil {
-				values[key], _ = types.NewDecimalFromString(sumStr)
-			}
-		}
-		_ = rows.Close()
-	}
-
-	// Records without matching entries get zero
-	for _, rec := range records {
-		v, ok := values[fmt.Sprint(rec["no"])]
-		if !ok {
-			v = types.ZeroDecimal()
-		}
-		rec["remaining_amount"] = v.String()
-	}
-}
-
-// calcForRecords_interest_amount calculates the interest_amount FlowField for a set of records
-// CalcFormula: Sum(IssuedFinChargeMemoLine.amount)
-func (t *IssuedFinChargeMemoHeader) calcForRecords_interest_amount(records []map[string]interface{}) {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, IssuedFinChargeMemoLineTableName), false
-	_ = useSIFT
-
-	// Distinct key values of the records
-	seen := make(map[string]bool, len(records))
-	var keys []interface{}
-	for _, rec := range records {
-		k := fmt.Sprint(rec["no"])
-		if !seen[k] {
-			seen[k] = true
-			keys = append(keys, rec["no"])
-		}
-	}
-
-	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
-	// list) one grouped query over the whole source table instead: much cheaper than
-	// many IN queries, and it keeps the bind parameters bounded.
-	values := make(map[string]types.Decimal, len(keys))
-	const chunkSize = 500
-	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
-	if len(keys) <= chunkSize {
-		chunks = [][]interface{}{keys}
-	}
-	for _, chunk := range chunks {
-
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "type = ?")
-		args = append(args, 2)
-		if chunk != nil {
-			whereClauses = append(whereClauses, "finance_charge_memo_no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
-			args = append(args, chunk...)
-		}
-		whereClause := "1=1"
-		if len(whereClauses) > 0 {
-			whereClause = strings.Join(whereClauses, " AND ")
-		}
-		query := fmt.Sprintf(`SELECT finance_charge_memo_no, COALESCE(SUM(amount), 0) FROM "%s" WHERE %s GROUP BY finance_charge_memo_no`, tableName, whereClause)
-		query = t.convertPlaceholders(query, len(args))
-
-		rows, err := t.db.Query(query, args...)
-		if err != nil {
-			fmt.Printf("Error: Failed to calculate interest_amount: %v\n", err)
-			return
-		}
-		for rows.Next() {
-			var key string
-			var sumStr string
-			if err := rows.Scan(&key, &sumStr); err == nil {
-				values[key], _ = types.NewDecimalFromString(sumStr)
-			}
-		}
-		_ = rows.Close()
-	}
-
-	// Records without matching entries get zero
-	for _, rec := range records {
-		v, ok := values[fmt.Sprint(rec["no"])]
-		if !ok {
-			v = types.ZeroDecimal()
-		}
-		rec["interest_amount"] = v.String()
-	}
-}
-
-// calcForRecords_additional_fee calculates the additional_fee FlowField for a set of records
-// CalcFormula: Sum(IssuedFinChargeMemoLine.amount)
-func (t *IssuedFinChargeMemoHeader) calcForRecords_additional_fee(records []map[string]interface{}) {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, IssuedFinChargeMemoLineTableName), false
-	_ = useSIFT
-
-	// Distinct key values of the records
-	seen := make(map[string]bool, len(records))
-	var keys []interface{}
-	for _, rec := range records {
-		k := fmt.Sprint(rec["no"])
-		if !seen[k] {
-			seen[k] = true
-			keys = append(keys, rec["no"])
-		}
-	}
-
-	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
-	// list) one grouped query over the whole source table instead: much cheaper than
-	// many IN queries, and it keeps the bind parameters bounded.
-	values := make(map[string]types.Decimal, len(keys))
-	const chunkSize = 500
-	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
-	if len(keys) <= chunkSize {
-		chunks = [][]interface{}{keys}
-	}
-	for _, chunk := range chunks {
-
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "type = ?")
-		args = append(args, 1)
-		if chunk != nil {
-			whereClauses = append(whereClauses, "finance_charge_memo_no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
-			args = append(args, chunk...)
-		}
-		whereClause := "1=1"
-		if len(whereClauses) > 0 {
-			whereClause = strings.Join(whereClauses, " AND ")
-		}
-		query := fmt.Sprintf(`SELECT finance_charge_memo_no, COALESCE(SUM(amount), 0) FROM "%s" WHERE %s GROUP BY finance_charge_memo_no`, tableName, whereClause)
-		query = t.convertPlaceholders(query, len(args))
-
-		rows, err := t.db.Query(query, args...)
-		if err != nil {
-			fmt.Printf("Error: Failed to calculate additional_fee: %v\n", err)
-			return
-		}
-		for rows.Next() {
-			var key string
-			var sumStr string
-			if err := rows.Scan(&key, &sumStr); err == nil {
-				values[key], _ = types.NewDecimalFromString(sumStr)
-			}
-		}
-		_ = rows.Close()
-	}
-
-	// Records without matching entries get zero
-	for _, rec := range records {
-		v, ok := values[fmt.Sprint(rec["no"])]
-		if !ok {
-			v = types.ZeroDecimal()
-		}
-		rec["additional_fee"] = v.String()
-	}
-}
-
-// calcForRecords_tax_amount calculates the tax_amount FlowField for a set of records
-// CalcFormula: Sum(IssuedFinChargeMemoLine.tax_amount)
-func (t *IssuedFinChargeMemoHeader) calcForRecords_tax_amount(records []map[string]interface{}) {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, IssuedFinChargeMemoLineTableName), false
-	_ = useSIFT
-
-	// Distinct key values of the records
-	seen := make(map[string]bool, len(records))
-	var keys []interface{}
-	for _, rec := range records {
-		k := fmt.Sprint(rec["no"])
-		if !seen[k] {
-			seen[k] = true
-			keys = append(keys, rec["no"])
-		}
-	}
-
-	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
-	// list) one grouped query over the whole source table instead: much cheaper than
-	// many IN queries, and it keeps the bind parameters bounded.
-	values := make(map[string]types.Decimal, len(keys))
-	const chunkSize = 500
-	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
-	if len(keys) <= chunkSize {
-		chunks = [][]interface{}{keys}
-	}
-	for _, chunk := range chunks {
-
-		var whereClauses []string
-		var args []interface{}
-		if chunk != nil {
-			whereClauses = append(whereClauses, "finance_charge_memo_no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
-			args = append(args, chunk...)
-		}
-		whereClause := "1=1"
-		if len(whereClauses) > 0 {
-			whereClause = strings.Join(whereClauses, " AND ")
-		}
-		query := fmt.Sprintf(`SELECT finance_charge_memo_no, COALESCE(SUM(tax_amount), 0) FROM "%s" WHERE %s GROUP BY finance_charge_memo_no`, tableName, whereClause)
-		query = t.convertPlaceholders(query, len(args))
-
-		rows, err := t.db.Query(query, args...)
-		if err != nil {
-			fmt.Printf("Error: Failed to calculate tax_amount: %v\n", err)
-			return
-		}
-		for rows.Next() {
-			var key string
-			var sumStr string
-			if err := rows.Scan(&key, &sumStr); err == nil {
-				values[key], _ = types.NewDecimalFromString(sumStr)
-			}
-		}
-		_ = rows.Close()
-	}
-
-	// Records without matching entries get zero
-	for _, rec := range records {
-		v, ok := values[fmt.Sprint(rec["no"])]
-		if !ok {
-			v = types.ZeroDecimal()
-		}
-		rec["tax_amount"] = v.String()
-	}
-}
-
-// Helper methods for FlowField calculations
-
-func (t *IssuedFinChargeMemoHeader) calcCount_comment() int {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, FinChargeCommentLineTableName), false
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "type = ?")
-	args = append(args, 1)
-	whereClauses = append(whereClauses, "no = ?")
-	args = append(args, t.No)
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	agg := "COUNT(*)"
-	if useSIFT {
-		agg = "COALESCE(SUM(cnt), 0)" // the totals hold the entry count per key value
-	}
-	query := fmt.Sprintf(`SELECT %s FROM "%s" WHERE %s`, agg, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var count int
-	err := t.db.QueryRow(query, args...).Scan(&count)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate count for comment: %v\n", err)
-		return 0
-	}
-
-	return count
-}
-
-func (t *IssuedFinChargeMemoHeader) calcSum_remaining_amount() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, IssuedFinChargeMemoLineTableName), false
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "finance_charge_memo_no = ?")
-	args = append(args, t.No)
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(remaining_amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for remaining_amount: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-func (t *IssuedFinChargeMemoHeader) calcSum_interest_amount() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, IssuedFinChargeMemoLineTableName), false
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "finance_charge_memo_no = ?")
-	args = append(args, t.No)
-	whereClauses = append(whereClauses, "type = ?")
-	args = append(args, 2)
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for interest_amount: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-func (t *IssuedFinChargeMemoHeader) calcSum_additional_fee() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, IssuedFinChargeMemoLineTableName), false
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "finance_charge_memo_no = ?")
-	args = append(args, t.No)
-	whereClauses = append(whereClauses, "type = ?")
-	args = append(args, 1)
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for additional_fee: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-func (t *IssuedFinChargeMemoHeader) calcSum_tax_amount() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, IssuedFinChargeMemoLineTableName), false
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "finance_charge_memo_no = ?")
-	args = append(args, t.No)
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(tax_amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for tax_amount: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
+	return nil
 }
 
 // ========================================
@@ -1753,84 +1201,14 @@ func (t *IssuedFinChargeMemoHeader) SetFilter(fieldName, filterExpr string) {
 // FlowFieldFilterKind reports whether a list can be filtered on FlowField field (Sum and
 // Count FlowFields: SETFILTER on a FlowField) and the kind of its values.
 func (t *IssuedFinChargeMemoHeader) FlowFieldFilterKind(field string) (flowfilter.Kind, bool) {
-	switch strings.ToLower(field) {
-	case "remaining_amount":
-		return flowfilter.KindDecimal, true
-	case "interest_amount":
-		return flowfilter.KindDecimal, true
-	case "additional_fee":
-		return flowfilter.KindDecimal, true
-	case "tax_amount":
-		return flowfilter.KindDecimal, true
-	}
-	return "", false
+	return issuedFinChargeMemoHeaderFields.FlowFieldFilterKind(field)
 }
 
 // flowFieldExpr is the SQL expression computing FlowField field for each row of a query
 // on this table: a correlated subquery reading the source like CalcFieldsForRecords (the
 // SIFT totals of a covering key, else the entries), with the FlowFilters set on t.
 func (t *IssuedFinChargeMemoHeader) flowFieldExpr(field string) (string, []interface{}) {
-	outer := "\"" + fmt.Sprintf("%s$%s", t.company, IssuedFinChargeMemoHeaderTableName) + "\""
-	_ = outer
-	switch strings.ToLower(field) {
-	case "remaining_amount":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, IssuedFinChargeMemoLineTableName), false
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "finance_charge_memo_no = "+outer+".no")
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(remaining_amount), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	case "interest_amount":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, IssuedFinChargeMemoLineTableName), false
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "finance_charge_memo_no = "+outer+".no")
-		whereClauses = append(whereClauses, "type = ?")
-		args = append(args, 2)
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(amount), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	case "additional_fee":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, IssuedFinChargeMemoLineTableName), false
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "finance_charge_memo_no = "+outer+".no")
-		whereClauses = append(whereClauses, "type = ?")
-		args = append(args, 1)
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(amount), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	case "tax_amount":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, IssuedFinChargeMemoLineTableName), false
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "finance_charge_memo_no = "+outer+".no")
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(tax_amount), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	}
-	return "NULL", nil
+	return t.flow().Expr(field)
 }
 
 // SetCurrentKey sets the sort order for queries
@@ -2118,31 +1496,7 @@ func (t *IssuedFinChargeMemoHeader) FieldError(fieldName string, text string) er
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *IssuedFinChargeMemoHeader) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, IssuedFinChargeMemoHeaderTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "no_printed":
-			column = "no_printed"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Issued_Fin_Charge_Memo_Header", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Issued_Fin_Charge_Memo_Header.%s: %w", column, err)
-		}
-		switch column {
-		case "no_printed":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Issued_Fin_Charge_Memo_Header.%s: %w", column, err)
-			}
-			t.No_printed = int(f)
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a
@@ -3210,6 +2564,66 @@ var issuedFinChargeMemoHeaderFields = &tables.TableFields{
 			Kind:     tables.KindCode,
 			Trigger:  "OnValidate_Tax_bus_posting_group",
 			Relation: true,
+		},
+	},
+	FlowFields: []tables.FlowFieldMeta{
+		{
+			Field:         "comment",
+			Formula:       "Exist",
+			Source:        FinChargeCommentLineTableName,
+			SourceField:   "line_no",
+			BatchKeyField: "no",
+			BatchKeyValue: "no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowConst, Column: "type", Const: 1},
+				{Type: tables.FlowFieldValue, Column: "no", Value: "no", ValueColumn: "no"},
+			},
+		},
+		{
+			Field:         "remaining_amount",
+			Formula:       "Sum",
+			Source:        IssuedFinChargeMemoLineTableName,
+			SourceField:   "remaining_amount",
+			BatchKeyField: "finance_charge_memo_no",
+			BatchKeyValue: "no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "finance_charge_memo_no", Value: "no", ValueColumn: "no"},
+			},
+		},
+		{
+			Field:         "interest_amount",
+			Formula:       "Sum",
+			Source:        IssuedFinChargeMemoLineTableName,
+			SourceField:   "amount",
+			BatchKeyField: "finance_charge_memo_no",
+			BatchKeyValue: "no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "finance_charge_memo_no", Value: "no", ValueColumn: "no"},
+				{Type: tables.FlowConst, Column: "type", Const: 2},
+			},
+		},
+		{
+			Field:         "additional_fee",
+			Formula:       "Sum",
+			Source:        IssuedFinChargeMemoLineTableName,
+			SourceField:   "amount",
+			BatchKeyField: "finance_charge_memo_no",
+			BatchKeyValue: "no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "finance_charge_memo_no", Value: "no", ValueColumn: "no"},
+				{Type: tables.FlowConst, Column: "type", Const: 1},
+			},
+		},
+		{
+			Field:         "tax_amount",
+			Formula:       "Sum",
+			Source:        IssuedFinChargeMemoLineTableName,
+			SourceField:   "tax_amount",
+			BatchKeyField: "finance_charge_memo_no",
+			BatchKeyValue: "no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "finance_charge_memo_no", Value: "no", ValueColumn: "no"},
+			},
 		},
 	},
 }

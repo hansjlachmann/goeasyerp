@@ -40,14 +40,12 @@
 //	OnValidate_Entry_exit_point(rec *gtables.IntrastatJnlLine) error
 //	OnValidate_Area(rec *gtables.IntrastatJnlLine) error
 //	OnValidate_Transaction_specification(rec *gtables.IntrastatJnlLine) error
-
 package tables
 
 import (
 	"database/sql"
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -1003,13 +1001,22 @@ func (t *IntrastatJnlLine) Delete(runTrigger bool) bool {
 	return t.rec().Delete()
 }
 
-// CalcFields is a no-op for tables without FlowFields
-// Implemented for tables.Table interface compliance
+// ========================================
+// FlowField Calculations
+// ========================================
+
+// CalcFields calculates FlowField values
+// Usage:
+//
+//	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
+//	customer.CalcFields() - Calculate all FlowFields
 func (t *IntrastatJnlLine) CalcFields(fieldNames ...string) {
-	// This table has no FlowFields to calculate
 }
 
-// CalcFieldsForRecords is a no-op for tables without FlowFields
+// CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
+// one grouped query per FlowField instead of one query per record. records are
+// ToMap() results; each gets its FlowField values under the field name. With no
+// field names, all FlowFields are calculated.
 func (t *IntrastatJnlLine) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
 }
 
@@ -1328,95 +1335,7 @@ func (t *IntrastatJnlLine) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *IntrastatJnlLine) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, IntrastatJnlLineTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "line_no":
-			column = "line_no"
-		case "source_entry_no":
-			column = "source_entry_no"
-		case "net_weight":
-			column = "net_weight"
-		case "amount":
-			column = "amount"
-		case "quantity":
-			column = "quantity"
-		case "cost_regulation_percent":
-			column = "cost_regulation_percent"
-		case "indirect_cost":
-			column = "indirect_cost"
-		case "statistical_value":
-			column = "statistical_value"
-		case "total_weight":
-			column = "total_weight"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Intrastat_Jnl_Line", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Intrastat_Jnl_Line.%s: %w", column, err)
-		}
-		switch column {
-		case "line_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Intrastat_Jnl_Line.%s: %w", column, err)
-			}
-			t.Line_no = int(f)
-		case "source_entry_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Intrastat_Jnl_Line.%s: %w", column, err)
-			}
-			t.Source_entry_no = int(f)
-		case "net_weight":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Intrastat_Jnl_Line.%s: %w", column, err)
-			}
-			t.Net_weight = d
-		case "amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Intrastat_Jnl_Line.%s: %w", column, err)
-			}
-			t.Amount = d
-		case "quantity":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Intrastat_Jnl_Line.%s: %w", column, err)
-			}
-			t.Quantity = d
-		case "cost_regulation_percent":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Intrastat_Jnl_Line.%s: %w", column, err)
-			}
-			t.Cost_regulation_percent = d
-		case "indirect_cost":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Intrastat_Jnl_Line.%s: %w", column, err)
-			}
-			t.Indirect_cost = d
-		case "statistical_value":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Intrastat_Jnl_Line.%s: %w", column, err)
-			}
-			t.Statistical_value = d
-		case "total_weight":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Intrastat_Jnl_Line.%s: %w", column, err)
-			}
-			t.Total_weight = d
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a

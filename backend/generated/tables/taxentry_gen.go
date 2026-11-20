@@ -56,14 +56,12 @@
 //	OnValidate_Unrealized_tax_entry_no(rec *gtables.TaxEntry) error
 //	OnValidate_Tax_bus_posting_group(rec *gtables.TaxEntry) error
 //	OnValidate_Tax_prod_posting_group(rec *gtables.TaxEntry) error
-
 package tables
 
 import (
 	"database/sql"
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -1166,13 +1164,22 @@ func (t *TaxEntry) Delete(runTrigger bool) bool {
 	return t.rec().Delete()
 }
 
-// CalcFields is a no-op for tables without FlowFields
-// Implemented for tables.Table interface compliance
+// ========================================
+// FlowField Calculations
+// ========================================
+
+// CalcFields calculates FlowField values
+// Usage:
+//
+//	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
+//	customer.CalcFields() - Calculate all FlowFields
 func (t *TaxEntry) CalcFields(fieldNames ...string) {
-	// This table has no FlowFields to calculate
 }
 
-// CalcFieldsForRecords is a no-op for tables without FlowFields
+// CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
+// one grouped query per FlowField instead of one query per record. records are
+// ToMap() results; each gets its FlowField values under the field name. With no
+// field names, all FlowFields are calculated.
 func (t *TaxEntry) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
 }
 
@@ -1491,159 +1498,7 @@ func (t *TaxEntry) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *TaxEntry) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, TaxEntryTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "entry_no":
-			column = "entry_no"
-		case "base":
-			column = "base"
-		case "amount":
-			column = "amount"
-		case "closed_by_entry_no":
-			column = "closed_by_entry_no"
-		case "transaction_no":
-			column = "transaction_no"
-		case "unrealized_amount":
-			column = "unrealized_amount"
-		case "unrealized_base":
-			column = "unrealized_base"
-		case "remaining_unrealized_amount":
-			column = "remaining_unrealized_amount"
-		case "remaining_unrealized_base":
-			column = "remaining_unrealized_base"
-		case "additional_currency_amount":
-			column = "additional_currency_amount"
-		case "additional_currency_base":
-			column = "additional_currency_base"
-		case "add_currency_unrealized_amt":
-			column = "add_currency_unrealized_amt"
-		case "add_currency_unrealized_base":
-			column = "add_currency_unrealized_base"
-		case "add_curr_rem_unreal_amount":
-			column = "add_curr_rem_unreal_amount"
-		case "add_curr_rem_unreal_base":
-			column = "add_curr_rem_unreal_base"
-		case "sales_tax_connection_no":
-			column = "sales_tax_connection_no"
-		case "unrealized_tax_entry_no":
-			column = "unrealized_tax_entry_no"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Tax_Entry", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Tax_Entry.%s: %w", column, err)
-		}
-		switch column {
-		case "entry_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Tax_Entry.%s: %w", column, err)
-			}
-			t.Entry_no = int(f)
-		case "base":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Tax_Entry.%s: %w", column, err)
-			}
-			t.Base = d
-		case "amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Tax_Entry.%s: %w", column, err)
-			}
-			t.Amount = d
-		case "closed_by_entry_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Tax_Entry.%s: %w", column, err)
-			}
-			t.Closed_by_entry_no = int(f)
-		case "transaction_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Tax_Entry.%s: %w", column, err)
-			}
-			t.Transaction_no = int(f)
-		case "unrealized_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Tax_Entry.%s: %w", column, err)
-			}
-			t.Unrealized_amount = d
-		case "unrealized_base":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Tax_Entry.%s: %w", column, err)
-			}
-			t.Unrealized_base = d
-		case "remaining_unrealized_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Tax_Entry.%s: %w", column, err)
-			}
-			t.Remaining_unrealized_amount = d
-		case "remaining_unrealized_base":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Tax_Entry.%s: %w", column, err)
-			}
-			t.Remaining_unrealized_base = d
-		case "additional_currency_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Tax_Entry.%s: %w", column, err)
-			}
-			t.Additional_currency_amount = d
-		case "additional_currency_base":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Tax_Entry.%s: %w", column, err)
-			}
-			t.Additional_currency_base = d
-		case "add_currency_unrealized_amt":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Tax_Entry.%s: %w", column, err)
-			}
-			t.Add_currency_unrealized_amt = d
-		case "add_currency_unrealized_base":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Tax_Entry.%s: %w", column, err)
-			}
-			t.Add_currency_unrealized_base = d
-		case "add_curr_rem_unreal_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Tax_Entry.%s: %w", column, err)
-			}
-			t.Add_curr_rem_unreal_amount = d
-		case "add_curr_rem_unreal_base":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Tax_Entry.%s: %w", column, err)
-			}
-			t.Add_curr_rem_unreal_base = d
-		case "sales_tax_connection_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Tax_Entry.%s: %w", column, err)
-			}
-			t.Sales_tax_connection_no = int(f)
-		case "unrealized_tax_entry_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Tax_Entry.%s: %w", column, err)
-			}
-			t.Unrealized_tax_entry_no = int(f)
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a

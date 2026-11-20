@@ -49,7 +49,6 @@
 //	OnValidate_E_mail(rec *gtables.BankAccount) error
 //	OnValidate_Home_page(rec *gtables.BankAccount) error
 //	OnValidate_No_series(rec *gtables.BankAccount) error
-
 package tables
 
 import (
@@ -57,7 +56,6 @@ import (
 
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -1220,115 +1218,7 @@ func (t *BankAccount) Delete(runTrigger bool) bool {
 //	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
 //	customer.CalcFields() - Calculate all FlowFields
 func (t *BankAccount) CalcFields(fieldNames ...string) {
-	// If no field names specified, calculate all FlowFields
-	if len(fieldNames) == 0 {
-		t.calcFlowField_comment()
-		t.calcFlowField_balance()
-		t.calcFlowField_balance_lcy()
-		t.calcFlowField_net_change()
-		t.calcFlowField_net_change_lcy()
-		t.calcFlowField_balance_at_date()
-		t.calcFlowField_balance_at_date_lcy()
-		t.calcFlowField_debit_amount()
-		t.calcFlowField_credit_amount()
-		t.calcFlowField_debit_amount_lcy()
-		t.calcFlowField_credit_amount_lcy()
-		return
-	}
-
-	// Calculate only specified fields
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "comment":
-			t.calcFlowField_comment()
-		case "balance":
-			t.calcFlowField_balance()
-		case "balance_lcy":
-			t.calcFlowField_balance_lcy()
-		case "net_change":
-			t.calcFlowField_net_change()
-		case "net_change_lcy":
-			t.calcFlowField_net_change_lcy()
-		case "balance_at_date":
-			t.calcFlowField_balance_at_date()
-		case "balance_at_date_lcy":
-			t.calcFlowField_balance_at_date_lcy()
-		case "debit_amount":
-			t.calcFlowField_debit_amount()
-		case "credit_amount":
-			t.calcFlowField_credit_amount()
-		case "debit_amount_lcy":
-			t.calcFlowField_debit_amount_lcy()
-		case "credit_amount_lcy":
-			t.calcFlowField_credit_amount_lcy()
-		}
-	}
-}
-
-// calcFlowField_comment calculates the comment FlowField
-// CalcFormula: Exist(CommentLine.line_no)
-func (t *BankAccount) calcFlowField_comment() {
-	t.Comment = t.calcCount_comment() > 0
-}
-
-// calcFlowField_balance calculates the balance FlowField
-// CalcFormula: Sum(BankAccountLedgerEntry.amount)
-func (t *BankAccount) calcFlowField_balance() {
-	t.Balance = t.calcSum_balance()
-}
-
-// calcFlowField_balance_lcy calculates the balance_lcy FlowField
-// CalcFormula: Sum(BankAccountLedgerEntry.amount_lcy)
-func (t *BankAccount) calcFlowField_balance_lcy() {
-	t.Balance_lcy = t.calcSum_balance_lcy()
-}
-
-// calcFlowField_net_change calculates the net_change FlowField
-// CalcFormula: Sum(BankAccountLedgerEntry.amount)
-func (t *BankAccount) calcFlowField_net_change() {
-	t.Net_change = t.calcSum_net_change()
-}
-
-// calcFlowField_net_change_lcy calculates the net_change_lcy FlowField
-// CalcFormula: Sum(BankAccountLedgerEntry.amount_lcy)
-func (t *BankAccount) calcFlowField_net_change_lcy() {
-	t.Net_change_lcy = t.calcSum_net_change_lcy()
-}
-
-// calcFlowField_balance_at_date calculates the balance_at_date FlowField
-// CalcFormula: Sum(BankAccountLedgerEntry.amount)
-func (t *BankAccount) calcFlowField_balance_at_date() {
-	t.Balance_at_date = t.calcSum_balance_at_date()
-}
-
-// calcFlowField_balance_at_date_lcy calculates the balance_at_date_lcy FlowField
-// CalcFormula: Sum(BankAccountLedgerEntry.amount_lcy)
-func (t *BankAccount) calcFlowField_balance_at_date_lcy() {
-	t.Balance_at_date_lcy = t.calcSum_balance_at_date_lcy()
-}
-
-// calcFlowField_debit_amount calculates the debit_amount FlowField
-// CalcFormula: Sum(BankAccountLedgerEntry.debit_amount)
-func (t *BankAccount) calcFlowField_debit_amount() {
-	t.Debit_amount = t.calcSum_debit_amount()
-}
-
-// calcFlowField_credit_amount calculates the credit_amount FlowField
-// CalcFormula: Sum(BankAccountLedgerEntry.credit_amount)
-func (t *BankAccount) calcFlowField_credit_amount() {
-	t.Credit_amount = t.calcSum_credit_amount()
-}
-
-// calcFlowField_debit_amount_lcy calculates the debit_amount_lcy FlowField
-// CalcFormula: Sum(BankAccountLedgerEntry.debit_amount_lcy)
-func (t *BankAccount) calcFlowField_debit_amount_lcy() {
-	t.Debit_amount_lcy = t.calcSum_debit_amount_lcy()
-}
-
-// calcFlowField_credit_amount_lcy calculates the credit_amount_lcy FlowField
-// CalcFormula: Sum(BankAccountLedgerEntry.credit_amount_lcy)
-func (t *BankAccount) calcFlowField_credit_amount_lcy() {
-	t.Credit_amount_lcy = t.calcSum_credit_amount_lcy()
+	t.flow().CalcFields(fieldNames)
 }
 
 // CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
@@ -1336,1628 +1226,48 @@ func (t *BankAccount) calcFlowField_credit_amount_lcy() {
 // ToMap() results; each gets its FlowField values under the field name. With no
 // field names, all FlowFields are calculated.
 func (t *BankAccount) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
-	if len(records) == 0 {
-		return
-	}
-	if len(fieldNames) == 0 {
-		fieldNames = t.GetFlowFields()
-	}
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "comment":
-			t.calcForRecords_comment(records)
-		case "balance":
-			t.calcForRecords_balance(records)
-		case "balance_lcy":
-			t.calcForRecords_balance_lcy(records)
-		case "net_change":
-			t.calcForRecords_net_change(records)
-		case "net_change_lcy":
-			t.calcForRecords_net_change_lcy(records)
-		case "balance_at_date":
-			t.calcForRecords_balance_at_date(records)
-		case "balance_at_date_lcy":
-			t.calcForRecords_balance_at_date_lcy(records)
-		case "debit_amount":
-			t.calcForRecords_debit_amount(records)
-		case "credit_amount":
-			t.calcForRecords_credit_amount(records)
-		case "debit_amount_lcy":
-			t.calcForRecords_debit_amount_lcy(records)
-		case "credit_amount_lcy":
-			t.calcForRecords_credit_amount_lcy(records)
-		}
+	t.flow().CalcFieldsForRecords(records, fieldNames)
+}
+
+// flow is what the FlowField functions of foundation/tables need of the record
+func (t *BankAccount) flow() *tables.FlowRec {
+	return &tables.FlowRec{
+		Fields:     bankAccountFields,
+		Ref:        t.fieldRef,
+		FlowFilter: t.flowFilterRef,
+		DB:         t.db,
+		Company:    t.company,
+		Postgres:   t.dbType == database.DBTypePostgres,
+		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, BankAccountTableName) + "\"",
+		One:        t.flowFieldOf,
 	}
 }
 
-// calcForRecords_comment calculates the comment FlowField for a set of records
-// CalcFormula: Exist(CommentLine.line_no)
-func (t *BankAccount) calcForRecords_comment(records []map[string]interface{}) {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CommentLineTableName), false
-	_ = useSIFT
-
-	// Distinct key values of the records
-	seen := make(map[string]bool, len(records))
-	var keys []interface{}
-	for _, rec := range records {
-		k := fmt.Sprint(rec["no"])
-		if !seen[k] {
-			seen[k] = true
-			keys = append(keys, rec["no"])
-		}
+// flowFieldOf calculates a FlowField for one record of a list (a record from the map, with
+// this record's FlowFilters), in its map form
+func (t *BankAccount) flowFieldOf(rec map[string]any, flowField int) any {
+	one := &BankAccount{}
+	one.InitWithDBType(t.db, t.company, t.dbType)
+	for i := range bankAccountFields.FlowFilters {
+		*one.flowFilterRef(i) = *t.flowFilterRef(i)
 	}
-
-	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
-	// list) one grouped query over the whole source table instead: much cheaper than
-	// many IN queries, and it keeps the bind parameters bounded.
-	values := make(map[string]int, len(keys))
-	const chunkSize = 500
-	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
-	if len(keys) <= chunkSize {
-		chunks = [][]interface{}{keys}
-	}
-	for _, chunk := range chunks {
-
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "table_name = ?")
-		args = append(args, 8)
-		if chunk != nil {
-			whereClauses = append(whereClauses, "no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
-			args = append(args, chunk...)
-		}
-		whereClause := "1=1"
-		if len(whereClauses) > 0 {
-			whereClause = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COUNT(*)"
-		if useSIFT {
-			agg = "COALESCE(SUM(cnt), 0)" // the totals hold the entry count per key value
-		}
-		query := fmt.Sprintf(`SELECT no, %s FROM "%s" WHERE %s GROUP BY no`, agg, tableName, whereClause)
-		query = t.convertPlaceholders(query, len(args))
-
-		rows, err := t.db.Query(query, args...)
-		if err != nil {
-			fmt.Printf("Error: Failed to calculate comment: %v\n", err)
-			return
-		}
-		for rows.Next() {
-			var key string
-			var count int
-			if err := rows.Scan(&key, &count); err == nil {
-				values[key] = count
-			}
-		}
-		_ = rows.Close()
-	}
-
-	// Records without matching entries get zero
-	for _, rec := range records {
-		rec["comment"] = values[fmt.Sprint(rec["no"])] > 0
-	}
+	one.FromMap(rec)
+	f := one.flow()
+	f.Calc(flowField)
+	return f.MapValue(flowField)
 }
 
-// calcForRecords_balance calculates the balance FlowField for a set of records
-// CalcFormula: Sum(BankAccountLedgerEntry.amount)
-func (t *BankAccount) calcForRecords_balance(records []map[string]interface{}) {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_date"), true
-	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_dimensions"), true
-	}
-	_ = useSIFT
-
-	// Distinct key values of the records
-	seen := make(map[string]bool, len(records))
-	var keys []interface{}
-	for _, rec := range records {
-		k := fmt.Sprint(rec["no"])
-		if !seen[k] {
-			seen[k] = true
-			keys = append(keys, rec["no"])
-		}
-	}
-
-	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
-	// list) one grouped query over the whole source table instead: much cheaper than
-	// many IN queries, and it keeps the bind parameters bounded.
-	values := make(map[string]types.Decimal, len(keys))
-	const chunkSize = 500
-	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
-	if len(keys) <= chunkSize {
-		chunks = [][]interface{}{keys}
-	}
-	for _, chunk := range chunks {
-
-		var whereClauses []string
-		var args []interface{}
-		if t.Dimension_1_filter != "" {
-			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Dimension_2_filter != "" {
-			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if chunk != nil {
-			whereClauses = append(whereClauses, "bank_account_no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
-			args = append(args, chunk...)
-		}
-		whereClause := "1=1"
-		if len(whereClauses) > 0 {
-			whereClause = strings.Join(whereClauses, " AND ")
-		}
-		query := fmt.Sprintf(`SELECT bank_account_no, COALESCE(SUM(amount), 0) FROM "%s" WHERE %s GROUP BY bank_account_no`, tableName, whereClause)
-		query = t.convertPlaceholders(query, len(args))
-
-		rows, err := t.db.Query(query, args...)
-		if err != nil {
-			fmt.Printf("Error: Failed to calculate balance: %v\n", err)
-			return
-		}
-		for rows.Next() {
-			var key string
-			var sumStr string
-			if err := rows.Scan(&key, &sumStr); err == nil {
-				values[key], _ = types.NewDecimalFromString(sumStr)
-			}
-		}
-		_ = rows.Close()
-	}
-
-	// Records without matching entries get zero
-	for _, rec := range records {
-		v, ok := values[fmt.Sprint(rec["no"])]
-		if !ok {
-			v = types.ZeroDecimal()
-		}
-		rec["balance"] = v.String()
-	}
-}
-
-// calcForRecords_balance_lcy calculates the balance_lcy FlowField for a set of records
-// CalcFormula: Sum(BankAccountLedgerEntry.amount_lcy)
-func (t *BankAccount) calcForRecords_balance_lcy(records []map[string]interface{}) {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_date"), true
-	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_dimensions"), true
-	}
-	_ = useSIFT
-
-	// Distinct key values of the records
-	seen := make(map[string]bool, len(records))
-	var keys []interface{}
-	for _, rec := range records {
-		k := fmt.Sprint(rec["no"])
-		if !seen[k] {
-			seen[k] = true
-			keys = append(keys, rec["no"])
-		}
-	}
-
-	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
-	// list) one grouped query over the whole source table instead: much cheaper than
-	// many IN queries, and it keeps the bind parameters bounded.
-	values := make(map[string]types.Decimal, len(keys))
-	const chunkSize = 500
-	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
-	if len(keys) <= chunkSize {
-		chunks = [][]interface{}{keys}
-	}
-	for _, chunk := range chunks {
-
-		var whereClauses []string
-		var args []interface{}
-		if t.Dimension_1_filter != "" {
-			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Dimension_2_filter != "" {
-			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if chunk != nil {
-			whereClauses = append(whereClauses, "bank_account_no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
-			args = append(args, chunk...)
-		}
-		whereClause := "1=1"
-		if len(whereClauses) > 0 {
-			whereClause = strings.Join(whereClauses, " AND ")
-		}
-		query := fmt.Sprintf(`SELECT bank_account_no, COALESCE(SUM(amount_lcy), 0) FROM "%s" WHERE %s GROUP BY bank_account_no`, tableName, whereClause)
-		query = t.convertPlaceholders(query, len(args))
-
-		rows, err := t.db.Query(query, args...)
-		if err != nil {
-			fmt.Printf("Error: Failed to calculate balance_lcy: %v\n", err)
-			return
-		}
-		for rows.Next() {
-			var key string
-			var sumStr string
-			if err := rows.Scan(&key, &sumStr); err == nil {
-				values[key], _ = types.NewDecimalFromString(sumStr)
-			}
-		}
-		_ = rows.Close()
-	}
-
-	// Records without matching entries get zero
-	for _, rec := range records {
-		v, ok := values[fmt.Sprint(rec["no"])]
-		if !ok {
-			v = types.ZeroDecimal()
-		}
-		rec["balance_lcy"] = v.String()
-	}
-}
-
-// calcForRecords_net_change calculates the net_change FlowField for a set of records
-// CalcFormula: Sum(BankAccountLedgerEntry.amount)
-func (t *BankAccount) calcForRecords_net_change(records []map[string]interface{}) {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_date"), true
-	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_dimensions"), true
-	}
-	_ = useSIFT
-
-	// Distinct key values of the records
-	seen := make(map[string]bool, len(records))
-	var keys []interface{}
-	for _, rec := range records {
-		k := fmt.Sprint(rec["no"])
-		if !seen[k] {
-			seen[k] = true
-			keys = append(keys, rec["no"])
-		}
-	}
-
-	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
-	// list) one grouped query over the whole source table instead: much cheaper than
-	// many IN queries, and it keeps the bind parameters bounded.
-	values := make(map[string]types.Decimal, len(keys))
-	const chunkSize = 500
-	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
-	if len(keys) <= chunkSize {
-		chunks = [][]interface{}{keys}
-	}
-	for _, chunk := range chunks {
-
-		var whereClauses []string
-		var args []interface{}
-		if t.Dimension_1_filter != "" {
-			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Dimension_2_filter != "" {
-			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Date_filter != "" {
-			// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if chunk != nil {
-			whereClauses = append(whereClauses, "bank_account_no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
-			args = append(args, chunk...)
-		}
-		whereClause := "1=1"
-		if len(whereClauses) > 0 {
-			whereClause = strings.Join(whereClauses, " AND ")
-		}
-		query := fmt.Sprintf(`SELECT bank_account_no, COALESCE(SUM(amount), 0) FROM "%s" WHERE %s GROUP BY bank_account_no`, tableName, whereClause)
-		query = t.convertPlaceholders(query, len(args))
-
-		rows, err := t.db.Query(query, args...)
-		if err != nil {
-			fmt.Printf("Error: Failed to calculate net_change: %v\n", err)
-			return
-		}
-		for rows.Next() {
-			var key string
-			var sumStr string
-			if err := rows.Scan(&key, &sumStr); err == nil {
-				values[key], _ = types.NewDecimalFromString(sumStr)
-			}
-		}
-		_ = rows.Close()
-	}
-
-	// Records without matching entries get zero
-	for _, rec := range records {
-		v, ok := values[fmt.Sprint(rec["no"])]
-		if !ok {
-			v = types.ZeroDecimal()
-		}
-		rec["net_change"] = v.String()
-	}
-}
-
-// calcForRecords_net_change_lcy calculates the net_change_lcy FlowField for a set of records
-// CalcFormula: Sum(BankAccountLedgerEntry.amount_lcy)
-func (t *BankAccount) calcForRecords_net_change_lcy(records []map[string]interface{}) {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_date"), true
-	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_dimensions"), true
-	}
-	_ = useSIFT
-
-	// Distinct key values of the records
-	seen := make(map[string]bool, len(records))
-	var keys []interface{}
-	for _, rec := range records {
-		k := fmt.Sprint(rec["no"])
-		if !seen[k] {
-			seen[k] = true
-			keys = append(keys, rec["no"])
-		}
-	}
-
-	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
-	// list) one grouped query over the whole source table instead: much cheaper than
-	// many IN queries, and it keeps the bind parameters bounded.
-	values := make(map[string]types.Decimal, len(keys))
-	const chunkSize = 500
-	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
-	if len(keys) <= chunkSize {
-		chunks = [][]interface{}{keys}
-	}
-	for _, chunk := range chunks {
-
-		var whereClauses []string
-		var args []interface{}
-		if t.Dimension_1_filter != "" {
-			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Dimension_2_filter != "" {
-			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Date_filter != "" {
-			// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if chunk != nil {
-			whereClauses = append(whereClauses, "bank_account_no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
-			args = append(args, chunk...)
-		}
-		whereClause := "1=1"
-		if len(whereClauses) > 0 {
-			whereClause = strings.Join(whereClauses, " AND ")
-		}
-		query := fmt.Sprintf(`SELECT bank_account_no, COALESCE(SUM(amount_lcy), 0) FROM "%s" WHERE %s GROUP BY bank_account_no`, tableName, whereClause)
-		query = t.convertPlaceholders(query, len(args))
-
-		rows, err := t.db.Query(query, args...)
-		if err != nil {
-			fmt.Printf("Error: Failed to calculate net_change_lcy: %v\n", err)
-			return
-		}
-		for rows.Next() {
-			var key string
-			var sumStr string
-			if err := rows.Scan(&key, &sumStr); err == nil {
-				values[key], _ = types.NewDecimalFromString(sumStr)
-			}
-		}
-		_ = rows.Close()
-	}
-
-	// Records without matching entries get zero
-	for _, rec := range records {
-		v, ok := values[fmt.Sprint(rec["no"])]
-		if !ok {
-			v = types.ZeroDecimal()
-		}
-		rec["net_change_lcy"] = v.String()
-	}
-}
-
-// calcForRecords_balance_at_date calculates the balance_at_date FlowField for a set of records
-// CalcFormula: Sum(BankAccountLedgerEntry.amount)
-func (t *BankAccount) calcForRecords_balance_at_date(records []map[string]interface{}) {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_date"), true
-	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_dimensions"), true
-	}
-	_ = useSIFT
-
-	// Distinct key values of the records
-	seen := make(map[string]bool, len(records))
-	var keys []interface{}
-	for _, rec := range records {
-		k := fmt.Sprint(rec["no"])
-		if !seen[k] {
-			seen[k] = true
-			keys = append(keys, rec["no"])
-		}
-	}
-
-	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
-	// list) one grouped query over the whole source table instead: much cheaper than
-	// many IN queries, and it keeps the bind parameters bounded.
-	values := make(map[string]types.Decimal, len(keys))
-	const chunkSize = 500
-	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
-	if len(keys) <= chunkSize {
-		chunks = [][]interface{}{keys}
-	}
-	for _, chunk := range chunks {
-
-		var whereClauses []string
-		var args []interface{}
-		if t.Dimension_1_filter != "" {
-			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Dimension_2_filter != "" {
-			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Date_filter != "" {
-			// The upper end of FlowFilter date_filter applied to posting_date (UpperLimit)
-			if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, flowfilter.UpperLimit(flowfilter.KindDate, t.Date_filter)); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if chunk != nil {
-			whereClauses = append(whereClauses, "bank_account_no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
-			args = append(args, chunk...)
-		}
-		whereClause := "1=1"
-		if len(whereClauses) > 0 {
-			whereClause = strings.Join(whereClauses, " AND ")
-		}
-		query := fmt.Sprintf(`SELECT bank_account_no, COALESCE(SUM(amount), 0) FROM "%s" WHERE %s GROUP BY bank_account_no`, tableName, whereClause)
-		query = t.convertPlaceholders(query, len(args))
-
-		rows, err := t.db.Query(query, args...)
-		if err != nil {
-			fmt.Printf("Error: Failed to calculate balance_at_date: %v\n", err)
-			return
-		}
-		for rows.Next() {
-			var key string
-			var sumStr string
-			if err := rows.Scan(&key, &sumStr); err == nil {
-				values[key], _ = types.NewDecimalFromString(sumStr)
-			}
-		}
-		_ = rows.Close()
-	}
-
-	// Records without matching entries get zero
-	for _, rec := range records {
-		v, ok := values[fmt.Sprint(rec["no"])]
-		if !ok {
-			v = types.ZeroDecimal()
-		}
-		rec["balance_at_date"] = v.String()
-	}
-}
-
-// calcForRecords_balance_at_date_lcy calculates the balance_at_date_lcy FlowField for a set of records
-// CalcFormula: Sum(BankAccountLedgerEntry.amount_lcy)
-func (t *BankAccount) calcForRecords_balance_at_date_lcy(records []map[string]interface{}) {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_date"), true
-	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_dimensions"), true
-	}
-	_ = useSIFT
-
-	// Distinct key values of the records
-	seen := make(map[string]bool, len(records))
-	var keys []interface{}
-	for _, rec := range records {
-		k := fmt.Sprint(rec["no"])
-		if !seen[k] {
-			seen[k] = true
-			keys = append(keys, rec["no"])
-		}
-	}
-
-	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
-	// list) one grouped query over the whole source table instead: much cheaper than
-	// many IN queries, and it keeps the bind parameters bounded.
-	values := make(map[string]types.Decimal, len(keys))
-	const chunkSize = 500
-	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
-	if len(keys) <= chunkSize {
-		chunks = [][]interface{}{keys}
-	}
-	for _, chunk := range chunks {
-
-		var whereClauses []string
-		var args []interface{}
-		if t.Dimension_1_filter != "" {
-			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Dimension_2_filter != "" {
-			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Date_filter != "" {
-			// The upper end of FlowFilter date_filter applied to posting_date (UpperLimit)
-			if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, flowfilter.UpperLimit(flowfilter.KindDate, t.Date_filter)); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if chunk != nil {
-			whereClauses = append(whereClauses, "bank_account_no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
-			args = append(args, chunk...)
-		}
-		whereClause := "1=1"
-		if len(whereClauses) > 0 {
-			whereClause = strings.Join(whereClauses, " AND ")
-		}
-		query := fmt.Sprintf(`SELECT bank_account_no, COALESCE(SUM(amount_lcy), 0) FROM "%s" WHERE %s GROUP BY bank_account_no`, tableName, whereClause)
-		query = t.convertPlaceholders(query, len(args))
-
-		rows, err := t.db.Query(query, args...)
-		if err != nil {
-			fmt.Printf("Error: Failed to calculate balance_at_date_lcy: %v\n", err)
-			return
-		}
-		for rows.Next() {
-			var key string
-			var sumStr string
-			if err := rows.Scan(&key, &sumStr); err == nil {
-				values[key], _ = types.NewDecimalFromString(sumStr)
-			}
-		}
-		_ = rows.Close()
-	}
-
-	// Records without matching entries get zero
-	for _, rec := range records {
-		v, ok := values[fmt.Sprint(rec["no"])]
-		if !ok {
-			v = types.ZeroDecimal()
-		}
-		rec["balance_at_date_lcy"] = v.String()
-	}
-}
-
-// calcForRecords_debit_amount calculates the debit_amount FlowField for a set of records
-// CalcFormula: Sum(BankAccountLedgerEntry.debit_amount)
-func (t *BankAccount) calcForRecords_debit_amount(records []map[string]interface{}) {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_date"), true
-	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_dimensions"), true
-	}
-	_ = useSIFT
-
-	// Distinct key values of the records
-	seen := make(map[string]bool, len(records))
-	var keys []interface{}
-	for _, rec := range records {
-		k := fmt.Sprint(rec["no"])
-		if !seen[k] {
-			seen[k] = true
-			keys = append(keys, rec["no"])
-		}
-	}
-
-	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
-	// list) one grouped query over the whole source table instead: much cheaper than
-	// many IN queries, and it keeps the bind parameters bounded.
-	values := make(map[string]types.Decimal, len(keys))
-	const chunkSize = 500
-	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
-	if len(keys) <= chunkSize {
-		chunks = [][]interface{}{keys}
-	}
-	for _, chunk := range chunks {
-
-		var whereClauses []string
-		var args []interface{}
-		if t.Dimension_1_filter != "" {
-			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Dimension_2_filter != "" {
-			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Date_filter != "" {
-			// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if chunk != nil {
-			whereClauses = append(whereClauses, "bank_account_no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
-			args = append(args, chunk...)
-		}
-		whereClause := "1=1"
-		if len(whereClauses) > 0 {
-			whereClause = strings.Join(whereClauses, " AND ")
-		}
-		query := fmt.Sprintf(`SELECT bank_account_no, COALESCE(SUM(debit_amount), 0) FROM "%s" WHERE %s GROUP BY bank_account_no`, tableName, whereClause)
-		query = t.convertPlaceholders(query, len(args))
-
-		rows, err := t.db.Query(query, args...)
-		if err != nil {
-			fmt.Printf("Error: Failed to calculate debit_amount: %v\n", err)
-			return
-		}
-		for rows.Next() {
-			var key string
-			var sumStr string
-			if err := rows.Scan(&key, &sumStr); err == nil {
-				values[key], _ = types.NewDecimalFromString(sumStr)
-			}
-		}
-		_ = rows.Close()
-	}
-
-	// Records without matching entries get zero
-	for _, rec := range records {
-		v, ok := values[fmt.Sprint(rec["no"])]
-		if !ok {
-			v = types.ZeroDecimal()
-		}
-		rec["debit_amount"] = v.String()
-	}
-}
-
-// calcForRecords_credit_amount calculates the credit_amount FlowField for a set of records
-// CalcFormula: Sum(BankAccountLedgerEntry.credit_amount)
-func (t *BankAccount) calcForRecords_credit_amount(records []map[string]interface{}) {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_date"), true
-	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_dimensions"), true
-	}
-	_ = useSIFT
-
-	// Distinct key values of the records
-	seen := make(map[string]bool, len(records))
-	var keys []interface{}
-	for _, rec := range records {
-		k := fmt.Sprint(rec["no"])
-		if !seen[k] {
-			seen[k] = true
-			keys = append(keys, rec["no"])
-		}
-	}
-
-	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
-	// list) one grouped query over the whole source table instead: much cheaper than
-	// many IN queries, and it keeps the bind parameters bounded.
-	values := make(map[string]types.Decimal, len(keys))
-	const chunkSize = 500
-	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
-	if len(keys) <= chunkSize {
-		chunks = [][]interface{}{keys}
-	}
-	for _, chunk := range chunks {
-
-		var whereClauses []string
-		var args []interface{}
-		if t.Dimension_1_filter != "" {
-			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Dimension_2_filter != "" {
-			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Date_filter != "" {
-			// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if chunk != nil {
-			whereClauses = append(whereClauses, "bank_account_no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
-			args = append(args, chunk...)
-		}
-		whereClause := "1=1"
-		if len(whereClauses) > 0 {
-			whereClause = strings.Join(whereClauses, " AND ")
-		}
-		query := fmt.Sprintf(`SELECT bank_account_no, COALESCE(SUM(credit_amount), 0) FROM "%s" WHERE %s GROUP BY bank_account_no`, tableName, whereClause)
-		query = t.convertPlaceholders(query, len(args))
-
-		rows, err := t.db.Query(query, args...)
-		if err != nil {
-			fmt.Printf("Error: Failed to calculate credit_amount: %v\n", err)
-			return
-		}
-		for rows.Next() {
-			var key string
-			var sumStr string
-			if err := rows.Scan(&key, &sumStr); err == nil {
-				values[key], _ = types.NewDecimalFromString(sumStr)
-			}
-		}
-		_ = rows.Close()
-	}
-
-	// Records without matching entries get zero
-	for _, rec := range records {
-		v, ok := values[fmt.Sprint(rec["no"])]
-		if !ok {
-			v = types.ZeroDecimal()
-		}
-		rec["credit_amount"] = v.String()
-	}
-}
-
-// calcForRecords_debit_amount_lcy calculates the debit_amount_lcy FlowField for a set of records
-// CalcFormula: Sum(BankAccountLedgerEntry.debit_amount_lcy)
-func (t *BankAccount) calcForRecords_debit_amount_lcy(records []map[string]interface{}) {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_date"), true
-	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_dimensions"), true
-	}
-	_ = useSIFT
-
-	// Distinct key values of the records
-	seen := make(map[string]bool, len(records))
-	var keys []interface{}
-	for _, rec := range records {
-		k := fmt.Sprint(rec["no"])
-		if !seen[k] {
-			seen[k] = true
-			keys = append(keys, rec["no"])
-		}
-	}
-
-	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
-	// list) one grouped query over the whole source table instead: much cheaper than
-	// many IN queries, and it keeps the bind parameters bounded.
-	values := make(map[string]types.Decimal, len(keys))
-	const chunkSize = 500
-	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
-	if len(keys) <= chunkSize {
-		chunks = [][]interface{}{keys}
-	}
-	for _, chunk := range chunks {
-
-		var whereClauses []string
-		var args []interface{}
-		if t.Dimension_1_filter != "" {
-			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Dimension_2_filter != "" {
-			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Date_filter != "" {
-			// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if chunk != nil {
-			whereClauses = append(whereClauses, "bank_account_no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
-			args = append(args, chunk...)
-		}
-		whereClause := "1=1"
-		if len(whereClauses) > 0 {
-			whereClause = strings.Join(whereClauses, " AND ")
-		}
-		query := fmt.Sprintf(`SELECT bank_account_no, COALESCE(SUM(debit_amount_lcy), 0) FROM "%s" WHERE %s GROUP BY bank_account_no`, tableName, whereClause)
-		query = t.convertPlaceholders(query, len(args))
-
-		rows, err := t.db.Query(query, args...)
-		if err != nil {
-			fmt.Printf("Error: Failed to calculate debit_amount_lcy: %v\n", err)
-			return
-		}
-		for rows.Next() {
-			var key string
-			var sumStr string
-			if err := rows.Scan(&key, &sumStr); err == nil {
-				values[key], _ = types.NewDecimalFromString(sumStr)
-			}
-		}
-		_ = rows.Close()
-	}
-
-	// Records without matching entries get zero
-	for _, rec := range records {
-		v, ok := values[fmt.Sprint(rec["no"])]
-		if !ok {
-			v = types.ZeroDecimal()
-		}
-		rec["debit_amount_lcy"] = v.String()
-	}
-}
-
-// calcForRecords_credit_amount_lcy calculates the credit_amount_lcy FlowField for a set of records
-// CalcFormula: Sum(BankAccountLedgerEntry.credit_amount_lcy)
-func (t *BankAccount) calcForRecords_credit_amount_lcy(records []map[string]interface{}) {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_date"), true
-	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_dimensions"), true
-	}
-	_ = useSIFT
-
-	// Distinct key values of the records
-	seen := make(map[string]bool, len(records))
-	var keys []interface{}
-	for _, rec := range records {
-		k := fmt.Sprint(rec["no"])
-		if !seen[k] {
-			seen[k] = true
-			keys = append(keys, rec["no"])
-		}
-	}
-
-	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
-	// list) one grouped query over the whole source table instead: much cheaper than
-	// many IN queries, and it keeps the bind parameters bounded.
-	values := make(map[string]types.Decimal, len(keys))
-	const chunkSize = 500
-	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
-	if len(keys) <= chunkSize {
-		chunks = [][]interface{}{keys}
-	}
-	for _, chunk := range chunks {
-
-		var whereClauses []string
-		var args []interface{}
-		if t.Dimension_1_filter != "" {
-			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Dimension_2_filter != "" {
-			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Date_filter != "" {
-			// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if chunk != nil {
-			whereClauses = append(whereClauses, "bank_account_no IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
-			args = append(args, chunk...)
-		}
-		whereClause := "1=1"
-		if len(whereClauses) > 0 {
-			whereClause = strings.Join(whereClauses, " AND ")
-		}
-		query := fmt.Sprintf(`SELECT bank_account_no, COALESCE(SUM(credit_amount_lcy), 0) FROM "%s" WHERE %s GROUP BY bank_account_no`, tableName, whereClause)
-		query = t.convertPlaceholders(query, len(args))
-
-		rows, err := t.db.Query(query, args...)
-		if err != nil {
-			fmt.Printf("Error: Failed to calculate credit_amount_lcy: %v\n", err)
-			return
-		}
-		for rows.Next() {
-			var key string
-			var sumStr string
-			if err := rows.Scan(&key, &sumStr); err == nil {
-				values[key], _ = types.NewDecimalFromString(sumStr)
-			}
-		}
-		_ = rows.Close()
-	}
-
-	// Records without matching entries get zero
-	for _, rec := range records {
-		v, ok := values[fmt.Sprint(rec["no"])]
-		if !ok {
-			v = types.ZeroDecimal()
-		}
-		rec["credit_amount_lcy"] = v.String()
-	}
-}
-
-// Helper methods for FlowField calculations
-
-func (t *BankAccount) calcCount_comment() int {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, CommentLineTableName), false
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "table_name = ?")
-	args = append(args, 8)
-	whereClauses = append(whereClauses, "no = ?")
-	args = append(args, t.No)
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	agg := "COUNT(*)"
-	if useSIFT {
-		agg = "COALESCE(SUM(cnt), 0)" // the totals hold the entry count per key value
-	}
-	query := fmt.Sprintf(`SELECT %s FROM "%s" WHERE %s`, agg, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var count int
-	err := t.db.QueryRow(query, args...).Scan(&count)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate count for comment: %v\n", err)
-		return 0
-	}
-
-	return count
-}
-
-func (t *BankAccount) calcSum_balance() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_date"), true
-	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_dimensions"), true
-	}
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "bank_account_no = ?")
-	args = append(args, t.No)
-	if t.Dimension_1_filter != "" {
-		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Dimension_2_filter != "" {
-		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for balance: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-func (t *BankAccount) calcSum_balance_lcy() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_date"), true
-	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_dimensions"), true
-	}
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "bank_account_no = ?")
-	args = append(args, t.No)
-	if t.Dimension_1_filter != "" {
-		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Dimension_2_filter != "" {
-		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(amount_lcy), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for balance_lcy: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-func (t *BankAccount) calcSum_net_change() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_date"), true
-	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_dimensions"), true
-	}
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "bank_account_no = ?")
-	args = append(args, t.No)
-	if t.Dimension_1_filter != "" {
-		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Dimension_2_filter != "" {
-		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Date_filter != "" {
-		// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for net_change: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-func (t *BankAccount) calcSum_net_change_lcy() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_date"), true
-	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_dimensions"), true
-	}
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "bank_account_no = ?")
-	args = append(args, t.No)
-	if t.Dimension_1_filter != "" {
-		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Dimension_2_filter != "" {
-		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Date_filter != "" {
-		// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(amount_lcy), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for net_change_lcy: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-func (t *BankAccount) calcSum_balance_at_date() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_date"), true
-	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_dimensions"), true
-	}
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "bank_account_no = ?")
-	args = append(args, t.No)
-	if t.Dimension_1_filter != "" {
-		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Dimension_2_filter != "" {
-		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Date_filter != "" {
-		// The upper end of FlowFilter date_filter applied to posting_date (UpperLimit)
-		if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, flowfilter.UpperLimit(flowfilter.KindDate, t.Date_filter)); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for balance_at_date: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-func (t *BankAccount) calcSum_balance_at_date_lcy() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_date"), true
-	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_dimensions"), true
-	}
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "bank_account_no = ?")
-	args = append(args, t.No)
-	if t.Dimension_1_filter != "" {
-		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Dimension_2_filter != "" {
-		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Date_filter != "" {
-		// The upper end of FlowFilter date_filter applied to posting_date (UpperLimit)
-		if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, flowfilter.UpperLimit(flowfilter.KindDate, t.Date_filter)); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(amount_lcy), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for balance_at_date_lcy: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-func (t *BankAccount) calcSum_debit_amount() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_date"), true
-	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_dimensions"), true
-	}
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "bank_account_no = ?")
-	args = append(args, t.No)
-	if t.Dimension_1_filter != "" {
-		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Dimension_2_filter != "" {
-		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Date_filter != "" {
-		// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(debit_amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for debit_amount: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-func (t *BankAccount) calcSum_credit_amount() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_date"), true
-	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_dimensions"), true
-	}
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "bank_account_no = ?")
-	args = append(args, t.No)
-	if t.Dimension_1_filter != "" {
-		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Dimension_2_filter != "" {
-		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Date_filter != "" {
-		// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(credit_amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for credit_amount: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-func (t *BankAccount) calcSum_debit_amount_lcy() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_date"), true
-	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_dimensions"), true
-	}
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "bank_account_no = ?")
-	args = append(args, t.No)
-	if t.Dimension_1_filter != "" {
-		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Dimension_2_filter != "" {
-		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Date_filter != "" {
-		// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(debit_amount_lcy), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for debit_amount_lcy: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
-}
-
-func (t *BankAccount) calcSum_credit_amount_lcy() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName), false
-	tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_date"), true
-	if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
-		// A FlowFilter is set: the key must contain the filtered fields too
-		tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_dimensions"), true
-	}
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "bank_account_no = ?")
-	args = append(args, t.No)
-	if t.Dimension_1_filter != "" {
-		// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Dimension_2_filter != "" {
-		// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-	if t.Date_filter != "" {
-		// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
-		if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
-			whereClauses = append(whereClauses, clause)
-			args = append(args, filterArgs...)
-		}
-	}
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(credit_amount_lcy), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for credit_amount_lcy: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
+// flowFilterRef returns a pointer to the FlowFilter field with index i in bankAccountFields.FlowFilters
+func (t *BankAccount) flowFilterRef(i int) *string {
+	switch i {
+	case 0:
+		return &t.Date_filter
+	case 1:
+		return &t.Dimension_1_filter
+	case 2:
+		return &t.Dimension_2_filter
+	}
+	return nil
 }
 
 // ========================================
@@ -2995,416 +1305,14 @@ func (t *BankAccount) SetFilter(fieldName, filterExpr string) {
 // FlowFieldFilterKind reports whether a list can be filtered on FlowField field (Sum and
 // Count FlowFields: SETFILTER on a FlowField) and the kind of its values.
 func (t *BankAccount) FlowFieldFilterKind(field string) (flowfilter.Kind, bool) {
-	switch strings.ToLower(field) {
-	case "balance":
-		return flowfilter.KindDecimal, true
-	case "balance_lcy":
-		return flowfilter.KindDecimal, true
-	case "net_change":
-		return flowfilter.KindDecimal, true
-	case "net_change_lcy":
-		return flowfilter.KindDecimal, true
-	case "balance_at_date":
-		return flowfilter.KindDecimal, true
-	case "balance_at_date_lcy":
-		return flowfilter.KindDecimal, true
-	case "debit_amount":
-		return flowfilter.KindDecimal, true
-	case "credit_amount":
-		return flowfilter.KindDecimal, true
-	case "debit_amount_lcy":
-		return flowfilter.KindDecimal, true
-	case "credit_amount_lcy":
-		return flowfilter.KindDecimal, true
-	}
-	return "", false
+	return bankAccountFields.FlowFieldFilterKind(field)
 }
 
 // flowFieldExpr is the SQL expression computing FlowField field for each row of a query
 // on this table: a correlated subquery reading the source like CalcFieldsForRecords (the
 // SIFT totals of a covering key, else the entries), with the FlowFilters set on t.
 func (t *BankAccount) flowFieldExpr(field string) (string, []interface{}) {
-	outer := "\"" + fmt.Sprintf("%s$%s", t.company, BankAccountTableName) + "\""
-	_ = outer
-	switch strings.ToLower(field) {
-	case "balance":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName), false
-		tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_date"), true
-		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" {
-			// A FlowFilter is set: the key must contain the filtered fields too
-			tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_dimensions"), true
-		}
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "bank_account_no = "+outer+".no")
-		if t.Dimension_1_filter != "" {
-			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Dimension_2_filter != "" {
-			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(amount), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	case "balance_lcy":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName), false
-		tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_date"), true
-		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" {
-			// A FlowFilter is set: the key must contain the filtered fields too
-			tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_dimensions"), true
-		}
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "bank_account_no = "+outer+".no")
-		if t.Dimension_1_filter != "" {
-			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Dimension_2_filter != "" {
-			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(amount_lcy), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	case "net_change":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName), false
-		tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_date"), true
-		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
-			// A FlowFilter is set: the key must contain the filtered fields too
-			tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_dimensions"), true
-		}
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "bank_account_no = "+outer+".no")
-		if t.Dimension_1_filter != "" {
-			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Dimension_2_filter != "" {
-			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Date_filter != "" {
-			// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(amount), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	case "net_change_lcy":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName), false
-		tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_date"), true
-		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
-			// A FlowFilter is set: the key must contain the filtered fields too
-			tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_dimensions"), true
-		}
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "bank_account_no = "+outer+".no")
-		if t.Dimension_1_filter != "" {
-			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Dimension_2_filter != "" {
-			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Date_filter != "" {
-			// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(amount_lcy), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	case "balance_at_date":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName), false
-		tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_date"), true
-		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
-			// A FlowFilter is set: the key must contain the filtered fields too
-			tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_dimensions"), true
-		}
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "bank_account_no = "+outer+".no")
-		if t.Dimension_1_filter != "" {
-			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Dimension_2_filter != "" {
-			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Date_filter != "" {
-			// The upper end of FlowFilter date_filter applied to posting_date (UpperLimit)
-			if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, flowfilter.UpperLimit(flowfilter.KindDate, t.Date_filter)); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(amount), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	case "balance_at_date_lcy":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName), false
-		tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_date"), true
-		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
-			// A FlowFilter is set: the key must contain the filtered fields too
-			tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_dimensions"), true
-		}
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "bank_account_no = "+outer+".no")
-		if t.Dimension_1_filter != "" {
-			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Dimension_2_filter != "" {
-			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Date_filter != "" {
-			// The upper end of FlowFilter date_filter applied to posting_date (UpperLimit)
-			if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, flowfilter.UpperLimit(flowfilter.KindDate, t.Date_filter)); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(amount_lcy), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	case "debit_amount":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName), false
-		tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_date"), true
-		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
-			// A FlowFilter is set: the key must contain the filtered fields too
-			tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_dimensions"), true
-		}
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "bank_account_no = "+outer+".no")
-		if t.Dimension_1_filter != "" {
-			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Dimension_2_filter != "" {
-			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Date_filter != "" {
-			// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(debit_amount), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	case "credit_amount":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName), false
-		tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_date"), true
-		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
-			// A FlowFilter is set: the key must contain the filtered fields too
-			tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_dimensions"), true
-		}
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "bank_account_no = "+outer+".no")
-		if t.Dimension_1_filter != "" {
-			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Dimension_2_filter != "" {
-			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Date_filter != "" {
-			// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(credit_amount), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	case "debit_amount_lcy":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName), false
-		tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_date"), true
-		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
-			// A FlowFilter is set: the key must contain the filtered fields too
-			tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_dimensions"), true
-		}
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "bank_account_no = "+outer+".no")
-		if t.Dimension_1_filter != "" {
-			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Dimension_2_filter != "" {
-			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Date_filter != "" {
-			// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(debit_amount_lcy), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	case "credit_amount_lcy":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName), false
-		tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_date"), true
-		if t.Dimension_1_filter != "" || t.Dimension_2_filter != "" || t.Date_filter != "" {
-			// A FlowFilter is set: the key must contain the filtered fields too
-			tableName, useSIFT = sift.TableName(t.company, BankAccountLedgerEntryTableName, "bank_account_dimensions"), true
-		}
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "bank_account_no = "+outer+".no")
-		if t.Dimension_1_filter != "" {
-			// FlowFilter dimension_1_filter applied to dimension_1_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_1_code", flowfilter.KindCode, t.Dimension_1_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Dimension_2_filter != "" {
-			// FlowFilter dimension_2_filter applied to dimension_2_code (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("dimension_2_code", flowfilter.KindCode, t.Dimension_2_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		if t.Date_filter != "" {
-			// FlowFilter date_filter applied to posting_date (validated by SetFlowFilter)
-			if clause, filterArgs, _ := flowfilter.Clause("posting_date", flowfilter.KindDate, t.Date_filter); clause != "" {
-				whereClauses = append(whereClauses, clause)
-				args = append(args, filterArgs...)
-			}
-		}
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(credit_amount_lcy), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	}
-	return "NULL", nil
+	return t.flow().Expr(field)
 }
 
 // SetCurrentKey sets the sort order for queries
@@ -3692,47 +1600,7 @@ func (t *BankAccount) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *BankAccount) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, BankAccountTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "min_balance":
-			column = "min_balance"
-		case "statistics_group":
-			column = "statistics_group"
-		case "balance_last_statement":
-			column = "balance_last_statement"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Bank_Account", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Bank_Account.%s: %w", column, err)
-		}
-		switch column {
-		case "min_balance":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Bank_Account.%s: %w", column, err)
-			}
-			t.Min_balance = d
-		case "statistics_group":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Bank_Account.%s: %w", column, err)
-			}
-			t.Statistics_group = int(f)
-		case "balance_last_statement":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Bank_Account.%s: %w", column, err)
-			}
-			t.Balance_last_statement = d
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a
@@ -4916,6 +2784,178 @@ var bankAccountFields = &tables.TableFields{
 			Kind:     tables.KindCode,
 			Trigger:  "OnValidate_No_series",
 			Relation: true,
+		},
+	},
+	FlowFields: []tables.FlowFieldMeta{
+		{
+			Field:         "comment",
+			Formula:       "Exist",
+			Source:        CommentLineTableName,
+			SourceField:   "line_no",
+			BatchKeyField: "no",
+			BatchKeyValue: "no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowConst, Column: "table_name", Const: 8},
+				{Type: tables.FlowFieldValue, Column: "no", Value: "no", ValueColumn: "no"},
+			},
+		},
+		{
+			Field:           "balance",
+			Formula:         "Sum",
+			Source:          BankAccountLedgerEntryTableName,
+			SourceField:     "amount",
+			SIFTKey:         "bank_account_date",
+			SIFTKeyFiltered: "bank_account_dimensions",
+			BatchKeyField:   "bank_account_no",
+			BatchKeyValue:   "no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "bank_account_no", Value: "no", ValueColumn: "no"},
+				{Type: tables.FlowFilterSet, Column: "dimension_1_code", Value: "dimension_1_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "dimension_2_code", Value: "dimension_2_filter", Kind: flowfilter.KindCode},
+			},
+		},
+		{
+			Field:           "balance_lcy",
+			Formula:         "Sum",
+			Source:          BankAccountLedgerEntryTableName,
+			SourceField:     "amount_lcy",
+			SIFTKey:         "bank_account_date",
+			SIFTKeyFiltered: "bank_account_dimensions",
+			BatchKeyField:   "bank_account_no",
+			BatchKeyValue:   "no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "bank_account_no", Value: "no", ValueColumn: "no"},
+				{Type: tables.FlowFilterSet, Column: "dimension_1_code", Value: "dimension_1_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "dimension_2_code", Value: "dimension_2_filter", Kind: flowfilter.KindCode},
+			},
+		},
+		{
+			Field:           "net_change",
+			Formula:         "Sum",
+			Source:          BankAccountLedgerEntryTableName,
+			SourceField:     "amount",
+			SIFTKey:         "bank_account_date",
+			SIFTKeyFiltered: "bank_account_dimensions",
+			BatchKeyField:   "bank_account_no",
+			BatchKeyValue:   "no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "bank_account_no", Value: "no", ValueColumn: "no"},
+				{Type: tables.FlowFilterSet, Column: "dimension_1_code", Value: "dimension_1_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "dimension_2_code", Value: "dimension_2_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "posting_date", Value: "date_filter", Kind: flowfilter.KindDate},
+			},
+		},
+		{
+			Field:           "net_change_lcy",
+			Formula:         "Sum",
+			Source:          BankAccountLedgerEntryTableName,
+			SourceField:     "amount_lcy",
+			SIFTKey:         "bank_account_date",
+			SIFTKeyFiltered: "bank_account_dimensions",
+			BatchKeyField:   "bank_account_no",
+			BatchKeyValue:   "no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "bank_account_no", Value: "no", ValueColumn: "no"},
+				{Type: tables.FlowFilterSet, Column: "dimension_1_code", Value: "dimension_1_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "dimension_2_code", Value: "dimension_2_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "posting_date", Value: "date_filter", Kind: flowfilter.KindDate},
+			},
+		},
+		{
+			Field:           "balance_at_date",
+			Formula:         "Sum",
+			Source:          BankAccountLedgerEntryTableName,
+			SourceField:     "amount",
+			SIFTKey:         "bank_account_date",
+			SIFTKeyFiltered: "bank_account_dimensions",
+			BatchKeyField:   "bank_account_no",
+			BatchKeyValue:   "no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "bank_account_no", Value: "no", ValueColumn: "no"},
+				{Type: tables.FlowFilterSet, Column: "dimension_1_code", Value: "dimension_1_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "dimension_2_code", Value: "dimension_2_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "posting_date", Value: "date_filter", Kind: flowfilter.KindDate, UpperLimit: true},
+			},
+		},
+		{
+			Field:           "balance_at_date_lcy",
+			Formula:         "Sum",
+			Source:          BankAccountLedgerEntryTableName,
+			SourceField:     "amount_lcy",
+			SIFTKey:         "bank_account_date",
+			SIFTKeyFiltered: "bank_account_dimensions",
+			BatchKeyField:   "bank_account_no",
+			BatchKeyValue:   "no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "bank_account_no", Value: "no", ValueColumn: "no"},
+				{Type: tables.FlowFilterSet, Column: "dimension_1_code", Value: "dimension_1_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "dimension_2_code", Value: "dimension_2_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "posting_date", Value: "date_filter", Kind: flowfilter.KindDate, UpperLimit: true},
+			},
+		},
+		{
+			Field:           "debit_amount",
+			Formula:         "Sum",
+			Source:          BankAccountLedgerEntryTableName,
+			SourceField:     "debit_amount",
+			SIFTKey:         "bank_account_date",
+			SIFTKeyFiltered: "bank_account_dimensions",
+			BatchKeyField:   "bank_account_no",
+			BatchKeyValue:   "no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "bank_account_no", Value: "no", ValueColumn: "no"},
+				{Type: tables.FlowFilterSet, Column: "dimension_1_code", Value: "dimension_1_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "dimension_2_code", Value: "dimension_2_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "posting_date", Value: "date_filter", Kind: flowfilter.KindDate},
+			},
+		},
+		{
+			Field:           "credit_amount",
+			Formula:         "Sum",
+			Source:          BankAccountLedgerEntryTableName,
+			SourceField:     "credit_amount",
+			SIFTKey:         "bank_account_date",
+			SIFTKeyFiltered: "bank_account_dimensions",
+			BatchKeyField:   "bank_account_no",
+			BatchKeyValue:   "no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "bank_account_no", Value: "no", ValueColumn: "no"},
+				{Type: tables.FlowFilterSet, Column: "dimension_1_code", Value: "dimension_1_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "dimension_2_code", Value: "dimension_2_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "posting_date", Value: "date_filter", Kind: flowfilter.KindDate},
+			},
+		},
+		{
+			Field:           "debit_amount_lcy",
+			Formula:         "Sum",
+			Source:          BankAccountLedgerEntryTableName,
+			SourceField:     "debit_amount_lcy",
+			SIFTKey:         "bank_account_date",
+			SIFTKeyFiltered: "bank_account_dimensions",
+			BatchKeyField:   "bank_account_no",
+			BatchKeyValue:   "no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "bank_account_no", Value: "no", ValueColumn: "no"},
+				{Type: tables.FlowFilterSet, Column: "dimension_1_code", Value: "dimension_1_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "dimension_2_code", Value: "dimension_2_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "posting_date", Value: "date_filter", Kind: flowfilter.KindDate},
+			},
+		},
+		{
+			Field:           "credit_amount_lcy",
+			Formula:         "Sum",
+			Source:          BankAccountLedgerEntryTableName,
+			SourceField:     "credit_amount_lcy",
+			SIFTKey:         "bank_account_date",
+			SIFTKeyFiltered: "bank_account_dimensions",
+			BatchKeyField:   "bank_account_no",
+			BatchKeyValue:   "no",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "bank_account_no", Value: "no", ValueColumn: "no"},
+				{Type: tables.FlowFilterSet, Column: "dimension_1_code", Value: "dimension_1_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "dimension_2_code", Value: "dimension_2_filter", Kind: flowfilter.KindCode},
+				{Type: tables.FlowFilterSet, Column: "posting_date", Value: "date_filter", Kind: flowfilter.KindDate},
+			},
 		},
 	},
 	FlowFilters: []tables.FieldInfo{

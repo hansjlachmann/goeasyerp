@@ -23,14 +23,12 @@
 //	OnValidate_Adjusted_amt_lcy(rec *gtables.ExchRateAdjmtReg) error
 //	OnValidate_Adjusted_base_add_curr(rec *gtables.ExchRateAdjmtReg) error
 //	OnValidate_Adjusted_amt_add_curr(rec *gtables.ExchRateAdjmtReg) error
-
 package tables
 
 import (
 	"database/sql"
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -817,13 +815,22 @@ func (t *ExchRateAdjmtReg) Delete(runTrigger bool) bool {
 	return t.rec().Delete()
 }
 
-// CalcFields is a no-op for tables without FlowFields
-// Implemented for tables.Table interface compliance
+// ========================================
+// FlowField Calculations
+// ========================================
+
+// CalcFields calculates FlowField values
+// Usage:
+//
+//	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
+//	customer.CalcFields() - Calculate all FlowFields
 func (t *ExchRateAdjmtReg) CalcFields(fieldNames ...string) {
-	// This table has no FlowFields to calculate
 }
 
-// CalcFieldsForRecords is a no-op for tables without FlowFields
+// CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
+// one grouped query per FlowField instead of one query per record. records are
+// ToMap() results; each gets its FlowField values under the field name. With no
+// field names, all FlowFields are calculated.
 func (t *ExchRateAdjmtReg) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
 }
 
@@ -1142,79 +1149,7 @@ func (t *ExchRateAdjmtReg) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *ExchRateAdjmtReg) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, ExchRateAdjmtRegTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "no":
-			column = "no"
-		case "currency_factor":
-			column = "currency_factor"
-		case "adjusted_base":
-			column = "adjusted_base"
-		case "adjusted_base_lcy":
-			column = "adjusted_base_lcy"
-		case "adjusted_amt_lcy":
-			column = "adjusted_amt_lcy"
-		case "adjusted_base_add_curr":
-			column = "adjusted_base_add_curr"
-		case "adjusted_amt_add_curr":
-			column = "adjusted_amt_add_curr"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Exch_Rate_Adjmt_Reg", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Exch_Rate_Adjmt_Reg.%s: %w", column, err)
-		}
-		switch column {
-		case "no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Exch_Rate_Adjmt_Reg.%s: %w", column, err)
-			}
-			t.No = int(f)
-		case "currency_factor":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Exch_Rate_Adjmt_Reg.%s: %w", column, err)
-			}
-			t.Currency_factor = d
-		case "adjusted_base":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Exch_Rate_Adjmt_Reg.%s: %w", column, err)
-			}
-			t.Adjusted_base = d
-		case "adjusted_base_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Exch_Rate_Adjmt_Reg.%s: %w", column, err)
-			}
-			t.Adjusted_base_lcy = d
-		case "adjusted_amt_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Exch_Rate_Adjmt_Reg.%s: %w", column, err)
-			}
-			t.Adjusted_amt_lcy = d
-		case "adjusted_base_add_curr":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Exch_Rate_Adjmt_Reg.%s: %w", column, err)
-			}
-			t.Adjusted_base_add_curr = d
-		case "adjusted_amt_add_curr":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Exch_Rate_Adjmt_Reg.%s: %w", column, err)
-			}
-			t.Adjusted_amt_add_curr = d
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a

@@ -49,14 +49,12 @@
 //	OnValidate_Rounding_currency(rec *gtables.EntryApplication) error
 //	OnValidate_Applies_to_id(rec *gtables.EntryApplication) error
 //	OnValidate_Calculate_interest(rec *gtables.EntryApplication) error
-
 package tables
 
 import (
 	"database/sql"
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -996,13 +994,22 @@ func (t *EntryApplication) Delete(runTrigger bool) bool {
 	return t.rec().Delete()
 }
 
-// CalcFields is a no-op for tables without FlowFields
-// Implemented for tables.Table interface compliance
+// ========================================
+// FlowField Calculations
+// ========================================
+
+// CalcFields calculates FlowField values
+// Usage:
+//
+//	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
+//	customer.CalcFields() - Calculate all FlowFields
 func (t *EntryApplication) CalcFields(fieldNames ...string) {
-	// This table has no FlowFields to calculate
 }
 
-// CalcFieldsForRecords is a no-op for tables without FlowFields
+// CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
+// one grouped query per FlowField instead of one query per record. records are
+// ToMap() results; each gets its FlowField values under the field name. With no
+// field names, all FlowFields are calculated.
 func (t *EntryApplication) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
 }
 
@@ -1321,199 +1328,7 @@ func (t *EntryApplication) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *EntryApplication) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, EntryApplicationTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "entry_no":
-			column = "entry_no"
-		case "application_no":
-			column = "application_no"
-		case "ledger_entry_no":
-			column = "ledger_entry_no"
-		case "amount_applied":
-			column = "amount_applied"
-		case "transaction_no":
-			column = "transaction_no"
-		case "unapplied_transaction_no":
-			column = "unapplied_transaction_no"
-		case "amount":
-			column = "amount"
-		case "amount_lcy":
-			column = "amount_lcy"
-		case "original_amount_lcy":
-			column = "original_amount_lcy"
-		case "remaining_amount":
-			column = "remaining_amount"
-		case "remaining_amt_lcy":
-			column = "remaining_amt_lcy"
-		case "debit_amount":
-			column = "debit_amount"
-		case "credit_amount":
-			column = "credit_amount"
-		case "debit_amount_lcy":
-			column = "debit_amount_lcy"
-		case "credit_amount_lcy":
-			column = "credit_amount_lcy"
-		case "closed_by_entry_no":
-			column = "closed_by_entry_no"
-		case "closed_by_amount":
-			column = "closed_by_amount"
-		case "closed_by_amount_lcy":
-			column = "closed_by_amount_lcy"
-		case "closed_by_currency_amount":
-			column = "closed_by_currency_amount"
-		case "pmt_disc_lcy":
-			column = "pmt_disc_lcy"
-		case "rounding_amount":
-			column = "rounding_amount"
-		case "rounding_amount_lcy":
-			column = "rounding_amount_lcy"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Entry_Application", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Entry_Application.%s: %w", column, err)
-		}
-		switch column {
-		case "entry_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Entry_Application.%s: %w", column, err)
-			}
-			t.Entry_no = int(f)
-		case "application_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Entry_Application.%s: %w", column, err)
-			}
-			t.Application_no = int(f)
-		case "ledger_entry_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Entry_Application.%s: %w", column, err)
-			}
-			t.Ledger_entry_no = int(f)
-		case "amount_applied":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Entry_Application.%s: %w", column, err)
-			}
-			t.Amount_applied = d
-		case "transaction_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Entry_Application.%s: %w", column, err)
-			}
-			t.Transaction_no = int(f)
-		case "unapplied_transaction_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Entry_Application.%s: %w", column, err)
-			}
-			t.Unapplied_transaction_no = int(f)
-		case "amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Entry_Application.%s: %w", column, err)
-			}
-			t.Amount = d
-		case "amount_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Entry_Application.%s: %w", column, err)
-			}
-			t.Amount_lcy = d
-		case "original_amount_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Entry_Application.%s: %w", column, err)
-			}
-			t.Original_amount_lcy = d
-		case "remaining_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Entry_Application.%s: %w", column, err)
-			}
-			t.Remaining_amount = d
-		case "remaining_amt_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Entry_Application.%s: %w", column, err)
-			}
-			t.Remaining_amt_lcy = d
-		case "debit_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Entry_Application.%s: %w", column, err)
-			}
-			t.Debit_amount = d
-		case "credit_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Entry_Application.%s: %w", column, err)
-			}
-			t.Credit_amount = d
-		case "debit_amount_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Entry_Application.%s: %w", column, err)
-			}
-			t.Debit_amount_lcy = d
-		case "credit_amount_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Entry_Application.%s: %w", column, err)
-			}
-			t.Credit_amount_lcy = d
-		case "closed_by_entry_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Entry_Application.%s: %w", column, err)
-			}
-			t.Closed_by_entry_no = int(f)
-		case "closed_by_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Entry_Application.%s: %w", column, err)
-			}
-			t.Closed_by_amount = d
-		case "closed_by_amount_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Entry_Application.%s: %w", column, err)
-			}
-			t.Closed_by_amount_lcy = d
-		case "closed_by_currency_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Entry_Application.%s: %w", column, err)
-			}
-			t.Closed_by_currency_amount = d
-		case "pmt_disc_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Entry_Application.%s: %w", column, err)
-			}
-			t.Pmt_disc_lcy = d
-		case "rounding_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Entry_Application.%s: %w", column, err)
-			}
-			t.Rounding_amount = d
-		case "rounding_amount_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Entry_Application.%s: %w", column, err)
-			}
-			t.Rounding_amount_lcy = d
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a

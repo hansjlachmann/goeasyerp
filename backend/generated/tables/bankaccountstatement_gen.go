@@ -17,7 +17,6 @@
 //	OnValidate_Statement_ending_balance(rec *gtables.BankAccountStatement) error
 //	OnValidate_Statement_date(rec *gtables.BankAccountStatement) error
 //	OnValidate_Balance_last_statement(rec *gtables.BankAccountStatement) error
-
 package tables
 
 import (
@@ -741,13 +740,22 @@ func (t *BankAccountStatement) Delete(runTrigger bool) bool {
 	return t.rec().Delete()
 }
 
-// CalcFields is a no-op for tables without FlowFields
-// Implemented for tables.Table interface compliance
+// ========================================
+// FlowField Calculations
+// ========================================
+
+// CalcFields calculates FlowField values
+// Usage:
+//
+//	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
+//	customer.CalcFields() - Calculate all FlowFields
 func (t *BankAccountStatement) CalcFields(fieldNames ...string) {
-	// This table has no FlowFields to calculate
 }
 
-// CalcFieldsForRecords is a no-op for tables without FlowFields
+// CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
+// one grouped query per FlowField instead of one query per record. records are
+// ToMap() results; each gets its FlowField values under the field name. With no
+// field names, all FlowFields are calculated.
 func (t *BankAccountStatement) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
 }
 
@@ -1066,39 +1074,7 @@ func (t *BankAccountStatement) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *BankAccountStatement) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, BankAccountStatementTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "statement_ending_balance":
-			column = "statement_ending_balance"
-		case "balance_last_statement":
-			column = "balance_last_statement"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Bank_Account_Statement", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Bank_Account_Statement.%s: %w", column, err)
-		}
-		switch column {
-		case "statement_ending_balance":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Bank_Account_Statement.%s: %w", column, err)
-			}
-			t.Statement_ending_balance = d
-		case "balance_last_statement":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Bank_Account_Statement.%s: %w", column, err)
-			}
-			t.Balance_last_statement = d
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a

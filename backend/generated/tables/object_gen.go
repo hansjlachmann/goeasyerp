@@ -16,14 +16,12 @@
 //	OnValidate_Id(rec *gtables.Object) error
 //	OnValidate_Name(rec *gtables.Object) error
 //	OnValidate_Runnable(rec *gtables.Object) error
-
 package tables
 
 import (
 	"database/sql"
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -858,25 +856,7 @@ func (t *Object) Delete(runTrigger bool) bool {
 //	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
 //	customer.CalcFields() - Calculate all FlowFields
 func (t *Object) CalcFields(fieldNames ...string) {
-	// If no field names specified, calculate all FlowFields
-	if len(fieldNames) == 0 {
-		t.calcFlowField_caption()
-		return
-	}
-
-	// Calculate only specified fields
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "caption":
-			t.calcFlowField_caption()
-		}
-	}
-}
-
-// calcFlowField_caption calculates the caption FlowField
-// CalcFormula: Lookup(Object_Translation.object_name)
-func (t *Object) calcFlowField_caption() {
-	t.Caption = t.calcLookup_caption()
+	t.flow().CalcFields(fieldNames)
 }
 
 // CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
@@ -884,56 +864,42 @@ func (t *Object) calcFlowField_caption() {
 // ToMap() results; each gets its FlowField values under the field name. With no
 // field names, all FlowFields are calculated.
 func (t *Object) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
-	if len(records) == 0 {
-		return
-	}
-	if len(fieldNames) == 0 {
-		fieldNames = t.GetFlowFields()
-	}
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "caption":
-			t.calcForRecords_caption(records)
-		}
+	t.flow().CalcFieldsForRecords(records, fieldNames)
+}
+
+// flow is what the FlowField functions of foundation/tables need of the record
+func (t *Object) flow() *tables.FlowRec {
+	return &tables.FlowRec{
+		Fields:     objectFields,
+		Ref:        t.fieldRef,
+		FlowFilter: t.flowFilterRef,
+		DB:         t.db,
+		Company:    t.company,
+		Postgres:   t.dbType == database.DBTypePostgres,
+		Outer:      "\"" + ObjectTableName + "\"",
+		One:        t.flowFieldOf,
 	}
 }
 
-// calcForRecords_caption calculates the caption FlowField for a set of records
-// CalcFormula: Lookup(Object_Translation.object_name)
-func (t *Object) calcForRecords_caption(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &Object{db: t.db, company: t.company, dbType: t.dbType}
-		r.FromMap(rec)
-		r.calcFlowField_caption()
-		rec["caption"] = r.Caption
+// flowFieldOf calculates a FlowField for one record of a list (a record from the map, with
+// this record's FlowFilters), in its map form
+func (t *Object) flowFieldOf(rec map[string]any, flowField int) any {
+	one := &Object{}
+	one.InitWithDBType(t.db, t.company, t.dbType)
+	for i := range objectFields.FlowFilters {
+		*one.flowFilterRef(i) = *t.flowFilterRef(i)
 	}
+	one.FromMap(rec)
+	f := one.flow()
+	f.Calc(flowField)
+	return f.MapValue(flowField)
 }
 
-// Helper methods for FlowField calculations
-
-// calcLookup_caption reads Object_Translation.object_name of the first record matching the
-// flow filters (CalcFormula Lookup); blank when there is none
-func (t *Object) calcLookup_caption() types.Text {
-	tableName := ObjectTranslationTableName
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "object_type = ?")
-	args = append(args, t.Type)
-	whereClauses = append(whereClauses, "object_id = ?")
-	args = append(args, t.Id)
-	whereClauses = append(whereClauses, "language_id = ?")
-	args = append(args, i18n.SessionLanguageID())
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
+// flowFilterRef returns a pointer to the FlowFilter field with index i in objectFields.FlowFilters
+func (t *Object) flowFilterRef(i int) *string {
+	switch i {
 	}
-	query := t.convertPlaceholders(fmt.Sprintf(`SELECT object_name FROM "%s" WHERE %s LIMIT 1`, tableName, whereClause), len(args))
-	var value sql.NullString
-	if err := t.db.QueryRow(query, args...).Scan(&value); err != nil && err != sql.ErrNoRows {
-		fmt.Printf("Error: Failed to look up caption: %v\n", err)
-	}
-	return types.NewText(value.String)
+	return nil
 }
 
 // ========================================
@@ -1251,31 +1217,7 @@ func (t *Object) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *Object) CalcSums(fieldNames ...string) error {
-	tableName := ObjectTableName
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "id":
-			column = "id"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Object", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Object.%s: %w", column, err)
-		}
-		switch column {
-		case "id":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Object.%s: %w", column, err)
-			}
-			t.Id = int(f)
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a
@@ -1719,6 +1661,20 @@ var objectFields = &tables.TableFields{
 			},
 			Kind:    tables.KindText,
 			Trigger: "OnValidate_Caption",
+		},
+	},
+	FlowFields: []tables.FlowFieldMeta{
+		{
+			Field:        "caption",
+			Formula:      "Lookup",
+			Source:       ObjectTranslationTableName,
+			SourceGlobal: true,
+			SourceField:  "object_name",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "object_type", Value: "type", ValueColumn: "type"},
+				{Type: tables.FlowFieldValue, Column: "object_id", Value: "id", ValueColumn: "id"},
+				{Type: tables.FlowConst, Column: "language_id", Language: true},
+			},
 		},
 	},
 }

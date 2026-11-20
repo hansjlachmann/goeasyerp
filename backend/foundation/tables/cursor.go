@@ -88,7 +88,7 @@ func (c *Cursor) LimitClause() string {
 // CloseRows closes the open result set (FindSet)
 func (c *Cursor) CloseRows() {
 	if c.rows != nil {
-		c.rows.Close()
+		_ = c.rows.Close()
 		c.rows = nil
 	}
 }
@@ -201,7 +201,7 @@ func (r *Rec) FindSetBuffered() bool {
 		fmt.Printf("Error: Failed to execute FindSetBuffered for %s: %v\n", r.Fields.Table, err)
 		return false
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	// each row is read into the record and its values kept; the record gets its own values
 	// back when a row cannot be read

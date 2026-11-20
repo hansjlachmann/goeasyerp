@@ -43,14 +43,12 @@
 //	OnValidate_Expiration_date(rec *gtables.ResJournalLine) error
 //	OnValidate_Recurring_frequency(rec *gtables.ResJournalLine) error
 //	OnValidate_Project_no(rec *gtables.ResJournalLine) error
-
 package tables
 
 import (
 	"database/sql"
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -1034,13 +1032,22 @@ func (t *ResJournalLine) Delete(runTrigger bool) bool {
 	return t.rec().Delete()
 }
 
-// CalcFields is a no-op for tables without FlowFields
-// Implemented for tables.Table interface compliance
+// ========================================
+// FlowField Calculations
+// ========================================
+
+// CalcFields calculates FlowField values
+// Usage:
+//
+//	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
+//	customer.CalcFields() - Calculate all FlowFields
 func (t *ResJournalLine) CalcFields(fieldNames ...string) {
-	// This table has no FlowFields to calculate
 }
 
-// CalcFieldsForRecords is a no-op for tables without FlowFields
+// CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
+// one grouped query per FlowField instead of one query per record. records are
+// ToMap() results; each gets its FlowField values under the field name. With no
+// field names, all FlowFields are calculated.
 func (t *ResJournalLine) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
 }
 
@@ -1359,79 +1366,7 @@ func (t *ResJournalLine) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *ResJournalLine) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, ResJournalLineTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "line_no":
-			column = "line_no"
-		case "quantity":
-			column = "quantity"
-		case "direct_unit_cost":
-			column = "direct_unit_cost"
-		case "unit_cost":
-			column = "unit_cost"
-		case "total_cost":
-			column = "total_cost"
-		case "unit_price":
-			column = "unit_price"
-		case "total_price":
-			column = "total_price"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Res_Journal_Line", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Res_Journal_Line.%s: %w", column, err)
-		}
-		switch column {
-		case "line_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Res_Journal_Line.%s: %w", column, err)
-			}
-			t.Line_no = int(f)
-		case "quantity":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Res_Journal_Line.%s: %w", column, err)
-			}
-			t.Quantity = d
-		case "direct_unit_cost":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Res_Journal_Line.%s: %w", column, err)
-			}
-			t.Direct_unit_cost = d
-		case "unit_cost":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Res_Journal_Line.%s: %w", column, err)
-			}
-			t.Unit_cost = d
-		case "total_cost":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Res_Journal_Line.%s: %w", column, err)
-			}
-			t.Total_cost = d
-		case "unit_price":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Res_Journal_Line.%s: %w", column, err)
-			}
-			t.Unit_price = d
-		case "total_price":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Res_Journal_Line.%s: %w", column, err)
-			}
-			t.Total_price = d
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a

@@ -15,7 +15,6 @@
 //	OnValidate_Code(rec *gtables.ItemSalesQtyDisc) error
 //	OnValidate_Minimum_quantity(rec *gtables.ItemSalesQtyDisc) error
 //	OnValidate_Discount_percent(rec *gtables.ItemSalesQtyDisc) error
-
 package tables
 
 import (
@@ -729,13 +728,22 @@ func (t *ItemSalesQtyDisc) Delete(runTrigger bool) bool {
 	return t.rec().Delete()
 }
 
-// CalcFields is a no-op for tables without FlowFields
-// Implemented for tables.Table interface compliance
+// ========================================
+// FlowField Calculations
+// ========================================
+
+// CalcFields calculates FlowField values
+// Usage:
+//
+//	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
+//	customer.CalcFields() - Calculate all FlowFields
 func (t *ItemSalesQtyDisc) CalcFields(fieldNames ...string) {
-	// This table has no FlowFields to calculate
 }
 
-// CalcFieldsForRecords is a no-op for tables without FlowFields
+// CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
+// one grouped query per FlowField instead of one query per record. records are
+// ToMap() results; each gets its FlowField values under the field name. With no
+// field names, all FlowFields are calculated.
 func (t *ItemSalesQtyDisc) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
 }
 
@@ -1054,39 +1062,7 @@ func (t *ItemSalesQtyDisc) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *ItemSalesQtyDisc) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, ItemSalesQtyDiscTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "minimum_quantity":
-			column = "minimum_quantity"
-		case "discount_percent":
-			column = "discount_percent"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Item_Sales_Qty_Disc", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Item_Sales_Qty_Disc.%s: %w", column, err)
-		}
-		switch column {
-		case "minimum_quantity":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Sales_Qty_Disc.%s: %w", column, err)
-			}
-			t.Minimum_quantity = d
-		case "discount_percent":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Sales_Qty_Disc.%s: %w", column, err)
-			}
-			t.Discount_percent = d
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a

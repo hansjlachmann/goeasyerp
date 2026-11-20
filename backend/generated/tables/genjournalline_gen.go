@@ -118,14 +118,12 @@
 //	OnValidate_Index_entry(rec *gtables.GenJournalLine) error
 //	OnValidate_Project_no(rec *gtables.GenJournalLine) error
 //	OnValidate_Eu_3_party_trade(rec *gtables.GenJournalLine) error
-
 package tables
 
 import (
 	"database/sql"
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -1982,25 +1980,7 @@ func (t *GenJournalLine) Delete(runTrigger bool) bool {
 //	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
 //	customer.CalcFields() - Calculate all FlowFields
 func (t *GenJournalLine) CalcFields(fieldNames ...string) {
-	// If no field names specified, calculate all FlowFields
-	if len(fieldNames) == 0 {
-		t.calcFlowField_allocated_amt_lcy()
-		return
-	}
-
-	// Calculate only specified fields
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "allocated_amt_lcy":
-			t.calcFlowField_allocated_amt_lcy()
-		}
-	}
-}
-
-// calcFlowField_allocated_amt_lcy calculates the allocated_amt_lcy FlowField
-// CalcFormula: Sum(GenJnlAllocation.amount)
-func (t *GenJournalLine) calcFlowField_allocated_amt_lcy() {
-	t.Allocated_amt_lcy = t.calcSum_allocated_amt_lcy()
+	t.flow().CalcFields(fieldNames)
 }
 
 // CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
@@ -2008,69 +1988,42 @@ func (t *GenJournalLine) calcFlowField_allocated_amt_lcy() {
 // ToMap() results; each gets its FlowField values under the field name. With no
 // field names, all FlowFields are calculated.
 func (t *GenJournalLine) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
-	if len(records) == 0 {
-		return
-	}
-	if len(fieldNames) == 0 {
-		fieldNames = t.GetFlowFields()
-	}
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "allocated_amt_lcy":
-			t.calcForRecords_allocated_amt_lcy(records)
-		}
+	t.flow().CalcFieldsForRecords(records, fieldNames)
+}
+
+// flow is what the FlowField functions of foundation/tables need of the record
+func (t *GenJournalLine) flow() *tables.FlowRec {
+	return &tables.FlowRec{
+		Fields:     genJournalLineFields,
+		Ref:        t.fieldRef,
+		FlowFilter: t.flowFilterRef,
+		DB:         t.db,
+		Company:    t.company,
+		Postgres:   t.dbType == database.DBTypePostgres,
+		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, GenJournalLineTableName) + "\"",
+		One:        t.flowFieldOf,
 	}
 }
 
-// calcForRecords_allocated_amt_lcy calculates the allocated_amt_lcy FlowField for a set of records
-// CalcFormula: Sum(GenJnlAllocation.amount)
-func (t *GenJournalLine) calcForRecords_allocated_amt_lcy(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &GenJournalLine{db: t.db, company: t.company, dbType: t.dbType}
-		r.FromMap(rec)
-		r.calcFlowField_allocated_amt_lcy()
-		rec["allocated_amt_lcy"] = r.Allocated_amt_lcy.String()
+// flowFieldOf calculates a FlowField for one record of a list (a record from the map, with
+// this record's FlowFilters), in its map form
+func (t *GenJournalLine) flowFieldOf(rec map[string]any, flowField int) any {
+	one := &GenJournalLine{}
+	one.InitWithDBType(t.db, t.company, t.dbType)
+	for i := range genJournalLineFields.FlowFilters {
+		*one.flowFilterRef(i) = *t.flowFilterRef(i)
 	}
+	one.FromMap(rec)
+	f := one.flow()
+	f.Calc(flowField)
+	return f.MapValue(flowField)
 }
 
-// Helper methods for FlowField calculations
-
-func (t *GenJournalLine) calcSum_allocated_amt_lcy() types.Decimal {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, GenJnlAllocationTableName), false
-	tableName, useSIFT = sift.TableName(t.company, GenJnlAllocationTableName, "Primary"), true
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "journal_template_name = ?")
-	args = append(args, t.Journal_template_name)
-	whereClauses = append(whereClauses, "journal_batch_name = ?")
-	args = append(args, t.Journal_batch_name)
-	whereClauses = append(whereClauses, "journal_line_no = ?")
-	args = append(args, t.Line_no)
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
+// flowFilterRef returns a pointer to the FlowFilter field with index i in genJournalLineFields.FlowFilters
+func (t *GenJournalLine) flowFilterRef(i int) *string {
+	switch i {
 	}
-
-	query := fmt.Sprintf(`SELECT COALESCE(SUM(amount), 0) FROM "%s" WHERE %s`, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var sumStr string
-	err := t.db.QueryRow(query, args...).Scan(&sumStr)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate sum for allocated_amt_lcy: %v\n", err)
-		return types.ZeroDecimal()
-	}
-
-	sum, _ := types.NewDecimalFromString(sumStr)
-	return sum
+	return nil
 }
 
 // ========================================
@@ -2108,38 +2061,14 @@ func (t *GenJournalLine) SetFilter(fieldName, filterExpr string) {
 // FlowFieldFilterKind reports whether a list can be filtered on FlowField field (Sum and
 // Count FlowFields: SETFILTER on a FlowField) and the kind of its values.
 func (t *GenJournalLine) FlowFieldFilterKind(field string) (flowfilter.Kind, bool) {
-	switch strings.ToLower(field) {
-	case "allocated_amt_lcy":
-		return flowfilter.KindDecimal, true
-	}
-	return "", false
+	return genJournalLineFields.FlowFieldFilterKind(field)
 }
 
 // flowFieldExpr is the SQL expression computing FlowField field for each row of a query
 // on this table: a correlated subquery reading the source like CalcFieldsForRecords (the
 // SIFT totals of a covering key, else the entries), with the FlowFilters set on t.
 func (t *GenJournalLine) flowFieldExpr(field string) (string, []interface{}) {
-	outer := "\"" + fmt.Sprintf("%s$%s", t.company, GenJournalLineTableName) + "\""
-	_ = outer
-	switch strings.ToLower(field) {
-	case "allocated_amt_lcy":
-		// Source: the SIFT totals table of a key covering the filters, else the entries
-		tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, GenJnlAllocationTableName), false
-		tableName, useSIFT = sift.TableName(t.company, GenJnlAllocationTableName, "Primary"), true
-		_ = useSIFT
-		var whereClauses []string
-		var args []interface{}
-		whereClauses = append(whereClauses, "journal_template_name = "+outer+".journal_template_name")
-		whereClauses = append(whereClauses, "journal_batch_name = "+outer+".journal_batch_name")
-		whereClauses = append(whereClauses, "journal_line_no = "+outer+".line_no")
-		where := "1=1"
-		if len(whereClauses) > 0 {
-			where = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COALESCE(SUM(amount), 0)"
-		return "(SELECT " + agg + " FROM \"" + tableName + "\" WHERE " + where + ")", args
-	}
-	return "NULL", nil
+	return t.flow().Expr(field)
 }
 
 // SetCurrentKey sets the sort order for queries
@@ -2427,255 +2356,7 @@ func (t *GenJournalLine) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *GenJournalLine) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, GenJournalLineTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "line_no":
-			column = "line_no"
-		case "tax_percent":
-			column = "tax_percent"
-		case "amount":
-			column = "amount"
-		case "debit_amount":
-			column = "debit_amount"
-		case "credit_amount":
-			column = "credit_amount"
-		case "amount_lcy":
-			column = "amount_lcy"
-		case "balance_lcy":
-			column = "balance_lcy"
-		case "currency_factor":
-			column = "currency_factor"
-		case "sales_purch_lcy":
-			column = "sales_purch_lcy"
-		case "profit_lcy":
-			column = "profit_lcy"
-		case "inv_discount_lcy":
-			column = "inv_discount_lcy"
-		case "payment_discount_percent":
-			column = "payment_discount_percent"
-		case "quantity":
-			column = "quantity"
-		case "tax_amount":
-			column = "tax_amount"
-		case "bal_tax_percent":
-			column = "bal_tax_percent"
-		case "bal_tax_amount":
-			column = "bal_tax_amount"
-		case "tax_base_amount":
-			column = "tax_base_amount"
-		case "bal_tax_base_amount":
-			column = "bal_tax_base_amount"
-		case "source_currency_amount":
-			column = "source_currency_amount"
-		case "source_curr_tax_base_amount":
-			column = "source_curr_tax_base_amount"
-		case "fa_add_currency_factor":
-			column = "fa_add_currency_factor"
-		case "source_curr_tax_amount":
-			column = "source_curr_tax_amount"
-		case "tax_amount_lcy":
-			column = "tax_amount_lcy"
-		case "tax_base_amount_lcy":
-			column = "tax_base_amount_lcy"
-		case "bal_tax_amount_lcy":
-			column = "bal_tax_amount_lcy"
-		case "bal_tax_base_amount_lcy":
-			column = "bal_tax_base_amount_lcy"
-		case "salvage_value":
-			column = "salvage_value"
-		case "no_of_depreciation_days":
-			column = "no_of_depreciation_days"
-		case "fa_error_entry_no":
-			column = "fa_error_entry_no"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Gen_Journal_Line", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
-		}
-		switch column {
-		case "line_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
-			}
-			t.Line_no = int(f)
-		case "tax_percent":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
-			}
-			t.Tax_percent = d
-		case "amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
-			}
-			t.Amount = d
-		case "debit_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
-			}
-			t.Debit_amount = d
-		case "credit_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
-			}
-			t.Credit_amount = d
-		case "amount_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
-			}
-			t.Amount_lcy = d
-		case "balance_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
-			}
-			t.Balance_lcy = d
-		case "currency_factor":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
-			}
-			t.Currency_factor = d
-		case "sales_purch_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
-			}
-			t.Sales_purch_lcy = d
-		case "profit_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
-			}
-			t.Profit_lcy = d
-		case "inv_discount_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
-			}
-			t.Inv_discount_lcy = d
-		case "payment_discount_percent":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
-			}
-			t.Payment_discount_percent = d
-		case "quantity":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
-			}
-			t.Quantity = d
-		case "tax_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
-			}
-			t.Tax_amount = d
-		case "bal_tax_percent":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
-			}
-			t.Bal_tax_percent = d
-		case "bal_tax_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
-			}
-			t.Bal_tax_amount = d
-		case "tax_base_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
-			}
-			t.Tax_base_amount = d
-		case "bal_tax_base_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
-			}
-			t.Bal_tax_base_amount = d
-		case "source_currency_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
-			}
-			t.Source_currency_amount = d
-		case "source_curr_tax_base_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
-			}
-			t.Source_curr_tax_base_amount = d
-		case "fa_add_currency_factor":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
-			}
-			t.Fa_add_currency_factor = d
-		case "source_curr_tax_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
-			}
-			t.Source_curr_tax_amount = d
-		case "tax_amount_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
-			}
-			t.Tax_amount_lcy = d
-		case "tax_base_amount_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
-			}
-			t.Tax_base_amount_lcy = d
-		case "bal_tax_amount_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
-			}
-			t.Bal_tax_amount_lcy = d
-		case "bal_tax_base_amount_lcy":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
-			}
-			t.Bal_tax_base_amount_lcy = d
-		case "salvage_value":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
-			}
-			t.Salvage_value = d
-		case "no_of_depreciation_days":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
-			}
-			t.No_of_depreciation_days = int(f)
-		case "fa_error_entry_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Gen_Journal_Line.%s: %w", column, err)
-			}
-			t.Fa_error_entry_no = int(f)
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a
@@ -4959,6 +4640,20 @@ var genJournalLineFields = &tables.TableFields{
 			},
 			Kind:    tables.KindBool,
 			Trigger: "OnValidate_Eu_3_party_trade",
+		},
+	},
+	FlowFields: []tables.FlowFieldMeta{
+		{
+			Field:       "allocated_amt_lcy",
+			Formula:     "Sum",
+			Source:      GenJnlAllocationTableName,
+			SourceField: "amount",
+			SIFTKey:     "Primary",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "journal_template_name", Value: "journal_template_name", ValueColumn: "journal_template_name"},
+				{Type: tables.FlowFieldValue, Column: "journal_batch_name", Value: "journal_batch_name", ValueColumn: "journal_batch_name"},
+				{Type: tables.FlowFieldValue, Column: "journal_line_no", Value: "line_no", ValueColumn: "line_no"},
+			},
 		},
 	},
 }

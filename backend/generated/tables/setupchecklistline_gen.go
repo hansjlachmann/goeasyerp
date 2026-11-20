@@ -23,14 +23,12 @@
 //	OnValidate_Responsible_id(rec *gtables.SetupChecklistLine) error
 //	OnValidate_Status(rec *gtables.SetupChecklistLine) error
 //	OnValidate_Application_area_id(rec *gtables.SetupChecklistLine) error
-
 package tables
 
 import (
 	"database/sql"
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -856,34 +854,7 @@ func (t *SetupChecklistLine) Delete(runTrigger bool) bool {
 //	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
 //	customer.CalcFields() - Calculate all FlowFields
 func (t *SetupChecklistLine) CalcFields(fieldNames ...string) {
-	// If no field names specified, calculate all FlowFields
-	if len(fieldNames) == 0 {
-		t.calcFlowField_comments()
-		t.calcFlowField_application_area_name()
-		return
-	}
-
-	// Calculate only specified fields
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "comments":
-			t.calcFlowField_comments()
-		case "application_area_name":
-			t.calcFlowField_application_area_name()
-		}
-	}
-}
-
-// calcFlowField_comments calculates the comments FlowField
-// CalcFormula: Exist(SetupChecklistComment.line_no)
-func (t *SetupChecklistLine) calcFlowField_comments() {
-	t.Comments = t.calcCount_comments() > 0
-}
-
-// calcFlowField_application_area_name calculates the application_area_name FlowField
-// CalcFormula: Lookup(ApplicationAreaLine.name)
-func (t *SetupChecklistLine) calcFlowField_application_area_name() {
-	t.Application_area_name = t.calcLookup_application_area_name()
+	t.flow().CalcFields(fieldNames)
 }
 
 // CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
@@ -891,156 +862,42 @@ func (t *SetupChecklistLine) calcFlowField_application_area_name() {
 // ToMap() results; each gets its FlowField values under the field name. With no
 // field names, all FlowFields are calculated.
 func (t *SetupChecklistLine) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
-	if len(records) == 0 {
-		return
-	}
-	if len(fieldNames) == 0 {
-		fieldNames = t.GetFlowFields()
-	}
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "comments":
-			t.calcForRecords_comments(records)
-		case "application_area_name":
-			t.calcForRecords_application_area_name(records)
-		}
+	t.flow().CalcFieldsForRecords(records, fieldNames)
+}
+
+// flow is what the FlowField functions of foundation/tables need of the record
+func (t *SetupChecklistLine) flow() *tables.FlowRec {
+	return &tables.FlowRec{
+		Fields:     setupChecklistLineFields,
+		Ref:        t.fieldRef,
+		FlowFilter: t.flowFilterRef,
+		DB:         t.db,
+		Company:    t.company,
+		Postgres:   t.dbType == database.DBTypePostgres,
+		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, SetupChecklistLineTableName) + "\"",
+		One:        t.flowFieldOf,
 	}
 }
 
-// calcForRecords_comments calculates the comments FlowField for a set of records
-// CalcFormula: Exist(SetupChecklistComment.line_no)
-func (t *SetupChecklistLine) calcForRecords_comments(records []map[string]interface{}) {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SetupChecklistCommentTableName), false
-	_ = useSIFT
-
-	// Distinct key values of the records
-	seen := make(map[string]bool, len(records))
-	var keys []interface{}
-	for _, rec := range records {
-		k := fmt.Sprint(rec["table_id"])
-		if !seen[k] {
-			seen[k] = true
-			keys = append(keys, rec["table_id"])
-		}
+// flowFieldOf calculates a FlowField for one record of a list (a record from the map, with
+// this record's FlowFilters), in its map form
+func (t *SetupChecklistLine) flowFieldOf(rec map[string]any, flowField int) any {
+	one := &SetupChecklistLine{}
+	one.InitWithDBType(t.db, t.company, t.dbType)
+	for i := range setupChecklistLineFields.FlowFilters {
+		*one.flowFilterRef(i) = *t.flowFilterRef(i)
 	}
-
-	// One grouped query for the keys (IN list). With more keys than chunkSize (a long
-	// list) one grouped query over the whole source table instead: much cheaper than
-	// many IN queries, and it keeps the bind parameters bounded.
-	values := make(map[string]int, len(keys))
-	const chunkSize = 500
-	chunks := [][]interface{}{nil} // nil chunk: no IN filter, all keys
-	if len(keys) <= chunkSize {
-		chunks = [][]interface{}{keys}
-	}
-	for _, chunk := range chunks {
-
-		var whereClauses []string
-		var args []interface{}
-		if chunk != nil {
-			whereClauses = append(whereClauses, "table_id IN ("+strings.TrimSuffix(strings.Repeat("?, ", len(chunk)), ", ")+")")
-			args = append(args, chunk...)
-		}
-		whereClause := "1=1"
-		if len(whereClauses) > 0 {
-			whereClause = strings.Join(whereClauses, " AND ")
-		}
-		agg := "COUNT(*)"
-		if useSIFT {
-			agg = "COALESCE(SUM(cnt), 0)" // the totals hold the entry count per key value
-		}
-		query := fmt.Sprintf(`SELECT table_id, %s FROM "%s" WHERE %s GROUP BY table_id`, agg, tableName, whereClause)
-		query = t.convertPlaceholders(query, len(args))
-
-		rows, err := t.db.Query(query, args...)
-		if err != nil {
-			fmt.Printf("Error: Failed to calculate comments: %v\n", err)
-			return
-		}
-		for rows.Next() {
-			var key string
-			var count int
-			if err := rows.Scan(&key, &count); err == nil {
-				values[key] = count
-			}
-		}
-		_ = rows.Close()
-	}
-
-	// Records without matching entries get zero
-	for _, rec := range records {
-		rec["comments"] = values[fmt.Sprint(rec["table_id"])] > 0
-	}
+	one.FromMap(rec)
+	f := one.flow()
+	f.Calc(flowField)
+	return f.MapValue(flowField)
 }
 
-// calcForRecords_application_area_name calculates the application_area_name FlowField for a set of records
-// CalcFormula: Lookup(ApplicationAreaLine.name)
-func (t *SetupChecklistLine) calcForRecords_application_area_name(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &SetupChecklistLine{db: t.db, company: t.company, dbType: t.dbType}
-		r.FromMap(rec)
-		r.calcFlowField_application_area_name()
-		rec["application_area_name"] = r.Application_area_name
+// flowFilterRef returns a pointer to the FlowFilter field with index i in setupChecklistLineFields.FlowFilters
+func (t *SetupChecklistLine) flowFilterRef(i int) *string {
+	switch i {
 	}
-}
-
-// Helper methods for FlowField calculations
-
-func (t *SetupChecklistLine) calcCount_comments() int {
-	// Source: the SIFT totals table of a key covering the filters, else the entries
-	tableName, useSIFT := fmt.Sprintf("%s$%s", t.company, SetupChecklistCommentTableName), false
-	_ = useSIFT
-
-	// Build WHERE clause from FlowFilters
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "table_id = ?")
-	args = append(args, t.Table_id)
-
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-
-	agg := "COUNT(*)"
-	if useSIFT {
-		agg = "COALESCE(SUM(cnt), 0)" // the totals hold the entry count per key value
-	}
-	query := fmt.Sprintf(`SELECT %s FROM "%s" WHERE %s`, agg, tableName, whereClause)
-
-	// Convert placeholders for PostgreSQL
-	query = t.convertPlaceholders(query, len(args))
-
-	var count int
-	err := t.db.QueryRow(query, args...).Scan(&count)
-	if err != nil {
-		fmt.Printf("Error: Failed to calculate count for comments: %v\n", err)
-		return 0
-	}
-
-	return count
-}
-
-// calcLookup_application_area_name reads ApplicationAreaLine.name of the first record matching the
-// flow filters (CalcFormula Lookup); blank when there is none
-func (t *SetupChecklistLine) calcLookup_application_area_name() types.Text {
-	tableName := fmt.Sprintf("%s$%s", t.company, ApplicationAreaLineTableName)
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "id = ?")
-	args = append(args, t.Application_area_id)
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-	query := t.convertPlaceholders(fmt.Sprintf(`SELECT name FROM "%s" WHERE %s LIMIT 1`, tableName, whereClause), len(args))
-	var value sql.NullString
-	if err := t.db.QueryRow(query, args...).Scan(&value); err != nil && err != sql.ErrNoRows {
-		fmt.Printf("Error: Failed to look up application_area_name: %v\n", err)
-	}
-	return types.NewText(value.String)
+	return nil
 }
 
 // ========================================
@@ -1358,55 +1215,7 @@ func (t *SetupChecklistLine) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *SetupChecklistLine) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, SetupChecklistLineTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "line_no":
-			column = "line_no"
-		case "table_id":
-			column = "table_id"
-		case "page_id":
-			column = "page_id"
-		case "application_area_id":
-			column = "application_area_id"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Setup_Checklist_Line", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Setup_Checklist_Line.%s: %w", column, err)
-		}
-		switch column {
-		case "line_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Setup_Checklist_Line.%s: %w", column, err)
-			}
-			t.Line_no = int(f)
-		case "table_id":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Setup_Checklist_Line.%s: %w", column, err)
-			}
-			t.Table_id = int(f)
-		case "page_id":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Setup_Checklist_Line.%s: %w", column, err)
-			}
-			t.Page_id = int(f)
-		case "application_area_id":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Setup_Checklist_Line.%s: %w", column, err)
-			}
-			t.Application_area_id = int(f)
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a
@@ -1991,6 +1800,30 @@ var setupChecklistLineFields = &tables.TableFields{
 			},
 			Kind:    tables.KindText,
 			Trigger: "OnValidate_Application_area_name",
+		},
+	},
+	FlowFields: []tables.FlowFieldMeta{
+		{
+			Field:         "comments",
+			Formula:       "Exist",
+			Source:        SetupChecklistCommentTableName,
+			SourceField:   "line_no",
+			BatchKeyField: "table_id",
+			BatchKeyValue: "table_id",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "table_id", Value: "table_id", ValueColumn: "table_id"},
+			},
+		},
+		{
+			Field:         "application_area_name",
+			Formula:       "Lookup",
+			Source:        ApplicationAreaLineTableName,
+			SourceField:   "name",
+			BatchKeyField: "id",
+			BatchKeyValue: "application_area_id",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "id", Value: "application_area_id", ValueColumn: "application_area_id"},
+			},
 		},
 	},
 }

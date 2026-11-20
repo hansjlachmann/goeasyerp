@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 	"path/filepath"
-	"strings"
+	"regexp"
 	"testing"
 )
 
@@ -35,8 +35,9 @@ func TestExistFlowField(t *testing.T) {
 		t.Fatal(err)
 	}
 	code, _ := os.ReadFile(out)
-	if !strings.Contains(string(code), "t.Comment = t.calcCount_comment() > 0") {
-		t.Error("CalcFields does not set the Exist FlowField from the count")
+	// foundation/tables calculates it from the description: Exist, counting the comment lines
+	if !regexp.MustCompile(`Formula:\s+"Exist",`).Match(code) {
+		t.Error("the Exist FlowField is not described as Exist")
 	}
 
 	cust.Table.Fields[1].Type = "types.Decimal"

@@ -34,14 +34,12 @@
 //	OnValidate_Tax_amount(rec *gtables.FinanceChargeMemoLine) error
 //	OnValidate_Tax_group_code(rec *gtables.FinanceChargeMemoLine) error
 //	OnValidate_Tax_prod_posting_group(rec *gtables.FinanceChargeMemoLine) error
-
 package tables
 
 import (
 	"database/sql"
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -965,13 +963,22 @@ func (t *FinanceChargeMemoLine) Delete(runTrigger bool) bool {
 	return t.rec().Delete()
 }
 
-// CalcFields is a no-op for tables without FlowFields
-// Implemented for tables.Table interface compliance
+// ========================================
+// FlowField Calculations
+// ========================================
+
+// CalcFields calculates FlowField values
+// Usage:
+//
+//	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
+//	customer.CalcFields() - Calculate all FlowFields
 func (t *FinanceChargeMemoLine) CalcFields(fieldNames ...string) {
-	// This table has no FlowFields to calculate
 }
 
-// CalcFieldsForRecords is a no-op for tables without FlowFields
+// CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
+// one grouped query per FlowField instead of one query per record. records are
+// ToMap() results; each gets its FlowField values under the field name. With no
+// field names, all FlowFields are calculated.
 func (t *FinanceChargeMemoLine) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
 }
 
@@ -1290,95 +1297,7 @@ func (t *FinanceChargeMemoLine) FieldError(fieldName string, text string) error 
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *FinanceChargeMemoLine) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, FinanceChargeMemoLineTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "line_no":
-			column = "line_no"
-		case "attached_to_line_no":
-			column = "attached_to_line_no"
-		case "entry_no":
-			column = "entry_no"
-		case "original_amount":
-			column = "original_amount"
-		case "remaining_amount":
-			column = "remaining_amount"
-		case "amount":
-			column = "amount"
-		case "interest_rate":
-			column = "interest_rate"
-		case "tax_percent":
-			column = "tax_percent"
-		case "tax_amount":
-			column = "tax_amount"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Finance_Charge_Memo_Line", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Finance_Charge_Memo_Line.%s: %w", column, err)
-		}
-		switch column {
-		case "line_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Finance_Charge_Memo_Line.%s: %w", column, err)
-			}
-			t.Line_no = int(f)
-		case "attached_to_line_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Finance_Charge_Memo_Line.%s: %w", column, err)
-			}
-			t.Attached_to_line_no = int(f)
-		case "entry_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Finance_Charge_Memo_Line.%s: %w", column, err)
-			}
-			t.Entry_no = int(f)
-		case "original_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Finance_Charge_Memo_Line.%s: %w", column, err)
-			}
-			t.Original_amount = d
-		case "remaining_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Finance_Charge_Memo_Line.%s: %w", column, err)
-			}
-			t.Remaining_amount = d
-		case "amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Finance_Charge_Memo_Line.%s: %w", column, err)
-			}
-			t.Amount = d
-		case "interest_rate":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Finance_Charge_Memo_Line.%s: %w", column, err)
-			}
-			t.Interest_rate = d
-		case "tax_percent":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Finance_Charge_Memo_Line.%s: %w", column, err)
-			}
-			t.Tax_percent = d
-		case "tax_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Finance_Charge_Memo_Line.%s: %w", column, err)
-			}
-			t.Tax_amount = d
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a

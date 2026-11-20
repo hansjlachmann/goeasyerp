@@ -79,14 +79,12 @@
 //	OnValidate_New_lot_no(rec *gtables.ItemJournalLine) error
 //	OnValidate_Bin_code(rec *gtables.ItemJournalLine) error
 //	OnValidate_New_bin_code(rec *gtables.ItemJournalLine) error
-
 package tables
 
 import (
 	"database/sql"
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -1373,13 +1371,22 @@ func (t *ItemJournalLine) Delete(runTrigger bool) bool {
 	return t.rec().Delete()
 }
 
-// CalcFields is a no-op for tables without FlowFields
-// Implemented for tables.Table interface compliance
+// ========================================
+// FlowField Calculations
+// ========================================
+
+// CalcFields calculates FlowField values
+// Usage:
+//
+//	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
+//	customer.CalcFields() - Calculate all FlowFields
 func (t *ItemJournalLine) CalcFields(fieldNames ...string) {
-	// This table has no FlowFields to calculate
 }
 
-// CalcFieldsForRecords is a no-op for tables without FlowFields
+// CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
+// one grouped query per FlowField instead of one query per record. records are
+// ToMap() results; each gets its FlowField values under the field name. With no
+// field names, all FlowFields are calculated.
 func (t *ItemJournalLine) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
 }
 
@@ -1698,191 +1705,7 @@ func (t *ItemJournalLine) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *ItemJournalLine) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, ItemJournalLineTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "line_no":
-			column = "line_no"
-		case "quantity":
-			column = "quantity"
-		case "invoiced_quantity":
-			column = "invoiced_quantity"
-		case "unit_amount":
-			column = "unit_amount"
-		case "unit_cost":
-			column = "unit_cost"
-		case "amount":
-			column = "amount"
-		case "discount_amount":
-			column = "discount_amount"
-		case "applies_to_entry":
-			column = "applies_to_entry"
-		case "item_shpt_entry_no":
-			column = "item_shpt_entry_no"
-		case "indirect_cost_percent":
-			column = "indirect_cost_percent"
-		case "qty_calculated":
-			column = "qty_calculated"
-		case "qty_phys_inventory":
-			column = "qty_phys_inventory"
-		case "last_item_ledger_entry_no":
-			column = "last_item_ledger_entry_no"
-		case "source_currency_unit_cost":
-			column = "source_currency_unit_cost"
-		case "qty_per_unit_of_measure":
-			column = "qty_per_unit_of_measure"
-		case "quantity_base":
-			column = "quantity_base"
-		case "invoiced_qty_base":
-			column = "invoiced_qty_base"
-		case "positive_reserved_quantity":
-			column = "positive_reserved_quantity"
-		case "negative_reserved_quantity":
-			column = "negative_reserved_quantity"
-		case "positive_reserved_qty_base":
-			column = "positive_reserved_qty_base"
-		case "negative_reserved_qty_base":
-			column = "negative_reserved_qty_base"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Item_Journal_Line", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Item_Journal_Line.%s: %w", column, err)
-		}
-		switch column {
-		case "line_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Journal_Line.%s: %w", column, err)
-			}
-			t.Line_no = int(f)
-		case "quantity":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Journal_Line.%s: %w", column, err)
-			}
-			t.Quantity = d
-		case "invoiced_quantity":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Journal_Line.%s: %w", column, err)
-			}
-			t.Invoiced_quantity = d
-		case "unit_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Journal_Line.%s: %w", column, err)
-			}
-			t.Unit_amount = d
-		case "unit_cost":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Journal_Line.%s: %w", column, err)
-			}
-			t.Unit_cost = d
-		case "amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Journal_Line.%s: %w", column, err)
-			}
-			t.Amount = d
-		case "discount_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Journal_Line.%s: %w", column, err)
-			}
-			t.Discount_amount = d
-		case "applies_to_entry":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Journal_Line.%s: %w", column, err)
-			}
-			t.Applies_to_entry = int(f)
-		case "item_shpt_entry_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Journal_Line.%s: %w", column, err)
-			}
-			t.Item_shpt_entry_no = int(f)
-		case "indirect_cost_percent":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Journal_Line.%s: %w", column, err)
-			}
-			t.Indirect_cost_percent = d
-		case "qty_calculated":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Journal_Line.%s: %w", column, err)
-			}
-			t.Qty_calculated = d
-		case "qty_phys_inventory":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Journal_Line.%s: %w", column, err)
-			}
-			t.Qty_phys_inventory = d
-		case "last_item_ledger_entry_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Journal_Line.%s: %w", column, err)
-			}
-			t.Last_item_ledger_entry_no = int(f)
-		case "source_currency_unit_cost":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Journal_Line.%s: %w", column, err)
-			}
-			t.Source_currency_unit_cost = d
-		case "qty_per_unit_of_measure":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Journal_Line.%s: %w", column, err)
-			}
-			t.Qty_per_unit_of_measure = d
-		case "quantity_base":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Journal_Line.%s: %w", column, err)
-			}
-			t.Quantity_base = d
-		case "invoiced_qty_base":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Journal_Line.%s: %w", column, err)
-			}
-			t.Invoiced_qty_base = d
-		case "positive_reserved_quantity":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Journal_Line.%s: %w", column, err)
-			}
-			t.Positive_reserved_quantity = d
-		case "negative_reserved_quantity":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Journal_Line.%s: %w", column, err)
-			}
-			t.Negative_reserved_quantity = d
-		case "positive_reserved_qty_base":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Journal_Line.%s: %w", column, err)
-			}
-			t.Positive_reserved_qty_base = d
-		case "negative_reserved_qty_base":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Journal_Line.%s: %w", column, err)
-			}
-			t.Negative_reserved_qty_base = d
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a

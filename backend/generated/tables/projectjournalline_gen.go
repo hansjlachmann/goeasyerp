@@ -72,14 +72,12 @@
 //	OnValidate_Qty_per_unit_of_measure(rec *gtables.ProjectJournalLine) error
 //	OnValidate_Quantity_base(rec *gtables.ProjectJournalLine) error
 //	OnValidate_Balancing_acc_no(rec *gtables.ProjectJournalLine) error
-
 package tables
 
 import (
 	"database/sql"
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -1303,13 +1301,22 @@ func (t *ProjectJournalLine) Delete(runTrigger bool) bool {
 	return t.rec().Delete()
 }
 
-// CalcFields is a no-op for tables without FlowFields
-// Implemented for tables.Table interface compliance
+// ========================================
+// FlowField Calculations
+// ========================================
+
+// CalcFields calculates FlowField values
+// Usage:
+//
+//	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
+//	customer.CalcFields() - Calculate all FlowFields
 func (t *ProjectJournalLine) CalcFields(fieldNames ...string) {
-	// This table has no FlowFields to calculate
 }
 
-// CalcFieldsForRecords is a no-op for tables without FlowFields
+// CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
+// one grouped query per FlowField instead of one query per record. records are
+// ToMap() results; each gets its FlowField values under the field name. With no
+// field names, all FlowFields are calculated.
 func (t *ProjectJournalLine) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
 }
 
@@ -1628,135 +1635,7 @@ func (t *ProjectJournalLine) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *ProjectJournalLine) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, ProjectJournalLineTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "line_no":
-			column = "line_no"
-		case "quantity":
-			column = "quantity"
-		case "direct_unit_cost":
-			column = "direct_unit_cost"
-		case "unit_cost":
-			column = "unit_cost"
-		case "total_cost":
-			column = "total_cost"
-		case "unit_price":
-			column = "unit_price"
-		case "total_price":
-			column = "total_price"
-		case "appl_to_item_entry":
-			column = "appl_to_item_entry"
-		case "profit_percent":
-			column = "profit_percent"
-		case "applies_to_entry":
-			column = "applies_to_entry"
-		case "source_currency_total_cost":
-			column = "source_currency_total_cost"
-		case "source_currency_total_price":
-			column = "source_currency_total_price"
-		case "qty_per_unit_of_measure":
-			column = "qty_per_unit_of_measure"
-		case "quantity_base":
-			column = "quantity_base"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Project_Journal_Line", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Project_Journal_Line.%s: %w", column, err)
-		}
-		switch column {
-		case "line_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Journal_Line.%s: %w", column, err)
-			}
-			t.Line_no = int(f)
-		case "quantity":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Journal_Line.%s: %w", column, err)
-			}
-			t.Quantity = d
-		case "direct_unit_cost":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Journal_Line.%s: %w", column, err)
-			}
-			t.Direct_unit_cost = d
-		case "unit_cost":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Journal_Line.%s: %w", column, err)
-			}
-			t.Unit_cost = d
-		case "total_cost":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Journal_Line.%s: %w", column, err)
-			}
-			t.Total_cost = d
-		case "unit_price":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Journal_Line.%s: %w", column, err)
-			}
-			t.Unit_price = d
-		case "total_price":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Journal_Line.%s: %w", column, err)
-			}
-			t.Total_price = d
-		case "appl_to_item_entry":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Journal_Line.%s: %w", column, err)
-			}
-			t.Appl_to_item_entry = int(f)
-		case "profit_percent":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Journal_Line.%s: %w", column, err)
-			}
-			t.Profit_percent = d
-		case "applies_to_entry":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Journal_Line.%s: %w", column, err)
-			}
-			t.Applies_to_entry = int(f)
-		case "source_currency_total_cost":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Journal_Line.%s: %w", column, err)
-			}
-			t.Source_currency_total_cost = d
-		case "source_currency_total_price":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Journal_Line.%s: %w", column, err)
-			}
-			t.Source_currency_total_price = d
-		case "qty_per_unit_of_measure":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Journal_Line.%s: %w", column, err)
-			}
-			t.Qty_per_unit_of_measure = d
-		case "quantity_base":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Project_Journal_Line.%s: %w", column, err)
-			}
-			t.Quantity_base = d
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a

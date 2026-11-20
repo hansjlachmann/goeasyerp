@@ -35,14 +35,12 @@
 //	OnValidate_Posting_date(rec *gtables.ItemApplicationEntry) error
 //	OnValidate_Location_code(rec *gtables.ItemApplicationEntry) error
 //	OnValidate_Transfered_from_entry_no(rec *gtables.ItemApplicationEntry) error
-
 package tables
 
 import (
 	"database/sql"
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -912,13 +910,22 @@ func (t *ItemApplicationEntry) Delete(runTrigger bool) bool {
 	return t.rec().Delete()
 }
 
-// CalcFields is a no-op for tables without FlowFields
-// Implemented for tables.Table interface compliance
+// ========================================
+// FlowField Calculations
+// ========================================
+
+// CalcFields calculates FlowField values
+// Usage:
+//
+//	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
+//	customer.CalcFields() - Calculate all FlowFields
 func (t *ItemApplicationEntry) CalcFields(fieldNames ...string) {
-	// This table has no FlowFields to calculate
 }
 
-// CalcFieldsForRecords is a no-op for tables without FlowFields
+// CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
+// one grouped query per FlowField instead of one query per record. records are
+// ToMap() results; each gets its FlowField values under the field name. With no
+// field names, all FlowFields are calculated.
 func (t *ItemApplicationEntry) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
 }
 
@@ -1237,111 +1244,7 @@ func (t *ItemApplicationEntry) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *ItemApplicationEntry) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, ItemApplicationEntryTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "entry_no":
-			column = "entry_no"
-		case "item_ledger_entry_no":
-			column = "item_ledger_entry_no"
-		case "applied_to_entry_no":
-			column = "applied_to_entry_no"
-		case "applied_from_entry_no":
-			column = "applied_from_entry_no"
-		case "new_entry_no":
-			column = "new_entry_no"
-		case "fixed_applied_to_entry_no":
-			column = "fixed_applied_to_entry_no"
-		case "quantity":
-			column = "quantity"
-		case "reserved_quantity":
-			column = "reserved_quantity"
-		case "remaining_quantity":
-			column = "remaining_quantity"
-		case "adjusted_cost":
-			column = "adjusted_cost"
-		case "transfered_from_entry_no":
-			column = "transfered_from_entry_no"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Item_Application_Entry", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Item_Application_Entry.%s: %w", column, err)
-		}
-		switch column {
-		case "entry_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Application_Entry.%s: %w", column, err)
-			}
-			t.Entry_no = int(f)
-		case "item_ledger_entry_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Application_Entry.%s: %w", column, err)
-			}
-			t.Item_ledger_entry_no = int(f)
-		case "applied_to_entry_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Application_Entry.%s: %w", column, err)
-			}
-			t.Applied_to_entry_no = int(f)
-		case "applied_from_entry_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Application_Entry.%s: %w", column, err)
-			}
-			t.Applied_from_entry_no = int(f)
-		case "new_entry_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Application_Entry.%s: %w", column, err)
-			}
-			t.New_entry_no = int(f)
-		case "fixed_applied_to_entry_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Application_Entry.%s: %w", column, err)
-			}
-			t.Fixed_applied_to_entry_no = int(f)
-		case "quantity":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Application_Entry.%s: %w", column, err)
-			}
-			t.Quantity = d
-		case "reserved_quantity":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Application_Entry.%s: %w", column, err)
-			}
-			t.Reserved_quantity = d
-		case "remaining_quantity":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Application_Entry.%s: %w", column, err)
-			}
-			t.Remaining_quantity = d
-		case "adjusted_cost":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Application_Entry.%s: %w", column, err)
-			}
-			t.Adjusted_cost = d
-		case "transfered_from_entry_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Item_Application_Entry.%s: %w", column, err)
-			}
-			t.Transfered_from_entry_no = int(f)
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a

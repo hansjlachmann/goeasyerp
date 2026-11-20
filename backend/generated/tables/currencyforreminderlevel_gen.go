@@ -16,14 +16,12 @@
 //	OnValidate_No(rec *gtables.CurrencyForReminderLevel) error
 //	OnValidate_Currency_code(rec *gtables.CurrencyForReminderLevel) error
 //	OnValidate_Additional_fee(rec *gtables.CurrencyForReminderLevel) error
-
 package tables
 
 import (
 	"database/sql"
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -740,13 +738,22 @@ func (t *CurrencyForReminderLevel) Delete(runTrigger bool) bool {
 	return t.rec().Delete()
 }
 
-// CalcFields is a no-op for tables without FlowFields
-// Implemented for tables.Table interface compliance
+// ========================================
+// FlowField Calculations
+// ========================================
+
+// CalcFields calculates FlowField values
+// Usage:
+//
+//	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
+//	customer.CalcFields() - Calculate all FlowFields
 func (t *CurrencyForReminderLevel) CalcFields(fieldNames ...string) {
-	// This table has no FlowFields to calculate
 }
 
-// CalcFieldsForRecords is a no-op for tables without FlowFields
+// CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
+// one grouped query per FlowField instead of one query per record. records are
+// ToMap() results; each gets its FlowField values under the field name. With no
+// field names, all FlowFields are calculated.
 func (t *CurrencyForReminderLevel) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
 }
 
@@ -1065,39 +1072,7 @@ func (t *CurrencyForReminderLevel) FieldError(fieldName string, text string) err
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *CurrencyForReminderLevel) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, CurrencyForReminderLevelTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "no":
-			column = "no"
-		case "additional_fee":
-			column = "additional_fee"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Currency_for_Reminder_Level", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Currency_for_Reminder_Level.%s: %w", column, err)
-		}
-		switch column {
-		case "no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Currency_for_Reminder_Level.%s: %w", column, err)
-			}
-			t.No = int(f)
-		case "additional_fee":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums Currency_for_Reminder_Level.%s: %w", column, err)
-			}
-			t.Additional_fee = d
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a

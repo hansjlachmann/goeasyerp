@@ -87,14 +87,12 @@
 //	OnValidate_Reserve_item_jnl_line_neg(rec *gtables.ReservationSetup) error
 //	OnValidate_Reserve_item_jnl_line_trans(rec *gtables.ReservationSetup) error
 //	OnValidate_Reserve_bom_journal_line(rec *gtables.ReservationSetup) error
-
 package tables
 
 import (
 	"database/sql"
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -1750,13 +1748,22 @@ func (t *ReservationSetup) Delete(runTrigger bool) bool {
 	return t.rec().Delete()
 }
 
-// CalcFields is a no-op for tables without FlowFields
-// Implemented for tables.Table interface compliance
+// ========================================
+// FlowField Calculations
+// ========================================
+
+// CalcFields calculates FlowField values
+// Usage:
+//
+//	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
+//	customer.CalcFields() - Calculate all FlowFields
 func (t *ReservationSetup) CalcFields(fieldNames ...string) {
-	// This table has no FlowFields to calculate
 }
 
-// CalcFieldsForRecords is a no-op for tables without FlowFields
+// CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
+// one grouped query per FlowField instead of one query per record. records are
+// ToMap() results; each gets its FlowField values under the field name. With no
+// field names, all FlowFields are calculated.
 func (t *ReservationSetup) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
 }
 
@@ -2075,167 +2082,7 @@ func (t *ReservationSetup) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *ReservationSetup) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, ReservationSetupTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "item_ledger_entry_priority":
-			column = "item_ledger_entry_priority"
-		case "purchase_quote_priority":
-			column = "purchase_quote_priority"
-		case "blanket_purch_order_priority":
-			column = "blanket_purch_order_priority"
-		case "purchase_order_priority":
-			column = "purchase_order_priority"
-		case "purchase_invoice_priority":
-			column = "purchase_invoice_priority"
-		case "purchase_credit_memo_priority":
-			column = "purchase_credit_memo_priority"
-		case "requisition_line_priority":
-			column = "requisition_line_priority"
-		case "sales_quote_priority":
-			column = "sales_quote_priority"
-		case "blanket_sales_order_priority":
-			column = "blanket_sales_order_priority"
-		case "sales_order_priority":
-			column = "sales_order_priority"
-		case "sales_invoice_priority":
-			column = "sales_invoice_priority"
-		case "sales_credit_memo_priority":
-			column = "sales_credit_memo_priority"
-		case "item_jnl_line_purch_priority":
-			column = "item_jnl_line_purch_priority"
-		case "item_jnl_line_sales_priority":
-			column = "item_jnl_line_sales_priority"
-		case "item_jnl_line_pos_priority":
-			column = "item_jnl_line_pos_priority"
-		case "item_jnl_line_neg_priority":
-			column = "item_jnl_line_neg_priority"
-		case "item_jnl_line_trans_priority":
-			column = "item_jnl_line_trans_priority"
-		case "bom_journal_line_priority":
-			column = "bom_journal_line_priority"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of Reservation_Setup", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums Reservation_Setup.%s: %w", column, err)
-		}
-		switch column {
-		case "item_ledger_entry_priority":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Reservation_Setup.%s: %w", column, err)
-			}
-			t.Item_ledger_entry_priority = int(f)
-		case "purchase_quote_priority":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Reservation_Setup.%s: %w", column, err)
-			}
-			t.Purchase_quote_priority = int(f)
-		case "blanket_purch_order_priority":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Reservation_Setup.%s: %w", column, err)
-			}
-			t.Blanket_purch_order_priority = int(f)
-		case "purchase_order_priority":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Reservation_Setup.%s: %w", column, err)
-			}
-			t.Purchase_order_priority = int(f)
-		case "purchase_invoice_priority":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Reservation_Setup.%s: %w", column, err)
-			}
-			t.Purchase_invoice_priority = int(f)
-		case "purchase_credit_memo_priority":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Reservation_Setup.%s: %w", column, err)
-			}
-			t.Purchase_credit_memo_priority = int(f)
-		case "requisition_line_priority":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Reservation_Setup.%s: %w", column, err)
-			}
-			t.Requisition_line_priority = int(f)
-		case "sales_quote_priority":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Reservation_Setup.%s: %w", column, err)
-			}
-			t.Sales_quote_priority = int(f)
-		case "blanket_sales_order_priority":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Reservation_Setup.%s: %w", column, err)
-			}
-			t.Blanket_sales_order_priority = int(f)
-		case "sales_order_priority":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Reservation_Setup.%s: %w", column, err)
-			}
-			t.Sales_order_priority = int(f)
-		case "sales_invoice_priority":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Reservation_Setup.%s: %w", column, err)
-			}
-			t.Sales_invoice_priority = int(f)
-		case "sales_credit_memo_priority":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Reservation_Setup.%s: %w", column, err)
-			}
-			t.Sales_credit_memo_priority = int(f)
-		case "item_jnl_line_purch_priority":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Reservation_Setup.%s: %w", column, err)
-			}
-			t.Item_jnl_line_purch_priority = int(f)
-		case "item_jnl_line_sales_priority":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Reservation_Setup.%s: %w", column, err)
-			}
-			t.Item_jnl_line_sales_priority = int(f)
-		case "item_jnl_line_pos_priority":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Reservation_Setup.%s: %w", column, err)
-			}
-			t.Item_jnl_line_pos_priority = int(f)
-		case "item_jnl_line_neg_priority":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Reservation_Setup.%s: %w", column, err)
-			}
-			t.Item_jnl_line_neg_priority = int(f)
-		case "item_jnl_line_trans_priority":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Reservation_Setup.%s: %w", column, err)
-			}
-			t.Item_jnl_line_trans_priority = int(f)
-		case "bom_journal_line_priority":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums Reservation_Setup.%s: %w", column, err)
-			}
-			t.Bom_journal_line_priority = int(f)
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a

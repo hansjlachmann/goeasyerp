@@ -51,14 +51,12 @@
 //	OnValidate_Recurring_method(rec *gtables.FAJournalLine) error
 //	OnValidate_Expiration_date(rec *gtables.FAJournalLine) error
 //	OnValidate_Recurring_frequency(rec *gtables.FAJournalLine) error
-
 package tables
 
 import (
 	"database/sql"
 	"fmt"
 
-	"strconv"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -1122,13 +1120,22 @@ func (t *FAJournalLine) Delete(runTrigger bool) bool {
 	return t.rec().Delete()
 }
 
-// CalcFields is a no-op for tables without FlowFields
-// Implemented for tables.Table interface compliance
+// ========================================
+// FlowField Calculations
+// ========================================
+
+// CalcFields calculates FlowField values
+// Usage:
+//
+//	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
+//	customer.CalcFields() - Calculate all FlowFields
 func (t *FAJournalLine) CalcFields(fieldNames ...string) {
-	// This table has no FlowFields to calculate
 }
 
-// CalcFieldsForRecords is a no-op for tables without FlowFields
+// CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
+// one grouped query per FlowField instead of one query per record. records are
+// ToMap() results; each gets its FlowField values under the field name. With no
+// field names, all FlowFields are calculated.
 func (t *FAJournalLine) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
 }
 
@@ -1447,87 +1454,7 @@ func (t *FAJournalLine) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *FAJournalLine) CalcSums(fieldNames ...string) error {
-	tableName := fmt.Sprintf("%s$%s", t.company, FAJournalLineTableName)
-	where, args := t.buildWhereClause()
-	for _, name := range fieldNames {
-		var column string
-		switch strings.ToLower(name) {
-		case "line_no":
-			column = "line_no"
-		case "amount":
-			column = "amount"
-		case "debit_amount":
-			column = "debit_amount"
-		case "credit_amount":
-			column = "credit_amount"
-		case "salvage_value":
-			column = "salvage_value"
-		case "quantity":
-			column = "quantity"
-		case "no_of_depreciation_days":
-			column = "no_of_depreciation_days"
-		case "fa_error_entry_no":
-			column = "fa_error_entry_no"
-		default:
-			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of FA_Journal_Line", name)
-		}
-		query := t.convertPlaceholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, tableName, where), len(args))
-		var total string
-		if err := t.exec().QueryRow(query, args...).Scan(&total); err != nil {
-			return fmt.Errorf("CalcSums FA_Journal_Line.%s: %w", column, err)
-		}
-		switch column {
-		case "line_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums FA_Journal_Line.%s: %w", column, err)
-			}
-			t.Line_no = int(f)
-		case "amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums FA_Journal_Line.%s: %w", column, err)
-			}
-			t.Amount = d
-		case "debit_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums FA_Journal_Line.%s: %w", column, err)
-			}
-			t.Debit_amount = d
-		case "credit_amount":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums FA_Journal_Line.%s: %w", column, err)
-			}
-			t.Credit_amount = d
-		case "salvage_value":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums FA_Journal_Line.%s: %w", column, err)
-			}
-			t.Salvage_value = d
-		case "quantity":
-			d, err := types.NewDecimalFromString(total)
-			if err != nil {
-				return fmt.Errorf("CalcSums FA_Journal_Line.%s: %w", column, err)
-			}
-			t.Quantity = d
-		case "no_of_depreciation_days":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums FA_Journal_Line.%s: %w", column, err)
-			}
-			t.No_of_depreciation_days = int(f)
-		case "fa_error_entry_no":
-			f, err := strconv.ParseFloat(total, 64)
-			if err != nil {
-				return fmt.Errorf("CalcSums FA_Journal_Line.%s: %w", column, err)
-			}
-			t.Fa_error_entry_no = int(f)
-		}
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a

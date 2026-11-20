@@ -14,7 +14,6 @@
 //	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Code(rec *gtables.NoSeriesRelationship) error
 //	OnValidate_Series_code(rec *gtables.NoSeriesRelationship) error
-
 package tables
 
 import (
@@ -745,34 +744,7 @@ func (t *NoSeriesRelationship) Delete(runTrigger bool) bool {
 //	customer.CalcFields("balance", "balance_lcy") - Calculate specific fields
 //	customer.CalcFields() - Calculate all FlowFields
 func (t *NoSeriesRelationship) CalcFields(fieldNames ...string) {
-	// If no field names specified, calculate all FlowFields
-	if len(fieldNames) == 0 {
-		t.calcFlowField_description()
-		t.calcFlowField_series_description()
-		return
-	}
-
-	// Calculate only specified fields
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "description":
-			t.calcFlowField_description()
-		case "series_description":
-			t.calcFlowField_series_description()
-		}
-	}
-}
-
-// calcFlowField_description calculates the description FlowField
-// CalcFormula: Lookup(NoSeries.description)
-func (t *NoSeriesRelationship) calcFlowField_description() {
-	t.Description = t.calcLookup_description()
-}
-
-// calcFlowField_series_description calculates the series_description FlowField
-// CalcFormula: Lookup(NoSeries.description)
-func (t *NoSeriesRelationship) calcFlowField_series_description() {
-	t.Series_description = t.calcLookup_series_description()
+	t.flow().CalcFields(fieldNames)
 }
 
 // CalcFieldsForRecords calculates FlowFields for many records at once (list pages):
@@ -780,86 +752,42 @@ func (t *NoSeriesRelationship) calcFlowField_series_description() {
 // ToMap() results; each gets its FlowField values under the field name. With no
 // field names, all FlowFields are calculated.
 func (t *NoSeriesRelationship) CalcFieldsForRecords(records []map[string]interface{}, fieldNames ...string) {
-	if len(records) == 0 {
-		return
-	}
-	if len(fieldNames) == 0 {
-		fieldNames = t.GetFlowFields()
-	}
-	for _, fieldName := range fieldNames {
-		switch fieldName {
-		case "description":
-			t.calcForRecords_description(records)
-		case "series_description":
-			t.calcForRecords_series_description(records)
-		}
+	t.flow().CalcFieldsForRecords(records, fieldNames)
+}
+
+// flow is what the FlowField functions of foundation/tables need of the record
+func (t *NoSeriesRelationship) flow() *tables.FlowRec {
+	return &tables.FlowRec{
+		Fields:     noSeriesRelationshipFields,
+		Ref:        t.fieldRef,
+		FlowFilter: t.flowFilterRef,
+		DB:         t.db,
+		Company:    t.company,
+		Postgres:   t.dbType == database.DBTypePostgres,
+		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, NoSeriesRelationshipTableName) + "\"",
+		One:        t.flowFieldOf,
 	}
 }
 
-// calcForRecords_description calculates the description FlowField for a set of records
-// CalcFormula: Lookup(NoSeries.description)
-func (t *NoSeriesRelationship) calcForRecords_description(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &NoSeriesRelationship{db: t.db, company: t.company, dbType: t.dbType}
-		r.FromMap(rec)
-		r.calcFlowField_description()
-		rec["description"] = r.Description
+// flowFieldOf calculates a FlowField for one record of a list (a record from the map, with
+// this record's FlowFilters), in its map form
+func (t *NoSeriesRelationship) flowFieldOf(rec map[string]any, flowField int) any {
+	one := &NoSeriesRelationship{}
+	one.InitWithDBType(t.db, t.company, t.dbType)
+	for i := range noSeriesRelationshipFields.FlowFilters {
+		*one.flowFilterRef(i) = *t.flowFilterRef(i)
 	}
+	one.FromMap(rec)
+	f := one.flow()
+	f.Calc(flowField)
+	return f.MapValue(flowField)
 }
 
-// calcForRecords_series_description calculates the series_description FlowField for a set of records
-// CalcFormula: Lookup(NoSeries.description)
-func (t *NoSeriesRelationship) calcForRecords_series_description(records []map[string]interface{}) {
-	// No single key field to group by: calculate per record, with this record's FlowFilters
-	for _, rec := range records {
-		r := &NoSeriesRelationship{db: t.db, company: t.company, dbType: t.dbType}
-		r.FromMap(rec)
-		r.calcFlowField_series_description()
-		rec["series_description"] = r.Series_description
+// flowFilterRef returns a pointer to the FlowFilter field with index i in noSeriesRelationshipFields.FlowFilters
+func (t *NoSeriesRelationship) flowFilterRef(i int) *string {
+	switch i {
 	}
-}
-
-// Helper methods for FlowField calculations
-
-// calcLookup_description reads NoSeries.description of the first record matching the
-// flow filters (CalcFormula Lookup); blank when there is none
-func (t *NoSeriesRelationship) calcLookup_description() types.Text {
-	tableName := fmt.Sprintf("%s$%s", t.company, NoSeriesTableName)
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "code = ?")
-	args = append(args, t.Code)
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-	query := t.convertPlaceholders(fmt.Sprintf(`SELECT description FROM "%s" WHERE %s LIMIT 1`, tableName, whereClause), len(args))
-	var value sql.NullString
-	if err := t.db.QueryRow(query, args...).Scan(&value); err != nil && err != sql.ErrNoRows {
-		fmt.Printf("Error: Failed to look up description: %v\n", err)
-	}
-	return types.NewText(value.String)
-}
-
-// calcLookup_series_description reads NoSeries.description of the first record matching the
-// flow filters (CalcFormula Lookup); blank when there is none
-func (t *NoSeriesRelationship) calcLookup_series_description() types.Text {
-	tableName := fmt.Sprintf("%s$%s", t.company, NoSeriesTableName)
-	var whereClauses []string
-	var args []interface{}
-	whereClauses = append(whereClauses, "code = ?")
-	args = append(args, t.Series_code)
-	whereClause := "1=1"
-	if len(whereClauses) > 0 {
-		whereClause = strings.Join(whereClauses, " AND ")
-	}
-	query := t.convertPlaceholders(fmt.Sprintf(`SELECT description FROM "%s" WHERE %s LIMIT 1`, tableName, whereClause), len(args))
-	var value sql.NullString
-	if err := t.db.QueryRow(query, args...).Scan(&value); err != nil && err != sql.ErrNoRows {
-		fmt.Printf("Error: Failed to look up series_description: %v\n", err)
-	}
-	return types.NewText(value.String)
+	return nil
 }
 
 // ========================================
@@ -1177,10 +1105,7 @@ func (t *NoSeriesRelationship) FieldError(fieldName string, text string) error {
 // CalcSums sets each of the decimal or integer fields to its total over the records matching
 // the current filters (CalcSums)
 func (t *NoSeriesRelationship) CalcSums(fieldNames ...string) error {
-	if len(fieldNames) > 0 {
-		return fmt.Errorf("CalcSums: %s is not a decimal or integer field of No_Series_Relationship", fieldNames[0])
-	}
-	return nil
+	return t.rec().CalcSums(fieldNames)
 }
 
 // LockTable locks the table until the transaction ends (classic LOCKTABLE): on Postgres a
@@ -1607,6 +1532,30 @@ var noSeriesRelationshipFields = &tables.TableFields{
 			},
 			Kind:    tables.KindText,
 			Trigger: "OnValidate_Series_description",
+		},
+	},
+	FlowFields: []tables.FlowFieldMeta{
+		{
+			Field:         "description",
+			Formula:       "Lookup",
+			Source:        NoSeriesTableName,
+			SourceField:   "description",
+			BatchKeyField: "code",
+			BatchKeyValue: "code",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "code", Value: "code", ValueColumn: "code"},
+			},
+		},
+		{
+			Field:         "series_description",
+			Formula:       "Lookup",
+			Source:        NoSeriesTableName,
+			SourceField:   "description",
+			BatchKeyField: "code",
+			BatchKeyValue: "series_code",
+			Filters: []tables.FlowFilterMeta{
+				{Type: tables.FlowFieldValue, Column: "code", Value: "series_code", ValueColumn: "series_code"},
+			},
 		},
 	},
 }
