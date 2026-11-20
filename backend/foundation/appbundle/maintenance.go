@@ -31,14 +31,32 @@ func (s *MaintenanceStatus) set(failed string) {
 	s.mu.Unlock()
 }
 
-func (s *MaintenanceStatus) message(lang string) string {
+// maintenanceAnswer: the API's answer during maintenance. The page cannot load its texts from
+// the server then, so the answer brings the notice's texts in the browser's language: its
+// heading, the message and the Try again button's caption.
+type maintenanceAnswer struct {
+	Success     bool   `json:"success"`
+	Error       string `json:"error"`       // the message (also what clients show as the error)
+	Maintenance bool   `json:"maintenance"` // the marker: maintenance, not an error of the request
+	Failed      bool   `json:"failed"`      // the build of the apps failed: an administrator acts
+	Title       string `json:"title"`
+	Retry       string `json:"retry"`
+}
+
+func (s *MaintenanceStatus) answer(lang string) maintenanceAnswer {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	ts := i18n.GetInstance()
+	a := maintenanceAnswer{Maintenance: true, Retry: ts.Message("APP_MAINTENANCE_RETRY", lang)}
 	if s.failed != "" {
-		return ts.MessageWithParams("APP_MAINTENANCE_BUILD_FAILED", lang, s.version, s.failed)
+		a.Failed = true
+		a.Title = ts.Message("APP_MAINTENANCE_TITLE_FAILED", lang)
+		a.Error = ts.MessageWithParams("APP_MAINTENANCE_BUILD_FAILED", lang, s.version, s.failed)
+		return a
 	}
-	return ts.MessageWithParams("APP_MAINTENANCE_BUILDING", lang, s.version)
+	a.Title = ts.Message("APP_MAINTENANCE_TITLE", lang)
+	a.Error = ts.MessageWithParams("APP_MAINTENANCE_BUILDING", lang, s.version)
+	return a
 }
 
 // maintenanceHandler answers the requests during maintenance
@@ -51,11 +69,7 @@ func maintenanceHandler(status *MaintenanceStatus) http.Handler {
 			return
 		}
 		w.WriteHeader(http.StatusServiceUnavailable)
-		_ = json.NewEncoder(w).Encode(map[string]interface{}{
-			"success":     false,
-			"error":       status.message(language(r.Header.Get("Accept-Language"))),
-			"maintenance": true,
-		})
+		_ = json.NewEncoder(w).Encode(status.answer(language(r.Header.Get("Accept-Language"))))
 	})
 }
 

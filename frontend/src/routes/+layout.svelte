@@ -21,6 +21,8 @@
 	import ToastContainer from '$lib/components/ToastContainer.svelte';
 	import PrintPreview from '$lib/components/PrintPreview.svelte';
 	import QuestionDialog from '$lib/components/QuestionDialog.svelte';
+	import MaintenanceNotice from '$lib/components/MaintenanceNotice.svelte';
+	import { installMaintenanceWatch } from '$lib/utils/maintenance';
 	import { regionalVersion } from '$lib/stores/regional';
 	import type { Snippet } from 'svelte';
 
@@ -29,6 +31,9 @@
 	}
 
 	let { children }: Props = $props();
+
+	// Every API answer is watched for the server's maintenance (before the first call below)
+	installMaintenanceWatch();
 
 	// Help pages open in a detached window (window.open): no menu bar or breadcrumb
 	const detached = $derived(page.url.pathname.startsWith('/help/'));
@@ -92,3 +97,6 @@
 
 <!-- The server's Yes/No questions during a request (a table trigger's Confirm) -->
 <QuestionDialog />
+
+<!-- The server is being updated (its apps built for a new version): a notice over everything -->
+<MaintenanceNotice />

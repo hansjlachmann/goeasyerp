@@ -497,7 +497,10 @@ messages:
   ERR_APP_BUILD_PENDING: "Build %1 is requested or running already: wait for it (App Builds)."
   APP_BUILD_REQUESTED: "Build %1 is requested (%2). The installation switches to the new program by itself when it is built; follow it in App Builds."
   APP_BUILD_NO_APPS: "no extension apps"
-  APP_MAINTENANCE_BUILDING: "GoEasyERP is being updated to version %1: its extension apps are being built for it. This takes a few minutes — try again shortly."
+  APP_MAINTENANCE_TITLE: "GoEasyERP is being updated"
+  APP_MAINTENANCE_TITLE_FAILED: "GoEasyERP cannot start"
+  APP_MAINTENANCE_RETRY: "Try again"
+  APP_MAINTENANCE_BUILDING: "GoEasyERP is being updated to version %1: its extension apps are being built for it. This takes a few minutes; the page opens by itself when it is done."
   APP_MAINTENANCE_BUILD_FAILED: "GoEasyERP version %1 cannot start: the build of its extension apps failed (%2). An administrator can read the builder's log, go back to the previous version, or restart the server to try again."
 
   # Dialog Messages

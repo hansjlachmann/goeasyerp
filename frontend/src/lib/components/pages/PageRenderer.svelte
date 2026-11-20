@@ -33,6 +33,7 @@
 	import { apiFlowFilters, apiFieldFilters, toApiFlowFilter } from '$lib/utils/flowFilter';
 	import { currentLanguage } from '$lib/stores/session';
 	import { get } from 'svelte/store';
+	import { maintenance } from '$lib/utils/maintenance';
 
 	interface Props {
 		pageid: number;
@@ -996,8 +997,9 @@
 			<ListPageSkeleton />
 		{/if}
 	{/if}
-{:else if error !== null}
-	<!-- error is "" for a failed page request: the screen translates its status -->
+{:else if error !== null && !$maintenance}
+	<!-- error is "" for a failed page request: the screen translates its status (not during the
+	     server's maintenance: MaintenanceNotice covers the app then) -->
 	<div class="flex items-center justify-center h-full">
 		<div class="text-center">
 			<div class="text-red-600 dark:text-red-400 text-5xl mb-4">⚠</div>

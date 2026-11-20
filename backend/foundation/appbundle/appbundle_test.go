@@ -163,22 +163,24 @@ func TestMaintenanceHandler(t *testing.T) {
 	req.Header.Set("Accept-Language", "nb-NO,nb;q=0.9,en;q=0.8")
 	rec = httptest.NewRecorder()
 	h.ServeHTTP(rec, req)
-	var body struct {
-		Success     bool   `json:"success"`
-		Error       string `json:"error"`
-		Maintenance bool   `json:"maintenance"`
-	}
+	var body maintenanceAnswer
 	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
 		t.Fatal(err)
 	}
-	if rec.Code != http.StatusServiceUnavailable || body.Success || !body.Maintenance || !strings.Contains(body.Error, "1.2.0") {
+	if rec.Code != http.StatusServiceUnavailable || body.Success || !body.Maintenance || body.Failed ||
+		!strings.Contains(body.Error, "1.2.0") || body.Title == "" || body.Title == "APP_MAINTENANCE_TITLE" ||
+		body.Retry == "" || body.Retry == "APP_MAINTENANCE_RETRY" {
 		t.Errorf("API: %d %+v", rec.Code, body)
 	}
 	status.set("go build failed")
 	rec = httptest.NewRecorder()
 	h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/api/session", nil))
-	if !strings.Contains(rec.Body.String(), "go build failed") {
-		t.Errorf("a failed build: %s", rec.Body.String())
+	body = maintenanceAnswer{}
+	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
+		t.Fatal(err)
+	}
+	if !body.Failed || !strings.Contains(body.Error, "go build failed") || body.Title == "APP_MAINTENANCE_TITLE_FAILED" {
+		t.Errorf("a failed build: %+v", body)
 	}
 	if language("da,en;q=0.5") != "da-DK" || language("fr") != "en-US" {
 		t.Error("language")
