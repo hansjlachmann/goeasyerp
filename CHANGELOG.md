@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.1.167](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.166...v0.1.167) (2026-11-20)
+
+
+### Bug Fixes
+
+* pages show an update notice during maintenance instead of an error ([4b328ba](https://github.com/hansjlachmann/goeasyerp/commit/4b328bae616115b359710d47e2f5eae26ea48b53))
+
+
+### Performance
+
+* the generated table code needs 2.3 GB less memory to compile ([4fa34a6](https://github.com/hansjlachmann/goeasyerp/commit/4fa34a614641e68060abc0fcf230ad30eab5a546))
+* the generated table code needs another 0.57 GB less memory to compile ([93df433](https://github.com/hansjlachmann/goeasyerp/commit/93df433980f64fb701f42b5dfdc90ff4a5c0a832))
+* the generated table code needs another 0.6 GB less memory to compile ([1115f58](https://github.com/hansjlachmann/goeasyerp/commit/1115f584fac1f69bd7a84d439164fc6958d6ea3b))
+* the generated table code needs another 0.65 GB less memory to compile ([6bf2d1b](https://github.com/hansjlachmann/goeasyerp/commit/6bf2d1b256bee1d5d4c456bc3e64fff9e6681ca6))
+* the generated table code needs another 1.1 GB less memory to compile ([b6e8d1b](https://github.com/hansjlachmann/goeasyerp/commit/b6e8d1b10e35f9634d80edc615bc8094e833adc4))
+
 ## [0.1.166](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.165...v0.1.166) (2026-11-20)
 
 
