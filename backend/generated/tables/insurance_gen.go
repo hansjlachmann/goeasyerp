@@ -771,44 +771,14 @@ func (t *Insurance) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, InsuranceTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.No,
-		t.Effective_date,
-		t.Policy_no,
-		t.Annual_premium,
-		t.Policy_coverage,
-		t.Insurance_type,
-		t.Last_date_modified,
-		t.Insurance_vendor_no,
-		t.Fa_class_code,
-		t.Fa_subclass_code,
-		t.Fa_location_code,
-		t.Dimension_1_code,
-		t.Dimension_2_code,
-		t.Location_code,
-		t.Blocked,
-		t.Description,
-		t.Search_description,
-		t.No_series,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (no, effective_date, policy_no, annual_premium, policy_coverage, insurance_type, last_date_modified, insurance_vendor_no, fa_class_code, fa_subclass_code, fa_location_code, dimension_1_code, dimension_2_code, location_code, blocked, description, search_description, no_series) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Insurance: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(InsuranceTableName, key)
 		return false
@@ -834,30 +804,10 @@ func (t *Insurance) InsertAll(records []*Insurance, runTrigger bool) error {
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.No,
-			r.Effective_date,
-			r.Policy_no,
-			r.Annual_premium,
-			r.Policy_coverage,
-			r.Insurance_type,
-			r.Last_date_modified,
-			r.Insurance_vendor_no,
-			r.Fa_class_code,
-			r.Fa_subclass_code,
-			r.Fa_location_code,
-			r.Dimension_1_code,
-			r.Dimension_2_code,
-			r.Location_code,
-			r.Blocked,
-			r.Description,
-			r.Search_description,
-			r.No_series,
-		})
+		rows = append(rows, insuranceFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, InsuranceTableName)
-	columns := []string{"no", "effective_date", "policy_no", "annual_premium", "policy_coverage", "insurance_type", "last_date_modified", "insurance_vendor_no", "fa_class_code", "fa_subclass_code", "fa_location_code", "dimension_1_code", "dimension_2_code", "location_code", "blocked", "description", "search_description", "no_series"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, insuranceFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -873,149 +823,13 @@ func (t *Insurance) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := insuranceFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
 		}
-	}
-	tableName := fmt.Sprintf("%s$%s", t.company, InsuranceTableName)
-
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("no") {
-			setClauses = append(setClauses, "no = ?")
-			values = append(values, t.No)
-		}
-		if t.hasFieldChanged("effective_date") {
-			setClauses = append(setClauses, "effective_date = ?")
-			values = append(values, t.Effective_date)
-		}
-		if t.hasFieldChanged("policy_no") {
-			setClauses = append(setClauses, "policy_no = ?")
-			values = append(values, t.Policy_no)
-		}
-		if t.hasFieldChanged("annual_premium") {
-			setClauses = append(setClauses, "annual_premium = ?")
-			values = append(values, t.Annual_premium)
-		}
-		if t.hasFieldChanged("policy_coverage") {
-			setClauses = append(setClauses, "policy_coverage = ?")
-			values = append(values, t.Policy_coverage)
-		}
-		if t.hasFieldChanged("insurance_type") {
-			setClauses = append(setClauses, "insurance_type = ?")
-			values = append(values, t.Insurance_type)
-		}
-		if t.hasFieldChanged("last_date_modified") {
-			setClauses = append(setClauses, "last_date_modified = ?")
-			values = append(values, t.Last_date_modified)
-		}
-		if t.hasFieldChanged("insurance_vendor_no") {
-			setClauses = append(setClauses, "insurance_vendor_no = ?")
-			values = append(values, t.Insurance_vendor_no)
-		}
-		if t.hasFieldChanged("fa_class_code") {
-			setClauses = append(setClauses, "fa_class_code = ?")
-			values = append(values, t.Fa_class_code)
-		}
-		if t.hasFieldChanged("fa_subclass_code") {
-			setClauses = append(setClauses, "fa_subclass_code = ?")
-			values = append(values, t.Fa_subclass_code)
-		}
-		if t.hasFieldChanged("fa_location_code") {
-			setClauses = append(setClauses, "fa_location_code = ?")
-			values = append(values, t.Fa_location_code)
-		}
-		if t.hasFieldChanged("dimension_1_code") {
-			setClauses = append(setClauses, "dimension_1_code = ?")
-			values = append(values, t.Dimension_1_code)
-		}
-		if t.hasFieldChanged("dimension_2_code") {
-			setClauses = append(setClauses, "dimension_2_code = ?")
-			values = append(values, t.Dimension_2_code)
-		}
-		if t.hasFieldChanged("location_code") {
-			setClauses = append(setClauses, "location_code = ?")
-			values = append(values, t.Location_code)
-		}
-		if t.hasFieldChanged("blocked") {
-			setClauses = append(setClauses, "blocked = ?")
-			values = append(values, t.Blocked)
-		}
-		if t.hasFieldChanged("description") {
-			setClauses = append(setClauses, "description = ?")
-			values = append(values, t.Description)
-		}
-		if t.hasFieldChanged("search_description") {
-			setClauses = append(setClauses, "search_description = ?")
-			values = append(values, t.Search_description)
-		}
-		if t.hasFieldChanged("no_series") {
-			setClauses = append(setClauses, "no_series = ?")
-			values = append(values, t.No_series)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "effective_date = ?")
-		values = append(values, t.Effective_date)
-		setClauses = append(setClauses, "policy_no = ?")
-		values = append(values, t.Policy_no)
-		setClauses = append(setClauses, "annual_premium = ?")
-		values = append(values, t.Annual_premium)
-		setClauses = append(setClauses, "policy_coverage = ?")
-		values = append(values, t.Policy_coverage)
-		setClauses = append(setClauses, "insurance_type = ?")
-		values = append(values, t.Insurance_type)
-		setClauses = append(setClauses, "last_date_modified = ?")
-		values = append(values, t.Last_date_modified)
-		setClauses = append(setClauses, "insurance_vendor_no = ?")
-		values = append(values, t.Insurance_vendor_no)
-		setClauses = append(setClauses, "fa_class_code = ?")
-		values = append(values, t.Fa_class_code)
-		setClauses = append(setClauses, "fa_subclass_code = ?")
-		values = append(values, t.Fa_subclass_code)
-		setClauses = append(setClauses, "fa_location_code = ?")
-		values = append(values, t.Fa_location_code)
-		setClauses = append(setClauses, "dimension_1_code = ?")
-		values = append(values, t.Dimension_1_code)
-		setClauses = append(setClauses, "dimension_2_code = ?")
-		values = append(values, t.Dimension_2_code)
-		setClauses = append(setClauses, "location_code = ?")
-		values = append(values, t.Location_code)
-		setClauses = append(setClauses, "blocked = ?")
-		values = append(values, t.Blocked)
-		setClauses = append(setClauses, "description = ?")
-		values = append(values, t.Description)
-		setClauses = append(setClauses, "search_description = ?")
-		values = append(values, t.Search_description)
-		setClauses = append(setClauses, "no_series = ?")
-		values = append(values, t.No_series)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.No)
 	}
 	// Renamed key fields that other tables refer to (Rename): carried over below
 	type renamedKey struct {
@@ -1029,19 +843,11 @@ func (t *Insurance) Modify(runTrigger bool) bool {
 		}
 	}
 
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Insurance: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// A temporary record's rename stays in the record: other tables are not changed
 	for _, r := range renamed {
@@ -1123,25 +929,8 @@ func (t *Insurance) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, InsuranceTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.No,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Insurance: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // ========================================
@@ -1677,53 +1466,13 @@ func (t *Insurance) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *Insurance) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, InsuranceTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Insurance\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Insurance: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *Insurance) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, InsuranceTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Insurance: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

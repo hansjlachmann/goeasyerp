@@ -835,36 +835,14 @@ func (t *AccScheduleLine) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, AccScheduleLineTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Schedule_name,
-		t.Line_no,
-		t.Row_no,
-		t.Description,
-		t.Totaling,
-		t.Totaling_type,
-		t.New_page,
-		t.Show,
-		t.Calculate,
-		t.Sign_control,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (schedule_name, line_no, row_no, description, totaling, totaling_type, new_page, show, calculate, sign_control) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (schedule_name, line_no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Acc_Schedule_Line: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(AccScheduleLineTableName, key)
 		return false
@@ -890,22 +868,10 @@ func (t *AccScheduleLine) InsertAll(records []*AccScheduleLine, runTrigger bool)
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Schedule_name,
-			r.Line_no,
-			r.Row_no,
-			r.Description,
-			r.Totaling,
-			r.Totaling_type,
-			r.New_page,
-			r.Show,
-			r.Calculate,
-			r.Sign_control,
-		})
+		rows = append(rows, accScheduleLineFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, AccScheduleLineTableName)
-	columns := []string{"schedule_name", "line_no", "row_no", "description", "totaling", "totaling_type", "new_page", "show", "calculate", "sign_control"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, accScheduleLineFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -921,15 +887,7 @@ func (t *AccScheduleLine) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("schedule_name") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("line_no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := accScheduleLineFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -937,106 +895,12 @@ func (t *AccScheduleLine) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, AccScheduleLineTableName)
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("schedule_name") {
-			setClauses = append(setClauses, "schedule_name = ?")
-			values = append(values, t.Schedule_name)
-		}
-		if t.hasFieldChanged("line_no") {
-			setClauses = append(setClauses, "line_no = ?")
-			values = append(values, t.Line_no)
-		}
-		if t.hasFieldChanged("row_no") {
-			setClauses = append(setClauses, "row_no = ?")
-			values = append(values, t.Row_no)
-		}
-		if t.hasFieldChanged("description") {
-			setClauses = append(setClauses, "description = ?")
-			values = append(values, t.Description)
-		}
-		if t.hasFieldChanged("totaling") {
-			setClauses = append(setClauses, "totaling = ?")
-			values = append(values, t.Totaling)
-		}
-		if t.hasFieldChanged("totaling_type") {
-			setClauses = append(setClauses, "totaling_type = ?")
-			values = append(values, t.Totaling_type)
-		}
-		if t.hasFieldChanged("new_page") {
-			setClauses = append(setClauses, "new_page = ?")
-			values = append(values, t.New_page)
-		}
-		if t.hasFieldChanged("show") {
-			setClauses = append(setClauses, "show = ?")
-			values = append(values, t.Show)
-		}
-		if t.hasFieldChanged("calculate") {
-			setClauses = append(setClauses, "calculate = ?")
-			values = append(values, t.Calculate)
-		}
-		if t.hasFieldChanged("sign_control") {
-			setClauses = append(setClauses, "sign_control = ?")
-			values = append(values, t.Sign_control)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "row_no = ?")
-		values = append(values, t.Row_no)
-		setClauses = append(setClauses, "description = ?")
-		values = append(values, t.Description)
-		setClauses = append(setClauses, "totaling = ?")
-		values = append(values, t.Totaling)
-		setClauses = append(setClauses, "totaling_type = ?")
-		values = append(values, t.Totaling_type)
-		setClauses = append(setClauses, "new_page = ?")
-		values = append(values, t.New_page)
-		setClauses = append(setClauses, "show = ?")
-		values = append(values, t.Show)
-		setClauses = append(setClauses, "calculate = ?")
-		values = append(values, t.Calculate)
-		setClauses = append(setClauses, "sign_control = ?")
-		values = append(values, t.Sign_control)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["schedule_name"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Schedule_name)
-	}
-	if old, ok := t.oldValues["line_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Line_no)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND schedule_name = ? AND line_no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Acc_Schedule_Line: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -1067,26 +931,8 @@ func (t *AccScheduleLine) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, AccScheduleLineTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Schedule_name,
-		t.Line_no,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND schedule_name = ? AND line_no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Acc_Schedule_Line: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1286,53 +1132,13 @@ func (t *AccScheduleLine) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *AccScheduleLine) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, AccScheduleLineTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Acc_Schedule_Line\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Acc_Schedule_Line: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *AccScheduleLine) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, AccScheduleLineTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Acc_Schedule_Line: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

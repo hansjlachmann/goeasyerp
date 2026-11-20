@@ -876,40 +876,14 @@ func (t *AccSchedColumn) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, AccSchedColumnTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Column_layout_name,
-		t.Line_no,
-		t.Column_no,
-		t.Column_header,
-		t.Column_type,
-		t.Ledger_entry_type,
-		t.Amount_type,
-		t.Formula,
-		t.Comparison_period_formula,
-		t.Show_opposite_sign,
-		t.Show,
-		t.Rounding_factor,
-		t.Dimension_1_filter,
-		t.Dimension_2_filter,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (column_layout_name, line_no, column_no, column_header, column_type, ledger_entry_type, amount_type, formula, comparison_period_formula, show_opposite_sign, show, rounding_factor, dimension_1_filter, dimension_2_filter) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (column_layout_name, line_no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Acc_Sched_Column: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(AccSchedColumnTableName, key)
 		return false
@@ -935,26 +909,10 @@ func (t *AccSchedColumn) InsertAll(records []*AccSchedColumn, runTrigger bool) e
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Column_layout_name,
-			r.Line_no,
-			r.Column_no,
-			r.Column_header,
-			r.Column_type,
-			r.Ledger_entry_type,
-			r.Amount_type,
-			r.Formula,
-			r.Comparison_period_formula,
-			r.Show_opposite_sign,
-			r.Show,
-			r.Rounding_factor,
-			r.Dimension_1_filter,
-			r.Dimension_2_filter,
-		})
+		rows = append(rows, accSchedColumnFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, AccSchedColumnTableName)
-	columns := []string{"column_layout_name", "line_no", "column_no", "column_header", "column_type", "ledger_entry_type", "amount_type", "formula", "comparison_period_formula", "show_opposite_sign", "show", "rounding_factor", "dimension_1_filter", "dimension_2_filter"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, accSchedColumnFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -970,15 +928,7 @@ func (t *AccSchedColumn) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("column_layout_name") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("line_no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := accSchedColumnFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -986,130 +936,12 @@ func (t *AccSchedColumn) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, AccSchedColumnTableName)
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("column_layout_name") {
-			setClauses = append(setClauses, "column_layout_name = ?")
-			values = append(values, t.Column_layout_name)
-		}
-		if t.hasFieldChanged("line_no") {
-			setClauses = append(setClauses, "line_no = ?")
-			values = append(values, t.Line_no)
-		}
-		if t.hasFieldChanged("column_no") {
-			setClauses = append(setClauses, "column_no = ?")
-			values = append(values, t.Column_no)
-		}
-		if t.hasFieldChanged("column_header") {
-			setClauses = append(setClauses, "column_header = ?")
-			values = append(values, t.Column_header)
-		}
-		if t.hasFieldChanged("column_type") {
-			setClauses = append(setClauses, "column_type = ?")
-			values = append(values, t.Column_type)
-		}
-		if t.hasFieldChanged("ledger_entry_type") {
-			setClauses = append(setClauses, "ledger_entry_type = ?")
-			values = append(values, t.Ledger_entry_type)
-		}
-		if t.hasFieldChanged("amount_type") {
-			setClauses = append(setClauses, "amount_type = ?")
-			values = append(values, t.Amount_type)
-		}
-		if t.hasFieldChanged("formula") {
-			setClauses = append(setClauses, "formula = ?")
-			values = append(values, t.Formula)
-		}
-		if t.hasFieldChanged("comparison_period_formula") {
-			setClauses = append(setClauses, "comparison_period_formula = ?")
-			values = append(values, t.Comparison_period_formula)
-		}
-		if t.hasFieldChanged("show_opposite_sign") {
-			setClauses = append(setClauses, "show_opposite_sign = ?")
-			values = append(values, t.Show_opposite_sign)
-		}
-		if t.hasFieldChanged("show") {
-			setClauses = append(setClauses, "show = ?")
-			values = append(values, t.Show)
-		}
-		if t.hasFieldChanged("rounding_factor") {
-			setClauses = append(setClauses, "rounding_factor = ?")
-			values = append(values, t.Rounding_factor)
-		}
-		if t.hasFieldChanged("dimension_1_filter") {
-			setClauses = append(setClauses, "dimension_1_filter = ?")
-			values = append(values, t.Dimension_1_filter)
-		}
-		if t.hasFieldChanged("dimension_2_filter") {
-			setClauses = append(setClauses, "dimension_2_filter = ?")
-			values = append(values, t.Dimension_2_filter)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "column_no = ?")
-		values = append(values, t.Column_no)
-		setClauses = append(setClauses, "column_header = ?")
-		values = append(values, t.Column_header)
-		setClauses = append(setClauses, "column_type = ?")
-		values = append(values, t.Column_type)
-		setClauses = append(setClauses, "ledger_entry_type = ?")
-		values = append(values, t.Ledger_entry_type)
-		setClauses = append(setClauses, "amount_type = ?")
-		values = append(values, t.Amount_type)
-		setClauses = append(setClauses, "formula = ?")
-		values = append(values, t.Formula)
-		setClauses = append(setClauses, "comparison_period_formula = ?")
-		values = append(values, t.Comparison_period_formula)
-		setClauses = append(setClauses, "show_opposite_sign = ?")
-		values = append(values, t.Show_opposite_sign)
-		setClauses = append(setClauses, "show = ?")
-		values = append(values, t.Show)
-		setClauses = append(setClauses, "rounding_factor = ?")
-		values = append(values, t.Rounding_factor)
-		setClauses = append(setClauses, "dimension_1_filter = ?")
-		values = append(values, t.Dimension_1_filter)
-		setClauses = append(setClauses, "dimension_2_filter = ?")
-		values = append(values, t.Dimension_2_filter)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["column_layout_name"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Column_layout_name)
-	}
-	if old, ok := t.oldValues["line_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Line_no)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND column_layout_name = ? AND line_no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Acc_Sched_Column: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -1140,26 +972,8 @@ func (t *AccSchedColumn) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, AccSchedColumnTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Column_layout_name,
-		t.Line_no,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND column_layout_name = ? AND line_no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Acc_Sched_Column: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1359,53 +1173,13 @@ func (t *AccSchedColumn) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *AccSchedColumn) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, AccSchedColumnTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Acc_Sched_Column\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Acc_Sched_Column: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *AccSchedColumn) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, AccSchedColumnTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Acc_Sched_Column: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

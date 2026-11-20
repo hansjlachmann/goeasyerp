@@ -896,50 +896,14 @@ func (t *InsCoverageLedgerEntry) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, InsCoverageLedgerEntryTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Entry_no,
-		t.Insurance_no,
-		t.Disposed_fa,
-		t.Fa_no,
-		t.Fa_description,
-		t.Posting_date,
-		t.Document_type,
-		t.Document_date,
-		t.Document_no,
-		t.External_document_no,
-		t.Amount,
-		t.Description,
-		t.Fa_class_code,
-		t.Fa_subclass_code,
-		t.Fa_location_code,
-		t.Dimension_1_code,
-		t.Dimension_2_code,
-		t.Location_code,
-		t.User_id,
-		t.Source_code,
-		t.Journal_batch_name,
-		t.Reason_code,
-		t.Index_entry,
-		t.No_series,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, insurance_no, disposed_fa, fa_no, fa_description, posting_date, document_type, document_date, document_no, external_document_no, amount, description, fa_class_code, fa_subclass_code, fa_location_code, dimension_1_code, dimension_2_code, location_code, user_id, source_code, journal_batch_name, reason_code, index_entry, no_series) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Ins_Coverage_Ledger_Entry: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(InsCoverageLedgerEntryTableName, key)
 		return false
@@ -965,36 +929,10 @@ func (t *InsCoverageLedgerEntry) InsertAll(records []*InsCoverageLedgerEntry, ru
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Entry_no,
-			r.Insurance_no,
-			r.Disposed_fa,
-			r.Fa_no,
-			r.Fa_description,
-			r.Posting_date,
-			r.Document_type,
-			r.Document_date,
-			r.Document_no,
-			r.External_document_no,
-			r.Amount,
-			r.Description,
-			r.Fa_class_code,
-			r.Fa_subclass_code,
-			r.Fa_location_code,
-			r.Dimension_1_code,
-			r.Dimension_2_code,
-			r.Location_code,
-			r.User_id,
-			r.Source_code,
-			r.Journal_batch_name,
-			r.Reason_code,
-			r.Index_entry,
-			r.No_series,
-		})
+		rows = append(rows, insCoverageLedgerEntryFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, InsCoverageLedgerEntryTableName)
-	columns := []string{"entry_no", "insurance_no", "disposed_fa", "fa_no", "fa_description", "posting_date", "document_type", "document_date", "document_no", "external_document_no", "amount", "description", "fa_class_code", "fa_subclass_code", "fa_location_code", "dimension_1_code", "dimension_2_code", "location_code", "user_id", "source_code", "journal_batch_name", "reason_code", "index_entry", "no_series"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, insCoverageLedgerEntryFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -1010,185 +948,13 @@ func (t *InsCoverageLedgerEntry) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("entry_no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := insCoverageLedgerEntryFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
 		}
-	}
-	tableName := fmt.Sprintf("%s$%s", t.company, InsCoverageLedgerEntryTableName)
-
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("entry_no") {
-			setClauses = append(setClauses, "entry_no = ?")
-			values = append(values, t.Entry_no)
-		}
-		if t.hasFieldChanged("insurance_no") {
-			setClauses = append(setClauses, "insurance_no = ?")
-			values = append(values, t.Insurance_no)
-		}
-		if t.hasFieldChanged("disposed_fa") {
-			setClauses = append(setClauses, "disposed_fa = ?")
-			values = append(values, t.Disposed_fa)
-		}
-		if t.hasFieldChanged("fa_no") {
-			setClauses = append(setClauses, "fa_no = ?")
-			values = append(values, t.Fa_no)
-		}
-		if t.hasFieldChanged("fa_description") {
-			setClauses = append(setClauses, "fa_description = ?")
-			values = append(values, t.Fa_description)
-		}
-		if t.hasFieldChanged("posting_date") {
-			setClauses = append(setClauses, "posting_date = ?")
-			values = append(values, t.Posting_date)
-		}
-		if t.hasFieldChanged("document_type") {
-			setClauses = append(setClauses, "document_type = ?")
-			values = append(values, t.Document_type)
-		}
-		if t.hasFieldChanged("document_date") {
-			setClauses = append(setClauses, "document_date = ?")
-			values = append(values, t.Document_date)
-		}
-		if t.hasFieldChanged("document_no") {
-			setClauses = append(setClauses, "document_no = ?")
-			values = append(values, t.Document_no)
-		}
-		if t.hasFieldChanged("external_document_no") {
-			setClauses = append(setClauses, "external_document_no = ?")
-			values = append(values, t.External_document_no)
-		}
-		if t.hasFieldChanged("amount") {
-			setClauses = append(setClauses, "amount = ?")
-			values = append(values, t.Amount)
-		}
-		if t.hasFieldChanged("description") {
-			setClauses = append(setClauses, "description = ?")
-			values = append(values, t.Description)
-		}
-		if t.hasFieldChanged("fa_class_code") {
-			setClauses = append(setClauses, "fa_class_code = ?")
-			values = append(values, t.Fa_class_code)
-		}
-		if t.hasFieldChanged("fa_subclass_code") {
-			setClauses = append(setClauses, "fa_subclass_code = ?")
-			values = append(values, t.Fa_subclass_code)
-		}
-		if t.hasFieldChanged("fa_location_code") {
-			setClauses = append(setClauses, "fa_location_code = ?")
-			values = append(values, t.Fa_location_code)
-		}
-		if t.hasFieldChanged("dimension_1_code") {
-			setClauses = append(setClauses, "dimension_1_code = ?")
-			values = append(values, t.Dimension_1_code)
-		}
-		if t.hasFieldChanged("dimension_2_code") {
-			setClauses = append(setClauses, "dimension_2_code = ?")
-			values = append(values, t.Dimension_2_code)
-		}
-		if t.hasFieldChanged("location_code") {
-			setClauses = append(setClauses, "location_code = ?")
-			values = append(values, t.Location_code)
-		}
-		if t.hasFieldChanged("user_id") {
-			setClauses = append(setClauses, "user_id = ?")
-			values = append(values, t.User_id)
-		}
-		if t.hasFieldChanged("source_code") {
-			setClauses = append(setClauses, "source_code = ?")
-			values = append(values, t.Source_code)
-		}
-		if t.hasFieldChanged("journal_batch_name") {
-			setClauses = append(setClauses, "journal_batch_name = ?")
-			values = append(values, t.Journal_batch_name)
-		}
-		if t.hasFieldChanged("reason_code") {
-			setClauses = append(setClauses, "reason_code = ?")
-			values = append(values, t.Reason_code)
-		}
-		if t.hasFieldChanged("index_entry") {
-			setClauses = append(setClauses, "index_entry = ?")
-			values = append(values, t.Index_entry)
-		}
-		if t.hasFieldChanged("no_series") {
-			setClauses = append(setClauses, "no_series = ?")
-			values = append(values, t.No_series)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "insurance_no = ?")
-		values = append(values, t.Insurance_no)
-		setClauses = append(setClauses, "disposed_fa = ?")
-		values = append(values, t.Disposed_fa)
-		setClauses = append(setClauses, "fa_no = ?")
-		values = append(values, t.Fa_no)
-		setClauses = append(setClauses, "fa_description = ?")
-		values = append(values, t.Fa_description)
-		setClauses = append(setClauses, "posting_date = ?")
-		values = append(values, t.Posting_date)
-		setClauses = append(setClauses, "document_type = ?")
-		values = append(values, t.Document_type)
-		setClauses = append(setClauses, "document_date = ?")
-		values = append(values, t.Document_date)
-		setClauses = append(setClauses, "document_no = ?")
-		values = append(values, t.Document_no)
-		setClauses = append(setClauses, "external_document_no = ?")
-		values = append(values, t.External_document_no)
-		setClauses = append(setClauses, "amount = ?")
-		values = append(values, t.Amount)
-		setClauses = append(setClauses, "description = ?")
-		values = append(values, t.Description)
-		setClauses = append(setClauses, "fa_class_code = ?")
-		values = append(values, t.Fa_class_code)
-		setClauses = append(setClauses, "fa_subclass_code = ?")
-		values = append(values, t.Fa_subclass_code)
-		setClauses = append(setClauses, "fa_location_code = ?")
-		values = append(values, t.Fa_location_code)
-		setClauses = append(setClauses, "dimension_1_code = ?")
-		values = append(values, t.Dimension_1_code)
-		setClauses = append(setClauses, "dimension_2_code = ?")
-		values = append(values, t.Dimension_2_code)
-		setClauses = append(setClauses, "location_code = ?")
-		values = append(values, t.Location_code)
-		setClauses = append(setClauses, "user_id = ?")
-		values = append(values, t.User_id)
-		setClauses = append(setClauses, "source_code = ?")
-		values = append(values, t.Source_code)
-		setClauses = append(setClauses, "journal_batch_name = ?")
-		values = append(values, t.Journal_batch_name)
-		setClauses = append(setClauses, "reason_code = ?")
-		values = append(values, t.Reason_code)
-		setClauses = append(setClauses, "index_entry = ?")
-		values = append(values, t.Index_entry)
-		setClauses = append(setClauses, "no_series = ?")
-		values = append(values, t.No_series)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["entry_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Entry_no)
 	}
 	// Renamed key fields that other tables refer to (Rename): carried over below
 	type renamedKey struct {
@@ -1202,19 +968,11 @@ func (t *InsCoverageLedgerEntry) Modify(runTrigger bool) bool {
 		}
 	}
 
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND entry_no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Ins_Coverage_Ledger_Entry: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// A temporary record's rename stays in the record: other tables are not changed
 	for _, r := range renamed {
@@ -1296,25 +1054,8 @@ func (t *InsCoverageLedgerEntry) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, InsCoverageLedgerEntryTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Entry_no,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Ins_Coverage_Ledger_Entry: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1514,53 +1255,13 @@ func (t *InsCoverageLedgerEntry) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *InsCoverageLedgerEntry) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, InsCoverageLedgerEntryTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Ins_Coverage_Ledger_Entry\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Ins_Coverage_Ledger_Entry: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *InsCoverageLedgerEntry) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, InsCoverageLedgerEntryTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Ins_Coverage_Ledger_Entry: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

@@ -1066,70 +1066,14 @@ func (t *TaxEntry) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, TaxEntryTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Entry_no,
-		t.Gen_bus_posting_group,
-		t.Gen_prod_posting_group,
-		t.Posting_date,
-		t.Document_no,
-		t.Document_type,
-		t.Type,
-		t.Base,
-		t.Amount,
-		t.Tax_calculation_type,
-		t.Sell_to_buy_from_no,
-		t.Eu_3_party_trade,
-		t.User_id,
-		t.Source_code,
-		t.Reason_code,
-		t.Closed_by_entry_no,
-		t.Closed,
-		t.Country_code,
-		t.Internal_ref_no,
-		t.Transaction_no,
-		t.Unrealized_amount,
-		t.Unrealized_base,
-		t.Remaining_unrealized_amount,
-		t.Remaining_unrealized_base,
-		t.Additional_currency_amount,
-		t.Additional_currency_base,
-		t.Add_currency_unrealized_amt,
-		t.Add_currency_unrealized_base,
-		t.Add_curr_rem_unreal_amount,
-		t.Add_curr_rem_unreal_base,
-		t.External_document_no,
-		t.No_series,
-		t.Tax_area_code,
-		t.Tax_liable,
-		t.Tax_group_code,
-		t.Use_tax,
-		t.Tax_jurisdiction_code,
-		t.Tax_group_used,
-		t.Tax_type,
-		t.Tax_on_tax,
-		t.Sales_tax_connection_no,
-		t.Unrealized_tax_entry_no,
-		t.Tax_bus_posting_group,
-		t.Tax_prod_posting_group,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, gen_bus_posting_group, gen_prod_posting_group, posting_date, document_no, document_type, type, base, amount, tax_calculation_type, sell_to_buy_from_no, eu_3_party_trade, user_id, source_code, reason_code, closed_by_entry_no, closed, country_code, internal_ref_no, transaction_no, unrealized_amount, unrealized_base, remaining_unrealized_amount, remaining_unrealized_base, additional_currency_amount, additional_currency_base, add_currency_unrealized_amt, add_currency_unrealized_base, add_curr_rem_unreal_amount, add_curr_rem_unreal_base, external_document_no, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_jurisdiction_code, tax_group_used, tax_type, tax_on_tax, sales_tax_connection_no, unrealized_tax_entry_no, tax_bus_posting_group, tax_prod_posting_group) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Tax_Entry: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(TaxEntryTableName, key)
 		return false
@@ -1155,56 +1099,10 @@ func (t *TaxEntry) InsertAll(records []*TaxEntry, runTrigger bool) error {
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Entry_no,
-			r.Gen_bus_posting_group,
-			r.Gen_prod_posting_group,
-			r.Posting_date,
-			r.Document_no,
-			r.Document_type,
-			r.Type,
-			r.Base,
-			r.Amount,
-			r.Tax_calculation_type,
-			r.Sell_to_buy_from_no,
-			r.Eu_3_party_trade,
-			r.User_id,
-			r.Source_code,
-			r.Reason_code,
-			r.Closed_by_entry_no,
-			r.Closed,
-			r.Country_code,
-			r.Internal_ref_no,
-			r.Transaction_no,
-			r.Unrealized_amount,
-			r.Unrealized_base,
-			r.Remaining_unrealized_amount,
-			r.Remaining_unrealized_base,
-			r.Additional_currency_amount,
-			r.Additional_currency_base,
-			r.Add_currency_unrealized_amt,
-			r.Add_currency_unrealized_base,
-			r.Add_curr_rem_unreal_amount,
-			r.Add_curr_rem_unreal_base,
-			r.External_document_no,
-			r.No_series,
-			r.Tax_area_code,
-			r.Tax_liable,
-			r.Tax_group_code,
-			r.Use_tax,
-			r.Tax_jurisdiction_code,
-			r.Tax_group_used,
-			r.Tax_type,
-			r.Tax_on_tax,
-			r.Sales_tax_connection_no,
-			r.Unrealized_tax_entry_no,
-			r.Tax_bus_posting_group,
-			r.Tax_prod_posting_group,
-		})
+		rows = append(rows, taxEntryFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, TaxEntryTableName)
-	columns := []string{"entry_no", "gen_bus_posting_group", "gen_prod_posting_group", "posting_date", "document_no", "document_type", "type", "base", "amount", "tax_calculation_type", "sell_to_buy_from_no", "eu_3_party_trade", "user_id", "source_code", "reason_code", "closed_by_entry_no", "closed", "country_code", "internal_ref_no", "transaction_no", "unrealized_amount", "unrealized_base", "remaining_unrealized_amount", "remaining_unrealized_base", "additional_currency_amount", "additional_currency_base", "add_currency_unrealized_amt", "add_currency_unrealized_base", "add_curr_rem_unreal_amount", "add_curr_rem_unreal_base", "external_document_no", "no_series", "tax_area_code", "tax_liable", "tax_group_code", "use_tax", "tax_jurisdiction_code", "tax_group_used", "tax_type", "tax_on_tax", "sales_tax_connection_no", "unrealized_tax_entry_no", "tax_bus_posting_group", "tax_prod_posting_group"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, taxEntryFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -1220,12 +1118,7 @@ func (t *TaxEntry) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("entry_no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := taxEntryFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -1233,307 +1126,12 @@ func (t *TaxEntry) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, TaxEntryTableName)
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("entry_no") {
-			setClauses = append(setClauses, "entry_no = ?")
-			values = append(values, t.Entry_no)
-		}
-		if t.hasFieldChanged("gen_bus_posting_group") {
-			setClauses = append(setClauses, "gen_bus_posting_group = ?")
-			values = append(values, t.Gen_bus_posting_group)
-		}
-		if t.hasFieldChanged("gen_prod_posting_group") {
-			setClauses = append(setClauses, "gen_prod_posting_group = ?")
-			values = append(values, t.Gen_prod_posting_group)
-		}
-		if t.hasFieldChanged("posting_date") {
-			setClauses = append(setClauses, "posting_date = ?")
-			values = append(values, t.Posting_date)
-		}
-		if t.hasFieldChanged("document_no") {
-			setClauses = append(setClauses, "document_no = ?")
-			values = append(values, t.Document_no)
-		}
-		if t.hasFieldChanged("document_type") {
-			setClauses = append(setClauses, "document_type = ?")
-			values = append(values, t.Document_type)
-		}
-		if t.hasFieldChanged("type") {
-			setClauses = append(setClauses, "type = ?")
-			values = append(values, t.Type)
-		}
-		if t.hasFieldChanged("base") {
-			setClauses = append(setClauses, "base = ?")
-			values = append(values, t.Base)
-		}
-		if t.hasFieldChanged("amount") {
-			setClauses = append(setClauses, "amount = ?")
-			values = append(values, t.Amount)
-		}
-		if t.hasFieldChanged("tax_calculation_type") {
-			setClauses = append(setClauses, "tax_calculation_type = ?")
-			values = append(values, t.Tax_calculation_type)
-		}
-		if t.hasFieldChanged("sell_to_buy_from_no") {
-			setClauses = append(setClauses, "sell_to_buy_from_no = ?")
-			values = append(values, t.Sell_to_buy_from_no)
-		}
-		if t.hasFieldChanged("eu_3_party_trade") {
-			setClauses = append(setClauses, "eu_3_party_trade = ?")
-			values = append(values, t.Eu_3_party_trade)
-		}
-		if t.hasFieldChanged("user_id") {
-			setClauses = append(setClauses, "user_id = ?")
-			values = append(values, t.User_id)
-		}
-		if t.hasFieldChanged("source_code") {
-			setClauses = append(setClauses, "source_code = ?")
-			values = append(values, t.Source_code)
-		}
-		if t.hasFieldChanged("reason_code") {
-			setClauses = append(setClauses, "reason_code = ?")
-			values = append(values, t.Reason_code)
-		}
-		if t.hasFieldChanged("closed_by_entry_no") {
-			setClauses = append(setClauses, "closed_by_entry_no = ?")
-			values = append(values, t.Closed_by_entry_no)
-		}
-		if t.hasFieldChanged("closed") {
-			setClauses = append(setClauses, "closed = ?")
-			values = append(values, t.Closed)
-		}
-		if t.hasFieldChanged("country_code") {
-			setClauses = append(setClauses, "country_code = ?")
-			values = append(values, t.Country_code)
-		}
-		if t.hasFieldChanged("internal_ref_no") {
-			setClauses = append(setClauses, "internal_ref_no = ?")
-			values = append(values, t.Internal_ref_no)
-		}
-		if t.hasFieldChanged("transaction_no") {
-			setClauses = append(setClauses, "transaction_no = ?")
-			values = append(values, t.Transaction_no)
-		}
-		if t.hasFieldChanged("unrealized_amount") {
-			setClauses = append(setClauses, "unrealized_amount = ?")
-			values = append(values, t.Unrealized_amount)
-		}
-		if t.hasFieldChanged("unrealized_base") {
-			setClauses = append(setClauses, "unrealized_base = ?")
-			values = append(values, t.Unrealized_base)
-		}
-		if t.hasFieldChanged("remaining_unrealized_amount") {
-			setClauses = append(setClauses, "remaining_unrealized_amount = ?")
-			values = append(values, t.Remaining_unrealized_amount)
-		}
-		if t.hasFieldChanged("remaining_unrealized_base") {
-			setClauses = append(setClauses, "remaining_unrealized_base = ?")
-			values = append(values, t.Remaining_unrealized_base)
-		}
-		if t.hasFieldChanged("additional_currency_amount") {
-			setClauses = append(setClauses, "additional_currency_amount = ?")
-			values = append(values, t.Additional_currency_amount)
-		}
-		if t.hasFieldChanged("additional_currency_base") {
-			setClauses = append(setClauses, "additional_currency_base = ?")
-			values = append(values, t.Additional_currency_base)
-		}
-		if t.hasFieldChanged("add_currency_unrealized_amt") {
-			setClauses = append(setClauses, "add_currency_unrealized_amt = ?")
-			values = append(values, t.Add_currency_unrealized_amt)
-		}
-		if t.hasFieldChanged("add_currency_unrealized_base") {
-			setClauses = append(setClauses, "add_currency_unrealized_base = ?")
-			values = append(values, t.Add_currency_unrealized_base)
-		}
-		if t.hasFieldChanged("add_curr_rem_unreal_amount") {
-			setClauses = append(setClauses, "add_curr_rem_unreal_amount = ?")
-			values = append(values, t.Add_curr_rem_unreal_amount)
-		}
-		if t.hasFieldChanged("add_curr_rem_unreal_base") {
-			setClauses = append(setClauses, "add_curr_rem_unreal_base = ?")
-			values = append(values, t.Add_curr_rem_unreal_base)
-		}
-		if t.hasFieldChanged("external_document_no") {
-			setClauses = append(setClauses, "external_document_no = ?")
-			values = append(values, t.External_document_no)
-		}
-		if t.hasFieldChanged("no_series") {
-			setClauses = append(setClauses, "no_series = ?")
-			values = append(values, t.No_series)
-		}
-		if t.hasFieldChanged("tax_area_code") {
-			setClauses = append(setClauses, "tax_area_code = ?")
-			values = append(values, t.Tax_area_code)
-		}
-		if t.hasFieldChanged("tax_liable") {
-			setClauses = append(setClauses, "tax_liable = ?")
-			values = append(values, t.Tax_liable)
-		}
-		if t.hasFieldChanged("tax_group_code") {
-			setClauses = append(setClauses, "tax_group_code = ?")
-			values = append(values, t.Tax_group_code)
-		}
-		if t.hasFieldChanged("use_tax") {
-			setClauses = append(setClauses, "use_tax = ?")
-			values = append(values, t.Use_tax)
-		}
-		if t.hasFieldChanged("tax_jurisdiction_code") {
-			setClauses = append(setClauses, "tax_jurisdiction_code = ?")
-			values = append(values, t.Tax_jurisdiction_code)
-		}
-		if t.hasFieldChanged("tax_group_used") {
-			setClauses = append(setClauses, "tax_group_used = ?")
-			values = append(values, t.Tax_group_used)
-		}
-		if t.hasFieldChanged("tax_type") {
-			setClauses = append(setClauses, "tax_type = ?")
-			values = append(values, t.Tax_type)
-		}
-		if t.hasFieldChanged("tax_on_tax") {
-			setClauses = append(setClauses, "tax_on_tax = ?")
-			values = append(values, t.Tax_on_tax)
-		}
-		if t.hasFieldChanged("sales_tax_connection_no") {
-			setClauses = append(setClauses, "sales_tax_connection_no = ?")
-			values = append(values, t.Sales_tax_connection_no)
-		}
-		if t.hasFieldChanged("unrealized_tax_entry_no") {
-			setClauses = append(setClauses, "unrealized_tax_entry_no = ?")
-			values = append(values, t.Unrealized_tax_entry_no)
-		}
-		if t.hasFieldChanged("tax_bus_posting_group") {
-			setClauses = append(setClauses, "tax_bus_posting_group = ?")
-			values = append(values, t.Tax_bus_posting_group)
-		}
-		if t.hasFieldChanged("tax_prod_posting_group") {
-			setClauses = append(setClauses, "tax_prod_posting_group = ?")
-			values = append(values, t.Tax_prod_posting_group)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "gen_bus_posting_group = ?")
-		values = append(values, t.Gen_bus_posting_group)
-		setClauses = append(setClauses, "gen_prod_posting_group = ?")
-		values = append(values, t.Gen_prod_posting_group)
-		setClauses = append(setClauses, "posting_date = ?")
-		values = append(values, t.Posting_date)
-		setClauses = append(setClauses, "document_no = ?")
-		values = append(values, t.Document_no)
-		setClauses = append(setClauses, "document_type = ?")
-		values = append(values, t.Document_type)
-		setClauses = append(setClauses, "type = ?")
-		values = append(values, t.Type)
-		setClauses = append(setClauses, "base = ?")
-		values = append(values, t.Base)
-		setClauses = append(setClauses, "amount = ?")
-		values = append(values, t.Amount)
-		setClauses = append(setClauses, "tax_calculation_type = ?")
-		values = append(values, t.Tax_calculation_type)
-		setClauses = append(setClauses, "sell_to_buy_from_no = ?")
-		values = append(values, t.Sell_to_buy_from_no)
-		setClauses = append(setClauses, "eu_3_party_trade = ?")
-		values = append(values, t.Eu_3_party_trade)
-		setClauses = append(setClauses, "user_id = ?")
-		values = append(values, t.User_id)
-		setClauses = append(setClauses, "source_code = ?")
-		values = append(values, t.Source_code)
-		setClauses = append(setClauses, "reason_code = ?")
-		values = append(values, t.Reason_code)
-		setClauses = append(setClauses, "closed_by_entry_no = ?")
-		values = append(values, t.Closed_by_entry_no)
-		setClauses = append(setClauses, "closed = ?")
-		values = append(values, t.Closed)
-		setClauses = append(setClauses, "country_code = ?")
-		values = append(values, t.Country_code)
-		setClauses = append(setClauses, "internal_ref_no = ?")
-		values = append(values, t.Internal_ref_no)
-		setClauses = append(setClauses, "transaction_no = ?")
-		values = append(values, t.Transaction_no)
-		setClauses = append(setClauses, "unrealized_amount = ?")
-		values = append(values, t.Unrealized_amount)
-		setClauses = append(setClauses, "unrealized_base = ?")
-		values = append(values, t.Unrealized_base)
-		setClauses = append(setClauses, "remaining_unrealized_amount = ?")
-		values = append(values, t.Remaining_unrealized_amount)
-		setClauses = append(setClauses, "remaining_unrealized_base = ?")
-		values = append(values, t.Remaining_unrealized_base)
-		setClauses = append(setClauses, "additional_currency_amount = ?")
-		values = append(values, t.Additional_currency_amount)
-		setClauses = append(setClauses, "additional_currency_base = ?")
-		values = append(values, t.Additional_currency_base)
-		setClauses = append(setClauses, "add_currency_unrealized_amt = ?")
-		values = append(values, t.Add_currency_unrealized_amt)
-		setClauses = append(setClauses, "add_currency_unrealized_base = ?")
-		values = append(values, t.Add_currency_unrealized_base)
-		setClauses = append(setClauses, "add_curr_rem_unreal_amount = ?")
-		values = append(values, t.Add_curr_rem_unreal_amount)
-		setClauses = append(setClauses, "add_curr_rem_unreal_base = ?")
-		values = append(values, t.Add_curr_rem_unreal_base)
-		setClauses = append(setClauses, "external_document_no = ?")
-		values = append(values, t.External_document_no)
-		setClauses = append(setClauses, "no_series = ?")
-		values = append(values, t.No_series)
-		setClauses = append(setClauses, "tax_area_code = ?")
-		values = append(values, t.Tax_area_code)
-		setClauses = append(setClauses, "tax_liable = ?")
-		values = append(values, t.Tax_liable)
-		setClauses = append(setClauses, "tax_group_code = ?")
-		values = append(values, t.Tax_group_code)
-		setClauses = append(setClauses, "use_tax = ?")
-		values = append(values, t.Use_tax)
-		setClauses = append(setClauses, "tax_jurisdiction_code = ?")
-		values = append(values, t.Tax_jurisdiction_code)
-		setClauses = append(setClauses, "tax_group_used = ?")
-		values = append(values, t.Tax_group_used)
-		setClauses = append(setClauses, "tax_type = ?")
-		values = append(values, t.Tax_type)
-		setClauses = append(setClauses, "tax_on_tax = ?")
-		values = append(values, t.Tax_on_tax)
-		setClauses = append(setClauses, "sales_tax_connection_no = ?")
-		values = append(values, t.Sales_tax_connection_no)
-		setClauses = append(setClauses, "unrealized_tax_entry_no = ?")
-		values = append(values, t.Unrealized_tax_entry_no)
-		setClauses = append(setClauses, "tax_bus_posting_group = ?")
-		values = append(values, t.Tax_bus_posting_group)
-		setClauses = append(setClauses, "tax_prod_posting_group = ?")
-		values = append(values, t.Tax_prod_posting_group)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["entry_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Entry_no)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND entry_no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Tax_Entry: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -1564,25 +1162,8 @@ func (t *TaxEntry) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, TaxEntryTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Entry_no,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Tax_Entry: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1782,53 +1363,13 @@ func (t *TaxEntry) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *TaxEntry) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, TaxEntryTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Tax_Entry\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Tax_Entry: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *TaxEntry) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, TaxEntryTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Tax_Entry: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

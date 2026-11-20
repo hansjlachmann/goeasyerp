@@ -640,30 +640,14 @@ func (t *ReqWkshTemplate) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ReqWkshTemplateTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Name,
-		t.Description,
-		t.Page_id,
-		t.Recurring,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (name, description, page_id, recurring) VALUES (?, ?, ?, ?) ON CONFLICT (name) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Req_Wksh_Template: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(ReqWkshTemplateTableName, key)
 		return false
@@ -689,16 +673,10 @@ func (t *ReqWkshTemplate) InsertAll(records []*ReqWkshTemplate, runTrigger bool)
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Name,
-			r.Description,
-			r.Page_id,
-			r.Recurring,
-		})
+		rows = append(rows, reqWkshTemplateFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, ReqWkshTemplateTableName)
-	columns := []string{"name", "description", "page_id", "recurring"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, reqWkshTemplateFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -714,65 +692,13 @@ func (t *ReqWkshTemplate) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("name") {
-			keyChanged = true
-		}
-	}
+	keyChanged := reqWkshTemplateFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
 		}
-	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ReqWkshTemplateTableName)
-
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("name") {
-			setClauses = append(setClauses, "name = ?")
-			values = append(values, t.Name)
-		}
-		if t.hasFieldChanged("description") {
-			setClauses = append(setClauses, "description = ?")
-			values = append(values, t.Description)
-		}
-		if t.hasFieldChanged("page_id") {
-			setClauses = append(setClauses, "page_id = ?")
-			values = append(values, t.Page_id)
-		}
-		if t.hasFieldChanged("recurring") {
-			setClauses = append(setClauses, "recurring = ?")
-			values = append(values, t.Recurring)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "description = ?")
-		values = append(values, t.Description)
-		setClauses = append(setClauses, "page_id = ?")
-		values = append(values, t.Page_id)
-		setClauses = append(setClauses, "recurring = ?")
-		values = append(values, t.Recurring)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["name"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Name)
 	}
 	// Renamed key fields that other tables refer to (Rename): carried over below
 	type renamedKey struct {
@@ -786,19 +712,11 @@ func (t *ReqWkshTemplate) Modify(runTrigger bool) bool {
 		}
 	}
 
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND name = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Req_Wksh_Template: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// A temporary record's rename stays in the record: other tables are not changed
 	for _, r := range renamed {
@@ -880,25 +798,8 @@ func (t *ReqWkshTemplate) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ReqWkshTemplateTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Name,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND name = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Req_Wksh_Template: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // ========================================
@@ -1176,53 +1077,13 @@ func (t *ReqWkshTemplate) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *ReqWkshTemplate) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, ReqWkshTemplateTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Req_Wksh_Template\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Req_Wksh_Template: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *ReqWkshTemplate) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, ReqWkshTemplateTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Req_Wksh_Template: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

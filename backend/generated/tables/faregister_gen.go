@@ -720,37 +720,14 @@ func (t *FARegister) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, FARegisterTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.No,
-		t.From_entry_no,
-		t.To_entry_no,
-		t.Creation_date,
-		t.Source_code,
-		t.User_id,
-		t.Journal_batch_name,
-		t.Journal_type,
-		t.G_l_register_no,
-		t.From_maintenance_entry_no,
-		t.To_maintenance_entry_no,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (no, from_entry_no, to_entry_no, creation_date, source_code, user_id, journal_batch_name, journal_type, g_l_register_no, from_maintenance_entry_no, to_maintenance_entry_no) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert FA_Register: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(FARegisterTableName, key)
 		return false
@@ -776,23 +753,10 @@ func (t *FARegister) InsertAll(records []*FARegister, runTrigger bool) error {
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.No,
-			r.From_entry_no,
-			r.To_entry_no,
-			r.Creation_date,
-			r.Source_code,
-			r.User_id,
-			r.Journal_batch_name,
-			r.Journal_type,
-			r.G_l_register_no,
-			r.From_maintenance_entry_no,
-			r.To_maintenance_entry_no,
-		})
+		rows = append(rows, fARegisterFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, FARegisterTableName)
-	columns := []string{"no", "from_entry_no", "to_entry_no", "creation_date", "source_code", "user_id", "journal_batch_name", "journal_type", "g_l_register_no", "from_maintenance_entry_no", "to_maintenance_entry_no"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, fARegisterFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -808,107 +772,13 @@ func (t *FARegister) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := fARegisterFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
 		}
-	}
-	tableName := fmt.Sprintf("%s$%s", t.company, FARegisterTableName)
-
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("no") {
-			setClauses = append(setClauses, "no = ?")
-			values = append(values, t.No)
-		}
-		if t.hasFieldChanged("from_entry_no") {
-			setClauses = append(setClauses, "from_entry_no = ?")
-			values = append(values, t.From_entry_no)
-		}
-		if t.hasFieldChanged("to_entry_no") {
-			setClauses = append(setClauses, "to_entry_no = ?")
-			values = append(values, t.To_entry_no)
-		}
-		if t.hasFieldChanged("creation_date") {
-			setClauses = append(setClauses, "creation_date = ?")
-			values = append(values, t.Creation_date)
-		}
-		if t.hasFieldChanged("source_code") {
-			setClauses = append(setClauses, "source_code = ?")
-			values = append(values, t.Source_code)
-		}
-		if t.hasFieldChanged("user_id") {
-			setClauses = append(setClauses, "user_id = ?")
-			values = append(values, t.User_id)
-		}
-		if t.hasFieldChanged("journal_batch_name") {
-			setClauses = append(setClauses, "journal_batch_name = ?")
-			values = append(values, t.Journal_batch_name)
-		}
-		if t.hasFieldChanged("journal_type") {
-			setClauses = append(setClauses, "journal_type = ?")
-			values = append(values, t.Journal_type)
-		}
-		if t.hasFieldChanged("g_l_register_no") {
-			setClauses = append(setClauses, "g_l_register_no = ?")
-			values = append(values, t.G_l_register_no)
-		}
-		if t.hasFieldChanged("from_maintenance_entry_no") {
-			setClauses = append(setClauses, "from_maintenance_entry_no = ?")
-			values = append(values, t.From_maintenance_entry_no)
-		}
-		if t.hasFieldChanged("to_maintenance_entry_no") {
-			setClauses = append(setClauses, "to_maintenance_entry_no = ?")
-			values = append(values, t.To_maintenance_entry_no)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "from_entry_no = ?")
-		values = append(values, t.From_entry_no)
-		setClauses = append(setClauses, "to_entry_no = ?")
-		values = append(values, t.To_entry_no)
-		setClauses = append(setClauses, "creation_date = ?")
-		values = append(values, t.Creation_date)
-		setClauses = append(setClauses, "source_code = ?")
-		values = append(values, t.Source_code)
-		setClauses = append(setClauses, "user_id = ?")
-		values = append(values, t.User_id)
-		setClauses = append(setClauses, "journal_batch_name = ?")
-		values = append(values, t.Journal_batch_name)
-		setClauses = append(setClauses, "journal_type = ?")
-		values = append(values, t.Journal_type)
-		setClauses = append(setClauses, "g_l_register_no = ?")
-		values = append(values, t.G_l_register_no)
-		setClauses = append(setClauses, "from_maintenance_entry_no = ?")
-		values = append(values, t.From_maintenance_entry_no)
-		setClauses = append(setClauses, "to_maintenance_entry_no = ?")
-		values = append(values, t.To_maintenance_entry_no)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.No)
 	}
 	// Renamed key fields that other tables refer to (Rename): carried over below
 	type renamedKey struct {
@@ -922,19 +792,11 @@ func (t *FARegister) Modify(runTrigger bool) bool {
 		}
 	}
 
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify FA_Register: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// A temporary record's rename stays in the record: other tables are not changed
 	for _, r := range renamed {
@@ -1016,25 +878,8 @@ func (t *FARegister) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, FARegisterTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.No,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete FA_Register: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1234,53 +1079,13 @@ func (t *FARegister) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *FARegister) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, FARegisterTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of FA_Register\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all FA_Register: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *FARegister) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, FARegisterTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all FA_Register: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

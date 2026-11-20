@@ -640,29 +640,14 @@ func (t *TaxAreaLine) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, TaxAreaLineTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Tax_area,
-		t.Tax_jurisdiction_code,
-		t.Calculation_order,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (tax_area, tax_jurisdiction_code, calculation_order) VALUES (?, ?, ?) ON CONFLICT (tax_area, tax_jurisdiction_code) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Tax_Area_Line: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(TaxAreaLineTableName, key)
 		return false
@@ -688,15 +673,10 @@ func (t *TaxAreaLine) InsertAll(records []*TaxAreaLine, runTrigger bool) error {
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Tax_area,
-			r.Tax_jurisdiction_code,
-			r.Calculation_order,
-		})
+		rows = append(rows, taxAreaLineFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, TaxAreaLineTableName)
-	columns := []string{"tax_area", "tax_jurisdiction_code", "calculation_order"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, taxAreaLineFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -712,15 +692,7 @@ func (t *TaxAreaLine) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("tax_area") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("tax_jurisdiction_code") {
-			keyChanged = true
-		}
-	}
+	keyChanged := taxAreaLineFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -728,64 +700,12 @@ func (t *TaxAreaLine) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, TaxAreaLineTableName)
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("tax_area") {
-			setClauses = append(setClauses, "tax_area = ?")
-			values = append(values, t.Tax_area)
-		}
-		if t.hasFieldChanged("tax_jurisdiction_code") {
-			setClauses = append(setClauses, "tax_jurisdiction_code = ?")
-			values = append(values, t.Tax_jurisdiction_code)
-		}
-		if t.hasFieldChanged("calculation_order") {
-			setClauses = append(setClauses, "calculation_order = ?")
-			values = append(values, t.Calculation_order)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "calculation_order = ?")
-		values = append(values, t.Calculation_order)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["tax_area"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Tax_area)
-	}
-	if old, ok := t.oldValues["tax_jurisdiction_code"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Tax_jurisdiction_code)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND tax_area = ? AND tax_jurisdiction_code = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Tax_Area_Line: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -816,26 +736,8 @@ func (t *TaxAreaLine) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, TaxAreaLineTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Tax_area,
-		t.Tax_jurisdiction_code,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND tax_area = ? AND tax_jurisdiction_code = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Tax_Area_Line: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // ========================================
@@ -1109,53 +1011,13 @@ func (t *TaxAreaLine) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *TaxAreaLine) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, TaxAreaLineTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Tax_Area_Line\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Tax_Area_Line: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *TaxAreaLine) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, TaxAreaLineTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Tax_Area_Line: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

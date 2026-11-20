@@ -738,34 +738,14 @@ func (t *FAAllocation) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Code,
-		t.Line_no,
-		t.Description,
-		t.Account_no,
-		t.Dimension_1_code,
-		t.Dimension_2_code,
-		t.Allocation_percent,
-		t.Allocation_type,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (code, line_no, description, account_no, dimension_1_code, dimension_2_code, allocation_percent, allocation_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (code, line_no, allocation_type) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert FA_Allocation: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(FAAllocationTableName, key)
 		return false
@@ -791,20 +771,10 @@ func (t *FAAllocation) InsertAll(records []*FAAllocation, runTrigger bool) error
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Code,
-			r.Line_no,
-			r.Description,
-			r.Account_no,
-			r.Dimension_1_code,
-			r.Dimension_2_code,
-			r.Allocation_percent,
-			r.Allocation_type,
-		})
+		rows = append(rows, fAAllocationFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName)
-	columns := []string{"code", "line_no", "description", "account_no", "dimension_1_code", "dimension_2_code", "allocation_percent", "allocation_type"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, fAAllocationFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -820,18 +790,7 @@ func (t *FAAllocation) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("code") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("line_no") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("allocation_type") {
-			keyChanged = true
-		}
-	}
+	keyChanged := fAAllocationFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -839,97 +798,12 @@ func (t *FAAllocation) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName)
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("code") {
-			setClauses = append(setClauses, "code = ?")
-			values = append(values, t.Code)
-		}
-		if t.hasFieldChanged("line_no") {
-			setClauses = append(setClauses, "line_no = ?")
-			values = append(values, t.Line_no)
-		}
-		if t.hasFieldChanged("description") {
-			setClauses = append(setClauses, "description = ?")
-			values = append(values, t.Description)
-		}
-		if t.hasFieldChanged("account_no") {
-			setClauses = append(setClauses, "account_no = ?")
-			values = append(values, t.Account_no)
-		}
-		if t.hasFieldChanged("dimension_1_code") {
-			setClauses = append(setClauses, "dimension_1_code = ?")
-			values = append(values, t.Dimension_1_code)
-		}
-		if t.hasFieldChanged("dimension_2_code") {
-			setClauses = append(setClauses, "dimension_2_code = ?")
-			values = append(values, t.Dimension_2_code)
-		}
-		if t.hasFieldChanged("allocation_percent") {
-			setClauses = append(setClauses, "allocation_percent = ?")
-			values = append(values, t.Allocation_percent)
-		}
-		if t.hasFieldChanged("allocation_type") {
-			setClauses = append(setClauses, "allocation_type = ?")
-			values = append(values, t.Allocation_type)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "description = ?")
-		values = append(values, t.Description)
-		setClauses = append(setClauses, "account_no = ?")
-		values = append(values, t.Account_no)
-		setClauses = append(setClauses, "dimension_1_code = ?")
-		values = append(values, t.Dimension_1_code)
-		setClauses = append(setClauses, "dimension_2_code = ?")
-		values = append(values, t.Dimension_2_code)
-		setClauses = append(setClauses, "allocation_percent = ?")
-		values = append(values, t.Allocation_percent)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["code"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Code)
-	}
-	if old, ok := t.oldValues["line_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Line_no)
-	}
-	if old, ok := t.oldValues["allocation_type"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Allocation_type)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND code = ? AND line_no = ? AND allocation_type = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify FA_Allocation: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -960,27 +834,8 @@ func (t *FAAllocation) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Code,
-		t.Line_no,
-		t.Allocation_type,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND code = ? AND line_no = ? AND allocation_type = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete FA_Allocation: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // ========================================
@@ -1254,53 +1109,13 @@ func (t *FAAllocation) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *FAAllocation) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of FA_Allocation\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all FA_Allocation: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *FAAllocation) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, FAAllocationTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all FA_Allocation: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

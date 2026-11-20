@@ -1022,65 +1022,14 @@ func (t *FAJournalLine) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, FAJournalLineTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Journal_template_name,
-		t.Journal_batch_name,
-		t.Line_no,
-		t.Depreciation_book_code,
-		t.Fa_posting_type,
-		t.Fa_no,
-		t.Fa_posting_date,
-		t.Posting_date,
-		t.Document_type,
-		t.Document_date,
-		t.Document_no,
-		t.External_document_no,
-		t.Description,
-		t.Amount,
-		t.Debit_amount,
-		t.Credit_amount,
-		t.Salvage_value,
-		t.Quantity,
-		t.Correction,
-		t.No_of_depreciation_days,
-		t.Depr_until_fa_posting_date,
-		t.Depr_acquisition_cost,
-		t.Fa_posting_group,
-		t.Maintenance_code,
-		t.Dimension_1_code,
-		t.Dimension_2_code,
-		t.Insurance_no,
-		t.Budgeted_fa_no,
-		t.Use_duplication_list,
-		t.Duplicate_in_depreciation_book,
-		t.Fa_reclassification_entry,
-		t.Fa_error_entry_no,
-		t.Reason_code,
-		t.Source_code,
-		t.Index_entry,
-		t.Posting_no_series,
-		t.Recurring_method,
-		t.Expiration_date,
-		t.Recurring_frequency,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, journal_batch_name, line_no, depreciation_book_code, fa_posting_type, fa_no, fa_posting_date, posting_date, document_type, document_date, document_no, external_document_no, description, amount, debit_amount, credit_amount, salvage_value, quantity, correction, no_of_depreciation_days, depr_until_fa_posting_date, depr_acquisition_cost, fa_posting_group, maintenance_code, dimension_1_code, dimension_2_code, insurance_no, budgeted_fa_no, use_duplication_list, duplicate_in_depreciation_book, fa_reclassification_entry, fa_error_entry_no, reason_code, source_code, index_entry, posting_no_series, recurring_method, expiration_date, recurring_frequency) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert FA_Journal_Line: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(FAJournalLineTableName, key)
 		return false
@@ -1106,51 +1055,10 @@ func (t *FAJournalLine) InsertAll(records []*FAJournalLine, runTrigger bool) err
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Journal_template_name,
-			r.Journal_batch_name,
-			r.Line_no,
-			r.Depreciation_book_code,
-			r.Fa_posting_type,
-			r.Fa_no,
-			r.Fa_posting_date,
-			r.Posting_date,
-			r.Document_type,
-			r.Document_date,
-			r.Document_no,
-			r.External_document_no,
-			r.Description,
-			r.Amount,
-			r.Debit_amount,
-			r.Credit_amount,
-			r.Salvage_value,
-			r.Quantity,
-			r.Correction,
-			r.No_of_depreciation_days,
-			r.Depr_until_fa_posting_date,
-			r.Depr_acquisition_cost,
-			r.Fa_posting_group,
-			r.Maintenance_code,
-			r.Dimension_1_code,
-			r.Dimension_2_code,
-			r.Insurance_no,
-			r.Budgeted_fa_no,
-			r.Use_duplication_list,
-			r.Duplicate_in_depreciation_book,
-			r.Fa_reclassification_entry,
-			r.Fa_error_entry_no,
-			r.Reason_code,
-			r.Source_code,
-			r.Index_entry,
-			r.Posting_no_series,
-			r.Recurring_method,
-			r.Expiration_date,
-			r.Recurring_frequency,
-		})
+		rows = append(rows, fAJournalLineFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, FAJournalLineTableName)
-	columns := []string{"journal_template_name", "journal_batch_name", "line_no", "depreciation_book_code", "fa_posting_type", "fa_no", "fa_posting_date", "posting_date", "document_type", "document_date", "document_no", "external_document_no", "description", "amount", "debit_amount", "credit_amount", "salvage_value", "quantity", "correction", "no_of_depreciation_days", "depr_until_fa_posting_date", "depr_acquisition_cost", "fa_posting_group", "maintenance_code", "dimension_1_code", "dimension_2_code", "insurance_no", "budgeted_fa_no", "use_duplication_list", "duplicate_in_depreciation_book", "fa_reclassification_entry", "fa_error_entry_no", "reason_code", "source_code", "index_entry", "posting_no_series", "recurring_method", "expiration_date", "recurring_frequency"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, fAJournalLineFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -1166,18 +1074,7 @@ func (t *FAJournalLine) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("journal_template_name") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("journal_batch_name") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("line_no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := fAJournalLineFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -1185,283 +1082,12 @@ func (t *FAJournalLine) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, FAJournalLineTableName)
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("journal_template_name") {
-			setClauses = append(setClauses, "journal_template_name = ?")
-			values = append(values, t.Journal_template_name)
-		}
-		if t.hasFieldChanged("journal_batch_name") {
-			setClauses = append(setClauses, "journal_batch_name = ?")
-			values = append(values, t.Journal_batch_name)
-		}
-		if t.hasFieldChanged("line_no") {
-			setClauses = append(setClauses, "line_no = ?")
-			values = append(values, t.Line_no)
-		}
-		if t.hasFieldChanged("depreciation_book_code") {
-			setClauses = append(setClauses, "depreciation_book_code = ?")
-			values = append(values, t.Depreciation_book_code)
-		}
-		if t.hasFieldChanged("fa_posting_type") {
-			setClauses = append(setClauses, "fa_posting_type = ?")
-			values = append(values, t.Fa_posting_type)
-		}
-		if t.hasFieldChanged("fa_no") {
-			setClauses = append(setClauses, "fa_no = ?")
-			values = append(values, t.Fa_no)
-		}
-		if t.hasFieldChanged("fa_posting_date") {
-			setClauses = append(setClauses, "fa_posting_date = ?")
-			values = append(values, t.Fa_posting_date)
-		}
-		if t.hasFieldChanged("posting_date") {
-			setClauses = append(setClauses, "posting_date = ?")
-			values = append(values, t.Posting_date)
-		}
-		if t.hasFieldChanged("document_type") {
-			setClauses = append(setClauses, "document_type = ?")
-			values = append(values, t.Document_type)
-		}
-		if t.hasFieldChanged("document_date") {
-			setClauses = append(setClauses, "document_date = ?")
-			values = append(values, t.Document_date)
-		}
-		if t.hasFieldChanged("document_no") {
-			setClauses = append(setClauses, "document_no = ?")
-			values = append(values, t.Document_no)
-		}
-		if t.hasFieldChanged("external_document_no") {
-			setClauses = append(setClauses, "external_document_no = ?")
-			values = append(values, t.External_document_no)
-		}
-		if t.hasFieldChanged("description") {
-			setClauses = append(setClauses, "description = ?")
-			values = append(values, t.Description)
-		}
-		if t.hasFieldChanged("amount") {
-			setClauses = append(setClauses, "amount = ?")
-			values = append(values, t.Amount)
-		}
-		if t.hasFieldChanged("debit_amount") {
-			setClauses = append(setClauses, "debit_amount = ?")
-			values = append(values, t.Debit_amount)
-		}
-		if t.hasFieldChanged("credit_amount") {
-			setClauses = append(setClauses, "credit_amount = ?")
-			values = append(values, t.Credit_amount)
-		}
-		if t.hasFieldChanged("salvage_value") {
-			setClauses = append(setClauses, "salvage_value = ?")
-			values = append(values, t.Salvage_value)
-		}
-		if t.hasFieldChanged("quantity") {
-			setClauses = append(setClauses, "quantity = ?")
-			values = append(values, t.Quantity)
-		}
-		if t.hasFieldChanged("correction") {
-			setClauses = append(setClauses, "correction = ?")
-			values = append(values, t.Correction)
-		}
-		if t.hasFieldChanged("no_of_depreciation_days") {
-			setClauses = append(setClauses, "no_of_depreciation_days = ?")
-			values = append(values, t.No_of_depreciation_days)
-		}
-		if t.hasFieldChanged("depr_until_fa_posting_date") {
-			setClauses = append(setClauses, "depr_until_fa_posting_date = ?")
-			values = append(values, t.Depr_until_fa_posting_date)
-		}
-		if t.hasFieldChanged("depr_acquisition_cost") {
-			setClauses = append(setClauses, "depr_acquisition_cost = ?")
-			values = append(values, t.Depr_acquisition_cost)
-		}
-		if t.hasFieldChanged("fa_posting_group") {
-			setClauses = append(setClauses, "fa_posting_group = ?")
-			values = append(values, t.Fa_posting_group)
-		}
-		if t.hasFieldChanged("maintenance_code") {
-			setClauses = append(setClauses, "maintenance_code = ?")
-			values = append(values, t.Maintenance_code)
-		}
-		if t.hasFieldChanged("dimension_1_code") {
-			setClauses = append(setClauses, "dimension_1_code = ?")
-			values = append(values, t.Dimension_1_code)
-		}
-		if t.hasFieldChanged("dimension_2_code") {
-			setClauses = append(setClauses, "dimension_2_code = ?")
-			values = append(values, t.Dimension_2_code)
-		}
-		if t.hasFieldChanged("insurance_no") {
-			setClauses = append(setClauses, "insurance_no = ?")
-			values = append(values, t.Insurance_no)
-		}
-		if t.hasFieldChanged("budgeted_fa_no") {
-			setClauses = append(setClauses, "budgeted_fa_no = ?")
-			values = append(values, t.Budgeted_fa_no)
-		}
-		if t.hasFieldChanged("use_duplication_list") {
-			setClauses = append(setClauses, "use_duplication_list = ?")
-			values = append(values, t.Use_duplication_list)
-		}
-		if t.hasFieldChanged("duplicate_in_depreciation_book") {
-			setClauses = append(setClauses, "duplicate_in_depreciation_book = ?")
-			values = append(values, t.Duplicate_in_depreciation_book)
-		}
-		if t.hasFieldChanged("fa_reclassification_entry") {
-			setClauses = append(setClauses, "fa_reclassification_entry = ?")
-			values = append(values, t.Fa_reclassification_entry)
-		}
-		if t.hasFieldChanged("fa_error_entry_no") {
-			setClauses = append(setClauses, "fa_error_entry_no = ?")
-			values = append(values, t.Fa_error_entry_no)
-		}
-		if t.hasFieldChanged("reason_code") {
-			setClauses = append(setClauses, "reason_code = ?")
-			values = append(values, t.Reason_code)
-		}
-		if t.hasFieldChanged("source_code") {
-			setClauses = append(setClauses, "source_code = ?")
-			values = append(values, t.Source_code)
-		}
-		if t.hasFieldChanged("index_entry") {
-			setClauses = append(setClauses, "index_entry = ?")
-			values = append(values, t.Index_entry)
-		}
-		if t.hasFieldChanged("posting_no_series") {
-			setClauses = append(setClauses, "posting_no_series = ?")
-			values = append(values, t.Posting_no_series)
-		}
-		if t.hasFieldChanged("recurring_method") {
-			setClauses = append(setClauses, "recurring_method = ?")
-			values = append(values, t.Recurring_method)
-		}
-		if t.hasFieldChanged("expiration_date") {
-			setClauses = append(setClauses, "expiration_date = ?")
-			values = append(values, t.Expiration_date)
-		}
-		if t.hasFieldChanged("recurring_frequency") {
-			setClauses = append(setClauses, "recurring_frequency = ?")
-			values = append(values, t.Recurring_frequency)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "depreciation_book_code = ?")
-		values = append(values, t.Depreciation_book_code)
-		setClauses = append(setClauses, "fa_posting_type = ?")
-		values = append(values, t.Fa_posting_type)
-		setClauses = append(setClauses, "fa_no = ?")
-		values = append(values, t.Fa_no)
-		setClauses = append(setClauses, "fa_posting_date = ?")
-		values = append(values, t.Fa_posting_date)
-		setClauses = append(setClauses, "posting_date = ?")
-		values = append(values, t.Posting_date)
-		setClauses = append(setClauses, "document_type = ?")
-		values = append(values, t.Document_type)
-		setClauses = append(setClauses, "document_date = ?")
-		values = append(values, t.Document_date)
-		setClauses = append(setClauses, "document_no = ?")
-		values = append(values, t.Document_no)
-		setClauses = append(setClauses, "external_document_no = ?")
-		values = append(values, t.External_document_no)
-		setClauses = append(setClauses, "description = ?")
-		values = append(values, t.Description)
-		setClauses = append(setClauses, "amount = ?")
-		values = append(values, t.Amount)
-		setClauses = append(setClauses, "debit_amount = ?")
-		values = append(values, t.Debit_amount)
-		setClauses = append(setClauses, "credit_amount = ?")
-		values = append(values, t.Credit_amount)
-		setClauses = append(setClauses, "salvage_value = ?")
-		values = append(values, t.Salvage_value)
-		setClauses = append(setClauses, "quantity = ?")
-		values = append(values, t.Quantity)
-		setClauses = append(setClauses, "correction = ?")
-		values = append(values, t.Correction)
-		setClauses = append(setClauses, "no_of_depreciation_days = ?")
-		values = append(values, t.No_of_depreciation_days)
-		setClauses = append(setClauses, "depr_until_fa_posting_date = ?")
-		values = append(values, t.Depr_until_fa_posting_date)
-		setClauses = append(setClauses, "depr_acquisition_cost = ?")
-		values = append(values, t.Depr_acquisition_cost)
-		setClauses = append(setClauses, "fa_posting_group = ?")
-		values = append(values, t.Fa_posting_group)
-		setClauses = append(setClauses, "maintenance_code = ?")
-		values = append(values, t.Maintenance_code)
-		setClauses = append(setClauses, "dimension_1_code = ?")
-		values = append(values, t.Dimension_1_code)
-		setClauses = append(setClauses, "dimension_2_code = ?")
-		values = append(values, t.Dimension_2_code)
-		setClauses = append(setClauses, "insurance_no = ?")
-		values = append(values, t.Insurance_no)
-		setClauses = append(setClauses, "budgeted_fa_no = ?")
-		values = append(values, t.Budgeted_fa_no)
-		setClauses = append(setClauses, "use_duplication_list = ?")
-		values = append(values, t.Use_duplication_list)
-		setClauses = append(setClauses, "duplicate_in_depreciation_book = ?")
-		values = append(values, t.Duplicate_in_depreciation_book)
-		setClauses = append(setClauses, "fa_reclassification_entry = ?")
-		values = append(values, t.Fa_reclassification_entry)
-		setClauses = append(setClauses, "fa_error_entry_no = ?")
-		values = append(values, t.Fa_error_entry_no)
-		setClauses = append(setClauses, "reason_code = ?")
-		values = append(values, t.Reason_code)
-		setClauses = append(setClauses, "source_code = ?")
-		values = append(values, t.Source_code)
-		setClauses = append(setClauses, "index_entry = ?")
-		values = append(values, t.Index_entry)
-		setClauses = append(setClauses, "posting_no_series = ?")
-		values = append(values, t.Posting_no_series)
-		setClauses = append(setClauses, "recurring_method = ?")
-		values = append(values, t.Recurring_method)
-		setClauses = append(setClauses, "expiration_date = ?")
-		values = append(values, t.Expiration_date)
-		setClauses = append(setClauses, "recurring_frequency = ?")
-		values = append(values, t.Recurring_frequency)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["journal_template_name"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Journal_template_name)
-	}
-	if old, ok := t.oldValues["journal_batch_name"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Journal_batch_name)
-	}
-	if old, ok := t.oldValues["line_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Line_no)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify FA_Journal_Line: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -1492,27 +1118,8 @@ func (t *FAJournalLine) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, FAJournalLineTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Journal_template_name,
-		t.Journal_batch_name,
-		t.Line_no,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete FA_Journal_Line: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1712,53 +1319,13 @@ func (t *FAJournalLine) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *FAJournalLine) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, FAJournalLineTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of FA_Journal_Line\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all FA_Journal_Line: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *FAJournalLine) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, FAJournalLineTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all FA_Journal_Line: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

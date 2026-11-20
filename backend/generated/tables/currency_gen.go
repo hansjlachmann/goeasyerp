@@ -936,49 +936,14 @@ func (t *Currency) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, CurrencyTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Code,
-		t.Last_date_modified,
-		t.Last_date_adjusted,
-		t.Unrealized_gains_acc,
-		t.Realized_gains_acc,
-		t.Unrealized_losses_acc,
-		t.Realized_losses_acc,
-		t.Invoice_rounding_precision,
-		t.Invoice_rounding_type,
-		t.Amount_rounding_precision,
-		t.Unit_amount_rounding_precision,
-		t.Description,
-		t.Amount_decimal_places,
-		t.Unit_amount_decimal_places,
-		t.Appln_rounding_precision,
-		t.Emu_currency,
-		t.Currency_factor,
-		t.Realized_gl_gains_account,
-		t.Realized_gl_losses_account,
-		t.Residual_gains_account,
-		t.Residual_losses_account,
-		t.Conv_lcy_rndg_debit_acc,
-		t.Conv_lcy_rndg_credit_acc,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (code, last_date_modified, last_date_adjusted, unrealized_gains_acc, realized_gains_acc, unrealized_losses_acc, realized_losses_acc, invoice_rounding_precision, invoice_rounding_type, amount_rounding_precision, unit_amount_rounding_precision, description, amount_decimal_places, unit_amount_decimal_places, appln_rounding_precision, emu_currency, currency_factor, realized_gl_gains_account, realized_gl_losses_account, residual_gains_account, residual_losses_account, conv_lcy_rndg_debit_acc, conv_lcy_rndg_credit_acc) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (code) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Currency: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(CurrencyTableName, key)
 		return false
@@ -1004,35 +969,10 @@ func (t *Currency) InsertAll(records []*Currency, runTrigger bool) error {
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Code,
-			r.Last_date_modified,
-			r.Last_date_adjusted,
-			r.Unrealized_gains_acc,
-			r.Realized_gains_acc,
-			r.Unrealized_losses_acc,
-			r.Realized_losses_acc,
-			r.Invoice_rounding_precision,
-			r.Invoice_rounding_type,
-			r.Amount_rounding_precision,
-			r.Unit_amount_rounding_precision,
-			r.Description,
-			r.Amount_decimal_places,
-			r.Unit_amount_decimal_places,
-			r.Appln_rounding_precision,
-			r.Emu_currency,
-			r.Currency_factor,
-			r.Realized_gl_gains_account,
-			r.Realized_gl_losses_account,
-			r.Residual_gains_account,
-			r.Residual_losses_account,
-			r.Conv_lcy_rndg_debit_acc,
-			r.Conv_lcy_rndg_credit_acc,
-		})
+		rows = append(rows, currencyFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, CurrencyTableName)
-	columns := []string{"code", "last_date_modified", "last_date_adjusted", "unrealized_gains_acc", "realized_gains_acc", "unrealized_losses_acc", "realized_losses_acc", "invoice_rounding_precision", "invoice_rounding_type", "amount_rounding_precision", "unit_amount_rounding_precision", "description", "amount_decimal_places", "unit_amount_decimal_places", "appln_rounding_precision", "emu_currency", "currency_factor", "realized_gl_gains_account", "realized_gl_losses_account", "residual_gains_account", "residual_losses_account", "conv_lcy_rndg_debit_acc", "conv_lcy_rndg_credit_acc"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, currencyFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -1048,179 +988,13 @@ func (t *Currency) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("code") {
-			keyChanged = true
-		}
-	}
+	keyChanged := currencyFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
 		}
-	}
-	tableName := fmt.Sprintf("%s$%s", t.company, CurrencyTableName)
-
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("code") {
-			setClauses = append(setClauses, "code = ?")
-			values = append(values, t.Code)
-		}
-		if t.hasFieldChanged("last_date_modified") {
-			setClauses = append(setClauses, "last_date_modified = ?")
-			values = append(values, t.Last_date_modified)
-		}
-		if t.hasFieldChanged("last_date_adjusted") {
-			setClauses = append(setClauses, "last_date_adjusted = ?")
-			values = append(values, t.Last_date_adjusted)
-		}
-		if t.hasFieldChanged("unrealized_gains_acc") {
-			setClauses = append(setClauses, "unrealized_gains_acc = ?")
-			values = append(values, t.Unrealized_gains_acc)
-		}
-		if t.hasFieldChanged("realized_gains_acc") {
-			setClauses = append(setClauses, "realized_gains_acc = ?")
-			values = append(values, t.Realized_gains_acc)
-		}
-		if t.hasFieldChanged("unrealized_losses_acc") {
-			setClauses = append(setClauses, "unrealized_losses_acc = ?")
-			values = append(values, t.Unrealized_losses_acc)
-		}
-		if t.hasFieldChanged("realized_losses_acc") {
-			setClauses = append(setClauses, "realized_losses_acc = ?")
-			values = append(values, t.Realized_losses_acc)
-		}
-		if t.hasFieldChanged("invoice_rounding_precision") {
-			setClauses = append(setClauses, "invoice_rounding_precision = ?")
-			values = append(values, t.Invoice_rounding_precision)
-		}
-		if t.hasFieldChanged("invoice_rounding_type") {
-			setClauses = append(setClauses, "invoice_rounding_type = ?")
-			values = append(values, t.Invoice_rounding_type)
-		}
-		if t.hasFieldChanged("amount_rounding_precision") {
-			setClauses = append(setClauses, "amount_rounding_precision = ?")
-			values = append(values, t.Amount_rounding_precision)
-		}
-		if t.hasFieldChanged("unit_amount_rounding_precision") {
-			setClauses = append(setClauses, "unit_amount_rounding_precision = ?")
-			values = append(values, t.Unit_amount_rounding_precision)
-		}
-		if t.hasFieldChanged("description") {
-			setClauses = append(setClauses, "description = ?")
-			values = append(values, t.Description)
-		}
-		if t.hasFieldChanged("amount_decimal_places") {
-			setClauses = append(setClauses, "amount_decimal_places = ?")
-			values = append(values, t.Amount_decimal_places)
-		}
-		if t.hasFieldChanged("unit_amount_decimal_places") {
-			setClauses = append(setClauses, "unit_amount_decimal_places = ?")
-			values = append(values, t.Unit_amount_decimal_places)
-		}
-		if t.hasFieldChanged("appln_rounding_precision") {
-			setClauses = append(setClauses, "appln_rounding_precision = ?")
-			values = append(values, t.Appln_rounding_precision)
-		}
-		if t.hasFieldChanged("emu_currency") {
-			setClauses = append(setClauses, "emu_currency = ?")
-			values = append(values, t.Emu_currency)
-		}
-		if t.hasFieldChanged("currency_factor") {
-			setClauses = append(setClauses, "currency_factor = ?")
-			values = append(values, t.Currency_factor)
-		}
-		if t.hasFieldChanged("realized_gl_gains_account") {
-			setClauses = append(setClauses, "realized_gl_gains_account = ?")
-			values = append(values, t.Realized_gl_gains_account)
-		}
-		if t.hasFieldChanged("realized_gl_losses_account") {
-			setClauses = append(setClauses, "realized_gl_losses_account = ?")
-			values = append(values, t.Realized_gl_losses_account)
-		}
-		if t.hasFieldChanged("residual_gains_account") {
-			setClauses = append(setClauses, "residual_gains_account = ?")
-			values = append(values, t.Residual_gains_account)
-		}
-		if t.hasFieldChanged("residual_losses_account") {
-			setClauses = append(setClauses, "residual_losses_account = ?")
-			values = append(values, t.Residual_losses_account)
-		}
-		if t.hasFieldChanged("conv_lcy_rndg_debit_acc") {
-			setClauses = append(setClauses, "conv_lcy_rndg_debit_acc = ?")
-			values = append(values, t.Conv_lcy_rndg_debit_acc)
-		}
-		if t.hasFieldChanged("conv_lcy_rndg_credit_acc") {
-			setClauses = append(setClauses, "conv_lcy_rndg_credit_acc = ?")
-			values = append(values, t.Conv_lcy_rndg_credit_acc)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "last_date_modified = ?")
-		values = append(values, t.Last_date_modified)
-		setClauses = append(setClauses, "last_date_adjusted = ?")
-		values = append(values, t.Last_date_adjusted)
-		setClauses = append(setClauses, "unrealized_gains_acc = ?")
-		values = append(values, t.Unrealized_gains_acc)
-		setClauses = append(setClauses, "realized_gains_acc = ?")
-		values = append(values, t.Realized_gains_acc)
-		setClauses = append(setClauses, "unrealized_losses_acc = ?")
-		values = append(values, t.Unrealized_losses_acc)
-		setClauses = append(setClauses, "realized_losses_acc = ?")
-		values = append(values, t.Realized_losses_acc)
-		setClauses = append(setClauses, "invoice_rounding_precision = ?")
-		values = append(values, t.Invoice_rounding_precision)
-		setClauses = append(setClauses, "invoice_rounding_type = ?")
-		values = append(values, t.Invoice_rounding_type)
-		setClauses = append(setClauses, "amount_rounding_precision = ?")
-		values = append(values, t.Amount_rounding_precision)
-		setClauses = append(setClauses, "unit_amount_rounding_precision = ?")
-		values = append(values, t.Unit_amount_rounding_precision)
-		setClauses = append(setClauses, "description = ?")
-		values = append(values, t.Description)
-		setClauses = append(setClauses, "amount_decimal_places = ?")
-		values = append(values, t.Amount_decimal_places)
-		setClauses = append(setClauses, "unit_amount_decimal_places = ?")
-		values = append(values, t.Unit_amount_decimal_places)
-		setClauses = append(setClauses, "appln_rounding_precision = ?")
-		values = append(values, t.Appln_rounding_precision)
-		setClauses = append(setClauses, "emu_currency = ?")
-		values = append(values, t.Emu_currency)
-		setClauses = append(setClauses, "currency_factor = ?")
-		values = append(values, t.Currency_factor)
-		setClauses = append(setClauses, "realized_gl_gains_account = ?")
-		values = append(values, t.Realized_gl_gains_account)
-		setClauses = append(setClauses, "realized_gl_losses_account = ?")
-		values = append(values, t.Realized_gl_losses_account)
-		setClauses = append(setClauses, "residual_gains_account = ?")
-		values = append(values, t.Residual_gains_account)
-		setClauses = append(setClauses, "residual_losses_account = ?")
-		values = append(values, t.Residual_losses_account)
-		setClauses = append(setClauses, "conv_lcy_rndg_debit_acc = ?")
-		values = append(values, t.Conv_lcy_rndg_debit_acc)
-		setClauses = append(setClauses, "conv_lcy_rndg_credit_acc = ?")
-		values = append(values, t.Conv_lcy_rndg_credit_acc)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["code"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Code)
 	}
 	// Renamed key fields that other tables refer to (Rename): carried over below
 	type renamedKey struct {
@@ -1234,19 +1008,11 @@ func (t *Currency) Modify(runTrigger bool) bool {
 		}
 	}
 
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND code = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Currency: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// A temporary record's rename stays in the record: other tables are not changed
 	for _, r := range renamed {
@@ -1393,25 +1159,8 @@ func (t *Currency) Delete(runTrigger bool) bool {
 			}
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, CurrencyTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Code,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND code = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Currency: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // ========================================
@@ -4095,53 +3844,13 @@ func (t *Currency) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *Currency) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, CurrencyTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Currency\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Currency: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *Currency) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, CurrencyTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Currency: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

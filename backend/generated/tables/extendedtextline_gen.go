@@ -692,32 +692,14 @@ func (t *ExtendedTextLine) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ExtendedTextLineTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Table_name,
-		t.No,
-		t.Language_code,
-		t.Text_no,
-		t.Line_no,
-		t.Text,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (table_name, no, language_code, text_no, line_no, text) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (table_name, no, language_code, text_no, line_no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Extended_Text_Line: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(ExtendedTextLineTableName, key)
 		return false
@@ -743,18 +725,10 @@ func (t *ExtendedTextLine) InsertAll(records []*ExtendedTextLine, runTrigger boo
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Table_name,
-			r.No,
-			r.Language_code,
-			r.Text_no,
-			r.Line_no,
-			r.Text,
-		})
+		rows = append(rows, extendedTextLineFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, ExtendedTextLineTableName)
-	columns := []string{"table_name", "no", "language_code", "text_no", "line_no", "text"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, extendedTextLineFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -770,24 +744,7 @@ func (t *ExtendedTextLine) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("table_name") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("no") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("language_code") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("text_no") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("line_no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := extendedTextLineFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -795,91 +752,12 @@ func (t *ExtendedTextLine) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ExtendedTextLineTableName)
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("table_name") {
-			setClauses = append(setClauses, "table_name = ?")
-			values = append(values, t.Table_name)
-		}
-		if t.hasFieldChanged("no") {
-			setClauses = append(setClauses, "no = ?")
-			values = append(values, t.No)
-		}
-		if t.hasFieldChanged("language_code") {
-			setClauses = append(setClauses, "language_code = ?")
-			values = append(values, t.Language_code)
-		}
-		if t.hasFieldChanged("text_no") {
-			setClauses = append(setClauses, "text_no = ?")
-			values = append(values, t.Text_no)
-		}
-		if t.hasFieldChanged("line_no") {
-			setClauses = append(setClauses, "line_no = ?")
-			values = append(values, t.Line_no)
-		}
-		if t.hasFieldChanged("text") {
-			setClauses = append(setClauses, "text = ?")
-			values = append(values, t.Text)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "text = ?")
-		values = append(values, t.Text)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["table_name"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Table_name)
-	}
-	if old, ok := t.oldValues["no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.No)
-	}
-	if old, ok := t.oldValues["language_code"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Language_code)
-	}
-	if old, ok := t.oldValues["text_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Text_no)
-	}
-	if old, ok := t.oldValues["line_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Line_no)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND table_name = ? AND no = ? AND language_code = ? AND text_no = ? AND line_no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Extended_Text_Line: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -910,29 +788,8 @@ func (t *ExtendedTextLine) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ExtendedTextLineTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Table_name,
-		t.No,
-		t.Language_code,
-		t.Text_no,
-		t.Line_no,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND table_name = ? AND no = ? AND language_code = ? AND text_no = ? AND line_no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Extended_Text_Line: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1132,53 +989,13 @@ func (t *ExtendedTextLine) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *ExtendedTextLine) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, ExtendedTextLineTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Extended_Text_Line\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Extended_Text_Line: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *ExtendedTextLine) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, ExtendedTextLineTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Extended_Text_Line: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

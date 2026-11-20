@@ -1031,48 +1031,14 @@ func (t *CheckLedgerEntry) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, CheckLedgerEntryTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Entry_no,
-		t.Bank_account_no,
-		t.Bank_account_ledger_entry_no,
-		t.Posting_date,
-		t.Document_type,
-		t.Document_no,
-		t.Description,
-		t.Amount,
-		t.Check_date,
-		t.Check_no,
-		t.Check_type,
-		t.Bank_payment_type,
-		t.Entry_status,
-		t.Original_entry_status,
-		t.Bal_account_type,
-		t.Bal_account_no,
-		t.Open,
-		t.Statement_status,
-		t.Statement_no,
-		t.Statement_line_no,
-		t.User_id,
-		t.External_document_no,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, bank_account_no, bank_account_ledger_entry_no, posting_date, document_type, document_no, description, amount, check_date, check_no, check_type, bank_payment_type, entry_status, original_entry_status, bal_account_type, bal_account_no, open, statement_status, statement_no, statement_line_no, user_id, external_document_no) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Check_Ledger_Entry: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(CheckLedgerEntryTableName, key)
 		return false
@@ -1098,34 +1064,10 @@ func (t *CheckLedgerEntry) InsertAll(records []*CheckLedgerEntry, runTrigger boo
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Entry_no,
-			r.Bank_account_no,
-			r.Bank_account_ledger_entry_no,
-			r.Posting_date,
-			r.Document_type,
-			r.Document_no,
-			r.Description,
-			r.Amount,
-			r.Check_date,
-			r.Check_no,
-			r.Check_type,
-			r.Bank_payment_type,
-			r.Entry_status,
-			r.Original_entry_status,
-			r.Bal_account_type,
-			r.Bal_account_no,
-			r.Open,
-			r.Statement_status,
-			r.Statement_no,
-			r.Statement_line_no,
-			r.User_id,
-			r.External_document_no,
-		})
+		rows = append(rows, checkLedgerEntryFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, CheckLedgerEntryTableName)
-	columns := []string{"entry_no", "bank_account_no", "bank_account_ledger_entry_no", "posting_date", "document_type", "document_no", "description", "amount", "check_date", "check_no", "check_type", "bank_payment_type", "entry_status", "original_entry_status", "bal_account_type", "bal_account_no", "open", "statement_status", "statement_no", "statement_line_no", "user_id", "external_document_no"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, checkLedgerEntryFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -1141,12 +1083,7 @@ func (t *CheckLedgerEntry) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("entry_no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := checkLedgerEntryFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -1154,175 +1091,12 @@ func (t *CheckLedgerEntry) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, CheckLedgerEntryTableName)
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("entry_no") {
-			setClauses = append(setClauses, "entry_no = ?")
-			values = append(values, t.Entry_no)
-		}
-		if t.hasFieldChanged("bank_account_no") {
-			setClauses = append(setClauses, "bank_account_no = ?")
-			values = append(values, t.Bank_account_no)
-		}
-		if t.hasFieldChanged("bank_account_ledger_entry_no") {
-			setClauses = append(setClauses, "bank_account_ledger_entry_no = ?")
-			values = append(values, t.Bank_account_ledger_entry_no)
-		}
-		if t.hasFieldChanged("posting_date") {
-			setClauses = append(setClauses, "posting_date = ?")
-			values = append(values, t.Posting_date)
-		}
-		if t.hasFieldChanged("document_type") {
-			setClauses = append(setClauses, "document_type = ?")
-			values = append(values, t.Document_type)
-		}
-		if t.hasFieldChanged("document_no") {
-			setClauses = append(setClauses, "document_no = ?")
-			values = append(values, t.Document_no)
-		}
-		if t.hasFieldChanged("description") {
-			setClauses = append(setClauses, "description = ?")
-			values = append(values, t.Description)
-		}
-		if t.hasFieldChanged("amount") {
-			setClauses = append(setClauses, "amount = ?")
-			values = append(values, t.Amount)
-		}
-		if t.hasFieldChanged("check_date") {
-			setClauses = append(setClauses, "check_date = ?")
-			values = append(values, t.Check_date)
-		}
-		if t.hasFieldChanged("check_no") {
-			setClauses = append(setClauses, "check_no = ?")
-			values = append(values, t.Check_no)
-		}
-		if t.hasFieldChanged("check_type") {
-			setClauses = append(setClauses, "check_type = ?")
-			values = append(values, t.Check_type)
-		}
-		if t.hasFieldChanged("bank_payment_type") {
-			setClauses = append(setClauses, "bank_payment_type = ?")
-			values = append(values, t.Bank_payment_type)
-		}
-		if t.hasFieldChanged("entry_status") {
-			setClauses = append(setClauses, "entry_status = ?")
-			values = append(values, t.Entry_status)
-		}
-		if t.hasFieldChanged("original_entry_status") {
-			setClauses = append(setClauses, "original_entry_status = ?")
-			values = append(values, t.Original_entry_status)
-		}
-		if t.hasFieldChanged("bal_account_type") {
-			setClauses = append(setClauses, "bal_account_type = ?")
-			values = append(values, t.Bal_account_type)
-		}
-		if t.hasFieldChanged("bal_account_no") {
-			setClauses = append(setClauses, "bal_account_no = ?")
-			values = append(values, t.Bal_account_no)
-		}
-		if t.hasFieldChanged("open") {
-			setClauses = append(setClauses, "open = ?")
-			values = append(values, t.Open)
-		}
-		if t.hasFieldChanged("statement_status") {
-			setClauses = append(setClauses, "statement_status = ?")
-			values = append(values, t.Statement_status)
-		}
-		if t.hasFieldChanged("statement_no") {
-			setClauses = append(setClauses, "statement_no = ?")
-			values = append(values, t.Statement_no)
-		}
-		if t.hasFieldChanged("statement_line_no") {
-			setClauses = append(setClauses, "statement_line_no = ?")
-			values = append(values, t.Statement_line_no)
-		}
-		if t.hasFieldChanged("user_id") {
-			setClauses = append(setClauses, "user_id = ?")
-			values = append(values, t.User_id)
-		}
-		if t.hasFieldChanged("external_document_no") {
-			setClauses = append(setClauses, "external_document_no = ?")
-			values = append(values, t.External_document_no)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "bank_account_no = ?")
-		values = append(values, t.Bank_account_no)
-		setClauses = append(setClauses, "bank_account_ledger_entry_no = ?")
-		values = append(values, t.Bank_account_ledger_entry_no)
-		setClauses = append(setClauses, "posting_date = ?")
-		values = append(values, t.Posting_date)
-		setClauses = append(setClauses, "document_type = ?")
-		values = append(values, t.Document_type)
-		setClauses = append(setClauses, "document_no = ?")
-		values = append(values, t.Document_no)
-		setClauses = append(setClauses, "description = ?")
-		values = append(values, t.Description)
-		setClauses = append(setClauses, "amount = ?")
-		values = append(values, t.Amount)
-		setClauses = append(setClauses, "check_date = ?")
-		values = append(values, t.Check_date)
-		setClauses = append(setClauses, "check_no = ?")
-		values = append(values, t.Check_no)
-		setClauses = append(setClauses, "check_type = ?")
-		values = append(values, t.Check_type)
-		setClauses = append(setClauses, "bank_payment_type = ?")
-		values = append(values, t.Bank_payment_type)
-		setClauses = append(setClauses, "entry_status = ?")
-		values = append(values, t.Entry_status)
-		setClauses = append(setClauses, "original_entry_status = ?")
-		values = append(values, t.Original_entry_status)
-		setClauses = append(setClauses, "bal_account_type = ?")
-		values = append(values, t.Bal_account_type)
-		setClauses = append(setClauses, "bal_account_no = ?")
-		values = append(values, t.Bal_account_no)
-		setClauses = append(setClauses, "open = ?")
-		values = append(values, t.Open)
-		setClauses = append(setClauses, "statement_status = ?")
-		values = append(values, t.Statement_status)
-		setClauses = append(setClauses, "statement_no = ?")
-		values = append(values, t.Statement_no)
-		setClauses = append(setClauses, "statement_line_no = ?")
-		values = append(values, t.Statement_line_no)
-		setClauses = append(setClauses, "user_id = ?")
-		values = append(values, t.User_id)
-		setClauses = append(setClauses, "external_document_no = ?")
-		values = append(values, t.External_document_no)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["entry_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Entry_no)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND entry_no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Check_Ledger_Entry: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -1353,25 +1127,8 @@ func (t *CheckLedgerEntry) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, CheckLedgerEntryTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Entry_no,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Check_Ledger_Entry: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1571,53 +1328,13 @@ func (t *CheckLedgerEntry) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *CheckLedgerEntry) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, CheckLedgerEntryTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Check_Ledger_Entry\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Check_Ledger_Entry: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *CheckLedgerEntry) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, CheckLedgerEntryTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Check_Ledger_Entry: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

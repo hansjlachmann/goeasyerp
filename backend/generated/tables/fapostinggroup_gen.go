@@ -940,56 +940,14 @@ func (t *FAPostingGroup) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, FAPostingGroupTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Code,
-		t.Acquisition_cost_account,
-		t.Accum_depreciation_account,
-		t.Write_down_account,
-		t.Appreciation_account,
-		t.Custom_1_account,
-		t.Custom_2_account,
-		t.Acq_cost_acc_on_disposal,
-		t.Accum_depr_acc_on_disposal,
-		t.Write_down_acc_on_disposal,
-		t.Appreciation_acc_on_disposal,
-		t.Custom_1_account_on_disposal,
-		t.Custom_2_account_on_disposal,
-		t.Gains_acc_on_disposal,
-		t.Losses_acc_on_disposal,
-		t.Book_value_acc_on_disposal,
-		t.Sales_acc_on_disposal,
-		t.Write_down_bal_acc_on_disp,
-		t.Apprec_bal_acc_on_disp,
-		t.Custom_1_bal_acc_on_disposal,
-		t.Custom_2_bal_acc_on_disposal,
-		t.Maintenance_expense_account,
-		t.Maintenance_bal_acc,
-		t.Acquisition_cost_bal_acc,
-		t.Depreciation_expense_acc,
-		t.Write_down_expense_acc,
-		t.Appreciation_bal_account,
-		t.Custom_1_expense_acc,
-		t.Custom_2_expense_acc,
-		t.Sales_bal_acc,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (code, acquisition_cost_account, accum_depreciation_account, write_down_account, appreciation_account, custom_1_account, custom_2_account, acq_cost_acc_on_disposal, accum_depr_acc_on_disposal, write_down_acc_on_disposal, appreciation_acc_on_disposal, custom_1_account_on_disposal, custom_2_account_on_disposal, gains_acc_on_disposal, losses_acc_on_disposal, book_value_acc_on_disposal, sales_acc_on_disposal, write_down_bal_acc_on_disp, apprec_bal_acc_on_disp, custom_1_bal_acc_on_disposal, custom_2_bal_acc_on_disposal, maintenance_expense_account, maintenance_bal_acc, acquisition_cost_bal_acc, depreciation_expense_acc, write_down_expense_acc, appreciation_bal_account, custom_1_expense_acc, custom_2_expense_acc, sales_bal_acc) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (code) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert FA_Posting_Group: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(FAPostingGroupTableName, key)
 		return false
@@ -1015,42 +973,10 @@ func (t *FAPostingGroup) InsertAll(records []*FAPostingGroup, runTrigger bool) e
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Code,
-			r.Acquisition_cost_account,
-			r.Accum_depreciation_account,
-			r.Write_down_account,
-			r.Appreciation_account,
-			r.Custom_1_account,
-			r.Custom_2_account,
-			r.Acq_cost_acc_on_disposal,
-			r.Accum_depr_acc_on_disposal,
-			r.Write_down_acc_on_disposal,
-			r.Appreciation_acc_on_disposal,
-			r.Custom_1_account_on_disposal,
-			r.Custom_2_account_on_disposal,
-			r.Gains_acc_on_disposal,
-			r.Losses_acc_on_disposal,
-			r.Book_value_acc_on_disposal,
-			r.Sales_acc_on_disposal,
-			r.Write_down_bal_acc_on_disp,
-			r.Apprec_bal_acc_on_disp,
-			r.Custom_1_bal_acc_on_disposal,
-			r.Custom_2_bal_acc_on_disposal,
-			r.Maintenance_expense_account,
-			r.Maintenance_bal_acc,
-			r.Acquisition_cost_bal_acc,
-			r.Depreciation_expense_acc,
-			r.Write_down_expense_acc,
-			r.Appreciation_bal_account,
-			r.Custom_1_expense_acc,
-			r.Custom_2_expense_acc,
-			r.Sales_bal_acc,
-		})
+		rows = append(rows, fAPostingGroupFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, FAPostingGroupTableName)
-	columns := []string{"code", "acquisition_cost_account", "accum_depreciation_account", "write_down_account", "appreciation_account", "custom_1_account", "custom_2_account", "acq_cost_acc_on_disposal", "accum_depr_acc_on_disposal", "write_down_acc_on_disposal", "appreciation_acc_on_disposal", "custom_1_account_on_disposal", "custom_2_account_on_disposal", "gains_acc_on_disposal", "losses_acc_on_disposal", "book_value_acc_on_disposal", "sales_acc_on_disposal", "write_down_bal_acc_on_disp", "apprec_bal_acc_on_disp", "custom_1_bal_acc_on_disposal", "custom_2_bal_acc_on_disposal", "maintenance_expense_account", "maintenance_bal_acc", "acquisition_cost_bal_acc", "depreciation_expense_acc", "write_down_expense_acc", "appreciation_bal_account", "custom_1_expense_acc", "custom_2_expense_acc", "sales_bal_acc"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, fAPostingGroupFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -1066,221 +992,13 @@ func (t *FAPostingGroup) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("code") {
-			keyChanged = true
-		}
-	}
+	keyChanged := fAPostingGroupFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
 		}
-	}
-	tableName := fmt.Sprintf("%s$%s", t.company, FAPostingGroupTableName)
-
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("code") {
-			setClauses = append(setClauses, "code = ?")
-			values = append(values, t.Code)
-		}
-		if t.hasFieldChanged("acquisition_cost_account") {
-			setClauses = append(setClauses, "acquisition_cost_account = ?")
-			values = append(values, t.Acquisition_cost_account)
-		}
-		if t.hasFieldChanged("accum_depreciation_account") {
-			setClauses = append(setClauses, "accum_depreciation_account = ?")
-			values = append(values, t.Accum_depreciation_account)
-		}
-		if t.hasFieldChanged("write_down_account") {
-			setClauses = append(setClauses, "write_down_account = ?")
-			values = append(values, t.Write_down_account)
-		}
-		if t.hasFieldChanged("appreciation_account") {
-			setClauses = append(setClauses, "appreciation_account = ?")
-			values = append(values, t.Appreciation_account)
-		}
-		if t.hasFieldChanged("custom_1_account") {
-			setClauses = append(setClauses, "custom_1_account = ?")
-			values = append(values, t.Custom_1_account)
-		}
-		if t.hasFieldChanged("custom_2_account") {
-			setClauses = append(setClauses, "custom_2_account = ?")
-			values = append(values, t.Custom_2_account)
-		}
-		if t.hasFieldChanged("acq_cost_acc_on_disposal") {
-			setClauses = append(setClauses, "acq_cost_acc_on_disposal = ?")
-			values = append(values, t.Acq_cost_acc_on_disposal)
-		}
-		if t.hasFieldChanged("accum_depr_acc_on_disposal") {
-			setClauses = append(setClauses, "accum_depr_acc_on_disposal = ?")
-			values = append(values, t.Accum_depr_acc_on_disposal)
-		}
-		if t.hasFieldChanged("write_down_acc_on_disposal") {
-			setClauses = append(setClauses, "write_down_acc_on_disposal = ?")
-			values = append(values, t.Write_down_acc_on_disposal)
-		}
-		if t.hasFieldChanged("appreciation_acc_on_disposal") {
-			setClauses = append(setClauses, "appreciation_acc_on_disposal = ?")
-			values = append(values, t.Appreciation_acc_on_disposal)
-		}
-		if t.hasFieldChanged("custom_1_account_on_disposal") {
-			setClauses = append(setClauses, "custom_1_account_on_disposal = ?")
-			values = append(values, t.Custom_1_account_on_disposal)
-		}
-		if t.hasFieldChanged("custom_2_account_on_disposal") {
-			setClauses = append(setClauses, "custom_2_account_on_disposal = ?")
-			values = append(values, t.Custom_2_account_on_disposal)
-		}
-		if t.hasFieldChanged("gains_acc_on_disposal") {
-			setClauses = append(setClauses, "gains_acc_on_disposal = ?")
-			values = append(values, t.Gains_acc_on_disposal)
-		}
-		if t.hasFieldChanged("losses_acc_on_disposal") {
-			setClauses = append(setClauses, "losses_acc_on_disposal = ?")
-			values = append(values, t.Losses_acc_on_disposal)
-		}
-		if t.hasFieldChanged("book_value_acc_on_disposal") {
-			setClauses = append(setClauses, "book_value_acc_on_disposal = ?")
-			values = append(values, t.Book_value_acc_on_disposal)
-		}
-		if t.hasFieldChanged("sales_acc_on_disposal") {
-			setClauses = append(setClauses, "sales_acc_on_disposal = ?")
-			values = append(values, t.Sales_acc_on_disposal)
-		}
-		if t.hasFieldChanged("write_down_bal_acc_on_disp") {
-			setClauses = append(setClauses, "write_down_bal_acc_on_disp = ?")
-			values = append(values, t.Write_down_bal_acc_on_disp)
-		}
-		if t.hasFieldChanged("apprec_bal_acc_on_disp") {
-			setClauses = append(setClauses, "apprec_bal_acc_on_disp = ?")
-			values = append(values, t.Apprec_bal_acc_on_disp)
-		}
-		if t.hasFieldChanged("custom_1_bal_acc_on_disposal") {
-			setClauses = append(setClauses, "custom_1_bal_acc_on_disposal = ?")
-			values = append(values, t.Custom_1_bal_acc_on_disposal)
-		}
-		if t.hasFieldChanged("custom_2_bal_acc_on_disposal") {
-			setClauses = append(setClauses, "custom_2_bal_acc_on_disposal = ?")
-			values = append(values, t.Custom_2_bal_acc_on_disposal)
-		}
-		if t.hasFieldChanged("maintenance_expense_account") {
-			setClauses = append(setClauses, "maintenance_expense_account = ?")
-			values = append(values, t.Maintenance_expense_account)
-		}
-		if t.hasFieldChanged("maintenance_bal_acc") {
-			setClauses = append(setClauses, "maintenance_bal_acc = ?")
-			values = append(values, t.Maintenance_bal_acc)
-		}
-		if t.hasFieldChanged("acquisition_cost_bal_acc") {
-			setClauses = append(setClauses, "acquisition_cost_bal_acc = ?")
-			values = append(values, t.Acquisition_cost_bal_acc)
-		}
-		if t.hasFieldChanged("depreciation_expense_acc") {
-			setClauses = append(setClauses, "depreciation_expense_acc = ?")
-			values = append(values, t.Depreciation_expense_acc)
-		}
-		if t.hasFieldChanged("write_down_expense_acc") {
-			setClauses = append(setClauses, "write_down_expense_acc = ?")
-			values = append(values, t.Write_down_expense_acc)
-		}
-		if t.hasFieldChanged("appreciation_bal_account") {
-			setClauses = append(setClauses, "appreciation_bal_account = ?")
-			values = append(values, t.Appreciation_bal_account)
-		}
-		if t.hasFieldChanged("custom_1_expense_acc") {
-			setClauses = append(setClauses, "custom_1_expense_acc = ?")
-			values = append(values, t.Custom_1_expense_acc)
-		}
-		if t.hasFieldChanged("custom_2_expense_acc") {
-			setClauses = append(setClauses, "custom_2_expense_acc = ?")
-			values = append(values, t.Custom_2_expense_acc)
-		}
-		if t.hasFieldChanged("sales_bal_acc") {
-			setClauses = append(setClauses, "sales_bal_acc = ?")
-			values = append(values, t.Sales_bal_acc)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "acquisition_cost_account = ?")
-		values = append(values, t.Acquisition_cost_account)
-		setClauses = append(setClauses, "accum_depreciation_account = ?")
-		values = append(values, t.Accum_depreciation_account)
-		setClauses = append(setClauses, "write_down_account = ?")
-		values = append(values, t.Write_down_account)
-		setClauses = append(setClauses, "appreciation_account = ?")
-		values = append(values, t.Appreciation_account)
-		setClauses = append(setClauses, "custom_1_account = ?")
-		values = append(values, t.Custom_1_account)
-		setClauses = append(setClauses, "custom_2_account = ?")
-		values = append(values, t.Custom_2_account)
-		setClauses = append(setClauses, "acq_cost_acc_on_disposal = ?")
-		values = append(values, t.Acq_cost_acc_on_disposal)
-		setClauses = append(setClauses, "accum_depr_acc_on_disposal = ?")
-		values = append(values, t.Accum_depr_acc_on_disposal)
-		setClauses = append(setClauses, "write_down_acc_on_disposal = ?")
-		values = append(values, t.Write_down_acc_on_disposal)
-		setClauses = append(setClauses, "appreciation_acc_on_disposal = ?")
-		values = append(values, t.Appreciation_acc_on_disposal)
-		setClauses = append(setClauses, "custom_1_account_on_disposal = ?")
-		values = append(values, t.Custom_1_account_on_disposal)
-		setClauses = append(setClauses, "custom_2_account_on_disposal = ?")
-		values = append(values, t.Custom_2_account_on_disposal)
-		setClauses = append(setClauses, "gains_acc_on_disposal = ?")
-		values = append(values, t.Gains_acc_on_disposal)
-		setClauses = append(setClauses, "losses_acc_on_disposal = ?")
-		values = append(values, t.Losses_acc_on_disposal)
-		setClauses = append(setClauses, "book_value_acc_on_disposal = ?")
-		values = append(values, t.Book_value_acc_on_disposal)
-		setClauses = append(setClauses, "sales_acc_on_disposal = ?")
-		values = append(values, t.Sales_acc_on_disposal)
-		setClauses = append(setClauses, "write_down_bal_acc_on_disp = ?")
-		values = append(values, t.Write_down_bal_acc_on_disp)
-		setClauses = append(setClauses, "apprec_bal_acc_on_disp = ?")
-		values = append(values, t.Apprec_bal_acc_on_disp)
-		setClauses = append(setClauses, "custom_1_bal_acc_on_disposal = ?")
-		values = append(values, t.Custom_1_bal_acc_on_disposal)
-		setClauses = append(setClauses, "custom_2_bal_acc_on_disposal = ?")
-		values = append(values, t.Custom_2_bal_acc_on_disposal)
-		setClauses = append(setClauses, "maintenance_expense_account = ?")
-		values = append(values, t.Maintenance_expense_account)
-		setClauses = append(setClauses, "maintenance_bal_acc = ?")
-		values = append(values, t.Maintenance_bal_acc)
-		setClauses = append(setClauses, "acquisition_cost_bal_acc = ?")
-		values = append(values, t.Acquisition_cost_bal_acc)
-		setClauses = append(setClauses, "depreciation_expense_acc = ?")
-		values = append(values, t.Depreciation_expense_acc)
-		setClauses = append(setClauses, "write_down_expense_acc = ?")
-		values = append(values, t.Write_down_expense_acc)
-		setClauses = append(setClauses, "appreciation_bal_account = ?")
-		values = append(values, t.Appreciation_bal_account)
-		setClauses = append(setClauses, "custom_1_expense_acc = ?")
-		values = append(values, t.Custom_1_expense_acc)
-		setClauses = append(setClauses, "custom_2_expense_acc = ?")
-		values = append(values, t.Custom_2_expense_acc)
-		setClauses = append(setClauses, "sales_bal_acc = ?")
-		values = append(values, t.Sales_bal_acc)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["code"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Code)
 	}
 	// Renamed key fields that other tables refer to (Rename): carried over below
 	type renamedKey struct {
@@ -1294,19 +1012,11 @@ func (t *FAPostingGroup) Modify(runTrigger bool) bool {
 		}
 	}
 
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND code = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify FA_Posting_Group: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// A temporary record's rename stays in the record: other tables are not changed
 	for _, r := range renamed {
@@ -1409,25 +1119,8 @@ func (t *FAPostingGroup) Delete(runTrigger bool) bool {
 			}
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, FAPostingGroupTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Code,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND code = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete FA_Posting_Group: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // ========================================
@@ -3153,53 +2846,13 @@ func (t *FAPostingGroup) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *FAPostingGroup) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, FAPostingGroupTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of FA_Posting_Group\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all FA_Posting_Group: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *FAPostingGroup) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, FAPostingGroupTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all FA_Posting_Group: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

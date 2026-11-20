@@ -845,41 +845,14 @@ func (t *ProjectBudgetEntry) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ProjectBudgetEntryTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Entry_no,
-		t.Project_status,
-		t.Project_no,
-		t.Type,
-		t.No,
-		t.Phase_code,
-		t.Task_code,
-		t.Step_code,
-		t.Date,
-		t.Resource_group_no,
-		t.Quantity,
-		t.Total_cost,
-		t.Total_price,
-		t.User_id,
-		t.Variant_code,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, project_status, project_no, type, no, phase_code, task_code, step_code, date, resource_group_no, quantity, total_cost, total_price, user_id, variant_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Project_Budget_Entry: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(ProjectBudgetEntryTableName, key)
 		return false
@@ -905,27 +878,10 @@ func (t *ProjectBudgetEntry) InsertAll(records []*ProjectBudgetEntry, runTrigger
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Entry_no,
-			r.Project_status,
-			r.Project_no,
-			r.Type,
-			r.No,
-			r.Phase_code,
-			r.Task_code,
-			r.Step_code,
-			r.Date,
-			r.Resource_group_no,
-			r.Quantity,
-			r.Total_cost,
-			r.Total_price,
-			r.User_id,
-			r.Variant_code,
-		})
+		rows = append(rows, projectBudgetEntryFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, ProjectBudgetEntryTableName)
-	columns := []string{"entry_no", "project_status", "project_no", "type", "no", "phase_code", "task_code", "step_code", "date", "resource_group_no", "quantity", "total_cost", "total_price", "user_id", "variant_code"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, projectBudgetEntryFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -941,12 +897,7 @@ func (t *ProjectBudgetEntry) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("entry_no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := projectBudgetEntryFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -954,133 +905,12 @@ func (t *ProjectBudgetEntry) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ProjectBudgetEntryTableName)
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("entry_no") {
-			setClauses = append(setClauses, "entry_no = ?")
-			values = append(values, t.Entry_no)
-		}
-		if t.hasFieldChanged("project_status") {
-			setClauses = append(setClauses, "project_status = ?")
-			values = append(values, t.Project_status)
-		}
-		if t.hasFieldChanged("project_no") {
-			setClauses = append(setClauses, "project_no = ?")
-			values = append(values, t.Project_no)
-		}
-		if t.hasFieldChanged("type") {
-			setClauses = append(setClauses, "type = ?")
-			values = append(values, t.Type)
-		}
-		if t.hasFieldChanged("no") {
-			setClauses = append(setClauses, "no = ?")
-			values = append(values, t.No)
-		}
-		if t.hasFieldChanged("phase_code") {
-			setClauses = append(setClauses, "phase_code = ?")
-			values = append(values, t.Phase_code)
-		}
-		if t.hasFieldChanged("task_code") {
-			setClauses = append(setClauses, "task_code = ?")
-			values = append(values, t.Task_code)
-		}
-		if t.hasFieldChanged("step_code") {
-			setClauses = append(setClauses, "step_code = ?")
-			values = append(values, t.Step_code)
-		}
-		if t.hasFieldChanged("date") {
-			setClauses = append(setClauses, "date = ?")
-			values = append(values, t.Date)
-		}
-		if t.hasFieldChanged("resource_group_no") {
-			setClauses = append(setClauses, "resource_group_no = ?")
-			values = append(values, t.Resource_group_no)
-		}
-		if t.hasFieldChanged("quantity") {
-			setClauses = append(setClauses, "quantity = ?")
-			values = append(values, t.Quantity)
-		}
-		if t.hasFieldChanged("total_cost") {
-			setClauses = append(setClauses, "total_cost = ?")
-			values = append(values, t.Total_cost)
-		}
-		if t.hasFieldChanged("total_price") {
-			setClauses = append(setClauses, "total_price = ?")
-			values = append(values, t.Total_price)
-		}
-		if t.hasFieldChanged("user_id") {
-			setClauses = append(setClauses, "user_id = ?")
-			values = append(values, t.User_id)
-		}
-		if t.hasFieldChanged("variant_code") {
-			setClauses = append(setClauses, "variant_code = ?")
-			values = append(values, t.Variant_code)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "project_status = ?")
-		values = append(values, t.Project_status)
-		setClauses = append(setClauses, "project_no = ?")
-		values = append(values, t.Project_no)
-		setClauses = append(setClauses, "type = ?")
-		values = append(values, t.Type)
-		setClauses = append(setClauses, "no = ?")
-		values = append(values, t.No)
-		setClauses = append(setClauses, "phase_code = ?")
-		values = append(values, t.Phase_code)
-		setClauses = append(setClauses, "task_code = ?")
-		values = append(values, t.Task_code)
-		setClauses = append(setClauses, "step_code = ?")
-		values = append(values, t.Step_code)
-		setClauses = append(setClauses, "date = ?")
-		values = append(values, t.Date)
-		setClauses = append(setClauses, "resource_group_no = ?")
-		values = append(values, t.Resource_group_no)
-		setClauses = append(setClauses, "quantity = ?")
-		values = append(values, t.Quantity)
-		setClauses = append(setClauses, "total_cost = ?")
-		values = append(values, t.Total_cost)
-		setClauses = append(setClauses, "total_price = ?")
-		values = append(values, t.Total_price)
-		setClauses = append(setClauses, "user_id = ?")
-		values = append(values, t.User_id)
-		setClauses = append(setClauses, "variant_code = ?")
-		values = append(values, t.Variant_code)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["entry_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Entry_no)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND entry_no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Project_Budget_Entry: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -1111,25 +941,8 @@ func (t *ProjectBudgetEntry) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ProjectBudgetEntryTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Entry_no,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Project_Budget_Entry: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1329,53 +1142,13 @@ func (t *ProjectBudgetEntry) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *ProjectBudgetEntry) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, ProjectBudgetEntryTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Project_Budget_Entry\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Project_Budget_Entry: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *ProjectBudgetEntry) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, ProjectBudgetEntryTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Project_Budget_Entry: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

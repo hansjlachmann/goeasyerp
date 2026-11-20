@@ -639,30 +639,14 @@ func (t *DepreciationTableLine) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, DepreciationTableLineTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Depreciation_table_code,
-		t.Period_no,
-		t.Period_depreciation_percent,
-		t.No_of_units_in_period,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (depreciation_table_code, period_no, period_depreciation_percent, no_of_units_in_period) VALUES (?, ?, ?, ?) ON CONFLICT (depreciation_table_code, period_no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Depreciation_Table_Line: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(DepreciationTableLineTableName, key)
 		return false
@@ -688,16 +672,10 @@ func (t *DepreciationTableLine) InsertAll(records []*DepreciationTableLine, runT
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Depreciation_table_code,
-			r.Period_no,
-			r.Period_depreciation_percent,
-			r.No_of_units_in_period,
-		})
+		rows = append(rows, depreciationTableLineFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, DepreciationTableLineTableName)
-	columns := []string{"depreciation_table_code", "period_no", "period_depreciation_percent", "no_of_units_in_period"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, depreciationTableLineFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -713,15 +691,7 @@ func (t *DepreciationTableLine) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("depreciation_table_code") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("period_no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := depreciationTableLineFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -729,70 +699,12 @@ func (t *DepreciationTableLine) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, DepreciationTableLineTableName)
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("depreciation_table_code") {
-			setClauses = append(setClauses, "depreciation_table_code = ?")
-			values = append(values, t.Depreciation_table_code)
-		}
-		if t.hasFieldChanged("period_no") {
-			setClauses = append(setClauses, "period_no = ?")
-			values = append(values, t.Period_no)
-		}
-		if t.hasFieldChanged("period_depreciation_percent") {
-			setClauses = append(setClauses, "period_depreciation_percent = ?")
-			values = append(values, t.Period_depreciation_percent)
-		}
-		if t.hasFieldChanged("no_of_units_in_period") {
-			setClauses = append(setClauses, "no_of_units_in_period = ?")
-			values = append(values, t.No_of_units_in_period)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "period_depreciation_percent = ?")
-		values = append(values, t.Period_depreciation_percent)
-		setClauses = append(setClauses, "no_of_units_in_period = ?")
-		values = append(values, t.No_of_units_in_period)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["depreciation_table_code"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Depreciation_table_code)
-	}
-	if old, ok := t.oldValues["period_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Period_no)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND depreciation_table_code = ? AND period_no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Depreciation_Table_Line: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -823,26 +735,8 @@ func (t *DepreciationTableLine) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, DepreciationTableLineTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Depreciation_table_code,
-		t.Period_no,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND depreciation_table_code = ? AND period_no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Depreciation_Table_Line: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1042,53 +936,13 @@ func (t *DepreciationTableLine) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *DepreciationTableLine) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, DepreciationTableLineTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Depreciation_Table_Line\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Depreciation_Table_Line: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *DepreciationTableLine) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, DepreciationTableLineTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Depreciation_Table_Line: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

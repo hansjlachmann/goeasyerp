@@ -869,49 +869,14 @@ func (t *GenJnlAllocation) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, GenJnlAllocationTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Journal_template_name,
-		t.Journal_batch_name,
-		t.Journal_line_no,
-		t.Line_no,
-		t.Account_no,
-		t.Dimension_1_code,
-		t.Dimension_2_code,
-		t.Allocation_quantity,
-		t.Allocation_percent,
-		t.Amount,
-		t.Gen_posting_type,
-		t.Gen_bus_posting_group,
-		t.Gen_prod_posting_group,
-		t.Tax_calculation_type,
-		t.Tax_amount,
-		t.Tax_percent,
-		t.Tax_area_code,
-		t.Tax_liable,
-		t.Tax_group_code,
-		t.Use_tax,
-		t.Tax_bus_posting_group,
-		t.Tax_prod_posting_group,
-		t.Additional_currency_amount,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, journal_batch_name, journal_line_no, line_no, account_no, dimension_1_code, dimension_2_code, allocation_quantity, allocation_percent, amount, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, tax_calculation_type, tax_amount, tax_percent, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group, additional_currency_amount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, journal_line_no, line_no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Gen_Jnl_Allocation: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(GenJnlAllocationTableName, key)
 		return false
@@ -937,35 +902,10 @@ func (t *GenJnlAllocation) InsertAll(records []*GenJnlAllocation, runTrigger boo
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Journal_template_name,
-			r.Journal_batch_name,
-			r.Journal_line_no,
-			r.Line_no,
-			r.Account_no,
-			r.Dimension_1_code,
-			r.Dimension_2_code,
-			r.Allocation_quantity,
-			r.Allocation_percent,
-			r.Amount,
-			r.Gen_posting_type,
-			r.Gen_bus_posting_group,
-			r.Gen_prod_posting_group,
-			r.Tax_calculation_type,
-			r.Tax_amount,
-			r.Tax_percent,
-			r.Tax_area_code,
-			r.Tax_liable,
-			r.Tax_group_code,
-			r.Use_tax,
-			r.Tax_bus_posting_group,
-			r.Tax_prod_posting_group,
-			r.Additional_currency_amount,
-		})
+		rows = append(rows, genJnlAllocationFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, GenJnlAllocationTableName)
-	columns := []string{"journal_template_name", "journal_batch_name", "journal_line_no", "line_no", "account_no", "dimension_1_code", "dimension_2_code", "allocation_quantity", "allocation_percent", "amount", "gen_posting_type", "gen_bus_posting_group", "gen_prod_posting_group", "tax_calculation_type", "tax_amount", "tax_percent", "tax_area_code", "tax_liable", "tax_group_code", "use_tax", "tax_bus_posting_group", "tax_prod_posting_group", "additional_currency_amount"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, genJnlAllocationFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -981,21 +921,7 @@ func (t *GenJnlAllocation) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("journal_template_name") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("journal_batch_name") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("journal_line_no") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("line_no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := genJnlAllocationFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -1003,190 +929,12 @@ func (t *GenJnlAllocation) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, GenJnlAllocationTableName)
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("journal_template_name") {
-			setClauses = append(setClauses, "journal_template_name = ?")
-			values = append(values, t.Journal_template_name)
-		}
-		if t.hasFieldChanged("journal_batch_name") {
-			setClauses = append(setClauses, "journal_batch_name = ?")
-			values = append(values, t.Journal_batch_name)
-		}
-		if t.hasFieldChanged("journal_line_no") {
-			setClauses = append(setClauses, "journal_line_no = ?")
-			values = append(values, t.Journal_line_no)
-		}
-		if t.hasFieldChanged("line_no") {
-			setClauses = append(setClauses, "line_no = ?")
-			values = append(values, t.Line_no)
-		}
-		if t.hasFieldChanged("account_no") {
-			setClauses = append(setClauses, "account_no = ?")
-			values = append(values, t.Account_no)
-		}
-		if t.hasFieldChanged("dimension_1_code") {
-			setClauses = append(setClauses, "dimension_1_code = ?")
-			values = append(values, t.Dimension_1_code)
-		}
-		if t.hasFieldChanged("dimension_2_code") {
-			setClauses = append(setClauses, "dimension_2_code = ?")
-			values = append(values, t.Dimension_2_code)
-		}
-		if t.hasFieldChanged("allocation_quantity") {
-			setClauses = append(setClauses, "allocation_quantity = ?")
-			values = append(values, t.Allocation_quantity)
-		}
-		if t.hasFieldChanged("allocation_percent") {
-			setClauses = append(setClauses, "allocation_percent = ?")
-			values = append(values, t.Allocation_percent)
-		}
-		if t.hasFieldChanged("amount") {
-			setClauses = append(setClauses, "amount = ?")
-			values = append(values, t.Amount)
-		}
-		if t.hasFieldChanged("gen_posting_type") {
-			setClauses = append(setClauses, "gen_posting_type = ?")
-			values = append(values, t.Gen_posting_type)
-		}
-		if t.hasFieldChanged("gen_bus_posting_group") {
-			setClauses = append(setClauses, "gen_bus_posting_group = ?")
-			values = append(values, t.Gen_bus_posting_group)
-		}
-		if t.hasFieldChanged("gen_prod_posting_group") {
-			setClauses = append(setClauses, "gen_prod_posting_group = ?")
-			values = append(values, t.Gen_prod_posting_group)
-		}
-		if t.hasFieldChanged("tax_calculation_type") {
-			setClauses = append(setClauses, "tax_calculation_type = ?")
-			values = append(values, t.Tax_calculation_type)
-		}
-		if t.hasFieldChanged("tax_amount") {
-			setClauses = append(setClauses, "tax_amount = ?")
-			values = append(values, t.Tax_amount)
-		}
-		if t.hasFieldChanged("tax_percent") {
-			setClauses = append(setClauses, "tax_percent = ?")
-			values = append(values, t.Tax_percent)
-		}
-		if t.hasFieldChanged("tax_area_code") {
-			setClauses = append(setClauses, "tax_area_code = ?")
-			values = append(values, t.Tax_area_code)
-		}
-		if t.hasFieldChanged("tax_liable") {
-			setClauses = append(setClauses, "tax_liable = ?")
-			values = append(values, t.Tax_liable)
-		}
-		if t.hasFieldChanged("tax_group_code") {
-			setClauses = append(setClauses, "tax_group_code = ?")
-			values = append(values, t.Tax_group_code)
-		}
-		if t.hasFieldChanged("use_tax") {
-			setClauses = append(setClauses, "use_tax = ?")
-			values = append(values, t.Use_tax)
-		}
-		if t.hasFieldChanged("tax_bus_posting_group") {
-			setClauses = append(setClauses, "tax_bus_posting_group = ?")
-			values = append(values, t.Tax_bus_posting_group)
-		}
-		if t.hasFieldChanged("tax_prod_posting_group") {
-			setClauses = append(setClauses, "tax_prod_posting_group = ?")
-			values = append(values, t.Tax_prod_posting_group)
-		}
-		if t.hasFieldChanged("additional_currency_amount") {
-			setClauses = append(setClauses, "additional_currency_amount = ?")
-			values = append(values, t.Additional_currency_amount)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "account_no = ?")
-		values = append(values, t.Account_no)
-		setClauses = append(setClauses, "dimension_1_code = ?")
-		values = append(values, t.Dimension_1_code)
-		setClauses = append(setClauses, "dimension_2_code = ?")
-		values = append(values, t.Dimension_2_code)
-		setClauses = append(setClauses, "allocation_quantity = ?")
-		values = append(values, t.Allocation_quantity)
-		setClauses = append(setClauses, "allocation_percent = ?")
-		values = append(values, t.Allocation_percent)
-		setClauses = append(setClauses, "amount = ?")
-		values = append(values, t.Amount)
-		setClauses = append(setClauses, "gen_posting_type = ?")
-		values = append(values, t.Gen_posting_type)
-		setClauses = append(setClauses, "gen_bus_posting_group = ?")
-		values = append(values, t.Gen_bus_posting_group)
-		setClauses = append(setClauses, "gen_prod_posting_group = ?")
-		values = append(values, t.Gen_prod_posting_group)
-		setClauses = append(setClauses, "tax_calculation_type = ?")
-		values = append(values, t.Tax_calculation_type)
-		setClauses = append(setClauses, "tax_amount = ?")
-		values = append(values, t.Tax_amount)
-		setClauses = append(setClauses, "tax_percent = ?")
-		values = append(values, t.Tax_percent)
-		setClauses = append(setClauses, "tax_area_code = ?")
-		values = append(values, t.Tax_area_code)
-		setClauses = append(setClauses, "tax_liable = ?")
-		values = append(values, t.Tax_liable)
-		setClauses = append(setClauses, "tax_group_code = ?")
-		values = append(values, t.Tax_group_code)
-		setClauses = append(setClauses, "use_tax = ?")
-		values = append(values, t.Use_tax)
-		setClauses = append(setClauses, "tax_bus_posting_group = ?")
-		values = append(values, t.Tax_bus_posting_group)
-		setClauses = append(setClauses, "tax_prod_posting_group = ?")
-		values = append(values, t.Tax_prod_posting_group)
-		setClauses = append(setClauses, "additional_currency_amount = ?")
-		values = append(values, t.Additional_currency_amount)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["journal_template_name"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Journal_template_name)
-	}
-	if old, ok := t.oldValues["journal_batch_name"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Journal_batch_name)
-	}
-	if old, ok := t.oldValues["journal_line_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Journal_line_no)
-	}
-	if old, ok := t.oldValues["line_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Line_no)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND journal_line_no = ? AND line_no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Gen_Jnl_Allocation: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -1217,28 +965,8 @@ func (t *GenJnlAllocation) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, GenJnlAllocationTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Journal_template_name,
-		t.Journal_batch_name,
-		t.Journal_line_no,
-		t.Line_no,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND journal_line_no = ? AND line_no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Gen_Jnl_Allocation: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // ========================================
@@ -1512,53 +1240,13 @@ func (t *GenJnlAllocation) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *GenJnlAllocation) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, GenJnlAllocationTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Gen_Jnl_Allocation\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Gen_Jnl_Allocation: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *GenJnlAllocation) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, GenJnlAllocationTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Gen_Jnl_Allocation: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

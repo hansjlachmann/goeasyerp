@@ -748,39 +748,14 @@ func (t *BankAccountStatementLine) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, BankAccountStatementLineTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Bank_account_no,
-		t.Statement_no,
-		t.Statement_line_no,
-		t.Document_no,
-		t.Transaction_date,
-		t.Description,
-		t.Statement_amount,
-		t.Difference,
-		t.Applied_amount,
-		t.Type,
-		t.Applied_entries,
-		t.Value_date,
-		t.Check_no,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (bank_account_no, statement_no, statement_line_no, document_no, transaction_date, description, statement_amount, difference, applied_amount, type, applied_entries, value_date, check_no) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (bank_account_no, statement_no, statement_line_no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Bank_Account_Statement_Line: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(BankAccountStatementLineTableName, key)
 		return false
@@ -806,25 +781,10 @@ func (t *BankAccountStatementLine) InsertAll(records []*BankAccountStatementLine
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Bank_account_no,
-			r.Statement_no,
-			r.Statement_line_no,
-			r.Document_no,
-			r.Transaction_date,
-			r.Description,
-			r.Statement_amount,
-			r.Difference,
-			r.Applied_amount,
-			r.Type,
-			r.Applied_entries,
-			r.Value_date,
-			r.Check_no,
-		})
+		rows = append(rows, bankAccountStatementLineFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, BankAccountStatementLineTableName)
-	columns := []string{"bank_account_no", "statement_no", "statement_line_no", "document_no", "transaction_date", "description", "statement_amount", "difference", "applied_amount", "type", "applied_entries", "value_date", "check_no"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, bankAccountStatementLineFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -840,18 +800,7 @@ func (t *BankAccountStatementLine) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("bank_account_no") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("statement_no") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("statement_line_no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := bankAccountStatementLineFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -859,127 +808,12 @@ func (t *BankAccountStatementLine) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, BankAccountStatementLineTableName)
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("bank_account_no") {
-			setClauses = append(setClauses, "bank_account_no = ?")
-			values = append(values, t.Bank_account_no)
-		}
-		if t.hasFieldChanged("statement_no") {
-			setClauses = append(setClauses, "statement_no = ?")
-			values = append(values, t.Statement_no)
-		}
-		if t.hasFieldChanged("statement_line_no") {
-			setClauses = append(setClauses, "statement_line_no = ?")
-			values = append(values, t.Statement_line_no)
-		}
-		if t.hasFieldChanged("document_no") {
-			setClauses = append(setClauses, "document_no = ?")
-			values = append(values, t.Document_no)
-		}
-		if t.hasFieldChanged("transaction_date") {
-			setClauses = append(setClauses, "transaction_date = ?")
-			values = append(values, t.Transaction_date)
-		}
-		if t.hasFieldChanged("description") {
-			setClauses = append(setClauses, "description = ?")
-			values = append(values, t.Description)
-		}
-		if t.hasFieldChanged("statement_amount") {
-			setClauses = append(setClauses, "statement_amount = ?")
-			values = append(values, t.Statement_amount)
-		}
-		if t.hasFieldChanged("difference") {
-			setClauses = append(setClauses, "difference = ?")
-			values = append(values, t.Difference)
-		}
-		if t.hasFieldChanged("applied_amount") {
-			setClauses = append(setClauses, "applied_amount = ?")
-			values = append(values, t.Applied_amount)
-		}
-		if t.hasFieldChanged("type") {
-			setClauses = append(setClauses, "type = ?")
-			values = append(values, t.Type)
-		}
-		if t.hasFieldChanged("applied_entries") {
-			setClauses = append(setClauses, "applied_entries = ?")
-			values = append(values, t.Applied_entries)
-		}
-		if t.hasFieldChanged("value_date") {
-			setClauses = append(setClauses, "value_date = ?")
-			values = append(values, t.Value_date)
-		}
-		if t.hasFieldChanged("check_no") {
-			setClauses = append(setClauses, "check_no = ?")
-			values = append(values, t.Check_no)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "document_no = ?")
-		values = append(values, t.Document_no)
-		setClauses = append(setClauses, "transaction_date = ?")
-		values = append(values, t.Transaction_date)
-		setClauses = append(setClauses, "description = ?")
-		values = append(values, t.Description)
-		setClauses = append(setClauses, "statement_amount = ?")
-		values = append(values, t.Statement_amount)
-		setClauses = append(setClauses, "difference = ?")
-		values = append(values, t.Difference)
-		setClauses = append(setClauses, "applied_amount = ?")
-		values = append(values, t.Applied_amount)
-		setClauses = append(setClauses, "type = ?")
-		values = append(values, t.Type)
-		setClauses = append(setClauses, "applied_entries = ?")
-		values = append(values, t.Applied_entries)
-		setClauses = append(setClauses, "value_date = ?")
-		values = append(values, t.Value_date)
-		setClauses = append(setClauses, "check_no = ?")
-		values = append(values, t.Check_no)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["bank_account_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Bank_account_no)
-	}
-	if old, ok := t.oldValues["statement_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Statement_no)
-	}
-	if old, ok := t.oldValues["statement_line_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Statement_line_no)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND bank_account_no = ? AND statement_no = ? AND statement_line_no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Bank_Account_Statement_Line: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -1010,27 +844,8 @@ func (t *BankAccountStatementLine) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, BankAccountStatementLineTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Bank_account_no,
-		t.Statement_no,
-		t.Statement_line_no,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND bank_account_no = ? AND statement_no = ? AND statement_line_no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Bank_Account_Statement_Line: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1230,53 +1045,13 @@ func (t *BankAccountStatementLine) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *BankAccountStatementLine) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, BankAccountStatementLineTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Bank_Account_Statement_Line\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Bank_Account_Statement_Line: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *BankAccountStatementLine) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, BankAccountStatementLineTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Bank_Account_Statement_Line: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

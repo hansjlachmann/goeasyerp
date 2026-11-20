@@ -746,37 +746,14 @@ func (t *SetupChecklistLine) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, SetupChecklistLineTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Line_no,
-		t.Table_id,
-		t.Table_name,
-		t.Copying_available,
-		t.Page_id,
-		t.Page_name,
-		t.Starting_date,
-		t.Ending_date,
-		t.Responsible_id,
-		t.Status,
-		t.Application_area_id,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (line_no, table_id, table_name, copying_available, page_id, page_name, starting_date, ending_date, responsible_id, status, application_area_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (line_no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Setup_Checklist_Line: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(SetupChecklistLineTableName, key)
 		return false
@@ -802,23 +779,10 @@ func (t *SetupChecklistLine) InsertAll(records []*SetupChecklistLine, runTrigger
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Line_no,
-			r.Table_id,
-			r.Table_name,
-			r.Copying_available,
-			r.Page_id,
-			r.Page_name,
-			r.Starting_date,
-			r.Ending_date,
-			r.Responsible_id,
-			r.Status,
-			r.Application_area_id,
-		})
+		rows = append(rows, setupChecklistLineFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, SetupChecklistLineTableName)
-	columns := []string{"line_no", "table_id", "table_name", "copying_available", "page_id", "page_name", "starting_date", "ending_date", "responsible_id", "status", "application_area_id"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, setupChecklistLineFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -834,12 +798,7 @@ func (t *SetupChecklistLine) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("line_no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := setupChecklistLineFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -847,109 +806,12 @@ func (t *SetupChecklistLine) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, SetupChecklistLineTableName)
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("line_no") {
-			setClauses = append(setClauses, "line_no = ?")
-			values = append(values, t.Line_no)
-		}
-		if t.hasFieldChanged("table_id") {
-			setClauses = append(setClauses, "table_id = ?")
-			values = append(values, t.Table_id)
-		}
-		if t.hasFieldChanged("table_name") {
-			setClauses = append(setClauses, "table_name = ?")
-			values = append(values, t.Table_name)
-		}
-		if t.hasFieldChanged("copying_available") {
-			setClauses = append(setClauses, "copying_available = ?")
-			values = append(values, t.Copying_available)
-		}
-		if t.hasFieldChanged("page_id") {
-			setClauses = append(setClauses, "page_id = ?")
-			values = append(values, t.Page_id)
-		}
-		if t.hasFieldChanged("page_name") {
-			setClauses = append(setClauses, "page_name = ?")
-			values = append(values, t.Page_name)
-		}
-		if t.hasFieldChanged("starting_date") {
-			setClauses = append(setClauses, "starting_date = ?")
-			values = append(values, t.Starting_date)
-		}
-		if t.hasFieldChanged("ending_date") {
-			setClauses = append(setClauses, "ending_date = ?")
-			values = append(values, t.Ending_date)
-		}
-		if t.hasFieldChanged("responsible_id") {
-			setClauses = append(setClauses, "responsible_id = ?")
-			values = append(values, t.Responsible_id)
-		}
-		if t.hasFieldChanged("status") {
-			setClauses = append(setClauses, "status = ?")
-			values = append(values, t.Status)
-		}
-		if t.hasFieldChanged("application_area_id") {
-			setClauses = append(setClauses, "application_area_id = ?")
-			values = append(values, t.Application_area_id)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "table_id = ?")
-		values = append(values, t.Table_id)
-		setClauses = append(setClauses, "table_name = ?")
-		values = append(values, t.Table_name)
-		setClauses = append(setClauses, "copying_available = ?")
-		values = append(values, t.Copying_available)
-		setClauses = append(setClauses, "page_id = ?")
-		values = append(values, t.Page_id)
-		setClauses = append(setClauses, "page_name = ?")
-		values = append(values, t.Page_name)
-		setClauses = append(setClauses, "starting_date = ?")
-		values = append(values, t.Starting_date)
-		setClauses = append(setClauses, "ending_date = ?")
-		values = append(values, t.Ending_date)
-		setClauses = append(setClauses, "responsible_id = ?")
-		values = append(values, t.Responsible_id)
-		setClauses = append(setClauses, "status = ?")
-		values = append(values, t.Status)
-		setClauses = append(setClauses, "application_area_id = ?")
-		values = append(values, t.Application_area_id)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["line_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Line_no)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND line_no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Setup_Checklist_Line: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -980,25 +842,8 @@ func (t *SetupChecklistLine) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, SetupChecklistLineTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Line_no,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND line_no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Setup_Checklist_Line: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // ========================================
@@ -1385,53 +1230,13 @@ func (t *SetupChecklistLine) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *SetupChecklistLine) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, SetupChecklistLineTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Setup_Checklist_Line\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Setup_Checklist_Line: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *SetupChecklistLine) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, SetupChecklistLineTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Setup_Checklist_Line: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

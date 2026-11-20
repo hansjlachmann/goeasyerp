@@ -782,38 +782,14 @@ func (t *TaxPostingSetup) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, TaxPostingSetupTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Tax_bus_posting_group,
-		t.Tax_prod_posting_group,
-		t.Tax_calculation_type,
-		t.Vat_percent,
-		t.Unrealized_tax_type,
-		t.Adjust_for_payment_discount,
-		t.Sales_vat_account,
-		t.Sales_vat_unreal_account,
-		t.Purchase_vat_account,
-		t.Purch_vat_unreal_account,
-		t.Reverse_chrg_vat_acc,
-		t.Reverse_chrg_vat_unreal_acc,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (tax_bus_posting_group, tax_prod_posting_group, tax_calculation_type, vat_percent, unrealized_tax_type, adjust_for_payment_discount, sales_vat_account, sales_vat_unreal_account, purchase_vat_account, purch_vat_unreal_account, reverse_chrg_vat_acc, reverse_chrg_vat_unreal_acc) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (tax_bus_posting_group, tax_prod_posting_group) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Tax_Posting_Setup: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(TaxPostingSetupTableName, key)
 		return false
@@ -839,24 +815,10 @@ func (t *TaxPostingSetup) InsertAll(records []*TaxPostingSetup, runTrigger bool)
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Tax_bus_posting_group,
-			r.Tax_prod_posting_group,
-			r.Tax_calculation_type,
-			r.Vat_percent,
-			r.Unrealized_tax_type,
-			r.Adjust_for_payment_discount,
-			r.Sales_vat_account,
-			r.Sales_vat_unreal_account,
-			r.Purchase_vat_account,
-			r.Purch_vat_unreal_account,
-			r.Reverse_chrg_vat_acc,
-			r.Reverse_chrg_vat_unreal_acc,
-		})
+		rows = append(rows, taxPostingSetupFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, TaxPostingSetupTableName)
-	columns := []string{"tax_bus_posting_group", "tax_prod_posting_group", "tax_calculation_type", "vat_percent", "unrealized_tax_type", "adjust_for_payment_discount", "sales_vat_account", "sales_vat_unreal_account", "purchase_vat_account", "purch_vat_unreal_account", "reverse_chrg_vat_acc", "reverse_chrg_vat_unreal_acc"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, taxPostingSetupFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -872,15 +834,7 @@ func (t *TaxPostingSetup) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("tax_bus_posting_group") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("tax_prod_posting_group") {
-			keyChanged = true
-		}
-	}
+	keyChanged := taxPostingSetupFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -888,118 +842,12 @@ func (t *TaxPostingSetup) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, TaxPostingSetupTableName)
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("tax_bus_posting_group") {
-			setClauses = append(setClauses, "tax_bus_posting_group = ?")
-			values = append(values, t.Tax_bus_posting_group)
-		}
-		if t.hasFieldChanged("tax_prod_posting_group") {
-			setClauses = append(setClauses, "tax_prod_posting_group = ?")
-			values = append(values, t.Tax_prod_posting_group)
-		}
-		if t.hasFieldChanged("tax_calculation_type") {
-			setClauses = append(setClauses, "tax_calculation_type = ?")
-			values = append(values, t.Tax_calculation_type)
-		}
-		if t.hasFieldChanged("vat_percent") {
-			setClauses = append(setClauses, "vat_percent = ?")
-			values = append(values, t.Vat_percent)
-		}
-		if t.hasFieldChanged("unrealized_tax_type") {
-			setClauses = append(setClauses, "unrealized_tax_type = ?")
-			values = append(values, t.Unrealized_tax_type)
-		}
-		if t.hasFieldChanged("adjust_for_payment_discount") {
-			setClauses = append(setClauses, "adjust_for_payment_discount = ?")
-			values = append(values, t.Adjust_for_payment_discount)
-		}
-		if t.hasFieldChanged("sales_vat_account") {
-			setClauses = append(setClauses, "sales_vat_account = ?")
-			values = append(values, t.Sales_vat_account)
-		}
-		if t.hasFieldChanged("sales_vat_unreal_account") {
-			setClauses = append(setClauses, "sales_vat_unreal_account = ?")
-			values = append(values, t.Sales_vat_unreal_account)
-		}
-		if t.hasFieldChanged("purchase_vat_account") {
-			setClauses = append(setClauses, "purchase_vat_account = ?")
-			values = append(values, t.Purchase_vat_account)
-		}
-		if t.hasFieldChanged("purch_vat_unreal_account") {
-			setClauses = append(setClauses, "purch_vat_unreal_account = ?")
-			values = append(values, t.Purch_vat_unreal_account)
-		}
-		if t.hasFieldChanged("reverse_chrg_vat_acc") {
-			setClauses = append(setClauses, "reverse_chrg_vat_acc = ?")
-			values = append(values, t.Reverse_chrg_vat_acc)
-		}
-		if t.hasFieldChanged("reverse_chrg_vat_unreal_acc") {
-			setClauses = append(setClauses, "reverse_chrg_vat_unreal_acc = ?")
-			values = append(values, t.Reverse_chrg_vat_unreal_acc)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "tax_calculation_type = ?")
-		values = append(values, t.Tax_calculation_type)
-		setClauses = append(setClauses, "vat_percent = ?")
-		values = append(values, t.Vat_percent)
-		setClauses = append(setClauses, "unrealized_tax_type = ?")
-		values = append(values, t.Unrealized_tax_type)
-		setClauses = append(setClauses, "adjust_for_payment_discount = ?")
-		values = append(values, t.Adjust_for_payment_discount)
-		setClauses = append(setClauses, "sales_vat_account = ?")
-		values = append(values, t.Sales_vat_account)
-		setClauses = append(setClauses, "sales_vat_unreal_account = ?")
-		values = append(values, t.Sales_vat_unreal_account)
-		setClauses = append(setClauses, "purchase_vat_account = ?")
-		values = append(values, t.Purchase_vat_account)
-		setClauses = append(setClauses, "purch_vat_unreal_account = ?")
-		values = append(values, t.Purch_vat_unreal_account)
-		setClauses = append(setClauses, "reverse_chrg_vat_acc = ?")
-		values = append(values, t.Reverse_chrg_vat_acc)
-		setClauses = append(setClauses, "reverse_chrg_vat_unreal_acc = ?")
-		values = append(values, t.Reverse_chrg_vat_unreal_acc)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["tax_bus_posting_group"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Tax_bus_posting_group)
-	}
-	if old, ok := t.oldValues["tax_prod_posting_group"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Tax_prod_posting_group)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND tax_bus_posting_group = ? AND tax_prod_posting_group = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Tax_Posting_Setup: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -1030,26 +878,8 @@ func (t *TaxPostingSetup) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, TaxPostingSetupTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Tax_bus_posting_group,
-		t.Tax_prod_posting_group,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND tax_bus_posting_group = ? AND tax_prod_posting_group = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Tax_Posting_Setup: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1249,53 +1079,13 @@ func (t *TaxPostingSetup) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *TaxPostingSetup) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, TaxPostingSetupTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Tax_Posting_Setup\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Tax_Posting_Setup: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *TaxPostingSetup) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, TaxPostingSetupTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Tax_Posting_Setup: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

@@ -1134,73 +1134,14 @@ func (t *MaintenanceLedgerEntry) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, MaintenanceLedgerEntryTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Entry_no,
-		t.G_l_entry_no,
-		t.Fa_no,
-		t.Fa_posting_date,
-		t.Posting_date,
-		t.Document_type,
-		t.Document_date,
-		t.Document_no,
-		t.External_document_no,
-		t.Description,
-		t.Amount,
-		t.Debit_amount,
-		t.Credit_amount,
-		t.Quantity,
-		t.Fa_no_budgeted_fa_no,
-		t.Fa_subclass_code,
-		t.Fa_location_code,
-		t.Fa_posting_group,
-		t.Dimension_1_code,
-		t.Dimension_2_code,
-		t.Location_code,
-		t.User_id,
-		t.Journal_batch_name,
-		t.Source_code,
-		t.Reason_code,
-		t.Transaction_no,
-		t.Bal_account_type,
-		t.Bal_account_no,
-		t.Tax_amount,
-		t.Gen_posting_type,
-		t.Gen_bus_posting_group,
-		t.Gen_prod_posting_group,
-		t.Fa_class_code,
-		t.Depreciation_book_code,
-		t.Fa_exchange_rate,
-		t.Amount_lcy,
-		t.Maintenance_code,
-		t.Correction,
-		t.Index_entry,
-		t.Automatic_entry,
-		t.No_series,
-		t.Tax_area_code,
-		t.Tax_liable,
-		t.Tax_group_code,
-		t.Use_tax,
-		t.Tax_bus_posting_group,
-		t.Tax_prod_posting_group,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, g_l_entry_no, fa_no, fa_posting_date, posting_date, document_type, document_date, document_no, external_document_no, description, amount, debit_amount, credit_amount, quantity, fa_no_budgeted_fa_no, fa_subclass_code, fa_location_code, fa_posting_group, dimension_1_code, dimension_2_code, location_code, user_id, journal_batch_name, source_code, reason_code, transaction_no, bal_account_type, bal_account_no, tax_amount, gen_posting_type, gen_bus_posting_group, gen_prod_posting_group, fa_class_code, depreciation_book_code, fa_exchange_rate, amount_lcy, maintenance_code, correction, index_entry, automatic_entry, no_series, tax_area_code, tax_liable, tax_group_code, use_tax, tax_bus_posting_group, tax_prod_posting_group) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Maintenance_Ledger_Entry: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(MaintenanceLedgerEntryTableName, key)
 		return false
@@ -1226,59 +1167,10 @@ func (t *MaintenanceLedgerEntry) InsertAll(records []*MaintenanceLedgerEntry, ru
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Entry_no,
-			r.G_l_entry_no,
-			r.Fa_no,
-			r.Fa_posting_date,
-			r.Posting_date,
-			r.Document_type,
-			r.Document_date,
-			r.Document_no,
-			r.External_document_no,
-			r.Description,
-			r.Amount,
-			r.Debit_amount,
-			r.Credit_amount,
-			r.Quantity,
-			r.Fa_no_budgeted_fa_no,
-			r.Fa_subclass_code,
-			r.Fa_location_code,
-			r.Fa_posting_group,
-			r.Dimension_1_code,
-			r.Dimension_2_code,
-			r.Location_code,
-			r.User_id,
-			r.Journal_batch_name,
-			r.Source_code,
-			r.Reason_code,
-			r.Transaction_no,
-			r.Bal_account_type,
-			r.Bal_account_no,
-			r.Tax_amount,
-			r.Gen_posting_type,
-			r.Gen_bus_posting_group,
-			r.Gen_prod_posting_group,
-			r.Fa_class_code,
-			r.Depreciation_book_code,
-			r.Fa_exchange_rate,
-			r.Amount_lcy,
-			r.Maintenance_code,
-			r.Correction,
-			r.Index_entry,
-			r.Automatic_entry,
-			r.No_series,
-			r.Tax_area_code,
-			r.Tax_liable,
-			r.Tax_group_code,
-			r.Use_tax,
-			r.Tax_bus_posting_group,
-			r.Tax_prod_posting_group,
-		})
+		rows = append(rows, maintenanceLedgerEntryFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, MaintenanceLedgerEntryTableName)
-	columns := []string{"entry_no", "g_l_entry_no", "fa_no", "fa_posting_date", "posting_date", "document_type", "document_date", "document_no", "external_document_no", "description", "amount", "debit_amount", "credit_amount", "quantity", "fa_no_budgeted_fa_no", "fa_subclass_code", "fa_location_code", "fa_posting_group", "dimension_1_code", "dimension_2_code", "location_code", "user_id", "journal_batch_name", "source_code", "reason_code", "transaction_no", "bal_account_type", "bal_account_no", "tax_amount", "gen_posting_type", "gen_bus_posting_group", "gen_prod_posting_group", "fa_class_code", "depreciation_book_code", "fa_exchange_rate", "amount_lcy", "maintenance_code", "correction", "index_entry", "automatic_entry", "no_series", "tax_area_code", "tax_liable", "tax_group_code", "use_tax", "tax_bus_posting_group", "tax_prod_posting_group"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, maintenanceLedgerEntryFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -1294,323 +1186,13 @@ func (t *MaintenanceLedgerEntry) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("entry_no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := maintenanceLedgerEntryFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
 		}
-	}
-	tableName := fmt.Sprintf("%s$%s", t.company, MaintenanceLedgerEntryTableName)
-
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("entry_no") {
-			setClauses = append(setClauses, "entry_no = ?")
-			values = append(values, t.Entry_no)
-		}
-		if t.hasFieldChanged("g_l_entry_no") {
-			setClauses = append(setClauses, "g_l_entry_no = ?")
-			values = append(values, t.G_l_entry_no)
-		}
-		if t.hasFieldChanged("fa_no") {
-			setClauses = append(setClauses, "fa_no = ?")
-			values = append(values, t.Fa_no)
-		}
-		if t.hasFieldChanged("fa_posting_date") {
-			setClauses = append(setClauses, "fa_posting_date = ?")
-			values = append(values, t.Fa_posting_date)
-		}
-		if t.hasFieldChanged("posting_date") {
-			setClauses = append(setClauses, "posting_date = ?")
-			values = append(values, t.Posting_date)
-		}
-		if t.hasFieldChanged("document_type") {
-			setClauses = append(setClauses, "document_type = ?")
-			values = append(values, t.Document_type)
-		}
-		if t.hasFieldChanged("document_date") {
-			setClauses = append(setClauses, "document_date = ?")
-			values = append(values, t.Document_date)
-		}
-		if t.hasFieldChanged("document_no") {
-			setClauses = append(setClauses, "document_no = ?")
-			values = append(values, t.Document_no)
-		}
-		if t.hasFieldChanged("external_document_no") {
-			setClauses = append(setClauses, "external_document_no = ?")
-			values = append(values, t.External_document_no)
-		}
-		if t.hasFieldChanged("description") {
-			setClauses = append(setClauses, "description = ?")
-			values = append(values, t.Description)
-		}
-		if t.hasFieldChanged("amount") {
-			setClauses = append(setClauses, "amount = ?")
-			values = append(values, t.Amount)
-		}
-		if t.hasFieldChanged("debit_amount") {
-			setClauses = append(setClauses, "debit_amount = ?")
-			values = append(values, t.Debit_amount)
-		}
-		if t.hasFieldChanged("credit_amount") {
-			setClauses = append(setClauses, "credit_amount = ?")
-			values = append(values, t.Credit_amount)
-		}
-		if t.hasFieldChanged("quantity") {
-			setClauses = append(setClauses, "quantity = ?")
-			values = append(values, t.Quantity)
-		}
-		if t.hasFieldChanged("fa_no_budgeted_fa_no") {
-			setClauses = append(setClauses, "fa_no_budgeted_fa_no = ?")
-			values = append(values, t.Fa_no_budgeted_fa_no)
-		}
-		if t.hasFieldChanged("fa_subclass_code") {
-			setClauses = append(setClauses, "fa_subclass_code = ?")
-			values = append(values, t.Fa_subclass_code)
-		}
-		if t.hasFieldChanged("fa_location_code") {
-			setClauses = append(setClauses, "fa_location_code = ?")
-			values = append(values, t.Fa_location_code)
-		}
-		if t.hasFieldChanged("fa_posting_group") {
-			setClauses = append(setClauses, "fa_posting_group = ?")
-			values = append(values, t.Fa_posting_group)
-		}
-		if t.hasFieldChanged("dimension_1_code") {
-			setClauses = append(setClauses, "dimension_1_code = ?")
-			values = append(values, t.Dimension_1_code)
-		}
-		if t.hasFieldChanged("dimension_2_code") {
-			setClauses = append(setClauses, "dimension_2_code = ?")
-			values = append(values, t.Dimension_2_code)
-		}
-		if t.hasFieldChanged("location_code") {
-			setClauses = append(setClauses, "location_code = ?")
-			values = append(values, t.Location_code)
-		}
-		if t.hasFieldChanged("user_id") {
-			setClauses = append(setClauses, "user_id = ?")
-			values = append(values, t.User_id)
-		}
-		if t.hasFieldChanged("journal_batch_name") {
-			setClauses = append(setClauses, "journal_batch_name = ?")
-			values = append(values, t.Journal_batch_name)
-		}
-		if t.hasFieldChanged("source_code") {
-			setClauses = append(setClauses, "source_code = ?")
-			values = append(values, t.Source_code)
-		}
-		if t.hasFieldChanged("reason_code") {
-			setClauses = append(setClauses, "reason_code = ?")
-			values = append(values, t.Reason_code)
-		}
-		if t.hasFieldChanged("transaction_no") {
-			setClauses = append(setClauses, "transaction_no = ?")
-			values = append(values, t.Transaction_no)
-		}
-		if t.hasFieldChanged("bal_account_type") {
-			setClauses = append(setClauses, "bal_account_type = ?")
-			values = append(values, t.Bal_account_type)
-		}
-		if t.hasFieldChanged("bal_account_no") {
-			setClauses = append(setClauses, "bal_account_no = ?")
-			values = append(values, t.Bal_account_no)
-		}
-		if t.hasFieldChanged("tax_amount") {
-			setClauses = append(setClauses, "tax_amount = ?")
-			values = append(values, t.Tax_amount)
-		}
-		if t.hasFieldChanged("gen_posting_type") {
-			setClauses = append(setClauses, "gen_posting_type = ?")
-			values = append(values, t.Gen_posting_type)
-		}
-		if t.hasFieldChanged("gen_bus_posting_group") {
-			setClauses = append(setClauses, "gen_bus_posting_group = ?")
-			values = append(values, t.Gen_bus_posting_group)
-		}
-		if t.hasFieldChanged("gen_prod_posting_group") {
-			setClauses = append(setClauses, "gen_prod_posting_group = ?")
-			values = append(values, t.Gen_prod_posting_group)
-		}
-		if t.hasFieldChanged("fa_class_code") {
-			setClauses = append(setClauses, "fa_class_code = ?")
-			values = append(values, t.Fa_class_code)
-		}
-		if t.hasFieldChanged("depreciation_book_code") {
-			setClauses = append(setClauses, "depreciation_book_code = ?")
-			values = append(values, t.Depreciation_book_code)
-		}
-		if t.hasFieldChanged("fa_exchange_rate") {
-			setClauses = append(setClauses, "fa_exchange_rate = ?")
-			values = append(values, t.Fa_exchange_rate)
-		}
-		if t.hasFieldChanged("amount_lcy") {
-			setClauses = append(setClauses, "amount_lcy = ?")
-			values = append(values, t.Amount_lcy)
-		}
-		if t.hasFieldChanged("maintenance_code") {
-			setClauses = append(setClauses, "maintenance_code = ?")
-			values = append(values, t.Maintenance_code)
-		}
-		if t.hasFieldChanged("correction") {
-			setClauses = append(setClauses, "correction = ?")
-			values = append(values, t.Correction)
-		}
-		if t.hasFieldChanged("index_entry") {
-			setClauses = append(setClauses, "index_entry = ?")
-			values = append(values, t.Index_entry)
-		}
-		if t.hasFieldChanged("automatic_entry") {
-			setClauses = append(setClauses, "automatic_entry = ?")
-			values = append(values, t.Automatic_entry)
-		}
-		if t.hasFieldChanged("no_series") {
-			setClauses = append(setClauses, "no_series = ?")
-			values = append(values, t.No_series)
-		}
-		if t.hasFieldChanged("tax_area_code") {
-			setClauses = append(setClauses, "tax_area_code = ?")
-			values = append(values, t.Tax_area_code)
-		}
-		if t.hasFieldChanged("tax_liable") {
-			setClauses = append(setClauses, "tax_liable = ?")
-			values = append(values, t.Tax_liable)
-		}
-		if t.hasFieldChanged("tax_group_code") {
-			setClauses = append(setClauses, "tax_group_code = ?")
-			values = append(values, t.Tax_group_code)
-		}
-		if t.hasFieldChanged("use_tax") {
-			setClauses = append(setClauses, "use_tax = ?")
-			values = append(values, t.Use_tax)
-		}
-		if t.hasFieldChanged("tax_bus_posting_group") {
-			setClauses = append(setClauses, "tax_bus_posting_group = ?")
-			values = append(values, t.Tax_bus_posting_group)
-		}
-		if t.hasFieldChanged("tax_prod_posting_group") {
-			setClauses = append(setClauses, "tax_prod_posting_group = ?")
-			values = append(values, t.Tax_prod_posting_group)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "g_l_entry_no = ?")
-		values = append(values, t.G_l_entry_no)
-		setClauses = append(setClauses, "fa_no = ?")
-		values = append(values, t.Fa_no)
-		setClauses = append(setClauses, "fa_posting_date = ?")
-		values = append(values, t.Fa_posting_date)
-		setClauses = append(setClauses, "posting_date = ?")
-		values = append(values, t.Posting_date)
-		setClauses = append(setClauses, "document_type = ?")
-		values = append(values, t.Document_type)
-		setClauses = append(setClauses, "document_date = ?")
-		values = append(values, t.Document_date)
-		setClauses = append(setClauses, "document_no = ?")
-		values = append(values, t.Document_no)
-		setClauses = append(setClauses, "external_document_no = ?")
-		values = append(values, t.External_document_no)
-		setClauses = append(setClauses, "description = ?")
-		values = append(values, t.Description)
-		setClauses = append(setClauses, "amount = ?")
-		values = append(values, t.Amount)
-		setClauses = append(setClauses, "debit_amount = ?")
-		values = append(values, t.Debit_amount)
-		setClauses = append(setClauses, "credit_amount = ?")
-		values = append(values, t.Credit_amount)
-		setClauses = append(setClauses, "quantity = ?")
-		values = append(values, t.Quantity)
-		setClauses = append(setClauses, "fa_no_budgeted_fa_no = ?")
-		values = append(values, t.Fa_no_budgeted_fa_no)
-		setClauses = append(setClauses, "fa_subclass_code = ?")
-		values = append(values, t.Fa_subclass_code)
-		setClauses = append(setClauses, "fa_location_code = ?")
-		values = append(values, t.Fa_location_code)
-		setClauses = append(setClauses, "fa_posting_group = ?")
-		values = append(values, t.Fa_posting_group)
-		setClauses = append(setClauses, "dimension_1_code = ?")
-		values = append(values, t.Dimension_1_code)
-		setClauses = append(setClauses, "dimension_2_code = ?")
-		values = append(values, t.Dimension_2_code)
-		setClauses = append(setClauses, "location_code = ?")
-		values = append(values, t.Location_code)
-		setClauses = append(setClauses, "user_id = ?")
-		values = append(values, t.User_id)
-		setClauses = append(setClauses, "journal_batch_name = ?")
-		values = append(values, t.Journal_batch_name)
-		setClauses = append(setClauses, "source_code = ?")
-		values = append(values, t.Source_code)
-		setClauses = append(setClauses, "reason_code = ?")
-		values = append(values, t.Reason_code)
-		setClauses = append(setClauses, "transaction_no = ?")
-		values = append(values, t.Transaction_no)
-		setClauses = append(setClauses, "bal_account_type = ?")
-		values = append(values, t.Bal_account_type)
-		setClauses = append(setClauses, "bal_account_no = ?")
-		values = append(values, t.Bal_account_no)
-		setClauses = append(setClauses, "tax_amount = ?")
-		values = append(values, t.Tax_amount)
-		setClauses = append(setClauses, "gen_posting_type = ?")
-		values = append(values, t.Gen_posting_type)
-		setClauses = append(setClauses, "gen_bus_posting_group = ?")
-		values = append(values, t.Gen_bus_posting_group)
-		setClauses = append(setClauses, "gen_prod_posting_group = ?")
-		values = append(values, t.Gen_prod_posting_group)
-		setClauses = append(setClauses, "fa_class_code = ?")
-		values = append(values, t.Fa_class_code)
-		setClauses = append(setClauses, "depreciation_book_code = ?")
-		values = append(values, t.Depreciation_book_code)
-		setClauses = append(setClauses, "fa_exchange_rate = ?")
-		values = append(values, t.Fa_exchange_rate)
-		setClauses = append(setClauses, "amount_lcy = ?")
-		values = append(values, t.Amount_lcy)
-		setClauses = append(setClauses, "maintenance_code = ?")
-		values = append(values, t.Maintenance_code)
-		setClauses = append(setClauses, "correction = ?")
-		values = append(values, t.Correction)
-		setClauses = append(setClauses, "index_entry = ?")
-		values = append(values, t.Index_entry)
-		setClauses = append(setClauses, "automatic_entry = ?")
-		values = append(values, t.Automatic_entry)
-		setClauses = append(setClauses, "no_series = ?")
-		values = append(values, t.No_series)
-		setClauses = append(setClauses, "tax_area_code = ?")
-		values = append(values, t.Tax_area_code)
-		setClauses = append(setClauses, "tax_liable = ?")
-		values = append(values, t.Tax_liable)
-		setClauses = append(setClauses, "tax_group_code = ?")
-		values = append(values, t.Tax_group_code)
-		setClauses = append(setClauses, "use_tax = ?")
-		values = append(values, t.Use_tax)
-		setClauses = append(setClauses, "tax_bus_posting_group = ?")
-		values = append(values, t.Tax_bus_posting_group)
-		setClauses = append(setClauses, "tax_prod_posting_group = ?")
-		values = append(values, t.Tax_prod_posting_group)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["entry_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Entry_no)
 	}
 	// Renamed key fields that other tables refer to (Rename): carried over below
 	type renamedKey struct {
@@ -1624,19 +1206,11 @@ func (t *MaintenanceLedgerEntry) Modify(runTrigger bool) bool {
 		}
 	}
 
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND entry_no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Maintenance_Ledger_Entry: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// A temporary record's rename stays in the record: other tables are not changed
 	for _, r := range renamed {
@@ -1718,25 +1292,8 @@ func (t *MaintenanceLedgerEntry) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, MaintenanceLedgerEntryTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Entry_no,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Maintenance_Ledger_Entry: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1936,53 +1493,13 @@ func (t *MaintenanceLedgerEntry) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *MaintenanceLedgerEntry) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, MaintenanceLedgerEntryTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Maintenance_Ledger_Entry\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Maintenance_Ledger_Entry: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *MaintenanceLedgerEntry) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, MaintenanceLedgerEntryTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Maintenance_Ledger_Entry: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

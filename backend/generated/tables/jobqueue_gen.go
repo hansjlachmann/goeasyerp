@@ -839,41 +839,14 @@ func (t *JobQueue) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, JobQueueTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.No,
-		t.Description,
-		t.Description_2,
-		t.Status,
-		t.Object_type_to_run,
-		t.Object_id_to_run,
-		t.Parameter,
-		t.Next_start,
-		t.Minutes_between_run,
-		t.Recurring_job,
-		t.Recurrence,
-		t.Notification_email,
-		t.Notify_on,
-		t.Notification_language,
-		t.User_id,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (no, description, description_2, status, object_type_to_run, object_id_to_run, parameter, next_start, minutes_between_run, recurring_job, recurrence, notification_email, notify_on, notification_language, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Job_Queue: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(JobQueueTableName, key)
 		return false
@@ -899,27 +872,10 @@ func (t *JobQueue) InsertAll(records []*JobQueue, runTrigger bool) error {
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.No,
-			r.Description,
-			r.Description_2,
-			r.Status,
-			r.Object_type_to_run,
-			r.Object_id_to_run,
-			r.Parameter,
-			r.Next_start,
-			r.Minutes_between_run,
-			r.Recurring_job,
-			r.Recurrence,
-			r.Notification_email,
-			r.Notify_on,
-			r.Notification_language,
-			r.User_id,
-		})
+		rows = append(rows, jobQueueFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, JobQueueTableName)
-	columns := []string{"no", "description", "description_2", "status", "object_type_to_run", "object_id_to_run", "parameter", "next_start", "minutes_between_run", "recurring_job", "recurrence", "notification_email", "notify_on", "notification_language", "user_id"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, jobQueueFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -935,131 +891,13 @@ func (t *JobQueue) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := jobQueueFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
 		}
-	}
-	tableName := fmt.Sprintf("%s$%s", t.company, JobQueueTableName)
-
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("no") {
-			setClauses = append(setClauses, "no = ?")
-			values = append(values, t.No)
-		}
-		if t.hasFieldChanged("description") {
-			setClauses = append(setClauses, "description = ?")
-			values = append(values, t.Description)
-		}
-		if t.hasFieldChanged("description_2") {
-			setClauses = append(setClauses, "description_2 = ?")
-			values = append(values, t.Description_2)
-		}
-		if t.hasFieldChanged("status") {
-			setClauses = append(setClauses, "status = ?")
-			values = append(values, t.Status)
-		}
-		if t.hasFieldChanged("object_type_to_run") {
-			setClauses = append(setClauses, "object_type_to_run = ?")
-			values = append(values, t.Object_type_to_run)
-		}
-		if t.hasFieldChanged("object_id_to_run") {
-			setClauses = append(setClauses, "object_id_to_run = ?")
-			values = append(values, t.Object_id_to_run)
-		}
-		if t.hasFieldChanged("parameter") {
-			setClauses = append(setClauses, "parameter = ?")
-			values = append(values, t.Parameter)
-		}
-		if t.hasFieldChanged("next_start") {
-			setClauses = append(setClauses, "next_start = ?")
-			values = append(values, t.Next_start)
-		}
-		if t.hasFieldChanged("minutes_between_run") {
-			setClauses = append(setClauses, "minutes_between_run = ?")
-			values = append(values, t.Minutes_between_run)
-		}
-		if t.hasFieldChanged("recurring_job") {
-			setClauses = append(setClauses, "recurring_job = ?")
-			values = append(values, t.Recurring_job)
-		}
-		if t.hasFieldChanged("recurrence") {
-			setClauses = append(setClauses, "recurrence = ?")
-			values = append(values, t.Recurrence)
-		}
-		if t.hasFieldChanged("notification_email") {
-			setClauses = append(setClauses, "notification_email = ?")
-			values = append(values, t.Notification_email)
-		}
-		if t.hasFieldChanged("notify_on") {
-			setClauses = append(setClauses, "notify_on = ?")
-			values = append(values, t.Notify_on)
-		}
-		if t.hasFieldChanged("notification_language") {
-			setClauses = append(setClauses, "notification_language = ?")
-			values = append(values, t.Notification_language)
-		}
-		if t.hasFieldChanged("user_id") {
-			setClauses = append(setClauses, "user_id = ?")
-			values = append(values, t.User_id)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "description = ?")
-		values = append(values, t.Description)
-		setClauses = append(setClauses, "description_2 = ?")
-		values = append(values, t.Description_2)
-		setClauses = append(setClauses, "status = ?")
-		values = append(values, t.Status)
-		setClauses = append(setClauses, "object_type_to_run = ?")
-		values = append(values, t.Object_type_to_run)
-		setClauses = append(setClauses, "object_id_to_run = ?")
-		values = append(values, t.Object_id_to_run)
-		setClauses = append(setClauses, "parameter = ?")
-		values = append(values, t.Parameter)
-		setClauses = append(setClauses, "next_start = ?")
-		values = append(values, t.Next_start)
-		setClauses = append(setClauses, "minutes_between_run = ?")
-		values = append(values, t.Minutes_between_run)
-		setClauses = append(setClauses, "recurring_job = ?")
-		values = append(values, t.Recurring_job)
-		setClauses = append(setClauses, "recurrence = ?")
-		values = append(values, t.Recurrence)
-		setClauses = append(setClauses, "notification_email = ?")
-		values = append(values, t.Notification_email)
-		setClauses = append(setClauses, "notify_on = ?")
-		values = append(values, t.Notify_on)
-		setClauses = append(setClauses, "notification_language = ?")
-		values = append(values, t.Notification_language)
-		setClauses = append(setClauses, "user_id = ?")
-		values = append(values, t.User_id)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.No)
 	}
 	// Renamed key fields that other tables refer to (Rename): carried over below
 	type renamedKey struct {
@@ -1073,19 +911,11 @@ func (t *JobQueue) Modify(runTrigger bool) bool {
 		}
 	}
 
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Job_Queue: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// A temporary record's rename stays in the record: other tables are not changed
 	for _, r := range renamed {
@@ -1167,25 +997,8 @@ func (t *JobQueue) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, JobQueueTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.No,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Job_Queue: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // ========================================
@@ -1568,53 +1381,13 @@ func (t *JobQueue) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *JobQueue) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, JobQueueTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Job_Queue\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Job_Queue: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *JobQueue) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, JobQueueTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Job_Queue: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

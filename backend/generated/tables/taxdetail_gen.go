@@ -699,34 +699,14 @@ func (t *TaxDetail) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, TaxDetailTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Tax_jurisdiction_code,
-		t.Tax_group_code,
-		t.Tax_type,
-		t.Maximum_amount_qty,
-		t.Tax_below_maximum,
-		t.Tax_above_maximum,
-		types.KeyDate(t.Effective_date),
-		t.Calculate_tax_on_tax,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (tax_jurisdiction_code, tax_group_code, tax_type, maximum_amount_qty, tax_below_maximum, tax_above_maximum, effective_date, calculate_tax_on_tax) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (tax_jurisdiction_code, tax_group_code, tax_type, effective_date) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Tax_Detail: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(TaxDetailTableName, key)
 		return false
@@ -752,20 +732,10 @@ func (t *TaxDetail) InsertAll(records []*TaxDetail, runTrigger bool) error {
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Tax_jurisdiction_code,
-			r.Tax_group_code,
-			r.Tax_type,
-			r.Maximum_amount_qty,
-			r.Tax_below_maximum,
-			r.Tax_above_maximum,
-			types.KeyDate(r.Effective_date),
-			r.Calculate_tax_on_tax,
-		})
+		rows = append(rows, taxDetailFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, TaxDetailTableName)
-	columns := []string{"tax_jurisdiction_code", "tax_group_code", "tax_type", "maximum_amount_qty", "tax_below_maximum", "tax_above_maximum", "effective_date", "calculate_tax_on_tax"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, taxDetailFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -781,21 +751,7 @@ func (t *TaxDetail) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("tax_jurisdiction_code") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("tax_group_code") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("tax_type") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("effective_date") {
-			keyChanged = true
-		}
-	}
+	keyChanged := taxDetailFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -803,100 +759,12 @@ func (t *TaxDetail) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, TaxDetailTableName)
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("tax_jurisdiction_code") {
-			setClauses = append(setClauses, "tax_jurisdiction_code = ?")
-			values = append(values, t.Tax_jurisdiction_code)
-		}
-		if t.hasFieldChanged("tax_group_code") {
-			setClauses = append(setClauses, "tax_group_code = ?")
-			values = append(values, t.Tax_group_code)
-		}
-		if t.hasFieldChanged("tax_type") {
-			setClauses = append(setClauses, "tax_type = ?")
-			values = append(values, t.Tax_type)
-		}
-		if t.hasFieldChanged("maximum_amount_qty") {
-			setClauses = append(setClauses, "maximum_amount_qty = ?")
-			values = append(values, t.Maximum_amount_qty)
-		}
-		if t.hasFieldChanged("tax_below_maximum") {
-			setClauses = append(setClauses, "tax_below_maximum = ?")
-			values = append(values, t.Tax_below_maximum)
-		}
-		if t.hasFieldChanged("tax_above_maximum") {
-			setClauses = append(setClauses, "tax_above_maximum = ?")
-			values = append(values, t.Tax_above_maximum)
-		}
-		if t.hasFieldChanged("effective_date") {
-			setClauses = append(setClauses, "effective_date = ?")
-			values = append(values, types.KeyDate(t.Effective_date))
-		}
-		if t.hasFieldChanged("calculate_tax_on_tax") {
-			setClauses = append(setClauses, "calculate_tax_on_tax = ?")
-			values = append(values, t.Calculate_tax_on_tax)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "maximum_amount_qty = ?")
-		values = append(values, t.Maximum_amount_qty)
-		setClauses = append(setClauses, "tax_below_maximum = ?")
-		values = append(values, t.Tax_below_maximum)
-		setClauses = append(setClauses, "tax_above_maximum = ?")
-		values = append(values, t.Tax_above_maximum)
-		setClauses = append(setClauses, "calculate_tax_on_tax = ?")
-		values = append(values, t.Calculate_tax_on_tax)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["tax_jurisdiction_code"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Tax_jurisdiction_code)
-	}
-	if old, ok := t.oldValues["tax_group_code"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Tax_group_code)
-	}
-	if old, ok := t.oldValues["tax_type"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Tax_type)
-	}
-	if old, ok := t.oldValues["effective_date"]; ok {
-		values = append(values, types.KeyDate(old))
-	} else {
-		values = append(values, types.KeyDate(t.Effective_date))
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND tax_jurisdiction_code = ? AND tax_group_code = ? AND tax_type = ? AND effective_date = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Tax_Detail: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -927,28 +795,8 @@ func (t *TaxDetail) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, TaxDetailTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Tax_jurisdiction_code,
-		t.Tax_group_code,
-		t.Tax_type,
-		types.KeyDate(t.Effective_date),
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND tax_jurisdiction_code = ? AND tax_group_code = ? AND tax_type = ? AND effective_date = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Tax_Detail: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1148,53 +996,13 @@ func (t *TaxDetail) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *TaxDetail) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, TaxDetailTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Tax_Detail\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Tax_Detail: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *TaxDetail) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, TaxDetailTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Tax_Detail: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

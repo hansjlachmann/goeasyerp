@@ -665,35 +665,14 @@ func (t *User) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := UserTableName
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.User_id,
-		t.User_name,
-		t.Email,
-		t.Password_hash,
-		t.Language,
-		t.Menu,
-		t.Active,
-		t.Created_at,
-		t.Last_login,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (user_id, user_name, email, password_hash, language, menu, active, created_at, last_login) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (user_id) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert User: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(UserTableName, key)
 		return false
@@ -719,21 +698,10 @@ func (t *User) InsertAll(records []*User, runTrigger bool) error {
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.User_id,
-			r.User_name,
-			r.Email,
-			r.Password_hash,
-			r.Language,
-			r.Menu,
-			r.Active,
-			r.Created_at,
-			r.Last_login,
-		})
+		rows = append(rows, userFields.RowValues(r.fieldRef))
 	}
 	tableName := UserTableName
-	columns := []string{"user_id", "user_name", "email", "password_hash", "language", "menu", "active", "created_at", "last_login"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, userFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -749,95 +717,13 @@ func (t *User) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("user_id") {
-			keyChanged = true
-		}
-	}
+	keyChanged := userFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
 		}
-	}
-	tableName := UserTableName
-
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("user_id") {
-			setClauses = append(setClauses, "user_id = ?")
-			values = append(values, t.User_id)
-		}
-		if t.hasFieldChanged("user_name") {
-			setClauses = append(setClauses, "user_name = ?")
-			values = append(values, t.User_name)
-		}
-		if t.hasFieldChanged("email") {
-			setClauses = append(setClauses, "email = ?")
-			values = append(values, t.Email)
-		}
-		if t.hasFieldChanged("password_hash") {
-			setClauses = append(setClauses, "password_hash = ?")
-			values = append(values, t.Password_hash)
-		}
-		if t.hasFieldChanged("language") {
-			setClauses = append(setClauses, "language = ?")
-			values = append(values, t.Language)
-		}
-		if t.hasFieldChanged("menu") {
-			setClauses = append(setClauses, "menu = ?")
-			values = append(values, t.Menu)
-		}
-		if t.hasFieldChanged("active") {
-			setClauses = append(setClauses, "active = ?")
-			values = append(values, t.Active)
-		}
-		if t.hasFieldChanged("created_at") {
-			setClauses = append(setClauses, "created_at = ?")
-			values = append(values, t.Created_at)
-		}
-		if t.hasFieldChanged("last_login") {
-			setClauses = append(setClauses, "last_login = ?")
-			values = append(values, t.Last_login)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "user_name = ?")
-		values = append(values, t.User_name)
-		setClauses = append(setClauses, "email = ?")
-		values = append(values, t.Email)
-		setClauses = append(setClauses, "password_hash = ?")
-		values = append(values, t.Password_hash)
-		setClauses = append(setClauses, "language = ?")
-		values = append(values, t.Language)
-		setClauses = append(setClauses, "menu = ?")
-		values = append(values, t.Menu)
-		setClauses = append(setClauses, "active = ?")
-		values = append(values, t.Active)
-		setClauses = append(setClauses, "created_at = ?")
-		values = append(values, t.Created_at)
-		setClauses = append(setClauses, "last_login = ?")
-		values = append(values, t.Last_login)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["user_id"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.User_id)
 	}
 	// Renamed key fields that other tables refer to (Rename): carried over below
 	type renamedKey struct {
@@ -851,19 +737,11 @@ func (t *User) Modify(runTrigger bool) bool {
 		}
 	}
 
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND user_id = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify User: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// A temporary record's rename stays in the record: other tables are not changed
 	for _, r := range renamed {
@@ -958,25 +836,8 @@ func (t *User) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := UserTableName
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.User_id,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND user_id = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete User: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1176,53 +1037,13 @@ func (t *User) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *User) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := UserTableName
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of User\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all User: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *User) DeleteAll() int {
-	tableName := UserTableName
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all User: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

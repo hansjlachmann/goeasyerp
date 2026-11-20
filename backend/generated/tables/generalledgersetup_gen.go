@@ -966,53 +966,14 @@ func (t *GeneralLedgerSetup) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, GeneralLedgerSetupTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Primary_key,
-		t.Allow_posting_from,
-		t.Allow_posting_to,
-		t.Register_time,
-		t.Pmt_disc_excl_tax,
-		t.Unrealized_tax,
-		t.Adjust_for_payment_disc,
-		t.Mark_cr_memos_as_corrections,
-		t.Local_address_format,
-		t.Inv_rounding_precision_lcy,
-		t.Inv_rounding_type_lcy,
-		t.Local_cont_addr_format,
-		t.Recalculate_sales_tax,
-		t.Summarize_gl_entries,
-		t.Amount_decimal_places,
-		t.Unit_amount_decimal_places,
-		t.Additional_reporting_currency,
-		t.Vat_tolerance_percent,
-		t.Emu_currency,
-		t.Lcy_code,
-		t.Tax_exchange_rate_adjustment,
-		t.Amount_rounding_precision,
-		t.Unit_amount_rounding_precision,
-		t.Appln_rounding_precision,
-		t.Bank_account_nos,
-		t.Dimension_1,
-		t.Dimension_2,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (primary_key, allow_posting_from, allow_posting_to, register_time, pmt_disc_excl_tax, unrealized_tax, adjust_for_payment_disc, mark_cr_memos_as_corrections, local_address_format, inv_rounding_precision_lcy, inv_rounding_type_lcy, local_cont_addr_format, recalculate_sales_tax, summarize_gl_entries, amount_decimal_places, unit_amount_decimal_places, additional_reporting_currency, vat_tolerance_percent, emu_currency, lcy_code, tax_exchange_rate_adjustment, amount_rounding_precision, unit_amount_rounding_precision, appln_rounding_precision, bank_account_nos, dimension_1, dimension_2) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (primary_key) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert General_Ledger_Setup: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(GeneralLedgerSetupTableName, key)
 		return false
@@ -1038,39 +999,10 @@ func (t *GeneralLedgerSetup) InsertAll(records []*GeneralLedgerSetup, runTrigger
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Primary_key,
-			r.Allow_posting_from,
-			r.Allow_posting_to,
-			r.Register_time,
-			r.Pmt_disc_excl_tax,
-			r.Unrealized_tax,
-			r.Adjust_for_payment_disc,
-			r.Mark_cr_memos_as_corrections,
-			r.Local_address_format,
-			r.Inv_rounding_precision_lcy,
-			r.Inv_rounding_type_lcy,
-			r.Local_cont_addr_format,
-			r.Recalculate_sales_tax,
-			r.Summarize_gl_entries,
-			r.Amount_decimal_places,
-			r.Unit_amount_decimal_places,
-			r.Additional_reporting_currency,
-			r.Vat_tolerance_percent,
-			r.Emu_currency,
-			r.Lcy_code,
-			r.Tax_exchange_rate_adjustment,
-			r.Amount_rounding_precision,
-			r.Unit_amount_rounding_precision,
-			r.Appln_rounding_precision,
-			r.Bank_account_nos,
-			r.Dimension_1,
-			r.Dimension_2,
-		})
+		rows = append(rows, generalLedgerSetupFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, GeneralLedgerSetupTableName)
-	columns := []string{"primary_key", "allow_posting_from", "allow_posting_to", "register_time", "pmt_disc_excl_tax", "unrealized_tax", "adjust_for_payment_disc", "mark_cr_memos_as_corrections", "local_address_format", "inv_rounding_precision_lcy", "inv_rounding_type_lcy", "local_cont_addr_format", "recalculate_sales_tax", "summarize_gl_entries", "amount_decimal_places", "unit_amount_decimal_places", "additional_reporting_currency", "vat_tolerance_percent", "emu_currency", "lcy_code", "tax_exchange_rate_adjustment", "amount_rounding_precision", "unit_amount_rounding_precision", "appln_rounding_precision", "bank_account_nos", "dimension_1", "dimension_2"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, generalLedgerSetupFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -1086,12 +1018,7 @@ func (t *GeneralLedgerSetup) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("primary_key") {
-			keyChanged = true
-		}
-	}
+	keyChanged := generalLedgerSetupFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -1099,205 +1026,12 @@ func (t *GeneralLedgerSetup) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, GeneralLedgerSetupTableName)
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("primary_key") {
-			setClauses = append(setClauses, "primary_key = ?")
-			values = append(values, t.Primary_key)
-		}
-		if t.hasFieldChanged("allow_posting_from") {
-			setClauses = append(setClauses, "allow_posting_from = ?")
-			values = append(values, t.Allow_posting_from)
-		}
-		if t.hasFieldChanged("allow_posting_to") {
-			setClauses = append(setClauses, "allow_posting_to = ?")
-			values = append(values, t.Allow_posting_to)
-		}
-		if t.hasFieldChanged("register_time") {
-			setClauses = append(setClauses, "register_time = ?")
-			values = append(values, t.Register_time)
-		}
-		if t.hasFieldChanged("pmt_disc_excl_tax") {
-			setClauses = append(setClauses, "pmt_disc_excl_tax = ?")
-			values = append(values, t.Pmt_disc_excl_tax)
-		}
-		if t.hasFieldChanged("unrealized_tax") {
-			setClauses = append(setClauses, "unrealized_tax = ?")
-			values = append(values, t.Unrealized_tax)
-		}
-		if t.hasFieldChanged("adjust_for_payment_disc") {
-			setClauses = append(setClauses, "adjust_for_payment_disc = ?")
-			values = append(values, t.Adjust_for_payment_disc)
-		}
-		if t.hasFieldChanged("mark_cr_memos_as_corrections") {
-			setClauses = append(setClauses, "mark_cr_memos_as_corrections = ?")
-			values = append(values, t.Mark_cr_memos_as_corrections)
-		}
-		if t.hasFieldChanged("local_address_format") {
-			setClauses = append(setClauses, "local_address_format = ?")
-			values = append(values, t.Local_address_format)
-		}
-		if t.hasFieldChanged("inv_rounding_precision_lcy") {
-			setClauses = append(setClauses, "inv_rounding_precision_lcy = ?")
-			values = append(values, t.Inv_rounding_precision_lcy)
-		}
-		if t.hasFieldChanged("inv_rounding_type_lcy") {
-			setClauses = append(setClauses, "inv_rounding_type_lcy = ?")
-			values = append(values, t.Inv_rounding_type_lcy)
-		}
-		if t.hasFieldChanged("local_cont_addr_format") {
-			setClauses = append(setClauses, "local_cont_addr_format = ?")
-			values = append(values, t.Local_cont_addr_format)
-		}
-		if t.hasFieldChanged("recalculate_sales_tax") {
-			setClauses = append(setClauses, "recalculate_sales_tax = ?")
-			values = append(values, t.Recalculate_sales_tax)
-		}
-		if t.hasFieldChanged("summarize_gl_entries") {
-			setClauses = append(setClauses, "summarize_gl_entries = ?")
-			values = append(values, t.Summarize_gl_entries)
-		}
-		if t.hasFieldChanged("amount_decimal_places") {
-			setClauses = append(setClauses, "amount_decimal_places = ?")
-			values = append(values, t.Amount_decimal_places)
-		}
-		if t.hasFieldChanged("unit_amount_decimal_places") {
-			setClauses = append(setClauses, "unit_amount_decimal_places = ?")
-			values = append(values, t.Unit_amount_decimal_places)
-		}
-		if t.hasFieldChanged("additional_reporting_currency") {
-			setClauses = append(setClauses, "additional_reporting_currency = ?")
-			values = append(values, t.Additional_reporting_currency)
-		}
-		if t.hasFieldChanged("vat_tolerance_percent") {
-			setClauses = append(setClauses, "vat_tolerance_percent = ?")
-			values = append(values, t.Vat_tolerance_percent)
-		}
-		if t.hasFieldChanged("emu_currency") {
-			setClauses = append(setClauses, "emu_currency = ?")
-			values = append(values, t.Emu_currency)
-		}
-		if t.hasFieldChanged("lcy_code") {
-			setClauses = append(setClauses, "lcy_code = ?")
-			values = append(values, t.Lcy_code)
-		}
-		if t.hasFieldChanged("tax_exchange_rate_adjustment") {
-			setClauses = append(setClauses, "tax_exchange_rate_adjustment = ?")
-			values = append(values, t.Tax_exchange_rate_adjustment)
-		}
-		if t.hasFieldChanged("amount_rounding_precision") {
-			setClauses = append(setClauses, "amount_rounding_precision = ?")
-			values = append(values, t.Amount_rounding_precision)
-		}
-		if t.hasFieldChanged("unit_amount_rounding_precision") {
-			setClauses = append(setClauses, "unit_amount_rounding_precision = ?")
-			values = append(values, t.Unit_amount_rounding_precision)
-		}
-		if t.hasFieldChanged("appln_rounding_precision") {
-			setClauses = append(setClauses, "appln_rounding_precision = ?")
-			values = append(values, t.Appln_rounding_precision)
-		}
-		if t.hasFieldChanged("bank_account_nos") {
-			setClauses = append(setClauses, "bank_account_nos = ?")
-			values = append(values, t.Bank_account_nos)
-		}
-		if t.hasFieldChanged("dimension_1") {
-			setClauses = append(setClauses, "dimension_1 = ?")
-			values = append(values, t.Dimension_1)
-		}
-		if t.hasFieldChanged("dimension_2") {
-			setClauses = append(setClauses, "dimension_2 = ?")
-			values = append(values, t.Dimension_2)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "allow_posting_from = ?")
-		values = append(values, t.Allow_posting_from)
-		setClauses = append(setClauses, "allow_posting_to = ?")
-		values = append(values, t.Allow_posting_to)
-		setClauses = append(setClauses, "register_time = ?")
-		values = append(values, t.Register_time)
-		setClauses = append(setClauses, "pmt_disc_excl_tax = ?")
-		values = append(values, t.Pmt_disc_excl_tax)
-		setClauses = append(setClauses, "unrealized_tax = ?")
-		values = append(values, t.Unrealized_tax)
-		setClauses = append(setClauses, "adjust_for_payment_disc = ?")
-		values = append(values, t.Adjust_for_payment_disc)
-		setClauses = append(setClauses, "mark_cr_memos_as_corrections = ?")
-		values = append(values, t.Mark_cr_memos_as_corrections)
-		setClauses = append(setClauses, "local_address_format = ?")
-		values = append(values, t.Local_address_format)
-		setClauses = append(setClauses, "inv_rounding_precision_lcy = ?")
-		values = append(values, t.Inv_rounding_precision_lcy)
-		setClauses = append(setClauses, "inv_rounding_type_lcy = ?")
-		values = append(values, t.Inv_rounding_type_lcy)
-		setClauses = append(setClauses, "local_cont_addr_format = ?")
-		values = append(values, t.Local_cont_addr_format)
-		setClauses = append(setClauses, "recalculate_sales_tax = ?")
-		values = append(values, t.Recalculate_sales_tax)
-		setClauses = append(setClauses, "summarize_gl_entries = ?")
-		values = append(values, t.Summarize_gl_entries)
-		setClauses = append(setClauses, "amount_decimal_places = ?")
-		values = append(values, t.Amount_decimal_places)
-		setClauses = append(setClauses, "unit_amount_decimal_places = ?")
-		values = append(values, t.Unit_amount_decimal_places)
-		setClauses = append(setClauses, "additional_reporting_currency = ?")
-		values = append(values, t.Additional_reporting_currency)
-		setClauses = append(setClauses, "vat_tolerance_percent = ?")
-		values = append(values, t.Vat_tolerance_percent)
-		setClauses = append(setClauses, "emu_currency = ?")
-		values = append(values, t.Emu_currency)
-		setClauses = append(setClauses, "lcy_code = ?")
-		values = append(values, t.Lcy_code)
-		setClauses = append(setClauses, "tax_exchange_rate_adjustment = ?")
-		values = append(values, t.Tax_exchange_rate_adjustment)
-		setClauses = append(setClauses, "amount_rounding_precision = ?")
-		values = append(values, t.Amount_rounding_precision)
-		setClauses = append(setClauses, "unit_amount_rounding_precision = ?")
-		values = append(values, t.Unit_amount_rounding_precision)
-		setClauses = append(setClauses, "appln_rounding_precision = ?")
-		values = append(values, t.Appln_rounding_precision)
-		setClauses = append(setClauses, "bank_account_nos = ?")
-		values = append(values, t.Bank_account_nos)
-		setClauses = append(setClauses, "dimension_1 = ?")
-		values = append(values, t.Dimension_1)
-		setClauses = append(setClauses, "dimension_2 = ?")
-		values = append(values, t.Dimension_2)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["primary_key"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Primary_key)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND primary_key = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify General_Ledger_Setup: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -1328,25 +1062,8 @@ func (t *GeneralLedgerSetup) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, GeneralLedgerSetupTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Primary_key,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND primary_key = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete General_Ledger_Setup: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // ========================================
@@ -1850,53 +1567,13 @@ func (t *GeneralLedgerSetup) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *GeneralLedgerSetup) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, GeneralLedgerSetupTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of General_Ledger_Setup\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all General_Ledger_Setup: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *GeneralLedgerSetup) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, GeneralLedgerSetupTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all General_Ledger_Setup: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

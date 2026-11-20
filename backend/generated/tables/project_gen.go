@@ -1034,50 +1034,14 @@ func (t *Project) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ProjectTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.No,
-		t.Search_description,
-		t.Description,
-		t.Description_2,
-		t.Bill_to_customer_no,
-		t.Creation_date,
-		t.Starting_date,
-		t.Ending_date,
-		t.Completion_date,
-		t.Project_posting_date,
-		t.Recognition_date,
-		t.Completion_percent,
-		t.Status,
-		t.Person_responsible,
-		t.Dimension_1_code,
-		t.Dimension_2_code,
-		t.Project_posting_group,
-		t.Blocked,
-		t.Recognition_method,
-		t.Last_date_modified,
-		t.Application_method,
-		t.Project_usage_posting,
-		t.Picture,
-		t.No_series,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (no, search_description, description, description_2, bill_to_customer_no, creation_date, starting_date, ending_date, completion_date, project_posting_date, recognition_date, completion_percent, status, person_responsible, dimension_1_code, dimension_2_code, project_posting_group, blocked, recognition_method, last_date_modified, application_method, project_usage_posting, picture, no_series) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Project: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(ProjectTableName, key)
 		return false
@@ -1103,36 +1067,10 @@ func (t *Project) InsertAll(records []*Project, runTrigger bool) error {
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.No,
-			r.Search_description,
-			r.Description,
-			r.Description_2,
-			r.Bill_to_customer_no,
-			r.Creation_date,
-			r.Starting_date,
-			r.Ending_date,
-			r.Completion_date,
-			r.Project_posting_date,
-			r.Recognition_date,
-			r.Completion_percent,
-			r.Status,
-			r.Person_responsible,
-			r.Dimension_1_code,
-			r.Dimension_2_code,
-			r.Project_posting_group,
-			r.Blocked,
-			r.Recognition_method,
-			r.Last_date_modified,
-			r.Application_method,
-			r.Project_usage_posting,
-			r.Picture,
-			r.No_series,
-		})
+		rows = append(rows, projectFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, ProjectTableName)
-	columns := []string{"no", "search_description", "description", "description_2", "bill_to_customer_no", "creation_date", "starting_date", "ending_date", "completion_date", "project_posting_date", "recognition_date", "completion_percent", "status", "person_responsible", "dimension_1_code", "dimension_2_code", "project_posting_group", "blocked", "recognition_method", "last_date_modified", "application_method", "project_usage_posting", "picture", "no_series"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, projectFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -1148,185 +1086,13 @@ func (t *Project) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := projectFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
 		}
-	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ProjectTableName)
-
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("no") {
-			setClauses = append(setClauses, "no = ?")
-			values = append(values, t.No)
-		}
-		if t.hasFieldChanged("search_description") {
-			setClauses = append(setClauses, "search_description = ?")
-			values = append(values, t.Search_description)
-		}
-		if t.hasFieldChanged("description") {
-			setClauses = append(setClauses, "description = ?")
-			values = append(values, t.Description)
-		}
-		if t.hasFieldChanged("description_2") {
-			setClauses = append(setClauses, "description_2 = ?")
-			values = append(values, t.Description_2)
-		}
-		if t.hasFieldChanged("bill_to_customer_no") {
-			setClauses = append(setClauses, "bill_to_customer_no = ?")
-			values = append(values, t.Bill_to_customer_no)
-		}
-		if t.hasFieldChanged("creation_date") {
-			setClauses = append(setClauses, "creation_date = ?")
-			values = append(values, t.Creation_date)
-		}
-		if t.hasFieldChanged("starting_date") {
-			setClauses = append(setClauses, "starting_date = ?")
-			values = append(values, t.Starting_date)
-		}
-		if t.hasFieldChanged("ending_date") {
-			setClauses = append(setClauses, "ending_date = ?")
-			values = append(values, t.Ending_date)
-		}
-		if t.hasFieldChanged("completion_date") {
-			setClauses = append(setClauses, "completion_date = ?")
-			values = append(values, t.Completion_date)
-		}
-		if t.hasFieldChanged("project_posting_date") {
-			setClauses = append(setClauses, "project_posting_date = ?")
-			values = append(values, t.Project_posting_date)
-		}
-		if t.hasFieldChanged("recognition_date") {
-			setClauses = append(setClauses, "recognition_date = ?")
-			values = append(values, t.Recognition_date)
-		}
-		if t.hasFieldChanged("completion_percent") {
-			setClauses = append(setClauses, "completion_percent = ?")
-			values = append(values, t.Completion_percent)
-		}
-		if t.hasFieldChanged("status") {
-			setClauses = append(setClauses, "status = ?")
-			values = append(values, t.Status)
-		}
-		if t.hasFieldChanged("person_responsible") {
-			setClauses = append(setClauses, "person_responsible = ?")
-			values = append(values, t.Person_responsible)
-		}
-		if t.hasFieldChanged("dimension_1_code") {
-			setClauses = append(setClauses, "dimension_1_code = ?")
-			values = append(values, t.Dimension_1_code)
-		}
-		if t.hasFieldChanged("dimension_2_code") {
-			setClauses = append(setClauses, "dimension_2_code = ?")
-			values = append(values, t.Dimension_2_code)
-		}
-		if t.hasFieldChanged("project_posting_group") {
-			setClauses = append(setClauses, "project_posting_group = ?")
-			values = append(values, t.Project_posting_group)
-		}
-		if t.hasFieldChanged("blocked") {
-			setClauses = append(setClauses, "blocked = ?")
-			values = append(values, t.Blocked)
-		}
-		if t.hasFieldChanged("recognition_method") {
-			setClauses = append(setClauses, "recognition_method = ?")
-			values = append(values, t.Recognition_method)
-		}
-		if t.hasFieldChanged("last_date_modified") {
-			setClauses = append(setClauses, "last_date_modified = ?")
-			values = append(values, t.Last_date_modified)
-		}
-		if t.hasFieldChanged("application_method") {
-			setClauses = append(setClauses, "application_method = ?")
-			values = append(values, t.Application_method)
-		}
-		if t.hasFieldChanged("project_usage_posting") {
-			setClauses = append(setClauses, "project_usage_posting = ?")
-			values = append(values, t.Project_usage_posting)
-		}
-		if t.hasFieldChanged("picture") {
-			setClauses = append(setClauses, "picture = ?")
-			values = append(values, t.Picture)
-		}
-		if t.hasFieldChanged("no_series") {
-			setClauses = append(setClauses, "no_series = ?")
-			values = append(values, t.No_series)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "search_description = ?")
-		values = append(values, t.Search_description)
-		setClauses = append(setClauses, "description = ?")
-		values = append(values, t.Description)
-		setClauses = append(setClauses, "description_2 = ?")
-		values = append(values, t.Description_2)
-		setClauses = append(setClauses, "bill_to_customer_no = ?")
-		values = append(values, t.Bill_to_customer_no)
-		setClauses = append(setClauses, "creation_date = ?")
-		values = append(values, t.Creation_date)
-		setClauses = append(setClauses, "starting_date = ?")
-		values = append(values, t.Starting_date)
-		setClauses = append(setClauses, "ending_date = ?")
-		values = append(values, t.Ending_date)
-		setClauses = append(setClauses, "completion_date = ?")
-		values = append(values, t.Completion_date)
-		setClauses = append(setClauses, "project_posting_date = ?")
-		values = append(values, t.Project_posting_date)
-		setClauses = append(setClauses, "recognition_date = ?")
-		values = append(values, t.Recognition_date)
-		setClauses = append(setClauses, "completion_percent = ?")
-		values = append(values, t.Completion_percent)
-		setClauses = append(setClauses, "status = ?")
-		values = append(values, t.Status)
-		setClauses = append(setClauses, "person_responsible = ?")
-		values = append(values, t.Person_responsible)
-		setClauses = append(setClauses, "dimension_1_code = ?")
-		values = append(values, t.Dimension_1_code)
-		setClauses = append(setClauses, "dimension_2_code = ?")
-		values = append(values, t.Dimension_2_code)
-		setClauses = append(setClauses, "project_posting_group = ?")
-		values = append(values, t.Project_posting_group)
-		setClauses = append(setClauses, "blocked = ?")
-		values = append(values, t.Blocked)
-		setClauses = append(setClauses, "recognition_method = ?")
-		values = append(values, t.Recognition_method)
-		setClauses = append(setClauses, "last_date_modified = ?")
-		values = append(values, t.Last_date_modified)
-		setClauses = append(setClauses, "application_method = ?")
-		values = append(values, t.Application_method)
-		setClauses = append(setClauses, "project_usage_posting = ?")
-		values = append(values, t.Project_usage_posting)
-		setClauses = append(setClauses, "picture = ?")
-		values = append(values, t.Picture)
-		setClauses = append(setClauses, "no_series = ?")
-		values = append(values, t.No_series)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.No)
 	}
 	// Renamed key fields that other tables refer to (Rename): carried over below
 	type renamedKey struct {
@@ -1340,19 +1106,11 @@ func (t *Project) Modify(runTrigger bool) bool {
 		}
 	}
 
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Project: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// A temporary record's rename stays in the record: other tables are not changed
 	for _, r := range renamed {
@@ -1462,25 +1220,8 @@ func (t *Project) Delete(runTrigger bool) bool {
 			}
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ProjectTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.No,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Project: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // ========================================
@@ -3812,53 +3553,13 @@ func (t *Project) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *Project) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, ProjectTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Project\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Project: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *Project) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, ProjectTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Project: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

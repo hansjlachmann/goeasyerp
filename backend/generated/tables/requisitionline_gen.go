@@ -1027,65 +1027,14 @@ func (t *RequisitionLine) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, RequisitionLineTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Worksheet_template_name,
-		t.Journal_batch_name,
-		t.Line_no,
-		t.Type,
-		t.No,
-		t.Description,
-		t.Description_2,
-		t.Quantity,
-		t.Vendor_no,
-		t.Direct_unit_cost,
-		t.Quantity_disc_percent,
-		t.Expected_receipt_date,
-		t.Requester_id,
-		t.Confirmed,
-		t.Dimension_1_code,
-		t.Dimension_2_code,
-		t.Location_code,
-		t.Recurring_method,
-		t.Expiration_date,
-		t.Recurring_frequency,
-		t.Order_date,
-		t.Vendor_item_no,
-		t.Order_address_code,
-		t.Currency_code,
-		t.Currency_factor,
-		t.Variant_code,
-		t.Qty_per_unit_of_measure,
-		t.Unit_of_measure_code,
-		t.Quantity_base,
-		t.Reserved_quantity,
-		t.Reserve,
-		t.Reserved_qty_base,
-		t.Serial_no,
-		t.Lot_no,
-		t.Bin_code,
-		t.Sales_order_no,
-		t.Sales_order_line_no,
-		t.Sell_to_customer_no,
-		t.Ship_to_code,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (worksheet_template_name, journal_batch_name, line_no, type, no, description, description_2, quantity, vendor_no, direct_unit_cost, quantity_disc_percent, expected_receipt_date, requester_id, confirmed, dimension_1_code, dimension_2_code, location_code, recurring_method, expiration_date, recurring_frequency, order_date, vendor_item_no, order_address_code, currency_code, currency_factor, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, reserved_quantity, reserve, reserved_qty_base, serial_no, lot_no, bin_code, sales_order_no, sales_order_line_no, sell_to_customer_no, ship_to_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (worksheet_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Requisition_Line: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(RequisitionLineTableName, key)
 		return false
@@ -1111,51 +1060,10 @@ func (t *RequisitionLine) InsertAll(records []*RequisitionLine, runTrigger bool)
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Worksheet_template_name,
-			r.Journal_batch_name,
-			r.Line_no,
-			r.Type,
-			r.No,
-			r.Description,
-			r.Description_2,
-			r.Quantity,
-			r.Vendor_no,
-			r.Direct_unit_cost,
-			r.Quantity_disc_percent,
-			r.Expected_receipt_date,
-			r.Requester_id,
-			r.Confirmed,
-			r.Dimension_1_code,
-			r.Dimension_2_code,
-			r.Location_code,
-			r.Recurring_method,
-			r.Expiration_date,
-			r.Recurring_frequency,
-			r.Order_date,
-			r.Vendor_item_no,
-			r.Order_address_code,
-			r.Currency_code,
-			r.Currency_factor,
-			r.Variant_code,
-			r.Qty_per_unit_of_measure,
-			r.Unit_of_measure_code,
-			r.Quantity_base,
-			r.Reserved_quantity,
-			r.Reserve,
-			r.Reserved_qty_base,
-			r.Serial_no,
-			r.Lot_no,
-			r.Bin_code,
-			r.Sales_order_no,
-			r.Sales_order_line_no,
-			r.Sell_to_customer_no,
-			r.Ship_to_code,
-		})
+		rows = append(rows, requisitionLineFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, RequisitionLineTableName)
-	columns := []string{"worksheet_template_name", "journal_batch_name", "line_no", "type", "no", "description", "description_2", "quantity", "vendor_no", "direct_unit_cost", "quantity_disc_percent", "expected_receipt_date", "requester_id", "confirmed", "dimension_1_code", "dimension_2_code", "location_code", "recurring_method", "expiration_date", "recurring_frequency", "order_date", "vendor_item_no", "order_address_code", "currency_code", "currency_factor", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "reserved_quantity", "reserve", "reserved_qty_base", "serial_no", "lot_no", "bin_code", "sales_order_no", "sales_order_line_no", "sell_to_customer_no", "ship_to_code"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, requisitionLineFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -1171,18 +1079,7 @@ func (t *RequisitionLine) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("worksheet_template_name") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("journal_batch_name") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("line_no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := requisitionLineFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -1190,283 +1087,12 @@ func (t *RequisitionLine) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, RequisitionLineTableName)
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("worksheet_template_name") {
-			setClauses = append(setClauses, "worksheet_template_name = ?")
-			values = append(values, t.Worksheet_template_name)
-		}
-		if t.hasFieldChanged("journal_batch_name") {
-			setClauses = append(setClauses, "journal_batch_name = ?")
-			values = append(values, t.Journal_batch_name)
-		}
-		if t.hasFieldChanged("line_no") {
-			setClauses = append(setClauses, "line_no = ?")
-			values = append(values, t.Line_no)
-		}
-		if t.hasFieldChanged("type") {
-			setClauses = append(setClauses, "type = ?")
-			values = append(values, t.Type)
-		}
-		if t.hasFieldChanged("no") {
-			setClauses = append(setClauses, "no = ?")
-			values = append(values, t.No)
-		}
-		if t.hasFieldChanged("description") {
-			setClauses = append(setClauses, "description = ?")
-			values = append(values, t.Description)
-		}
-		if t.hasFieldChanged("description_2") {
-			setClauses = append(setClauses, "description_2 = ?")
-			values = append(values, t.Description_2)
-		}
-		if t.hasFieldChanged("quantity") {
-			setClauses = append(setClauses, "quantity = ?")
-			values = append(values, t.Quantity)
-		}
-		if t.hasFieldChanged("vendor_no") {
-			setClauses = append(setClauses, "vendor_no = ?")
-			values = append(values, t.Vendor_no)
-		}
-		if t.hasFieldChanged("direct_unit_cost") {
-			setClauses = append(setClauses, "direct_unit_cost = ?")
-			values = append(values, t.Direct_unit_cost)
-		}
-		if t.hasFieldChanged("quantity_disc_percent") {
-			setClauses = append(setClauses, "quantity_disc_percent = ?")
-			values = append(values, t.Quantity_disc_percent)
-		}
-		if t.hasFieldChanged("expected_receipt_date") {
-			setClauses = append(setClauses, "expected_receipt_date = ?")
-			values = append(values, t.Expected_receipt_date)
-		}
-		if t.hasFieldChanged("requester_id") {
-			setClauses = append(setClauses, "requester_id = ?")
-			values = append(values, t.Requester_id)
-		}
-		if t.hasFieldChanged("confirmed") {
-			setClauses = append(setClauses, "confirmed = ?")
-			values = append(values, t.Confirmed)
-		}
-		if t.hasFieldChanged("dimension_1_code") {
-			setClauses = append(setClauses, "dimension_1_code = ?")
-			values = append(values, t.Dimension_1_code)
-		}
-		if t.hasFieldChanged("dimension_2_code") {
-			setClauses = append(setClauses, "dimension_2_code = ?")
-			values = append(values, t.Dimension_2_code)
-		}
-		if t.hasFieldChanged("location_code") {
-			setClauses = append(setClauses, "location_code = ?")
-			values = append(values, t.Location_code)
-		}
-		if t.hasFieldChanged("recurring_method") {
-			setClauses = append(setClauses, "recurring_method = ?")
-			values = append(values, t.Recurring_method)
-		}
-		if t.hasFieldChanged("expiration_date") {
-			setClauses = append(setClauses, "expiration_date = ?")
-			values = append(values, t.Expiration_date)
-		}
-		if t.hasFieldChanged("recurring_frequency") {
-			setClauses = append(setClauses, "recurring_frequency = ?")
-			values = append(values, t.Recurring_frequency)
-		}
-		if t.hasFieldChanged("order_date") {
-			setClauses = append(setClauses, "order_date = ?")
-			values = append(values, t.Order_date)
-		}
-		if t.hasFieldChanged("vendor_item_no") {
-			setClauses = append(setClauses, "vendor_item_no = ?")
-			values = append(values, t.Vendor_item_no)
-		}
-		if t.hasFieldChanged("order_address_code") {
-			setClauses = append(setClauses, "order_address_code = ?")
-			values = append(values, t.Order_address_code)
-		}
-		if t.hasFieldChanged("currency_code") {
-			setClauses = append(setClauses, "currency_code = ?")
-			values = append(values, t.Currency_code)
-		}
-		if t.hasFieldChanged("currency_factor") {
-			setClauses = append(setClauses, "currency_factor = ?")
-			values = append(values, t.Currency_factor)
-		}
-		if t.hasFieldChanged("variant_code") {
-			setClauses = append(setClauses, "variant_code = ?")
-			values = append(values, t.Variant_code)
-		}
-		if t.hasFieldChanged("qty_per_unit_of_measure") {
-			setClauses = append(setClauses, "qty_per_unit_of_measure = ?")
-			values = append(values, t.Qty_per_unit_of_measure)
-		}
-		if t.hasFieldChanged("unit_of_measure_code") {
-			setClauses = append(setClauses, "unit_of_measure_code = ?")
-			values = append(values, t.Unit_of_measure_code)
-		}
-		if t.hasFieldChanged("quantity_base") {
-			setClauses = append(setClauses, "quantity_base = ?")
-			values = append(values, t.Quantity_base)
-		}
-		if t.hasFieldChanged("reserved_quantity") {
-			setClauses = append(setClauses, "reserved_quantity = ?")
-			values = append(values, t.Reserved_quantity)
-		}
-		if t.hasFieldChanged("reserve") {
-			setClauses = append(setClauses, "reserve = ?")
-			values = append(values, t.Reserve)
-		}
-		if t.hasFieldChanged("reserved_qty_base") {
-			setClauses = append(setClauses, "reserved_qty_base = ?")
-			values = append(values, t.Reserved_qty_base)
-		}
-		if t.hasFieldChanged("serial_no") {
-			setClauses = append(setClauses, "serial_no = ?")
-			values = append(values, t.Serial_no)
-		}
-		if t.hasFieldChanged("lot_no") {
-			setClauses = append(setClauses, "lot_no = ?")
-			values = append(values, t.Lot_no)
-		}
-		if t.hasFieldChanged("bin_code") {
-			setClauses = append(setClauses, "bin_code = ?")
-			values = append(values, t.Bin_code)
-		}
-		if t.hasFieldChanged("sales_order_no") {
-			setClauses = append(setClauses, "sales_order_no = ?")
-			values = append(values, t.Sales_order_no)
-		}
-		if t.hasFieldChanged("sales_order_line_no") {
-			setClauses = append(setClauses, "sales_order_line_no = ?")
-			values = append(values, t.Sales_order_line_no)
-		}
-		if t.hasFieldChanged("sell_to_customer_no") {
-			setClauses = append(setClauses, "sell_to_customer_no = ?")
-			values = append(values, t.Sell_to_customer_no)
-		}
-		if t.hasFieldChanged("ship_to_code") {
-			setClauses = append(setClauses, "ship_to_code = ?")
-			values = append(values, t.Ship_to_code)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "type = ?")
-		values = append(values, t.Type)
-		setClauses = append(setClauses, "no = ?")
-		values = append(values, t.No)
-		setClauses = append(setClauses, "description = ?")
-		values = append(values, t.Description)
-		setClauses = append(setClauses, "description_2 = ?")
-		values = append(values, t.Description_2)
-		setClauses = append(setClauses, "quantity = ?")
-		values = append(values, t.Quantity)
-		setClauses = append(setClauses, "vendor_no = ?")
-		values = append(values, t.Vendor_no)
-		setClauses = append(setClauses, "direct_unit_cost = ?")
-		values = append(values, t.Direct_unit_cost)
-		setClauses = append(setClauses, "quantity_disc_percent = ?")
-		values = append(values, t.Quantity_disc_percent)
-		setClauses = append(setClauses, "expected_receipt_date = ?")
-		values = append(values, t.Expected_receipt_date)
-		setClauses = append(setClauses, "requester_id = ?")
-		values = append(values, t.Requester_id)
-		setClauses = append(setClauses, "confirmed = ?")
-		values = append(values, t.Confirmed)
-		setClauses = append(setClauses, "dimension_1_code = ?")
-		values = append(values, t.Dimension_1_code)
-		setClauses = append(setClauses, "dimension_2_code = ?")
-		values = append(values, t.Dimension_2_code)
-		setClauses = append(setClauses, "location_code = ?")
-		values = append(values, t.Location_code)
-		setClauses = append(setClauses, "recurring_method = ?")
-		values = append(values, t.Recurring_method)
-		setClauses = append(setClauses, "expiration_date = ?")
-		values = append(values, t.Expiration_date)
-		setClauses = append(setClauses, "recurring_frequency = ?")
-		values = append(values, t.Recurring_frequency)
-		setClauses = append(setClauses, "order_date = ?")
-		values = append(values, t.Order_date)
-		setClauses = append(setClauses, "vendor_item_no = ?")
-		values = append(values, t.Vendor_item_no)
-		setClauses = append(setClauses, "order_address_code = ?")
-		values = append(values, t.Order_address_code)
-		setClauses = append(setClauses, "currency_code = ?")
-		values = append(values, t.Currency_code)
-		setClauses = append(setClauses, "currency_factor = ?")
-		values = append(values, t.Currency_factor)
-		setClauses = append(setClauses, "variant_code = ?")
-		values = append(values, t.Variant_code)
-		setClauses = append(setClauses, "qty_per_unit_of_measure = ?")
-		values = append(values, t.Qty_per_unit_of_measure)
-		setClauses = append(setClauses, "unit_of_measure_code = ?")
-		values = append(values, t.Unit_of_measure_code)
-		setClauses = append(setClauses, "quantity_base = ?")
-		values = append(values, t.Quantity_base)
-		setClauses = append(setClauses, "reserved_quantity = ?")
-		values = append(values, t.Reserved_quantity)
-		setClauses = append(setClauses, "reserve = ?")
-		values = append(values, t.Reserve)
-		setClauses = append(setClauses, "reserved_qty_base = ?")
-		values = append(values, t.Reserved_qty_base)
-		setClauses = append(setClauses, "serial_no = ?")
-		values = append(values, t.Serial_no)
-		setClauses = append(setClauses, "lot_no = ?")
-		values = append(values, t.Lot_no)
-		setClauses = append(setClauses, "bin_code = ?")
-		values = append(values, t.Bin_code)
-		setClauses = append(setClauses, "sales_order_no = ?")
-		values = append(values, t.Sales_order_no)
-		setClauses = append(setClauses, "sales_order_line_no = ?")
-		values = append(values, t.Sales_order_line_no)
-		setClauses = append(setClauses, "sell_to_customer_no = ?")
-		values = append(values, t.Sell_to_customer_no)
-		setClauses = append(setClauses, "ship_to_code = ?")
-		values = append(values, t.Ship_to_code)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["worksheet_template_name"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Worksheet_template_name)
-	}
-	if old, ok := t.oldValues["journal_batch_name"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Journal_batch_name)
-	}
-	if old, ok := t.oldValues["line_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Line_no)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND worksheet_template_name = ? AND journal_batch_name = ? AND line_no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Requisition_Line: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -1497,27 +1123,8 @@ func (t *RequisitionLine) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, RequisitionLineTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Worksheet_template_name,
-		t.Journal_batch_name,
-		t.Line_no,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND worksheet_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Requisition_Line: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1717,53 +1324,13 @@ func (t *RequisitionLine) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *RequisitionLine) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, RequisitionLineTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Requisition_Line\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Requisition_Line: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *RequisitionLine) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, RequisitionLineTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Requisition_Line: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

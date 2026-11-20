@@ -685,37 +685,14 @@ func (t *DocumentEntry) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, DocumentEntryTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Table_id,
-		t.No_of_records,
-		t.Document_no,
-		t.Posting_date,
-		t.Entry_no,
-		t.Table_name,
-		t.Page_id,
-		t.Document_no_filter,
-		t.Posting_date_filter,
-		t.No_filter,
-		t.Preview_id,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (table_id, no_of_records, document_no, posting_date, entry_no, table_name, page_id, document_no_filter, posting_date_filter, no_filter, preview_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Document_Entry: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(DocumentEntryTableName, key)
 		return false
@@ -741,23 +718,10 @@ func (t *DocumentEntry) InsertAll(records []*DocumentEntry, runTrigger bool) err
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Table_id,
-			r.No_of_records,
-			r.Document_no,
-			r.Posting_date,
-			r.Entry_no,
-			r.Table_name,
-			r.Page_id,
-			r.Document_no_filter,
-			r.Posting_date_filter,
-			r.No_filter,
-			r.Preview_id,
-		})
+		rows = append(rows, documentEntryFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, DocumentEntryTableName)
-	columns := []string{"table_id", "no_of_records", "document_no", "posting_date", "entry_no", "table_name", "page_id", "document_no_filter", "posting_date_filter", "no_filter", "preview_id"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, documentEntryFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -773,12 +737,7 @@ func (t *DocumentEntry) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("entry_no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := documentEntryFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -786,109 +745,12 @@ func (t *DocumentEntry) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, DocumentEntryTableName)
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("table_id") {
-			setClauses = append(setClauses, "table_id = ?")
-			values = append(values, t.Table_id)
-		}
-		if t.hasFieldChanged("no_of_records") {
-			setClauses = append(setClauses, "no_of_records = ?")
-			values = append(values, t.No_of_records)
-		}
-		if t.hasFieldChanged("document_no") {
-			setClauses = append(setClauses, "document_no = ?")
-			values = append(values, t.Document_no)
-		}
-		if t.hasFieldChanged("posting_date") {
-			setClauses = append(setClauses, "posting_date = ?")
-			values = append(values, t.Posting_date)
-		}
-		if t.hasFieldChanged("entry_no") {
-			setClauses = append(setClauses, "entry_no = ?")
-			values = append(values, t.Entry_no)
-		}
-		if t.hasFieldChanged("table_name") {
-			setClauses = append(setClauses, "table_name = ?")
-			values = append(values, t.Table_name)
-		}
-		if t.hasFieldChanged("page_id") {
-			setClauses = append(setClauses, "page_id = ?")
-			values = append(values, t.Page_id)
-		}
-		if t.hasFieldChanged("document_no_filter") {
-			setClauses = append(setClauses, "document_no_filter = ?")
-			values = append(values, t.Document_no_filter)
-		}
-		if t.hasFieldChanged("posting_date_filter") {
-			setClauses = append(setClauses, "posting_date_filter = ?")
-			values = append(values, t.Posting_date_filter)
-		}
-		if t.hasFieldChanged("no_filter") {
-			setClauses = append(setClauses, "no_filter = ?")
-			values = append(values, t.No_filter)
-		}
-		if t.hasFieldChanged("preview_id") {
-			setClauses = append(setClauses, "preview_id = ?")
-			values = append(values, t.Preview_id)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "table_id = ?")
-		values = append(values, t.Table_id)
-		setClauses = append(setClauses, "no_of_records = ?")
-		values = append(values, t.No_of_records)
-		setClauses = append(setClauses, "document_no = ?")
-		values = append(values, t.Document_no)
-		setClauses = append(setClauses, "posting_date = ?")
-		values = append(values, t.Posting_date)
-		setClauses = append(setClauses, "table_name = ?")
-		values = append(values, t.Table_name)
-		setClauses = append(setClauses, "page_id = ?")
-		values = append(values, t.Page_id)
-		setClauses = append(setClauses, "document_no_filter = ?")
-		values = append(values, t.Document_no_filter)
-		setClauses = append(setClauses, "posting_date_filter = ?")
-		values = append(values, t.Posting_date_filter)
-		setClauses = append(setClauses, "no_filter = ?")
-		values = append(values, t.No_filter)
-		setClauses = append(setClauses, "preview_id = ?")
-		values = append(values, t.Preview_id)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["entry_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Entry_no)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND entry_no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Document_Entry: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -919,25 +781,8 @@ func (t *DocumentEntry) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, DocumentEntryTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Entry_no,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Document_Entry: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1137,53 +982,13 @@ func (t *DocumentEntry) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *DocumentEntry) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, DocumentEntryTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Document_Entry\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Document_Entry: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *DocumentEntry) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, DocumentEntryTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Document_Entry: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

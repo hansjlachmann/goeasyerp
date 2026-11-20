@@ -927,57 +927,14 @@ func (t *BOMJournalLine) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, BOMJournalLineTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Journal_template_name,
-		t.Journal_batch_name,
-		t.Line_no,
-		t.Item_no,
-		t.Posting_date,
-		t.Document_no,
-		t.Description,
-		t.Dimension_1_code,
-		t.Dimension_2_code,
-		t.Location_code,
-		t.Quantity,
-		t.Unit_cost,
-		t.Total_cost,
-		t.Inventory_posting_group,
-		t.Source_code,
-		t.Reason_code,
-		t.Document_date,
-		t.External_document_no,
-		t.Posting_no_series,
-		t.Variant_code,
-		t.Qty_per_unit_of_measure,
-		t.Unit_of_measure_code,
-		t.Quantity_base,
-		t.Recurring_method,
-		t.Expiration_date,
-		t.Recurring_frequency,
-		t.Reserved_quantity,
-		t.Reserve,
-		t.Reserved_qty_base,
-		t.Lot_no,
-		t.Bin_code,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, journal_batch_name, line_no, item_no, posting_date, document_no, description, dimension_1_code, dimension_2_code, location_code, quantity, unit_cost, total_cost, inventory_posting_group, source_code, reason_code, document_date, external_document_no, posting_no_series, variant_code, qty_per_unit_of_measure, unit_of_measure_code, quantity_base, recurring_method, expiration_date, recurring_frequency, reserved_quantity, reserve, reserved_qty_base, lot_no, bin_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert BOM_Journal_Line: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(BOMJournalLineTableName, key)
 		return false
@@ -1003,43 +960,10 @@ func (t *BOMJournalLine) InsertAll(records []*BOMJournalLine, runTrigger bool) e
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Journal_template_name,
-			r.Journal_batch_name,
-			r.Line_no,
-			r.Item_no,
-			r.Posting_date,
-			r.Document_no,
-			r.Description,
-			r.Dimension_1_code,
-			r.Dimension_2_code,
-			r.Location_code,
-			r.Quantity,
-			r.Unit_cost,
-			r.Total_cost,
-			r.Inventory_posting_group,
-			r.Source_code,
-			r.Reason_code,
-			r.Document_date,
-			r.External_document_no,
-			r.Posting_no_series,
-			r.Variant_code,
-			r.Qty_per_unit_of_measure,
-			r.Unit_of_measure_code,
-			r.Quantity_base,
-			r.Recurring_method,
-			r.Expiration_date,
-			r.Recurring_frequency,
-			r.Reserved_quantity,
-			r.Reserve,
-			r.Reserved_qty_base,
-			r.Lot_no,
-			r.Bin_code,
-		})
+		rows = append(rows, bOMJournalLineFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, BOMJournalLineTableName)
-	columns := []string{"journal_template_name", "journal_batch_name", "line_no", "item_no", "posting_date", "document_no", "description", "dimension_1_code", "dimension_2_code", "location_code", "quantity", "unit_cost", "total_cost", "inventory_posting_group", "source_code", "reason_code", "document_date", "external_document_no", "posting_no_series", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "quantity_base", "recurring_method", "expiration_date", "recurring_frequency", "reserved_quantity", "reserve", "reserved_qty_base", "lot_no", "bin_code"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, bOMJournalLineFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -1055,18 +979,7 @@ func (t *BOMJournalLine) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("journal_template_name") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("journal_batch_name") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("line_no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := bOMJournalLineFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -1074,235 +987,12 @@ func (t *BOMJournalLine) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, BOMJournalLineTableName)
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("journal_template_name") {
-			setClauses = append(setClauses, "journal_template_name = ?")
-			values = append(values, t.Journal_template_name)
-		}
-		if t.hasFieldChanged("journal_batch_name") {
-			setClauses = append(setClauses, "journal_batch_name = ?")
-			values = append(values, t.Journal_batch_name)
-		}
-		if t.hasFieldChanged("line_no") {
-			setClauses = append(setClauses, "line_no = ?")
-			values = append(values, t.Line_no)
-		}
-		if t.hasFieldChanged("item_no") {
-			setClauses = append(setClauses, "item_no = ?")
-			values = append(values, t.Item_no)
-		}
-		if t.hasFieldChanged("posting_date") {
-			setClauses = append(setClauses, "posting_date = ?")
-			values = append(values, t.Posting_date)
-		}
-		if t.hasFieldChanged("document_no") {
-			setClauses = append(setClauses, "document_no = ?")
-			values = append(values, t.Document_no)
-		}
-		if t.hasFieldChanged("description") {
-			setClauses = append(setClauses, "description = ?")
-			values = append(values, t.Description)
-		}
-		if t.hasFieldChanged("dimension_1_code") {
-			setClauses = append(setClauses, "dimension_1_code = ?")
-			values = append(values, t.Dimension_1_code)
-		}
-		if t.hasFieldChanged("dimension_2_code") {
-			setClauses = append(setClauses, "dimension_2_code = ?")
-			values = append(values, t.Dimension_2_code)
-		}
-		if t.hasFieldChanged("location_code") {
-			setClauses = append(setClauses, "location_code = ?")
-			values = append(values, t.Location_code)
-		}
-		if t.hasFieldChanged("quantity") {
-			setClauses = append(setClauses, "quantity = ?")
-			values = append(values, t.Quantity)
-		}
-		if t.hasFieldChanged("unit_cost") {
-			setClauses = append(setClauses, "unit_cost = ?")
-			values = append(values, t.Unit_cost)
-		}
-		if t.hasFieldChanged("total_cost") {
-			setClauses = append(setClauses, "total_cost = ?")
-			values = append(values, t.Total_cost)
-		}
-		if t.hasFieldChanged("inventory_posting_group") {
-			setClauses = append(setClauses, "inventory_posting_group = ?")
-			values = append(values, t.Inventory_posting_group)
-		}
-		if t.hasFieldChanged("source_code") {
-			setClauses = append(setClauses, "source_code = ?")
-			values = append(values, t.Source_code)
-		}
-		if t.hasFieldChanged("reason_code") {
-			setClauses = append(setClauses, "reason_code = ?")
-			values = append(values, t.Reason_code)
-		}
-		if t.hasFieldChanged("document_date") {
-			setClauses = append(setClauses, "document_date = ?")
-			values = append(values, t.Document_date)
-		}
-		if t.hasFieldChanged("external_document_no") {
-			setClauses = append(setClauses, "external_document_no = ?")
-			values = append(values, t.External_document_no)
-		}
-		if t.hasFieldChanged("posting_no_series") {
-			setClauses = append(setClauses, "posting_no_series = ?")
-			values = append(values, t.Posting_no_series)
-		}
-		if t.hasFieldChanged("variant_code") {
-			setClauses = append(setClauses, "variant_code = ?")
-			values = append(values, t.Variant_code)
-		}
-		if t.hasFieldChanged("qty_per_unit_of_measure") {
-			setClauses = append(setClauses, "qty_per_unit_of_measure = ?")
-			values = append(values, t.Qty_per_unit_of_measure)
-		}
-		if t.hasFieldChanged("unit_of_measure_code") {
-			setClauses = append(setClauses, "unit_of_measure_code = ?")
-			values = append(values, t.Unit_of_measure_code)
-		}
-		if t.hasFieldChanged("quantity_base") {
-			setClauses = append(setClauses, "quantity_base = ?")
-			values = append(values, t.Quantity_base)
-		}
-		if t.hasFieldChanged("recurring_method") {
-			setClauses = append(setClauses, "recurring_method = ?")
-			values = append(values, t.Recurring_method)
-		}
-		if t.hasFieldChanged("expiration_date") {
-			setClauses = append(setClauses, "expiration_date = ?")
-			values = append(values, t.Expiration_date)
-		}
-		if t.hasFieldChanged("recurring_frequency") {
-			setClauses = append(setClauses, "recurring_frequency = ?")
-			values = append(values, t.Recurring_frequency)
-		}
-		if t.hasFieldChanged("reserved_quantity") {
-			setClauses = append(setClauses, "reserved_quantity = ?")
-			values = append(values, t.Reserved_quantity)
-		}
-		if t.hasFieldChanged("reserve") {
-			setClauses = append(setClauses, "reserve = ?")
-			values = append(values, t.Reserve)
-		}
-		if t.hasFieldChanged("reserved_qty_base") {
-			setClauses = append(setClauses, "reserved_qty_base = ?")
-			values = append(values, t.Reserved_qty_base)
-		}
-		if t.hasFieldChanged("lot_no") {
-			setClauses = append(setClauses, "lot_no = ?")
-			values = append(values, t.Lot_no)
-		}
-		if t.hasFieldChanged("bin_code") {
-			setClauses = append(setClauses, "bin_code = ?")
-			values = append(values, t.Bin_code)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "item_no = ?")
-		values = append(values, t.Item_no)
-		setClauses = append(setClauses, "posting_date = ?")
-		values = append(values, t.Posting_date)
-		setClauses = append(setClauses, "document_no = ?")
-		values = append(values, t.Document_no)
-		setClauses = append(setClauses, "description = ?")
-		values = append(values, t.Description)
-		setClauses = append(setClauses, "dimension_1_code = ?")
-		values = append(values, t.Dimension_1_code)
-		setClauses = append(setClauses, "dimension_2_code = ?")
-		values = append(values, t.Dimension_2_code)
-		setClauses = append(setClauses, "location_code = ?")
-		values = append(values, t.Location_code)
-		setClauses = append(setClauses, "quantity = ?")
-		values = append(values, t.Quantity)
-		setClauses = append(setClauses, "unit_cost = ?")
-		values = append(values, t.Unit_cost)
-		setClauses = append(setClauses, "total_cost = ?")
-		values = append(values, t.Total_cost)
-		setClauses = append(setClauses, "inventory_posting_group = ?")
-		values = append(values, t.Inventory_posting_group)
-		setClauses = append(setClauses, "source_code = ?")
-		values = append(values, t.Source_code)
-		setClauses = append(setClauses, "reason_code = ?")
-		values = append(values, t.Reason_code)
-		setClauses = append(setClauses, "document_date = ?")
-		values = append(values, t.Document_date)
-		setClauses = append(setClauses, "external_document_no = ?")
-		values = append(values, t.External_document_no)
-		setClauses = append(setClauses, "posting_no_series = ?")
-		values = append(values, t.Posting_no_series)
-		setClauses = append(setClauses, "variant_code = ?")
-		values = append(values, t.Variant_code)
-		setClauses = append(setClauses, "qty_per_unit_of_measure = ?")
-		values = append(values, t.Qty_per_unit_of_measure)
-		setClauses = append(setClauses, "unit_of_measure_code = ?")
-		values = append(values, t.Unit_of_measure_code)
-		setClauses = append(setClauses, "quantity_base = ?")
-		values = append(values, t.Quantity_base)
-		setClauses = append(setClauses, "recurring_method = ?")
-		values = append(values, t.Recurring_method)
-		setClauses = append(setClauses, "expiration_date = ?")
-		values = append(values, t.Expiration_date)
-		setClauses = append(setClauses, "recurring_frequency = ?")
-		values = append(values, t.Recurring_frequency)
-		setClauses = append(setClauses, "reserved_quantity = ?")
-		values = append(values, t.Reserved_quantity)
-		setClauses = append(setClauses, "reserve = ?")
-		values = append(values, t.Reserve)
-		setClauses = append(setClauses, "reserved_qty_base = ?")
-		values = append(values, t.Reserved_qty_base)
-		setClauses = append(setClauses, "lot_no = ?")
-		values = append(values, t.Lot_no)
-		setClauses = append(setClauses, "bin_code = ?")
-		values = append(values, t.Bin_code)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["journal_template_name"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Journal_template_name)
-	}
-	if old, ok := t.oldValues["journal_batch_name"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Journal_batch_name)
-	}
-	if old, ok := t.oldValues["line_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Line_no)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify BOM_Journal_Line: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -1333,27 +1023,8 @@ func (t *BOMJournalLine) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, BOMJournalLineTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Journal_template_name,
-		t.Journal_batch_name,
-		t.Line_no,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete BOM_Journal_Line: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1553,53 +1224,13 @@ func (t *BOMJournalLine) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *BOMJournalLine) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, BOMJournalLineTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of BOM_Journal_Line\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all BOM_Journal_Line: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *BOMJournalLine) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, BOMJournalLineTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all BOM_Journal_Line: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

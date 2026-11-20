@@ -754,46 +754,14 @@ func (t *FAReclassJournalLine) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, FAReclassJournalLineTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Journal_template_name,
-		t.Journal_batch_name,
-		t.Line_no,
-		t.Fa_no,
-		t.New_fa_no,
-		t.Fa_posting_date,
-		t.Posting_date,
-		t.Depreciation_book_code,
-		t.Reclassify_acq_cost_amount,
-		t.Reclassify_acq_cost_percent,
-		t.Reclassify_acquisition_cost,
-		t.Reclassify_depreciation,
-		t.Reclassify_write_down,
-		t.Reclassify_appreciation,
-		t.Reclassify_custom_1,
-		t.Reclassify_custom_2,
-		t.Reclassify_salvage_value,
-		t.Insert_bal_account,
-		t.Description,
-		t.Document_no,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, journal_batch_name, line_no, fa_no, new_fa_no, fa_posting_date, posting_date, depreciation_book_code, reclassify_acq_cost_amount, reclassify_acq_cost_percent, reclassify_acquisition_cost, reclassify_depreciation, reclassify_write_down, reclassify_appreciation, reclassify_custom_1, reclassify_custom_2, reclassify_salvage_value, insert_bal_account, description, document_no) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert FA_Reclass_Journal_Line: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(FAReclassJournalLineTableName, key)
 		return false
@@ -819,32 +787,10 @@ func (t *FAReclassJournalLine) InsertAll(records []*FAReclassJournalLine, runTri
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Journal_template_name,
-			r.Journal_batch_name,
-			r.Line_no,
-			r.Fa_no,
-			r.New_fa_no,
-			r.Fa_posting_date,
-			r.Posting_date,
-			r.Depreciation_book_code,
-			r.Reclassify_acq_cost_amount,
-			r.Reclassify_acq_cost_percent,
-			r.Reclassify_acquisition_cost,
-			r.Reclassify_depreciation,
-			r.Reclassify_write_down,
-			r.Reclassify_appreciation,
-			r.Reclassify_custom_1,
-			r.Reclassify_custom_2,
-			r.Reclassify_salvage_value,
-			r.Insert_bal_account,
-			r.Description,
-			r.Document_no,
-		})
+		rows = append(rows, fAReclassJournalLineFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, FAReclassJournalLineTableName)
-	columns := []string{"journal_template_name", "journal_batch_name", "line_no", "fa_no", "new_fa_no", "fa_posting_date", "posting_date", "depreciation_book_code", "reclassify_acq_cost_amount", "reclassify_acq_cost_percent", "reclassify_acquisition_cost", "reclassify_depreciation", "reclassify_write_down", "reclassify_appreciation", "reclassify_custom_1", "reclassify_custom_2", "reclassify_salvage_value", "insert_bal_account", "description", "document_no"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, fAReclassJournalLineFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -860,18 +806,7 @@ func (t *FAReclassJournalLine) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("journal_template_name") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("journal_batch_name") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("line_no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := fAReclassJournalLineFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -879,169 +814,12 @@ func (t *FAReclassJournalLine) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, FAReclassJournalLineTableName)
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("journal_template_name") {
-			setClauses = append(setClauses, "journal_template_name = ?")
-			values = append(values, t.Journal_template_name)
-		}
-		if t.hasFieldChanged("journal_batch_name") {
-			setClauses = append(setClauses, "journal_batch_name = ?")
-			values = append(values, t.Journal_batch_name)
-		}
-		if t.hasFieldChanged("line_no") {
-			setClauses = append(setClauses, "line_no = ?")
-			values = append(values, t.Line_no)
-		}
-		if t.hasFieldChanged("fa_no") {
-			setClauses = append(setClauses, "fa_no = ?")
-			values = append(values, t.Fa_no)
-		}
-		if t.hasFieldChanged("new_fa_no") {
-			setClauses = append(setClauses, "new_fa_no = ?")
-			values = append(values, t.New_fa_no)
-		}
-		if t.hasFieldChanged("fa_posting_date") {
-			setClauses = append(setClauses, "fa_posting_date = ?")
-			values = append(values, t.Fa_posting_date)
-		}
-		if t.hasFieldChanged("posting_date") {
-			setClauses = append(setClauses, "posting_date = ?")
-			values = append(values, t.Posting_date)
-		}
-		if t.hasFieldChanged("depreciation_book_code") {
-			setClauses = append(setClauses, "depreciation_book_code = ?")
-			values = append(values, t.Depreciation_book_code)
-		}
-		if t.hasFieldChanged("reclassify_acq_cost_amount") {
-			setClauses = append(setClauses, "reclassify_acq_cost_amount = ?")
-			values = append(values, t.Reclassify_acq_cost_amount)
-		}
-		if t.hasFieldChanged("reclassify_acq_cost_percent") {
-			setClauses = append(setClauses, "reclassify_acq_cost_percent = ?")
-			values = append(values, t.Reclassify_acq_cost_percent)
-		}
-		if t.hasFieldChanged("reclassify_acquisition_cost") {
-			setClauses = append(setClauses, "reclassify_acquisition_cost = ?")
-			values = append(values, t.Reclassify_acquisition_cost)
-		}
-		if t.hasFieldChanged("reclassify_depreciation") {
-			setClauses = append(setClauses, "reclassify_depreciation = ?")
-			values = append(values, t.Reclassify_depreciation)
-		}
-		if t.hasFieldChanged("reclassify_write_down") {
-			setClauses = append(setClauses, "reclassify_write_down = ?")
-			values = append(values, t.Reclassify_write_down)
-		}
-		if t.hasFieldChanged("reclassify_appreciation") {
-			setClauses = append(setClauses, "reclassify_appreciation = ?")
-			values = append(values, t.Reclassify_appreciation)
-		}
-		if t.hasFieldChanged("reclassify_custom_1") {
-			setClauses = append(setClauses, "reclassify_custom_1 = ?")
-			values = append(values, t.Reclassify_custom_1)
-		}
-		if t.hasFieldChanged("reclassify_custom_2") {
-			setClauses = append(setClauses, "reclassify_custom_2 = ?")
-			values = append(values, t.Reclassify_custom_2)
-		}
-		if t.hasFieldChanged("reclassify_salvage_value") {
-			setClauses = append(setClauses, "reclassify_salvage_value = ?")
-			values = append(values, t.Reclassify_salvage_value)
-		}
-		if t.hasFieldChanged("insert_bal_account") {
-			setClauses = append(setClauses, "insert_bal_account = ?")
-			values = append(values, t.Insert_bal_account)
-		}
-		if t.hasFieldChanged("description") {
-			setClauses = append(setClauses, "description = ?")
-			values = append(values, t.Description)
-		}
-		if t.hasFieldChanged("document_no") {
-			setClauses = append(setClauses, "document_no = ?")
-			values = append(values, t.Document_no)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "fa_no = ?")
-		values = append(values, t.Fa_no)
-		setClauses = append(setClauses, "new_fa_no = ?")
-		values = append(values, t.New_fa_no)
-		setClauses = append(setClauses, "fa_posting_date = ?")
-		values = append(values, t.Fa_posting_date)
-		setClauses = append(setClauses, "posting_date = ?")
-		values = append(values, t.Posting_date)
-		setClauses = append(setClauses, "depreciation_book_code = ?")
-		values = append(values, t.Depreciation_book_code)
-		setClauses = append(setClauses, "reclassify_acq_cost_amount = ?")
-		values = append(values, t.Reclassify_acq_cost_amount)
-		setClauses = append(setClauses, "reclassify_acq_cost_percent = ?")
-		values = append(values, t.Reclassify_acq_cost_percent)
-		setClauses = append(setClauses, "reclassify_acquisition_cost = ?")
-		values = append(values, t.Reclassify_acquisition_cost)
-		setClauses = append(setClauses, "reclassify_depreciation = ?")
-		values = append(values, t.Reclassify_depreciation)
-		setClauses = append(setClauses, "reclassify_write_down = ?")
-		values = append(values, t.Reclassify_write_down)
-		setClauses = append(setClauses, "reclassify_appreciation = ?")
-		values = append(values, t.Reclassify_appreciation)
-		setClauses = append(setClauses, "reclassify_custom_1 = ?")
-		values = append(values, t.Reclassify_custom_1)
-		setClauses = append(setClauses, "reclassify_custom_2 = ?")
-		values = append(values, t.Reclassify_custom_2)
-		setClauses = append(setClauses, "reclassify_salvage_value = ?")
-		values = append(values, t.Reclassify_salvage_value)
-		setClauses = append(setClauses, "insert_bal_account = ?")
-		values = append(values, t.Insert_bal_account)
-		setClauses = append(setClauses, "description = ?")
-		values = append(values, t.Description)
-		setClauses = append(setClauses, "document_no = ?")
-		values = append(values, t.Document_no)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["journal_template_name"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Journal_template_name)
-	}
-	if old, ok := t.oldValues["journal_batch_name"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Journal_batch_name)
-	}
-	if old, ok := t.oldValues["line_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Line_no)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify FA_Reclass_Journal_Line: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -1072,27 +850,8 @@ func (t *FAReclassJournalLine) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, FAReclassJournalLineTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Journal_template_name,
-		t.Journal_batch_name,
-		t.Line_no,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete FA_Reclass_Journal_Line: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1292,53 +1051,13 @@ func (t *FAReclassJournalLine) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *FAReclassJournalLine) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, FAReclassJournalLineTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of FA_Reclass_Journal_Line\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all FA_Reclass_Journal_Line: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *FAReclassJournalLine) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, FAReclassJournalLineTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all FA_Reclass_Journal_Line: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

@@ -763,40 +763,14 @@ func (t *BOMComponent) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, BOMComponentTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Parent_item_no,
-		t.Line_no,
-		t.Type,
-		t.No,
-		t.Bill_of_materials,
-		t.Description,
-		t.Unit_of_measure_code,
-		t.Quantity_per,
-		t.Position,
-		t.Position_2,
-		t.Position_3,
-		t.Machine_no,
-		t.Production_lead_time,
-		t.Variant_code,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (parent_item_no, line_no, type, no, bill_of_materials, description, unit_of_measure_code, quantity_per, position, position_2, position_3, machine_no, production_lead_time, variant_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (parent_item_no, line_no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert BOM_Component: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(BOMComponentTableName, key)
 		return false
@@ -822,26 +796,10 @@ func (t *BOMComponent) InsertAll(records []*BOMComponent, runTrigger bool) error
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Parent_item_no,
-			r.Line_no,
-			r.Type,
-			r.No,
-			r.Bill_of_materials,
-			r.Description,
-			r.Unit_of_measure_code,
-			r.Quantity_per,
-			r.Position,
-			r.Position_2,
-			r.Position_3,
-			r.Machine_no,
-			r.Production_lead_time,
-			r.Variant_code,
-		})
+		rows = append(rows, bOMComponentFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, BOMComponentTableName)
-	columns := []string{"parent_item_no", "line_no", "type", "no", "bill_of_materials", "description", "unit_of_measure_code", "quantity_per", "position", "position_2", "position_3", "machine_no", "production_lead_time", "variant_code"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, bOMComponentFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -857,15 +815,7 @@ func (t *BOMComponent) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("parent_item_no") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("line_no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := bOMComponentFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -873,130 +823,12 @@ func (t *BOMComponent) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, BOMComponentTableName)
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("parent_item_no") {
-			setClauses = append(setClauses, "parent_item_no = ?")
-			values = append(values, t.Parent_item_no)
-		}
-		if t.hasFieldChanged("line_no") {
-			setClauses = append(setClauses, "line_no = ?")
-			values = append(values, t.Line_no)
-		}
-		if t.hasFieldChanged("type") {
-			setClauses = append(setClauses, "type = ?")
-			values = append(values, t.Type)
-		}
-		if t.hasFieldChanged("no") {
-			setClauses = append(setClauses, "no = ?")
-			values = append(values, t.No)
-		}
-		if t.hasFieldChanged("bill_of_materials") {
-			setClauses = append(setClauses, "bill_of_materials = ?")
-			values = append(values, t.Bill_of_materials)
-		}
-		if t.hasFieldChanged("description") {
-			setClauses = append(setClauses, "description = ?")
-			values = append(values, t.Description)
-		}
-		if t.hasFieldChanged("unit_of_measure_code") {
-			setClauses = append(setClauses, "unit_of_measure_code = ?")
-			values = append(values, t.Unit_of_measure_code)
-		}
-		if t.hasFieldChanged("quantity_per") {
-			setClauses = append(setClauses, "quantity_per = ?")
-			values = append(values, t.Quantity_per)
-		}
-		if t.hasFieldChanged("position") {
-			setClauses = append(setClauses, "position = ?")
-			values = append(values, t.Position)
-		}
-		if t.hasFieldChanged("position_2") {
-			setClauses = append(setClauses, "position_2 = ?")
-			values = append(values, t.Position_2)
-		}
-		if t.hasFieldChanged("position_3") {
-			setClauses = append(setClauses, "position_3 = ?")
-			values = append(values, t.Position_3)
-		}
-		if t.hasFieldChanged("machine_no") {
-			setClauses = append(setClauses, "machine_no = ?")
-			values = append(values, t.Machine_no)
-		}
-		if t.hasFieldChanged("production_lead_time") {
-			setClauses = append(setClauses, "production_lead_time = ?")
-			values = append(values, t.Production_lead_time)
-		}
-		if t.hasFieldChanged("variant_code") {
-			setClauses = append(setClauses, "variant_code = ?")
-			values = append(values, t.Variant_code)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "type = ?")
-		values = append(values, t.Type)
-		setClauses = append(setClauses, "no = ?")
-		values = append(values, t.No)
-		setClauses = append(setClauses, "bill_of_materials = ?")
-		values = append(values, t.Bill_of_materials)
-		setClauses = append(setClauses, "description = ?")
-		values = append(values, t.Description)
-		setClauses = append(setClauses, "unit_of_measure_code = ?")
-		values = append(values, t.Unit_of_measure_code)
-		setClauses = append(setClauses, "quantity_per = ?")
-		values = append(values, t.Quantity_per)
-		setClauses = append(setClauses, "position = ?")
-		values = append(values, t.Position)
-		setClauses = append(setClauses, "position_2 = ?")
-		values = append(values, t.Position_2)
-		setClauses = append(setClauses, "position_3 = ?")
-		values = append(values, t.Position_3)
-		setClauses = append(setClauses, "machine_no = ?")
-		values = append(values, t.Machine_no)
-		setClauses = append(setClauses, "production_lead_time = ?")
-		values = append(values, t.Production_lead_time)
-		setClauses = append(setClauses, "variant_code = ?")
-		values = append(values, t.Variant_code)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["parent_item_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Parent_item_no)
-	}
-	if old, ok := t.oldValues["line_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Line_no)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND parent_item_no = ? AND line_no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify BOM_Component: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -1027,26 +859,8 @@ func (t *BOMComponent) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, BOMComponentTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Parent_item_no,
-		t.Line_no,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND parent_item_no = ? AND line_no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete BOM_Component: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // ========================================
@@ -1320,53 +1134,13 @@ func (t *BOMComponent) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *BOMComponent) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, BOMComponentTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of BOM_Component\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all BOM_Component: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *BOMComponent) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, BOMComponentTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all BOM_Component: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

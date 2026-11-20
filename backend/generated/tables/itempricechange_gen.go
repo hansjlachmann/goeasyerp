@@ -701,38 +701,14 @@ func (t *ItemPriceChange) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ItemPriceChangeTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Item_no,
-		t.Price_group_code,
-		t.Unit_of_measure_code,
-		t.Currency_code,
-		types.KeyDate(t.Starting_date),
-		t.Current_unit_price,
-		t.New_unit_price,
-		t.Price_includes_tax,
-		t.Allow_quantity_disc,
-		t.Allow_cust_item_disc,
-		t.Allow_invoice_disc,
-		t.Tax_bus_posting_gr_price,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (item_no, price_group_code, unit_of_measure_code, currency_code, starting_date, current_unit_price, new_unit_price, price_includes_tax, allow_quantity_disc, allow_cust_item_disc, allow_invoice_disc, tax_bus_posting_gr_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (item_no, price_group_code, unit_of_measure_code, currency_code, starting_date) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Item_Price_Change: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(ItemPriceChangeTableName, key)
 		return false
@@ -758,24 +734,10 @@ func (t *ItemPriceChange) InsertAll(records []*ItemPriceChange, runTrigger bool)
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Item_no,
-			r.Price_group_code,
-			r.Unit_of_measure_code,
-			r.Currency_code,
-			types.KeyDate(r.Starting_date),
-			r.Current_unit_price,
-			r.New_unit_price,
-			r.Price_includes_tax,
-			r.Allow_quantity_disc,
-			r.Allow_cust_item_disc,
-			r.Allow_invoice_disc,
-			r.Tax_bus_posting_gr_price,
-		})
+		rows = append(rows, itemPriceChangeFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, ItemPriceChangeTableName)
-	columns := []string{"item_no", "price_group_code", "unit_of_measure_code", "currency_code", "starting_date", "current_unit_price", "new_unit_price", "price_includes_tax", "allow_quantity_disc", "allow_cust_item_disc", "allow_invoice_disc", "tax_bus_posting_gr_price"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, itemPriceChangeFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -791,24 +753,7 @@ func (t *ItemPriceChange) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("item_no") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("price_group_code") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("unit_of_measure_code") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("currency_code") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("starting_date") {
-			keyChanged = true
-		}
-	}
+	keyChanged := itemPriceChangeFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -816,127 +761,12 @@ func (t *ItemPriceChange) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ItemPriceChangeTableName)
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("item_no") {
-			setClauses = append(setClauses, "item_no = ?")
-			values = append(values, t.Item_no)
-		}
-		if t.hasFieldChanged("price_group_code") {
-			setClauses = append(setClauses, "price_group_code = ?")
-			values = append(values, t.Price_group_code)
-		}
-		if t.hasFieldChanged("unit_of_measure_code") {
-			setClauses = append(setClauses, "unit_of_measure_code = ?")
-			values = append(values, t.Unit_of_measure_code)
-		}
-		if t.hasFieldChanged("currency_code") {
-			setClauses = append(setClauses, "currency_code = ?")
-			values = append(values, t.Currency_code)
-		}
-		if t.hasFieldChanged("starting_date") {
-			setClauses = append(setClauses, "starting_date = ?")
-			values = append(values, types.KeyDate(t.Starting_date))
-		}
-		if t.hasFieldChanged("current_unit_price") {
-			setClauses = append(setClauses, "current_unit_price = ?")
-			values = append(values, t.Current_unit_price)
-		}
-		if t.hasFieldChanged("new_unit_price") {
-			setClauses = append(setClauses, "new_unit_price = ?")
-			values = append(values, t.New_unit_price)
-		}
-		if t.hasFieldChanged("price_includes_tax") {
-			setClauses = append(setClauses, "price_includes_tax = ?")
-			values = append(values, t.Price_includes_tax)
-		}
-		if t.hasFieldChanged("allow_quantity_disc") {
-			setClauses = append(setClauses, "allow_quantity_disc = ?")
-			values = append(values, t.Allow_quantity_disc)
-		}
-		if t.hasFieldChanged("allow_cust_item_disc") {
-			setClauses = append(setClauses, "allow_cust_item_disc = ?")
-			values = append(values, t.Allow_cust_item_disc)
-		}
-		if t.hasFieldChanged("allow_invoice_disc") {
-			setClauses = append(setClauses, "allow_invoice_disc = ?")
-			values = append(values, t.Allow_invoice_disc)
-		}
-		if t.hasFieldChanged("tax_bus_posting_gr_price") {
-			setClauses = append(setClauses, "tax_bus_posting_gr_price = ?")
-			values = append(values, t.Tax_bus_posting_gr_price)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "current_unit_price = ?")
-		values = append(values, t.Current_unit_price)
-		setClauses = append(setClauses, "new_unit_price = ?")
-		values = append(values, t.New_unit_price)
-		setClauses = append(setClauses, "price_includes_tax = ?")
-		values = append(values, t.Price_includes_tax)
-		setClauses = append(setClauses, "allow_quantity_disc = ?")
-		values = append(values, t.Allow_quantity_disc)
-		setClauses = append(setClauses, "allow_cust_item_disc = ?")
-		values = append(values, t.Allow_cust_item_disc)
-		setClauses = append(setClauses, "allow_invoice_disc = ?")
-		values = append(values, t.Allow_invoice_disc)
-		setClauses = append(setClauses, "tax_bus_posting_gr_price = ?")
-		values = append(values, t.Tax_bus_posting_gr_price)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["item_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Item_no)
-	}
-	if old, ok := t.oldValues["price_group_code"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Price_group_code)
-	}
-	if old, ok := t.oldValues["unit_of_measure_code"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Unit_of_measure_code)
-	}
-	if old, ok := t.oldValues["currency_code"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Currency_code)
-	}
-	if old, ok := t.oldValues["starting_date"]; ok {
-		values = append(values, types.KeyDate(old))
-	} else {
-		values = append(values, types.KeyDate(t.Starting_date))
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND item_no = ? AND price_group_code = ? AND unit_of_measure_code = ? AND currency_code = ? AND starting_date = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Item_Price_Change: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -967,29 +797,8 @@ func (t *ItemPriceChange) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ItemPriceChangeTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Item_no,
-		t.Price_group_code,
-		t.Unit_of_measure_code,
-		t.Currency_code,
-		types.KeyDate(t.Starting_date),
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND item_no = ? AND price_group_code = ? AND unit_of_measure_code = ? AND currency_code = ? AND starting_date = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Item_Price_Change: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1189,53 +998,13 @@ func (t *ItemPriceChange) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *ItemPriceChange) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, ItemPriceChangeTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Item_Price_Change\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Item_Price_Change: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *ItemPriceChange) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, ItemPriceChangeTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Item_Price_Change: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

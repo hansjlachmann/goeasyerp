@@ -894,62 +894,14 @@ func (t *DepreciationBook) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, DepreciationBookTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Code,
-		t.Description,
-		t.G_l_integration_acq_cost,
-		t.G_l_integration_depreciation,
-		t.G_l_integration_write_down,
-		t.G_l_integration_appreciation,
-		t.G_l_integration_custom_1,
-		t.G_l_integration_custom_2,
-		t.G_l_integration_disposal,
-		t.G_l_integration_maintenance,
-		t.Disposal_calculation_method,
-		t.Use_custom_1_depreciation,
-		t.Allow_depr_below_zero,
-		t.Use_fa_exch_rate_in_duplic,
-		t.Part_of_duplication_list,
-		t.Last_date_modified,
-		t.Allow_indexation,
-		t.Use_same_fa_g_l_posting_dates,
-		t.Default_exchange_rate,
-		t.Use_fa_ledger_check,
-		t.Use_rounding_in_periodic_depr,
-		t.New_fiscal_year_starting_date,
-		t.No_of_days_in_fiscal_year,
-		t.Allow_changes_in_depr_fields,
-		t.Default_final_rounding_amount,
-		t.Default_ending_book_value,
-		t.Periodic_depr_date_calc,
-		t.Mark_errors_as_corrections,
-		t.Add_curr_exch_rate_acq_cost,
-		t.Add_curr_exch_rate_depr,
-		t.Add_curr_exch_rate_write_down,
-		t.Add_curr_exch_rate_apprec,
-		t.Add_curr_exch_rate_custom_1,
-		t.Add_curr_exch_rate_custom_2,
-		t.Add_curr_exch_rate_disp,
-		t.Add_curr_exch_rate_maint,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (code, description, g_l_integration_acq_cost, g_l_integration_depreciation, g_l_integration_write_down, g_l_integration_appreciation, g_l_integration_custom_1, g_l_integration_custom_2, g_l_integration_disposal, g_l_integration_maintenance, disposal_calculation_method, use_custom_1_depreciation, allow_depr_below_zero, use_fa_exch_rate_in_duplic, part_of_duplication_list, last_date_modified, allow_indexation, use_same_fa_g_l_posting_dates, default_exchange_rate, use_fa_ledger_check, use_rounding_in_periodic_depr, new_fiscal_year_starting_date, no_of_days_in_fiscal_year, allow_changes_in_depr_fields, default_final_rounding_amount, default_ending_book_value, periodic_depr_date_calc, mark_errors_as_corrections, add_curr_exch_rate_acq_cost, add_curr_exch_rate_depr, add_curr_exch_rate_write_down, add_curr_exch_rate_apprec, add_curr_exch_rate_custom_1, add_curr_exch_rate_custom_2, add_curr_exch_rate_disp, add_curr_exch_rate_maint) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (code) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Depreciation_Book: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(DepreciationBookTableName, key)
 		return false
@@ -975,48 +927,10 @@ func (t *DepreciationBook) InsertAll(records []*DepreciationBook, runTrigger boo
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Code,
-			r.Description,
-			r.G_l_integration_acq_cost,
-			r.G_l_integration_depreciation,
-			r.G_l_integration_write_down,
-			r.G_l_integration_appreciation,
-			r.G_l_integration_custom_1,
-			r.G_l_integration_custom_2,
-			r.G_l_integration_disposal,
-			r.G_l_integration_maintenance,
-			r.Disposal_calculation_method,
-			r.Use_custom_1_depreciation,
-			r.Allow_depr_below_zero,
-			r.Use_fa_exch_rate_in_duplic,
-			r.Part_of_duplication_list,
-			r.Last_date_modified,
-			r.Allow_indexation,
-			r.Use_same_fa_g_l_posting_dates,
-			r.Default_exchange_rate,
-			r.Use_fa_ledger_check,
-			r.Use_rounding_in_periodic_depr,
-			r.New_fiscal_year_starting_date,
-			r.No_of_days_in_fiscal_year,
-			r.Allow_changes_in_depr_fields,
-			r.Default_final_rounding_amount,
-			r.Default_ending_book_value,
-			r.Periodic_depr_date_calc,
-			r.Mark_errors_as_corrections,
-			r.Add_curr_exch_rate_acq_cost,
-			r.Add_curr_exch_rate_depr,
-			r.Add_curr_exch_rate_write_down,
-			r.Add_curr_exch_rate_apprec,
-			r.Add_curr_exch_rate_custom_1,
-			r.Add_curr_exch_rate_custom_2,
-			r.Add_curr_exch_rate_disp,
-			r.Add_curr_exch_rate_maint,
-		})
+		rows = append(rows, depreciationBookFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, DepreciationBookTableName)
-	columns := []string{"code", "description", "g_l_integration_acq_cost", "g_l_integration_depreciation", "g_l_integration_write_down", "g_l_integration_appreciation", "g_l_integration_custom_1", "g_l_integration_custom_2", "g_l_integration_disposal", "g_l_integration_maintenance", "disposal_calculation_method", "use_custom_1_depreciation", "allow_depr_below_zero", "use_fa_exch_rate_in_duplic", "part_of_duplication_list", "last_date_modified", "allow_indexation", "use_same_fa_g_l_posting_dates", "default_exchange_rate", "use_fa_ledger_check", "use_rounding_in_periodic_depr", "new_fiscal_year_starting_date", "no_of_days_in_fiscal_year", "allow_changes_in_depr_fields", "default_final_rounding_amount", "default_ending_book_value", "periodic_depr_date_calc", "mark_errors_as_corrections", "add_curr_exch_rate_acq_cost", "add_curr_exch_rate_depr", "add_curr_exch_rate_write_down", "add_curr_exch_rate_apprec", "add_curr_exch_rate_custom_1", "add_curr_exch_rate_custom_2", "add_curr_exch_rate_disp", "add_curr_exch_rate_maint"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, depreciationBookFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -1032,257 +946,13 @@ func (t *DepreciationBook) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("code") {
-			keyChanged = true
-		}
-	}
+	keyChanged := depreciationBookFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
 		}
-	}
-	tableName := fmt.Sprintf("%s$%s", t.company, DepreciationBookTableName)
-
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("code") {
-			setClauses = append(setClauses, "code = ?")
-			values = append(values, t.Code)
-		}
-		if t.hasFieldChanged("description") {
-			setClauses = append(setClauses, "description = ?")
-			values = append(values, t.Description)
-		}
-		if t.hasFieldChanged("g_l_integration_acq_cost") {
-			setClauses = append(setClauses, "g_l_integration_acq_cost = ?")
-			values = append(values, t.G_l_integration_acq_cost)
-		}
-		if t.hasFieldChanged("g_l_integration_depreciation") {
-			setClauses = append(setClauses, "g_l_integration_depreciation = ?")
-			values = append(values, t.G_l_integration_depreciation)
-		}
-		if t.hasFieldChanged("g_l_integration_write_down") {
-			setClauses = append(setClauses, "g_l_integration_write_down = ?")
-			values = append(values, t.G_l_integration_write_down)
-		}
-		if t.hasFieldChanged("g_l_integration_appreciation") {
-			setClauses = append(setClauses, "g_l_integration_appreciation = ?")
-			values = append(values, t.G_l_integration_appreciation)
-		}
-		if t.hasFieldChanged("g_l_integration_custom_1") {
-			setClauses = append(setClauses, "g_l_integration_custom_1 = ?")
-			values = append(values, t.G_l_integration_custom_1)
-		}
-		if t.hasFieldChanged("g_l_integration_custom_2") {
-			setClauses = append(setClauses, "g_l_integration_custom_2 = ?")
-			values = append(values, t.G_l_integration_custom_2)
-		}
-		if t.hasFieldChanged("g_l_integration_disposal") {
-			setClauses = append(setClauses, "g_l_integration_disposal = ?")
-			values = append(values, t.G_l_integration_disposal)
-		}
-		if t.hasFieldChanged("g_l_integration_maintenance") {
-			setClauses = append(setClauses, "g_l_integration_maintenance = ?")
-			values = append(values, t.G_l_integration_maintenance)
-		}
-		if t.hasFieldChanged("disposal_calculation_method") {
-			setClauses = append(setClauses, "disposal_calculation_method = ?")
-			values = append(values, t.Disposal_calculation_method)
-		}
-		if t.hasFieldChanged("use_custom_1_depreciation") {
-			setClauses = append(setClauses, "use_custom_1_depreciation = ?")
-			values = append(values, t.Use_custom_1_depreciation)
-		}
-		if t.hasFieldChanged("allow_depr_below_zero") {
-			setClauses = append(setClauses, "allow_depr_below_zero = ?")
-			values = append(values, t.Allow_depr_below_zero)
-		}
-		if t.hasFieldChanged("use_fa_exch_rate_in_duplic") {
-			setClauses = append(setClauses, "use_fa_exch_rate_in_duplic = ?")
-			values = append(values, t.Use_fa_exch_rate_in_duplic)
-		}
-		if t.hasFieldChanged("part_of_duplication_list") {
-			setClauses = append(setClauses, "part_of_duplication_list = ?")
-			values = append(values, t.Part_of_duplication_list)
-		}
-		if t.hasFieldChanged("last_date_modified") {
-			setClauses = append(setClauses, "last_date_modified = ?")
-			values = append(values, t.Last_date_modified)
-		}
-		if t.hasFieldChanged("allow_indexation") {
-			setClauses = append(setClauses, "allow_indexation = ?")
-			values = append(values, t.Allow_indexation)
-		}
-		if t.hasFieldChanged("use_same_fa_g_l_posting_dates") {
-			setClauses = append(setClauses, "use_same_fa_g_l_posting_dates = ?")
-			values = append(values, t.Use_same_fa_g_l_posting_dates)
-		}
-		if t.hasFieldChanged("default_exchange_rate") {
-			setClauses = append(setClauses, "default_exchange_rate = ?")
-			values = append(values, t.Default_exchange_rate)
-		}
-		if t.hasFieldChanged("use_fa_ledger_check") {
-			setClauses = append(setClauses, "use_fa_ledger_check = ?")
-			values = append(values, t.Use_fa_ledger_check)
-		}
-		if t.hasFieldChanged("use_rounding_in_periodic_depr") {
-			setClauses = append(setClauses, "use_rounding_in_periodic_depr = ?")
-			values = append(values, t.Use_rounding_in_periodic_depr)
-		}
-		if t.hasFieldChanged("new_fiscal_year_starting_date") {
-			setClauses = append(setClauses, "new_fiscal_year_starting_date = ?")
-			values = append(values, t.New_fiscal_year_starting_date)
-		}
-		if t.hasFieldChanged("no_of_days_in_fiscal_year") {
-			setClauses = append(setClauses, "no_of_days_in_fiscal_year = ?")
-			values = append(values, t.No_of_days_in_fiscal_year)
-		}
-		if t.hasFieldChanged("allow_changes_in_depr_fields") {
-			setClauses = append(setClauses, "allow_changes_in_depr_fields = ?")
-			values = append(values, t.Allow_changes_in_depr_fields)
-		}
-		if t.hasFieldChanged("default_final_rounding_amount") {
-			setClauses = append(setClauses, "default_final_rounding_amount = ?")
-			values = append(values, t.Default_final_rounding_amount)
-		}
-		if t.hasFieldChanged("default_ending_book_value") {
-			setClauses = append(setClauses, "default_ending_book_value = ?")
-			values = append(values, t.Default_ending_book_value)
-		}
-		if t.hasFieldChanged("periodic_depr_date_calc") {
-			setClauses = append(setClauses, "periodic_depr_date_calc = ?")
-			values = append(values, t.Periodic_depr_date_calc)
-		}
-		if t.hasFieldChanged("mark_errors_as_corrections") {
-			setClauses = append(setClauses, "mark_errors_as_corrections = ?")
-			values = append(values, t.Mark_errors_as_corrections)
-		}
-		if t.hasFieldChanged("add_curr_exch_rate_acq_cost") {
-			setClauses = append(setClauses, "add_curr_exch_rate_acq_cost = ?")
-			values = append(values, t.Add_curr_exch_rate_acq_cost)
-		}
-		if t.hasFieldChanged("add_curr_exch_rate_depr") {
-			setClauses = append(setClauses, "add_curr_exch_rate_depr = ?")
-			values = append(values, t.Add_curr_exch_rate_depr)
-		}
-		if t.hasFieldChanged("add_curr_exch_rate_write_down") {
-			setClauses = append(setClauses, "add_curr_exch_rate_write_down = ?")
-			values = append(values, t.Add_curr_exch_rate_write_down)
-		}
-		if t.hasFieldChanged("add_curr_exch_rate_apprec") {
-			setClauses = append(setClauses, "add_curr_exch_rate_apprec = ?")
-			values = append(values, t.Add_curr_exch_rate_apprec)
-		}
-		if t.hasFieldChanged("add_curr_exch_rate_custom_1") {
-			setClauses = append(setClauses, "add_curr_exch_rate_custom_1 = ?")
-			values = append(values, t.Add_curr_exch_rate_custom_1)
-		}
-		if t.hasFieldChanged("add_curr_exch_rate_custom_2") {
-			setClauses = append(setClauses, "add_curr_exch_rate_custom_2 = ?")
-			values = append(values, t.Add_curr_exch_rate_custom_2)
-		}
-		if t.hasFieldChanged("add_curr_exch_rate_disp") {
-			setClauses = append(setClauses, "add_curr_exch_rate_disp = ?")
-			values = append(values, t.Add_curr_exch_rate_disp)
-		}
-		if t.hasFieldChanged("add_curr_exch_rate_maint") {
-			setClauses = append(setClauses, "add_curr_exch_rate_maint = ?")
-			values = append(values, t.Add_curr_exch_rate_maint)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "description = ?")
-		values = append(values, t.Description)
-		setClauses = append(setClauses, "g_l_integration_acq_cost = ?")
-		values = append(values, t.G_l_integration_acq_cost)
-		setClauses = append(setClauses, "g_l_integration_depreciation = ?")
-		values = append(values, t.G_l_integration_depreciation)
-		setClauses = append(setClauses, "g_l_integration_write_down = ?")
-		values = append(values, t.G_l_integration_write_down)
-		setClauses = append(setClauses, "g_l_integration_appreciation = ?")
-		values = append(values, t.G_l_integration_appreciation)
-		setClauses = append(setClauses, "g_l_integration_custom_1 = ?")
-		values = append(values, t.G_l_integration_custom_1)
-		setClauses = append(setClauses, "g_l_integration_custom_2 = ?")
-		values = append(values, t.G_l_integration_custom_2)
-		setClauses = append(setClauses, "g_l_integration_disposal = ?")
-		values = append(values, t.G_l_integration_disposal)
-		setClauses = append(setClauses, "g_l_integration_maintenance = ?")
-		values = append(values, t.G_l_integration_maintenance)
-		setClauses = append(setClauses, "disposal_calculation_method = ?")
-		values = append(values, t.Disposal_calculation_method)
-		setClauses = append(setClauses, "use_custom_1_depreciation = ?")
-		values = append(values, t.Use_custom_1_depreciation)
-		setClauses = append(setClauses, "allow_depr_below_zero = ?")
-		values = append(values, t.Allow_depr_below_zero)
-		setClauses = append(setClauses, "use_fa_exch_rate_in_duplic = ?")
-		values = append(values, t.Use_fa_exch_rate_in_duplic)
-		setClauses = append(setClauses, "part_of_duplication_list = ?")
-		values = append(values, t.Part_of_duplication_list)
-		setClauses = append(setClauses, "last_date_modified = ?")
-		values = append(values, t.Last_date_modified)
-		setClauses = append(setClauses, "allow_indexation = ?")
-		values = append(values, t.Allow_indexation)
-		setClauses = append(setClauses, "use_same_fa_g_l_posting_dates = ?")
-		values = append(values, t.Use_same_fa_g_l_posting_dates)
-		setClauses = append(setClauses, "default_exchange_rate = ?")
-		values = append(values, t.Default_exchange_rate)
-		setClauses = append(setClauses, "use_fa_ledger_check = ?")
-		values = append(values, t.Use_fa_ledger_check)
-		setClauses = append(setClauses, "use_rounding_in_periodic_depr = ?")
-		values = append(values, t.Use_rounding_in_periodic_depr)
-		setClauses = append(setClauses, "new_fiscal_year_starting_date = ?")
-		values = append(values, t.New_fiscal_year_starting_date)
-		setClauses = append(setClauses, "no_of_days_in_fiscal_year = ?")
-		values = append(values, t.No_of_days_in_fiscal_year)
-		setClauses = append(setClauses, "allow_changes_in_depr_fields = ?")
-		values = append(values, t.Allow_changes_in_depr_fields)
-		setClauses = append(setClauses, "default_final_rounding_amount = ?")
-		values = append(values, t.Default_final_rounding_amount)
-		setClauses = append(setClauses, "default_ending_book_value = ?")
-		values = append(values, t.Default_ending_book_value)
-		setClauses = append(setClauses, "periodic_depr_date_calc = ?")
-		values = append(values, t.Periodic_depr_date_calc)
-		setClauses = append(setClauses, "mark_errors_as_corrections = ?")
-		values = append(values, t.Mark_errors_as_corrections)
-		setClauses = append(setClauses, "add_curr_exch_rate_acq_cost = ?")
-		values = append(values, t.Add_curr_exch_rate_acq_cost)
-		setClauses = append(setClauses, "add_curr_exch_rate_depr = ?")
-		values = append(values, t.Add_curr_exch_rate_depr)
-		setClauses = append(setClauses, "add_curr_exch_rate_write_down = ?")
-		values = append(values, t.Add_curr_exch_rate_write_down)
-		setClauses = append(setClauses, "add_curr_exch_rate_apprec = ?")
-		values = append(values, t.Add_curr_exch_rate_apprec)
-		setClauses = append(setClauses, "add_curr_exch_rate_custom_1 = ?")
-		values = append(values, t.Add_curr_exch_rate_custom_1)
-		setClauses = append(setClauses, "add_curr_exch_rate_custom_2 = ?")
-		values = append(values, t.Add_curr_exch_rate_custom_2)
-		setClauses = append(setClauses, "add_curr_exch_rate_disp = ?")
-		values = append(values, t.Add_curr_exch_rate_disp)
-		setClauses = append(setClauses, "add_curr_exch_rate_maint = ?")
-		values = append(values, t.Add_curr_exch_rate_maint)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["code"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Code)
 	}
 	// Renamed key fields that other tables refer to (Rename): carried over below
 	type renamedKey struct {
@@ -1296,19 +966,11 @@ func (t *DepreciationBook) Modify(runTrigger bool) bool {
 		}
 	}
 
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND code = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Depreciation_Book: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// A temporary record's rename stays in the record: other tables are not changed
 	for _, r := range renamed {
@@ -1390,25 +1052,8 @@ func (t *DepreciationBook) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, DepreciationBookTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Code,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND code = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Depreciation_Book: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1608,53 +1253,13 @@ func (t *DepreciationBook) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *DepreciationBook) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, DepreciationBookTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Depreciation_Book\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Depreciation_Book: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *DepreciationBook) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, DepreciationBookTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Depreciation_Book: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

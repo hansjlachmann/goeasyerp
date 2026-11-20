@@ -756,44 +756,14 @@ func (t *OrderAddress) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, OrderAddressTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Vendor_no,
-		t.Code,
-		t.Name,
-		t.Name_2,
-		t.Address,
-		t.Address_2,
-		t.City,
-		t.Contact,
-		t.Phone_no,
-		t.Telex_no,
-		t.Country_code,
-		t.Last_date_modified,
-		t.Fax_no,
-		t.Telex_answer_back,
-		t.Post_code,
-		t.State,
-		t.E_mail,
-		t.Home_page,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (vendor_no, code, name, name_2, address, address_2, city, contact, phone_no, telex_no, country_code, last_date_modified, fax_no, telex_answer_back, post_code, state, e_mail, home_page) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (vendor_no, code) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Order_Address: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(OrderAddressTableName, key)
 		return false
@@ -819,30 +789,10 @@ func (t *OrderAddress) InsertAll(records []*OrderAddress, runTrigger bool) error
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Vendor_no,
-			r.Code,
-			r.Name,
-			r.Name_2,
-			r.Address,
-			r.Address_2,
-			r.City,
-			r.Contact,
-			r.Phone_no,
-			r.Telex_no,
-			r.Country_code,
-			r.Last_date_modified,
-			r.Fax_no,
-			r.Telex_answer_back,
-			r.Post_code,
-			r.State,
-			r.E_mail,
-			r.Home_page,
-		})
+		rows = append(rows, orderAddressFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, OrderAddressTableName)
-	columns := []string{"vendor_no", "code", "name", "name_2", "address", "address_2", "city", "contact", "phone_no", "telex_no", "country_code", "last_date_modified", "fax_no", "telex_answer_back", "post_code", "state", "e_mail", "home_page"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, orderAddressFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -858,15 +808,7 @@ func (t *OrderAddress) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("vendor_no") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("code") {
-			keyChanged = true
-		}
-	}
+	keyChanged := orderAddressFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -874,154 +816,12 @@ func (t *OrderAddress) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, OrderAddressTableName)
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("vendor_no") {
-			setClauses = append(setClauses, "vendor_no = ?")
-			values = append(values, t.Vendor_no)
-		}
-		if t.hasFieldChanged("code") {
-			setClauses = append(setClauses, "code = ?")
-			values = append(values, t.Code)
-		}
-		if t.hasFieldChanged("name") {
-			setClauses = append(setClauses, "name = ?")
-			values = append(values, t.Name)
-		}
-		if t.hasFieldChanged("name_2") {
-			setClauses = append(setClauses, "name_2 = ?")
-			values = append(values, t.Name_2)
-		}
-		if t.hasFieldChanged("address") {
-			setClauses = append(setClauses, "address = ?")
-			values = append(values, t.Address)
-		}
-		if t.hasFieldChanged("address_2") {
-			setClauses = append(setClauses, "address_2 = ?")
-			values = append(values, t.Address_2)
-		}
-		if t.hasFieldChanged("city") {
-			setClauses = append(setClauses, "city = ?")
-			values = append(values, t.City)
-		}
-		if t.hasFieldChanged("contact") {
-			setClauses = append(setClauses, "contact = ?")
-			values = append(values, t.Contact)
-		}
-		if t.hasFieldChanged("phone_no") {
-			setClauses = append(setClauses, "phone_no = ?")
-			values = append(values, t.Phone_no)
-		}
-		if t.hasFieldChanged("telex_no") {
-			setClauses = append(setClauses, "telex_no = ?")
-			values = append(values, t.Telex_no)
-		}
-		if t.hasFieldChanged("country_code") {
-			setClauses = append(setClauses, "country_code = ?")
-			values = append(values, t.Country_code)
-		}
-		if t.hasFieldChanged("last_date_modified") {
-			setClauses = append(setClauses, "last_date_modified = ?")
-			values = append(values, t.Last_date_modified)
-		}
-		if t.hasFieldChanged("fax_no") {
-			setClauses = append(setClauses, "fax_no = ?")
-			values = append(values, t.Fax_no)
-		}
-		if t.hasFieldChanged("telex_answer_back") {
-			setClauses = append(setClauses, "telex_answer_back = ?")
-			values = append(values, t.Telex_answer_back)
-		}
-		if t.hasFieldChanged("post_code") {
-			setClauses = append(setClauses, "post_code = ?")
-			values = append(values, t.Post_code)
-		}
-		if t.hasFieldChanged("state") {
-			setClauses = append(setClauses, "state = ?")
-			values = append(values, t.State)
-		}
-		if t.hasFieldChanged("e_mail") {
-			setClauses = append(setClauses, "e_mail = ?")
-			values = append(values, t.E_mail)
-		}
-		if t.hasFieldChanged("home_page") {
-			setClauses = append(setClauses, "home_page = ?")
-			values = append(values, t.Home_page)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "name = ?")
-		values = append(values, t.Name)
-		setClauses = append(setClauses, "name_2 = ?")
-		values = append(values, t.Name_2)
-		setClauses = append(setClauses, "address = ?")
-		values = append(values, t.Address)
-		setClauses = append(setClauses, "address_2 = ?")
-		values = append(values, t.Address_2)
-		setClauses = append(setClauses, "city = ?")
-		values = append(values, t.City)
-		setClauses = append(setClauses, "contact = ?")
-		values = append(values, t.Contact)
-		setClauses = append(setClauses, "phone_no = ?")
-		values = append(values, t.Phone_no)
-		setClauses = append(setClauses, "telex_no = ?")
-		values = append(values, t.Telex_no)
-		setClauses = append(setClauses, "country_code = ?")
-		values = append(values, t.Country_code)
-		setClauses = append(setClauses, "last_date_modified = ?")
-		values = append(values, t.Last_date_modified)
-		setClauses = append(setClauses, "fax_no = ?")
-		values = append(values, t.Fax_no)
-		setClauses = append(setClauses, "telex_answer_back = ?")
-		values = append(values, t.Telex_answer_back)
-		setClauses = append(setClauses, "post_code = ?")
-		values = append(values, t.Post_code)
-		setClauses = append(setClauses, "state = ?")
-		values = append(values, t.State)
-		setClauses = append(setClauses, "e_mail = ?")
-		values = append(values, t.E_mail)
-		setClauses = append(setClauses, "home_page = ?")
-		values = append(values, t.Home_page)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["vendor_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Vendor_no)
-	}
-	if old, ok := t.oldValues["code"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Code)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND vendor_no = ? AND code = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Order_Address: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -1052,26 +852,8 @@ func (t *OrderAddress) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, OrderAddressTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Vendor_no,
-		t.Code,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND vendor_no = ? AND code = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Order_Address: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1271,53 +1053,13 @@ func (t *OrderAddress) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *OrderAddress) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, OrderAddressTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Order_Address\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Order_Address: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *OrderAddress) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, OrderAddressTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Order_Address: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

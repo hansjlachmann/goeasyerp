@@ -662,34 +662,14 @@ func (t *AppPackage) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := AppPackageTableName
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.App_id,
-		t.Version,
-		t.Name,
-		t.Package,
-		t.Sha256,
-		t.Size,
-		t.Uploaded_by,
-		t.Uploaded_at,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (app_id, version, name, package, sha256, size, uploaded_by, uploaded_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (app_id, version) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert App_Package: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(AppPackageTableName, key)
 		return false
@@ -715,20 +695,10 @@ func (t *AppPackage) InsertAll(records []*AppPackage, runTrigger bool) error {
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.App_id,
-			r.Version,
-			r.Name,
-			r.Package,
-			r.Sha256,
-			r.Size,
-			r.Uploaded_by,
-			r.Uploaded_at,
-		})
+		rows = append(rows, appPackageFields.RowValues(r.fieldRef))
 	}
 	tableName := AppPackageTableName
-	columns := []string{"app_id", "version", "name", "package", "sha256", "size", "uploaded_by", "uploaded_at"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, appPackageFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -744,15 +714,7 @@ func (t *AppPackage) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("app_id") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("version") {
-			keyChanged = true
-		}
-	}
+	keyChanged := appPackageFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -760,94 +722,12 @@ func (t *AppPackage) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := AppPackageTableName
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("app_id") {
-			setClauses = append(setClauses, "app_id = ?")
-			values = append(values, t.App_id)
-		}
-		if t.hasFieldChanged("version") {
-			setClauses = append(setClauses, "version = ?")
-			values = append(values, t.Version)
-		}
-		if t.hasFieldChanged("name") {
-			setClauses = append(setClauses, "name = ?")
-			values = append(values, t.Name)
-		}
-		if t.hasFieldChanged("package") {
-			setClauses = append(setClauses, "package = ?")
-			values = append(values, t.Package)
-		}
-		if t.hasFieldChanged("sha256") {
-			setClauses = append(setClauses, "sha256 = ?")
-			values = append(values, t.Sha256)
-		}
-		if t.hasFieldChanged("size") {
-			setClauses = append(setClauses, "size = ?")
-			values = append(values, t.Size)
-		}
-		if t.hasFieldChanged("uploaded_by") {
-			setClauses = append(setClauses, "uploaded_by = ?")
-			values = append(values, t.Uploaded_by)
-		}
-		if t.hasFieldChanged("uploaded_at") {
-			setClauses = append(setClauses, "uploaded_at = ?")
-			values = append(values, t.Uploaded_at)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "name = ?")
-		values = append(values, t.Name)
-		setClauses = append(setClauses, "package = ?")
-		values = append(values, t.Package)
-		setClauses = append(setClauses, "sha256 = ?")
-		values = append(values, t.Sha256)
-		setClauses = append(setClauses, "size = ?")
-		values = append(values, t.Size)
-		setClauses = append(setClauses, "uploaded_by = ?")
-		values = append(values, t.Uploaded_by)
-		setClauses = append(setClauses, "uploaded_at = ?")
-		values = append(values, t.Uploaded_at)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["app_id"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.App_id)
-	}
-	if old, ok := t.oldValues["version"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Version)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND app_id = ? AND version = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify App_Package: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -878,26 +758,8 @@ func (t *AppPackage) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := AppPackageTableName
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.App_id,
-		t.Version,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND app_id = ? AND version = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete App_Package: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1097,53 +959,13 @@ func (t *AppPackage) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *AppPackage) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := AppPackageTableName
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of App_Package\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all App_Package: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *AppPackage) DeleteAll() int {
-	tableName := AppPackageTableName
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all App_Package: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

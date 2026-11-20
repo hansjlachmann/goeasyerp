@@ -700,35 +700,14 @@ func (t *Permission) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := PermissionTableName
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Role_id,
-		t.Table_name,
-		t.Can_read,
-		t.Can_insert,
-		t.Can_modify,
-		t.Can_delete,
-		t.Object_type,
-		t.Object_id,
-		t.Can_execute,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (role_id, table_name, can_read, can_insert, can_modify, can_delete, object_type, object_id, can_execute) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (role_id, table_name) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Permission: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(PermissionTableName, key)
 		return false
@@ -754,21 +733,10 @@ func (t *Permission) InsertAll(records []*Permission, runTrigger bool) error {
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Role_id,
-			r.Table_name,
-			r.Can_read,
-			r.Can_insert,
-			r.Can_modify,
-			r.Can_delete,
-			r.Object_type,
-			r.Object_id,
-			r.Can_execute,
-		})
+		rows = append(rows, permissionFields.RowValues(r.fieldRef))
 	}
 	tableName := PermissionTableName
-	columns := []string{"role_id", "table_name", "can_read", "can_insert", "can_modify", "can_delete", "object_type", "object_id", "can_execute"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, permissionFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -784,15 +752,7 @@ func (t *Permission) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("role_id") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("table_name") {
-			keyChanged = true
-		}
-	}
+	keyChanged := permissionFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -800,100 +760,12 @@ func (t *Permission) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := PermissionTableName
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("role_id") {
-			setClauses = append(setClauses, "role_id = ?")
-			values = append(values, t.Role_id)
-		}
-		if t.hasFieldChanged("table_name") {
-			setClauses = append(setClauses, "table_name = ?")
-			values = append(values, t.Table_name)
-		}
-		if t.hasFieldChanged("can_read") {
-			setClauses = append(setClauses, "can_read = ?")
-			values = append(values, t.Can_read)
-		}
-		if t.hasFieldChanged("can_insert") {
-			setClauses = append(setClauses, "can_insert = ?")
-			values = append(values, t.Can_insert)
-		}
-		if t.hasFieldChanged("can_modify") {
-			setClauses = append(setClauses, "can_modify = ?")
-			values = append(values, t.Can_modify)
-		}
-		if t.hasFieldChanged("can_delete") {
-			setClauses = append(setClauses, "can_delete = ?")
-			values = append(values, t.Can_delete)
-		}
-		if t.hasFieldChanged("object_type") {
-			setClauses = append(setClauses, "object_type = ?")
-			values = append(values, t.Object_type)
-		}
-		if t.hasFieldChanged("object_id") {
-			setClauses = append(setClauses, "object_id = ?")
-			values = append(values, t.Object_id)
-		}
-		if t.hasFieldChanged("can_execute") {
-			setClauses = append(setClauses, "can_execute = ?")
-			values = append(values, t.Can_execute)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "can_read = ?")
-		values = append(values, t.Can_read)
-		setClauses = append(setClauses, "can_insert = ?")
-		values = append(values, t.Can_insert)
-		setClauses = append(setClauses, "can_modify = ?")
-		values = append(values, t.Can_modify)
-		setClauses = append(setClauses, "can_delete = ?")
-		values = append(values, t.Can_delete)
-		setClauses = append(setClauses, "object_type = ?")
-		values = append(values, t.Object_type)
-		setClauses = append(setClauses, "object_id = ?")
-		values = append(values, t.Object_id)
-		setClauses = append(setClauses, "can_execute = ?")
-		values = append(values, t.Can_execute)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["role_id"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Role_id)
-	}
-	if old, ok := t.oldValues["table_name"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Table_name)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND role_id = ? AND table_name = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Permission: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -924,26 +796,8 @@ func (t *Permission) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := PermissionTableName
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Role_id,
-		t.Table_name,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND role_id = ? AND table_name = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Permission: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1143,53 +997,13 @@ func (t *Permission) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *Permission) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := PermissionTableName
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Permission\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Permission: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *Permission) DeleteAll() int {
-	tableName := PermissionTableName
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Permission: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

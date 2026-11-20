@@ -674,35 +674,14 @@ func (t *FASetup) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, FASetupTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Primary_key,
-		t.Allow_posting_to_main_assets,
-		t.Default_depr_book,
-		t.Allow_fa_posting_from,
-		t.Allow_fa_posting_to,
-		t.Insurance_depr_book,
-		t.Automatic_insurance_posting,
-		t.Fixed_asset_nos,
-		t.Insurance_nos,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (primary_key, allow_posting_to_main_assets, default_depr_book, allow_fa_posting_from, allow_fa_posting_to, insurance_depr_book, automatic_insurance_posting, fixed_asset_nos, insurance_nos) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (primary_key) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert FA_Setup: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(FASetupTableName, key)
 		return false
@@ -728,21 +707,10 @@ func (t *FASetup) InsertAll(records []*FASetup, runTrigger bool) error {
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Primary_key,
-			r.Allow_posting_to_main_assets,
-			r.Default_depr_book,
-			r.Allow_fa_posting_from,
-			r.Allow_fa_posting_to,
-			r.Insurance_depr_book,
-			r.Automatic_insurance_posting,
-			r.Fixed_asset_nos,
-			r.Insurance_nos,
-		})
+		rows = append(rows, fASetupFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, FASetupTableName)
-	columns := []string{"primary_key", "allow_posting_to_main_assets", "default_depr_book", "allow_fa_posting_from", "allow_fa_posting_to", "insurance_depr_book", "automatic_insurance_posting", "fixed_asset_nos", "insurance_nos"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, fASetupFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -758,12 +726,7 @@ func (t *FASetup) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("primary_key") {
-			keyChanged = true
-		}
-	}
+	keyChanged := fASetupFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -771,97 +734,12 @@ func (t *FASetup) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, FASetupTableName)
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("primary_key") {
-			setClauses = append(setClauses, "primary_key = ?")
-			values = append(values, t.Primary_key)
-		}
-		if t.hasFieldChanged("allow_posting_to_main_assets") {
-			setClauses = append(setClauses, "allow_posting_to_main_assets = ?")
-			values = append(values, t.Allow_posting_to_main_assets)
-		}
-		if t.hasFieldChanged("default_depr_book") {
-			setClauses = append(setClauses, "default_depr_book = ?")
-			values = append(values, t.Default_depr_book)
-		}
-		if t.hasFieldChanged("allow_fa_posting_from") {
-			setClauses = append(setClauses, "allow_fa_posting_from = ?")
-			values = append(values, t.Allow_fa_posting_from)
-		}
-		if t.hasFieldChanged("allow_fa_posting_to") {
-			setClauses = append(setClauses, "allow_fa_posting_to = ?")
-			values = append(values, t.Allow_fa_posting_to)
-		}
-		if t.hasFieldChanged("insurance_depr_book") {
-			setClauses = append(setClauses, "insurance_depr_book = ?")
-			values = append(values, t.Insurance_depr_book)
-		}
-		if t.hasFieldChanged("automatic_insurance_posting") {
-			setClauses = append(setClauses, "automatic_insurance_posting = ?")
-			values = append(values, t.Automatic_insurance_posting)
-		}
-		if t.hasFieldChanged("fixed_asset_nos") {
-			setClauses = append(setClauses, "fixed_asset_nos = ?")
-			values = append(values, t.Fixed_asset_nos)
-		}
-		if t.hasFieldChanged("insurance_nos") {
-			setClauses = append(setClauses, "insurance_nos = ?")
-			values = append(values, t.Insurance_nos)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "allow_posting_to_main_assets = ?")
-		values = append(values, t.Allow_posting_to_main_assets)
-		setClauses = append(setClauses, "default_depr_book = ?")
-		values = append(values, t.Default_depr_book)
-		setClauses = append(setClauses, "allow_fa_posting_from = ?")
-		values = append(values, t.Allow_fa_posting_from)
-		setClauses = append(setClauses, "allow_fa_posting_to = ?")
-		values = append(values, t.Allow_fa_posting_to)
-		setClauses = append(setClauses, "insurance_depr_book = ?")
-		values = append(values, t.Insurance_depr_book)
-		setClauses = append(setClauses, "automatic_insurance_posting = ?")
-		values = append(values, t.Automatic_insurance_posting)
-		setClauses = append(setClauses, "fixed_asset_nos = ?")
-		values = append(values, t.Fixed_asset_nos)
-		setClauses = append(setClauses, "insurance_nos = ?")
-		values = append(values, t.Insurance_nos)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["primary_key"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Primary_key)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND primary_key = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify FA_Setup: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -892,25 +770,8 @@ func (t *FASetup) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, FASetupTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Primary_key,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND primary_key = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete FA_Setup: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1110,53 +971,13 @@ func (t *FASetup) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *FASetup) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, FASetupTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of FA_Setup\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all FA_Setup: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *FASetup) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, FASetupTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all FA_Setup: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

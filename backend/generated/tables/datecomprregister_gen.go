@@ -760,40 +760,14 @@ func (t *DateComprRegister) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, DateComprRegisterTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.No,
-		t.Creation_date,
-		t.Period_length,
-		t.Ending_date,
-		t.No_of_new_records,
-		t.No_records_deleted,
-		t.User_id,
-		t.Filter,
-		t.Starting_date,
-		t.Table_id,
-		t.Register_no,
-		t.Source_code,
-		t.Retain_field_contents,
-		t.Retain_totals,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (no, creation_date, period_length, ending_date, no_of_new_records, no_records_deleted, user_id, filter, starting_date, table_id, register_no, source_code, retain_field_contents, retain_totals) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Date_Compr_Register: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(DateComprRegisterTableName, key)
 		return false
@@ -819,26 +793,10 @@ func (t *DateComprRegister) InsertAll(records []*DateComprRegister, runTrigger b
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.No,
-			r.Creation_date,
-			r.Period_length,
-			r.Ending_date,
-			r.No_of_new_records,
-			r.No_records_deleted,
-			r.User_id,
-			r.Filter,
-			r.Starting_date,
-			r.Table_id,
-			r.Register_no,
-			r.Source_code,
-			r.Retain_field_contents,
-			r.Retain_totals,
-		})
+		rows = append(rows, dateComprRegisterFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, DateComprRegisterTableName)
-	columns := []string{"no", "creation_date", "period_length", "ending_date", "no_of_new_records", "no_records_deleted", "user_id", "filter", "starting_date", "table_id", "register_no", "source_code", "retain_field_contents", "retain_totals"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, dateComprRegisterFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -854,12 +812,7 @@ func (t *DateComprRegister) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := dateComprRegisterFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -867,127 +820,12 @@ func (t *DateComprRegister) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, DateComprRegisterTableName)
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("no") {
-			setClauses = append(setClauses, "no = ?")
-			values = append(values, t.No)
-		}
-		if t.hasFieldChanged("creation_date") {
-			setClauses = append(setClauses, "creation_date = ?")
-			values = append(values, t.Creation_date)
-		}
-		if t.hasFieldChanged("period_length") {
-			setClauses = append(setClauses, "period_length = ?")
-			values = append(values, t.Period_length)
-		}
-		if t.hasFieldChanged("ending_date") {
-			setClauses = append(setClauses, "ending_date = ?")
-			values = append(values, t.Ending_date)
-		}
-		if t.hasFieldChanged("no_of_new_records") {
-			setClauses = append(setClauses, "no_of_new_records = ?")
-			values = append(values, t.No_of_new_records)
-		}
-		if t.hasFieldChanged("no_records_deleted") {
-			setClauses = append(setClauses, "no_records_deleted = ?")
-			values = append(values, t.No_records_deleted)
-		}
-		if t.hasFieldChanged("user_id") {
-			setClauses = append(setClauses, "user_id = ?")
-			values = append(values, t.User_id)
-		}
-		if t.hasFieldChanged("filter") {
-			setClauses = append(setClauses, "filter = ?")
-			values = append(values, t.Filter)
-		}
-		if t.hasFieldChanged("starting_date") {
-			setClauses = append(setClauses, "starting_date = ?")
-			values = append(values, t.Starting_date)
-		}
-		if t.hasFieldChanged("table_id") {
-			setClauses = append(setClauses, "table_id = ?")
-			values = append(values, t.Table_id)
-		}
-		if t.hasFieldChanged("register_no") {
-			setClauses = append(setClauses, "register_no = ?")
-			values = append(values, t.Register_no)
-		}
-		if t.hasFieldChanged("source_code") {
-			setClauses = append(setClauses, "source_code = ?")
-			values = append(values, t.Source_code)
-		}
-		if t.hasFieldChanged("retain_field_contents") {
-			setClauses = append(setClauses, "retain_field_contents = ?")
-			values = append(values, t.Retain_field_contents)
-		}
-		if t.hasFieldChanged("retain_totals") {
-			setClauses = append(setClauses, "retain_totals = ?")
-			values = append(values, t.Retain_totals)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "creation_date = ?")
-		values = append(values, t.Creation_date)
-		setClauses = append(setClauses, "period_length = ?")
-		values = append(values, t.Period_length)
-		setClauses = append(setClauses, "ending_date = ?")
-		values = append(values, t.Ending_date)
-		setClauses = append(setClauses, "no_of_new_records = ?")
-		values = append(values, t.No_of_new_records)
-		setClauses = append(setClauses, "no_records_deleted = ?")
-		values = append(values, t.No_records_deleted)
-		setClauses = append(setClauses, "user_id = ?")
-		values = append(values, t.User_id)
-		setClauses = append(setClauses, "filter = ?")
-		values = append(values, t.Filter)
-		setClauses = append(setClauses, "starting_date = ?")
-		values = append(values, t.Starting_date)
-		setClauses = append(setClauses, "table_id = ?")
-		values = append(values, t.Table_id)
-		setClauses = append(setClauses, "register_no = ?")
-		values = append(values, t.Register_no)
-		setClauses = append(setClauses, "source_code = ?")
-		values = append(values, t.Source_code)
-		setClauses = append(setClauses, "retain_field_contents = ?")
-		values = append(values, t.Retain_field_contents)
-		setClauses = append(setClauses, "retain_totals = ?")
-		values = append(values, t.Retain_totals)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.No)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Date_Compr_Register: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -1018,25 +856,8 @@ func (t *DateComprRegister) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, DateComprRegisterTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.No,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Date_Compr_Register: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // ========================================
@@ -1314,53 +1135,13 @@ func (t *DateComprRegister) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *DateComprRegister) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, DateComprRegisterTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Date_Compr_Register\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Date_Compr_Register: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *DateComprRegister) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, DateComprRegisterTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Date_Compr_Register: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

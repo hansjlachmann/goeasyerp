@@ -653,33 +653,14 @@ func (t *UserPreferences) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := UserPreferencesTableName
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.User_id,
-		t.Page_id,
-		t.Preference_type,
-		t.Preference_name,
-		t.Preference_data,
-		t.Created_at,
-		t.Updated_at,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (user_id, page_id, preference_type, preference_name, preference_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT (user_id, page_id, preference_type, preference_name) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert User_Preferences: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(UserPreferencesTableName, key)
 		return false
@@ -705,19 +686,10 @@ func (t *UserPreferences) InsertAll(records []*UserPreferences, runTrigger bool)
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.User_id,
-			r.Page_id,
-			r.Preference_type,
-			r.Preference_name,
-			r.Preference_data,
-			r.Created_at,
-			r.Updated_at,
-		})
+		rows = append(rows, userPreferencesFields.RowValues(r.fieldRef))
 	}
 	tableName := UserPreferencesTableName
-	columns := []string{"user_id", "page_id", "preference_type", "preference_name", "preference_data", "created_at", "updated_at"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, userPreferencesFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -733,21 +705,7 @@ func (t *UserPreferences) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("user_id") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("page_id") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("preference_type") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("preference_name") {
-			keyChanged = true
-		}
-	}
+	keyChanged := userPreferencesFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -755,94 +713,12 @@ func (t *UserPreferences) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := UserPreferencesTableName
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("user_id") {
-			setClauses = append(setClauses, "user_id = ?")
-			values = append(values, t.User_id)
-		}
-		if t.hasFieldChanged("page_id") {
-			setClauses = append(setClauses, "page_id = ?")
-			values = append(values, t.Page_id)
-		}
-		if t.hasFieldChanged("preference_type") {
-			setClauses = append(setClauses, "preference_type = ?")
-			values = append(values, t.Preference_type)
-		}
-		if t.hasFieldChanged("preference_name") {
-			setClauses = append(setClauses, "preference_name = ?")
-			values = append(values, t.Preference_name)
-		}
-		if t.hasFieldChanged("preference_data") {
-			setClauses = append(setClauses, "preference_data = ?")
-			values = append(values, t.Preference_data)
-		}
-		if t.hasFieldChanged("created_at") {
-			setClauses = append(setClauses, "created_at = ?")
-			values = append(values, t.Created_at)
-		}
-		if t.hasFieldChanged("updated_at") {
-			setClauses = append(setClauses, "updated_at = ?")
-			values = append(values, t.Updated_at)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "preference_data = ?")
-		values = append(values, t.Preference_data)
-		setClauses = append(setClauses, "created_at = ?")
-		values = append(values, t.Created_at)
-		setClauses = append(setClauses, "updated_at = ?")
-		values = append(values, t.Updated_at)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["user_id"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.User_id)
-	}
-	if old, ok := t.oldValues["page_id"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Page_id)
-	}
-	if old, ok := t.oldValues["preference_type"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Preference_type)
-	}
-	if old, ok := t.oldValues["preference_name"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Preference_name)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND user_id = ? AND page_id = ? AND preference_type = ? AND preference_name = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify User_Preferences: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -873,28 +749,8 @@ func (t *UserPreferences) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := UserPreferencesTableName
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.User_id,
-		t.Page_id,
-		t.Preference_type,
-		t.Preference_name,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND user_id = ? AND page_id = ? AND preference_type = ? AND preference_name = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete User_Preferences: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1094,53 +950,13 @@ func (t *UserPreferences) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *UserPreferences) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := UserPreferencesTableName
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of User_Preferences\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all User_Preferences: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *UserPreferences) DeleteAll() int {
-	tableName := UserPreferencesTableName
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all User_Preferences: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

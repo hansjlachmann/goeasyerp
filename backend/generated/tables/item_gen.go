@@ -1442,94 +1442,14 @@ func (t *Item) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ItemTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.No,
-		t.No_2,
-		t.Description,
-		t.Search_description,
-		t.Description_2,
-		t.Class,
-		t.Base_unit_of_measure,
-		t.Price_unit_conversion,
-		t.Inventory_posting_group,
-		t.Shelf_bin_no,
-		t.Sales_qty_disc_code,
-		t.Item_cust_disc_gr,
-		t.Allow_invoice_disc,
-		t.Statistics_group,
-		t.Commission_group,
-		t.Unit_price,
-		t.Price_profit_calculation,
-		t.Profit_percent,
-		t.Costing_method,
-		t.Unit_cost,
-		t.Standard_cost,
-		t.Last_direct_cost,
-		t.Average_cost,
-		t.Add_curr_average_cost,
-		t.Minimum_unit_price,
-		t.Indirect_cost_percent,
-		t.Vendor_no,
-		t.Vendor_item_no,
-		t.Lead_time_calculation,
-		t.Reorder_point,
-		t.Maximum_inventory,
-		t.Reorder_quantity,
-		t.Requisition_method_code,
-		t.Order_multiple,
-		t.Reorder_cycle,
-		t.Alternative_item_no,
-		t.Unit_list_price,
-		t.Duty_due_percent,
-		t.Duty_code,
-		t.Gross_weight,
-		t.Net_weight,
-		t.Units_per_parcel,
-		t.Unit_volume,
-		t.Durability,
-		t.Freight_type,
-		t.Tariff_no,
-		t.Duty_unit_conversion,
-		t.Country_purchased_code,
-		t.Budget_quantity,
-		t.Budgeted_amount,
-		t.Budget_profit,
-		t.Blocked,
-		t.Last_date_modified,
-		t.Price_includes_tax,
-		t.Tax_bus_posting_gr_price,
-		t.Gen_prod_posting_group,
-		t.Picture,
-		t.Country_of_origin_code,
-		t.No_series,
-		t.Tax_group_code,
-		t.Tax_prod_posting_group,
-		t.Reserve,
-		t.Inventory_value_zero,
-		t.Rounding_precision,
-		t.Sales_unit_of_measure,
-		t.Purch_unit_of_measure,
-		t.Serial_nos,
-		t.Automatic_ext_text,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (no, no_2, description, search_description, description_2, class, base_unit_of_measure, price_unit_conversion, inventory_posting_group, shelf_bin_no, sales_qty_disc_code, item_cust_disc_gr, allow_invoice_disc, statistics_group, commission_group, unit_price, price_profit_calculation, profit_percent, costing_method, unit_cost, standard_cost, last_direct_cost, average_cost, add_curr_average_cost, minimum_unit_price, indirect_cost_percent, vendor_no, vendor_item_no, lead_time_calculation, reorder_point, maximum_inventory, reorder_quantity, requisition_method_code, order_multiple, reorder_cycle, alternative_item_no, unit_list_price, duty_due_percent, duty_code, gross_weight, net_weight, units_per_parcel, unit_volume, durability, freight_type, tariff_no, duty_unit_conversion, country_purchased_code, budget_quantity, budgeted_amount, budget_profit, blocked, last_date_modified, price_includes_tax, tax_bus_posting_gr_price, gen_prod_posting_group, picture, country_of_origin_code, no_series, tax_group_code, tax_prod_posting_group, reserve, inventory_value_zero, rounding_precision, sales_unit_of_measure, purch_unit_of_measure, serial_nos, automatic_ext_text) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Item: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(ItemTableName, key)
 		return false
@@ -1555,80 +1475,10 @@ func (t *Item) InsertAll(records []*Item, runTrigger bool) error {
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.No,
-			r.No_2,
-			r.Description,
-			r.Search_description,
-			r.Description_2,
-			r.Class,
-			r.Base_unit_of_measure,
-			r.Price_unit_conversion,
-			r.Inventory_posting_group,
-			r.Shelf_bin_no,
-			r.Sales_qty_disc_code,
-			r.Item_cust_disc_gr,
-			r.Allow_invoice_disc,
-			r.Statistics_group,
-			r.Commission_group,
-			r.Unit_price,
-			r.Price_profit_calculation,
-			r.Profit_percent,
-			r.Costing_method,
-			r.Unit_cost,
-			r.Standard_cost,
-			r.Last_direct_cost,
-			r.Average_cost,
-			r.Add_curr_average_cost,
-			r.Minimum_unit_price,
-			r.Indirect_cost_percent,
-			r.Vendor_no,
-			r.Vendor_item_no,
-			r.Lead_time_calculation,
-			r.Reorder_point,
-			r.Maximum_inventory,
-			r.Reorder_quantity,
-			r.Requisition_method_code,
-			r.Order_multiple,
-			r.Reorder_cycle,
-			r.Alternative_item_no,
-			r.Unit_list_price,
-			r.Duty_due_percent,
-			r.Duty_code,
-			r.Gross_weight,
-			r.Net_weight,
-			r.Units_per_parcel,
-			r.Unit_volume,
-			r.Durability,
-			r.Freight_type,
-			r.Tariff_no,
-			r.Duty_unit_conversion,
-			r.Country_purchased_code,
-			r.Budget_quantity,
-			r.Budgeted_amount,
-			r.Budget_profit,
-			r.Blocked,
-			r.Last_date_modified,
-			r.Price_includes_tax,
-			r.Tax_bus_posting_gr_price,
-			r.Gen_prod_posting_group,
-			r.Picture,
-			r.Country_of_origin_code,
-			r.No_series,
-			r.Tax_group_code,
-			r.Tax_prod_posting_group,
-			r.Reserve,
-			r.Inventory_value_zero,
-			r.Rounding_precision,
-			r.Sales_unit_of_measure,
-			r.Purch_unit_of_measure,
-			r.Serial_nos,
-			r.Automatic_ext_text,
-		})
+		rows = append(rows, itemFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, ItemTableName)
-	columns := []string{"no", "no_2", "description", "search_description", "description_2", "class", "base_unit_of_measure", "price_unit_conversion", "inventory_posting_group", "shelf_bin_no", "sales_qty_disc_code", "item_cust_disc_gr", "allow_invoice_disc", "statistics_group", "commission_group", "unit_price", "price_profit_calculation", "profit_percent", "costing_method", "unit_cost", "standard_cost", "last_direct_cost", "average_cost", "add_curr_average_cost", "minimum_unit_price", "indirect_cost_percent", "vendor_no", "vendor_item_no", "lead_time_calculation", "reorder_point", "maximum_inventory", "reorder_quantity", "requisition_method_code", "order_multiple", "reorder_cycle", "alternative_item_no", "unit_list_price", "duty_due_percent", "duty_code", "gross_weight", "net_weight", "units_per_parcel", "unit_volume", "durability", "freight_type", "tariff_no", "duty_unit_conversion", "country_purchased_code", "budget_quantity", "budgeted_amount", "budget_profit", "blocked", "last_date_modified", "price_includes_tax", "tax_bus_posting_gr_price", "gen_prod_posting_group", "picture", "country_of_origin_code", "no_series", "tax_group_code", "tax_prod_posting_group", "reserve", "inventory_value_zero", "rounding_precision", "sales_unit_of_measure", "purch_unit_of_measure", "serial_nos", "automatic_ext_text"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, itemFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -1644,449 +1494,13 @@ func (t *Item) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := itemFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
 		}
-	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ItemTableName)
-
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("no") {
-			setClauses = append(setClauses, "no = ?")
-			values = append(values, t.No)
-		}
-		if t.hasFieldChanged("no_2") {
-			setClauses = append(setClauses, "no_2 = ?")
-			values = append(values, t.No_2)
-		}
-		if t.hasFieldChanged("description") {
-			setClauses = append(setClauses, "description = ?")
-			values = append(values, t.Description)
-		}
-		if t.hasFieldChanged("search_description") {
-			setClauses = append(setClauses, "search_description = ?")
-			values = append(values, t.Search_description)
-		}
-		if t.hasFieldChanged("description_2") {
-			setClauses = append(setClauses, "description_2 = ?")
-			values = append(values, t.Description_2)
-		}
-		if t.hasFieldChanged("class") {
-			setClauses = append(setClauses, "class = ?")
-			values = append(values, t.Class)
-		}
-		if t.hasFieldChanged("base_unit_of_measure") {
-			setClauses = append(setClauses, "base_unit_of_measure = ?")
-			values = append(values, t.Base_unit_of_measure)
-		}
-		if t.hasFieldChanged("price_unit_conversion") {
-			setClauses = append(setClauses, "price_unit_conversion = ?")
-			values = append(values, t.Price_unit_conversion)
-		}
-		if t.hasFieldChanged("inventory_posting_group") {
-			setClauses = append(setClauses, "inventory_posting_group = ?")
-			values = append(values, t.Inventory_posting_group)
-		}
-		if t.hasFieldChanged("shelf_bin_no") {
-			setClauses = append(setClauses, "shelf_bin_no = ?")
-			values = append(values, t.Shelf_bin_no)
-		}
-		if t.hasFieldChanged("sales_qty_disc_code") {
-			setClauses = append(setClauses, "sales_qty_disc_code = ?")
-			values = append(values, t.Sales_qty_disc_code)
-		}
-		if t.hasFieldChanged("item_cust_disc_gr") {
-			setClauses = append(setClauses, "item_cust_disc_gr = ?")
-			values = append(values, t.Item_cust_disc_gr)
-		}
-		if t.hasFieldChanged("allow_invoice_disc") {
-			setClauses = append(setClauses, "allow_invoice_disc = ?")
-			values = append(values, t.Allow_invoice_disc)
-		}
-		if t.hasFieldChanged("statistics_group") {
-			setClauses = append(setClauses, "statistics_group = ?")
-			values = append(values, t.Statistics_group)
-		}
-		if t.hasFieldChanged("commission_group") {
-			setClauses = append(setClauses, "commission_group = ?")
-			values = append(values, t.Commission_group)
-		}
-		if t.hasFieldChanged("unit_price") {
-			setClauses = append(setClauses, "unit_price = ?")
-			values = append(values, t.Unit_price)
-		}
-		if t.hasFieldChanged("price_profit_calculation") {
-			setClauses = append(setClauses, "price_profit_calculation = ?")
-			values = append(values, t.Price_profit_calculation)
-		}
-		if t.hasFieldChanged("profit_percent") {
-			setClauses = append(setClauses, "profit_percent = ?")
-			values = append(values, t.Profit_percent)
-		}
-		if t.hasFieldChanged("costing_method") {
-			setClauses = append(setClauses, "costing_method = ?")
-			values = append(values, t.Costing_method)
-		}
-		if t.hasFieldChanged("unit_cost") {
-			setClauses = append(setClauses, "unit_cost = ?")
-			values = append(values, t.Unit_cost)
-		}
-		if t.hasFieldChanged("standard_cost") {
-			setClauses = append(setClauses, "standard_cost = ?")
-			values = append(values, t.Standard_cost)
-		}
-		if t.hasFieldChanged("last_direct_cost") {
-			setClauses = append(setClauses, "last_direct_cost = ?")
-			values = append(values, t.Last_direct_cost)
-		}
-		if t.hasFieldChanged("average_cost") {
-			setClauses = append(setClauses, "average_cost = ?")
-			values = append(values, t.Average_cost)
-		}
-		if t.hasFieldChanged("add_curr_average_cost") {
-			setClauses = append(setClauses, "add_curr_average_cost = ?")
-			values = append(values, t.Add_curr_average_cost)
-		}
-		if t.hasFieldChanged("minimum_unit_price") {
-			setClauses = append(setClauses, "minimum_unit_price = ?")
-			values = append(values, t.Minimum_unit_price)
-		}
-		if t.hasFieldChanged("indirect_cost_percent") {
-			setClauses = append(setClauses, "indirect_cost_percent = ?")
-			values = append(values, t.Indirect_cost_percent)
-		}
-		if t.hasFieldChanged("vendor_no") {
-			setClauses = append(setClauses, "vendor_no = ?")
-			values = append(values, t.Vendor_no)
-		}
-		if t.hasFieldChanged("vendor_item_no") {
-			setClauses = append(setClauses, "vendor_item_no = ?")
-			values = append(values, t.Vendor_item_no)
-		}
-		if t.hasFieldChanged("lead_time_calculation") {
-			setClauses = append(setClauses, "lead_time_calculation = ?")
-			values = append(values, t.Lead_time_calculation)
-		}
-		if t.hasFieldChanged("reorder_point") {
-			setClauses = append(setClauses, "reorder_point = ?")
-			values = append(values, t.Reorder_point)
-		}
-		if t.hasFieldChanged("maximum_inventory") {
-			setClauses = append(setClauses, "maximum_inventory = ?")
-			values = append(values, t.Maximum_inventory)
-		}
-		if t.hasFieldChanged("reorder_quantity") {
-			setClauses = append(setClauses, "reorder_quantity = ?")
-			values = append(values, t.Reorder_quantity)
-		}
-		if t.hasFieldChanged("requisition_method_code") {
-			setClauses = append(setClauses, "requisition_method_code = ?")
-			values = append(values, t.Requisition_method_code)
-		}
-		if t.hasFieldChanged("order_multiple") {
-			setClauses = append(setClauses, "order_multiple = ?")
-			values = append(values, t.Order_multiple)
-		}
-		if t.hasFieldChanged("reorder_cycle") {
-			setClauses = append(setClauses, "reorder_cycle = ?")
-			values = append(values, t.Reorder_cycle)
-		}
-		if t.hasFieldChanged("alternative_item_no") {
-			setClauses = append(setClauses, "alternative_item_no = ?")
-			values = append(values, t.Alternative_item_no)
-		}
-		if t.hasFieldChanged("unit_list_price") {
-			setClauses = append(setClauses, "unit_list_price = ?")
-			values = append(values, t.Unit_list_price)
-		}
-		if t.hasFieldChanged("duty_due_percent") {
-			setClauses = append(setClauses, "duty_due_percent = ?")
-			values = append(values, t.Duty_due_percent)
-		}
-		if t.hasFieldChanged("duty_code") {
-			setClauses = append(setClauses, "duty_code = ?")
-			values = append(values, t.Duty_code)
-		}
-		if t.hasFieldChanged("gross_weight") {
-			setClauses = append(setClauses, "gross_weight = ?")
-			values = append(values, t.Gross_weight)
-		}
-		if t.hasFieldChanged("net_weight") {
-			setClauses = append(setClauses, "net_weight = ?")
-			values = append(values, t.Net_weight)
-		}
-		if t.hasFieldChanged("units_per_parcel") {
-			setClauses = append(setClauses, "units_per_parcel = ?")
-			values = append(values, t.Units_per_parcel)
-		}
-		if t.hasFieldChanged("unit_volume") {
-			setClauses = append(setClauses, "unit_volume = ?")
-			values = append(values, t.Unit_volume)
-		}
-		if t.hasFieldChanged("durability") {
-			setClauses = append(setClauses, "durability = ?")
-			values = append(values, t.Durability)
-		}
-		if t.hasFieldChanged("freight_type") {
-			setClauses = append(setClauses, "freight_type = ?")
-			values = append(values, t.Freight_type)
-		}
-		if t.hasFieldChanged("tariff_no") {
-			setClauses = append(setClauses, "tariff_no = ?")
-			values = append(values, t.Tariff_no)
-		}
-		if t.hasFieldChanged("duty_unit_conversion") {
-			setClauses = append(setClauses, "duty_unit_conversion = ?")
-			values = append(values, t.Duty_unit_conversion)
-		}
-		if t.hasFieldChanged("country_purchased_code") {
-			setClauses = append(setClauses, "country_purchased_code = ?")
-			values = append(values, t.Country_purchased_code)
-		}
-		if t.hasFieldChanged("budget_quantity") {
-			setClauses = append(setClauses, "budget_quantity = ?")
-			values = append(values, t.Budget_quantity)
-		}
-		if t.hasFieldChanged("budgeted_amount") {
-			setClauses = append(setClauses, "budgeted_amount = ?")
-			values = append(values, t.Budgeted_amount)
-		}
-		if t.hasFieldChanged("budget_profit") {
-			setClauses = append(setClauses, "budget_profit = ?")
-			values = append(values, t.Budget_profit)
-		}
-		if t.hasFieldChanged("blocked") {
-			setClauses = append(setClauses, "blocked = ?")
-			values = append(values, t.Blocked)
-		}
-		if t.hasFieldChanged("last_date_modified") {
-			setClauses = append(setClauses, "last_date_modified = ?")
-			values = append(values, t.Last_date_modified)
-		}
-		if t.hasFieldChanged("price_includes_tax") {
-			setClauses = append(setClauses, "price_includes_tax = ?")
-			values = append(values, t.Price_includes_tax)
-		}
-		if t.hasFieldChanged("tax_bus_posting_gr_price") {
-			setClauses = append(setClauses, "tax_bus_posting_gr_price = ?")
-			values = append(values, t.Tax_bus_posting_gr_price)
-		}
-		if t.hasFieldChanged("gen_prod_posting_group") {
-			setClauses = append(setClauses, "gen_prod_posting_group = ?")
-			values = append(values, t.Gen_prod_posting_group)
-		}
-		if t.hasFieldChanged("picture") {
-			setClauses = append(setClauses, "picture = ?")
-			values = append(values, t.Picture)
-		}
-		if t.hasFieldChanged("country_of_origin_code") {
-			setClauses = append(setClauses, "country_of_origin_code = ?")
-			values = append(values, t.Country_of_origin_code)
-		}
-		if t.hasFieldChanged("no_series") {
-			setClauses = append(setClauses, "no_series = ?")
-			values = append(values, t.No_series)
-		}
-		if t.hasFieldChanged("tax_group_code") {
-			setClauses = append(setClauses, "tax_group_code = ?")
-			values = append(values, t.Tax_group_code)
-		}
-		if t.hasFieldChanged("tax_prod_posting_group") {
-			setClauses = append(setClauses, "tax_prod_posting_group = ?")
-			values = append(values, t.Tax_prod_posting_group)
-		}
-		if t.hasFieldChanged("reserve") {
-			setClauses = append(setClauses, "reserve = ?")
-			values = append(values, t.Reserve)
-		}
-		if t.hasFieldChanged("inventory_value_zero") {
-			setClauses = append(setClauses, "inventory_value_zero = ?")
-			values = append(values, t.Inventory_value_zero)
-		}
-		if t.hasFieldChanged("rounding_precision") {
-			setClauses = append(setClauses, "rounding_precision = ?")
-			values = append(values, t.Rounding_precision)
-		}
-		if t.hasFieldChanged("sales_unit_of_measure") {
-			setClauses = append(setClauses, "sales_unit_of_measure = ?")
-			values = append(values, t.Sales_unit_of_measure)
-		}
-		if t.hasFieldChanged("purch_unit_of_measure") {
-			setClauses = append(setClauses, "purch_unit_of_measure = ?")
-			values = append(values, t.Purch_unit_of_measure)
-		}
-		if t.hasFieldChanged("serial_nos") {
-			setClauses = append(setClauses, "serial_nos = ?")
-			values = append(values, t.Serial_nos)
-		}
-		if t.hasFieldChanged("automatic_ext_text") {
-			setClauses = append(setClauses, "automatic_ext_text = ?")
-			values = append(values, t.Automatic_ext_text)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "no_2 = ?")
-		values = append(values, t.No_2)
-		setClauses = append(setClauses, "description = ?")
-		values = append(values, t.Description)
-		setClauses = append(setClauses, "search_description = ?")
-		values = append(values, t.Search_description)
-		setClauses = append(setClauses, "description_2 = ?")
-		values = append(values, t.Description_2)
-		setClauses = append(setClauses, "class = ?")
-		values = append(values, t.Class)
-		setClauses = append(setClauses, "base_unit_of_measure = ?")
-		values = append(values, t.Base_unit_of_measure)
-		setClauses = append(setClauses, "price_unit_conversion = ?")
-		values = append(values, t.Price_unit_conversion)
-		setClauses = append(setClauses, "inventory_posting_group = ?")
-		values = append(values, t.Inventory_posting_group)
-		setClauses = append(setClauses, "shelf_bin_no = ?")
-		values = append(values, t.Shelf_bin_no)
-		setClauses = append(setClauses, "sales_qty_disc_code = ?")
-		values = append(values, t.Sales_qty_disc_code)
-		setClauses = append(setClauses, "item_cust_disc_gr = ?")
-		values = append(values, t.Item_cust_disc_gr)
-		setClauses = append(setClauses, "allow_invoice_disc = ?")
-		values = append(values, t.Allow_invoice_disc)
-		setClauses = append(setClauses, "statistics_group = ?")
-		values = append(values, t.Statistics_group)
-		setClauses = append(setClauses, "commission_group = ?")
-		values = append(values, t.Commission_group)
-		setClauses = append(setClauses, "unit_price = ?")
-		values = append(values, t.Unit_price)
-		setClauses = append(setClauses, "price_profit_calculation = ?")
-		values = append(values, t.Price_profit_calculation)
-		setClauses = append(setClauses, "profit_percent = ?")
-		values = append(values, t.Profit_percent)
-		setClauses = append(setClauses, "costing_method = ?")
-		values = append(values, t.Costing_method)
-		setClauses = append(setClauses, "unit_cost = ?")
-		values = append(values, t.Unit_cost)
-		setClauses = append(setClauses, "standard_cost = ?")
-		values = append(values, t.Standard_cost)
-		setClauses = append(setClauses, "last_direct_cost = ?")
-		values = append(values, t.Last_direct_cost)
-		setClauses = append(setClauses, "average_cost = ?")
-		values = append(values, t.Average_cost)
-		setClauses = append(setClauses, "add_curr_average_cost = ?")
-		values = append(values, t.Add_curr_average_cost)
-		setClauses = append(setClauses, "minimum_unit_price = ?")
-		values = append(values, t.Minimum_unit_price)
-		setClauses = append(setClauses, "indirect_cost_percent = ?")
-		values = append(values, t.Indirect_cost_percent)
-		setClauses = append(setClauses, "vendor_no = ?")
-		values = append(values, t.Vendor_no)
-		setClauses = append(setClauses, "vendor_item_no = ?")
-		values = append(values, t.Vendor_item_no)
-		setClauses = append(setClauses, "lead_time_calculation = ?")
-		values = append(values, t.Lead_time_calculation)
-		setClauses = append(setClauses, "reorder_point = ?")
-		values = append(values, t.Reorder_point)
-		setClauses = append(setClauses, "maximum_inventory = ?")
-		values = append(values, t.Maximum_inventory)
-		setClauses = append(setClauses, "reorder_quantity = ?")
-		values = append(values, t.Reorder_quantity)
-		setClauses = append(setClauses, "requisition_method_code = ?")
-		values = append(values, t.Requisition_method_code)
-		setClauses = append(setClauses, "order_multiple = ?")
-		values = append(values, t.Order_multiple)
-		setClauses = append(setClauses, "reorder_cycle = ?")
-		values = append(values, t.Reorder_cycle)
-		setClauses = append(setClauses, "alternative_item_no = ?")
-		values = append(values, t.Alternative_item_no)
-		setClauses = append(setClauses, "unit_list_price = ?")
-		values = append(values, t.Unit_list_price)
-		setClauses = append(setClauses, "duty_due_percent = ?")
-		values = append(values, t.Duty_due_percent)
-		setClauses = append(setClauses, "duty_code = ?")
-		values = append(values, t.Duty_code)
-		setClauses = append(setClauses, "gross_weight = ?")
-		values = append(values, t.Gross_weight)
-		setClauses = append(setClauses, "net_weight = ?")
-		values = append(values, t.Net_weight)
-		setClauses = append(setClauses, "units_per_parcel = ?")
-		values = append(values, t.Units_per_parcel)
-		setClauses = append(setClauses, "unit_volume = ?")
-		values = append(values, t.Unit_volume)
-		setClauses = append(setClauses, "durability = ?")
-		values = append(values, t.Durability)
-		setClauses = append(setClauses, "freight_type = ?")
-		values = append(values, t.Freight_type)
-		setClauses = append(setClauses, "tariff_no = ?")
-		values = append(values, t.Tariff_no)
-		setClauses = append(setClauses, "duty_unit_conversion = ?")
-		values = append(values, t.Duty_unit_conversion)
-		setClauses = append(setClauses, "country_purchased_code = ?")
-		values = append(values, t.Country_purchased_code)
-		setClauses = append(setClauses, "budget_quantity = ?")
-		values = append(values, t.Budget_quantity)
-		setClauses = append(setClauses, "budgeted_amount = ?")
-		values = append(values, t.Budgeted_amount)
-		setClauses = append(setClauses, "budget_profit = ?")
-		values = append(values, t.Budget_profit)
-		setClauses = append(setClauses, "blocked = ?")
-		values = append(values, t.Blocked)
-		setClauses = append(setClauses, "last_date_modified = ?")
-		values = append(values, t.Last_date_modified)
-		setClauses = append(setClauses, "price_includes_tax = ?")
-		values = append(values, t.Price_includes_tax)
-		setClauses = append(setClauses, "tax_bus_posting_gr_price = ?")
-		values = append(values, t.Tax_bus_posting_gr_price)
-		setClauses = append(setClauses, "gen_prod_posting_group = ?")
-		values = append(values, t.Gen_prod_posting_group)
-		setClauses = append(setClauses, "picture = ?")
-		values = append(values, t.Picture)
-		setClauses = append(setClauses, "country_of_origin_code = ?")
-		values = append(values, t.Country_of_origin_code)
-		setClauses = append(setClauses, "no_series = ?")
-		values = append(values, t.No_series)
-		setClauses = append(setClauses, "tax_group_code = ?")
-		values = append(values, t.Tax_group_code)
-		setClauses = append(setClauses, "tax_prod_posting_group = ?")
-		values = append(values, t.Tax_prod_posting_group)
-		setClauses = append(setClauses, "reserve = ?")
-		values = append(values, t.Reserve)
-		setClauses = append(setClauses, "inventory_value_zero = ?")
-		values = append(values, t.Inventory_value_zero)
-		setClauses = append(setClauses, "rounding_precision = ?")
-		values = append(values, t.Rounding_precision)
-		setClauses = append(setClauses, "sales_unit_of_measure = ?")
-		values = append(values, t.Sales_unit_of_measure)
-		setClauses = append(setClauses, "purch_unit_of_measure = ?")
-		values = append(values, t.Purch_unit_of_measure)
-		setClauses = append(setClauses, "serial_nos = ?")
-		values = append(values, t.Serial_nos)
-		setClauses = append(setClauses, "automatic_ext_text = ?")
-		values = append(values, t.Automatic_ext_text)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.No)
 	}
 	// Renamed key fields that other tables refer to (Rename): carried over below
 	type renamedKey struct {
@@ -2100,19 +1514,11 @@ func (t *Item) Modify(runTrigger bool) bool {
 		}
 	}
 
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Item: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// A temporary record's rename stays in the record: other tables are not changed
 	for _, r := range renamed {
@@ -2232,25 +1638,8 @@ func (t *Item) Delete(runTrigger bool) bool {
 			}
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ItemTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.No,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Item: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // ========================================
@@ -8041,53 +7430,13 @@ func (t *Item) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *Item) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, ItemTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Item\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Item: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *Item) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, ItemTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Item: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

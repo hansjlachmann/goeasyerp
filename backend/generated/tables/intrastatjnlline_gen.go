@@ -903,54 +903,14 @@ func (t *IntrastatJnlLine) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, IntrastatJnlLineTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Journal_template_name,
-		t.Journal_batch_name,
-		t.Line_no,
-		t.Type,
-		t.Date,
-		t.Tariff_no,
-		t.Item_description,
-		t.Country_code,
-		t.Transaction_type,
-		t.Transport_method,
-		t.Source_type,
-		t.Source_entry_no,
-		t.Net_weight,
-		t.Amount,
-		t.Quantity,
-		t.Cost_regulation_percent,
-		t.Indirect_cost,
-		t.Statistical_value,
-		t.Document_no,
-		t.Item_no,
-		t.Name,
-		t.Total_weight,
-		t.Supplementary_units,
-		t.Internal_ref_no,
-		t.Country_of_origin_code,
-		t.Entry_exit_point,
-		t.Area,
-		t.Transaction_specification,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (journal_template_name, journal_batch_name, line_no, type, date, tariff_no, item_description, country_code, transaction_type, transport_method, source_type, source_entry_no, net_weight, amount, quantity, cost_regulation_percent, indirect_cost, statistical_value, document_no, item_no, name, total_weight, supplementary_units, internal_ref_no, country_of_origin_code, entry_exit_point, area, transaction_specification) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (journal_template_name, journal_batch_name, line_no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Intrastat_Jnl_Line: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(IntrastatJnlLineTableName, key)
 		return false
@@ -976,40 +936,10 @@ func (t *IntrastatJnlLine) InsertAll(records []*IntrastatJnlLine, runTrigger boo
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Journal_template_name,
-			r.Journal_batch_name,
-			r.Line_no,
-			r.Type,
-			r.Date,
-			r.Tariff_no,
-			r.Item_description,
-			r.Country_code,
-			r.Transaction_type,
-			r.Transport_method,
-			r.Source_type,
-			r.Source_entry_no,
-			r.Net_weight,
-			r.Amount,
-			r.Quantity,
-			r.Cost_regulation_percent,
-			r.Indirect_cost,
-			r.Statistical_value,
-			r.Document_no,
-			r.Item_no,
-			r.Name,
-			r.Total_weight,
-			r.Supplementary_units,
-			r.Internal_ref_no,
-			r.Country_of_origin_code,
-			r.Entry_exit_point,
-			r.Area,
-			r.Transaction_specification,
-		})
+		rows = append(rows, intrastatJnlLineFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, IntrastatJnlLineTableName)
-	columns := []string{"journal_template_name", "journal_batch_name", "line_no", "type", "date", "tariff_no", "item_description", "country_code", "transaction_type", "transport_method", "source_type", "source_entry_no", "net_weight", "amount", "quantity", "cost_regulation_percent", "indirect_cost", "statistical_value", "document_no", "item_no", "name", "total_weight", "supplementary_units", "internal_ref_no", "country_of_origin_code", "entry_exit_point", "area", "transaction_specification"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, intrastatJnlLineFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -1025,18 +955,7 @@ func (t *IntrastatJnlLine) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("journal_template_name") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("journal_batch_name") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("line_no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := intrastatJnlLineFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -1044,217 +963,12 @@ func (t *IntrastatJnlLine) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, IntrastatJnlLineTableName)
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("journal_template_name") {
-			setClauses = append(setClauses, "journal_template_name = ?")
-			values = append(values, t.Journal_template_name)
-		}
-		if t.hasFieldChanged("journal_batch_name") {
-			setClauses = append(setClauses, "journal_batch_name = ?")
-			values = append(values, t.Journal_batch_name)
-		}
-		if t.hasFieldChanged("line_no") {
-			setClauses = append(setClauses, "line_no = ?")
-			values = append(values, t.Line_no)
-		}
-		if t.hasFieldChanged("type") {
-			setClauses = append(setClauses, "type = ?")
-			values = append(values, t.Type)
-		}
-		if t.hasFieldChanged("date") {
-			setClauses = append(setClauses, "date = ?")
-			values = append(values, t.Date)
-		}
-		if t.hasFieldChanged("tariff_no") {
-			setClauses = append(setClauses, "tariff_no = ?")
-			values = append(values, t.Tariff_no)
-		}
-		if t.hasFieldChanged("item_description") {
-			setClauses = append(setClauses, "item_description = ?")
-			values = append(values, t.Item_description)
-		}
-		if t.hasFieldChanged("country_code") {
-			setClauses = append(setClauses, "country_code = ?")
-			values = append(values, t.Country_code)
-		}
-		if t.hasFieldChanged("transaction_type") {
-			setClauses = append(setClauses, "transaction_type = ?")
-			values = append(values, t.Transaction_type)
-		}
-		if t.hasFieldChanged("transport_method") {
-			setClauses = append(setClauses, "transport_method = ?")
-			values = append(values, t.Transport_method)
-		}
-		if t.hasFieldChanged("source_type") {
-			setClauses = append(setClauses, "source_type = ?")
-			values = append(values, t.Source_type)
-		}
-		if t.hasFieldChanged("source_entry_no") {
-			setClauses = append(setClauses, "source_entry_no = ?")
-			values = append(values, t.Source_entry_no)
-		}
-		if t.hasFieldChanged("net_weight") {
-			setClauses = append(setClauses, "net_weight = ?")
-			values = append(values, t.Net_weight)
-		}
-		if t.hasFieldChanged("amount") {
-			setClauses = append(setClauses, "amount = ?")
-			values = append(values, t.Amount)
-		}
-		if t.hasFieldChanged("quantity") {
-			setClauses = append(setClauses, "quantity = ?")
-			values = append(values, t.Quantity)
-		}
-		if t.hasFieldChanged("cost_regulation_percent") {
-			setClauses = append(setClauses, "cost_regulation_percent = ?")
-			values = append(values, t.Cost_regulation_percent)
-		}
-		if t.hasFieldChanged("indirect_cost") {
-			setClauses = append(setClauses, "indirect_cost = ?")
-			values = append(values, t.Indirect_cost)
-		}
-		if t.hasFieldChanged("statistical_value") {
-			setClauses = append(setClauses, "statistical_value = ?")
-			values = append(values, t.Statistical_value)
-		}
-		if t.hasFieldChanged("document_no") {
-			setClauses = append(setClauses, "document_no = ?")
-			values = append(values, t.Document_no)
-		}
-		if t.hasFieldChanged("item_no") {
-			setClauses = append(setClauses, "item_no = ?")
-			values = append(values, t.Item_no)
-		}
-		if t.hasFieldChanged("name") {
-			setClauses = append(setClauses, "name = ?")
-			values = append(values, t.Name)
-		}
-		if t.hasFieldChanged("total_weight") {
-			setClauses = append(setClauses, "total_weight = ?")
-			values = append(values, t.Total_weight)
-		}
-		if t.hasFieldChanged("supplementary_units") {
-			setClauses = append(setClauses, "supplementary_units = ?")
-			values = append(values, t.Supplementary_units)
-		}
-		if t.hasFieldChanged("internal_ref_no") {
-			setClauses = append(setClauses, "internal_ref_no = ?")
-			values = append(values, t.Internal_ref_no)
-		}
-		if t.hasFieldChanged("country_of_origin_code") {
-			setClauses = append(setClauses, "country_of_origin_code = ?")
-			values = append(values, t.Country_of_origin_code)
-		}
-		if t.hasFieldChanged("entry_exit_point") {
-			setClauses = append(setClauses, "entry_exit_point = ?")
-			values = append(values, t.Entry_exit_point)
-		}
-		if t.hasFieldChanged("area") {
-			setClauses = append(setClauses, "area = ?")
-			values = append(values, t.Area)
-		}
-		if t.hasFieldChanged("transaction_specification") {
-			setClauses = append(setClauses, "transaction_specification = ?")
-			values = append(values, t.Transaction_specification)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "type = ?")
-		values = append(values, t.Type)
-		setClauses = append(setClauses, "date = ?")
-		values = append(values, t.Date)
-		setClauses = append(setClauses, "tariff_no = ?")
-		values = append(values, t.Tariff_no)
-		setClauses = append(setClauses, "item_description = ?")
-		values = append(values, t.Item_description)
-		setClauses = append(setClauses, "country_code = ?")
-		values = append(values, t.Country_code)
-		setClauses = append(setClauses, "transaction_type = ?")
-		values = append(values, t.Transaction_type)
-		setClauses = append(setClauses, "transport_method = ?")
-		values = append(values, t.Transport_method)
-		setClauses = append(setClauses, "source_type = ?")
-		values = append(values, t.Source_type)
-		setClauses = append(setClauses, "source_entry_no = ?")
-		values = append(values, t.Source_entry_no)
-		setClauses = append(setClauses, "net_weight = ?")
-		values = append(values, t.Net_weight)
-		setClauses = append(setClauses, "amount = ?")
-		values = append(values, t.Amount)
-		setClauses = append(setClauses, "quantity = ?")
-		values = append(values, t.Quantity)
-		setClauses = append(setClauses, "cost_regulation_percent = ?")
-		values = append(values, t.Cost_regulation_percent)
-		setClauses = append(setClauses, "indirect_cost = ?")
-		values = append(values, t.Indirect_cost)
-		setClauses = append(setClauses, "statistical_value = ?")
-		values = append(values, t.Statistical_value)
-		setClauses = append(setClauses, "document_no = ?")
-		values = append(values, t.Document_no)
-		setClauses = append(setClauses, "item_no = ?")
-		values = append(values, t.Item_no)
-		setClauses = append(setClauses, "name = ?")
-		values = append(values, t.Name)
-		setClauses = append(setClauses, "total_weight = ?")
-		values = append(values, t.Total_weight)
-		setClauses = append(setClauses, "supplementary_units = ?")
-		values = append(values, t.Supplementary_units)
-		setClauses = append(setClauses, "internal_ref_no = ?")
-		values = append(values, t.Internal_ref_no)
-		setClauses = append(setClauses, "country_of_origin_code = ?")
-		values = append(values, t.Country_of_origin_code)
-		setClauses = append(setClauses, "entry_exit_point = ?")
-		values = append(values, t.Entry_exit_point)
-		setClauses = append(setClauses, "area = ?")
-		values = append(values, t.Area)
-		setClauses = append(setClauses, "transaction_specification = ?")
-		values = append(values, t.Transaction_specification)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["journal_template_name"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Journal_template_name)
-	}
-	if old, ok := t.oldValues["journal_batch_name"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Journal_batch_name)
-	}
-	if old, ok := t.oldValues["line_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Line_no)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Intrastat_Jnl_Line: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -1285,27 +999,8 @@ func (t *IntrastatJnlLine) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, IntrastatJnlLineTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Journal_template_name,
-		t.Journal_batch_name,
-		t.Line_no,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND journal_template_name = ? AND journal_batch_name = ? AND line_no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Intrastat_Jnl_Line: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1505,53 +1200,13 @@ func (t *IntrastatJnlLine) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *IntrastatJnlLine) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, IntrastatJnlLineTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Intrastat_Jnl_Line\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Intrastat_Jnl_Line: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *IntrastatJnlLine) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, IntrastatJnlLineTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Intrastat_Jnl_Line: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

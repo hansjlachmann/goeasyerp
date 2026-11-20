@@ -832,45 +832,14 @@ func (t *PurchasesPayablesSetup) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, PurchasesPayablesSetupTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Primary_key,
-		t.Discount_posting,
-		t.Receipt_on_invoice,
-		t.Invoice_rounding,
-		t.Ext_doc_no_mandatory,
-		t.Vendor_nos,
-		t.Quote_nos,
-		t.Order_nos,
-		t.Invoice_nos,
-		t.Posted_invoice_nos,
-		t.Credit_memo_nos,
-		t.Posted_credit_memo_nos,
-		t.Posted_receipt_nos,
-		t.Blanket_order_nos,
-		t.Calc_inv_discount,
-		t.Appln_between_currencies,
-		t.Copy_comments_blanket_to_order,
-		t.Copy_comments_order_to_invoice,
-		t.Copy_comments_order_to_receipt,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (primary_key, discount_posting, receipt_on_invoice, invoice_rounding, ext_doc_no_mandatory, vendor_nos, quote_nos, order_nos, invoice_nos, posted_invoice_nos, credit_memo_nos, posted_credit_memo_nos, posted_receipt_nos, blanket_order_nos, calc_inv_discount, appln_between_currencies, copy_comments_blanket_to_order, copy_comments_order_to_invoice, copy_comments_order_to_receipt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (primary_key) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Purchases_Payables_Setup: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(PurchasesPayablesSetupTableName, key)
 		return false
@@ -896,31 +865,10 @@ func (t *PurchasesPayablesSetup) InsertAll(records []*PurchasesPayablesSetup, ru
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Primary_key,
-			r.Discount_posting,
-			r.Receipt_on_invoice,
-			r.Invoice_rounding,
-			r.Ext_doc_no_mandatory,
-			r.Vendor_nos,
-			r.Quote_nos,
-			r.Order_nos,
-			r.Invoice_nos,
-			r.Posted_invoice_nos,
-			r.Credit_memo_nos,
-			r.Posted_credit_memo_nos,
-			r.Posted_receipt_nos,
-			r.Blanket_order_nos,
-			r.Calc_inv_discount,
-			r.Appln_between_currencies,
-			r.Copy_comments_blanket_to_order,
-			r.Copy_comments_order_to_invoice,
-			r.Copy_comments_order_to_receipt,
-		})
+		rows = append(rows, purchasesPayablesSetupFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, PurchasesPayablesSetupTableName)
-	columns := []string{"primary_key", "discount_posting", "receipt_on_invoice", "invoice_rounding", "ext_doc_no_mandatory", "vendor_nos", "quote_nos", "order_nos", "invoice_nos", "posted_invoice_nos", "credit_memo_nos", "posted_credit_memo_nos", "posted_receipt_nos", "blanket_order_nos", "calc_inv_discount", "appln_between_currencies", "copy_comments_blanket_to_order", "copy_comments_order_to_invoice", "copy_comments_order_to_receipt"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, purchasesPayablesSetupFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -936,12 +884,7 @@ func (t *PurchasesPayablesSetup) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("primary_key") {
-			keyChanged = true
-		}
-	}
+	keyChanged := purchasesPayablesSetupFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -949,157 +892,12 @@ func (t *PurchasesPayablesSetup) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, PurchasesPayablesSetupTableName)
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("primary_key") {
-			setClauses = append(setClauses, "primary_key = ?")
-			values = append(values, t.Primary_key)
-		}
-		if t.hasFieldChanged("discount_posting") {
-			setClauses = append(setClauses, "discount_posting = ?")
-			values = append(values, t.Discount_posting)
-		}
-		if t.hasFieldChanged("receipt_on_invoice") {
-			setClauses = append(setClauses, "receipt_on_invoice = ?")
-			values = append(values, t.Receipt_on_invoice)
-		}
-		if t.hasFieldChanged("invoice_rounding") {
-			setClauses = append(setClauses, "invoice_rounding = ?")
-			values = append(values, t.Invoice_rounding)
-		}
-		if t.hasFieldChanged("ext_doc_no_mandatory") {
-			setClauses = append(setClauses, "ext_doc_no_mandatory = ?")
-			values = append(values, t.Ext_doc_no_mandatory)
-		}
-		if t.hasFieldChanged("vendor_nos") {
-			setClauses = append(setClauses, "vendor_nos = ?")
-			values = append(values, t.Vendor_nos)
-		}
-		if t.hasFieldChanged("quote_nos") {
-			setClauses = append(setClauses, "quote_nos = ?")
-			values = append(values, t.Quote_nos)
-		}
-		if t.hasFieldChanged("order_nos") {
-			setClauses = append(setClauses, "order_nos = ?")
-			values = append(values, t.Order_nos)
-		}
-		if t.hasFieldChanged("invoice_nos") {
-			setClauses = append(setClauses, "invoice_nos = ?")
-			values = append(values, t.Invoice_nos)
-		}
-		if t.hasFieldChanged("posted_invoice_nos") {
-			setClauses = append(setClauses, "posted_invoice_nos = ?")
-			values = append(values, t.Posted_invoice_nos)
-		}
-		if t.hasFieldChanged("credit_memo_nos") {
-			setClauses = append(setClauses, "credit_memo_nos = ?")
-			values = append(values, t.Credit_memo_nos)
-		}
-		if t.hasFieldChanged("posted_credit_memo_nos") {
-			setClauses = append(setClauses, "posted_credit_memo_nos = ?")
-			values = append(values, t.Posted_credit_memo_nos)
-		}
-		if t.hasFieldChanged("posted_receipt_nos") {
-			setClauses = append(setClauses, "posted_receipt_nos = ?")
-			values = append(values, t.Posted_receipt_nos)
-		}
-		if t.hasFieldChanged("blanket_order_nos") {
-			setClauses = append(setClauses, "blanket_order_nos = ?")
-			values = append(values, t.Blanket_order_nos)
-		}
-		if t.hasFieldChanged("calc_inv_discount") {
-			setClauses = append(setClauses, "calc_inv_discount = ?")
-			values = append(values, t.Calc_inv_discount)
-		}
-		if t.hasFieldChanged("appln_between_currencies") {
-			setClauses = append(setClauses, "appln_between_currencies = ?")
-			values = append(values, t.Appln_between_currencies)
-		}
-		if t.hasFieldChanged("copy_comments_blanket_to_order") {
-			setClauses = append(setClauses, "copy_comments_blanket_to_order = ?")
-			values = append(values, t.Copy_comments_blanket_to_order)
-		}
-		if t.hasFieldChanged("copy_comments_order_to_invoice") {
-			setClauses = append(setClauses, "copy_comments_order_to_invoice = ?")
-			values = append(values, t.Copy_comments_order_to_invoice)
-		}
-		if t.hasFieldChanged("copy_comments_order_to_receipt") {
-			setClauses = append(setClauses, "copy_comments_order_to_receipt = ?")
-			values = append(values, t.Copy_comments_order_to_receipt)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "discount_posting = ?")
-		values = append(values, t.Discount_posting)
-		setClauses = append(setClauses, "receipt_on_invoice = ?")
-		values = append(values, t.Receipt_on_invoice)
-		setClauses = append(setClauses, "invoice_rounding = ?")
-		values = append(values, t.Invoice_rounding)
-		setClauses = append(setClauses, "ext_doc_no_mandatory = ?")
-		values = append(values, t.Ext_doc_no_mandatory)
-		setClauses = append(setClauses, "vendor_nos = ?")
-		values = append(values, t.Vendor_nos)
-		setClauses = append(setClauses, "quote_nos = ?")
-		values = append(values, t.Quote_nos)
-		setClauses = append(setClauses, "order_nos = ?")
-		values = append(values, t.Order_nos)
-		setClauses = append(setClauses, "invoice_nos = ?")
-		values = append(values, t.Invoice_nos)
-		setClauses = append(setClauses, "posted_invoice_nos = ?")
-		values = append(values, t.Posted_invoice_nos)
-		setClauses = append(setClauses, "credit_memo_nos = ?")
-		values = append(values, t.Credit_memo_nos)
-		setClauses = append(setClauses, "posted_credit_memo_nos = ?")
-		values = append(values, t.Posted_credit_memo_nos)
-		setClauses = append(setClauses, "posted_receipt_nos = ?")
-		values = append(values, t.Posted_receipt_nos)
-		setClauses = append(setClauses, "blanket_order_nos = ?")
-		values = append(values, t.Blanket_order_nos)
-		setClauses = append(setClauses, "calc_inv_discount = ?")
-		values = append(values, t.Calc_inv_discount)
-		setClauses = append(setClauses, "appln_between_currencies = ?")
-		values = append(values, t.Appln_between_currencies)
-		setClauses = append(setClauses, "copy_comments_blanket_to_order = ?")
-		values = append(values, t.Copy_comments_blanket_to_order)
-		setClauses = append(setClauses, "copy_comments_order_to_invoice = ?")
-		values = append(values, t.Copy_comments_order_to_invoice)
-		setClauses = append(setClauses, "copy_comments_order_to_receipt = ?")
-		values = append(values, t.Copy_comments_order_to_receipt)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["primary_key"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Primary_key)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND primary_key = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Purchases_Payables_Setup: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -1130,25 +928,8 @@ func (t *PurchasesPayablesSetup) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, PurchasesPayablesSetupTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Primary_key,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND primary_key = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Purchases_Payables_Setup: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1348,53 +1129,13 @@ func (t *PurchasesPayablesSetup) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *PurchasesPayablesSetup) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, PurchasesPayablesSetupTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Purchases_Payables_Setup\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Purchases_Payables_Setup: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *PurchasesPayablesSetup) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, PurchasesPayablesSetupTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Purchases_Payables_Setup: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

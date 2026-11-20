@@ -770,43 +770,14 @@ func (t *ExtendedTextHeader) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ExtendedTextHeaderTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Table_name,
-		t.No,
-		t.Language_code,
-		t.Text_no,
-		t.Starting_date,
-		t.Ending_date,
-		t.All_language_codes,
-		t.Sales_quote,
-		t.Sales_invoice,
-		t.Sales_order,
-		t.Sales_credit_memo,
-		t.Purchase_quote,
-		t.Purchase_invoice,
-		t.Purchase_order,
-		t.Purchase_credit_memo,
-		t.Reminder,
-		t.Finance_charge_memo,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (table_name, no, language_code, text_no, starting_date, ending_date, all_language_codes, sales_quote, sales_invoice, sales_order, sales_credit_memo, purchase_quote, purchase_invoice, purchase_order, purchase_credit_memo, reminder, finance_charge_memo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (table_name, no, language_code, text_no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Extended_Text_Header: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(ExtendedTextHeaderTableName, key)
 		return false
@@ -832,29 +803,10 @@ func (t *ExtendedTextHeader) InsertAll(records []*ExtendedTextHeader, runTrigger
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Table_name,
-			r.No,
-			r.Language_code,
-			r.Text_no,
-			r.Starting_date,
-			r.Ending_date,
-			r.All_language_codes,
-			r.Sales_quote,
-			r.Sales_invoice,
-			r.Sales_order,
-			r.Sales_credit_memo,
-			r.Purchase_quote,
-			r.Purchase_invoice,
-			r.Purchase_order,
-			r.Purchase_credit_memo,
-			r.Reminder,
-			r.Finance_charge_memo,
-		})
+		rows = append(rows, extendedTextHeaderFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, ExtendedTextHeaderTableName)
-	columns := []string{"table_name", "no", "language_code", "text_no", "starting_date", "ending_date", "all_language_codes", "sales_quote", "sales_invoice", "sales_order", "sales_credit_memo", "purchase_quote", "purchase_invoice", "purchase_order", "purchase_credit_memo", "reminder", "finance_charge_memo"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, extendedTextHeaderFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -870,21 +822,7 @@ func (t *ExtendedTextHeader) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("table_name") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("no") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("language_code") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("text_no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := extendedTextHeaderFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -892,154 +830,12 @@ func (t *ExtendedTextHeader) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ExtendedTextHeaderTableName)
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("table_name") {
-			setClauses = append(setClauses, "table_name = ?")
-			values = append(values, t.Table_name)
-		}
-		if t.hasFieldChanged("no") {
-			setClauses = append(setClauses, "no = ?")
-			values = append(values, t.No)
-		}
-		if t.hasFieldChanged("language_code") {
-			setClauses = append(setClauses, "language_code = ?")
-			values = append(values, t.Language_code)
-		}
-		if t.hasFieldChanged("text_no") {
-			setClauses = append(setClauses, "text_no = ?")
-			values = append(values, t.Text_no)
-		}
-		if t.hasFieldChanged("starting_date") {
-			setClauses = append(setClauses, "starting_date = ?")
-			values = append(values, t.Starting_date)
-		}
-		if t.hasFieldChanged("ending_date") {
-			setClauses = append(setClauses, "ending_date = ?")
-			values = append(values, t.Ending_date)
-		}
-		if t.hasFieldChanged("all_language_codes") {
-			setClauses = append(setClauses, "all_language_codes = ?")
-			values = append(values, t.All_language_codes)
-		}
-		if t.hasFieldChanged("sales_quote") {
-			setClauses = append(setClauses, "sales_quote = ?")
-			values = append(values, t.Sales_quote)
-		}
-		if t.hasFieldChanged("sales_invoice") {
-			setClauses = append(setClauses, "sales_invoice = ?")
-			values = append(values, t.Sales_invoice)
-		}
-		if t.hasFieldChanged("sales_order") {
-			setClauses = append(setClauses, "sales_order = ?")
-			values = append(values, t.Sales_order)
-		}
-		if t.hasFieldChanged("sales_credit_memo") {
-			setClauses = append(setClauses, "sales_credit_memo = ?")
-			values = append(values, t.Sales_credit_memo)
-		}
-		if t.hasFieldChanged("purchase_quote") {
-			setClauses = append(setClauses, "purchase_quote = ?")
-			values = append(values, t.Purchase_quote)
-		}
-		if t.hasFieldChanged("purchase_invoice") {
-			setClauses = append(setClauses, "purchase_invoice = ?")
-			values = append(values, t.Purchase_invoice)
-		}
-		if t.hasFieldChanged("purchase_order") {
-			setClauses = append(setClauses, "purchase_order = ?")
-			values = append(values, t.Purchase_order)
-		}
-		if t.hasFieldChanged("purchase_credit_memo") {
-			setClauses = append(setClauses, "purchase_credit_memo = ?")
-			values = append(values, t.Purchase_credit_memo)
-		}
-		if t.hasFieldChanged("reminder") {
-			setClauses = append(setClauses, "reminder = ?")
-			values = append(values, t.Reminder)
-		}
-		if t.hasFieldChanged("finance_charge_memo") {
-			setClauses = append(setClauses, "finance_charge_memo = ?")
-			values = append(values, t.Finance_charge_memo)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "starting_date = ?")
-		values = append(values, t.Starting_date)
-		setClauses = append(setClauses, "ending_date = ?")
-		values = append(values, t.Ending_date)
-		setClauses = append(setClauses, "all_language_codes = ?")
-		values = append(values, t.All_language_codes)
-		setClauses = append(setClauses, "sales_quote = ?")
-		values = append(values, t.Sales_quote)
-		setClauses = append(setClauses, "sales_invoice = ?")
-		values = append(values, t.Sales_invoice)
-		setClauses = append(setClauses, "sales_order = ?")
-		values = append(values, t.Sales_order)
-		setClauses = append(setClauses, "sales_credit_memo = ?")
-		values = append(values, t.Sales_credit_memo)
-		setClauses = append(setClauses, "purchase_quote = ?")
-		values = append(values, t.Purchase_quote)
-		setClauses = append(setClauses, "purchase_invoice = ?")
-		values = append(values, t.Purchase_invoice)
-		setClauses = append(setClauses, "purchase_order = ?")
-		values = append(values, t.Purchase_order)
-		setClauses = append(setClauses, "purchase_credit_memo = ?")
-		values = append(values, t.Purchase_credit_memo)
-		setClauses = append(setClauses, "reminder = ?")
-		values = append(values, t.Reminder)
-		setClauses = append(setClauses, "finance_charge_memo = ?")
-		values = append(values, t.Finance_charge_memo)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["table_name"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Table_name)
-	}
-	if old, ok := t.oldValues["no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.No)
-	}
-	if old, ok := t.oldValues["language_code"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Language_code)
-	}
-	if old, ok := t.oldValues["text_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Text_no)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND table_name = ? AND no = ? AND language_code = ? AND text_no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Extended_Text_Header: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -1070,28 +866,8 @@ func (t *ExtendedTextHeader) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ExtendedTextHeaderTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Table_name,
-		t.No,
-		t.Language_code,
-		t.Text_no,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND table_name = ? AND no = ? AND language_code = ? AND text_no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Extended_Text_Header: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1291,53 +1067,13 @@ func (t *ExtendedTextHeader) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *ExtendedTextHeader) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, ExtendedTextHeaderTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Extended_Text_Header\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Extended_Text_Header: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *ExtendedTextHeader) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, ExtendedTextHeaderTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Extended_Text_Header: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

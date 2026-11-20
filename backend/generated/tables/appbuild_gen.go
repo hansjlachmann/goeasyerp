@@ -768,40 +768,14 @@ func (t *AppBuild) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := AppBuildTableName
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Entry_no,
-		t.Status,
-		t.Base_version,
-		t.Trigger,
-		t.Requested_by,
-		t.Requested_at,
-		t.Started_at,
-		t.Finished_at,
-		t.Apps,
-		t.Build_list,
-		t.Log,
-		t.Binary_sha256,
-		t.Bundle_path,
-		t.Error_message,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, status, base_version, trigger, requested_by, requested_at, started_at, finished_at, apps, build_list, log, binary_sha256, bundle_path, error_message) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert App_Build: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(AppBuildTableName, key)
 		return false
@@ -827,26 +801,10 @@ func (t *AppBuild) InsertAll(records []*AppBuild, runTrigger bool) error {
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Entry_no,
-			r.Status,
-			r.Base_version,
-			r.Trigger,
-			r.Requested_by,
-			r.Requested_at,
-			r.Started_at,
-			r.Finished_at,
-			r.Apps,
-			r.Build_list,
-			r.Log,
-			r.Binary_sha256,
-			r.Bundle_path,
-			r.Error_message,
-		})
+		rows = append(rows, appBuildFields.RowValues(r.fieldRef))
 	}
 	tableName := AppBuildTableName
-	columns := []string{"entry_no", "status", "base_version", "trigger", "requested_by", "requested_at", "started_at", "finished_at", "apps", "build_list", "log", "binary_sha256", "bundle_path", "error_message"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, appBuildFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -862,12 +820,7 @@ func (t *AppBuild) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("entry_no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := appBuildFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -875,127 +828,12 @@ func (t *AppBuild) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := AppBuildTableName
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("entry_no") {
-			setClauses = append(setClauses, "entry_no = ?")
-			values = append(values, t.Entry_no)
-		}
-		if t.hasFieldChanged("status") {
-			setClauses = append(setClauses, "status = ?")
-			values = append(values, t.Status)
-		}
-		if t.hasFieldChanged("base_version") {
-			setClauses = append(setClauses, "base_version = ?")
-			values = append(values, t.Base_version)
-		}
-		if t.hasFieldChanged("trigger") {
-			setClauses = append(setClauses, "trigger = ?")
-			values = append(values, t.Trigger)
-		}
-		if t.hasFieldChanged("requested_by") {
-			setClauses = append(setClauses, "requested_by = ?")
-			values = append(values, t.Requested_by)
-		}
-		if t.hasFieldChanged("requested_at") {
-			setClauses = append(setClauses, "requested_at = ?")
-			values = append(values, t.Requested_at)
-		}
-		if t.hasFieldChanged("started_at") {
-			setClauses = append(setClauses, "started_at = ?")
-			values = append(values, t.Started_at)
-		}
-		if t.hasFieldChanged("finished_at") {
-			setClauses = append(setClauses, "finished_at = ?")
-			values = append(values, t.Finished_at)
-		}
-		if t.hasFieldChanged("apps") {
-			setClauses = append(setClauses, "apps = ?")
-			values = append(values, t.Apps)
-		}
-		if t.hasFieldChanged("build_list") {
-			setClauses = append(setClauses, "build_list = ?")
-			values = append(values, t.Build_list)
-		}
-		if t.hasFieldChanged("log") {
-			setClauses = append(setClauses, "log = ?")
-			values = append(values, t.Log)
-		}
-		if t.hasFieldChanged("binary_sha256") {
-			setClauses = append(setClauses, "binary_sha256 = ?")
-			values = append(values, t.Binary_sha256)
-		}
-		if t.hasFieldChanged("bundle_path") {
-			setClauses = append(setClauses, "bundle_path = ?")
-			values = append(values, t.Bundle_path)
-		}
-		if t.hasFieldChanged("error_message") {
-			setClauses = append(setClauses, "error_message = ?")
-			values = append(values, t.Error_message)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "status = ?")
-		values = append(values, t.Status)
-		setClauses = append(setClauses, "base_version = ?")
-		values = append(values, t.Base_version)
-		setClauses = append(setClauses, "trigger = ?")
-		values = append(values, t.Trigger)
-		setClauses = append(setClauses, "requested_by = ?")
-		values = append(values, t.Requested_by)
-		setClauses = append(setClauses, "requested_at = ?")
-		values = append(values, t.Requested_at)
-		setClauses = append(setClauses, "started_at = ?")
-		values = append(values, t.Started_at)
-		setClauses = append(setClauses, "finished_at = ?")
-		values = append(values, t.Finished_at)
-		setClauses = append(setClauses, "apps = ?")
-		values = append(values, t.Apps)
-		setClauses = append(setClauses, "build_list = ?")
-		values = append(values, t.Build_list)
-		setClauses = append(setClauses, "log = ?")
-		values = append(values, t.Log)
-		setClauses = append(setClauses, "binary_sha256 = ?")
-		values = append(values, t.Binary_sha256)
-		setClauses = append(setClauses, "bundle_path = ?")
-		values = append(values, t.Bundle_path)
-		setClauses = append(setClauses, "error_message = ?")
-		values = append(values, t.Error_message)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["entry_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Entry_no)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND entry_no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify App_Build: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -1026,25 +864,8 @@ func (t *AppBuild) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := AppBuildTableName
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Entry_no,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete App_Build: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1244,53 +1065,13 @@ func (t *AppBuild) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *AppBuild) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := AppBuildTableName
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of App_Build\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all App_Build: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *AppBuild) DeleteAll() int {
-	tableName := AppBuildTableName
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all App_Build: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

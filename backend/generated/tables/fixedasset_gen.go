@@ -901,51 +901,14 @@ func (t *FixedAsset) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, FixedAssetTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.No,
-		t.Description,
-		t.Search_description,
-		t.Description_2,
-		t.Fa_class_code,
-		t.Fa_subclass_code,
-		t.Dimension_1_code,
-		t.Dimension_2_code,
-		t.Location_code,
-		t.Fa_location_code,
-		t.Vendor_no,
-		t.Main_asset_component,
-		t.Component_of_main_asset,
-		t.Budgeted_asset,
-		t.Warranty_date,
-		t.Responsible_employee,
-		t.Serial_no,
-		t.Last_date_modified,
-		t.Blocked,
-		t.Picture,
-		t.Maintenance_vendor_no,
-		t.Under_maintenance,
-		t.Next_service_date,
-		t.Inactive,
-		t.No_series,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (no, description, search_description, description_2, fa_class_code, fa_subclass_code, dimension_1_code, dimension_2_code, location_code, fa_location_code, vendor_no, main_asset_component, component_of_main_asset, budgeted_asset, warranty_date, responsible_employee, serial_no, last_date_modified, blocked, picture, maintenance_vendor_no, under_maintenance, next_service_date, inactive, no_series) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Fixed_Asset: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(FixedAssetTableName, key)
 		return false
@@ -971,37 +934,10 @@ func (t *FixedAsset) InsertAll(records []*FixedAsset, runTrigger bool) error {
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.No,
-			r.Description,
-			r.Search_description,
-			r.Description_2,
-			r.Fa_class_code,
-			r.Fa_subclass_code,
-			r.Dimension_1_code,
-			r.Dimension_2_code,
-			r.Location_code,
-			r.Fa_location_code,
-			r.Vendor_no,
-			r.Main_asset_component,
-			r.Component_of_main_asset,
-			r.Budgeted_asset,
-			r.Warranty_date,
-			r.Responsible_employee,
-			r.Serial_no,
-			r.Last_date_modified,
-			r.Blocked,
-			r.Picture,
-			r.Maintenance_vendor_no,
-			r.Under_maintenance,
-			r.Next_service_date,
-			r.Inactive,
-			r.No_series,
-		})
+		rows = append(rows, fixedAssetFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, FixedAssetTableName)
-	columns := []string{"no", "description", "search_description", "description_2", "fa_class_code", "fa_subclass_code", "dimension_1_code", "dimension_2_code", "location_code", "fa_location_code", "vendor_no", "main_asset_component", "component_of_main_asset", "budgeted_asset", "warranty_date", "responsible_employee", "serial_no", "last_date_modified", "blocked", "picture", "maintenance_vendor_no", "under_maintenance", "next_service_date", "inactive", "no_series"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, fixedAssetFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -1017,191 +953,13 @@ func (t *FixedAsset) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := fixedAssetFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
 		}
-	}
-	tableName := fmt.Sprintf("%s$%s", t.company, FixedAssetTableName)
-
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("no") {
-			setClauses = append(setClauses, "no = ?")
-			values = append(values, t.No)
-		}
-		if t.hasFieldChanged("description") {
-			setClauses = append(setClauses, "description = ?")
-			values = append(values, t.Description)
-		}
-		if t.hasFieldChanged("search_description") {
-			setClauses = append(setClauses, "search_description = ?")
-			values = append(values, t.Search_description)
-		}
-		if t.hasFieldChanged("description_2") {
-			setClauses = append(setClauses, "description_2 = ?")
-			values = append(values, t.Description_2)
-		}
-		if t.hasFieldChanged("fa_class_code") {
-			setClauses = append(setClauses, "fa_class_code = ?")
-			values = append(values, t.Fa_class_code)
-		}
-		if t.hasFieldChanged("fa_subclass_code") {
-			setClauses = append(setClauses, "fa_subclass_code = ?")
-			values = append(values, t.Fa_subclass_code)
-		}
-		if t.hasFieldChanged("dimension_1_code") {
-			setClauses = append(setClauses, "dimension_1_code = ?")
-			values = append(values, t.Dimension_1_code)
-		}
-		if t.hasFieldChanged("dimension_2_code") {
-			setClauses = append(setClauses, "dimension_2_code = ?")
-			values = append(values, t.Dimension_2_code)
-		}
-		if t.hasFieldChanged("location_code") {
-			setClauses = append(setClauses, "location_code = ?")
-			values = append(values, t.Location_code)
-		}
-		if t.hasFieldChanged("fa_location_code") {
-			setClauses = append(setClauses, "fa_location_code = ?")
-			values = append(values, t.Fa_location_code)
-		}
-		if t.hasFieldChanged("vendor_no") {
-			setClauses = append(setClauses, "vendor_no = ?")
-			values = append(values, t.Vendor_no)
-		}
-		if t.hasFieldChanged("main_asset_component") {
-			setClauses = append(setClauses, "main_asset_component = ?")
-			values = append(values, t.Main_asset_component)
-		}
-		if t.hasFieldChanged("component_of_main_asset") {
-			setClauses = append(setClauses, "component_of_main_asset = ?")
-			values = append(values, t.Component_of_main_asset)
-		}
-		if t.hasFieldChanged("budgeted_asset") {
-			setClauses = append(setClauses, "budgeted_asset = ?")
-			values = append(values, t.Budgeted_asset)
-		}
-		if t.hasFieldChanged("warranty_date") {
-			setClauses = append(setClauses, "warranty_date = ?")
-			values = append(values, t.Warranty_date)
-		}
-		if t.hasFieldChanged("responsible_employee") {
-			setClauses = append(setClauses, "responsible_employee = ?")
-			values = append(values, t.Responsible_employee)
-		}
-		if t.hasFieldChanged("serial_no") {
-			setClauses = append(setClauses, "serial_no = ?")
-			values = append(values, t.Serial_no)
-		}
-		if t.hasFieldChanged("last_date_modified") {
-			setClauses = append(setClauses, "last_date_modified = ?")
-			values = append(values, t.Last_date_modified)
-		}
-		if t.hasFieldChanged("blocked") {
-			setClauses = append(setClauses, "blocked = ?")
-			values = append(values, t.Blocked)
-		}
-		if t.hasFieldChanged("picture") {
-			setClauses = append(setClauses, "picture = ?")
-			values = append(values, t.Picture)
-		}
-		if t.hasFieldChanged("maintenance_vendor_no") {
-			setClauses = append(setClauses, "maintenance_vendor_no = ?")
-			values = append(values, t.Maintenance_vendor_no)
-		}
-		if t.hasFieldChanged("under_maintenance") {
-			setClauses = append(setClauses, "under_maintenance = ?")
-			values = append(values, t.Under_maintenance)
-		}
-		if t.hasFieldChanged("next_service_date") {
-			setClauses = append(setClauses, "next_service_date = ?")
-			values = append(values, t.Next_service_date)
-		}
-		if t.hasFieldChanged("inactive") {
-			setClauses = append(setClauses, "inactive = ?")
-			values = append(values, t.Inactive)
-		}
-		if t.hasFieldChanged("no_series") {
-			setClauses = append(setClauses, "no_series = ?")
-			values = append(values, t.No_series)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "description = ?")
-		values = append(values, t.Description)
-		setClauses = append(setClauses, "search_description = ?")
-		values = append(values, t.Search_description)
-		setClauses = append(setClauses, "description_2 = ?")
-		values = append(values, t.Description_2)
-		setClauses = append(setClauses, "fa_class_code = ?")
-		values = append(values, t.Fa_class_code)
-		setClauses = append(setClauses, "fa_subclass_code = ?")
-		values = append(values, t.Fa_subclass_code)
-		setClauses = append(setClauses, "dimension_1_code = ?")
-		values = append(values, t.Dimension_1_code)
-		setClauses = append(setClauses, "dimension_2_code = ?")
-		values = append(values, t.Dimension_2_code)
-		setClauses = append(setClauses, "location_code = ?")
-		values = append(values, t.Location_code)
-		setClauses = append(setClauses, "fa_location_code = ?")
-		values = append(values, t.Fa_location_code)
-		setClauses = append(setClauses, "vendor_no = ?")
-		values = append(values, t.Vendor_no)
-		setClauses = append(setClauses, "main_asset_component = ?")
-		values = append(values, t.Main_asset_component)
-		setClauses = append(setClauses, "component_of_main_asset = ?")
-		values = append(values, t.Component_of_main_asset)
-		setClauses = append(setClauses, "budgeted_asset = ?")
-		values = append(values, t.Budgeted_asset)
-		setClauses = append(setClauses, "warranty_date = ?")
-		values = append(values, t.Warranty_date)
-		setClauses = append(setClauses, "responsible_employee = ?")
-		values = append(values, t.Responsible_employee)
-		setClauses = append(setClauses, "serial_no = ?")
-		values = append(values, t.Serial_no)
-		setClauses = append(setClauses, "last_date_modified = ?")
-		values = append(values, t.Last_date_modified)
-		setClauses = append(setClauses, "blocked = ?")
-		values = append(values, t.Blocked)
-		setClauses = append(setClauses, "picture = ?")
-		values = append(values, t.Picture)
-		setClauses = append(setClauses, "maintenance_vendor_no = ?")
-		values = append(values, t.Maintenance_vendor_no)
-		setClauses = append(setClauses, "under_maintenance = ?")
-		values = append(values, t.Under_maintenance)
-		setClauses = append(setClauses, "next_service_date = ?")
-		values = append(values, t.Next_service_date)
-		setClauses = append(setClauses, "inactive = ?")
-		values = append(values, t.Inactive)
-		setClauses = append(setClauses, "no_series = ?")
-		values = append(values, t.No_series)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.No)
 	}
 	// Renamed key fields that other tables refer to (Rename): carried over below
 	type renamedKey struct {
@@ -1215,19 +973,11 @@ func (t *FixedAsset) Modify(runTrigger bool) bool {
 		}
 	}
 
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Fixed_Asset: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// A temporary record's rename stays in the record: other tables are not changed
 	for _, r := range renamed {
@@ -1344,25 +1094,8 @@ func (t *FixedAsset) Delete(runTrigger bool) bool {
 			}
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, FixedAssetTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.No,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Fixed_Asset: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // ========================================
@@ -1829,53 +1562,13 @@ func (t *FixedAsset) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *FixedAsset) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, FixedAssetTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Fixed_Asset\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Fixed_Asset: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *FixedAsset) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, FixedAssetTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Fixed_Asset: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

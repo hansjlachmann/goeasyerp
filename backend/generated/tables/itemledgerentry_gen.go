@@ -1201,87 +1201,14 @@ func (t *ItemLedgerEntry) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ItemLedgerEntryTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Entry_no,
-		t.Item_no,
-		t.Posting_date,
-		t.Entry_type,
-		t.Source_no,
-		t.Document_no,
-		t.Description,
-		t.Location_code,
-		t.Inventory_posting_group,
-		t.Source_posting_group,
-		t.Quantity,
-		t.Remaining_quantity,
-		t.Invoiced_quantity,
-		t.Unit_amount,
-		t.Unit_cost,
-		t.Amount,
-		t.Discount_amount,
-		t.Salespers_purch_code,
-		t.User_id,
-		t.Source_code,
-		t.Applies_to_entry,
-		t.Open,
-		t.Cost_is_adjusted,
-		t.Dimension_1_code,
-		t.Dimension_2_code,
-		t.Positive,
-		t.Closed_by_entry_no,
-		t.Closed_at_date,
-		t.Closed_by_quantity,
-		t.Source_type,
-		t.Adjusted_cost_qty,
-		t.Adjusted_cost_invoiced_qty,
-		t.Cost_posted_to_gl,
-		t.Journal_batch_name,
-		t.Reason_code,
-		t.Drop_shipment,
-		t.Invt_qty_not_adjusted,
-		t.Adjust_invoice_cost,
-		t.Transaction_type,
-		t.Transport_method,
-		t.Country_code,
-		t.Transferred_from_entry_no,
-		t.Gen_bus_posting_group,
-		t.Gen_prod_posting_group,
-		t.Entry_exit_point,
-		t.Document_date,
-		t.External_document_no,
-		t.Area,
-		t.Transaction_specification,
-		t.No_series,
-		t.Reserved_quantity,
-		t.Add_currency_adj_cost_qty,
-		t.Add_curr_adj_cost_inv_qty,
-		t.Add_curr_cost_posted_to_gl,
-		t.Additional_currency_unit_cost,
-		t.Variant_code,
-		t.Qty_per_unit_of_measure,
-		t.Unit_of_measure_code,
-		t.Serial_no,
-		t.Lot_no,
-		t.Bin_code,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, item_no, posting_date, entry_type, source_no, document_no, description, location_code, inventory_posting_group, source_posting_group, quantity, remaining_quantity, invoiced_quantity, unit_amount, unit_cost, amount, discount_amount, salespers_purch_code, user_id, source_code, applies_to_entry, open, cost_is_adjusted, dimension_1_code, dimension_2_code, positive, closed_by_entry_no, closed_at_date, closed_by_quantity, source_type, adjusted_cost_qty, adjusted_cost_invoiced_qty, cost_posted_to_gl, journal_batch_name, reason_code, drop_shipment, invt_qty_not_adjusted, adjust_invoice_cost, transaction_type, transport_method, country_code, transferred_from_entry_no, gen_bus_posting_group, gen_prod_posting_group, entry_exit_point, document_date, external_document_no, area, transaction_specification, no_series, reserved_quantity, add_currency_adj_cost_qty, add_curr_adj_cost_inv_qty, add_curr_cost_posted_to_gl, additional_currency_unit_cost, variant_code, qty_per_unit_of_measure, unit_of_measure_code, serial_no, lot_no, bin_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Item_Ledger_Entry: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(ItemLedgerEntryTableName, key)
 		return false
@@ -1307,73 +1234,10 @@ func (t *ItemLedgerEntry) InsertAll(records []*ItemLedgerEntry, runTrigger bool)
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Entry_no,
-			r.Item_no,
-			r.Posting_date,
-			r.Entry_type,
-			r.Source_no,
-			r.Document_no,
-			r.Description,
-			r.Location_code,
-			r.Inventory_posting_group,
-			r.Source_posting_group,
-			r.Quantity,
-			r.Remaining_quantity,
-			r.Invoiced_quantity,
-			r.Unit_amount,
-			r.Unit_cost,
-			r.Amount,
-			r.Discount_amount,
-			r.Salespers_purch_code,
-			r.User_id,
-			r.Source_code,
-			r.Applies_to_entry,
-			r.Open,
-			r.Cost_is_adjusted,
-			r.Dimension_1_code,
-			r.Dimension_2_code,
-			r.Positive,
-			r.Closed_by_entry_no,
-			r.Closed_at_date,
-			r.Closed_by_quantity,
-			r.Source_type,
-			r.Adjusted_cost_qty,
-			r.Adjusted_cost_invoiced_qty,
-			r.Cost_posted_to_gl,
-			r.Journal_batch_name,
-			r.Reason_code,
-			r.Drop_shipment,
-			r.Invt_qty_not_adjusted,
-			r.Adjust_invoice_cost,
-			r.Transaction_type,
-			r.Transport_method,
-			r.Country_code,
-			r.Transferred_from_entry_no,
-			r.Gen_bus_posting_group,
-			r.Gen_prod_posting_group,
-			r.Entry_exit_point,
-			r.Document_date,
-			r.External_document_no,
-			r.Area,
-			r.Transaction_specification,
-			r.No_series,
-			r.Reserved_quantity,
-			r.Add_currency_adj_cost_qty,
-			r.Add_curr_adj_cost_inv_qty,
-			r.Add_curr_cost_posted_to_gl,
-			r.Additional_currency_unit_cost,
-			r.Variant_code,
-			r.Qty_per_unit_of_measure,
-			r.Unit_of_measure_code,
-			r.Serial_no,
-			r.Lot_no,
-			r.Bin_code,
-		})
+		rows = append(rows, itemLedgerEntryFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, ItemLedgerEntryTableName)
-	columns := []string{"entry_no", "item_no", "posting_date", "entry_type", "source_no", "document_no", "description", "location_code", "inventory_posting_group", "source_posting_group", "quantity", "remaining_quantity", "invoiced_quantity", "unit_amount", "unit_cost", "amount", "discount_amount", "salespers_purch_code", "user_id", "source_code", "applies_to_entry", "open", "cost_is_adjusted", "dimension_1_code", "dimension_2_code", "positive", "closed_by_entry_no", "closed_at_date", "closed_by_quantity", "source_type", "adjusted_cost_qty", "adjusted_cost_invoiced_qty", "cost_posted_to_gl", "journal_batch_name", "reason_code", "drop_shipment", "invt_qty_not_adjusted", "adjust_invoice_cost", "transaction_type", "transport_method", "country_code", "transferred_from_entry_no", "gen_bus_posting_group", "gen_prod_posting_group", "entry_exit_point", "document_date", "external_document_no", "area", "transaction_specification", "no_series", "reserved_quantity", "add_currency_adj_cost_qty", "add_curr_adj_cost_inv_qty", "add_curr_cost_posted_to_gl", "additional_currency_unit_cost", "variant_code", "qty_per_unit_of_measure", "unit_of_measure_code", "serial_no", "lot_no", "bin_code"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, itemLedgerEntryFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -1389,407 +1253,13 @@ func (t *ItemLedgerEntry) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("entry_no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := itemLedgerEntryFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
 		}
-	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ItemLedgerEntryTableName)
-
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("entry_no") {
-			setClauses = append(setClauses, "entry_no = ?")
-			values = append(values, t.Entry_no)
-		}
-		if t.hasFieldChanged("item_no") {
-			setClauses = append(setClauses, "item_no = ?")
-			values = append(values, t.Item_no)
-		}
-		if t.hasFieldChanged("posting_date") {
-			setClauses = append(setClauses, "posting_date = ?")
-			values = append(values, t.Posting_date)
-		}
-		if t.hasFieldChanged("entry_type") {
-			setClauses = append(setClauses, "entry_type = ?")
-			values = append(values, t.Entry_type)
-		}
-		if t.hasFieldChanged("source_no") {
-			setClauses = append(setClauses, "source_no = ?")
-			values = append(values, t.Source_no)
-		}
-		if t.hasFieldChanged("document_no") {
-			setClauses = append(setClauses, "document_no = ?")
-			values = append(values, t.Document_no)
-		}
-		if t.hasFieldChanged("description") {
-			setClauses = append(setClauses, "description = ?")
-			values = append(values, t.Description)
-		}
-		if t.hasFieldChanged("location_code") {
-			setClauses = append(setClauses, "location_code = ?")
-			values = append(values, t.Location_code)
-		}
-		if t.hasFieldChanged("inventory_posting_group") {
-			setClauses = append(setClauses, "inventory_posting_group = ?")
-			values = append(values, t.Inventory_posting_group)
-		}
-		if t.hasFieldChanged("source_posting_group") {
-			setClauses = append(setClauses, "source_posting_group = ?")
-			values = append(values, t.Source_posting_group)
-		}
-		if t.hasFieldChanged("quantity") {
-			setClauses = append(setClauses, "quantity = ?")
-			values = append(values, t.Quantity)
-		}
-		if t.hasFieldChanged("remaining_quantity") {
-			setClauses = append(setClauses, "remaining_quantity = ?")
-			values = append(values, t.Remaining_quantity)
-		}
-		if t.hasFieldChanged("invoiced_quantity") {
-			setClauses = append(setClauses, "invoiced_quantity = ?")
-			values = append(values, t.Invoiced_quantity)
-		}
-		if t.hasFieldChanged("unit_amount") {
-			setClauses = append(setClauses, "unit_amount = ?")
-			values = append(values, t.Unit_amount)
-		}
-		if t.hasFieldChanged("unit_cost") {
-			setClauses = append(setClauses, "unit_cost = ?")
-			values = append(values, t.Unit_cost)
-		}
-		if t.hasFieldChanged("amount") {
-			setClauses = append(setClauses, "amount = ?")
-			values = append(values, t.Amount)
-		}
-		if t.hasFieldChanged("discount_amount") {
-			setClauses = append(setClauses, "discount_amount = ?")
-			values = append(values, t.Discount_amount)
-		}
-		if t.hasFieldChanged("salespers_purch_code") {
-			setClauses = append(setClauses, "salespers_purch_code = ?")
-			values = append(values, t.Salespers_purch_code)
-		}
-		if t.hasFieldChanged("user_id") {
-			setClauses = append(setClauses, "user_id = ?")
-			values = append(values, t.User_id)
-		}
-		if t.hasFieldChanged("source_code") {
-			setClauses = append(setClauses, "source_code = ?")
-			values = append(values, t.Source_code)
-		}
-		if t.hasFieldChanged("applies_to_entry") {
-			setClauses = append(setClauses, "applies_to_entry = ?")
-			values = append(values, t.Applies_to_entry)
-		}
-		if t.hasFieldChanged("open") {
-			setClauses = append(setClauses, "open = ?")
-			values = append(values, t.Open)
-		}
-		if t.hasFieldChanged("cost_is_adjusted") {
-			setClauses = append(setClauses, "cost_is_adjusted = ?")
-			values = append(values, t.Cost_is_adjusted)
-		}
-		if t.hasFieldChanged("dimension_1_code") {
-			setClauses = append(setClauses, "dimension_1_code = ?")
-			values = append(values, t.Dimension_1_code)
-		}
-		if t.hasFieldChanged("dimension_2_code") {
-			setClauses = append(setClauses, "dimension_2_code = ?")
-			values = append(values, t.Dimension_2_code)
-		}
-		if t.hasFieldChanged("positive") {
-			setClauses = append(setClauses, "positive = ?")
-			values = append(values, t.Positive)
-		}
-		if t.hasFieldChanged("closed_by_entry_no") {
-			setClauses = append(setClauses, "closed_by_entry_no = ?")
-			values = append(values, t.Closed_by_entry_no)
-		}
-		if t.hasFieldChanged("closed_at_date") {
-			setClauses = append(setClauses, "closed_at_date = ?")
-			values = append(values, t.Closed_at_date)
-		}
-		if t.hasFieldChanged("closed_by_quantity") {
-			setClauses = append(setClauses, "closed_by_quantity = ?")
-			values = append(values, t.Closed_by_quantity)
-		}
-		if t.hasFieldChanged("source_type") {
-			setClauses = append(setClauses, "source_type = ?")
-			values = append(values, t.Source_type)
-		}
-		if t.hasFieldChanged("adjusted_cost_qty") {
-			setClauses = append(setClauses, "adjusted_cost_qty = ?")
-			values = append(values, t.Adjusted_cost_qty)
-		}
-		if t.hasFieldChanged("adjusted_cost_invoiced_qty") {
-			setClauses = append(setClauses, "adjusted_cost_invoiced_qty = ?")
-			values = append(values, t.Adjusted_cost_invoiced_qty)
-		}
-		if t.hasFieldChanged("cost_posted_to_gl") {
-			setClauses = append(setClauses, "cost_posted_to_gl = ?")
-			values = append(values, t.Cost_posted_to_gl)
-		}
-		if t.hasFieldChanged("journal_batch_name") {
-			setClauses = append(setClauses, "journal_batch_name = ?")
-			values = append(values, t.Journal_batch_name)
-		}
-		if t.hasFieldChanged("reason_code") {
-			setClauses = append(setClauses, "reason_code = ?")
-			values = append(values, t.Reason_code)
-		}
-		if t.hasFieldChanged("drop_shipment") {
-			setClauses = append(setClauses, "drop_shipment = ?")
-			values = append(values, t.Drop_shipment)
-		}
-		if t.hasFieldChanged("invt_qty_not_adjusted") {
-			setClauses = append(setClauses, "invt_qty_not_adjusted = ?")
-			values = append(values, t.Invt_qty_not_adjusted)
-		}
-		if t.hasFieldChanged("adjust_invoice_cost") {
-			setClauses = append(setClauses, "adjust_invoice_cost = ?")
-			values = append(values, t.Adjust_invoice_cost)
-		}
-		if t.hasFieldChanged("transaction_type") {
-			setClauses = append(setClauses, "transaction_type = ?")
-			values = append(values, t.Transaction_type)
-		}
-		if t.hasFieldChanged("transport_method") {
-			setClauses = append(setClauses, "transport_method = ?")
-			values = append(values, t.Transport_method)
-		}
-		if t.hasFieldChanged("country_code") {
-			setClauses = append(setClauses, "country_code = ?")
-			values = append(values, t.Country_code)
-		}
-		if t.hasFieldChanged("transferred_from_entry_no") {
-			setClauses = append(setClauses, "transferred_from_entry_no = ?")
-			values = append(values, t.Transferred_from_entry_no)
-		}
-		if t.hasFieldChanged("gen_bus_posting_group") {
-			setClauses = append(setClauses, "gen_bus_posting_group = ?")
-			values = append(values, t.Gen_bus_posting_group)
-		}
-		if t.hasFieldChanged("gen_prod_posting_group") {
-			setClauses = append(setClauses, "gen_prod_posting_group = ?")
-			values = append(values, t.Gen_prod_posting_group)
-		}
-		if t.hasFieldChanged("entry_exit_point") {
-			setClauses = append(setClauses, "entry_exit_point = ?")
-			values = append(values, t.Entry_exit_point)
-		}
-		if t.hasFieldChanged("document_date") {
-			setClauses = append(setClauses, "document_date = ?")
-			values = append(values, t.Document_date)
-		}
-		if t.hasFieldChanged("external_document_no") {
-			setClauses = append(setClauses, "external_document_no = ?")
-			values = append(values, t.External_document_no)
-		}
-		if t.hasFieldChanged("area") {
-			setClauses = append(setClauses, "area = ?")
-			values = append(values, t.Area)
-		}
-		if t.hasFieldChanged("transaction_specification") {
-			setClauses = append(setClauses, "transaction_specification = ?")
-			values = append(values, t.Transaction_specification)
-		}
-		if t.hasFieldChanged("no_series") {
-			setClauses = append(setClauses, "no_series = ?")
-			values = append(values, t.No_series)
-		}
-		if t.hasFieldChanged("reserved_quantity") {
-			setClauses = append(setClauses, "reserved_quantity = ?")
-			values = append(values, t.Reserved_quantity)
-		}
-		if t.hasFieldChanged("add_currency_adj_cost_qty") {
-			setClauses = append(setClauses, "add_currency_adj_cost_qty = ?")
-			values = append(values, t.Add_currency_adj_cost_qty)
-		}
-		if t.hasFieldChanged("add_curr_adj_cost_inv_qty") {
-			setClauses = append(setClauses, "add_curr_adj_cost_inv_qty = ?")
-			values = append(values, t.Add_curr_adj_cost_inv_qty)
-		}
-		if t.hasFieldChanged("add_curr_cost_posted_to_gl") {
-			setClauses = append(setClauses, "add_curr_cost_posted_to_gl = ?")
-			values = append(values, t.Add_curr_cost_posted_to_gl)
-		}
-		if t.hasFieldChanged("additional_currency_unit_cost") {
-			setClauses = append(setClauses, "additional_currency_unit_cost = ?")
-			values = append(values, t.Additional_currency_unit_cost)
-		}
-		if t.hasFieldChanged("variant_code") {
-			setClauses = append(setClauses, "variant_code = ?")
-			values = append(values, t.Variant_code)
-		}
-		if t.hasFieldChanged("qty_per_unit_of_measure") {
-			setClauses = append(setClauses, "qty_per_unit_of_measure = ?")
-			values = append(values, t.Qty_per_unit_of_measure)
-		}
-		if t.hasFieldChanged("unit_of_measure_code") {
-			setClauses = append(setClauses, "unit_of_measure_code = ?")
-			values = append(values, t.Unit_of_measure_code)
-		}
-		if t.hasFieldChanged("serial_no") {
-			setClauses = append(setClauses, "serial_no = ?")
-			values = append(values, t.Serial_no)
-		}
-		if t.hasFieldChanged("lot_no") {
-			setClauses = append(setClauses, "lot_no = ?")
-			values = append(values, t.Lot_no)
-		}
-		if t.hasFieldChanged("bin_code") {
-			setClauses = append(setClauses, "bin_code = ?")
-			values = append(values, t.Bin_code)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "item_no = ?")
-		values = append(values, t.Item_no)
-		setClauses = append(setClauses, "posting_date = ?")
-		values = append(values, t.Posting_date)
-		setClauses = append(setClauses, "entry_type = ?")
-		values = append(values, t.Entry_type)
-		setClauses = append(setClauses, "source_no = ?")
-		values = append(values, t.Source_no)
-		setClauses = append(setClauses, "document_no = ?")
-		values = append(values, t.Document_no)
-		setClauses = append(setClauses, "description = ?")
-		values = append(values, t.Description)
-		setClauses = append(setClauses, "location_code = ?")
-		values = append(values, t.Location_code)
-		setClauses = append(setClauses, "inventory_posting_group = ?")
-		values = append(values, t.Inventory_posting_group)
-		setClauses = append(setClauses, "source_posting_group = ?")
-		values = append(values, t.Source_posting_group)
-		setClauses = append(setClauses, "quantity = ?")
-		values = append(values, t.Quantity)
-		setClauses = append(setClauses, "remaining_quantity = ?")
-		values = append(values, t.Remaining_quantity)
-		setClauses = append(setClauses, "invoiced_quantity = ?")
-		values = append(values, t.Invoiced_quantity)
-		setClauses = append(setClauses, "unit_amount = ?")
-		values = append(values, t.Unit_amount)
-		setClauses = append(setClauses, "unit_cost = ?")
-		values = append(values, t.Unit_cost)
-		setClauses = append(setClauses, "amount = ?")
-		values = append(values, t.Amount)
-		setClauses = append(setClauses, "discount_amount = ?")
-		values = append(values, t.Discount_amount)
-		setClauses = append(setClauses, "salespers_purch_code = ?")
-		values = append(values, t.Salespers_purch_code)
-		setClauses = append(setClauses, "user_id = ?")
-		values = append(values, t.User_id)
-		setClauses = append(setClauses, "source_code = ?")
-		values = append(values, t.Source_code)
-		setClauses = append(setClauses, "applies_to_entry = ?")
-		values = append(values, t.Applies_to_entry)
-		setClauses = append(setClauses, "open = ?")
-		values = append(values, t.Open)
-		setClauses = append(setClauses, "cost_is_adjusted = ?")
-		values = append(values, t.Cost_is_adjusted)
-		setClauses = append(setClauses, "dimension_1_code = ?")
-		values = append(values, t.Dimension_1_code)
-		setClauses = append(setClauses, "dimension_2_code = ?")
-		values = append(values, t.Dimension_2_code)
-		setClauses = append(setClauses, "positive = ?")
-		values = append(values, t.Positive)
-		setClauses = append(setClauses, "closed_by_entry_no = ?")
-		values = append(values, t.Closed_by_entry_no)
-		setClauses = append(setClauses, "closed_at_date = ?")
-		values = append(values, t.Closed_at_date)
-		setClauses = append(setClauses, "closed_by_quantity = ?")
-		values = append(values, t.Closed_by_quantity)
-		setClauses = append(setClauses, "source_type = ?")
-		values = append(values, t.Source_type)
-		setClauses = append(setClauses, "adjusted_cost_qty = ?")
-		values = append(values, t.Adjusted_cost_qty)
-		setClauses = append(setClauses, "adjusted_cost_invoiced_qty = ?")
-		values = append(values, t.Adjusted_cost_invoiced_qty)
-		setClauses = append(setClauses, "cost_posted_to_gl = ?")
-		values = append(values, t.Cost_posted_to_gl)
-		setClauses = append(setClauses, "journal_batch_name = ?")
-		values = append(values, t.Journal_batch_name)
-		setClauses = append(setClauses, "reason_code = ?")
-		values = append(values, t.Reason_code)
-		setClauses = append(setClauses, "drop_shipment = ?")
-		values = append(values, t.Drop_shipment)
-		setClauses = append(setClauses, "invt_qty_not_adjusted = ?")
-		values = append(values, t.Invt_qty_not_adjusted)
-		setClauses = append(setClauses, "adjust_invoice_cost = ?")
-		values = append(values, t.Adjust_invoice_cost)
-		setClauses = append(setClauses, "transaction_type = ?")
-		values = append(values, t.Transaction_type)
-		setClauses = append(setClauses, "transport_method = ?")
-		values = append(values, t.Transport_method)
-		setClauses = append(setClauses, "country_code = ?")
-		values = append(values, t.Country_code)
-		setClauses = append(setClauses, "transferred_from_entry_no = ?")
-		values = append(values, t.Transferred_from_entry_no)
-		setClauses = append(setClauses, "gen_bus_posting_group = ?")
-		values = append(values, t.Gen_bus_posting_group)
-		setClauses = append(setClauses, "gen_prod_posting_group = ?")
-		values = append(values, t.Gen_prod_posting_group)
-		setClauses = append(setClauses, "entry_exit_point = ?")
-		values = append(values, t.Entry_exit_point)
-		setClauses = append(setClauses, "document_date = ?")
-		values = append(values, t.Document_date)
-		setClauses = append(setClauses, "external_document_no = ?")
-		values = append(values, t.External_document_no)
-		setClauses = append(setClauses, "area = ?")
-		values = append(values, t.Area)
-		setClauses = append(setClauses, "transaction_specification = ?")
-		values = append(values, t.Transaction_specification)
-		setClauses = append(setClauses, "no_series = ?")
-		values = append(values, t.No_series)
-		setClauses = append(setClauses, "reserved_quantity = ?")
-		values = append(values, t.Reserved_quantity)
-		setClauses = append(setClauses, "add_currency_adj_cost_qty = ?")
-		values = append(values, t.Add_currency_adj_cost_qty)
-		setClauses = append(setClauses, "add_curr_adj_cost_inv_qty = ?")
-		values = append(values, t.Add_curr_adj_cost_inv_qty)
-		setClauses = append(setClauses, "add_curr_cost_posted_to_gl = ?")
-		values = append(values, t.Add_curr_cost_posted_to_gl)
-		setClauses = append(setClauses, "additional_currency_unit_cost = ?")
-		values = append(values, t.Additional_currency_unit_cost)
-		setClauses = append(setClauses, "variant_code = ?")
-		values = append(values, t.Variant_code)
-		setClauses = append(setClauses, "qty_per_unit_of_measure = ?")
-		values = append(values, t.Qty_per_unit_of_measure)
-		setClauses = append(setClauses, "unit_of_measure_code = ?")
-		values = append(values, t.Unit_of_measure_code)
-		setClauses = append(setClauses, "serial_no = ?")
-		values = append(values, t.Serial_no)
-		setClauses = append(setClauses, "lot_no = ?")
-		values = append(values, t.Lot_no)
-		setClauses = append(setClauses, "bin_code = ?")
-		values = append(values, t.Bin_code)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["entry_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Entry_no)
 	}
 	// Renamed key fields that other tables refer to (Rename): carried over below
 	type renamedKey struct {
@@ -1803,19 +1273,11 @@ func (t *ItemLedgerEntry) Modify(runTrigger bool) bool {
 		}
 	}
 
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND entry_no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Item_Ledger_Entry: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// A temporary record's rename stays in the record: other tables are not changed
 	for _, r := range renamed {
@@ -1897,25 +1359,8 @@ func (t *ItemLedgerEntry) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ItemLedgerEntryTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Entry_no,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Item_Ledger_Entry: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -2115,53 +1560,13 @@ func (t *ItemLedgerEntry) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *ItemLedgerEntry) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, ItemLedgerEntryTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Item_Ledger_Entry\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Item_Ledger_Entry: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *ItemLedgerEntry) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, ItemLedgerEntryTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Item_Ledger_Entry: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

@@ -1020,60 +1020,14 @@ func (t *BankAccountLedgerEntry) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Entry_no,
-		t.Bank_account_no,
-		t.Posting_date,
-		t.Document_type,
-		t.Document_no,
-		t.Description,
-		t.Currency_code,
-		t.Amount,
-		t.Remaining_amount,
-		t.Amount_lcy,
-		t.Bank_acc_posting_group,
-		t.Dimension_1_code,
-		t.Dimension_2_code,
-		t.Our_contact_code,
-		t.User_id,
-		t.Source_code,
-		t.Open,
-		t.Positive,
-		t.Closed_by_entry_no,
-		t.Closed_at_date,
-		t.Journal_batch_name,
-		t.Reason_code,
-		t.Bal_account_type,
-		t.Bal_account_no,
-		t.Transaction_no,
-		t.Statement_status,
-		t.Statement_no,
-		t.Statement_line_no,
-		t.Debit_amount,
-		t.Credit_amount,
-		t.Debit_amount_lcy,
-		t.Credit_amount_lcy,
-		t.Document_date,
-		t.External_document_no,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, bank_account_no, posting_date, document_type, document_no, description, currency_code, amount, remaining_amount, amount_lcy, bank_acc_posting_group, dimension_1_code, dimension_2_code, our_contact_code, user_id, source_code, open, positive, closed_by_entry_no, closed_at_date, journal_batch_name, reason_code, bal_account_type, bal_account_no, transaction_no, statement_status, statement_no, statement_line_no, debit_amount, credit_amount, debit_amount_lcy, credit_amount_lcy, document_date, external_document_no) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Bank_Account_Ledger_Entry: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(BankAccountLedgerEntryTableName, key)
 		return false
@@ -1099,46 +1053,10 @@ func (t *BankAccountLedgerEntry) InsertAll(records []*BankAccountLedgerEntry, ru
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Entry_no,
-			r.Bank_account_no,
-			r.Posting_date,
-			r.Document_type,
-			r.Document_no,
-			r.Description,
-			r.Currency_code,
-			r.Amount,
-			r.Remaining_amount,
-			r.Amount_lcy,
-			r.Bank_acc_posting_group,
-			r.Dimension_1_code,
-			r.Dimension_2_code,
-			r.Our_contact_code,
-			r.User_id,
-			r.Source_code,
-			r.Open,
-			r.Positive,
-			r.Closed_by_entry_no,
-			r.Closed_at_date,
-			r.Journal_batch_name,
-			r.Reason_code,
-			r.Bal_account_type,
-			r.Bal_account_no,
-			r.Transaction_no,
-			r.Statement_status,
-			r.Statement_no,
-			r.Statement_line_no,
-			r.Debit_amount,
-			r.Credit_amount,
-			r.Debit_amount_lcy,
-			r.Credit_amount_lcy,
-			r.Document_date,
-			r.External_document_no,
-		})
+		rows = append(rows, bankAccountLedgerEntryFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName)
-	columns := []string{"entry_no", "bank_account_no", "posting_date", "document_type", "document_no", "description", "currency_code", "amount", "remaining_amount", "amount_lcy", "bank_acc_posting_group", "dimension_1_code", "dimension_2_code", "our_contact_code", "user_id", "source_code", "open", "positive", "closed_by_entry_no", "closed_at_date", "journal_batch_name", "reason_code", "bal_account_type", "bal_account_no", "transaction_no", "statement_status", "statement_no", "statement_line_no", "debit_amount", "credit_amount", "debit_amount_lcy", "credit_amount_lcy", "document_date", "external_document_no"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, bankAccountLedgerEntryFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -1154,245 +1072,13 @@ func (t *BankAccountLedgerEntry) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("entry_no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := bankAccountLedgerEntryFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
 		}
-	}
-	tableName := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName)
-
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("entry_no") {
-			setClauses = append(setClauses, "entry_no = ?")
-			values = append(values, t.Entry_no)
-		}
-		if t.hasFieldChanged("bank_account_no") {
-			setClauses = append(setClauses, "bank_account_no = ?")
-			values = append(values, t.Bank_account_no)
-		}
-		if t.hasFieldChanged("posting_date") {
-			setClauses = append(setClauses, "posting_date = ?")
-			values = append(values, t.Posting_date)
-		}
-		if t.hasFieldChanged("document_type") {
-			setClauses = append(setClauses, "document_type = ?")
-			values = append(values, t.Document_type)
-		}
-		if t.hasFieldChanged("document_no") {
-			setClauses = append(setClauses, "document_no = ?")
-			values = append(values, t.Document_no)
-		}
-		if t.hasFieldChanged("description") {
-			setClauses = append(setClauses, "description = ?")
-			values = append(values, t.Description)
-		}
-		if t.hasFieldChanged("currency_code") {
-			setClauses = append(setClauses, "currency_code = ?")
-			values = append(values, t.Currency_code)
-		}
-		if t.hasFieldChanged("amount") {
-			setClauses = append(setClauses, "amount = ?")
-			values = append(values, t.Amount)
-		}
-		if t.hasFieldChanged("remaining_amount") {
-			setClauses = append(setClauses, "remaining_amount = ?")
-			values = append(values, t.Remaining_amount)
-		}
-		if t.hasFieldChanged("amount_lcy") {
-			setClauses = append(setClauses, "amount_lcy = ?")
-			values = append(values, t.Amount_lcy)
-		}
-		if t.hasFieldChanged("bank_acc_posting_group") {
-			setClauses = append(setClauses, "bank_acc_posting_group = ?")
-			values = append(values, t.Bank_acc_posting_group)
-		}
-		if t.hasFieldChanged("dimension_1_code") {
-			setClauses = append(setClauses, "dimension_1_code = ?")
-			values = append(values, t.Dimension_1_code)
-		}
-		if t.hasFieldChanged("dimension_2_code") {
-			setClauses = append(setClauses, "dimension_2_code = ?")
-			values = append(values, t.Dimension_2_code)
-		}
-		if t.hasFieldChanged("our_contact_code") {
-			setClauses = append(setClauses, "our_contact_code = ?")
-			values = append(values, t.Our_contact_code)
-		}
-		if t.hasFieldChanged("user_id") {
-			setClauses = append(setClauses, "user_id = ?")
-			values = append(values, t.User_id)
-		}
-		if t.hasFieldChanged("source_code") {
-			setClauses = append(setClauses, "source_code = ?")
-			values = append(values, t.Source_code)
-		}
-		if t.hasFieldChanged("open") {
-			setClauses = append(setClauses, "open = ?")
-			values = append(values, t.Open)
-		}
-		if t.hasFieldChanged("positive") {
-			setClauses = append(setClauses, "positive = ?")
-			values = append(values, t.Positive)
-		}
-		if t.hasFieldChanged("closed_by_entry_no") {
-			setClauses = append(setClauses, "closed_by_entry_no = ?")
-			values = append(values, t.Closed_by_entry_no)
-		}
-		if t.hasFieldChanged("closed_at_date") {
-			setClauses = append(setClauses, "closed_at_date = ?")
-			values = append(values, t.Closed_at_date)
-		}
-		if t.hasFieldChanged("journal_batch_name") {
-			setClauses = append(setClauses, "journal_batch_name = ?")
-			values = append(values, t.Journal_batch_name)
-		}
-		if t.hasFieldChanged("reason_code") {
-			setClauses = append(setClauses, "reason_code = ?")
-			values = append(values, t.Reason_code)
-		}
-		if t.hasFieldChanged("bal_account_type") {
-			setClauses = append(setClauses, "bal_account_type = ?")
-			values = append(values, t.Bal_account_type)
-		}
-		if t.hasFieldChanged("bal_account_no") {
-			setClauses = append(setClauses, "bal_account_no = ?")
-			values = append(values, t.Bal_account_no)
-		}
-		if t.hasFieldChanged("transaction_no") {
-			setClauses = append(setClauses, "transaction_no = ?")
-			values = append(values, t.Transaction_no)
-		}
-		if t.hasFieldChanged("statement_status") {
-			setClauses = append(setClauses, "statement_status = ?")
-			values = append(values, t.Statement_status)
-		}
-		if t.hasFieldChanged("statement_no") {
-			setClauses = append(setClauses, "statement_no = ?")
-			values = append(values, t.Statement_no)
-		}
-		if t.hasFieldChanged("statement_line_no") {
-			setClauses = append(setClauses, "statement_line_no = ?")
-			values = append(values, t.Statement_line_no)
-		}
-		if t.hasFieldChanged("debit_amount") {
-			setClauses = append(setClauses, "debit_amount = ?")
-			values = append(values, t.Debit_amount)
-		}
-		if t.hasFieldChanged("credit_amount") {
-			setClauses = append(setClauses, "credit_amount = ?")
-			values = append(values, t.Credit_amount)
-		}
-		if t.hasFieldChanged("debit_amount_lcy") {
-			setClauses = append(setClauses, "debit_amount_lcy = ?")
-			values = append(values, t.Debit_amount_lcy)
-		}
-		if t.hasFieldChanged("credit_amount_lcy") {
-			setClauses = append(setClauses, "credit_amount_lcy = ?")
-			values = append(values, t.Credit_amount_lcy)
-		}
-		if t.hasFieldChanged("document_date") {
-			setClauses = append(setClauses, "document_date = ?")
-			values = append(values, t.Document_date)
-		}
-		if t.hasFieldChanged("external_document_no") {
-			setClauses = append(setClauses, "external_document_no = ?")
-			values = append(values, t.External_document_no)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "bank_account_no = ?")
-		values = append(values, t.Bank_account_no)
-		setClauses = append(setClauses, "posting_date = ?")
-		values = append(values, t.Posting_date)
-		setClauses = append(setClauses, "document_type = ?")
-		values = append(values, t.Document_type)
-		setClauses = append(setClauses, "document_no = ?")
-		values = append(values, t.Document_no)
-		setClauses = append(setClauses, "description = ?")
-		values = append(values, t.Description)
-		setClauses = append(setClauses, "currency_code = ?")
-		values = append(values, t.Currency_code)
-		setClauses = append(setClauses, "amount = ?")
-		values = append(values, t.Amount)
-		setClauses = append(setClauses, "remaining_amount = ?")
-		values = append(values, t.Remaining_amount)
-		setClauses = append(setClauses, "amount_lcy = ?")
-		values = append(values, t.Amount_lcy)
-		setClauses = append(setClauses, "bank_acc_posting_group = ?")
-		values = append(values, t.Bank_acc_posting_group)
-		setClauses = append(setClauses, "dimension_1_code = ?")
-		values = append(values, t.Dimension_1_code)
-		setClauses = append(setClauses, "dimension_2_code = ?")
-		values = append(values, t.Dimension_2_code)
-		setClauses = append(setClauses, "our_contact_code = ?")
-		values = append(values, t.Our_contact_code)
-		setClauses = append(setClauses, "user_id = ?")
-		values = append(values, t.User_id)
-		setClauses = append(setClauses, "source_code = ?")
-		values = append(values, t.Source_code)
-		setClauses = append(setClauses, "open = ?")
-		values = append(values, t.Open)
-		setClauses = append(setClauses, "positive = ?")
-		values = append(values, t.Positive)
-		setClauses = append(setClauses, "closed_by_entry_no = ?")
-		values = append(values, t.Closed_by_entry_no)
-		setClauses = append(setClauses, "closed_at_date = ?")
-		values = append(values, t.Closed_at_date)
-		setClauses = append(setClauses, "journal_batch_name = ?")
-		values = append(values, t.Journal_batch_name)
-		setClauses = append(setClauses, "reason_code = ?")
-		values = append(values, t.Reason_code)
-		setClauses = append(setClauses, "bal_account_type = ?")
-		values = append(values, t.Bal_account_type)
-		setClauses = append(setClauses, "bal_account_no = ?")
-		values = append(values, t.Bal_account_no)
-		setClauses = append(setClauses, "transaction_no = ?")
-		values = append(values, t.Transaction_no)
-		setClauses = append(setClauses, "statement_status = ?")
-		values = append(values, t.Statement_status)
-		setClauses = append(setClauses, "statement_no = ?")
-		values = append(values, t.Statement_no)
-		setClauses = append(setClauses, "statement_line_no = ?")
-		values = append(values, t.Statement_line_no)
-		setClauses = append(setClauses, "debit_amount = ?")
-		values = append(values, t.Debit_amount)
-		setClauses = append(setClauses, "credit_amount = ?")
-		values = append(values, t.Credit_amount)
-		setClauses = append(setClauses, "debit_amount_lcy = ?")
-		values = append(values, t.Debit_amount_lcy)
-		setClauses = append(setClauses, "credit_amount_lcy = ?")
-		values = append(values, t.Credit_amount_lcy)
-		setClauses = append(setClauses, "document_date = ?")
-		values = append(values, t.Document_date)
-		setClauses = append(setClauses, "external_document_no = ?")
-		values = append(values, t.External_document_no)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["entry_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Entry_no)
 	}
 	// Renamed key fields that other tables refer to (Rename): carried over below
 	type renamedKey struct {
@@ -1406,19 +1092,11 @@ func (t *BankAccountLedgerEntry) Modify(runTrigger bool) bool {
 		}
 	}
 
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND entry_no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Bank_Account_Ledger_Entry: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// A temporary record's rename stays in the record: other tables are not changed
 	for _, r := range renamed {
@@ -1500,25 +1178,8 @@ func (t *BankAccountLedgerEntry) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Entry_no,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Bank_Account_Ledger_Entry: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1718,53 +1379,13 @@ func (t *BankAccountLedgerEntry) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *BankAccountLedgerEntry) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Bank_Account_Ledger_Entry\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Bank_Account_Ledger_Entry: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *BankAccountLedgerEntry) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Bank_Account_Ledger_Entry: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

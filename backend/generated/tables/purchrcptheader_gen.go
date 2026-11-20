@@ -1204,94 +1204,14 @@ func (t *PurchRcptHeader) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, PurchRcptHeaderTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Buy_from_vendor_no,
-		t.No,
-		t.Pay_to_vendor_no,
-		t.Pay_to_name,
-		t.Pay_to_name_2,
-		t.Pay_to_address,
-		t.Pay_to_address_2,
-		t.Pay_to_city,
-		t.Pay_to_contact,
-		t.Your_reference,
-		t.Ship_to_name,
-		t.Ship_to_name_2,
-		t.Ship_to_address,
-		t.Ship_to_address_2,
-		t.Ship_to_city,
-		t.Ship_to_contact,
-		t.Order_date,
-		t.Posting_date,
-		t.Expected_receipt_date,
-		t.Posting_description,
-		t.Payment_terms_code,
-		t.Due_date,
-		t.Payment_discount_percent,
-		t.Pmt_discount_date,
-		t.Shipment_method_code,
-		t.Location_code,
-		t.Dimension_1_code,
-		t.Dimension_2_code,
-		t.Vendor_posting_group,
-		t.Currency_code,
-		t.Currency_factor,
-		t.Invoice_disc_code,
-		t.Language_code,
-		t.Purchaser_code,
-		t.Order_no,
-		t.No_printed,
-		t.Vendor_order_no,
-		t.Vendor_shipment_no,
-		t.Vendor_invoice_no,
-		t.Vendor_cr_memo_no,
-		t.Vat_registration_no,
-		t.Reason_code,
-		t.Gen_bus_posting_group,
-		t.Buy_from_vendor_name,
-		t.Buy_from_vendor_name_2,
-		t.Buy_from_address,
-		t.Buy_from_address_2,
-		t.Buy_from_city,
-		t.Buy_from_contact,
-		t.Pay_to_post_code,
-		t.Pay_to_state,
-		t.Pay_to_country_code,
-		t.Buy_from_post_code,
-		t.Buy_from_state,
-		t.Buy_from_country_code,
-		t.Ship_to_post_code,
-		t.Ship_to_state,
-		t.Ship_to_country_code,
-		t.Order_address_code,
-		t.Document_date,
-		t.Payment_method_code,
-		t.No_series,
-		t.User_id,
-		t.Source_code,
-		t.Tax_area_code,
-		t.Tax_liable,
-		t.Tax_bus_posting_group,
-		t.Project_no,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (buy_from_vendor_no, no, pay_to_vendor_no, pay_to_name, pay_to_name_2, pay_to_address, pay_to_address_2, pay_to_city, pay_to_contact, your_reference, ship_to_name, ship_to_name_2, ship_to_address, ship_to_address_2, ship_to_city, ship_to_contact, order_date, posting_date, expected_receipt_date, posting_description, payment_terms_code, due_date, payment_discount_percent, pmt_discount_date, shipment_method_code, location_code, dimension_1_code, dimension_2_code, vendor_posting_group, currency_code, currency_factor, invoice_disc_code, language_code, purchaser_code, order_no, no_printed, vendor_order_no, vendor_shipment_no, vendor_invoice_no, vendor_cr_memo_no, vat_registration_no, reason_code, gen_bus_posting_group, buy_from_vendor_name, buy_from_vendor_name_2, buy_from_address, buy_from_address_2, buy_from_city, buy_from_contact, pay_to_post_code, pay_to_state, pay_to_country_code, buy_from_post_code, buy_from_state, buy_from_country_code, ship_to_post_code, ship_to_state, ship_to_country_code, order_address_code, document_date, payment_method_code, no_series, user_id, source_code, tax_area_code, tax_liable, tax_bus_posting_group, project_no) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Purch_Rcpt_Header: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(PurchRcptHeaderTableName, key)
 		return false
@@ -1317,80 +1237,10 @@ func (t *PurchRcptHeader) InsertAll(records []*PurchRcptHeader, runTrigger bool)
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Buy_from_vendor_no,
-			r.No,
-			r.Pay_to_vendor_no,
-			r.Pay_to_name,
-			r.Pay_to_name_2,
-			r.Pay_to_address,
-			r.Pay_to_address_2,
-			r.Pay_to_city,
-			r.Pay_to_contact,
-			r.Your_reference,
-			r.Ship_to_name,
-			r.Ship_to_name_2,
-			r.Ship_to_address,
-			r.Ship_to_address_2,
-			r.Ship_to_city,
-			r.Ship_to_contact,
-			r.Order_date,
-			r.Posting_date,
-			r.Expected_receipt_date,
-			r.Posting_description,
-			r.Payment_terms_code,
-			r.Due_date,
-			r.Payment_discount_percent,
-			r.Pmt_discount_date,
-			r.Shipment_method_code,
-			r.Location_code,
-			r.Dimension_1_code,
-			r.Dimension_2_code,
-			r.Vendor_posting_group,
-			r.Currency_code,
-			r.Currency_factor,
-			r.Invoice_disc_code,
-			r.Language_code,
-			r.Purchaser_code,
-			r.Order_no,
-			r.No_printed,
-			r.Vendor_order_no,
-			r.Vendor_shipment_no,
-			r.Vendor_invoice_no,
-			r.Vendor_cr_memo_no,
-			r.Vat_registration_no,
-			r.Reason_code,
-			r.Gen_bus_posting_group,
-			r.Buy_from_vendor_name,
-			r.Buy_from_vendor_name_2,
-			r.Buy_from_address,
-			r.Buy_from_address_2,
-			r.Buy_from_city,
-			r.Buy_from_contact,
-			r.Pay_to_post_code,
-			r.Pay_to_state,
-			r.Pay_to_country_code,
-			r.Buy_from_post_code,
-			r.Buy_from_state,
-			r.Buy_from_country_code,
-			r.Ship_to_post_code,
-			r.Ship_to_state,
-			r.Ship_to_country_code,
-			r.Order_address_code,
-			r.Document_date,
-			r.Payment_method_code,
-			r.No_series,
-			r.User_id,
-			r.Source_code,
-			r.Tax_area_code,
-			r.Tax_liable,
-			r.Tax_bus_posting_group,
-			r.Project_no,
-		})
+		rows = append(rows, purchRcptHeaderFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, PurchRcptHeaderTableName)
-	columns := []string{"buy_from_vendor_no", "no", "pay_to_vendor_no", "pay_to_name", "pay_to_name_2", "pay_to_address", "pay_to_address_2", "pay_to_city", "pay_to_contact", "your_reference", "ship_to_name", "ship_to_name_2", "ship_to_address", "ship_to_address_2", "ship_to_city", "ship_to_contact", "order_date", "posting_date", "expected_receipt_date", "posting_description", "payment_terms_code", "due_date", "payment_discount_percent", "pmt_discount_date", "shipment_method_code", "location_code", "dimension_1_code", "dimension_2_code", "vendor_posting_group", "currency_code", "currency_factor", "invoice_disc_code", "language_code", "purchaser_code", "order_no", "no_printed", "vendor_order_no", "vendor_shipment_no", "vendor_invoice_no", "vendor_cr_memo_no", "vat_registration_no", "reason_code", "gen_bus_posting_group", "buy_from_vendor_name", "buy_from_vendor_name_2", "buy_from_address", "buy_from_address_2", "buy_from_city", "buy_from_contact", "pay_to_post_code", "pay_to_state", "pay_to_country_code", "buy_from_post_code", "buy_from_state", "buy_from_country_code", "ship_to_post_code", "ship_to_state", "ship_to_country_code", "order_address_code", "document_date", "payment_method_code", "no_series", "user_id", "source_code", "tax_area_code", "tax_liable", "tax_bus_posting_group", "project_no"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, purchRcptHeaderFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -1406,449 +1256,13 @@ func (t *PurchRcptHeader) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := purchRcptHeaderFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
 		}
-	}
-	tableName := fmt.Sprintf("%s$%s", t.company, PurchRcptHeaderTableName)
-
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("buy_from_vendor_no") {
-			setClauses = append(setClauses, "buy_from_vendor_no = ?")
-			values = append(values, t.Buy_from_vendor_no)
-		}
-		if t.hasFieldChanged("no") {
-			setClauses = append(setClauses, "no = ?")
-			values = append(values, t.No)
-		}
-		if t.hasFieldChanged("pay_to_vendor_no") {
-			setClauses = append(setClauses, "pay_to_vendor_no = ?")
-			values = append(values, t.Pay_to_vendor_no)
-		}
-		if t.hasFieldChanged("pay_to_name") {
-			setClauses = append(setClauses, "pay_to_name = ?")
-			values = append(values, t.Pay_to_name)
-		}
-		if t.hasFieldChanged("pay_to_name_2") {
-			setClauses = append(setClauses, "pay_to_name_2 = ?")
-			values = append(values, t.Pay_to_name_2)
-		}
-		if t.hasFieldChanged("pay_to_address") {
-			setClauses = append(setClauses, "pay_to_address = ?")
-			values = append(values, t.Pay_to_address)
-		}
-		if t.hasFieldChanged("pay_to_address_2") {
-			setClauses = append(setClauses, "pay_to_address_2 = ?")
-			values = append(values, t.Pay_to_address_2)
-		}
-		if t.hasFieldChanged("pay_to_city") {
-			setClauses = append(setClauses, "pay_to_city = ?")
-			values = append(values, t.Pay_to_city)
-		}
-		if t.hasFieldChanged("pay_to_contact") {
-			setClauses = append(setClauses, "pay_to_contact = ?")
-			values = append(values, t.Pay_to_contact)
-		}
-		if t.hasFieldChanged("your_reference") {
-			setClauses = append(setClauses, "your_reference = ?")
-			values = append(values, t.Your_reference)
-		}
-		if t.hasFieldChanged("ship_to_name") {
-			setClauses = append(setClauses, "ship_to_name = ?")
-			values = append(values, t.Ship_to_name)
-		}
-		if t.hasFieldChanged("ship_to_name_2") {
-			setClauses = append(setClauses, "ship_to_name_2 = ?")
-			values = append(values, t.Ship_to_name_2)
-		}
-		if t.hasFieldChanged("ship_to_address") {
-			setClauses = append(setClauses, "ship_to_address = ?")
-			values = append(values, t.Ship_to_address)
-		}
-		if t.hasFieldChanged("ship_to_address_2") {
-			setClauses = append(setClauses, "ship_to_address_2 = ?")
-			values = append(values, t.Ship_to_address_2)
-		}
-		if t.hasFieldChanged("ship_to_city") {
-			setClauses = append(setClauses, "ship_to_city = ?")
-			values = append(values, t.Ship_to_city)
-		}
-		if t.hasFieldChanged("ship_to_contact") {
-			setClauses = append(setClauses, "ship_to_contact = ?")
-			values = append(values, t.Ship_to_contact)
-		}
-		if t.hasFieldChanged("order_date") {
-			setClauses = append(setClauses, "order_date = ?")
-			values = append(values, t.Order_date)
-		}
-		if t.hasFieldChanged("posting_date") {
-			setClauses = append(setClauses, "posting_date = ?")
-			values = append(values, t.Posting_date)
-		}
-		if t.hasFieldChanged("expected_receipt_date") {
-			setClauses = append(setClauses, "expected_receipt_date = ?")
-			values = append(values, t.Expected_receipt_date)
-		}
-		if t.hasFieldChanged("posting_description") {
-			setClauses = append(setClauses, "posting_description = ?")
-			values = append(values, t.Posting_description)
-		}
-		if t.hasFieldChanged("payment_terms_code") {
-			setClauses = append(setClauses, "payment_terms_code = ?")
-			values = append(values, t.Payment_terms_code)
-		}
-		if t.hasFieldChanged("due_date") {
-			setClauses = append(setClauses, "due_date = ?")
-			values = append(values, t.Due_date)
-		}
-		if t.hasFieldChanged("payment_discount_percent") {
-			setClauses = append(setClauses, "payment_discount_percent = ?")
-			values = append(values, t.Payment_discount_percent)
-		}
-		if t.hasFieldChanged("pmt_discount_date") {
-			setClauses = append(setClauses, "pmt_discount_date = ?")
-			values = append(values, t.Pmt_discount_date)
-		}
-		if t.hasFieldChanged("shipment_method_code") {
-			setClauses = append(setClauses, "shipment_method_code = ?")
-			values = append(values, t.Shipment_method_code)
-		}
-		if t.hasFieldChanged("location_code") {
-			setClauses = append(setClauses, "location_code = ?")
-			values = append(values, t.Location_code)
-		}
-		if t.hasFieldChanged("dimension_1_code") {
-			setClauses = append(setClauses, "dimension_1_code = ?")
-			values = append(values, t.Dimension_1_code)
-		}
-		if t.hasFieldChanged("dimension_2_code") {
-			setClauses = append(setClauses, "dimension_2_code = ?")
-			values = append(values, t.Dimension_2_code)
-		}
-		if t.hasFieldChanged("vendor_posting_group") {
-			setClauses = append(setClauses, "vendor_posting_group = ?")
-			values = append(values, t.Vendor_posting_group)
-		}
-		if t.hasFieldChanged("currency_code") {
-			setClauses = append(setClauses, "currency_code = ?")
-			values = append(values, t.Currency_code)
-		}
-		if t.hasFieldChanged("currency_factor") {
-			setClauses = append(setClauses, "currency_factor = ?")
-			values = append(values, t.Currency_factor)
-		}
-		if t.hasFieldChanged("invoice_disc_code") {
-			setClauses = append(setClauses, "invoice_disc_code = ?")
-			values = append(values, t.Invoice_disc_code)
-		}
-		if t.hasFieldChanged("language_code") {
-			setClauses = append(setClauses, "language_code = ?")
-			values = append(values, t.Language_code)
-		}
-		if t.hasFieldChanged("purchaser_code") {
-			setClauses = append(setClauses, "purchaser_code = ?")
-			values = append(values, t.Purchaser_code)
-		}
-		if t.hasFieldChanged("order_no") {
-			setClauses = append(setClauses, "order_no = ?")
-			values = append(values, t.Order_no)
-		}
-		if t.hasFieldChanged("no_printed") {
-			setClauses = append(setClauses, "no_printed = ?")
-			values = append(values, t.No_printed)
-		}
-		if t.hasFieldChanged("vendor_order_no") {
-			setClauses = append(setClauses, "vendor_order_no = ?")
-			values = append(values, t.Vendor_order_no)
-		}
-		if t.hasFieldChanged("vendor_shipment_no") {
-			setClauses = append(setClauses, "vendor_shipment_no = ?")
-			values = append(values, t.Vendor_shipment_no)
-		}
-		if t.hasFieldChanged("vendor_invoice_no") {
-			setClauses = append(setClauses, "vendor_invoice_no = ?")
-			values = append(values, t.Vendor_invoice_no)
-		}
-		if t.hasFieldChanged("vendor_cr_memo_no") {
-			setClauses = append(setClauses, "vendor_cr_memo_no = ?")
-			values = append(values, t.Vendor_cr_memo_no)
-		}
-		if t.hasFieldChanged("vat_registration_no") {
-			setClauses = append(setClauses, "vat_registration_no = ?")
-			values = append(values, t.Vat_registration_no)
-		}
-		if t.hasFieldChanged("reason_code") {
-			setClauses = append(setClauses, "reason_code = ?")
-			values = append(values, t.Reason_code)
-		}
-		if t.hasFieldChanged("gen_bus_posting_group") {
-			setClauses = append(setClauses, "gen_bus_posting_group = ?")
-			values = append(values, t.Gen_bus_posting_group)
-		}
-		if t.hasFieldChanged("buy_from_vendor_name") {
-			setClauses = append(setClauses, "buy_from_vendor_name = ?")
-			values = append(values, t.Buy_from_vendor_name)
-		}
-		if t.hasFieldChanged("buy_from_vendor_name_2") {
-			setClauses = append(setClauses, "buy_from_vendor_name_2 = ?")
-			values = append(values, t.Buy_from_vendor_name_2)
-		}
-		if t.hasFieldChanged("buy_from_address") {
-			setClauses = append(setClauses, "buy_from_address = ?")
-			values = append(values, t.Buy_from_address)
-		}
-		if t.hasFieldChanged("buy_from_address_2") {
-			setClauses = append(setClauses, "buy_from_address_2 = ?")
-			values = append(values, t.Buy_from_address_2)
-		}
-		if t.hasFieldChanged("buy_from_city") {
-			setClauses = append(setClauses, "buy_from_city = ?")
-			values = append(values, t.Buy_from_city)
-		}
-		if t.hasFieldChanged("buy_from_contact") {
-			setClauses = append(setClauses, "buy_from_contact = ?")
-			values = append(values, t.Buy_from_contact)
-		}
-		if t.hasFieldChanged("pay_to_post_code") {
-			setClauses = append(setClauses, "pay_to_post_code = ?")
-			values = append(values, t.Pay_to_post_code)
-		}
-		if t.hasFieldChanged("pay_to_state") {
-			setClauses = append(setClauses, "pay_to_state = ?")
-			values = append(values, t.Pay_to_state)
-		}
-		if t.hasFieldChanged("pay_to_country_code") {
-			setClauses = append(setClauses, "pay_to_country_code = ?")
-			values = append(values, t.Pay_to_country_code)
-		}
-		if t.hasFieldChanged("buy_from_post_code") {
-			setClauses = append(setClauses, "buy_from_post_code = ?")
-			values = append(values, t.Buy_from_post_code)
-		}
-		if t.hasFieldChanged("buy_from_state") {
-			setClauses = append(setClauses, "buy_from_state = ?")
-			values = append(values, t.Buy_from_state)
-		}
-		if t.hasFieldChanged("buy_from_country_code") {
-			setClauses = append(setClauses, "buy_from_country_code = ?")
-			values = append(values, t.Buy_from_country_code)
-		}
-		if t.hasFieldChanged("ship_to_post_code") {
-			setClauses = append(setClauses, "ship_to_post_code = ?")
-			values = append(values, t.Ship_to_post_code)
-		}
-		if t.hasFieldChanged("ship_to_state") {
-			setClauses = append(setClauses, "ship_to_state = ?")
-			values = append(values, t.Ship_to_state)
-		}
-		if t.hasFieldChanged("ship_to_country_code") {
-			setClauses = append(setClauses, "ship_to_country_code = ?")
-			values = append(values, t.Ship_to_country_code)
-		}
-		if t.hasFieldChanged("order_address_code") {
-			setClauses = append(setClauses, "order_address_code = ?")
-			values = append(values, t.Order_address_code)
-		}
-		if t.hasFieldChanged("document_date") {
-			setClauses = append(setClauses, "document_date = ?")
-			values = append(values, t.Document_date)
-		}
-		if t.hasFieldChanged("payment_method_code") {
-			setClauses = append(setClauses, "payment_method_code = ?")
-			values = append(values, t.Payment_method_code)
-		}
-		if t.hasFieldChanged("no_series") {
-			setClauses = append(setClauses, "no_series = ?")
-			values = append(values, t.No_series)
-		}
-		if t.hasFieldChanged("user_id") {
-			setClauses = append(setClauses, "user_id = ?")
-			values = append(values, t.User_id)
-		}
-		if t.hasFieldChanged("source_code") {
-			setClauses = append(setClauses, "source_code = ?")
-			values = append(values, t.Source_code)
-		}
-		if t.hasFieldChanged("tax_area_code") {
-			setClauses = append(setClauses, "tax_area_code = ?")
-			values = append(values, t.Tax_area_code)
-		}
-		if t.hasFieldChanged("tax_liable") {
-			setClauses = append(setClauses, "tax_liable = ?")
-			values = append(values, t.Tax_liable)
-		}
-		if t.hasFieldChanged("tax_bus_posting_group") {
-			setClauses = append(setClauses, "tax_bus_posting_group = ?")
-			values = append(values, t.Tax_bus_posting_group)
-		}
-		if t.hasFieldChanged("project_no") {
-			setClauses = append(setClauses, "project_no = ?")
-			values = append(values, t.Project_no)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "buy_from_vendor_no = ?")
-		values = append(values, t.Buy_from_vendor_no)
-		setClauses = append(setClauses, "pay_to_vendor_no = ?")
-		values = append(values, t.Pay_to_vendor_no)
-		setClauses = append(setClauses, "pay_to_name = ?")
-		values = append(values, t.Pay_to_name)
-		setClauses = append(setClauses, "pay_to_name_2 = ?")
-		values = append(values, t.Pay_to_name_2)
-		setClauses = append(setClauses, "pay_to_address = ?")
-		values = append(values, t.Pay_to_address)
-		setClauses = append(setClauses, "pay_to_address_2 = ?")
-		values = append(values, t.Pay_to_address_2)
-		setClauses = append(setClauses, "pay_to_city = ?")
-		values = append(values, t.Pay_to_city)
-		setClauses = append(setClauses, "pay_to_contact = ?")
-		values = append(values, t.Pay_to_contact)
-		setClauses = append(setClauses, "your_reference = ?")
-		values = append(values, t.Your_reference)
-		setClauses = append(setClauses, "ship_to_name = ?")
-		values = append(values, t.Ship_to_name)
-		setClauses = append(setClauses, "ship_to_name_2 = ?")
-		values = append(values, t.Ship_to_name_2)
-		setClauses = append(setClauses, "ship_to_address = ?")
-		values = append(values, t.Ship_to_address)
-		setClauses = append(setClauses, "ship_to_address_2 = ?")
-		values = append(values, t.Ship_to_address_2)
-		setClauses = append(setClauses, "ship_to_city = ?")
-		values = append(values, t.Ship_to_city)
-		setClauses = append(setClauses, "ship_to_contact = ?")
-		values = append(values, t.Ship_to_contact)
-		setClauses = append(setClauses, "order_date = ?")
-		values = append(values, t.Order_date)
-		setClauses = append(setClauses, "posting_date = ?")
-		values = append(values, t.Posting_date)
-		setClauses = append(setClauses, "expected_receipt_date = ?")
-		values = append(values, t.Expected_receipt_date)
-		setClauses = append(setClauses, "posting_description = ?")
-		values = append(values, t.Posting_description)
-		setClauses = append(setClauses, "payment_terms_code = ?")
-		values = append(values, t.Payment_terms_code)
-		setClauses = append(setClauses, "due_date = ?")
-		values = append(values, t.Due_date)
-		setClauses = append(setClauses, "payment_discount_percent = ?")
-		values = append(values, t.Payment_discount_percent)
-		setClauses = append(setClauses, "pmt_discount_date = ?")
-		values = append(values, t.Pmt_discount_date)
-		setClauses = append(setClauses, "shipment_method_code = ?")
-		values = append(values, t.Shipment_method_code)
-		setClauses = append(setClauses, "location_code = ?")
-		values = append(values, t.Location_code)
-		setClauses = append(setClauses, "dimension_1_code = ?")
-		values = append(values, t.Dimension_1_code)
-		setClauses = append(setClauses, "dimension_2_code = ?")
-		values = append(values, t.Dimension_2_code)
-		setClauses = append(setClauses, "vendor_posting_group = ?")
-		values = append(values, t.Vendor_posting_group)
-		setClauses = append(setClauses, "currency_code = ?")
-		values = append(values, t.Currency_code)
-		setClauses = append(setClauses, "currency_factor = ?")
-		values = append(values, t.Currency_factor)
-		setClauses = append(setClauses, "invoice_disc_code = ?")
-		values = append(values, t.Invoice_disc_code)
-		setClauses = append(setClauses, "language_code = ?")
-		values = append(values, t.Language_code)
-		setClauses = append(setClauses, "purchaser_code = ?")
-		values = append(values, t.Purchaser_code)
-		setClauses = append(setClauses, "order_no = ?")
-		values = append(values, t.Order_no)
-		setClauses = append(setClauses, "no_printed = ?")
-		values = append(values, t.No_printed)
-		setClauses = append(setClauses, "vendor_order_no = ?")
-		values = append(values, t.Vendor_order_no)
-		setClauses = append(setClauses, "vendor_shipment_no = ?")
-		values = append(values, t.Vendor_shipment_no)
-		setClauses = append(setClauses, "vendor_invoice_no = ?")
-		values = append(values, t.Vendor_invoice_no)
-		setClauses = append(setClauses, "vendor_cr_memo_no = ?")
-		values = append(values, t.Vendor_cr_memo_no)
-		setClauses = append(setClauses, "vat_registration_no = ?")
-		values = append(values, t.Vat_registration_no)
-		setClauses = append(setClauses, "reason_code = ?")
-		values = append(values, t.Reason_code)
-		setClauses = append(setClauses, "gen_bus_posting_group = ?")
-		values = append(values, t.Gen_bus_posting_group)
-		setClauses = append(setClauses, "buy_from_vendor_name = ?")
-		values = append(values, t.Buy_from_vendor_name)
-		setClauses = append(setClauses, "buy_from_vendor_name_2 = ?")
-		values = append(values, t.Buy_from_vendor_name_2)
-		setClauses = append(setClauses, "buy_from_address = ?")
-		values = append(values, t.Buy_from_address)
-		setClauses = append(setClauses, "buy_from_address_2 = ?")
-		values = append(values, t.Buy_from_address_2)
-		setClauses = append(setClauses, "buy_from_city = ?")
-		values = append(values, t.Buy_from_city)
-		setClauses = append(setClauses, "buy_from_contact = ?")
-		values = append(values, t.Buy_from_contact)
-		setClauses = append(setClauses, "pay_to_post_code = ?")
-		values = append(values, t.Pay_to_post_code)
-		setClauses = append(setClauses, "pay_to_state = ?")
-		values = append(values, t.Pay_to_state)
-		setClauses = append(setClauses, "pay_to_country_code = ?")
-		values = append(values, t.Pay_to_country_code)
-		setClauses = append(setClauses, "buy_from_post_code = ?")
-		values = append(values, t.Buy_from_post_code)
-		setClauses = append(setClauses, "buy_from_state = ?")
-		values = append(values, t.Buy_from_state)
-		setClauses = append(setClauses, "buy_from_country_code = ?")
-		values = append(values, t.Buy_from_country_code)
-		setClauses = append(setClauses, "ship_to_post_code = ?")
-		values = append(values, t.Ship_to_post_code)
-		setClauses = append(setClauses, "ship_to_state = ?")
-		values = append(values, t.Ship_to_state)
-		setClauses = append(setClauses, "ship_to_country_code = ?")
-		values = append(values, t.Ship_to_country_code)
-		setClauses = append(setClauses, "order_address_code = ?")
-		values = append(values, t.Order_address_code)
-		setClauses = append(setClauses, "document_date = ?")
-		values = append(values, t.Document_date)
-		setClauses = append(setClauses, "payment_method_code = ?")
-		values = append(values, t.Payment_method_code)
-		setClauses = append(setClauses, "no_series = ?")
-		values = append(values, t.No_series)
-		setClauses = append(setClauses, "user_id = ?")
-		values = append(values, t.User_id)
-		setClauses = append(setClauses, "source_code = ?")
-		values = append(values, t.Source_code)
-		setClauses = append(setClauses, "tax_area_code = ?")
-		values = append(values, t.Tax_area_code)
-		setClauses = append(setClauses, "tax_liable = ?")
-		values = append(values, t.Tax_liable)
-		setClauses = append(setClauses, "tax_bus_posting_group = ?")
-		values = append(values, t.Tax_bus_posting_group)
-		setClauses = append(setClauses, "project_no = ?")
-		values = append(values, t.Project_no)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.No)
 	}
 	// Renamed key fields that other tables refer to (Rename): carried over below
 	type renamedKey struct {
@@ -1862,19 +1276,11 @@ func (t *PurchRcptHeader) Modify(runTrigger bool) bool {
 		}
 	}
 
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Purch_Rcpt_Header: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// A temporary record's rename stays in the record: other tables are not changed
 	for _, r := range renamed {
@@ -1956,25 +1362,8 @@ func (t *PurchRcptHeader) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, PurchRcptHeaderTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.No,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Purch_Rcpt_Header: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // ========================================
@@ -2322,53 +1711,13 @@ func (t *PurchRcptHeader) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *PurchRcptHeader) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, PurchRcptHeaderTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Purch_Rcpt_Header\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Purch_Rcpt_Header: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *PurchRcptHeader) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, PurchRcptHeaderTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Purch_Rcpt_Header: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

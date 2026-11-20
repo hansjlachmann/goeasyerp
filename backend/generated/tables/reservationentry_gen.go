@@ -976,56 +976,14 @@ func (t *ReservationEntry) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ReservationEntryTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Entry_no,
-		t.Item_no,
-		t.Location_code,
-		t.Quantity,
-		t.Reservation_status,
-		t.Valid_to_date,
-		t.Description,
-		t.Creation_date,
-		t.Transferred_from_entry_no,
-		t.For_type,
-		t.For_subtype,
-		t.For_id,
-		t.For_batch_name,
-		t.For_prod_order_line,
-		t.For_ref_no,
-		t.From_type,
-		t.From_subtype,
-		t.From_id,
-		t.From_batch_name,
-		t.From_prod_order_line,
-		t.From_ref_no,
-		t.Expected_receipt_date,
-		t.Shipment_date,
-		t.Created_by,
-		t.Cancelation_date,
-		t.Canceled_or_changed_by,
-		t.Variant_code,
-		t.Serial_no,
-		t.Lot_no,
-		t.Bin_code,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (entry_no, item_no, location_code, quantity, reservation_status, valid_to_date, description, creation_date, transferred_from_entry_no, for_type, for_subtype, for_id, for_batch_name, for_prod_order_line, for_ref_no, from_type, from_subtype, from_id, from_batch_name, from_prod_order_line, from_ref_no, expected_receipt_date, shipment_date, created_by, cancelation_date, canceled_or_changed_by, variant_code, serial_no, lot_no, bin_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (entry_no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Reservation_Entry: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(ReservationEntryTableName, key)
 		return false
@@ -1051,42 +1009,10 @@ func (t *ReservationEntry) InsertAll(records []*ReservationEntry, runTrigger boo
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Entry_no,
-			r.Item_no,
-			r.Location_code,
-			r.Quantity,
-			r.Reservation_status,
-			r.Valid_to_date,
-			r.Description,
-			r.Creation_date,
-			r.Transferred_from_entry_no,
-			r.For_type,
-			r.For_subtype,
-			r.For_id,
-			r.For_batch_name,
-			r.For_prod_order_line,
-			r.For_ref_no,
-			r.From_type,
-			r.From_subtype,
-			r.From_id,
-			r.From_batch_name,
-			r.From_prod_order_line,
-			r.From_ref_no,
-			r.Expected_receipt_date,
-			r.Shipment_date,
-			r.Created_by,
-			r.Cancelation_date,
-			r.Canceled_or_changed_by,
-			r.Variant_code,
-			r.Serial_no,
-			r.Lot_no,
-			r.Bin_code,
-		})
+		rows = append(rows, reservationEntryFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, ReservationEntryTableName)
-	columns := []string{"entry_no", "item_no", "location_code", "quantity", "reservation_status", "valid_to_date", "description", "creation_date", "transferred_from_entry_no", "for_type", "for_subtype", "for_id", "for_batch_name", "for_prod_order_line", "for_ref_no", "from_type", "from_subtype", "from_id", "from_batch_name", "from_prod_order_line", "from_ref_no", "expected_receipt_date", "shipment_date", "created_by", "cancelation_date", "canceled_or_changed_by", "variant_code", "serial_no", "lot_no", "bin_code"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, reservationEntryFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -1102,12 +1028,7 @@ func (t *ReservationEntry) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("entry_no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := reservationEntryFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -1115,223 +1036,12 @@ func (t *ReservationEntry) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ReservationEntryTableName)
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("entry_no") {
-			setClauses = append(setClauses, "entry_no = ?")
-			values = append(values, t.Entry_no)
-		}
-		if t.hasFieldChanged("item_no") {
-			setClauses = append(setClauses, "item_no = ?")
-			values = append(values, t.Item_no)
-		}
-		if t.hasFieldChanged("location_code") {
-			setClauses = append(setClauses, "location_code = ?")
-			values = append(values, t.Location_code)
-		}
-		if t.hasFieldChanged("quantity") {
-			setClauses = append(setClauses, "quantity = ?")
-			values = append(values, t.Quantity)
-		}
-		if t.hasFieldChanged("reservation_status") {
-			setClauses = append(setClauses, "reservation_status = ?")
-			values = append(values, t.Reservation_status)
-		}
-		if t.hasFieldChanged("valid_to_date") {
-			setClauses = append(setClauses, "valid_to_date = ?")
-			values = append(values, t.Valid_to_date)
-		}
-		if t.hasFieldChanged("description") {
-			setClauses = append(setClauses, "description = ?")
-			values = append(values, t.Description)
-		}
-		if t.hasFieldChanged("creation_date") {
-			setClauses = append(setClauses, "creation_date = ?")
-			values = append(values, t.Creation_date)
-		}
-		if t.hasFieldChanged("transferred_from_entry_no") {
-			setClauses = append(setClauses, "transferred_from_entry_no = ?")
-			values = append(values, t.Transferred_from_entry_no)
-		}
-		if t.hasFieldChanged("for_type") {
-			setClauses = append(setClauses, "for_type = ?")
-			values = append(values, t.For_type)
-		}
-		if t.hasFieldChanged("for_subtype") {
-			setClauses = append(setClauses, "for_subtype = ?")
-			values = append(values, t.For_subtype)
-		}
-		if t.hasFieldChanged("for_id") {
-			setClauses = append(setClauses, "for_id = ?")
-			values = append(values, t.For_id)
-		}
-		if t.hasFieldChanged("for_batch_name") {
-			setClauses = append(setClauses, "for_batch_name = ?")
-			values = append(values, t.For_batch_name)
-		}
-		if t.hasFieldChanged("for_prod_order_line") {
-			setClauses = append(setClauses, "for_prod_order_line = ?")
-			values = append(values, t.For_prod_order_line)
-		}
-		if t.hasFieldChanged("for_ref_no") {
-			setClauses = append(setClauses, "for_ref_no = ?")
-			values = append(values, t.For_ref_no)
-		}
-		if t.hasFieldChanged("from_type") {
-			setClauses = append(setClauses, "from_type = ?")
-			values = append(values, t.From_type)
-		}
-		if t.hasFieldChanged("from_subtype") {
-			setClauses = append(setClauses, "from_subtype = ?")
-			values = append(values, t.From_subtype)
-		}
-		if t.hasFieldChanged("from_id") {
-			setClauses = append(setClauses, "from_id = ?")
-			values = append(values, t.From_id)
-		}
-		if t.hasFieldChanged("from_batch_name") {
-			setClauses = append(setClauses, "from_batch_name = ?")
-			values = append(values, t.From_batch_name)
-		}
-		if t.hasFieldChanged("from_prod_order_line") {
-			setClauses = append(setClauses, "from_prod_order_line = ?")
-			values = append(values, t.From_prod_order_line)
-		}
-		if t.hasFieldChanged("from_ref_no") {
-			setClauses = append(setClauses, "from_ref_no = ?")
-			values = append(values, t.From_ref_no)
-		}
-		if t.hasFieldChanged("expected_receipt_date") {
-			setClauses = append(setClauses, "expected_receipt_date = ?")
-			values = append(values, t.Expected_receipt_date)
-		}
-		if t.hasFieldChanged("shipment_date") {
-			setClauses = append(setClauses, "shipment_date = ?")
-			values = append(values, t.Shipment_date)
-		}
-		if t.hasFieldChanged("created_by") {
-			setClauses = append(setClauses, "created_by = ?")
-			values = append(values, t.Created_by)
-		}
-		if t.hasFieldChanged("cancelation_date") {
-			setClauses = append(setClauses, "cancelation_date = ?")
-			values = append(values, t.Cancelation_date)
-		}
-		if t.hasFieldChanged("canceled_or_changed_by") {
-			setClauses = append(setClauses, "canceled_or_changed_by = ?")
-			values = append(values, t.Canceled_or_changed_by)
-		}
-		if t.hasFieldChanged("variant_code") {
-			setClauses = append(setClauses, "variant_code = ?")
-			values = append(values, t.Variant_code)
-		}
-		if t.hasFieldChanged("serial_no") {
-			setClauses = append(setClauses, "serial_no = ?")
-			values = append(values, t.Serial_no)
-		}
-		if t.hasFieldChanged("lot_no") {
-			setClauses = append(setClauses, "lot_no = ?")
-			values = append(values, t.Lot_no)
-		}
-		if t.hasFieldChanged("bin_code") {
-			setClauses = append(setClauses, "bin_code = ?")
-			values = append(values, t.Bin_code)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "item_no = ?")
-		values = append(values, t.Item_no)
-		setClauses = append(setClauses, "location_code = ?")
-		values = append(values, t.Location_code)
-		setClauses = append(setClauses, "quantity = ?")
-		values = append(values, t.Quantity)
-		setClauses = append(setClauses, "reservation_status = ?")
-		values = append(values, t.Reservation_status)
-		setClauses = append(setClauses, "valid_to_date = ?")
-		values = append(values, t.Valid_to_date)
-		setClauses = append(setClauses, "description = ?")
-		values = append(values, t.Description)
-		setClauses = append(setClauses, "creation_date = ?")
-		values = append(values, t.Creation_date)
-		setClauses = append(setClauses, "transferred_from_entry_no = ?")
-		values = append(values, t.Transferred_from_entry_no)
-		setClauses = append(setClauses, "for_type = ?")
-		values = append(values, t.For_type)
-		setClauses = append(setClauses, "for_subtype = ?")
-		values = append(values, t.For_subtype)
-		setClauses = append(setClauses, "for_id = ?")
-		values = append(values, t.For_id)
-		setClauses = append(setClauses, "for_batch_name = ?")
-		values = append(values, t.For_batch_name)
-		setClauses = append(setClauses, "for_prod_order_line = ?")
-		values = append(values, t.For_prod_order_line)
-		setClauses = append(setClauses, "for_ref_no = ?")
-		values = append(values, t.For_ref_no)
-		setClauses = append(setClauses, "from_type = ?")
-		values = append(values, t.From_type)
-		setClauses = append(setClauses, "from_subtype = ?")
-		values = append(values, t.From_subtype)
-		setClauses = append(setClauses, "from_id = ?")
-		values = append(values, t.From_id)
-		setClauses = append(setClauses, "from_batch_name = ?")
-		values = append(values, t.From_batch_name)
-		setClauses = append(setClauses, "from_prod_order_line = ?")
-		values = append(values, t.From_prod_order_line)
-		setClauses = append(setClauses, "from_ref_no = ?")
-		values = append(values, t.From_ref_no)
-		setClauses = append(setClauses, "expected_receipt_date = ?")
-		values = append(values, t.Expected_receipt_date)
-		setClauses = append(setClauses, "shipment_date = ?")
-		values = append(values, t.Shipment_date)
-		setClauses = append(setClauses, "created_by = ?")
-		values = append(values, t.Created_by)
-		setClauses = append(setClauses, "cancelation_date = ?")
-		values = append(values, t.Cancelation_date)
-		setClauses = append(setClauses, "canceled_or_changed_by = ?")
-		values = append(values, t.Canceled_or_changed_by)
-		setClauses = append(setClauses, "variant_code = ?")
-		values = append(values, t.Variant_code)
-		setClauses = append(setClauses, "serial_no = ?")
-		values = append(values, t.Serial_no)
-		setClauses = append(setClauses, "lot_no = ?")
-		values = append(values, t.Lot_no)
-		setClauses = append(setClauses, "bin_code = ?")
-		values = append(values, t.Bin_code)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["entry_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Entry_no)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND entry_no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Reservation_Entry: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -1362,25 +1072,8 @@ func (t *ReservationEntry) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ReservationEntryTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Entry_no,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND entry_no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Reservation_Entry: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1580,53 +1273,13 @@ func (t *ReservationEntry) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *ReservationEntry) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, ReservationEntryTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Reservation_Entry\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Reservation_Entry: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *ReservationEntry) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, ReservationEntryTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Reservation_Entry: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

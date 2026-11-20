@@ -871,49 +871,14 @@ func (t *IssuedReminderLine) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, IssuedReminderLineTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Reminder_no,
-		t.Line_no,
-		t.Attached_to_line_no,
-		t.Type,
-		t.Entry_no,
-		t.Reminder_level,
-		t.Posting_date,
-		t.Document_date,
-		t.Due_date,
-		t.Document_type,
-		t.Document_no,
-		t.Description,
-		t.Original_amount,
-		t.Remaining_amount,
-		t.No,
-		t.Amount,
-		t.Interest_rate,
-		t.Gen_prod_posting_group,
-		t.Tax_percent,
-		t.Tax_calculation_type,
-		t.Tax_amount,
-		t.Tax_group_code,
-		t.Tax_prod_posting_group,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (reminder_no, line_no, attached_to_line_no, type, entry_no, reminder_level, posting_date, document_date, due_date, document_type, document_no, description, original_amount, remaining_amount, no, amount, interest_rate, gen_prod_posting_group, tax_percent, tax_calculation_type, tax_amount, tax_group_code, tax_prod_posting_group) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (reminder_no, line_no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Issued_Reminder_Line: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(IssuedReminderLineTableName, key)
 		return false
@@ -939,35 +904,10 @@ func (t *IssuedReminderLine) InsertAll(records []*IssuedReminderLine, runTrigger
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Reminder_no,
-			r.Line_no,
-			r.Attached_to_line_no,
-			r.Type,
-			r.Entry_no,
-			r.Reminder_level,
-			r.Posting_date,
-			r.Document_date,
-			r.Due_date,
-			r.Document_type,
-			r.Document_no,
-			r.Description,
-			r.Original_amount,
-			r.Remaining_amount,
-			r.No,
-			r.Amount,
-			r.Interest_rate,
-			r.Gen_prod_posting_group,
-			r.Tax_percent,
-			r.Tax_calculation_type,
-			r.Tax_amount,
-			r.Tax_group_code,
-			r.Tax_prod_posting_group,
-		})
+		rows = append(rows, issuedReminderLineFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, IssuedReminderLineTableName)
-	columns := []string{"reminder_no", "line_no", "attached_to_line_no", "type", "entry_no", "reminder_level", "posting_date", "document_date", "due_date", "document_type", "document_no", "description", "original_amount", "remaining_amount", "no", "amount", "interest_rate", "gen_prod_posting_group", "tax_percent", "tax_calculation_type", "tax_amount", "tax_group_code", "tax_prod_posting_group"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, issuedReminderLineFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -983,15 +923,7 @@ func (t *IssuedReminderLine) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("reminder_no") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("line_no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := issuedReminderLineFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -999,184 +931,12 @@ func (t *IssuedReminderLine) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, IssuedReminderLineTableName)
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("reminder_no") {
-			setClauses = append(setClauses, "reminder_no = ?")
-			values = append(values, t.Reminder_no)
-		}
-		if t.hasFieldChanged("line_no") {
-			setClauses = append(setClauses, "line_no = ?")
-			values = append(values, t.Line_no)
-		}
-		if t.hasFieldChanged("attached_to_line_no") {
-			setClauses = append(setClauses, "attached_to_line_no = ?")
-			values = append(values, t.Attached_to_line_no)
-		}
-		if t.hasFieldChanged("type") {
-			setClauses = append(setClauses, "type = ?")
-			values = append(values, t.Type)
-		}
-		if t.hasFieldChanged("entry_no") {
-			setClauses = append(setClauses, "entry_no = ?")
-			values = append(values, t.Entry_no)
-		}
-		if t.hasFieldChanged("reminder_level") {
-			setClauses = append(setClauses, "reminder_level = ?")
-			values = append(values, t.Reminder_level)
-		}
-		if t.hasFieldChanged("posting_date") {
-			setClauses = append(setClauses, "posting_date = ?")
-			values = append(values, t.Posting_date)
-		}
-		if t.hasFieldChanged("document_date") {
-			setClauses = append(setClauses, "document_date = ?")
-			values = append(values, t.Document_date)
-		}
-		if t.hasFieldChanged("due_date") {
-			setClauses = append(setClauses, "due_date = ?")
-			values = append(values, t.Due_date)
-		}
-		if t.hasFieldChanged("document_type") {
-			setClauses = append(setClauses, "document_type = ?")
-			values = append(values, t.Document_type)
-		}
-		if t.hasFieldChanged("document_no") {
-			setClauses = append(setClauses, "document_no = ?")
-			values = append(values, t.Document_no)
-		}
-		if t.hasFieldChanged("description") {
-			setClauses = append(setClauses, "description = ?")
-			values = append(values, t.Description)
-		}
-		if t.hasFieldChanged("original_amount") {
-			setClauses = append(setClauses, "original_amount = ?")
-			values = append(values, t.Original_amount)
-		}
-		if t.hasFieldChanged("remaining_amount") {
-			setClauses = append(setClauses, "remaining_amount = ?")
-			values = append(values, t.Remaining_amount)
-		}
-		if t.hasFieldChanged("no") {
-			setClauses = append(setClauses, "no = ?")
-			values = append(values, t.No)
-		}
-		if t.hasFieldChanged("amount") {
-			setClauses = append(setClauses, "amount = ?")
-			values = append(values, t.Amount)
-		}
-		if t.hasFieldChanged("interest_rate") {
-			setClauses = append(setClauses, "interest_rate = ?")
-			values = append(values, t.Interest_rate)
-		}
-		if t.hasFieldChanged("gen_prod_posting_group") {
-			setClauses = append(setClauses, "gen_prod_posting_group = ?")
-			values = append(values, t.Gen_prod_posting_group)
-		}
-		if t.hasFieldChanged("tax_percent") {
-			setClauses = append(setClauses, "tax_percent = ?")
-			values = append(values, t.Tax_percent)
-		}
-		if t.hasFieldChanged("tax_calculation_type") {
-			setClauses = append(setClauses, "tax_calculation_type = ?")
-			values = append(values, t.Tax_calculation_type)
-		}
-		if t.hasFieldChanged("tax_amount") {
-			setClauses = append(setClauses, "tax_amount = ?")
-			values = append(values, t.Tax_amount)
-		}
-		if t.hasFieldChanged("tax_group_code") {
-			setClauses = append(setClauses, "tax_group_code = ?")
-			values = append(values, t.Tax_group_code)
-		}
-		if t.hasFieldChanged("tax_prod_posting_group") {
-			setClauses = append(setClauses, "tax_prod_posting_group = ?")
-			values = append(values, t.Tax_prod_posting_group)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "attached_to_line_no = ?")
-		values = append(values, t.Attached_to_line_no)
-		setClauses = append(setClauses, "type = ?")
-		values = append(values, t.Type)
-		setClauses = append(setClauses, "entry_no = ?")
-		values = append(values, t.Entry_no)
-		setClauses = append(setClauses, "reminder_level = ?")
-		values = append(values, t.Reminder_level)
-		setClauses = append(setClauses, "posting_date = ?")
-		values = append(values, t.Posting_date)
-		setClauses = append(setClauses, "document_date = ?")
-		values = append(values, t.Document_date)
-		setClauses = append(setClauses, "due_date = ?")
-		values = append(values, t.Due_date)
-		setClauses = append(setClauses, "document_type = ?")
-		values = append(values, t.Document_type)
-		setClauses = append(setClauses, "document_no = ?")
-		values = append(values, t.Document_no)
-		setClauses = append(setClauses, "description = ?")
-		values = append(values, t.Description)
-		setClauses = append(setClauses, "original_amount = ?")
-		values = append(values, t.Original_amount)
-		setClauses = append(setClauses, "remaining_amount = ?")
-		values = append(values, t.Remaining_amount)
-		setClauses = append(setClauses, "no = ?")
-		values = append(values, t.No)
-		setClauses = append(setClauses, "amount = ?")
-		values = append(values, t.Amount)
-		setClauses = append(setClauses, "interest_rate = ?")
-		values = append(values, t.Interest_rate)
-		setClauses = append(setClauses, "gen_prod_posting_group = ?")
-		values = append(values, t.Gen_prod_posting_group)
-		setClauses = append(setClauses, "tax_percent = ?")
-		values = append(values, t.Tax_percent)
-		setClauses = append(setClauses, "tax_calculation_type = ?")
-		values = append(values, t.Tax_calculation_type)
-		setClauses = append(setClauses, "tax_amount = ?")
-		values = append(values, t.Tax_amount)
-		setClauses = append(setClauses, "tax_group_code = ?")
-		values = append(values, t.Tax_group_code)
-		setClauses = append(setClauses, "tax_prod_posting_group = ?")
-		values = append(values, t.Tax_prod_posting_group)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["reminder_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Reminder_no)
-	}
-	if old, ok := t.oldValues["line_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Line_no)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND reminder_no = ? AND line_no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Issued_Reminder_Line: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -1207,26 +967,8 @@ func (t *IssuedReminderLine) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, IssuedReminderLineTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Reminder_no,
-		t.Line_no,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND reminder_no = ? AND line_no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Issued_Reminder_Line: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1426,53 +1168,13 @@ func (t *IssuedReminderLine) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *IssuedReminderLine) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, IssuedReminderLineTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Issued_Reminder_Line\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Issued_Reminder_Line: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *IssuedReminderLine) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, IssuedReminderLineTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Issued_Reminder_Line: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

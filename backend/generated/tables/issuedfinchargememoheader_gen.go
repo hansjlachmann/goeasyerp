@@ -950,62 +950,14 @@ func (t *IssuedFinChargeMemoHeader) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, IssuedFinChargeMemoHeaderTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.No,
-		t.Customer_no,
-		t.Name,
-		t.Name_2,
-		t.Address,
-		t.Address_2,
-		t.Post_code,
-		t.City,
-		t.State,
-		t.Country_code,
-		t.Language_code,
-		t.Currency_code,
-		t.Contact,
-		t.Your_reference,
-		t.Dimension_1_code,
-		t.Dimension_2_code,
-		t.Customer_posting_group,
-		t.Gen_bus_posting_group,
-		t.Vat_registration_no,
-		t.Reason_code,
-		t.Posting_date,
-		t.Document_date,
-		t.Due_date,
-		t.Fin_charge_terms_code,
-		t.Interest_posted,
-		t.Additional_fee_posted,
-		t.Posting_description,
-		t.No_printed,
-		t.User_id,
-		t.No_series,
-		t.Pre_assigned_no_series,
-		t.Pre_assigned_no,
-		t.Source_code,
-		t.Tax_area_code,
-		t.Tax_liable,
-		t.Tax_bus_posting_group,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (no, customer_no, name, name_2, address, address_2, post_code, city, state, country_code, language_code, currency_code, contact, your_reference, dimension_1_code, dimension_2_code, customer_posting_group, gen_bus_posting_group, vat_registration_no, reason_code, posting_date, document_date, due_date, fin_charge_terms_code, interest_posted, additional_fee_posted, posting_description, no_printed, user_id, no_series, pre_assigned_no_series, pre_assigned_no, source_code, tax_area_code, tax_liable, tax_bus_posting_group) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Issued_Fin_Charge_Memo_Header: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(IssuedFinChargeMemoHeaderTableName, key)
 		return false
@@ -1031,48 +983,10 @@ func (t *IssuedFinChargeMemoHeader) InsertAll(records []*IssuedFinChargeMemoHead
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.No,
-			r.Customer_no,
-			r.Name,
-			r.Name_2,
-			r.Address,
-			r.Address_2,
-			r.Post_code,
-			r.City,
-			r.State,
-			r.Country_code,
-			r.Language_code,
-			r.Currency_code,
-			r.Contact,
-			r.Your_reference,
-			r.Dimension_1_code,
-			r.Dimension_2_code,
-			r.Customer_posting_group,
-			r.Gen_bus_posting_group,
-			r.Vat_registration_no,
-			r.Reason_code,
-			r.Posting_date,
-			r.Document_date,
-			r.Due_date,
-			r.Fin_charge_terms_code,
-			r.Interest_posted,
-			r.Additional_fee_posted,
-			r.Posting_description,
-			r.No_printed,
-			r.User_id,
-			r.No_series,
-			r.Pre_assigned_no_series,
-			r.Pre_assigned_no,
-			r.Source_code,
-			r.Tax_area_code,
-			r.Tax_liable,
-			r.Tax_bus_posting_group,
-		})
+		rows = append(rows, issuedFinChargeMemoHeaderFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, IssuedFinChargeMemoHeaderTableName)
-	columns := []string{"no", "customer_no", "name", "name_2", "address", "address_2", "post_code", "city", "state", "country_code", "language_code", "currency_code", "contact", "your_reference", "dimension_1_code", "dimension_2_code", "customer_posting_group", "gen_bus_posting_group", "vat_registration_no", "reason_code", "posting_date", "document_date", "due_date", "fin_charge_terms_code", "interest_posted", "additional_fee_posted", "posting_description", "no_printed", "user_id", "no_series", "pre_assigned_no_series", "pre_assigned_no", "source_code", "tax_area_code", "tax_liable", "tax_bus_posting_group"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, issuedFinChargeMemoHeaderFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -1088,257 +1002,13 @@ func (t *IssuedFinChargeMemoHeader) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := issuedFinChargeMemoHeaderFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
 		}
-	}
-	tableName := fmt.Sprintf("%s$%s", t.company, IssuedFinChargeMemoHeaderTableName)
-
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("no") {
-			setClauses = append(setClauses, "no = ?")
-			values = append(values, t.No)
-		}
-		if t.hasFieldChanged("customer_no") {
-			setClauses = append(setClauses, "customer_no = ?")
-			values = append(values, t.Customer_no)
-		}
-		if t.hasFieldChanged("name") {
-			setClauses = append(setClauses, "name = ?")
-			values = append(values, t.Name)
-		}
-		if t.hasFieldChanged("name_2") {
-			setClauses = append(setClauses, "name_2 = ?")
-			values = append(values, t.Name_2)
-		}
-		if t.hasFieldChanged("address") {
-			setClauses = append(setClauses, "address = ?")
-			values = append(values, t.Address)
-		}
-		if t.hasFieldChanged("address_2") {
-			setClauses = append(setClauses, "address_2 = ?")
-			values = append(values, t.Address_2)
-		}
-		if t.hasFieldChanged("post_code") {
-			setClauses = append(setClauses, "post_code = ?")
-			values = append(values, t.Post_code)
-		}
-		if t.hasFieldChanged("city") {
-			setClauses = append(setClauses, "city = ?")
-			values = append(values, t.City)
-		}
-		if t.hasFieldChanged("state") {
-			setClauses = append(setClauses, "state = ?")
-			values = append(values, t.State)
-		}
-		if t.hasFieldChanged("country_code") {
-			setClauses = append(setClauses, "country_code = ?")
-			values = append(values, t.Country_code)
-		}
-		if t.hasFieldChanged("language_code") {
-			setClauses = append(setClauses, "language_code = ?")
-			values = append(values, t.Language_code)
-		}
-		if t.hasFieldChanged("currency_code") {
-			setClauses = append(setClauses, "currency_code = ?")
-			values = append(values, t.Currency_code)
-		}
-		if t.hasFieldChanged("contact") {
-			setClauses = append(setClauses, "contact = ?")
-			values = append(values, t.Contact)
-		}
-		if t.hasFieldChanged("your_reference") {
-			setClauses = append(setClauses, "your_reference = ?")
-			values = append(values, t.Your_reference)
-		}
-		if t.hasFieldChanged("dimension_1_code") {
-			setClauses = append(setClauses, "dimension_1_code = ?")
-			values = append(values, t.Dimension_1_code)
-		}
-		if t.hasFieldChanged("dimension_2_code") {
-			setClauses = append(setClauses, "dimension_2_code = ?")
-			values = append(values, t.Dimension_2_code)
-		}
-		if t.hasFieldChanged("customer_posting_group") {
-			setClauses = append(setClauses, "customer_posting_group = ?")
-			values = append(values, t.Customer_posting_group)
-		}
-		if t.hasFieldChanged("gen_bus_posting_group") {
-			setClauses = append(setClauses, "gen_bus_posting_group = ?")
-			values = append(values, t.Gen_bus_posting_group)
-		}
-		if t.hasFieldChanged("vat_registration_no") {
-			setClauses = append(setClauses, "vat_registration_no = ?")
-			values = append(values, t.Vat_registration_no)
-		}
-		if t.hasFieldChanged("reason_code") {
-			setClauses = append(setClauses, "reason_code = ?")
-			values = append(values, t.Reason_code)
-		}
-		if t.hasFieldChanged("posting_date") {
-			setClauses = append(setClauses, "posting_date = ?")
-			values = append(values, t.Posting_date)
-		}
-		if t.hasFieldChanged("document_date") {
-			setClauses = append(setClauses, "document_date = ?")
-			values = append(values, t.Document_date)
-		}
-		if t.hasFieldChanged("due_date") {
-			setClauses = append(setClauses, "due_date = ?")
-			values = append(values, t.Due_date)
-		}
-		if t.hasFieldChanged("fin_charge_terms_code") {
-			setClauses = append(setClauses, "fin_charge_terms_code = ?")
-			values = append(values, t.Fin_charge_terms_code)
-		}
-		if t.hasFieldChanged("interest_posted") {
-			setClauses = append(setClauses, "interest_posted = ?")
-			values = append(values, t.Interest_posted)
-		}
-		if t.hasFieldChanged("additional_fee_posted") {
-			setClauses = append(setClauses, "additional_fee_posted = ?")
-			values = append(values, t.Additional_fee_posted)
-		}
-		if t.hasFieldChanged("posting_description") {
-			setClauses = append(setClauses, "posting_description = ?")
-			values = append(values, t.Posting_description)
-		}
-		if t.hasFieldChanged("no_printed") {
-			setClauses = append(setClauses, "no_printed = ?")
-			values = append(values, t.No_printed)
-		}
-		if t.hasFieldChanged("user_id") {
-			setClauses = append(setClauses, "user_id = ?")
-			values = append(values, t.User_id)
-		}
-		if t.hasFieldChanged("no_series") {
-			setClauses = append(setClauses, "no_series = ?")
-			values = append(values, t.No_series)
-		}
-		if t.hasFieldChanged("pre_assigned_no_series") {
-			setClauses = append(setClauses, "pre_assigned_no_series = ?")
-			values = append(values, t.Pre_assigned_no_series)
-		}
-		if t.hasFieldChanged("pre_assigned_no") {
-			setClauses = append(setClauses, "pre_assigned_no = ?")
-			values = append(values, t.Pre_assigned_no)
-		}
-		if t.hasFieldChanged("source_code") {
-			setClauses = append(setClauses, "source_code = ?")
-			values = append(values, t.Source_code)
-		}
-		if t.hasFieldChanged("tax_area_code") {
-			setClauses = append(setClauses, "tax_area_code = ?")
-			values = append(values, t.Tax_area_code)
-		}
-		if t.hasFieldChanged("tax_liable") {
-			setClauses = append(setClauses, "tax_liable = ?")
-			values = append(values, t.Tax_liable)
-		}
-		if t.hasFieldChanged("tax_bus_posting_group") {
-			setClauses = append(setClauses, "tax_bus_posting_group = ?")
-			values = append(values, t.Tax_bus_posting_group)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "customer_no = ?")
-		values = append(values, t.Customer_no)
-		setClauses = append(setClauses, "name = ?")
-		values = append(values, t.Name)
-		setClauses = append(setClauses, "name_2 = ?")
-		values = append(values, t.Name_2)
-		setClauses = append(setClauses, "address = ?")
-		values = append(values, t.Address)
-		setClauses = append(setClauses, "address_2 = ?")
-		values = append(values, t.Address_2)
-		setClauses = append(setClauses, "post_code = ?")
-		values = append(values, t.Post_code)
-		setClauses = append(setClauses, "city = ?")
-		values = append(values, t.City)
-		setClauses = append(setClauses, "state = ?")
-		values = append(values, t.State)
-		setClauses = append(setClauses, "country_code = ?")
-		values = append(values, t.Country_code)
-		setClauses = append(setClauses, "language_code = ?")
-		values = append(values, t.Language_code)
-		setClauses = append(setClauses, "currency_code = ?")
-		values = append(values, t.Currency_code)
-		setClauses = append(setClauses, "contact = ?")
-		values = append(values, t.Contact)
-		setClauses = append(setClauses, "your_reference = ?")
-		values = append(values, t.Your_reference)
-		setClauses = append(setClauses, "dimension_1_code = ?")
-		values = append(values, t.Dimension_1_code)
-		setClauses = append(setClauses, "dimension_2_code = ?")
-		values = append(values, t.Dimension_2_code)
-		setClauses = append(setClauses, "customer_posting_group = ?")
-		values = append(values, t.Customer_posting_group)
-		setClauses = append(setClauses, "gen_bus_posting_group = ?")
-		values = append(values, t.Gen_bus_posting_group)
-		setClauses = append(setClauses, "vat_registration_no = ?")
-		values = append(values, t.Vat_registration_no)
-		setClauses = append(setClauses, "reason_code = ?")
-		values = append(values, t.Reason_code)
-		setClauses = append(setClauses, "posting_date = ?")
-		values = append(values, t.Posting_date)
-		setClauses = append(setClauses, "document_date = ?")
-		values = append(values, t.Document_date)
-		setClauses = append(setClauses, "due_date = ?")
-		values = append(values, t.Due_date)
-		setClauses = append(setClauses, "fin_charge_terms_code = ?")
-		values = append(values, t.Fin_charge_terms_code)
-		setClauses = append(setClauses, "interest_posted = ?")
-		values = append(values, t.Interest_posted)
-		setClauses = append(setClauses, "additional_fee_posted = ?")
-		values = append(values, t.Additional_fee_posted)
-		setClauses = append(setClauses, "posting_description = ?")
-		values = append(values, t.Posting_description)
-		setClauses = append(setClauses, "no_printed = ?")
-		values = append(values, t.No_printed)
-		setClauses = append(setClauses, "user_id = ?")
-		values = append(values, t.User_id)
-		setClauses = append(setClauses, "no_series = ?")
-		values = append(values, t.No_series)
-		setClauses = append(setClauses, "pre_assigned_no_series = ?")
-		values = append(values, t.Pre_assigned_no_series)
-		setClauses = append(setClauses, "pre_assigned_no = ?")
-		values = append(values, t.Pre_assigned_no)
-		setClauses = append(setClauses, "source_code = ?")
-		values = append(values, t.Source_code)
-		setClauses = append(setClauses, "tax_area_code = ?")
-		values = append(values, t.Tax_area_code)
-		setClauses = append(setClauses, "tax_liable = ?")
-		values = append(values, t.Tax_liable)
-		setClauses = append(setClauses, "tax_bus_posting_group = ?")
-		values = append(values, t.Tax_bus_posting_group)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.No)
 	}
 	// Renamed key fields that other tables refer to (Rename): carried over below
 	type renamedKey struct {
@@ -1352,19 +1022,11 @@ func (t *IssuedFinChargeMemoHeader) Modify(runTrigger bool) bool {
 		}
 	}
 
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Issued_Fin_Charge_Memo_Header: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// A temporary record's rename stays in the record: other tables are not changed
 	for _, r := range renamed {
@@ -1446,25 +1108,8 @@ func (t *IssuedFinChargeMemoHeader) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, IssuedFinChargeMemoHeaderTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.No,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Issued_Fin_Charge_Memo_Header: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // ========================================
@@ -2345,53 +1990,13 @@ func (t *IssuedFinChargeMemoHeader) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *IssuedFinChargeMemoHeader) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, IssuedFinChargeMemoHeaderTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Issued_Fin_Charge_Memo_Header\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Issued_Fin_Charge_Memo_Header: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *IssuedFinChargeMemoHeader) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, IssuedFinChargeMemoHeaderTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Issued_Fin_Charge_Memo_Header: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

@@ -799,43 +799,14 @@ func (t *InstalledApp) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := InstalledAppTableName
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.App_id,
-		t.Name,
-		t.Publisher,
-		t.Contact,
-		t.Version,
-		t.Object_series,
-		t.Field_series,
-		t.System_tables,
-		t.Installed_at,
-		t.Updated_at,
-		t.Disabled,
-		t.Status,
-		t.Source,
-		t.Source_ref,
-		t.Source_path,
-		t.Manifest,
-		t.Source_type,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (app_id, name, publisher, contact, version, object_series, field_series, system_tables, installed_at, updated_at, disabled, status, source, source_ref, source_path, manifest, source_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (app_id) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Installed_App: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(InstalledAppTableName, key)
 		return false
@@ -861,29 +832,10 @@ func (t *InstalledApp) InsertAll(records []*InstalledApp, runTrigger bool) error
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.App_id,
-			r.Name,
-			r.Publisher,
-			r.Contact,
-			r.Version,
-			r.Object_series,
-			r.Field_series,
-			r.System_tables,
-			r.Installed_at,
-			r.Updated_at,
-			r.Disabled,
-			r.Status,
-			r.Source,
-			r.Source_ref,
-			r.Source_path,
-			r.Manifest,
-			r.Source_type,
-		})
+		rows = append(rows, installedAppFields.RowValues(r.fieldRef))
 	}
 	tableName := InstalledAppTableName
-	columns := []string{"app_id", "name", "publisher", "contact", "version", "object_series", "field_series", "system_tables", "installed_at", "updated_at", "disabled", "status", "source", "source_ref", "source_path", "manifest", "source_type"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, installedAppFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -899,12 +851,7 @@ func (t *InstalledApp) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("app_id") {
-			keyChanged = true
-		}
-	}
+	keyChanged := installedAppFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -912,145 +859,12 @@ func (t *InstalledApp) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := InstalledAppTableName
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("app_id") {
-			setClauses = append(setClauses, "app_id = ?")
-			values = append(values, t.App_id)
-		}
-		if t.hasFieldChanged("name") {
-			setClauses = append(setClauses, "name = ?")
-			values = append(values, t.Name)
-		}
-		if t.hasFieldChanged("publisher") {
-			setClauses = append(setClauses, "publisher = ?")
-			values = append(values, t.Publisher)
-		}
-		if t.hasFieldChanged("contact") {
-			setClauses = append(setClauses, "contact = ?")
-			values = append(values, t.Contact)
-		}
-		if t.hasFieldChanged("version") {
-			setClauses = append(setClauses, "version = ?")
-			values = append(values, t.Version)
-		}
-		if t.hasFieldChanged("object_series") {
-			setClauses = append(setClauses, "object_series = ?")
-			values = append(values, t.Object_series)
-		}
-		if t.hasFieldChanged("field_series") {
-			setClauses = append(setClauses, "field_series = ?")
-			values = append(values, t.Field_series)
-		}
-		if t.hasFieldChanged("system_tables") {
-			setClauses = append(setClauses, "system_tables = ?")
-			values = append(values, t.System_tables)
-		}
-		if t.hasFieldChanged("installed_at") {
-			setClauses = append(setClauses, "installed_at = ?")
-			values = append(values, t.Installed_at)
-		}
-		if t.hasFieldChanged("updated_at") {
-			setClauses = append(setClauses, "updated_at = ?")
-			values = append(values, t.Updated_at)
-		}
-		if t.hasFieldChanged("disabled") {
-			setClauses = append(setClauses, "disabled = ?")
-			values = append(values, t.Disabled)
-		}
-		if t.hasFieldChanged("status") {
-			setClauses = append(setClauses, "status = ?")
-			values = append(values, t.Status)
-		}
-		if t.hasFieldChanged("source") {
-			setClauses = append(setClauses, "source = ?")
-			values = append(values, t.Source)
-		}
-		if t.hasFieldChanged("source_ref") {
-			setClauses = append(setClauses, "source_ref = ?")
-			values = append(values, t.Source_ref)
-		}
-		if t.hasFieldChanged("source_path") {
-			setClauses = append(setClauses, "source_path = ?")
-			values = append(values, t.Source_path)
-		}
-		if t.hasFieldChanged("manifest") {
-			setClauses = append(setClauses, "manifest = ?")
-			values = append(values, t.Manifest)
-		}
-		if t.hasFieldChanged("source_type") {
-			setClauses = append(setClauses, "source_type = ?")
-			values = append(values, t.Source_type)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "name = ?")
-		values = append(values, t.Name)
-		setClauses = append(setClauses, "publisher = ?")
-		values = append(values, t.Publisher)
-		setClauses = append(setClauses, "contact = ?")
-		values = append(values, t.Contact)
-		setClauses = append(setClauses, "version = ?")
-		values = append(values, t.Version)
-		setClauses = append(setClauses, "object_series = ?")
-		values = append(values, t.Object_series)
-		setClauses = append(setClauses, "field_series = ?")
-		values = append(values, t.Field_series)
-		setClauses = append(setClauses, "system_tables = ?")
-		values = append(values, t.System_tables)
-		setClauses = append(setClauses, "installed_at = ?")
-		values = append(values, t.Installed_at)
-		setClauses = append(setClauses, "updated_at = ?")
-		values = append(values, t.Updated_at)
-		setClauses = append(setClauses, "disabled = ?")
-		values = append(values, t.Disabled)
-		setClauses = append(setClauses, "status = ?")
-		values = append(values, t.Status)
-		setClauses = append(setClauses, "source = ?")
-		values = append(values, t.Source)
-		setClauses = append(setClauses, "source_ref = ?")
-		values = append(values, t.Source_ref)
-		setClauses = append(setClauses, "source_path = ?")
-		values = append(values, t.Source_path)
-		setClauses = append(setClauses, "manifest = ?")
-		values = append(values, t.Manifest)
-		setClauses = append(setClauses, "source_type = ?")
-		values = append(values, t.Source_type)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["app_id"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.App_id)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND app_id = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Installed_App: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -1081,25 +895,8 @@ func (t *InstalledApp) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := InstalledAppTableName
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.App_id,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND app_id = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Installed_App: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1299,53 +1096,13 @@ func (t *InstalledApp) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *InstalledApp) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := InstalledAppTableName
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Installed_App\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Installed_App: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *InstalledApp) DeleteAll() int {
-	tableName := InstalledAppTableName
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Installed_App: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

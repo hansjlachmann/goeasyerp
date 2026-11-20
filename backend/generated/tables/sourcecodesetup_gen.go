@@ -999,69 +999,14 @@ func (t *SourceCodeSetup) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, SourceCodeSetupTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Primary_key,
-		t.Sales,
-		t.Purchases,
-		t.Exchange_rate_adjmt,
-		t.Close_income_statement,
-		t.Consolidation,
-		t.Adjust_add_reporting_currency,
-		t.General_journal,
-		t.Sales_journal,
-		t.Purchase_journal,
-		t.Cash_receipt_journal,
-		t.Payment_journal,
-		t.Sales_entry_application,
-		t.Purchase_entry_application,
-		t.Tax_settlement,
-		t.Financially_voided_check,
-		t.Finance_charge_memo,
-		t.Reminder,
-		t.Inventory_post_cost,
-		t.Item_journal,
-		t.Bom_journal,
-		t.Resource_journal,
-		t.Post_recognition,
-		t.Post_value,
-		t.Project_journal,
-		t.Compress_project_ledger,
-		t.Item_transfer_journal,
-		t.Phys_inventory_journal,
-		t.Fixed_asset_journal,
-		t.Fixed_asset_g_l_journal,
-		t.Insurance_journal,
-		t.Compress_g_l,
-		t.Compress_tax_entries,
-		t.Compress_cust_ledger,
-		t.Compress_vend_ledger,
-		t.Compress_item_ledger,
-		t.Compress_bom_ledger,
-		t.Compress_res_ledger,
-		t.Compress_bank_acc_ledger,
-		t.Compress_check_ledger,
-		t.Compress_fa_ledger,
-		t.Compress_maintenance_ledger,
-		t.Compress_insurance_ledger,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (primary_key, sales, purchases, exchange_rate_adjmt, close_income_statement, consolidation, adjust_add_reporting_currency, general_journal, sales_journal, purchase_journal, cash_receipt_journal, payment_journal, sales_entry_application, purchase_entry_application, tax_settlement, financially_voided_check, finance_charge_memo, reminder, inventory_post_cost, item_journal, bom_journal, resource_journal, post_recognition, post_value, project_journal, compress_project_ledger, item_transfer_journal, phys_inventory_journal, fixed_asset_journal, fixed_asset_g_l_journal, insurance_journal, compress_g_l, compress_tax_entries, compress_cust_ledger, compress_vend_ledger, compress_item_ledger, compress_bom_ledger, compress_res_ledger, compress_bank_acc_ledger, compress_check_ledger, compress_fa_ledger, compress_maintenance_ledger, compress_insurance_ledger) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (primary_key) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Source_Code_Setup: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(SourceCodeSetupTableName, key)
 		return false
@@ -1087,55 +1032,10 @@ func (t *SourceCodeSetup) InsertAll(records []*SourceCodeSetup, runTrigger bool)
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Primary_key,
-			r.Sales,
-			r.Purchases,
-			r.Exchange_rate_adjmt,
-			r.Close_income_statement,
-			r.Consolidation,
-			r.Adjust_add_reporting_currency,
-			r.General_journal,
-			r.Sales_journal,
-			r.Purchase_journal,
-			r.Cash_receipt_journal,
-			r.Payment_journal,
-			r.Sales_entry_application,
-			r.Purchase_entry_application,
-			r.Tax_settlement,
-			r.Financially_voided_check,
-			r.Finance_charge_memo,
-			r.Reminder,
-			r.Inventory_post_cost,
-			r.Item_journal,
-			r.Bom_journal,
-			r.Resource_journal,
-			r.Post_recognition,
-			r.Post_value,
-			r.Project_journal,
-			r.Compress_project_ledger,
-			r.Item_transfer_journal,
-			r.Phys_inventory_journal,
-			r.Fixed_asset_journal,
-			r.Fixed_asset_g_l_journal,
-			r.Insurance_journal,
-			r.Compress_g_l,
-			r.Compress_tax_entries,
-			r.Compress_cust_ledger,
-			r.Compress_vend_ledger,
-			r.Compress_item_ledger,
-			r.Compress_bom_ledger,
-			r.Compress_res_ledger,
-			r.Compress_bank_acc_ledger,
-			r.Compress_check_ledger,
-			r.Compress_fa_ledger,
-			r.Compress_maintenance_ledger,
-			r.Compress_insurance_ledger,
-		})
+		rows = append(rows, sourceCodeSetupFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, SourceCodeSetupTableName)
-	columns := []string{"primary_key", "sales", "purchases", "exchange_rate_adjmt", "close_income_statement", "consolidation", "adjust_add_reporting_currency", "general_journal", "sales_journal", "purchase_journal", "cash_receipt_journal", "payment_journal", "sales_entry_application", "purchase_entry_application", "tax_settlement", "financially_voided_check", "finance_charge_memo", "reminder", "inventory_post_cost", "item_journal", "bom_journal", "resource_journal", "post_recognition", "post_value", "project_journal", "compress_project_ledger", "item_transfer_journal", "phys_inventory_journal", "fixed_asset_journal", "fixed_asset_g_l_journal", "insurance_journal", "compress_g_l", "compress_tax_entries", "compress_cust_ledger", "compress_vend_ledger", "compress_item_ledger", "compress_bom_ledger", "compress_res_ledger", "compress_bank_acc_ledger", "compress_check_ledger", "compress_fa_ledger", "compress_maintenance_ledger", "compress_insurance_ledger"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, sourceCodeSetupFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -1151,12 +1051,7 @@ func (t *SourceCodeSetup) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("primary_key") {
-			keyChanged = true
-		}
-	}
+	keyChanged := sourceCodeSetupFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -1164,301 +1059,12 @@ func (t *SourceCodeSetup) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, SourceCodeSetupTableName)
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("primary_key") {
-			setClauses = append(setClauses, "primary_key = ?")
-			values = append(values, t.Primary_key)
-		}
-		if t.hasFieldChanged("sales") {
-			setClauses = append(setClauses, "sales = ?")
-			values = append(values, t.Sales)
-		}
-		if t.hasFieldChanged("purchases") {
-			setClauses = append(setClauses, "purchases = ?")
-			values = append(values, t.Purchases)
-		}
-		if t.hasFieldChanged("exchange_rate_adjmt") {
-			setClauses = append(setClauses, "exchange_rate_adjmt = ?")
-			values = append(values, t.Exchange_rate_adjmt)
-		}
-		if t.hasFieldChanged("close_income_statement") {
-			setClauses = append(setClauses, "close_income_statement = ?")
-			values = append(values, t.Close_income_statement)
-		}
-		if t.hasFieldChanged("consolidation") {
-			setClauses = append(setClauses, "consolidation = ?")
-			values = append(values, t.Consolidation)
-		}
-		if t.hasFieldChanged("adjust_add_reporting_currency") {
-			setClauses = append(setClauses, "adjust_add_reporting_currency = ?")
-			values = append(values, t.Adjust_add_reporting_currency)
-		}
-		if t.hasFieldChanged("general_journal") {
-			setClauses = append(setClauses, "general_journal = ?")
-			values = append(values, t.General_journal)
-		}
-		if t.hasFieldChanged("sales_journal") {
-			setClauses = append(setClauses, "sales_journal = ?")
-			values = append(values, t.Sales_journal)
-		}
-		if t.hasFieldChanged("purchase_journal") {
-			setClauses = append(setClauses, "purchase_journal = ?")
-			values = append(values, t.Purchase_journal)
-		}
-		if t.hasFieldChanged("cash_receipt_journal") {
-			setClauses = append(setClauses, "cash_receipt_journal = ?")
-			values = append(values, t.Cash_receipt_journal)
-		}
-		if t.hasFieldChanged("payment_journal") {
-			setClauses = append(setClauses, "payment_journal = ?")
-			values = append(values, t.Payment_journal)
-		}
-		if t.hasFieldChanged("sales_entry_application") {
-			setClauses = append(setClauses, "sales_entry_application = ?")
-			values = append(values, t.Sales_entry_application)
-		}
-		if t.hasFieldChanged("purchase_entry_application") {
-			setClauses = append(setClauses, "purchase_entry_application = ?")
-			values = append(values, t.Purchase_entry_application)
-		}
-		if t.hasFieldChanged("tax_settlement") {
-			setClauses = append(setClauses, "tax_settlement = ?")
-			values = append(values, t.Tax_settlement)
-		}
-		if t.hasFieldChanged("financially_voided_check") {
-			setClauses = append(setClauses, "financially_voided_check = ?")
-			values = append(values, t.Financially_voided_check)
-		}
-		if t.hasFieldChanged("finance_charge_memo") {
-			setClauses = append(setClauses, "finance_charge_memo = ?")
-			values = append(values, t.Finance_charge_memo)
-		}
-		if t.hasFieldChanged("reminder") {
-			setClauses = append(setClauses, "reminder = ?")
-			values = append(values, t.Reminder)
-		}
-		if t.hasFieldChanged("inventory_post_cost") {
-			setClauses = append(setClauses, "inventory_post_cost = ?")
-			values = append(values, t.Inventory_post_cost)
-		}
-		if t.hasFieldChanged("item_journal") {
-			setClauses = append(setClauses, "item_journal = ?")
-			values = append(values, t.Item_journal)
-		}
-		if t.hasFieldChanged("bom_journal") {
-			setClauses = append(setClauses, "bom_journal = ?")
-			values = append(values, t.Bom_journal)
-		}
-		if t.hasFieldChanged("resource_journal") {
-			setClauses = append(setClauses, "resource_journal = ?")
-			values = append(values, t.Resource_journal)
-		}
-		if t.hasFieldChanged("post_recognition") {
-			setClauses = append(setClauses, "post_recognition = ?")
-			values = append(values, t.Post_recognition)
-		}
-		if t.hasFieldChanged("post_value") {
-			setClauses = append(setClauses, "post_value = ?")
-			values = append(values, t.Post_value)
-		}
-		if t.hasFieldChanged("project_journal") {
-			setClauses = append(setClauses, "project_journal = ?")
-			values = append(values, t.Project_journal)
-		}
-		if t.hasFieldChanged("compress_project_ledger") {
-			setClauses = append(setClauses, "compress_project_ledger = ?")
-			values = append(values, t.Compress_project_ledger)
-		}
-		if t.hasFieldChanged("item_transfer_journal") {
-			setClauses = append(setClauses, "item_transfer_journal = ?")
-			values = append(values, t.Item_transfer_journal)
-		}
-		if t.hasFieldChanged("phys_inventory_journal") {
-			setClauses = append(setClauses, "phys_inventory_journal = ?")
-			values = append(values, t.Phys_inventory_journal)
-		}
-		if t.hasFieldChanged("fixed_asset_journal") {
-			setClauses = append(setClauses, "fixed_asset_journal = ?")
-			values = append(values, t.Fixed_asset_journal)
-		}
-		if t.hasFieldChanged("fixed_asset_g_l_journal") {
-			setClauses = append(setClauses, "fixed_asset_g_l_journal = ?")
-			values = append(values, t.Fixed_asset_g_l_journal)
-		}
-		if t.hasFieldChanged("insurance_journal") {
-			setClauses = append(setClauses, "insurance_journal = ?")
-			values = append(values, t.Insurance_journal)
-		}
-		if t.hasFieldChanged("compress_g_l") {
-			setClauses = append(setClauses, "compress_g_l = ?")
-			values = append(values, t.Compress_g_l)
-		}
-		if t.hasFieldChanged("compress_tax_entries") {
-			setClauses = append(setClauses, "compress_tax_entries = ?")
-			values = append(values, t.Compress_tax_entries)
-		}
-		if t.hasFieldChanged("compress_cust_ledger") {
-			setClauses = append(setClauses, "compress_cust_ledger = ?")
-			values = append(values, t.Compress_cust_ledger)
-		}
-		if t.hasFieldChanged("compress_vend_ledger") {
-			setClauses = append(setClauses, "compress_vend_ledger = ?")
-			values = append(values, t.Compress_vend_ledger)
-		}
-		if t.hasFieldChanged("compress_item_ledger") {
-			setClauses = append(setClauses, "compress_item_ledger = ?")
-			values = append(values, t.Compress_item_ledger)
-		}
-		if t.hasFieldChanged("compress_bom_ledger") {
-			setClauses = append(setClauses, "compress_bom_ledger = ?")
-			values = append(values, t.Compress_bom_ledger)
-		}
-		if t.hasFieldChanged("compress_res_ledger") {
-			setClauses = append(setClauses, "compress_res_ledger = ?")
-			values = append(values, t.Compress_res_ledger)
-		}
-		if t.hasFieldChanged("compress_bank_acc_ledger") {
-			setClauses = append(setClauses, "compress_bank_acc_ledger = ?")
-			values = append(values, t.Compress_bank_acc_ledger)
-		}
-		if t.hasFieldChanged("compress_check_ledger") {
-			setClauses = append(setClauses, "compress_check_ledger = ?")
-			values = append(values, t.Compress_check_ledger)
-		}
-		if t.hasFieldChanged("compress_fa_ledger") {
-			setClauses = append(setClauses, "compress_fa_ledger = ?")
-			values = append(values, t.Compress_fa_ledger)
-		}
-		if t.hasFieldChanged("compress_maintenance_ledger") {
-			setClauses = append(setClauses, "compress_maintenance_ledger = ?")
-			values = append(values, t.Compress_maintenance_ledger)
-		}
-		if t.hasFieldChanged("compress_insurance_ledger") {
-			setClauses = append(setClauses, "compress_insurance_ledger = ?")
-			values = append(values, t.Compress_insurance_ledger)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "sales = ?")
-		values = append(values, t.Sales)
-		setClauses = append(setClauses, "purchases = ?")
-		values = append(values, t.Purchases)
-		setClauses = append(setClauses, "exchange_rate_adjmt = ?")
-		values = append(values, t.Exchange_rate_adjmt)
-		setClauses = append(setClauses, "close_income_statement = ?")
-		values = append(values, t.Close_income_statement)
-		setClauses = append(setClauses, "consolidation = ?")
-		values = append(values, t.Consolidation)
-		setClauses = append(setClauses, "adjust_add_reporting_currency = ?")
-		values = append(values, t.Adjust_add_reporting_currency)
-		setClauses = append(setClauses, "general_journal = ?")
-		values = append(values, t.General_journal)
-		setClauses = append(setClauses, "sales_journal = ?")
-		values = append(values, t.Sales_journal)
-		setClauses = append(setClauses, "purchase_journal = ?")
-		values = append(values, t.Purchase_journal)
-		setClauses = append(setClauses, "cash_receipt_journal = ?")
-		values = append(values, t.Cash_receipt_journal)
-		setClauses = append(setClauses, "payment_journal = ?")
-		values = append(values, t.Payment_journal)
-		setClauses = append(setClauses, "sales_entry_application = ?")
-		values = append(values, t.Sales_entry_application)
-		setClauses = append(setClauses, "purchase_entry_application = ?")
-		values = append(values, t.Purchase_entry_application)
-		setClauses = append(setClauses, "tax_settlement = ?")
-		values = append(values, t.Tax_settlement)
-		setClauses = append(setClauses, "financially_voided_check = ?")
-		values = append(values, t.Financially_voided_check)
-		setClauses = append(setClauses, "finance_charge_memo = ?")
-		values = append(values, t.Finance_charge_memo)
-		setClauses = append(setClauses, "reminder = ?")
-		values = append(values, t.Reminder)
-		setClauses = append(setClauses, "inventory_post_cost = ?")
-		values = append(values, t.Inventory_post_cost)
-		setClauses = append(setClauses, "item_journal = ?")
-		values = append(values, t.Item_journal)
-		setClauses = append(setClauses, "bom_journal = ?")
-		values = append(values, t.Bom_journal)
-		setClauses = append(setClauses, "resource_journal = ?")
-		values = append(values, t.Resource_journal)
-		setClauses = append(setClauses, "post_recognition = ?")
-		values = append(values, t.Post_recognition)
-		setClauses = append(setClauses, "post_value = ?")
-		values = append(values, t.Post_value)
-		setClauses = append(setClauses, "project_journal = ?")
-		values = append(values, t.Project_journal)
-		setClauses = append(setClauses, "compress_project_ledger = ?")
-		values = append(values, t.Compress_project_ledger)
-		setClauses = append(setClauses, "item_transfer_journal = ?")
-		values = append(values, t.Item_transfer_journal)
-		setClauses = append(setClauses, "phys_inventory_journal = ?")
-		values = append(values, t.Phys_inventory_journal)
-		setClauses = append(setClauses, "fixed_asset_journal = ?")
-		values = append(values, t.Fixed_asset_journal)
-		setClauses = append(setClauses, "fixed_asset_g_l_journal = ?")
-		values = append(values, t.Fixed_asset_g_l_journal)
-		setClauses = append(setClauses, "insurance_journal = ?")
-		values = append(values, t.Insurance_journal)
-		setClauses = append(setClauses, "compress_g_l = ?")
-		values = append(values, t.Compress_g_l)
-		setClauses = append(setClauses, "compress_tax_entries = ?")
-		values = append(values, t.Compress_tax_entries)
-		setClauses = append(setClauses, "compress_cust_ledger = ?")
-		values = append(values, t.Compress_cust_ledger)
-		setClauses = append(setClauses, "compress_vend_ledger = ?")
-		values = append(values, t.Compress_vend_ledger)
-		setClauses = append(setClauses, "compress_item_ledger = ?")
-		values = append(values, t.Compress_item_ledger)
-		setClauses = append(setClauses, "compress_bom_ledger = ?")
-		values = append(values, t.Compress_bom_ledger)
-		setClauses = append(setClauses, "compress_res_ledger = ?")
-		values = append(values, t.Compress_res_ledger)
-		setClauses = append(setClauses, "compress_bank_acc_ledger = ?")
-		values = append(values, t.Compress_bank_acc_ledger)
-		setClauses = append(setClauses, "compress_check_ledger = ?")
-		values = append(values, t.Compress_check_ledger)
-		setClauses = append(setClauses, "compress_fa_ledger = ?")
-		values = append(values, t.Compress_fa_ledger)
-		setClauses = append(setClauses, "compress_maintenance_ledger = ?")
-		values = append(values, t.Compress_maintenance_ledger)
-		setClauses = append(setClauses, "compress_insurance_ledger = ?")
-		values = append(values, t.Compress_insurance_ledger)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["primary_key"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Primary_key)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND primary_key = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Source_Code_Setup: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -1489,25 +1095,8 @@ func (t *SourceCodeSetup) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, SourceCodeSetupTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Primary_key,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND primary_key = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Source_Code_Setup: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1707,53 +1296,13 @@ func (t *SourceCodeSetup) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *SourceCodeSetup) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, SourceCodeSetupTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Source_Code_Setup\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Source_Code_Setup: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *SourceCodeSetup) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, SourceCodeSetupTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Source_Code_Setup: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

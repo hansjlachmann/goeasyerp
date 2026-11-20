@@ -679,30 +679,14 @@ func (t *ObjectTranslation) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := ObjectTranslationTableName
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Object_type,
-		t.Object_id,
-		t.Language_id,
-		t.Object_name,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (object_type, object_id, language_id, object_name) VALUES (?, ?, ?, ?) ON CONFLICT (object_type, object_id, language_id) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Object Translation: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(ObjectTranslationTableName, key)
 		return false
@@ -728,16 +712,10 @@ func (t *ObjectTranslation) InsertAll(records []*ObjectTranslation, runTrigger b
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Object_type,
-			r.Object_id,
-			r.Language_id,
-			r.Object_name,
-		})
+		rows = append(rows, objectTranslationFields.RowValues(r.fieldRef))
 	}
 	tableName := ObjectTranslationTableName
-	columns := []string{"object_type", "object_id", "language_id", "object_name"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, objectTranslationFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -753,18 +731,7 @@ func (t *ObjectTranslation) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("object_type") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("object_id") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("language_id") {
-			keyChanged = true
-		}
-	}
+	keyChanged := objectTranslationFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -772,73 +739,12 @@ func (t *ObjectTranslation) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := ObjectTranslationTableName
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("object_type") {
-			setClauses = append(setClauses, "object_type = ?")
-			values = append(values, t.Object_type)
-		}
-		if t.hasFieldChanged("object_id") {
-			setClauses = append(setClauses, "object_id = ?")
-			values = append(values, t.Object_id)
-		}
-		if t.hasFieldChanged("language_id") {
-			setClauses = append(setClauses, "language_id = ?")
-			values = append(values, t.Language_id)
-		}
-		if t.hasFieldChanged("object_name") {
-			setClauses = append(setClauses, "object_name = ?")
-			values = append(values, t.Object_name)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "object_name = ?")
-		values = append(values, t.Object_name)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["object_type"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Object_type)
-	}
-	if old, ok := t.oldValues["object_id"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Object_id)
-	}
-	if old, ok := t.oldValues["language_id"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Language_id)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND object_type = ? AND object_id = ? AND language_id = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Object Translation: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -869,27 +775,8 @@ func (t *ObjectTranslation) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := ObjectTranslationTableName
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Object_type,
-		t.Object_id,
-		t.Language_id,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND object_type = ? AND object_id = ? AND language_id = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Object Translation: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1089,53 +976,13 @@ func (t *ObjectTranslation) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *ObjectTranslation) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := ObjectTranslationTableName
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Object Translation\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Object Translation: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *ObjectTranslation) DeleteAll() int {
-	tableName := ObjectTranslationTableName
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Object Translation: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

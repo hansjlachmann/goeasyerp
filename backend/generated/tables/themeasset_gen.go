@@ -653,34 +653,14 @@ func (t *ThemeAsset) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := ThemeAssetTableName
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Theme_code,
-		t.Name,
-		t.Content_type,
-		t.Size,
-		t.Width,
-		t.Height,
-		t.Sha256,
-		t.Data,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (theme_code, name, content_type, size, width, height, sha256, data) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (theme_code, name) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Theme_Asset: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(ThemeAssetTableName, key)
 		return false
@@ -706,20 +686,10 @@ func (t *ThemeAsset) InsertAll(records []*ThemeAsset, runTrigger bool) error {
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Theme_code,
-			r.Name,
-			r.Content_type,
-			r.Size,
-			r.Width,
-			r.Height,
-			r.Sha256,
-			r.Data,
-		})
+		rows = append(rows, themeAssetFields.RowValues(r.fieldRef))
 	}
 	tableName := ThemeAssetTableName
-	columns := []string{"theme_code", "name", "content_type", "size", "width", "height", "sha256", "data"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, themeAssetFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -735,15 +705,7 @@ func (t *ThemeAsset) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("theme_code") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("name") {
-			keyChanged = true
-		}
-	}
+	keyChanged := themeAssetFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -751,94 +713,12 @@ func (t *ThemeAsset) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := ThemeAssetTableName
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("theme_code") {
-			setClauses = append(setClauses, "theme_code = ?")
-			values = append(values, t.Theme_code)
-		}
-		if t.hasFieldChanged("name") {
-			setClauses = append(setClauses, "name = ?")
-			values = append(values, t.Name)
-		}
-		if t.hasFieldChanged("content_type") {
-			setClauses = append(setClauses, "content_type = ?")
-			values = append(values, t.Content_type)
-		}
-		if t.hasFieldChanged("size") {
-			setClauses = append(setClauses, "size = ?")
-			values = append(values, t.Size)
-		}
-		if t.hasFieldChanged("width") {
-			setClauses = append(setClauses, "width = ?")
-			values = append(values, t.Width)
-		}
-		if t.hasFieldChanged("height") {
-			setClauses = append(setClauses, "height = ?")
-			values = append(values, t.Height)
-		}
-		if t.hasFieldChanged("sha256") {
-			setClauses = append(setClauses, "sha256 = ?")
-			values = append(values, t.Sha256)
-		}
-		if t.hasFieldChanged("data") {
-			setClauses = append(setClauses, "data = ?")
-			values = append(values, t.Data)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "content_type = ?")
-		values = append(values, t.Content_type)
-		setClauses = append(setClauses, "size = ?")
-		values = append(values, t.Size)
-		setClauses = append(setClauses, "width = ?")
-		values = append(values, t.Width)
-		setClauses = append(setClauses, "height = ?")
-		values = append(values, t.Height)
-		setClauses = append(setClauses, "sha256 = ?")
-		values = append(values, t.Sha256)
-		setClauses = append(setClauses, "data = ?")
-		values = append(values, t.Data)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["theme_code"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Theme_code)
-	}
-	if old, ok := t.oldValues["name"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Name)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND theme_code = ? AND name = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Theme_Asset: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -869,26 +749,8 @@ func (t *ThemeAsset) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := ThemeAssetTableName
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Theme_code,
-		t.Name,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND theme_code = ? AND name = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Theme_Asset: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1088,53 +950,13 @@ func (t *ThemeAsset) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *ThemeAsset) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := ThemeAssetTableName
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Theme_Asset\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Theme_Asset: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *ThemeAsset) DeleteAll() int {
-	tableName := ThemeAssetTableName
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Theme_Asset: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

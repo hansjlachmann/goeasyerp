@@ -720,40 +720,14 @@ func (t *BusinessUnit) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, BusinessUnitTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Code,
-		t.Consolidate,
-		t.Consolidation_pct,
-		t.Starting_date,
-		t.Ending_date,
-		t.Income_currency_factor,
-		t.Balance_currency_factor,
-		t.Exch_rate_loss_acc,
-		t.Exch_rate_gains_acc,
-		t.Residual_account,
-		t.Last_balance_currency_factor,
-		t.Name,
-		t.Company_name,
-		t.Currency_code,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (code, consolidate, consolidation_pct, starting_date, ending_date, income_currency_factor, balance_currency_factor, exch_rate_loss_acc, exch_rate_gains_acc, residual_account, last_balance_currency_factor, name, company_name, currency_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (code) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Business_Unit: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(BusinessUnitTableName, key)
 		return false
@@ -779,26 +753,10 @@ func (t *BusinessUnit) InsertAll(records []*BusinessUnit, runTrigger bool) error
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Code,
-			r.Consolidate,
-			r.Consolidation_pct,
-			r.Starting_date,
-			r.Ending_date,
-			r.Income_currency_factor,
-			r.Balance_currency_factor,
-			r.Exch_rate_loss_acc,
-			r.Exch_rate_gains_acc,
-			r.Residual_account,
-			r.Last_balance_currency_factor,
-			r.Name,
-			r.Company_name,
-			r.Currency_code,
-		})
+		rows = append(rows, businessUnitFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, BusinessUnitTableName)
-	columns := []string{"code", "consolidate", "consolidation_pct", "starting_date", "ending_date", "income_currency_factor", "balance_currency_factor", "exch_rate_loss_acc", "exch_rate_gains_acc", "residual_account", "last_balance_currency_factor", "name", "company_name", "currency_code"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, businessUnitFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -814,125 +772,13 @@ func (t *BusinessUnit) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("code") {
-			keyChanged = true
-		}
-	}
+	keyChanged := businessUnitFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
 		}
-	}
-	tableName := fmt.Sprintf("%s$%s", t.company, BusinessUnitTableName)
-
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("code") {
-			setClauses = append(setClauses, "code = ?")
-			values = append(values, t.Code)
-		}
-		if t.hasFieldChanged("consolidate") {
-			setClauses = append(setClauses, "consolidate = ?")
-			values = append(values, t.Consolidate)
-		}
-		if t.hasFieldChanged("consolidation_pct") {
-			setClauses = append(setClauses, "consolidation_pct = ?")
-			values = append(values, t.Consolidation_pct)
-		}
-		if t.hasFieldChanged("starting_date") {
-			setClauses = append(setClauses, "starting_date = ?")
-			values = append(values, t.Starting_date)
-		}
-		if t.hasFieldChanged("ending_date") {
-			setClauses = append(setClauses, "ending_date = ?")
-			values = append(values, t.Ending_date)
-		}
-		if t.hasFieldChanged("income_currency_factor") {
-			setClauses = append(setClauses, "income_currency_factor = ?")
-			values = append(values, t.Income_currency_factor)
-		}
-		if t.hasFieldChanged("balance_currency_factor") {
-			setClauses = append(setClauses, "balance_currency_factor = ?")
-			values = append(values, t.Balance_currency_factor)
-		}
-		if t.hasFieldChanged("exch_rate_loss_acc") {
-			setClauses = append(setClauses, "exch_rate_loss_acc = ?")
-			values = append(values, t.Exch_rate_loss_acc)
-		}
-		if t.hasFieldChanged("exch_rate_gains_acc") {
-			setClauses = append(setClauses, "exch_rate_gains_acc = ?")
-			values = append(values, t.Exch_rate_gains_acc)
-		}
-		if t.hasFieldChanged("residual_account") {
-			setClauses = append(setClauses, "residual_account = ?")
-			values = append(values, t.Residual_account)
-		}
-		if t.hasFieldChanged("last_balance_currency_factor") {
-			setClauses = append(setClauses, "last_balance_currency_factor = ?")
-			values = append(values, t.Last_balance_currency_factor)
-		}
-		if t.hasFieldChanged("name") {
-			setClauses = append(setClauses, "name = ?")
-			values = append(values, t.Name)
-		}
-		if t.hasFieldChanged("company_name") {
-			setClauses = append(setClauses, "company_name = ?")
-			values = append(values, t.Company_name)
-		}
-		if t.hasFieldChanged("currency_code") {
-			setClauses = append(setClauses, "currency_code = ?")
-			values = append(values, t.Currency_code)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "consolidate = ?")
-		values = append(values, t.Consolidate)
-		setClauses = append(setClauses, "consolidation_pct = ?")
-		values = append(values, t.Consolidation_pct)
-		setClauses = append(setClauses, "starting_date = ?")
-		values = append(values, t.Starting_date)
-		setClauses = append(setClauses, "ending_date = ?")
-		values = append(values, t.Ending_date)
-		setClauses = append(setClauses, "income_currency_factor = ?")
-		values = append(values, t.Income_currency_factor)
-		setClauses = append(setClauses, "balance_currency_factor = ?")
-		values = append(values, t.Balance_currency_factor)
-		setClauses = append(setClauses, "exch_rate_loss_acc = ?")
-		values = append(values, t.Exch_rate_loss_acc)
-		setClauses = append(setClauses, "exch_rate_gains_acc = ?")
-		values = append(values, t.Exch_rate_gains_acc)
-		setClauses = append(setClauses, "residual_account = ?")
-		values = append(values, t.Residual_account)
-		setClauses = append(setClauses, "last_balance_currency_factor = ?")
-		values = append(values, t.Last_balance_currency_factor)
-		setClauses = append(setClauses, "name = ?")
-		values = append(values, t.Name)
-		setClauses = append(setClauses, "company_name = ?")
-		values = append(values, t.Company_name)
-		setClauses = append(setClauses, "currency_code = ?")
-		values = append(values, t.Currency_code)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["code"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Code)
 	}
 	// Renamed key fields that other tables refer to (Rename): carried over below
 	type renamedKey struct {
@@ -946,19 +792,11 @@ func (t *BusinessUnit) Modify(runTrigger bool) bool {
 		}
 	}
 
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND code = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Business_Unit: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// A temporary record's rename stays in the record: other tables are not changed
 	for _, r := range renamed {
@@ -1040,25 +878,8 @@ func (t *BusinessUnit) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, BusinessUnitTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Code,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND code = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Business_Unit: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1258,53 +1079,13 @@ func (t *BusinessUnit) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *BusinessUnit) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, BusinessUnitTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Business_Unit\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Business_Unit: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *BusinessUnit) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, BusinessUnitTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Business_Unit: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

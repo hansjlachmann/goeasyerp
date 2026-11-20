@@ -694,38 +694,14 @@ func (t *FAJournalTemplate) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, FAJournalTemplateTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Name,
-		t.Description,
-		t.Test_report_id,
-		t.Page_id,
-		t.Posting_report_id,
-		t.Force_posting_report,
-		t.Source_code,
-		t.Reason_code,
-		t.Recurring,
-		t.Maint_posting_report_id,
-		t.No_series,
-		t.Posting_no_series,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (name, description, test_report_id, page_id, posting_report_id, force_posting_report, source_code, reason_code, recurring, maint_posting_report_id, no_series, posting_no_series) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (name) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert FA_Journal_Template: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(FAJournalTemplateTableName, key)
 		return false
@@ -751,24 +727,10 @@ func (t *FAJournalTemplate) InsertAll(records []*FAJournalTemplate, runTrigger b
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Name,
-			r.Description,
-			r.Test_report_id,
-			r.Page_id,
-			r.Posting_report_id,
-			r.Force_posting_report,
-			r.Source_code,
-			r.Reason_code,
-			r.Recurring,
-			r.Maint_posting_report_id,
-			r.No_series,
-			r.Posting_no_series,
-		})
+		rows = append(rows, fAJournalTemplateFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, FAJournalTemplateTableName)
-	columns := []string{"name", "description", "test_report_id", "page_id", "posting_report_id", "force_posting_report", "source_code", "reason_code", "recurring", "maint_posting_report_id", "no_series", "posting_no_series"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, fAJournalTemplateFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -784,113 +746,13 @@ func (t *FAJournalTemplate) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("name") {
-			keyChanged = true
-		}
-	}
+	keyChanged := fAJournalTemplateFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
 		}
-	}
-	tableName := fmt.Sprintf("%s$%s", t.company, FAJournalTemplateTableName)
-
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("name") {
-			setClauses = append(setClauses, "name = ?")
-			values = append(values, t.Name)
-		}
-		if t.hasFieldChanged("description") {
-			setClauses = append(setClauses, "description = ?")
-			values = append(values, t.Description)
-		}
-		if t.hasFieldChanged("test_report_id") {
-			setClauses = append(setClauses, "test_report_id = ?")
-			values = append(values, t.Test_report_id)
-		}
-		if t.hasFieldChanged("page_id") {
-			setClauses = append(setClauses, "page_id = ?")
-			values = append(values, t.Page_id)
-		}
-		if t.hasFieldChanged("posting_report_id") {
-			setClauses = append(setClauses, "posting_report_id = ?")
-			values = append(values, t.Posting_report_id)
-		}
-		if t.hasFieldChanged("force_posting_report") {
-			setClauses = append(setClauses, "force_posting_report = ?")
-			values = append(values, t.Force_posting_report)
-		}
-		if t.hasFieldChanged("source_code") {
-			setClauses = append(setClauses, "source_code = ?")
-			values = append(values, t.Source_code)
-		}
-		if t.hasFieldChanged("reason_code") {
-			setClauses = append(setClauses, "reason_code = ?")
-			values = append(values, t.Reason_code)
-		}
-		if t.hasFieldChanged("recurring") {
-			setClauses = append(setClauses, "recurring = ?")
-			values = append(values, t.Recurring)
-		}
-		if t.hasFieldChanged("maint_posting_report_id") {
-			setClauses = append(setClauses, "maint_posting_report_id = ?")
-			values = append(values, t.Maint_posting_report_id)
-		}
-		if t.hasFieldChanged("no_series") {
-			setClauses = append(setClauses, "no_series = ?")
-			values = append(values, t.No_series)
-		}
-		if t.hasFieldChanged("posting_no_series") {
-			setClauses = append(setClauses, "posting_no_series = ?")
-			values = append(values, t.Posting_no_series)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "description = ?")
-		values = append(values, t.Description)
-		setClauses = append(setClauses, "test_report_id = ?")
-		values = append(values, t.Test_report_id)
-		setClauses = append(setClauses, "page_id = ?")
-		values = append(values, t.Page_id)
-		setClauses = append(setClauses, "posting_report_id = ?")
-		values = append(values, t.Posting_report_id)
-		setClauses = append(setClauses, "force_posting_report = ?")
-		values = append(values, t.Force_posting_report)
-		setClauses = append(setClauses, "source_code = ?")
-		values = append(values, t.Source_code)
-		setClauses = append(setClauses, "reason_code = ?")
-		values = append(values, t.Reason_code)
-		setClauses = append(setClauses, "recurring = ?")
-		values = append(values, t.Recurring)
-		setClauses = append(setClauses, "maint_posting_report_id = ?")
-		values = append(values, t.Maint_posting_report_id)
-		setClauses = append(setClauses, "no_series = ?")
-		values = append(values, t.No_series)
-		setClauses = append(setClauses, "posting_no_series = ?")
-		values = append(values, t.Posting_no_series)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["name"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Name)
 	}
 	// Renamed key fields that other tables refer to (Rename): carried over below
 	type renamedKey struct {
@@ -904,19 +766,11 @@ func (t *FAJournalTemplate) Modify(runTrigger bool) bool {
 		}
 	}
 
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND name = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify FA_Journal_Template: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// A temporary record's rename stays in the record: other tables are not changed
 	for _, r := range renamed {
@@ -998,25 +852,8 @@ func (t *FAJournalTemplate) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, FAJournalTemplateTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Name,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND name = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete FA_Journal_Template: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // CalcFields is a no-op for tables without FlowFields
@@ -1216,53 +1053,13 @@ func (t *FAJournalTemplate) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *FAJournalTemplate) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, FAJournalTemplateTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of FA_Journal_Template\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all FA_Journal_Template: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *FAJournalTemplate) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, FAJournalTemplateTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all FA_Journal_Template: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

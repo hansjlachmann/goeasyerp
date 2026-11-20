@@ -1087,68 +1087,14 @@ func (t *FADepreciationBook) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, FADepreciationBookTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.Fa_no,
-		t.Depreciation_book_code,
-		t.Depreciation_method,
-		t.Depreciation_starting_date,
-		t.Straight_line_percent,
-		t.No_of_depreciation_years,
-		t.No_of_depreciation_months,
-		t.Fixed_depr_amount,
-		t.Declining_balance_percent,
-		t.Depreciation_table_code,
-		t.Final_rounding_amount,
-		t.Ending_book_value,
-		t.Fa_posting_group,
-		t.Depreciation_ending_date,
-		t.Acquisition_date,
-		t.G_l_acquisition_date,
-		t.Disposal_date,
-		t.Last_acquisition_cost_date,
-		t.Last_depreciation_date,
-		t.Last_write_down_date,
-		t.Last_appreciation_date,
-		t.Last_custom_1_date,
-		t.Last_custom_2_date,
-		t.Last_salvage_value_date,
-		t.Fa_exchange_rate,
-		t.Fixed_depr_amount_below_zero,
-		t.Last_date_modified,
-		t.First_user_defined_depr_date,
-		t.Use_fa_ledger_check,
-		t.Last_maintenance_date,
-		t.Depr_below_zero_percent,
-		t.Projected_disposal_date,
-		t.Projected_proceeds_on_disposal,
-		t.Depr_starting_date_custom_1,
-		t.Depr_ending_date_custom_1,
-		t.Accum_depr_percent_custom_1,
-		t.Depr_this_year_percent_custom_1,
-		t.Property_class_custom_1,
-		t.Description,
-		t.Main_asset_component,
-		t.Component_of_main_asset,
-		t.Fa_add_currency_factor,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (fa_no, depreciation_book_code, depreciation_method, depreciation_starting_date, straight_line_percent, no_of_depreciation_years, no_of_depreciation_months, fixed_depr_amount, declining_balance_percent, depreciation_table_code, final_rounding_amount, ending_book_value, fa_posting_group, depreciation_ending_date, acquisition_date, g_l_acquisition_date, disposal_date, last_acquisition_cost_date, last_depreciation_date, last_write_down_date, last_appreciation_date, last_custom_1_date, last_custom_2_date, last_salvage_value_date, fa_exchange_rate, fixed_depr_amount_below_zero, last_date_modified, first_user_defined_depr_date, use_fa_ledger_check, last_maintenance_date, depr_below_zero_percent, projected_disposal_date, projected_proceeds_on_disposal, depr_starting_date_custom_1, depr_ending_date_custom_1, accum_depr_percent_custom_1, depr_this_year_percent_custom_1, property_class_custom_1, description, main_asset_component, component_of_main_asset, fa_add_currency_factor) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (fa_no, depreciation_book_code) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert FA_Depreciation_Book: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(FADepreciationBookTableName, key)
 		return false
@@ -1174,54 +1120,10 @@ func (t *FADepreciationBook) InsertAll(records []*FADepreciationBook, runTrigger
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.Fa_no,
-			r.Depreciation_book_code,
-			r.Depreciation_method,
-			r.Depreciation_starting_date,
-			r.Straight_line_percent,
-			r.No_of_depreciation_years,
-			r.No_of_depreciation_months,
-			r.Fixed_depr_amount,
-			r.Declining_balance_percent,
-			r.Depreciation_table_code,
-			r.Final_rounding_amount,
-			r.Ending_book_value,
-			r.Fa_posting_group,
-			r.Depreciation_ending_date,
-			r.Acquisition_date,
-			r.G_l_acquisition_date,
-			r.Disposal_date,
-			r.Last_acquisition_cost_date,
-			r.Last_depreciation_date,
-			r.Last_write_down_date,
-			r.Last_appreciation_date,
-			r.Last_custom_1_date,
-			r.Last_custom_2_date,
-			r.Last_salvage_value_date,
-			r.Fa_exchange_rate,
-			r.Fixed_depr_amount_below_zero,
-			r.Last_date_modified,
-			r.First_user_defined_depr_date,
-			r.Use_fa_ledger_check,
-			r.Last_maintenance_date,
-			r.Depr_below_zero_percent,
-			r.Projected_disposal_date,
-			r.Projected_proceeds_on_disposal,
-			r.Depr_starting_date_custom_1,
-			r.Depr_ending_date_custom_1,
-			r.Accum_depr_percent_custom_1,
-			r.Depr_this_year_percent_custom_1,
-			r.Property_class_custom_1,
-			r.Description,
-			r.Main_asset_component,
-			r.Component_of_main_asset,
-			r.Fa_add_currency_factor,
-		})
+		rows = append(rows, fADepreciationBookFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, FADepreciationBookTableName)
-	columns := []string{"fa_no", "depreciation_book_code", "depreciation_method", "depreciation_starting_date", "straight_line_percent", "no_of_depreciation_years", "no_of_depreciation_months", "fixed_depr_amount", "declining_balance_percent", "depreciation_table_code", "final_rounding_amount", "ending_book_value", "fa_posting_group", "depreciation_ending_date", "acquisition_date", "g_l_acquisition_date", "disposal_date", "last_acquisition_cost_date", "last_depreciation_date", "last_write_down_date", "last_appreciation_date", "last_custom_1_date", "last_custom_2_date", "last_salvage_value_date", "fa_exchange_rate", "fixed_depr_amount_below_zero", "last_date_modified", "first_user_defined_depr_date", "use_fa_ledger_check", "last_maintenance_date", "depr_below_zero_percent", "projected_disposal_date", "projected_proceeds_on_disposal", "depr_starting_date_custom_1", "depr_ending_date_custom_1", "accum_depr_percent_custom_1", "depr_this_year_percent_custom_1", "property_class_custom_1", "description", "main_asset_component", "component_of_main_asset", "fa_add_currency_factor"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, fADepreciationBookFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -1237,15 +1139,7 @@ func (t *FADepreciationBook) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("fa_no") {
-			keyChanged = true
-		}
-		if t.hasFieldChanged("depreciation_book_code") {
-			keyChanged = true
-		}
-	}
+	keyChanged := fADepreciationBookFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
@@ -1253,298 +1147,12 @@ func (t *FADepreciationBook) Modify(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, FADepreciationBookTableName)
 
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("fa_no") {
-			setClauses = append(setClauses, "fa_no = ?")
-			values = append(values, t.Fa_no)
-		}
-		if t.hasFieldChanged("depreciation_book_code") {
-			setClauses = append(setClauses, "depreciation_book_code = ?")
-			values = append(values, t.Depreciation_book_code)
-		}
-		if t.hasFieldChanged("depreciation_method") {
-			setClauses = append(setClauses, "depreciation_method = ?")
-			values = append(values, t.Depreciation_method)
-		}
-		if t.hasFieldChanged("depreciation_starting_date") {
-			setClauses = append(setClauses, "depreciation_starting_date = ?")
-			values = append(values, t.Depreciation_starting_date)
-		}
-		if t.hasFieldChanged("straight_line_percent") {
-			setClauses = append(setClauses, "straight_line_percent = ?")
-			values = append(values, t.Straight_line_percent)
-		}
-		if t.hasFieldChanged("no_of_depreciation_years") {
-			setClauses = append(setClauses, "no_of_depreciation_years = ?")
-			values = append(values, t.No_of_depreciation_years)
-		}
-		if t.hasFieldChanged("no_of_depreciation_months") {
-			setClauses = append(setClauses, "no_of_depreciation_months = ?")
-			values = append(values, t.No_of_depreciation_months)
-		}
-		if t.hasFieldChanged("fixed_depr_amount") {
-			setClauses = append(setClauses, "fixed_depr_amount = ?")
-			values = append(values, t.Fixed_depr_amount)
-		}
-		if t.hasFieldChanged("declining_balance_percent") {
-			setClauses = append(setClauses, "declining_balance_percent = ?")
-			values = append(values, t.Declining_balance_percent)
-		}
-		if t.hasFieldChanged("depreciation_table_code") {
-			setClauses = append(setClauses, "depreciation_table_code = ?")
-			values = append(values, t.Depreciation_table_code)
-		}
-		if t.hasFieldChanged("final_rounding_amount") {
-			setClauses = append(setClauses, "final_rounding_amount = ?")
-			values = append(values, t.Final_rounding_amount)
-		}
-		if t.hasFieldChanged("ending_book_value") {
-			setClauses = append(setClauses, "ending_book_value = ?")
-			values = append(values, t.Ending_book_value)
-		}
-		if t.hasFieldChanged("fa_posting_group") {
-			setClauses = append(setClauses, "fa_posting_group = ?")
-			values = append(values, t.Fa_posting_group)
-		}
-		if t.hasFieldChanged("depreciation_ending_date") {
-			setClauses = append(setClauses, "depreciation_ending_date = ?")
-			values = append(values, t.Depreciation_ending_date)
-		}
-		if t.hasFieldChanged("acquisition_date") {
-			setClauses = append(setClauses, "acquisition_date = ?")
-			values = append(values, t.Acquisition_date)
-		}
-		if t.hasFieldChanged("g_l_acquisition_date") {
-			setClauses = append(setClauses, "g_l_acquisition_date = ?")
-			values = append(values, t.G_l_acquisition_date)
-		}
-		if t.hasFieldChanged("disposal_date") {
-			setClauses = append(setClauses, "disposal_date = ?")
-			values = append(values, t.Disposal_date)
-		}
-		if t.hasFieldChanged("last_acquisition_cost_date") {
-			setClauses = append(setClauses, "last_acquisition_cost_date = ?")
-			values = append(values, t.Last_acquisition_cost_date)
-		}
-		if t.hasFieldChanged("last_depreciation_date") {
-			setClauses = append(setClauses, "last_depreciation_date = ?")
-			values = append(values, t.Last_depreciation_date)
-		}
-		if t.hasFieldChanged("last_write_down_date") {
-			setClauses = append(setClauses, "last_write_down_date = ?")
-			values = append(values, t.Last_write_down_date)
-		}
-		if t.hasFieldChanged("last_appreciation_date") {
-			setClauses = append(setClauses, "last_appreciation_date = ?")
-			values = append(values, t.Last_appreciation_date)
-		}
-		if t.hasFieldChanged("last_custom_1_date") {
-			setClauses = append(setClauses, "last_custom_1_date = ?")
-			values = append(values, t.Last_custom_1_date)
-		}
-		if t.hasFieldChanged("last_custom_2_date") {
-			setClauses = append(setClauses, "last_custom_2_date = ?")
-			values = append(values, t.Last_custom_2_date)
-		}
-		if t.hasFieldChanged("last_salvage_value_date") {
-			setClauses = append(setClauses, "last_salvage_value_date = ?")
-			values = append(values, t.Last_salvage_value_date)
-		}
-		if t.hasFieldChanged("fa_exchange_rate") {
-			setClauses = append(setClauses, "fa_exchange_rate = ?")
-			values = append(values, t.Fa_exchange_rate)
-		}
-		if t.hasFieldChanged("fixed_depr_amount_below_zero") {
-			setClauses = append(setClauses, "fixed_depr_amount_below_zero = ?")
-			values = append(values, t.Fixed_depr_amount_below_zero)
-		}
-		if t.hasFieldChanged("last_date_modified") {
-			setClauses = append(setClauses, "last_date_modified = ?")
-			values = append(values, t.Last_date_modified)
-		}
-		if t.hasFieldChanged("first_user_defined_depr_date") {
-			setClauses = append(setClauses, "first_user_defined_depr_date = ?")
-			values = append(values, t.First_user_defined_depr_date)
-		}
-		if t.hasFieldChanged("use_fa_ledger_check") {
-			setClauses = append(setClauses, "use_fa_ledger_check = ?")
-			values = append(values, t.Use_fa_ledger_check)
-		}
-		if t.hasFieldChanged("last_maintenance_date") {
-			setClauses = append(setClauses, "last_maintenance_date = ?")
-			values = append(values, t.Last_maintenance_date)
-		}
-		if t.hasFieldChanged("depr_below_zero_percent") {
-			setClauses = append(setClauses, "depr_below_zero_percent = ?")
-			values = append(values, t.Depr_below_zero_percent)
-		}
-		if t.hasFieldChanged("projected_disposal_date") {
-			setClauses = append(setClauses, "projected_disposal_date = ?")
-			values = append(values, t.Projected_disposal_date)
-		}
-		if t.hasFieldChanged("projected_proceeds_on_disposal") {
-			setClauses = append(setClauses, "projected_proceeds_on_disposal = ?")
-			values = append(values, t.Projected_proceeds_on_disposal)
-		}
-		if t.hasFieldChanged("depr_starting_date_custom_1") {
-			setClauses = append(setClauses, "depr_starting_date_custom_1 = ?")
-			values = append(values, t.Depr_starting_date_custom_1)
-		}
-		if t.hasFieldChanged("depr_ending_date_custom_1") {
-			setClauses = append(setClauses, "depr_ending_date_custom_1 = ?")
-			values = append(values, t.Depr_ending_date_custom_1)
-		}
-		if t.hasFieldChanged("accum_depr_percent_custom_1") {
-			setClauses = append(setClauses, "accum_depr_percent_custom_1 = ?")
-			values = append(values, t.Accum_depr_percent_custom_1)
-		}
-		if t.hasFieldChanged("depr_this_year_percent_custom_1") {
-			setClauses = append(setClauses, "depr_this_year_percent_custom_1 = ?")
-			values = append(values, t.Depr_this_year_percent_custom_1)
-		}
-		if t.hasFieldChanged("property_class_custom_1") {
-			setClauses = append(setClauses, "property_class_custom_1 = ?")
-			values = append(values, t.Property_class_custom_1)
-		}
-		if t.hasFieldChanged("description") {
-			setClauses = append(setClauses, "description = ?")
-			values = append(values, t.Description)
-		}
-		if t.hasFieldChanged("main_asset_component") {
-			setClauses = append(setClauses, "main_asset_component = ?")
-			values = append(values, t.Main_asset_component)
-		}
-		if t.hasFieldChanged("component_of_main_asset") {
-			setClauses = append(setClauses, "component_of_main_asset = ?")
-			values = append(values, t.Component_of_main_asset)
-		}
-		if t.hasFieldChanged("fa_add_currency_factor") {
-			setClauses = append(setClauses, "fa_add_currency_factor = ?")
-			values = append(values, t.Fa_add_currency_factor)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "depreciation_method = ?")
-		values = append(values, t.Depreciation_method)
-		setClauses = append(setClauses, "depreciation_starting_date = ?")
-		values = append(values, t.Depreciation_starting_date)
-		setClauses = append(setClauses, "straight_line_percent = ?")
-		values = append(values, t.Straight_line_percent)
-		setClauses = append(setClauses, "no_of_depreciation_years = ?")
-		values = append(values, t.No_of_depreciation_years)
-		setClauses = append(setClauses, "no_of_depreciation_months = ?")
-		values = append(values, t.No_of_depreciation_months)
-		setClauses = append(setClauses, "fixed_depr_amount = ?")
-		values = append(values, t.Fixed_depr_amount)
-		setClauses = append(setClauses, "declining_balance_percent = ?")
-		values = append(values, t.Declining_balance_percent)
-		setClauses = append(setClauses, "depreciation_table_code = ?")
-		values = append(values, t.Depreciation_table_code)
-		setClauses = append(setClauses, "final_rounding_amount = ?")
-		values = append(values, t.Final_rounding_amount)
-		setClauses = append(setClauses, "ending_book_value = ?")
-		values = append(values, t.Ending_book_value)
-		setClauses = append(setClauses, "fa_posting_group = ?")
-		values = append(values, t.Fa_posting_group)
-		setClauses = append(setClauses, "depreciation_ending_date = ?")
-		values = append(values, t.Depreciation_ending_date)
-		setClauses = append(setClauses, "acquisition_date = ?")
-		values = append(values, t.Acquisition_date)
-		setClauses = append(setClauses, "g_l_acquisition_date = ?")
-		values = append(values, t.G_l_acquisition_date)
-		setClauses = append(setClauses, "disposal_date = ?")
-		values = append(values, t.Disposal_date)
-		setClauses = append(setClauses, "last_acquisition_cost_date = ?")
-		values = append(values, t.Last_acquisition_cost_date)
-		setClauses = append(setClauses, "last_depreciation_date = ?")
-		values = append(values, t.Last_depreciation_date)
-		setClauses = append(setClauses, "last_write_down_date = ?")
-		values = append(values, t.Last_write_down_date)
-		setClauses = append(setClauses, "last_appreciation_date = ?")
-		values = append(values, t.Last_appreciation_date)
-		setClauses = append(setClauses, "last_custom_1_date = ?")
-		values = append(values, t.Last_custom_1_date)
-		setClauses = append(setClauses, "last_custom_2_date = ?")
-		values = append(values, t.Last_custom_2_date)
-		setClauses = append(setClauses, "last_salvage_value_date = ?")
-		values = append(values, t.Last_salvage_value_date)
-		setClauses = append(setClauses, "fa_exchange_rate = ?")
-		values = append(values, t.Fa_exchange_rate)
-		setClauses = append(setClauses, "fixed_depr_amount_below_zero = ?")
-		values = append(values, t.Fixed_depr_amount_below_zero)
-		setClauses = append(setClauses, "last_date_modified = ?")
-		values = append(values, t.Last_date_modified)
-		setClauses = append(setClauses, "first_user_defined_depr_date = ?")
-		values = append(values, t.First_user_defined_depr_date)
-		setClauses = append(setClauses, "use_fa_ledger_check = ?")
-		values = append(values, t.Use_fa_ledger_check)
-		setClauses = append(setClauses, "last_maintenance_date = ?")
-		values = append(values, t.Last_maintenance_date)
-		setClauses = append(setClauses, "depr_below_zero_percent = ?")
-		values = append(values, t.Depr_below_zero_percent)
-		setClauses = append(setClauses, "projected_disposal_date = ?")
-		values = append(values, t.Projected_disposal_date)
-		setClauses = append(setClauses, "projected_proceeds_on_disposal = ?")
-		values = append(values, t.Projected_proceeds_on_disposal)
-		setClauses = append(setClauses, "depr_starting_date_custom_1 = ?")
-		values = append(values, t.Depr_starting_date_custom_1)
-		setClauses = append(setClauses, "depr_ending_date_custom_1 = ?")
-		values = append(values, t.Depr_ending_date_custom_1)
-		setClauses = append(setClauses, "accum_depr_percent_custom_1 = ?")
-		values = append(values, t.Accum_depr_percent_custom_1)
-		setClauses = append(setClauses, "depr_this_year_percent_custom_1 = ?")
-		values = append(values, t.Depr_this_year_percent_custom_1)
-		setClauses = append(setClauses, "property_class_custom_1 = ?")
-		values = append(values, t.Property_class_custom_1)
-		setClauses = append(setClauses, "description = ?")
-		values = append(values, t.Description)
-		setClauses = append(setClauses, "main_asset_component = ?")
-		values = append(values, t.Main_asset_component)
-		setClauses = append(setClauses, "component_of_main_asset = ?")
-		values = append(values, t.Component_of_main_asset)
-		setClauses = append(setClauses, "fa_add_currency_factor = ?")
-		values = append(values, t.Fa_add_currency_factor)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["fa_no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Fa_no)
-	}
-	if old, ok := t.oldValues["depreciation_book_code"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.Depreciation_book_code)
-	}
-
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND fa_no = ? AND depreciation_book_code = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify FA_Depreciation_Book: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// The stored record now matches the current values (including a renamed key)
 	if t.oldValues != nil {
@@ -1575,26 +1183,8 @@ func (t *FADepreciationBook) Delete(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, FADepreciationBookTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.Fa_no,
-		t.Depreciation_book_code,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND fa_no = ? AND depreciation_book_code = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete FA_Depreciation_Book: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // ========================================
@@ -3235,53 +2825,13 @@ func (t *FADepreciationBook) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *FADepreciationBook) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, FADepreciationBookTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of FA_Depreciation_Book\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all FA_Depreciation_Book: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *FADepreciationBook) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, FADepreciationBookTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all FA_Depreciation_Book: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record

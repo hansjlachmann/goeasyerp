@@ -1406,87 +1406,14 @@ func (t *Customer) Insert(runTrigger bool) bool {
 			return false
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, CustomerTableName)
 
-	// Collect arguments for INSERT
-	args := []interface{}{
-		t.No,
-		t.Name,
-		t.Search_name,
-		t.Name_2,
-		t.Address,
-		t.Address_2,
-		t.City,
-		t.Contact,
-		t.Phone_no,
-		t.Telex_no,
-		t.Our_account_no,
-		t.Territory_code,
-		t.Dimension_1_code,
-		t.Dimension_2_code,
-		t.Chain_name,
-		t.Budgeted_amount,
-		t.Credit_limit_lcy,
-		t.Customer_posting_group,
-		t.Currency_code,
-		t.Price_group_code,
-		t.Language_code,
-		t.Statistics_group,
-		t.Payment_terms_code,
-		t.Fin_charge_terms_code,
-		t.Salesperson_code,
-		t.Shipment_method_code,
-		t.Shipping_agent_code,
-		t.Place_of_export,
-		t.Invoice_disc_code,
-		t.Cust_item_disc_gr,
-		t.Country_code,
-		t.Collection_method,
-		t.Amount,
-		t.Blocked,
-		t.Invoice_copies,
-		t.Last_statement_no,
-		t.Print_statements,
-		t.Bill_to_customer_no,
-		t.Priority,
-		t.Payment_method_code,
-		t.Last_date_modified,
-		t.Application_method,
-		t.Allow_quantity_disc,
-		t.Prices_including_tax,
-		t.Location_code,
-		t.Fax_no,
-		t.Telex_answer_back,
-		t.Vat_registration_no,
-		t.Combine_shipments,
-		t.Gen_bus_posting_group,
-		t.Picture,
-		t.Post_code,
-		t.State,
-		t.E_mail,
-		t.Home_page,
-		t.Reminder_terms_code,
-		t.No_series,
-		t.Tax_area_code,
-		t.Tax_liable,
-		t.Tax_bus_posting_group,
-		t.Reserve,
-	}
-
-	// Build SQL with placeholders. A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead
-	// of failing: on PostgreSQL a failed INSERT would abort the transaction
-	sqlStr := fmt.Sprintf(`INSERT INTO "%s" (no, name, search_name, name_2, address, address_2, city, contact, phone_no, telex_no, our_account_no, territory_code, dimension_1_code, dimension_2_code, chain_name, budgeted_amount, credit_limit_lcy, customer_posting_group, currency_code, price_group_code, language_code, statistics_group, payment_terms_code, fin_charge_terms_code, salesperson_code, shipment_method_code, shipping_agent_code, place_of_export, invoice_disc_code, cust_item_disc_gr, country_code, collection_method, amount, blocked, invoice_copies, last_statement_no, print_statements, bill_to_customer_no, priority, payment_method_code, last_date_modified, application_method, allow_quantity_disc, prices_including_tax, location_code, fax_no, telex_answer_back, vat_registration_no, combine_shipments, gen_bus_posting_group, picture, post_code, state, e_mail, home_page, reminder_terms_code, no_series, tax_area_code, tax_liable, tax_bus_posting_group, reserve) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (no) DO NOTHING`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	result, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to insert Customer: %v\n", err)
+	// A taken key inserts nothing (ON CONFLICT … DO NOTHING) instead of failing: on PostgreSQL
+	// a failed INSERT would abort the transaction
+	switch t.rec().Insert() {
+	case tables.InsertFailed:
 		return false
-	}
-	// The key is taken (INSERT fails in the classic way: "<Table> <key> already exists")
-	if n, err := result.RowsAffected(); err == nil && n == 0 {
+	case tables.KeyTaken:
+		// INSERT fails in the classic way: "<Table> <key> already exists"
 		_, key := t.recordKey()
 		t.triggerErr = apperrors.TableRecordExists(CustomerTableName, key)
 		return false
@@ -1512,73 +1439,10 @@ func (t *Customer) InsertAll(records []*Customer, runTrigger bool) error {
 				return &tables.BatchInsertError{Index: i, Trigger: true, Err: err}
 			}
 		}
-		rows = append(rows, []interface{}{
-			r.No,
-			r.Name,
-			r.Search_name,
-			r.Name_2,
-			r.Address,
-			r.Address_2,
-			r.City,
-			r.Contact,
-			r.Phone_no,
-			r.Telex_no,
-			r.Our_account_no,
-			r.Territory_code,
-			r.Dimension_1_code,
-			r.Dimension_2_code,
-			r.Chain_name,
-			r.Budgeted_amount,
-			r.Credit_limit_lcy,
-			r.Customer_posting_group,
-			r.Currency_code,
-			r.Price_group_code,
-			r.Language_code,
-			r.Statistics_group,
-			r.Payment_terms_code,
-			r.Fin_charge_terms_code,
-			r.Salesperson_code,
-			r.Shipment_method_code,
-			r.Shipping_agent_code,
-			r.Place_of_export,
-			r.Invoice_disc_code,
-			r.Cust_item_disc_gr,
-			r.Country_code,
-			r.Collection_method,
-			r.Amount,
-			r.Blocked,
-			r.Invoice_copies,
-			r.Last_statement_no,
-			r.Print_statements,
-			r.Bill_to_customer_no,
-			r.Priority,
-			r.Payment_method_code,
-			r.Last_date_modified,
-			r.Application_method,
-			r.Allow_quantity_disc,
-			r.Prices_including_tax,
-			r.Location_code,
-			r.Fax_no,
-			r.Telex_answer_back,
-			r.Vat_registration_no,
-			r.Combine_shipments,
-			r.Gen_bus_posting_group,
-			r.Picture,
-			r.Post_code,
-			r.State,
-			r.E_mail,
-			r.Home_page,
-			r.Reminder_terms_code,
-			r.No_series,
-			r.Tax_area_code,
-			r.Tax_liable,
-			r.Tax_bus_posting_group,
-			r.Reserve,
-		})
+		rows = append(rows, customerFields.RowValues(r.fieldRef))
 	}
 	tableName := fmt.Sprintf("%s$%s", t.company, CustomerTableName)
-	columns := []string{"no", "name", "search_name", "name_2", "address", "address_2", "city", "contact", "phone_no", "telex_no", "our_account_no", "territory_code", "dimension_1_code", "dimension_2_code", "chain_name", "budgeted_amount", "credit_limit_lcy", "customer_posting_group", "currency_code", "price_group_code", "language_code", "statistics_group", "payment_terms_code", "fin_charge_terms_code", "salesperson_code", "shipment_method_code", "shipping_agent_code", "place_of_export", "invoice_disc_code", "cust_item_disc_gr", "country_code", "collection_method", "amount", "blocked", "invoice_copies", "last_statement_no", "print_statements", "bill_to_customer_no", "priority", "payment_method_code", "last_date_modified", "application_method", "allow_quantity_disc", "prices_including_tax", "location_code", "fax_no", "telex_answer_back", "vat_registration_no", "combine_shipments", "gen_bus_posting_group", "picture", "post_code", "state", "e_mail", "home_page", "reminder_terms_code", "no_series", "tax_area_code", "tax_liable", "tax_bus_posting_group", "reserve"}
-	return tables.InsertRows(t.exec(), t.dbType, tableName, columns, rows)
+	return tables.InsertRows(t.exec(), t.dbType, tableName, customerFields.Columns(), rows)
 }
 
 // Modify updates the record in the database
@@ -1594,407 +1458,13 @@ func (t *Customer) Modify(runTrigger bool) bool {
 	}
 	// A changed primary key is a rename: run the OnRename trigger
 	// before it is written; xRec values are available through OldValue
-	keyChanged := false
-	if t.oldValues != nil {
-		if t.hasFieldChanged("no") {
-			keyChanged = true
-		}
-	}
+	keyChanged := customerFields.KeyChanged(t.fieldRef, t.oldValues)
 	if runTrigger && keyChanged {
 		if err := t.runOnRename(); err != nil {
 			fmt.Printf("Error: OnRename trigger failed: %v\n", err)
 			t.triggerErr = err
 			return false
 		}
-	}
-	tableName := fmt.Sprintf("%s$%s", t.company, CustomerTableName)
-
-	// Build dynamic SQL based on field tracking
-	var setClauses []string
-	var values []interface{}
-
-	// If we have old values (loaded from Get), only update changed fields.
-	// Changed primary key fields are renamed in place (Rename): they are SET to the
-	// new value while the WHERE clause matches the old one.
-	if t.oldValues != nil {
-		if t.hasFieldChanged("no") {
-			setClauses = append(setClauses, "no = ?")
-			values = append(values, t.No)
-		}
-		if t.hasFieldChanged("name") {
-			setClauses = append(setClauses, "name = ?")
-			values = append(values, t.Name)
-		}
-		if t.hasFieldChanged("search_name") {
-			setClauses = append(setClauses, "search_name = ?")
-			values = append(values, t.Search_name)
-		}
-		if t.hasFieldChanged("name_2") {
-			setClauses = append(setClauses, "name_2 = ?")
-			values = append(values, t.Name_2)
-		}
-		if t.hasFieldChanged("address") {
-			setClauses = append(setClauses, "address = ?")
-			values = append(values, t.Address)
-		}
-		if t.hasFieldChanged("address_2") {
-			setClauses = append(setClauses, "address_2 = ?")
-			values = append(values, t.Address_2)
-		}
-		if t.hasFieldChanged("city") {
-			setClauses = append(setClauses, "city = ?")
-			values = append(values, t.City)
-		}
-		if t.hasFieldChanged("contact") {
-			setClauses = append(setClauses, "contact = ?")
-			values = append(values, t.Contact)
-		}
-		if t.hasFieldChanged("phone_no") {
-			setClauses = append(setClauses, "phone_no = ?")
-			values = append(values, t.Phone_no)
-		}
-		if t.hasFieldChanged("telex_no") {
-			setClauses = append(setClauses, "telex_no = ?")
-			values = append(values, t.Telex_no)
-		}
-		if t.hasFieldChanged("our_account_no") {
-			setClauses = append(setClauses, "our_account_no = ?")
-			values = append(values, t.Our_account_no)
-		}
-		if t.hasFieldChanged("territory_code") {
-			setClauses = append(setClauses, "territory_code = ?")
-			values = append(values, t.Territory_code)
-		}
-		if t.hasFieldChanged("dimension_1_code") {
-			setClauses = append(setClauses, "dimension_1_code = ?")
-			values = append(values, t.Dimension_1_code)
-		}
-		if t.hasFieldChanged("dimension_2_code") {
-			setClauses = append(setClauses, "dimension_2_code = ?")
-			values = append(values, t.Dimension_2_code)
-		}
-		if t.hasFieldChanged("chain_name") {
-			setClauses = append(setClauses, "chain_name = ?")
-			values = append(values, t.Chain_name)
-		}
-		if t.hasFieldChanged("budgeted_amount") {
-			setClauses = append(setClauses, "budgeted_amount = ?")
-			values = append(values, t.Budgeted_amount)
-		}
-		if t.hasFieldChanged("credit_limit_lcy") {
-			setClauses = append(setClauses, "credit_limit_lcy = ?")
-			values = append(values, t.Credit_limit_lcy)
-		}
-		if t.hasFieldChanged("customer_posting_group") {
-			setClauses = append(setClauses, "customer_posting_group = ?")
-			values = append(values, t.Customer_posting_group)
-		}
-		if t.hasFieldChanged("currency_code") {
-			setClauses = append(setClauses, "currency_code = ?")
-			values = append(values, t.Currency_code)
-		}
-		if t.hasFieldChanged("price_group_code") {
-			setClauses = append(setClauses, "price_group_code = ?")
-			values = append(values, t.Price_group_code)
-		}
-		if t.hasFieldChanged("language_code") {
-			setClauses = append(setClauses, "language_code = ?")
-			values = append(values, t.Language_code)
-		}
-		if t.hasFieldChanged("statistics_group") {
-			setClauses = append(setClauses, "statistics_group = ?")
-			values = append(values, t.Statistics_group)
-		}
-		if t.hasFieldChanged("payment_terms_code") {
-			setClauses = append(setClauses, "payment_terms_code = ?")
-			values = append(values, t.Payment_terms_code)
-		}
-		if t.hasFieldChanged("fin_charge_terms_code") {
-			setClauses = append(setClauses, "fin_charge_terms_code = ?")
-			values = append(values, t.Fin_charge_terms_code)
-		}
-		if t.hasFieldChanged("salesperson_code") {
-			setClauses = append(setClauses, "salesperson_code = ?")
-			values = append(values, t.Salesperson_code)
-		}
-		if t.hasFieldChanged("shipment_method_code") {
-			setClauses = append(setClauses, "shipment_method_code = ?")
-			values = append(values, t.Shipment_method_code)
-		}
-		if t.hasFieldChanged("shipping_agent_code") {
-			setClauses = append(setClauses, "shipping_agent_code = ?")
-			values = append(values, t.Shipping_agent_code)
-		}
-		if t.hasFieldChanged("place_of_export") {
-			setClauses = append(setClauses, "place_of_export = ?")
-			values = append(values, t.Place_of_export)
-		}
-		if t.hasFieldChanged("invoice_disc_code") {
-			setClauses = append(setClauses, "invoice_disc_code = ?")
-			values = append(values, t.Invoice_disc_code)
-		}
-		if t.hasFieldChanged("cust_item_disc_gr") {
-			setClauses = append(setClauses, "cust_item_disc_gr = ?")
-			values = append(values, t.Cust_item_disc_gr)
-		}
-		if t.hasFieldChanged("country_code") {
-			setClauses = append(setClauses, "country_code = ?")
-			values = append(values, t.Country_code)
-		}
-		if t.hasFieldChanged("collection_method") {
-			setClauses = append(setClauses, "collection_method = ?")
-			values = append(values, t.Collection_method)
-		}
-		if t.hasFieldChanged("amount") {
-			setClauses = append(setClauses, "amount = ?")
-			values = append(values, t.Amount)
-		}
-		if t.hasFieldChanged("blocked") {
-			setClauses = append(setClauses, "blocked = ?")
-			values = append(values, t.Blocked)
-		}
-		if t.hasFieldChanged("invoice_copies") {
-			setClauses = append(setClauses, "invoice_copies = ?")
-			values = append(values, t.Invoice_copies)
-		}
-		if t.hasFieldChanged("last_statement_no") {
-			setClauses = append(setClauses, "last_statement_no = ?")
-			values = append(values, t.Last_statement_no)
-		}
-		if t.hasFieldChanged("print_statements") {
-			setClauses = append(setClauses, "print_statements = ?")
-			values = append(values, t.Print_statements)
-		}
-		if t.hasFieldChanged("bill_to_customer_no") {
-			setClauses = append(setClauses, "bill_to_customer_no = ?")
-			values = append(values, t.Bill_to_customer_no)
-		}
-		if t.hasFieldChanged("priority") {
-			setClauses = append(setClauses, "priority = ?")
-			values = append(values, t.Priority)
-		}
-		if t.hasFieldChanged("payment_method_code") {
-			setClauses = append(setClauses, "payment_method_code = ?")
-			values = append(values, t.Payment_method_code)
-		}
-		if t.hasFieldChanged("last_date_modified") {
-			setClauses = append(setClauses, "last_date_modified = ?")
-			values = append(values, t.Last_date_modified)
-		}
-		if t.hasFieldChanged("application_method") {
-			setClauses = append(setClauses, "application_method = ?")
-			values = append(values, t.Application_method)
-		}
-		if t.hasFieldChanged("allow_quantity_disc") {
-			setClauses = append(setClauses, "allow_quantity_disc = ?")
-			values = append(values, t.Allow_quantity_disc)
-		}
-		if t.hasFieldChanged("prices_including_tax") {
-			setClauses = append(setClauses, "prices_including_tax = ?")
-			values = append(values, t.Prices_including_tax)
-		}
-		if t.hasFieldChanged("location_code") {
-			setClauses = append(setClauses, "location_code = ?")
-			values = append(values, t.Location_code)
-		}
-		if t.hasFieldChanged("fax_no") {
-			setClauses = append(setClauses, "fax_no = ?")
-			values = append(values, t.Fax_no)
-		}
-		if t.hasFieldChanged("telex_answer_back") {
-			setClauses = append(setClauses, "telex_answer_back = ?")
-			values = append(values, t.Telex_answer_back)
-		}
-		if t.hasFieldChanged("vat_registration_no") {
-			setClauses = append(setClauses, "vat_registration_no = ?")
-			values = append(values, t.Vat_registration_no)
-		}
-		if t.hasFieldChanged("combine_shipments") {
-			setClauses = append(setClauses, "combine_shipments = ?")
-			values = append(values, t.Combine_shipments)
-		}
-		if t.hasFieldChanged("gen_bus_posting_group") {
-			setClauses = append(setClauses, "gen_bus_posting_group = ?")
-			values = append(values, t.Gen_bus_posting_group)
-		}
-		if t.hasFieldChanged("picture") {
-			setClauses = append(setClauses, "picture = ?")
-			values = append(values, t.Picture)
-		}
-		if t.hasFieldChanged("post_code") {
-			setClauses = append(setClauses, "post_code = ?")
-			values = append(values, t.Post_code)
-		}
-		if t.hasFieldChanged("state") {
-			setClauses = append(setClauses, "state = ?")
-			values = append(values, t.State)
-		}
-		if t.hasFieldChanged("e_mail") {
-			setClauses = append(setClauses, "e_mail = ?")
-			values = append(values, t.E_mail)
-		}
-		if t.hasFieldChanged("home_page") {
-			setClauses = append(setClauses, "home_page = ?")
-			values = append(values, t.Home_page)
-		}
-		if t.hasFieldChanged("reminder_terms_code") {
-			setClauses = append(setClauses, "reminder_terms_code = ?")
-			values = append(values, t.Reminder_terms_code)
-		}
-		if t.hasFieldChanged("no_series") {
-			setClauses = append(setClauses, "no_series = ?")
-			values = append(values, t.No_series)
-		}
-		if t.hasFieldChanged("tax_area_code") {
-			setClauses = append(setClauses, "tax_area_code = ?")
-			values = append(values, t.Tax_area_code)
-		}
-		if t.hasFieldChanged("tax_liable") {
-			setClauses = append(setClauses, "tax_liable = ?")
-			values = append(values, t.Tax_liable)
-		}
-		if t.hasFieldChanged("tax_bus_posting_group") {
-			setClauses = append(setClauses, "tax_bus_posting_group = ?")
-			values = append(values, t.Tax_bus_posting_group)
-		}
-		if t.hasFieldChanged("reserve") {
-			setClauses = append(setClauses, "reserve = ?")
-			values = append(values, t.Reserve)
-		}
-
-		// If nothing changed, skip update
-		if len(setClauses) == 0 {
-			return true // No changes, success
-		}
-	} else {
-		// No old values (fresh record), update all fields
-		setClauses = append(setClauses, "name = ?")
-		values = append(values, t.Name)
-		setClauses = append(setClauses, "search_name = ?")
-		values = append(values, t.Search_name)
-		setClauses = append(setClauses, "name_2 = ?")
-		values = append(values, t.Name_2)
-		setClauses = append(setClauses, "address = ?")
-		values = append(values, t.Address)
-		setClauses = append(setClauses, "address_2 = ?")
-		values = append(values, t.Address_2)
-		setClauses = append(setClauses, "city = ?")
-		values = append(values, t.City)
-		setClauses = append(setClauses, "contact = ?")
-		values = append(values, t.Contact)
-		setClauses = append(setClauses, "phone_no = ?")
-		values = append(values, t.Phone_no)
-		setClauses = append(setClauses, "telex_no = ?")
-		values = append(values, t.Telex_no)
-		setClauses = append(setClauses, "our_account_no = ?")
-		values = append(values, t.Our_account_no)
-		setClauses = append(setClauses, "territory_code = ?")
-		values = append(values, t.Territory_code)
-		setClauses = append(setClauses, "dimension_1_code = ?")
-		values = append(values, t.Dimension_1_code)
-		setClauses = append(setClauses, "dimension_2_code = ?")
-		values = append(values, t.Dimension_2_code)
-		setClauses = append(setClauses, "chain_name = ?")
-		values = append(values, t.Chain_name)
-		setClauses = append(setClauses, "budgeted_amount = ?")
-		values = append(values, t.Budgeted_amount)
-		setClauses = append(setClauses, "credit_limit_lcy = ?")
-		values = append(values, t.Credit_limit_lcy)
-		setClauses = append(setClauses, "customer_posting_group = ?")
-		values = append(values, t.Customer_posting_group)
-		setClauses = append(setClauses, "currency_code = ?")
-		values = append(values, t.Currency_code)
-		setClauses = append(setClauses, "price_group_code = ?")
-		values = append(values, t.Price_group_code)
-		setClauses = append(setClauses, "language_code = ?")
-		values = append(values, t.Language_code)
-		setClauses = append(setClauses, "statistics_group = ?")
-		values = append(values, t.Statistics_group)
-		setClauses = append(setClauses, "payment_terms_code = ?")
-		values = append(values, t.Payment_terms_code)
-		setClauses = append(setClauses, "fin_charge_terms_code = ?")
-		values = append(values, t.Fin_charge_terms_code)
-		setClauses = append(setClauses, "salesperson_code = ?")
-		values = append(values, t.Salesperson_code)
-		setClauses = append(setClauses, "shipment_method_code = ?")
-		values = append(values, t.Shipment_method_code)
-		setClauses = append(setClauses, "shipping_agent_code = ?")
-		values = append(values, t.Shipping_agent_code)
-		setClauses = append(setClauses, "place_of_export = ?")
-		values = append(values, t.Place_of_export)
-		setClauses = append(setClauses, "invoice_disc_code = ?")
-		values = append(values, t.Invoice_disc_code)
-		setClauses = append(setClauses, "cust_item_disc_gr = ?")
-		values = append(values, t.Cust_item_disc_gr)
-		setClauses = append(setClauses, "country_code = ?")
-		values = append(values, t.Country_code)
-		setClauses = append(setClauses, "collection_method = ?")
-		values = append(values, t.Collection_method)
-		setClauses = append(setClauses, "amount = ?")
-		values = append(values, t.Amount)
-		setClauses = append(setClauses, "blocked = ?")
-		values = append(values, t.Blocked)
-		setClauses = append(setClauses, "invoice_copies = ?")
-		values = append(values, t.Invoice_copies)
-		setClauses = append(setClauses, "last_statement_no = ?")
-		values = append(values, t.Last_statement_no)
-		setClauses = append(setClauses, "print_statements = ?")
-		values = append(values, t.Print_statements)
-		setClauses = append(setClauses, "bill_to_customer_no = ?")
-		values = append(values, t.Bill_to_customer_no)
-		setClauses = append(setClauses, "priority = ?")
-		values = append(values, t.Priority)
-		setClauses = append(setClauses, "payment_method_code = ?")
-		values = append(values, t.Payment_method_code)
-		setClauses = append(setClauses, "last_date_modified = ?")
-		values = append(values, t.Last_date_modified)
-		setClauses = append(setClauses, "application_method = ?")
-		values = append(values, t.Application_method)
-		setClauses = append(setClauses, "allow_quantity_disc = ?")
-		values = append(values, t.Allow_quantity_disc)
-		setClauses = append(setClauses, "prices_including_tax = ?")
-		values = append(values, t.Prices_including_tax)
-		setClauses = append(setClauses, "location_code = ?")
-		values = append(values, t.Location_code)
-		setClauses = append(setClauses, "fax_no = ?")
-		values = append(values, t.Fax_no)
-		setClauses = append(setClauses, "telex_answer_back = ?")
-		values = append(values, t.Telex_answer_back)
-		setClauses = append(setClauses, "vat_registration_no = ?")
-		values = append(values, t.Vat_registration_no)
-		setClauses = append(setClauses, "combine_shipments = ?")
-		values = append(values, t.Combine_shipments)
-		setClauses = append(setClauses, "gen_bus_posting_group = ?")
-		values = append(values, t.Gen_bus_posting_group)
-		setClauses = append(setClauses, "picture = ?")
-		values = append(values, t.Picture)
-		setClauses = append(setClauses, "post_code = ?")
-		values = append(values, t.Post_code)
-		setClauses = append(setClauses, "state = ?")
-		values = append(values, t.State)
-		setClauses = append(setClauses, "e_mail = ?")
-		values = append(values, t.E_mail)
-		setClauses = append(setClauses, "home_page = ?")
-		values = append(values, t.Home_page)
-		setClauses = append(setClauses, "reminder_terms_code = ?")
-		values = append(values, t.Reminder_terms_code)
-		setClauses = append(setClauses, "no_series = ?")
-		values = append(values, t.No_series)
-		setClauses = append(setClauses, "tax_area_code = ?")
-		values = append(values, t.Tax_area_code)
-		setClauses = append(setClauses, "tax_liable = ?")
-		values = append(values, t.Tax_liable)
-		setClauses = append(setClauses, "tax_bus_posting_group = ?")
-		values = append(values, t.Tax_bus_posting_group)
-		setClauses = append(setClauses, "reserve = ?")
-		values = append(values, t.Reserve)
-	}
-
-	// Add WHERE clause value (primary key as loaded, so a renamed key still matches)
-	if old, ok := t.oldValues["no"]; ok {
-		values = append(values, old)
-	} else {
-		values = append(values, t.No)
 	}
 	// Renamed key fields that other tables refer to (Rename): carried over below
 	type renamedKey struct {
@@ -2008,19 +1478,11 @@ func (t *Customer) Modify(runTrigger bool) bool {
 		}
 	}
 
-	// Build and execute SQL
-	sqlStr := fmt.Sprintf(`UPDATE "%s" SET %s WHERE 1=1 AND no = ?`,
-		tableName,
-		strings.Join(setClauses, ", "),
-	)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(values))
-
-	_, err := t.exec().Exec(sqlStr, values...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify Customer: %v\n", err)
+	switch t.rec().Modify(t.oldValues) {
+	case tables.ModifyFailed:
 		return false
+	case tables.NothingToSave:
+		return true
 	}
 	// A temporary record's rename stays in the record: other tables are not changed
 	for _, r := range renamed {
@@ -2139,25 +1601,8 @@ func (t *Customer) Delete(runTrigger bool) bool {
 			}
 		}
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, CustomerTableName)
 
-	// Collect arguments for DELETE
-	args := []interface{}{
-		t.No,
-	}
-
-	// Build SQL with placeholders
-	sqlStr := fmt.Sprintf(`DELETE FROM "%s" WHERE 1=1 AND no = ?`, tableName)
-
-	// Convert placeholders for PostgreSQL
-	sqlStr = t.convertPlaceholders(sqlStr, len(args))
-
-	_, err := t.exec().Exec(sqlStr, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete Customer: %v\n", err)
-		return false
-	}
-	return true
+	return t.rec().Delete()
 }
 
 // ========================================
@@ -8800,53 +8245,13 @@ func (t *Customer) IsEmpty() bool {
 // ModifyAll updates a field for all records matching current filters
 // Returns the number of records modified
 func (t *Customer) ModifyAll(fieldName string, newValue interface{}) int {
-	tableName := fmt.Sprintf("%s$%s", t.company, CustomerTableName)
-	column, ok := t.columnName(fieldName)
-	if !ok {
-		fmt.Printf("Error: ModifyAll on unknown field %q of Customer\n", fieldName)
-		return 0
-	}
-	where, args := t.buildWhereClause()
-
-	// Build UPDATE SQL
-	updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s`, tableName, column, where)
-
-	// Prepend newValue to args
-	allArgs := append([]interface{}{newValue}, args...)
-
-	// Convert placeholders for PostgreSQL
-	updateSQL = t.convertPlaceholders(updateSQL, len(allArgs))
-
-	result, err := t.exec().Exec(updateSQL, allArgs...)
-	if err != nil {
-		fmt.Printf("Error: Failed to modify all Customer: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().ModifyAll(fieldName, newValue)
 }
 
 // DeleteAll deletes all records matching current filters
 // Returns the number of records deleted
 func (t *Customer) DeleteAll() int {
-	tableName := fmt.Sprintf("%s$%s", t.company, CustomerTableName)
-	where, args := t.buildWhereClause()
-
-	// Build DELETE SQL
-	deleteSQL := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, tableName, where)
-
-	// Convert placeholders for PostgreSQL
-	deleteSQL = t.convertPlaceholders(deleteSQL, len(args))
-
-	result, err := t.exec().Exec(deleteSQL, args...)
-	if err != nil {
-		fmt.Printf("Error: Failed to delete all Customer: %v\n", err)
-		return 0
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected)
+	return t.rec().DeleteAll()
 }
 
 // CopyFilters copies the filters (every filter group) and the current key of another record
