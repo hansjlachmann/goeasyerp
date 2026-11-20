@@ -5,6 +5,11 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # every night the Go tests with the race detector (pushes and pull requests run them without:
+  # several times faster)
+  schedule:
+    - cron: '17 2 * * *'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -13,9 +18,59 @@ permissions:
   packages: write
 
 jobs:
+  # A release changes only version files: the release-please PR and its merge commit carry the
+  # code CI tested on main already (the release PR is only made after CI passed there), so the
+  # tests do not run for them again — only when both the PR/commit is release-please's and it
+  # changes nothing but the release files
+  changes:
+    name: Changes
+    runs-on: ubuntu-24.04
+    outputs:
+      release_only: ${{ steps.check.outputs.release_only }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Release files only?
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          HEAD_REF: ${{ github.head_ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          release=false
+          case "$EVENT" in
+            pull_request)
+              case "$HEAD_REF" in release-please--*)
+                release=true
+                files=$(gh api "repos/${{ github.repository }}/pulls/$PR_NUMBER/files" --paginate --jq '.[].filename') ;;
+              esac ;;
+            push)
+              case "$COMMIT_MESSAGE" in "chore(main): release "*)
+                release=true
+                files=$(git diff --name-only HEAD^ HEAD) ;;
+              esac ;;
+          esac
+          if [ "$release" = true ]; then
+            for f in $files; do
+              case "$f" in
+                CHANGELOG.md|.release-please-manifest.json|backend/definitions/application.yaml|docker-compose.local.yml) ;;
+                *) echo "changes $f: the tests run"; release=false ;;
+              esac
+            done
+          fi
+          echo "release files only: $release"
+          echo "release_only=$release" >> "$GITHUB_OUTPUT"
+
   backend:
     name: Backend (Go)
     runs-on: ubuntu-24.04
+    needs: changes
+    if: needs.changes.outputs.release_only != 'true'
 
     # PostgreSQL for the tests that also run on it (TEST_POSTGRES_DSN): production runs on
     # PostgreSQL, the other tests on SQLite
@@ -69,7 +124,9 @@ jobs:
       - name: Run tests
         env:
           TEST_POSTGRES_DSN: postgres://openerp@localhost:5432/ci_test?sslmode=disable
-        run: go test -v -race -timeout 30m -coverprofile=coverage.out ./...
+          # the race detector in the nightly run (and when started by hand): several times slower
+          RACE: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && '-race' || '' }}
+        run: go test -v $RACE -timeout 45m -coverprofile=coverage.out ./...
 
       - name: Upload Go coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -89,6 +146,8 @@ jobs:
   frontend:
     name: Frontend (SvelteKit)
     runs-on: ubuntu-24.04
+    needs: changes
+    if: needs.changes.outputs.release_only != 'true'
 
     # The E2E tests run against the API server with demo data (DEMO_DATA) on a throwaway
     # PostgreSQL of the job
@@ -194,8 +253,13 @@ jobs:
   release:
     name: Release Please
     runs-on: ubuntu-24.04
-    needs: [backend, frontend]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [changes, backend, frontend]
+    # after the tests, or without them for a release's own commit (skipped, see Changes)
+    if: >-
+      always() && github.event_name == 'push' && github.ref == 'refs/heads/main' &&
+      needs.changes.result == 'success' &&
+      (needs.backend.result == 'success' || needs.backend.result == 'skipped') &&
+      (needs.frontend.result == 'success' || needs.frontend.result == 'skipped')
 
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
@@ -221,12 +285,11 @@ jobs:
     # no longer runs npm under QEMU (frontend/Dockerfile), which was what hung.
     # Re-run with "Re-run failed jobs": "Re-run all jobs" runs Release Please again, which then
     # creates no release, so this job is skipped and the images stay missing (0.1.89, 0.1.90).
-    # (raised from 30 for the app builder image, which compiles the server once more to fill
-    # its build cache)
-    timeout-minutes: 50
-    needs: [backend, frontend, release]
-    # Only build Docker images when a release is created
-    if: needs.release.outputs.release_created == 'true'
+    timeout-minutes: 30
+    needs: [release]
+    # Only build Docker images when a release is created (always(): the tests may have been
+    # skipped for the release's own commit, see Changes)
+    if: always() && needs.release.result == 'success' && needs.release.outputs.release_created == 'true'
 
     steps:
       - name: Checkout code
@@ -252,16 +315,6 @@ jobs:
           TAGS="$TAGS,ghcr.io/${{ github.repository }}/backend:${{ github.sha }}"
           if [ "${{ needs.release.outputs.release_created }}" == "true" ]; then
             TAGS="$TAGS,ghcr.io/${{ github.repository }}/backend:${{ needs.release.outputs.version }}"
-          fi
-          echo "tags=$TAGS" >> $GITHUB_OUTPUT
-
-      - name: Determine tags for the app builder
-        id: tags-builder
-        run: |
-          TAGS="ghcr.io/${{ github.repository }}/builder:latest"
-          TAGS="$TAGS,ghcr.io/${{ github.repository }}/builder:${{ github.sha }}"
-          if [ "${{ needs.release.outputs.release_created }}" == "true" ]; then
-            TAGS="$TAGS,ghcr.io/${{ github.repository }}/builder:${{ needs.release.outputs.version }}"
           fi
           echo "tags=$TAGS" >> $GITHUB_OUTPUT
 
@@ -294,21 +347,8 @@ jobs:
           tags: ${{ steps.tags-backend.outputs.tags }}
           build-args: |
             VERSION=${{ steps.version.outputs.version }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      # the installation's builder of the extension apps (Dockerfile target app-builder)
-      - name: Build and push the app builder
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./Dockerfile
-          target: app-builder
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: ${{ steps.tags-builder.outputs.tags }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
 
       - name: Build and push frontend
         uses: docker/build-push-action@v6
@@ -318,8 +358,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.tags-frontend.outputs.tags }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend
 
       - name: Commit .env file
         run: |
@@ -333,3 +373,50 @@ jobs:
           git add .env
           git diff --staged --quiet || git commit -m "chore: update .env to version ${{ needs.release.outputs.version }}"
           git push
+
+  # The installation's builder of the extension apps (Dockerfile target app-builder), in a job of
+  # its own next to the other images: its arm64 build cache must be compiled on arm64 to be valid
+  # on a Raspberry Pi, so it is built under emulation and takes the longest
+  docker-builder:
+    name: Docker Build & Push (app builder)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    needs: [release]
+    if: always() && needs.release.result == 'success' && needs.release.outputs.release_created == 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Determine tags
+        id: tags
+        run: |
+          TAGS="ghcr.io/${{ github.repository }}/builder:latest"
+          TAGS="$TAGS,ghcr.io/${{ github.repository }}/builder:${{ github.sha }}"
+          TAGS="$TAGS,ghcr.io/${{ github.repository }}/builder:${{ needs.release.outputs.version }}"
+          echo "tags=$TAGS" >> $GITHUB_OUTPUT
+
+      - name: Build and push the app builder
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          target: app-builder
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.tags.outputs.tags }}
+          cache-from: type=gha,scope=builder
+          cache-to: type=gha,mode=max,scope=builder

@@ -1,5 +1,9 @@
-# Build stage
-FROM golang:1.24-alpine AS builder
+# Build stage — on the build machine's own platform, cross-compiling the program for the image's
+# (TARGETOS/TARGETARCH): Go builds an arm64 program on amd64 natively, much faster than building
+# under emulation; only the runtime stage below is per platform
+FROM --platform=$BUILDPLATFORM golang:1.24-alpine AS builder
+ARG TARGETOS
+ARG TARGETARCH
 
 # Version passed at build time
 ARG VERSION=dev
@@ -20,7 +24,8 @@ RUN go mod download
 COPY . .
 
 # Build the extmerge tool
-RUN CGO_ENABLED=0 GOOS=linux go build -o extmerge ./tools/extmerge
+# (a tool of the build: for the build machine)
+RUN CGO_ENABLED=0 go build -o extmerge ./tools/extmerge
 
 # If EXTENSIONS_PATH is provided, merge the apps (their dependencies checked, in dependency
 # order) into backend/definitions and their texts into translations, then generate the table
@@ -41,7 +46,7 @@ RUN if [ -n "$EXTENSIONS_PATH" ] && [ -d "$EXTENSIONS_PATH" ]; then \
     fi
 
 # Build the application with version embedded
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-X github.com/hansjlachmann/goeasyerp/backend/api.Version=${VERSION}" -o api-server ./cmd/api-server
+RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go build -ldflags="-X github.com/hansjlachmann/goeasyerp/backend/api.Version=${VERSION}" -o api-server ./cmd/api-server
 
 # The installation's own builder of the extension apps (target app-builder, image
 # goeasyerp/builder:<version>; App Build Setup: Builds By = Local Builder): the Go toolchain and
@@ -75,8 +80,9 @@ FROM alpine:3.21
 
 WORKDIR /app
 
-# Install ca-certificates for HTTPS
-RUN apk add --no-cache ca-certificates
+# The CA certificates for HTTPS, from the build stage: no command runs in this stage, so the
+# arm64 image is built without emulation
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
 # Copy binary from builder
 COPY --from=builder /app/api-server .
