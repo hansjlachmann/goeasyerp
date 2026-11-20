@@ -111,9 +111,7 @@ jobs:
           git add --intent-to-add .
           git diff --exit-code -- backend/generated backend/business-logic/tables
 
-      - name: Run go vet
-        run: go vet ./...
-
+      # (go vet: golangci-lint's govet linter, enabled by default)
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
@@ -126,6 +124,9 @@ jobs:
           TEST_POSTGRES_DSN: postgres://openerp@localhost:5432/ci_test?sslmode=disable
           # the race detector in the nightly run (and when started by hand): several times slower
           RACE: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && '-race' || '' }}
+          # the app builder's whole build (cmd/app-builder TestBuildBundle) also only then: on every
+          # run "Build with the test extension app" builds the base with the test app already
+          GOEASYERP_SKIP_APP_BUILD: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && '' || '1' }}
         run: go test -v $RACE -timeout 45m -coverprofile=coverage.out ./...
 
       - name: Upload Go coverage to Codecov
@@ -232,8 +233,17 @@ jobs:
           cat "$RUNNER_TEMP/api-server.log"
           exit 1
 
-      - name: Install Playwright browsers
-        run: npx playwright install chromium --with-deps
+      # The runner's Google Chrome (preinstalled on GitHub's Ubuntu images) instead of downloading
+      # Playwright's Chromium and its system packages on every run (5 min); the download only
+      # when the image has no Chrome
+      - name: Browser for the E2E tests
+        run: |
+          if command -v google-chrome > /dev/null; then
+            google-chrome --version
+            echo "PLAYWRIGHT_CHANNEL=chrome" >> "$GITHUB_ENV"
+          else
+            npx playwright install chromium --with-deps
+          fi
 
       - name: Run E2E tests
         run: npm run test:e2e

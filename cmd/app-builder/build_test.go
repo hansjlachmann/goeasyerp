@@ -34,8 +34,8 @@ const repoRoot = "../.."
 // (verified by its SHA-256), the merged definitions with the app's fields and its
 // application.yaml, and build.json
 func TestBuildBundle(t *testing.T) {
-	if testing.Short() {
-		t.Skip("builds the server program")
+	if testing.Short() || os.Getenv("GOEASYERP_SKIP_APP_BUILD") != "" {
+		t.Skip("builds the server program (CI: in the nightly run; every run builds with the test app in scripts/check-extension-fixture.sh)")
 	}
 	base, err := fapps.Load(filepath.Join(repoRoot, "backend", "definitions", "application.yaml"))
 	if err != nil {
