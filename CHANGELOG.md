@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.168](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.167...v0.1.168) (2026-11-20)
+
+
+### Performance
+
+* app builds reuse the builder's build cache ([7915377](https://github.com/hansjlachmann/goeasyerp/commit/7915377a66cd94045e53082b3f530eff4b9e8de8))
+
 ## [0.1.167](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.166...v0.1.167) (2026-11-20)
 
 
