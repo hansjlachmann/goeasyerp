@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.166](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.165...v0.1.166) (2026-11-20)
+
+
+### Bug Fixes
+
+* the app builder compiles within about 5 GB of memory ([b8f6bd5](https://github.com/hansjlachmann/goeasyerp/commit/b8f6bd54d8d4eaab2fcd46df6313dfe8105c4a2c))
+
 ## [0.1.165](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.164...v0.1.165) (2026-11-20)
 
 
