@@ -66,28 +66,12 @@ jobs:
           echo "release files only: $release"
           echo "release_only=$release" >> "$GITHUB_OUTPUT"
 
+  # Lint, the generated code and the builds; the tests run in Backend tests, in parallel
   backend:
     name: Backend (Go)
     runs-on: ubuntu-24.04
     needs: changes
     if: needs.changes.outputs.release_only != 'true'
-
-    # PostgreSQL for the tests that also run on it (TEST_POSTGRES_DSN): production runs on
-    # PostgreSQL, the other tests on SQLite
-    services:
-      postgres:
-        image: postgres:16-alpine # as production
-        env:
-          POSTGRES_USER: openerp
-          POSTGRES_DB: ci_test
-          POSTGRES_HOST_AUTH_METHOD: trust # a throwaway database of the job, no password
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U openerp -d ci_test"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
 
     steps:
       - name: Checkout code
@@ -119,6 +103,70 @@ jobs:
           # the default 1 minute is too short for the generated table code without a warm cache
           args: --timeout=10m
 
+      - name: Build
+        run: go build -v ./...
+
+      # The base application with the test extension app merged in, as an installation's
+      # build does: extension apps keep building as the base changes
+      - name: Build with the test extension app
+        run: scripts/check-extension-fixture.sh
+
+  # The Go tests in three parallel jobs of about the same time (measured 2026-11-20 without the
+  # race detector: the reports package alone 4.5 min; the posting packages 6 min of test time;
+  # the rest). A new slow package: put it into a group, else it runs with the rest.
+  backend-tests:
+    name: Backend tests (${{ matrix.group }})
+    runs-on: ubuntu-24.04
+    needs: changes
+    if: needs.changes.outputs.release_only != 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [reports, posting, rest]
+
+    # PostgreSQL for the tests that also run on it (TEST_POSTGRES_DSN): production runs on
+    # PostgreSQL, the other tests on SQLite
+    services:
+      postgres:
+        image: postgres:16-alpine # as production
+        env:
+          POSTGRES_USER: openerp
+          POSTGRES_DB: ci_test
+          POSTGRES_HOST_AUTH_METHOD: trust # a throwaway database of the job, no password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U openerp -d ci_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+          cache: true
+
+      - name: The group's packages
+        id: packages
+        env:
+          GROUP: ${{ matrix.group }}
+        run: |
+          m=github.com/hansjlachmann/goeasyerp/backend/business-logic
+          reports="$m/reports"
+          posting="$m/genjnl $m/codeunits $m/fajnl $m/itemjnl $m/demodata $m/salesposting $m/purchposting"
+          case "$GROUP" in
+            reports) list="$reports" ;;
+            posting) list="$posting" ;;
+            rest) list=$(go list ./... | grep -v -x -F $(printf -- '-e %s ' $reports $posting)) ;;
+          esac
+          echo "list=$(echo $list)" >> "$GITHUB_OUTPUT"
+          echo "$list" | tr ' ' '\n'
+
       - name: Run tests
         env:
           TEST_POSTGRES_DSN: postgres://openerp@localhost:5432/ci_test?sslmode=disable
@@ -127,7 +175,8 @@ jobs:
           # the app builder's whole build (cmd/app-builder TestBuildBundle) also only then: on every
           # run "Build with the test extension app" builds the base with the test app already
           GOEASYERP_SKIP_APP_BUILD: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && '' || '1' }}
-        run: go test -v $RACE -timeout 45m -coverprofile=coverage.out ./...
+          PACKAGES: ${{ steps.packages.outputs.list }}
+        run: go test -v $RACE -timeout 45m -coverprofile=coverage.out $PACKAGES
 
       - name: Upload Go coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -135,14 +184,6 @@ jobs:
           files: coverage.out
           flags: backend
           fail_ci_if_error: false
-
-      - name: Build
-        run: go build -v ./...
-
-      # The base application with the test extension app merged in, as an installation's
-      # build does: extension apps keep building as the base changes
-      - name: Build with the test extension app
-        run: scripts/check-extension-fixture.sh
 
   frontend:
     name: Frontend (SvelteKit)
@@ -263,12 +304,13 @@ jobs:
   release:
     name: Release Please
     runs-on: ubuntu-24.04
-    needs: [changes, backend, frontend]
+    needs: [changes, backend, backend-tests, frontend]
     # after the tests, or without them for a release's own commit (skipped, see Changes)
     if: >-
       always() && github.event_name == 'push' && github.ref == 'refs/heads/main' &&
       needs.changes.result == 'success' &&
       (needs.backend.result == 'success' || needs.backend.result == 'skipped') &&
+      (needs.backend-tests.result == 'success' || needs.backend-tests.result == 'skipped') &&
       (needs.frontend.result == 'success' || needs.frontend.result == 'skipped')
 
     outputs:
