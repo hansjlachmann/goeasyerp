@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.165](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.164...v0.1.165) (2026-11-20)
+
+
+### CI/CD
+
+* E2E tests on the runner's Chrome, no separate go vet, one app build per run ([78e42b4](https://github.com/hansjlachmann/goeasyerp/commit/78e42b4117d61bc6133508c4ba07080b5feb5d82))
+* faster CI and releases ([b73b841](https://github.com/hansjlachmann/goeasyerp/commit/b73b8416f3fb35b33f87a7cd8faae98340a4ed90))
+* the Go tests run in three parallel jobs ([24fbdd3](https://github.com/hansjlachmann/goeasyerp/commit/24fbdd36cf20fc1dcc918866335871c68ba1050f))
+
 ## [0.1.164](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.163...v0.1.164) (2026-11-19)
 
 
