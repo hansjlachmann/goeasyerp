@@ -121,6 +121,13 @@ and waits in **maintenance** until it is built: the login page says so, and `/he
   `scripts/prod.sh logs builder` shows it.
 - To recover, go back to the previous `APP_VERSION`, or restart the backend to try again.
 - The last three builds stay in the volume.
+- The volume also holds the builder's Go build cache (`.cache/`, about 1–1.5 GB), so allow
+  about 2 GB plus 100 MB per kept build. With the cache, building the same apps again takes
+  seconds; the first build after an upgrade compiles the parts of the server the apps change.
+  Go removes cache entries no build has used for five days. Deleting the folder is safe: the
+  next build is slower.
+- Each build's log (App Builds → Show Log) ends with the time of each step: copy, fetch, merge,
+  generate, compile, bundle.
 
 **Kubernetes:** the same images.
 - A builder Deployment (`ghcr.io/hansjlachmann/goeasyerp/builder:<version>`, the backend's
@@ -129,7 +136,7 @@ and waits in **maintenance** until it is built: the login page says so, and `/he
   backend, which gets `APP_BUILDS_DIR=/builds` too.
 - With more than one backend replica the claim must be ReadWriteMany.
 - Keep the builder's image tag equal to the backend's.
-- Give the builder a memory limit of at least 6 GiB and no CPU limit (a CPU limit slows the
+- Give the builder a memory limit of at least 2.5 GiB and no CPU limit (a CPU limit slows the
   build directly). A build killed for memory shows in the node's kernel log (`dmesg`) as an
   out-of-memory kill of `compile`.
 

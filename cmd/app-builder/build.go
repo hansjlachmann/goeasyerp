@@ -90,6 +90,8 @@ func (b *builder) build(ctx context.Context, no int, list fapps.BuildList, log *
 	defer func() { _ = os.RemoveAll(work) }()
 	src := filepath.Join(work, "base")
 	log.Printf("== Build %d: base %s, %d app(s)", no, list.Base.Version, len(list.Apps))
+	steps := &stepTimer{log: log}
+	steps.start("copy", "Copying the base source")
 	err = copyTree(b.baseSource, src, skipSource)
 	if err != nil {
 		return "", fmt.Errorf("copying the base source: %w", err)
@@ -97,8 +99,9 @@ func (b *builder) build(ctx context.Context, no int, list fapps.BuildList, log *
 
 	if len(list.Apps) > 0 {
 		appsDir := filepath.Join(src, "apps")
+		steps.start("fetch", "Fetching the apps")
 		for _, app := range list.Apps {
-			log.Printf("== %s %s (%s)", app.Name, app.Version, app.Source)
+			log.Printf("   %s %s (%s)", app.Name, app.Version, app.Source)
 			dest := filepath.Join(appsDir, app.ID)
 			err = b.fetch.Fetch(ctx, app, dest, log)
 			if err != nil {
@@ -112,7 +115,7 @@ func (b *builder) build(ctx context.Context, no int, list fapps.BuildList, log *
 				return "", fmt.Errorf("%s: the source holds %s %s, not version %s of this app", app.Name, got.ID, got.Version, app.Version)
 			}
 		}
-		log.Printf("== Merging the apps into the base")
+		steps.start("merge", "Merging the apps into the base")
 		err = b.run(ctx, src, log, "go", "run", "./tools/extmerge", "--core", "backend/definitions", "--apps", "apps",
 			"--output", "merged", "--translations", "translations", "--translations-output", "merged-translations", "--go-root", ".")
 		if err != nil {
@@ -128,14 +131,14 @@ func (b *builder) build(ctx context.Context, no int, list fapps.BuildList, log *
 				return "", err
 			}
 		}
-		log.Printf("== Generating the table code")
+		steps.start("generate", "Generating the table code")
 		err = b.run(ctx, src, log, "go", "generate", "./backend/generated/tables")
 		if err != nil {
 			return "", err
 		}
 	}
 
-	log.Printf("== Building the server program")
+	steps.start("compile", "Building the server program")
 	ldflags := "-X github.com/hansjlachmann/goeasyerp/backend/api.Version=" + list.Base.Version
 	args := []string{"build", "-trimpath", "-ldflags=" + ldflags}
 	memArgs, memEnv := lowMemoryBuild(os.Getenv)
@@ -147,6 +150,7 @@ func (b *builder) build(ctx context.Context, no int, list fapps.BuildList, log *
 	}
 
 	// the bundle: written next to its place, then renamed into it
+	steps.start("bundle", "Writing the bundle")
 	final := appbundle.Dir(b.buildsDir, no)
 	tmp := final + ".tmp"
 	_ = os.RemoveAll(tmp)
@@ -182,7 +186,8 @@ func (b *builder) build(ctx context.Context, no int, list fapps.BuildList, log *
 	if err != nil {
 		return "", err
 	}
-	log.Printf("== Built in %s: %s", time.Since(start).Round(time.Second), sha)
+	steps.stop()
+	log.Printf("== Built in %s (%s): %s", time.Since(start).Round(time.Second), steps.summary(), sha)
 	return sha, nil
 }
 
@@ -292,3 +297,43 @@ func copyFile(from, to string) error {
 // the other packages of the server need far less than the table code, but four at once on top
 // of it would not fit a small server
 const parallelCompiles = 2
+
+// stepTimer times the steps of a build in its log: each step's time when it ends, and all of
+// them in the last line, so the log tells where a build spends its time
+type stepTimer struct {
+	log     *buildLog
+	name    string
+	started time.Time
+	done    []string
+}
+
+// start ends the step running and starts the next
+func (s *stepTimer) start(name, heading string) {
+	s.stop()
+	s.log.Printf("== %s", heading)
+	s.name, s.started = name, time.Now()
+}
+
+// stop ends the step running
+func (s *stepTimer) stop() {
+	if s.name == "" {
+		return
+	}
+	took := roundDuration(time.Since(s.started))
+	s.log.Printf("   (%s took %s)", s.name, took)
+	s.done = append(s.done, s.name+" "+took.String())
+	s.name = ""
+}
+
+// summary: the steps ended and their times ("copy 2s, merge 9s, …")
+func (s *stepTimer) summary() string {
+	return strings.Join(s.done, ", ")
+}
+
+// roundDuration: whole seconds, tenths below ten seconds
+func roundDuration(d time.Duration) time.Duration {
+	if d < 10*time.Second {
+		return d.Round(100 * time.Millisecond)
+	}
+	return d.Round(time.Second)
+}

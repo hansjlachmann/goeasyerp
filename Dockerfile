@@ -52,7 +52,10 @@ RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go build -ldflags
 # goeasyerp/builder:<version>; App Build Setup: Builds By = Local Builder): the Go toolchain and
 # this release's source, which cmd/app-builder copies for each build, merges the requested apps
 # into and builds into a bundle in the builds volume. The build cache is filled here, so a build
-# in the installation compiles little more than the apps.
+# in the installation compiles little more than the apps: with the flags the builder compiles
+# with (cmd/app-builder build.go: -trimpath, one compile thread for the table code) — other
+# flags give other cache keys, and nothing filled here would be used. The builder adds this
+# cache to its own in the builds volume (cache.go).
 FROM golang:1.24-alpine AS app-builder
 
 RUN apk add --no-cache git ca-certificates
@@ -66,7 +69,7 @@ RUN go mod download
 COPY . .
 
 RUN go build -o /usr/local/bin/app-builder ./cmd/app-builder && \
-    go build -o /dev/null ./cmd/api-server && \
+    go build -trimpath -gcflags=github.com/hansjlachmann/goeasyerp/backend/generated/tables=-c=1 -o /dev/null ./cmd/api-server && \
     go build -o /dev/null ./tools/extmerge && \
     go build -o /dev/null ./tools/tablegen/main.go
 

@@ -56,6 +56,8 @@ func TestBuildBundle(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%v\n%s", err, blog.Bytes())
 	}
+	lines := strings.Split(strings.TrimSpace(string(blog.Bytes())), "\n")
+	t.Log(lines[len(lines)-1]) // the steps' times
 	dir := appbundle.Dir(builds, 7)
 	if err := appbundle.Verify(dir, base.Version, sha); err != nil {
 		t.Fatal(err)

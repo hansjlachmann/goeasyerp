@@ -71,6 +71,11 @@ func main() {
 		workDir:    env("WORK_DIR", os.TempDir()),
 		fetch:      &sourceFetcher{db: db, token: token},
 	}
+	cacheEnv, err := persistentCache(buildsDir, base.Version, goEnvCache(), os.Getenv)
+	if err != nil {
+		log.Printf("the build cache in %s: %v (builds use the image's cache)", buildsDir, err)
+	}
+	b.env = append(b.env, cacheEnv...)
 	w := &worker{db: db, b: b, version: base.Version, secrets: []string{token}}
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
