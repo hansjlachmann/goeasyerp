@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.172](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.171...v0.1.172) (2026-11-21)
+
+
+### Bug Fixes
+
+* an app builder takes only the build requests for its own version ([6bfaa1b](https://github.com/hansjlachmann/goeasyerp/commit/6bfaa1b103b286345ba649e4dd7f3ab36f31881b))
+
+
+### CI/CD
+
+* build the app builder image natively for each platform ([1404360](https://github.com/hansjlachmann/goeasyerp/commit/1404360e3817b94258213a6eeeed0e09bd1ab389))
+
 ## [0.1.171](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.170...v0.1.171) (2026-11-21)
 
 
