@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.1.173](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.172...v0.1.173) (2026-11-21)
+
+
+### Features
+
+* app builds by the local builder by default ([50c85b4](https://github.com/hansjlachmann/goeasyerp/commit/50c85b455eb96b06dbbe0e672c3f01730016b601))
+
+
+### Bug Fixes
+
+* Esc on a card opened from the main menu goes back to the main menu ([dc2213a](https://github.com/hansjlachmann/goeasyerp/commit/dc2213a28faf2791683a3fcc906108d9496377c9))
+* the Build menu of Installed Apps in English in every language ([d041c98](https://github.com/hansjlachmann/goeasyerp/commit/d041c98ef41ae5af67cb0659b5a605655cac09fb))
+
+
+### CI/CD
+
+* skip the jobs a change does not need; Go and Node as the project uses ([c05bbbb](https://github.com/hansjlachmann/goeasyerp/commit/c05bbbbc33f5b61773b9407c1d082f27c2e3e5df))
+
 ## [0.1.172](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.171...v0.1.172) (2026-11-21)
 
 
