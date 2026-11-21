@@ -10,10 +10,12 @@ import (
 	"go/token"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"text/template"
 	"unicode"
 
@@ -427,18 +429,25 @@ func main() {
 		}
 	}
 
-	// Pass 2: generate
+	// Pass 2: generate — the data in table order (its warnings print in that order), the files
+	// in parallel: each table's file is independent, and formatting the code is most of the
+	// time (an app build on a small server runs this every time)
 	var all []TemplateData
+	jobs := make([]genJob, 0, len(defs))
 	for _, p := range defs {
 		data := prepareTemplateData(p.def)
 		all = append(all, data)
-
-		genFile := filepath.Join(*outDir, strings.ToLower(data.StructName)+"_gen.go")
-		if err := generateFile(genFile, "gen", boilerplateTemplate, data); err != nil {
-			fmt.Printf("✗ %s: %v\n", filepath.Base(p.file), err)
-			os.Exit(1)
-		}
-
+		jobs = append(jobs, genJob{
+			file:   filepath.Join(*outDir, strings.ToLower(data.StructName)+"_gen.go"),
+			source: filepath.Base(p.file),
+			data:   data,
+		})
+	}
+	if err := generateAll(jobs, runtime.NumCPU()); err != nil {
+		fmt.Printf("✗ %v\n", err)
+		os.Exit(1)
+	}
+	for _, data := range all {
 		// A new table gets a starting business logic file (never overwritten)
 		logicFile := filepath.Join(*logicDir, strings.ToLower(data.StructName)+".go")
 		if !fileExists(logicFile) {
@@ -1311,9 +1320,63 @@ func fileExists(filename string) bool {
 	return !os.IsNotExist(err)
 }
 
-// generateFile writes a template's output to filename, formatted by go/format
+// genJob is one table's generated file
+type genJob struct {
+	file   string // the file written
+	source string // the definition it comes from (errors name it)
+	data   TemplateData
+}
+
+// generateAll writes the tables' files with workers in parallel; the first error (in table
+// order) is returned
+func generateAll(jobs []genJob, workers int) error {
+	if workers < 1 {
+		workers = 1
+	}
+	errs := make([]error, len(jobs))
+	next := make(chan int)
+	var wg sync.WaitGroup
+	for w := 0; w < workers; w++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for i := range next {
+				errs[i] = generateFile(jobs[i].file, "gen", boilerplateTemplate, jobs[i].data)
+			}
+		}()
+	}
+	for i := range jobs {
+		next <- i
+	}
+	close(next)
+	wg.Wait()
+	for i, err := range errs {
+		if err != nil {
+			return fmt.Errorf("%s: %w", jobs[i].source, err)
+		}
+	}
+	return nil
+}
+
+// parsedTemplates: each template parsed once (a parsed template executes concurrently)
+var parsedTemplates sync.Map
+
+func parsedTemplate(name, text string) (*template.Template, error) {
+	key := name + "\x00" + text
+	if t, ok := parsedTemplates.Load(key); ok {
+		return t.(*template.Template), nil
+	}
+	t, err := template.New(name).Funcs(templateFuncs()).Parse(text)
+	if err != nil {
+		return nil, err
+	}
+	parsedTemplates.Store(key, t)
+	return t, nil
+}
+
+// generateFile writes a template's output to filename, formatted as gofmt does
 func generateFile(filename, name, text string, data any) error {
-	tmpl, err := template.New(name).Funcs(templateFuncs()).Parse(text)
+	tmpl, err := parsedTemplate(name, text)
 	if err != nil {
 		return err
 	}
@@ -1321,20 +1384,18 @@ func generateFile(filename, name, text string, data any) error {
 	if err := tmpl.Execute(&buf, data); err != nil {
 		return err
 	}
-	src, err := withoutUnusedImports(buf.Bytes())
-	if err != nil {
-		return fmt.Errorf("imports: %w", err)
-	}
-	src, err = format.Source(src)
+	src, err := formatWithoutUnusedImports(buf.Bytes())
 	if err != nil {
 		return fmt.Errorf("format: %w", err)
 	}
 	return os.WriteFile(filename, src, 0644)
 }
 
-// withoutUnusedImports removes the imports the generated code does not use (a package is
-// used when a selector names it), so the templates need no condition per import
-func withoutUnusedImports(src []byte) ([]byte, error) {
+// formatWithoutUnusedImports removes the imports the generated code does not use (a package
+// is used when a selector names it), so the templates need no condition per import, and
+// formats the code: parsed and printed once (format.Node formats as format.Source does —
+// parsing and printing each file twice was most of the generator's time)
+func formatWithoutUnusedImports(src []byte) ([]byte, error) {
 	fset := token.NewFileSet()
 	file, err := parser.ParseFile(fset, "", src, parser.ParseComments)
 	if err != nil {
@@ -1349,7 +1410,6 @@ func withoutUnusedImports(src []byte) ([]byte, error) {
 		}
 		return true
 	})
-	removed := false
 	for _, decl := range file.Decls {
 		gd, ok := decl.(*ast.GenDecl)
 		if !ok || gd.Tok != token.IMPORT {
@@ -1368,14 +1428,9 @@ func withoutUnusedImports(src []byte) ([]byte, error) {
 			}
 			if name == "_" || name == "." || used[name] {
 				specs = append(specs, spec)
-			} else {
-				removed = true
 			}
 		}
 		gd.Specs = specs
-	}
-	if !removed {
-		return src, nil
 	}
 	var out bytes.Buffer
 	if err := format.Node(&out, fset, file); err != nil {
