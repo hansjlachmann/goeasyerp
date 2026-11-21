@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.176](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.175...v0.1.176) (2026-11-21)
+
+
+### Bug Fixes
+
+* apps are installed only from allowed repositories, pinned to a commit ([fb9c97a](https://github.com/hansjlachmann/goeasyerp/commit/fb9c97acc747416607502167b40dd9e952bd4c0c))
+* deleting a company needs SUPER and its name typed ([2c50ac7](https://github.com/hansjlachmann/goeasyerp/commit/2c50ac7d16dc7389146918f37bfc32aaa7c44505))
+* demo data checks for the Company table before reading it ([9756138](https://github.com/hansjlachmann/goeasyerp/commit/9756138de95f798d49442db04c2e734c47bcb116))
+* demo data never empties a company with real data ([e72ad67](https://github.com/hansjlachmann/goeasyerp/commit/e72ad673c54c5f46737bbdb4e97ed2a31a65abc5))
+* large bulk deletes need the count typed, and every bulk delete is logged ([b9253c6](https://github.com/hansjlachmann/goeasyerp/commit/b9253c6b41890f7dc7ce277f057493f5b80a20b7))
+* pin nginx to 1.31.9, which fixes the November 2026 HTTP/2 flaws ([4ca65e3](https://github.com/hansjlachmann/goeasyerp/commit/4ca65e387a9b1bec8544b70cd9f9e438b2acbe1a))
+
 ## [0.1.175](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.174...v0.1.175) (2026-11-21)
 
 
