@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -336,4 +337,132 @@ items:
 			t.Errorf("%s: err = %v, want %q", name, err, c.want)
 		}
 	}
+}
+
+// Every page of the base application keeps every key through a merge: an extension adds an
+// action and a field (a card's first section, a list's columns); after a round trip through the
+// written YAML, with those two taken out again, the page is exactly the base definition
+// (a merge through a partial struct used to drop the keys it did not know)
+func TestEveryPageKeepsItsKeys(t *testing.T) {
+	dir := filepath.Join("..", "..", "backend", "definitions", "pages")
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	checked := 0
+	for _, e := range entries {
+		name := e.Name()
+		if !strings.HasSuffix(name, ".yaml") || strings.HasSuffix(name, ".extend.yaml") {
+			continue
+		}
+		data, err := os.ReadFile(filepath.Join(dir, name))
+		if err != nil {
+			t.Fatal(err)
+		}
+		var original, def map[string]interface{}
+		if err := yaml.Unmarshal(data, &original); err != nil {
+			t.Fatalf("%s: %v", name, err)
+		}
+		if err := yaml.Unmarshal(data, &def); err != nil {
+			t.Fatal(err)
+		}
+		page, _ := def["page"].(map[string]interface{})
+		if page == nil {
+			t.Fatalf("%s: no page section", name)
+		}
+		layout, _ := page["layout"].(map[string]interface{})
+		ext := map[string]interface{}{
+			"extends": page["id"],
+			"actions": []interface{}{map[string]interface{}{"name": "Zz Merge Check", "run_page": 50000}},
+		}
+		field := map[string]interface{}{"source": "zz_merge_check"}
+		sections, _ := layout["sections"].([]interface{})
+		switch {
+		case layout["repeater"] != nil:
+			ext["layout"] = map[string]interface{}{"repeater": map[string]interface{}{"fields": []interface{}{field}}}
+		case len(sections) > 0:
+			first, _ := sections[0].(map[string]interface{})
+			ext["layout"] = map[string]interface{}{"sections": []interface{}{
+				map[string]interface{}{"name": first["name"], "fields": []interface{}{field}},
+			}}
+		}
+		if err := mergePage(page, ext, "zz-app"); err != nil {
+			t.Errorf("%s: %v", name, err)
+			continue
+		}
+		out, err := yaml.Marshal(def)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var merged map[string]interface{}
+		if err := yaml.Unmarshal(out, &merged); err != nil {
+			t.Fatal(err)
+		}
+		// take the two additions out again
+		mp := merged["page"].(map[string]interface{})
+		mp["actions"] = withoutItem(t, name, mp["actions"], "name", "Zz Merge Check")
+		if _, had := original["page"].(map[string]interface{})["actions"]; !had && len(mp["actions"].([]interface{})) == 0 {
+			delete(mp, "actions")
+		}
+		if ml, _ := mp["layout"].(map[string]interface{}); ml != nil {
+			var target map[string]interface{}
+			if r, _ := ml["repeater"].(map[string]interface{}); r != nil {
+				target = r
+			} else if s, _ := ml["sections"].([]interface{}); len(s) > 0 {
+				target = s[0].(map[string]interface{})
+			}
+			if target != nil {
+				_, had := target["fields"]
+				had = had && !addedFieldsKey(original, target["name"])
+				target["fields"] = withoutItem(t, name, target["fields"], "source", "zz_merge_check")
+				if !had && len(target["fields"].([]interface{})) == 0 {
+					delete(target, "fields") // a section without fields (a period grid): none added
+				}
+			}
+		}
+		if !reflect.DeepEqual(original, merged) {
+			want, _ := yaml.Marshal(original)
+			t.Errorf("%s: the merge changed the page\n--- base\n%s\n--- merged\n%s", name, want, out)
+		}
+		checked++
+	}
+	if checked < 100 {
+		t.Fatalf("only %d pages checked", checked)
+	}
+}
+
+// withoutItem: the list without the one entry whose key is value (it must be there once)
+func withoutItem(t *testing.T, page string, list interface{}, key, value string) []interface{} {
+	t.Helper()
+	items, _ := list.([]interface{})
+	out := make([]interface{}, 0, len(items))
+	found := 0
+	for _, item := range items {
+		if m, _ := item.(map[string]interface{}); m != nil && m[key] == value {
+			found++
+			continue
+		}
+		out = append(out, item)
+	}
+	if found != 1 {
+		t.Errorf("%s: %s %q added %d times", page, key, value, found)
+	}
+	return out
+}
+
+// addedFieldsKey: the base page's list or first section had no fields list (the merge made one)
+func addedFieldsKey(original map[string]interface{}, sectionName interface{}) bool {
+	layout, _ := original["page"].(map[string]interface{})["layout"].(map[string]interface{})
+	if r, _ := layout["repeater"].(map[string]interface{}); r != nil {
+		_, has := r["fields"]
+		return !has
+	}
+	sections, _ := layout["sections"].([]interface{})
+	for _, s := range sections {
+		if m, _ := s.(map[string]interface{}); m != nil && m["name"] == sectionName {
+			_, has := m["fields"]
+			return !has
+		}
+	}
+	return false
 }
