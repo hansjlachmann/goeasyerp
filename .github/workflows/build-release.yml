@@ -27,6 +27,8 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       release_only: ${{ steps.check.outputs.release_only }}
+      go: ${{ steps.parts.outputs.go }}
+      frontend: ${{ steps.parts.outputs.frontend }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -66,12 +68,55 @@ jobs:
           echo "release files only: $release"
           echo "release_only=$release" >> "$GITHUB_OUTPUT"
 
+      # Which jobs the change needs: the Go jobs not for a change of the frontend or the docs
+      # only (frontend/src/app.css excepted: a Go test checks the themes against it); the
+      # frontend job not for the docs only (its end-to-end tests run against the server, so Go
+      # changes need it). Everything runs at night, by hand, for a workflow change, or when the
+      # pushed range is not known.
+      - name: Which parts changed?
+        id: parts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+        run: |
+          files=""
+          known=false
+          case "$EVENT" in
+            pull_request)
+              files=$(gh api "repos/${{ github.repository }}/pulls/$PR_NUMBER/files" --paginate --jq '.[].filename') && known=true ;;
+            push)
+              if [ -n "$BEFORE" ] && [ "$BEFORE" != 0000000000000000000000000000000000000000 ] &&
+                 git fetch --quiet --depth=1 origin "$BEFORE" 2>/dev/null; then
+                files=$(git diff --name-only "$BEFORE" "$AFTER") && known=true
+              fi ;;
+          esac
+          go=false
+          frontend=false
+          if [ "$known" != true ] || [ -z "$files" ]; then
+            go=true
+            frontend=true
+          fi
+          for f in $files; do
+            case "$f" in
+              *.md|docs/*) ;;
+              frontend/src/app.css) go=true; frontend=true ;;
+              frontend/*) frontend=true ;;
+              *) go=true; frontend=true ;;
+            esac
+          done
+          echo "go: $go, frontend: $frontend (range known: $known)"
+          echo "go=$go" >> "$GITHUB_OUTPUT"
+          echo "frontend=$frontend" >> "$GITHUB_OUTPUT"
+
   # Lint, the generated code and the builds; the tests run in Backend tests, in parallel
   backend:
     name: Backend (Go)
     runs-on: ubuntu-24.04
     needs: changes
-    if: needs.changes.outputs.release_only != 'true'
+    if: needs.changes.outputs.release_only != 'true' && needs.changes.outputs.go == 'true'
 
     steps:
       - name: Checkout code
@@ -80,7 +125,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.23'
+          go-version-file: go.mod
           cache: true
 
       - name: Download dependencies
@@ -118,7 +163,7 @@ jobs:
     name: Backend tests (${{ matrix.group }})
     runs-on: ubuntu-24.04
     needs: changes
-    if: needs.changes.outputs.release_only != 'true'
+    if: needs.changes.outputs.release_only != 'true' && needs.changes.outputs.go == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -148,7 +193,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.23'
+          go-version-file: go.mod
           cache: true
 
       - name: The group's packages
@@ -189,7 +234,7 @@ jobs:
     name: Frontend (SvelteKit)
     runs-on: ubuntu-24.04
     needs: changes
-    if: needs.changes.outputs.release_only != 'true'
+    if: needs.changes.outputs.release_only != 'true' && needs.changes.outputs.frontend == 'true'
 
     # The E2E tests run against the API server with demo data (DEMO_DATA) on a throwaway
     # PostgreSQL of the job
@@ -219,7 +264,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
@@ -245,7 +290,7 @@ jobs:
       - name: Set up Go (API server for the E2E tests)
         uses: actions/setup-go@v5
         with:
-          go-version: '1.23'
+          go-version-file: go.mod
           cache: true
 
       - name: Start the API server with demo data
