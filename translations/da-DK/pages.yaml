@@ -42,10 +42,10 @@ pages:
     caption: "Installerede apps"
 
   app_builds:
-    caption: "App-builds"
+    caption: "App Builds"
 
   app_build_setup:
-    caption: "Opsætning af app-builds"
+    caption: "App Build Setup"
 
   main_menu_text:
     caption: "Hovedmenutekst"
