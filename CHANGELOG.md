@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.177](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.176...v0.1.177) (2026-11-21)
+
+
+### Bug Fixes
+
+* a new company's name is checked before it becomes part of table names ([127246f](https://github.com/hansjlachmann/goeasyerp/commit/127246f8bc1f29494dae9dc50e1f0ac78c8663b8))
+* date compression keeps open entries and never runs unattended ([1b2a60d](https://github.com/hansjlachmann/goeasyerp/commit/1b2a60d59fcd9c89d986cf346601cfe9f4cf0bfe))
+
 ## [0.1.176](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.175...v0.1.176) (2026-11-21)
 
 
