@@ -84,6 +84,11 @@ Migrations run automatically at startup. `git pull` is only needed when the comp
 nginx config or scripts changed (the release notes say so); it no longer conflicts, because
 nothing tracked is edited on the server.
 
+**nginx version:** the compose file pins nginx to a fixed version (`nginx:1.31.9-alpine`); a
+release that raises it (an nginx security fix) says so in its notes. After `git pull`,
+`scripts/prod.sh pull && scripts/prod.sh up -d` starts the new nginx; check it with
+`scripts/prod.sh exec nginx nginx -v`.
+
 **Rollback:** set the previous `APP_VERSION` and `pull` + `up -d`. If a migration changed data in a
 way the old version cannot read, restore the backup taken before the upgrade (see below).
 
