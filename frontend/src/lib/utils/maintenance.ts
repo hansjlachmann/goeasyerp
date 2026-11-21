@@ -14,6 +14,8 @@ export interface Maintenance {
 	retry: string;
 	/** the build of the apps failed: an administrator has to act, the check goes on */
 	failed: boolean;
+	/** the server is starting a newer build of its apps: back in moments, checked more often */
+	starting: boolean;
 }
 
 /** The maintenance notice shown, null while the server answers normally */
@@ -21,6 +23,14 @@ export const maintenance = writable<Maintenance | null>(null);
 
 /** How often the notice asks whether the server is back */
 export const CHECK_INTERVAL_MS = 15_000;
+
+/** … while the server is starting a newer build (seconds, not minutes) */
+export const STARTING_CHECK_INTERVAL_MS = 2_000;
+
+/** The check interval for a notice */
+export function checkInterval(m: Maintenance): number {
+	return m.starting ? STARTING_CHECK_INTERVAL_MS : CHECK_INTERVAL_MS;
+}
 
 /** What the notice asks: a small API call that every server version answers */
 export const CHECK_URL = '/api/version';
@@ -39,7 +49,8 @@ export async function maintenanceOf(response: Response): Promise<Maintenance | n
 			title: typeof body.title === 'string' ? body.title : '',
 			message: typeof body.error === 'string' ? body.error : '',
 			retry: typeof body.retry === 'string' ? body.retry : '',
-			failed: body.failed === true
+			failed: body.failed === true,
+			starting: body.starting === true
 		};
 	} catch {
 		return null;

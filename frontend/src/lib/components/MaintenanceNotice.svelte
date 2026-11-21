@@ -1,16 +1,17 @@
 <script lang="ts">
 	// The server is in maintenance (utils/maintenance.ts): a notice over the whole app instead of
-	// the error of the page or call that met it. It checks every CHECK_INTERVAL_MS — and on Try
+	// the error of the page or call that met it. It checks every checkInterval — and on Try
 	// again — whether the server is back, and then loads the page again (a full load: the server
 	// runs another program now). Its texts come with the server's answer (the translations cannot
 	// be loaded during maintenance); the loaded translations are the fallback.
 	import { onDestroy } from 'svelte';
 	import Button from './Button.svelte';
 	import { t } from '$lib/services/i18n.svelte';
-	import { maintenance, maintenanceOver, CHECK_INTERVAL_MS } from '$lib/utils/maintenance';
+	import { maintenance, maintenanceOver, checkInterval } from '$lib/utils/maintenance';
 
 	let checking = $state(false);
 	let timer: ReturnType<typeof setInterval> | null = null;
+	let timerInterval = 0;
 
 	async function check() {
 		if (checking) return;
@@ -26,12 +27,14 @@
 	}
 
 	$effect(() => {
-		if ($maintenance && !timer) {
-			timer = setInterval(check, CHECK_INTERVAL_MS);
-		}
-		if (!$maintenance && timer) {
+		const interval = $maintenance ? checkInterval($maintenance) : 0;
+		if (timer && interval !== timerInterval) {
 			clearInterval(timer);
 			timer = null;
+		}
+		if (interval && !timer) {
+			timer = setInterval(check, interval);
+			timerInterval = interval;
 		}
 	});
 

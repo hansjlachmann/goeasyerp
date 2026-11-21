@@ -1,6 +1,15 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { get } from 'svelte/store';
-import { maintenance, maintenanceOf, maintenanceOver, watchingFetch, CHECK_URL } from './maintenance';
+import {
+	maintenance,
+	maintenanceOf,
+	maintenanceOver,
+	watchingFetch,
+	checkInterval,
+	CHECK_URL,
+	CHECK_INTERVAL_MS,
+	STARTING_CHECK_INTERVAL_MS
+} from './maintenance';
 
 function json(status: number, body: unknown): Response {
 	return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
@@ -21,9 +30,18 @@ describe('maintenanceOf', () => {
 			title: 'GoEasyERP is being updated',
 			message: 'GoEasyERP is being updated to version 1.2.0',
 			retry: 'Try again',
-			failed: false
+			failed: false,
+			starting: false
 		});
 		expect((await maintenanceOf(json(503, { ...answer, failed: true })))?.failed).toBe(true);
+	});
+
+	it('checks every few seconds while the server starts a newer build', async () => {
+		const building = await maintenanceOf(json(503, answer));
+		const starting = await maintenanceOf(json(503, { ...answer, starting: true }));
+		expect(starting?.starting).toBe(true);
+		expect(checkInterval(building!)).toBe(CHECK_INTERVAL_MS);
+		expect(checkInterval(starting!)).toBe(STARTING_CHECK_INTERVAL_MS);
 	});
 
 	it('is none for other answers: another 503, another status, no JSON', async () => {

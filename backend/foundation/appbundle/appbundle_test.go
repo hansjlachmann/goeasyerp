@@ -186,3 +186,17 @@ func TestMaintenanceHandler(t *testing.T) {
 		t.Error("language")
 	}
 }
+
+// While the server starts a newer build the notice says so (the page checks more often)
+func TestStartingAnswer(t *testing.T) {
+	rec := httptest.NewRecorder()
+	maintenanceHandler(&MaintenanceStatus{starting: true}).ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/api/version", nil))
+	var body maintenanceAnswer
+	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
+		t.Fatal(err)
+	}
+	if rec.Code != http.StatusServiceUnavailable || !body.Maintenance || !body.Starting || body.Failed ||
+		body.Error == "" || body.Error == "APP_MAINTENANCE_STARTING" {
+		t.Errorf("%d %+v", rec.Code, body)
+	}
+}

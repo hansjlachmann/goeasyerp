@@ -112,7 +112,9 @@ database, so `scripts/backup.sh` covers them.
 4. Run **Build → Build Apps**. The builder builds the program with the apps into the `app_builds`
    volume. Follow it under **Build → App Builds**, where Show Log gives the builder's output.
    When the build is done the server restarts by itself on the new program (users are logged
-   out briefly) and the apps show as Installed.
+   out briefly) and the apps show as Installed. The port stays open while it restarts: the old
+   program hands its socket to the new one, and until that one is ready the page shows
+   "GoEasyERP is starting" and opens again by itself, instead of an error 502.
 
 **Upgrading** works as above (`APP_VERSION`, `pull`, `up -d`), and the builder follows the same
 version. A server of a new version finds no build of its apps for that version. It requests one

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"log"
+	"net"
 	"net/http"
 	"strings"
 	"sync"
@@ -21,8 +22,9 @@ import (
 // MaintenanceStatus: what the maintenance message tells
 type MaintenanceStatus struct {
 	mu      sync.Mutex
-	failed  string // the error of the last build of the version, when it failed
-	version string
+	failed   string // the error of the last build of the version, when it failed
+	version  string
+	starting bool // a switch to a newer build: the program is starting (ServeStarting)
 }
 
 func (s *MaintenanceStatus) set(failed string) {
@@ -39,6 +41,7 @@ type maintenanceAnswer struct {
 	Error       string `json:"error"`       // the message (also what clients show as the error)
 	Maintenance bool   `json:"maintenance"` // the marker: maintenance, not an error of the request
 	Failed      bool   `json:"failed"`      // the build of the apps failed: an administrator acts
+	Starting    bool   `json:"starting"`    // the server is starting a newer build: back in moments
 	Title       string `json:"title"`
 	Retry       string `json:"retry"`
 }
@@ -48,6 +51,12 @@ func (s *MaintenanceStatus) answer(lang string) maintenanceAnswer {
 	defer s.mu.Unlock()
 	ts := i18n.GetInstance()
 	a := maintenanceAnswer{Maintenance: true, Retry: ts.Message("APP_MAINTENANCE_RETRY", lang)}
+	if s.starting {
+		a.Starting = true
+		a.Title = ts.Message("APP_MAINTENANCE_TITLE", lang)
+		a.Error = ts.Message("APP_MAINTENANCE_STARTING", lang)
+		return a
+	}
 	if s.failed != "" {
 		a.Failed = true
 		a.Title = ts.Message("APP_MAINTENANCE_TITLE_FAILED", lang)
@@ -108,13 +117,14 @@ func lastFailure(db *sql.DB, version string) string {
 // statusFailed: App Build Status Failed
 const statusFailed = 3
 
-// ServeMaintenance answers requests on addr in maintenance and checks every interval for the
-// bundle; when it is there it returns it (the caller starts it). PostgreSQL only.
-func ServeMaintenance(ctx context.Context, db *sql.DB, addr, buildsDir, version, baseAppID string, interval time.Duration) (Decision, error) {
+// ServeMaintenance answers requests on ln in maintenance and checks every interval for the
+// bundle; when it is there it hands the socket over (HandOver) and returns the bundle (the
+// caller starts it). PostgreSQL only.
+func ServeMaintenance(ctx context.Context, db *sql.DB, ln net.Listener, buildsDir, version, baseAppID string, interval time.Duration) (Decision, error) {
 	status := &MaintenanceStatus{version: version}
-	srv := &http.Server{Addr: addr, Handler: maintenanceHandler(status), ReadHeaderTimeout: 10 * time.Second}
+	srv := &http.Server{Handler: maintenanceHandler(status), ReadHeaderTimeout: 10 * time.Second}
 	go func() {
-		err := srv.ListenAndServe()
+		err := srv.Serve(ln)
 		if err != nil && err != http.ErrServerClosed {
 			log.Printf("maintenance server: %v", err)
 		}
@@ -129,7 +139,8 @@ func ServeMaintenance(ctx context.Context, db *sql.DB, addr, buildsDir, version,
 		if err != nil {
 			log.Printf("maintenance: %v", err)
 		} else if !d.Maintenance {
-			return d, nil
+			// before the deferred shutdown closes the listener
+			return d, HandOver(ln)
 		}
 		status.set(lastFailure(db, version))
 		select {

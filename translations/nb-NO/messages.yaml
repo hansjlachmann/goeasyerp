@@ -502,6 +502,7 @@ messages:
   APP_MAINTENANCE_RETRY: "Prøv igjen"
   APP_MAINTENANCE_BUILDING: "GoEasyERP oppdateres til versjon %1: utvidelsesappene bygges for den. Det tar noen minutter; siden åpnes av seg selv når det er ferdig."
   APP_MAINTENANCE_BUILD_FAILED: "GoEasyERP versjon %1 kan ikke starte: byggingen av utvidelsesappene feilet (%2). En administrator kan lese byggerens logg, gå tilbake til forrige versjon eller starte serveren på nytt for å prøve igjen."
+  APP_MAINTENANCE_STARTING: "GoEasyERP starter med det nye bygget av utvidelsesappene. Det tar et øyeblikk; siden åpnes av seg selv når det er ferdig."
 
   # Dialog Messages
   DLG_DELETE_RECORD_CONFIRM: "Er du sikker på at du vil slette denne posten?"

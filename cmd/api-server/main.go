@@ -45,7 +45,9 @@ func main() {
 
 	// The installation's own builds of its extension apps: the bundle of this version runs
 	// instead of this program (or the server waits in maintenance until it is built)
-	launchAppBundle()
+	// A switch to a newer build: the program that started this one handed its socket over —
+	// the notice "starting" answers on it until the server takes it (no 502 meanwhile)
+	starting := launchAppBundle(appbundle.ServeStarting())
 
 	// Initialize object registry
 	registry := objects.NewObjectRegistry()
@@ -223,9 +225,13 @@ func main() {
 	// Postings the balance check refuses are logged for an administrator (table 904)
 	refusedposting.Register(db.GetConnection(), db.GetDBType())
 
-	// Start server in a goroutine
+	// Start server in a goroutine (on the handed-over socket after a switch)
+	listener, err := appbundle.Listen(starting, "0.0.0.0:"+port)
+	if err != nil {
+		log.Fatalf("Server error: %v", err)
+	}
 	go func() {
-		if err := server.StartOnPort(port); err != nil {
+		if err := server.StartOnListener(listener); err != nil {
 			log.Fatalf("Server error: %v", err)
 		}
 	}()
@@ -272,6 +278,12 @@ func main() {
 
 	sched.Stop()
 
+	if switching {
+		// the next program takes the socket: the port stays open, requests wait for it
+		if err := appbundle.HandOver(listener); err != nil {
+			log.Printf("app builds: handing the socket over: %v", err)
+		}
+	}
 	if err := server.Shutdown(); err != nil {
 		log.Printf("Error during shutdown: %v", err)
 	}

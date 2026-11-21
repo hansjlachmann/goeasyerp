@@ -502,6 +502,7 @@ messages:
   APP_MAINTENANCE_RETRY: "Try again"
   APP_MAINTENANCE_BUILDING: "GoEasyERP is being updated to version %1: its extension apps are being built for it. This takes a few minutes; the page opens by itself when it is done."
   APP_MAINTENANCE_BUILD_FAILED: "GoEasyERP version %1 cannot start: the build of its extension apps failed (%2). An administrator can read the builder's log, go back to the previous version, or restart the server to try again."
+  APP_MAINTENANCE_STARTING: "GoEasyERP is starting with the new build of its extension apps. This takes a moment; the page opens by itself when it is done."
 
   # Dialog Messages
   DLG_DELETE_RECORD_CONFIRM: "Are you sure you want to delete this record?"

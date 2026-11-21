@@ -24,40 +24,40 @@ import (
 // launchAppBundle runs before anything else: it replaces this process with the bundle when
 // there is one, or waits in maintenance until there is; it returns when the standard program
 // is to run
-func launchAppBundle() {
+func launchAppBundle(starting *appbundle.Starting) *appbundle.Starting {
 	buildsDir := os.Getenv(appbundle.EnvBuildsDir)
 	if buildsDir == "" || appbundle.Current() != 0 {
-		return
+		return starting
 	}
 	config, ok := database.PostgresConfigFromEnv()
 	if !ok {
-		return
+		return starting
 	}
 	db, err := sql.Open("postgres", config.ConnectionString())
 	if err != nil {
 		log.Printf("app builds: %v", err)
-		return
+		return starting
 	}
 	defer func() { _ = db.Close() }()
 	err = db.Ping()
 	if err != nil {
 		log.Printf("app builds: %v", err)
-		return
+		return starting
 	}
 	base, err := fapps.LoadBase()
 	if err != nil {
 		log.Printf("app builds: %v", err)
-		return
+		return starting
 	}
 	home, err := os.Getwd()
 	if err != nil {
 		log.Printf("app builds: %v", err)
-		return
+		return starting
 	}
 	d, err := appbundle.Decide(db, database.DBTypePostgres, buildsDir, base.Version, base.ID)
 	if err != nil {
 		log.Printf("app builds: %v", err)
-		return
+		return starting
 	}
 	if d.Reason != "" {
 		log.Printf("app builds: %s", d.Reason)
@@ -70,20 +70,31 @@ func launchAppBundle() {
 		} else if build != nil {
 			log.Printf("app builds: build %d requested", build.Entry_no)
 		}
+		ln, err := appbundle.Listen(starting, ":"+getEnv("PORT", "8080"))
+		if err != nil {
+			log.Fatalf("app builds: maintenance: %v", err)
+		}
 		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-		d, err = appbundle.ServeMaintenance(ctx, db, ":"+getEnv("PORT", "8080"), buildsDir, base.Version, base.ID, 10*time.Second)
+		d, err = appbundle.ServeMaintenance(ctx, db, ln, buildsDir, base.Version, base.ID, 10*time.Second)
 		stop()
 		if err != nil {
 			log.Printf("app builds: maintenance stopped: %v", err)
 			os.Exit(0)
 		}
+		// maintenance handed its socket over: the notice "starting" answers on it from here on
+		starting = appbundle.ServeStarting()
 	}
 	if d.Bundle == nil {
-		return
+		return starting
 	}
 	log.Printf("app builds: starting %s", d)
+	err = starting.HandOver()
+	if err != nil {
+		log.Printf("app builds: handing the socket over: %v", err)
+	}
 	err = appbundle.Exec(d.Dir, d.Bundle.No, home)
 	log.Fatalf("app builds: starting build %d: %v", d.Bundle.No, err)
+	return nil
 }
 
 // watchAppBuilds checks every 30 s for a newer bundle of this version; when there is a verified

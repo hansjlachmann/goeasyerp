@@ -1,6 +1,7 @@
 package api
 
 import (
+	"net"
 	"database/sql"
 	"fmt"
 	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
@@ -220,6 +221,13 @@ func (s *Server) StartOnPort(port string) error {
 	log.Printf("📡 Health check: http://localhost:%s/health\n", port)
 	log.Printf("📚 API base: http://localhost:%s/api\n", port)
 	return s.app.Listen(addr)
+}
+
+// StartOnListener serves on a socket the caller opened (or one handed over by the program that
+// started this one, appbundle.Listen)
+func (s *Server) StartOnListener(ln net.Listener) error {
+	log.Printf("🚀 API Server starting on %s\n", ln.Addr())
+	return s.app.Listener(ln)
 }
 
 // Shutdown gracefully shuts down the server
