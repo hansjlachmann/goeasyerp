@@ -173,6 +173,7 @@ func (h *JobsHandler) StartJob(c *fiber.Ctx) error {
 	// something, opens a page, shows progress or a note, or takes longer) the browser follows
 	// the job by its ID, as for a run with progress.
 	dialog := fcodeunits.OpenDialog("Processing...")
+	dialog.SetOwner(userID, company) // only this user, in this company, follows it
 	jobID := dialog.JobID()
 	done := make(chan jobOutcome, 1)
 	go func() {
@@ -298,6 +299,21 @@ func finishJob(dialog *fcodeunits.Dialog, outcome jobOutcome) {
 	}
 }
 
+// ownJob is the running job jobID when the session's user started it in the session's company
+// (nil and the status otherwise: 401 without a session, 404 — also for another user's job, so
+// a job ID read elsewhere tells nothing)
+func ownJob(c *fiber.Ctx, jobID string) (*fcodeunits.Dialog, int) {
+	sess := getSession(c)
+	if sess == nil || sess.GetUserID() == "" {
+		return nil, fiber.StatusUnauthorized
+	}
+	dialog, ok := fcodeunits.GetJobRegistry().Get(jobID)
+	if !ok || !dialog.OwnedBy(sess.GetUserID(), sess.GetCompany()) {
+		return nil, fiber.StatusNotFound
+	}
+	return dialog, 0
+}
+
 // GetJobEvents streams job progress events via SSE
 // GET /api/jobs/:id/events
 func (h *JobsHandler) GetJobEvents(c *fiber.Ctx) error {
@@ -306,10 +322,10 @@ func (h *JobsHandler) GetJobEvents(c *fiber.Ctx) error {
 		return c.Status(400).JSON(apitypes.NewErrorResponse("Job ID is required"))
 	}
 
-	// Get the job from registry
-	dialog, ok := fcodeunits.GetJobRegistry().Get(jobID)
-	if !ok {
-		return c.Status(404).JSON(apitypes.NewErrorResponse("Job not found"))
+	// The job, if the session's user started it in this company
+	dialog, status := ownJob(c, jobID)
+	if dialog == nil {
+		return c.Status(status).JSON(apitypes.NewErrorResponse("Job not found"))
 	}
 
 	// Set SSE headers
@@ -406,10 +422,10 @@ func (h *JobsHandler) RespondToConfirm(c *fiber.Ctx) error {
 		return c.Status(400).JSON(apitypes.NewErrorResponse("Confirm ID is required"))
 	}
 
-	// Get the job from registry
-	dialog, ok := fcodeunits.GetJobRegistry().Get(jobID)
-	if !ok {
-		return c.Status(404).JSON(apitypes.NewErrorResponse("Job not found"))
+	// The job, if the session's user started it in this company
+	dialog, status := ownJob(c, jobID)
+	if dialog == nil {
+		return c.Status(status).JSON(apitypes.NewErrorResponse("Job not found"))
 	}
 
 	// Route to input response or confirm response
@@ -449,10 +465,10 @@ func (h *JobsHandler) CancelJob(c *fiber.Ctx) error {
 		return c.Status(400).JSON(apitypes.NewErrorResponse("Job ID is required"))
 	}
 
-	// Get the job from registry
-	dialog, ok := fcodeunits.GetJobRegistry().Get(jobID)
-	if !ok {
-		return c.Status(404).JSON(apitypes.NewErrorResponse("Job not found"))
+	// The job, if the session's user started it in this company
+	dialog, status := ownJob(c, jobID)
+	if dialog == nil {
+		return c.Status(status).JSON(apitypes.NewErrorResponse("Job not found"))
 	}
 
 	// Cancel the job

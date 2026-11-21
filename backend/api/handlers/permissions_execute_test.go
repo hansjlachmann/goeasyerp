@@ -13,6 +13,7 @@ import (
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/reports"
 	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/extensions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/functions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/session"
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
@@ -145,5 +146,22 @@ func TestRunEndpointsCheckExecute(t *testing.T) {
 	data, _ := out["data"].(map[string]interface{})
 	if out["success"] != true || data["message"] != "ran true" {
 		t.Errorf("codeunit with Execute: %v", out)
+	}
+
+	// a routine of a disabled extension app is refused, as by the job API (S24)
+	const app = "aaaaaaaa-0000-4000-8000-000000000024"
+	extensions.SetObjectApps(func(objectType string, id int) string {
+		if id == 99991 {
+			return app
+		}
+		return ""
+	})
+	extensions.SetDisabled(app)
+	t.Cleanup(func() { extensions.SetDisabled(); extensions.SetObjectApps(nil) })
+	for _, target := range []string{"/api/codeunits/run", "/api/jobs/start"} {
+		out = postJSON(t, allowed, target, `{"codeunit_id":99991}`)
+		if out["success"] != false || !strings.Contains(fmt.Sprint(out["error"]), "disabled") {
+			t.Errorf("%s: a disabled app's routine: %v", target, out)
+		}
 	}
 }

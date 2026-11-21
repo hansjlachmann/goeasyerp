@@ -8,6 +8,7 @@ import { toast } from '$lib/stores/toast';
 import { buildQueryString } from '$lib/services/api';
 import type { ListOptions } from '$lib/types/api';
 import { downloadBlob, downloadPdf, handlePrintout, pdfBlob, printoutsOf, resultFileOf } from '$lib/utils/printout';
+import { withTabCompanyParam } from '$lib/utils/tabCompany';
 
 /** An answer to a codeunit's question was refused by the server: show why */
 async function answerRefused(res: Response): Promise<void> {
@@ -160,7 +161,7 @@ export async function startJob(
 		callbacks.onJobStarted?.(jobId);
 
 		return new Promise((resolve, reject) => {
-			const eventSource = new EventSource(`/api/jobs/${jobId}/events`);
+			const eventSource = new EventSource(withTabCompanyParam(`/api/jobs/${jobId}/events`));
 			let lastEvent: ProgressEvent | null = null;
 
 			eventSource.addEventListener('connected', () => {

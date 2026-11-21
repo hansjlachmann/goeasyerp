@@ -4,6 +4,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 // Failed logins per user ID, so a password is not guessed from many addresses (the login rate
@@ -83,4 +85,18 @@ func (g *loginGuard) prune(now time.Time) {
 			delete(g.failures, key)
 		}
 	}
+}
+
+// dummyHash is a bcrypt hash of a random password, checked for user IDs that do not exist
+var dummyHash = sync.OnceValue(func() []byte {
+	hash, err := bcrypt.GenerateFromPassword([]byte(time.Now().String()), bcrypt.DefaultCost)
+	if err != nil {
+		return nil
+	}
+	return hash
+})
+
+// checkDummyPassword takes as long as checking a real password (the result is always no)
+func checkDummyPassword(password string) {
+	_ = bcrypt.CompareHashAndPassword(dummyHash(), []byte(password))
 }

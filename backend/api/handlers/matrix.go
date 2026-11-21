@@ -354,8 +354,18 @@ func (h *PageTriggersHandler) MatrixValidate(c *fiber.Ctx) error {
 	if !m.matrix.Editable || !pages.HasMatrixValidate(m.pageID) {
 		return c.Status(fiber.StatusForbidden).JSON(apitypes.NewErrorResponse(apperrors.FieldNotEditable(m.matrix.Table, m.matrix.Value).Message(m.language)))
 	}
-	if m.matrix.EntryTable != "" && !m.sess.IsSuper && !m.sess.HasPermission(m.matrix.EntryTable, session.PermInsert) {
-		return c.Status(fiber.StatusForbidden).JSON(apitypes.NewErrorResponse(apperrors.PermissionDenied(string(session.PermInsert), m.matrix.EntryTable).Message(m.language)))
+	// A cell's trigger inserts, changes or deletes the entries behind it (a discount of 0 is
+	// deleted, a budget's dates move): Insert, Modify and Delete on the entry table; a matrix
+	// that names none is entered by SUPER users only
+	if !m.sess.IsSuper {
+		if m.matrix.EntryTable == "" {
+			return c.Status(fiber.StatusForbidden).JSON(apitypes.NewErrorResponse(apperrors.PermissionDenied(string(session.PermModify), m.matrix.Table).Message(m.language)))
+		}
+		for _, op := range []session.PermissionOperation{session.PermInsert, session.PermModify, session.PermDelete} {
+			if !m.sess.HasPermission(m.matrix.EntryTable, op) {
+				return c.Status(fiber.StatusForbidden).JSON(apitypes.NewErrorResponse(apperrors.PermissionDenied(string(op), m.matrix.EntryTable).Message(m.language)))
+			}
+		}
 	}
 	value := types.Decimal{}
 	if m.req.Value != "" {

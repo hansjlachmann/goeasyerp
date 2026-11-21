@@ -53,8 +53,9 @@ func TestMatrix(t *testing.T) {
 	}
 
 	app := fiber.New()
+	user := &session.Session{IsSuper: true, HasRoles: true, Company: "TEST", Language: "en-US"}
 	app.Use(func(c *fiber.Ctx) error {
-		c.Locals("session", &session.Session{IsSuper: true, HasRoles: true, Company: "TEST", Language: "en-US"})
+		c.Locals("session", user)
 		return c.Next()
 	})
 	h := NewPageTriggersHandler(db, database.DBTypeSQLite)
@@ -121,6 +122,24 @@ func TestMatrix(t *testing.T) {
 	}
 	if n := gtables.NewGLBudgetEntry(src).Count(); n != 2 {
 		t.Errorf("%d budget entries, want 2", n)
+	}
+
+	// a cell's trigger inserts, changes or deletes entries: Insert alone is not enough (S24)
+	read := session.TablePermission{Read: true}
+	clerk := func(entries session.TablePermission) *session.Session {
+		s := &session.Session{UserID: "CLERK", Company: "TEST", Language: "en-US"}
+		s.SetPermissions(true, false, map[string]session.TablePermission{
+			"G_L_BUDGET_NAME": read, "G_L_ACCOUNT": read, "G_L_BUDGET_ENTRY": entries,
+		})
+		return s
+	}
+	user = clerk(session.TablePermission{Read: true, Insert: true})
+	if status, _ := enter("B1", "6100", "2026-03-01", "2026-03-31", "10", 0); status != 403 {
+		t.Errorf("Insert only on the budget entries: %d, want 403", status)
+	}
+	user = clerk(session.TablePermission{Read: true, Insert: true, Modify: true, Delete: true})
+	if status, out := enter("B1", "6100", "2026-03-01", "2026-03-31", "10", 0); status != 200 {
+		t.Errorf("Insert, Modify and Delete on the budget entries: %d %v", status, out)
 	}
 }
 

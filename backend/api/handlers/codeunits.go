@@ -67,6 +67,10 @@ func (h *CodeunitsHandler) RunCodeunit(c *fiber.Ctx) error {
 	if !ok {
 		return c.Status(404).JSON(apitypes.NewErrorResponse("Routine not found"))
 	}
+	// A routine of a disabled extension app does not run (as through the job API)
+	if !runObjectEnabled(req.CodeunitID, 0, "") {
+		return c.Status(fiber.StatusForbidden).JSON(apitypes.NewErrorResponse(apperrors.AppDisabled().Message(language)))
+	}
 	// Execute permission on the codeunit (classic object permissions)
 	if !sess.CanExecute(session.ObjectCodeunit, req.CodeunitID) {
 		return c.Status(fiber.StatusForbidden).JSON(apitypes.NewErrorResponse(

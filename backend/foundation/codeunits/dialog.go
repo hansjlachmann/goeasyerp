@@ -3,6 +3,7 @@ package codeunits
 import (
 	"context"
 	"errors"
+	"strings"
 	"sync"
 	"time"
 
@@ -109,6 +110,23 @@ type Dialog struct {
 	// request page, a page, a note): the job API then lets the browser follow the job
 	activity     chan struct{}
 	activityOnce sync.Once
+	// ownerUser, ownerCompany: who started the job (SetOwner) — only they follow, answer or
+	// cancel it through the job API
+	ownerUser, ownerCompany string
+}
+
+// SetOwner records the user and company that started the job
+func (d *Dialog) SetOwner(userID, company string) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	d.ownerUser, d.ownerCompany = userID, company
+}
+
+// OwnedBy reports whether the job was started by the user in the company
+func (d *Dialog) OwnedBy(userID, company string) bool {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	return d.ownerUser != "" && strings.EqualFold(d.ownerUser, userID) && d.ownerCompany == company
 }
 
 // signalActivity marks that the run has shown something to the user (Activity)

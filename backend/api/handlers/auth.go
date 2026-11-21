@@ -8,6 +8,7 @@ import (
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 	"log"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -98,21 +99,21 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	var user gtables.User
 	user.InitWithDBType(h.db, company, h.dbType)
 
+	// An unknown user ID and a wrong password get the same answer after the same work (a
+	// password check against a dummy hash), so the answer does not tell which user IDs exist;
+	// only the right password learns that a user is not active
 	if !user.Get(types.NewCode(requestBody.UserID)) {
+		checkDummyPassword(requestBody.Password)
 		logins.failed(requestBody.UserID)
 		return c.Status(401).JSON(apitypes.NewErrorResponse(apperrors.InvalidCredentials().Message("en-US")))
 	}
-
-	// Check if user is active
-	if !user.Active {
-		logins.failed(requestBody.UserID)
-		return c.Status(401).JSON(apitypes.NewErrorResponse(apperrors.UserInactive().Message("en-US")))
-	}
-
-	// Verify password
 	if !tables.CheckPassword(&user, requestBody.Password) {
 		logins.failed(requestBody.UserID)
 		return c.Status(401).JSON(apitypes.NewErrorResponse(apperrors.InvalidCredentials().Message("en-US")))
+	}
+	if !user.Active {
+		logins.failed(requestBody.UserID)
+		return c.Status(401).JSON(apitypes.NewErrorResponse(apperrors.UserInactive().Message("en-US")))
 	}
 	logins.succeeded(requestBody.UserID)
 
@@ -267,6 +268,9 @@ func (h *AuthHandler) GetCurrentUser(c *fiber.Ctx) error {
 	return c.JSON(response)
 }
 
+// initialUserMu: one first-user setup at a time in this server (the table lock covers others)
+var initialUserMu sync.Mutex
+
 // CreateInitialUser creates the first admin user (for setup)
 // POST /api/auth/init
 func (h *AuthHandler) CreateInitialUser(c *fiber.Ctx) error {
@@ -281,12 +285,20 @@ func (h *AuthHandler) CreateInitialUser(c *fiber.Ctx) error {
 		return c.Status(400).JSON(apitypes.NewErrorResponse(apperrors.InvalidRequestBody().Message("en-US")))
 	}
 
-	// Check if any users exist (User is a global table: no company)
+	// Only while no user exists, and one call at a time: the check and the insert in one
+	// transaction with the User table locked (a lock across servers on PostgreSQL), so two
+	// calls at once cannot both make a SUPER user
+	initialUserMu.Lock()
+	defer initialUserMu.Unlock()
+	tx, err := ftables.BeginTransaction(h.db)
+	if err != nil {
+		return c.Status(500).JSON(apitypes.NewErrorResponse(apperrors.CreateUserFailed().Message("en-US")))
+	}
+	defer func() { _ = ftables.Rollback(tx) }() // after Commit: nothing to roll back
 	var user gtables.User
-	user.InitWithDBType(h.db, "", h.dbType)
-	count := user.Count()
-
-	if count > 0 {
+	user.InitWithDBType(tx, "", h.dbType) // User is a global table: no company
+	user.LockTable()
+	if user.Count() > 0 {
 		return c.Status(403).JSON(apitypes.NewErrorResponse(apperrors.UsersExist().Message("en-US")))
 	}
 
@@ -310,10 +322,13 @@ func (h *AuthHandler) CreateInitialUser(c *fiber.Ctx) error {
 	// The first user is the administrator: SUPER in every company (a user without roles may
 	// do nothing)
 	var member gtables.UserMember
-	member.InitWithDBType(h.db, "", h.dbType)
+	member.InitWithDBType(tx, "", h.dbType)
 	member.User_id = user.User_id
 	member.Role_id = types.NewCode(session.SuperRole)
 	if !member.Insert(true) {
+		return c.Status(500).JSON(apitypes.NewErrorResponse(apperrors.CreateUserFailed().Message("en-US")))
+	}
+	if err := ftables.Commit(tx); err != nil {
 		return c.Status(500).JSON(apitypes.NewErrorResponse(apperrors.CreateUserFailed().Message("en-US")))
 	}
 
