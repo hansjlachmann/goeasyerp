@@ -10,7 +10,8 @@ import (
 
 // Every transaction of the API and the business logic ends with Commit / Rollback of this
 // package, so a table left inconsistent (Consistent(false): G/L entries that do not balance)
-// is never committed. Only the framework itself (this package, SIFT, migrations) uses the
+// is never committed. Only the framework itself (this package, SIFT, migrations, the database
+// roles — no records) uses the
 // database/sql methods directly.
 func TestTransactionsUseCheckedCommit(t *testing.T) {
 	plain := regexp.MustCompile(`\b(tx|transaction)\.(Commit|Rollback)\(\)`)
@@ -18,6 +19,7 @@ func TestTransactionsUseCheckedCommit(t *testing.T) {
 		"foundation/tables/consistent.go": true,
 		"foundation/sift/sift.go":         true,
 		"foundation/migrations/runner.go": true,
+		"foundation/database/roles.go":    true,
 	}
 	root := filepath.Join("..", "..")
 	for _, dir := range []string{"api", "business-logic", "foundation"} {
