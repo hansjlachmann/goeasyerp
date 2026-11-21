@@ -85,7 +85,7 @@ func setDisabled(rec *gtables.InstalledApp, disable bool) (fcodeunits.Result, er
 	ts := i18n.GetInstance()
 	lang := fcodeunits.CurrentLanguage()
 	access := fcodeunits.CurrentAccess()
-	if access != nil && access.HasRoles && !access.IsSuper {
+	if access != nil && !access.IsSuper {
 		return fcodeunits.Result{}, errors.New(ts.Message("ERR_APP_SUPER_ONLY", lang))
 	}
 	installedMu.RLock()

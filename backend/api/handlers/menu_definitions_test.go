@@ -87,7 +87,7 @@ func TestGetMenuMarksAvailableEntries(t *testing.T) {
 	}
 	app := fiber.New()
 	app.Use(func(c *fiber.Ctx) error {
-		c.Locals("session", &session.Session{Company: "TEST", Language: "nb-NO", Menu: "admin"})
+		c.Locals("session", &session.Session{IsSuper: true, HasRoles: true, Company: "TEST", Language: "nb-NO", Menu: "admin"})
 		return c.Next()
 	})
 	app.Get("/api/menu", (&PagesHandler{}).GetMenu)
@@ -147,7 +147,7 @@ func TestGetMenuMarksAvailableEntries(t *testing.T) {
 
 // Entries and actions the user may not run are greyed out and marked denied: a page whose table
 // the user may not read, a report without Execute, a sub-menu with nothing allowed; New and
-// Delete without Insert/Delete. SUPER, and a user without roles, may run everything.
+// Delete without Insert/Delete. SUPER may run everything, a user without roles nothing.
 func TestDeniedMenuEntriesAndActions(t *testing.T) {
 	clerk := &session.Session{}
 	clerk.SetPermissions(true, false, map[string]session.TablePermission{
@@ -165,11 +165,14 @@ func TestDeniedMenuEntriesAndActions(t *testing.T) {
 		!got[2].Enabled || !got[2].Items[0].Enabled || got[2].Items[1].Enabled || !got[2].Items[1].Denied || got[3].Enabled {
 		t.Errorf("clerk's menu %+v", got)
 	}
-	for _, sess := range []*session.Session{{IsSuper: true, HasRoles: true}, {}} {
-		for _, e := range menuEntries(entries, i18n.GetInstance(), "en-US", sess) {
-			if !e.Enabled || e.Denied {
-				t.Errorf("%+v: %+v greyed out", sess, e)
-			}
+	for _, e := range menuEntries(entries, i18n.GetInstance(), "en-US", &session.Session{IsSuper: true, HasRoles: true}) {
+		if !e.Enabled || e.Denied {
+			t.Errorf("SUPER: %+v greyed out", e)
+		}
+	}
+	for _, e := range menuEntries(entries, i18n.GetInstance(), "en-US", &session.Session{}) {
+		if e.Enabled {
+			t.Errorf("no roles: %+v not greyed out", e)
 		}
 	}
 

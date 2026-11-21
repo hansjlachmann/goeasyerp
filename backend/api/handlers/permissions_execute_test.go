@@ -65,16 +65,21 @@ func TestRunPermissionError(t *testing.T) {
 			t.Errorf("%s: allowed=%v, got %v", tt.name, tt.allowed, denied)
 		}
 	}
-	// SUPER and users without roles run everything
+	// SUPER runs everything, a user without roles nothing
 	super := &session.Session{}
 	super.SetPermissions(true, true, nil)
-	for _, s := range []*session.Session{super, {}} {
-		if denied := runPermissionError(s, 7, 0, "", "en-US"); denied != nil {
-			t.Errorf("unchecked user denied: %v", denied)
-		}
-		if denied := runPermissionError(s, 0, 0, "table:Job_Queue.ShowLineNo", "en-US"); denied != nil {
-			t.Errorf("unchecked user denied a table function: %v", denied)
-		}
+	if denied := runPermissionError(super, 7, 0, "", "en-US"); denied != nil {
+		t.Errorf("SUPER denied: %v", denied)
+	}
+	if denied := runPermissionError(super, 0, 0, "table:Job_Queue.ShowLineNo", "en-US"); denied != nil {
+		t.Errorf("SUPER denied a table function: %v", denied)
+	}
+	noRoles := &session.Session{}
+	if runPermissionError(noRoles, 7, 0, "", "en-US") == nil {
+		t.Error("a user without roles may run a routine")
+	}
+	if runPermissionError(noRoles, 0, 0, "table:Job_Queue.ShowLineNo", "en-US") == nil {
+		t.Error("a user without roles may run a table function")
 	}
 }
 

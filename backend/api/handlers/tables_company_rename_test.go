@@ -146,7 +146,7 @@ func companyApp(d renameDB) *fiber.App {
 	h := NewTablesHandlerWithDBType(d.db, d.dbType)
 	app := fiber.New()
 	app.Use(func(c *fiber.Ctx) error {
-		c.Locals("session", &session.Session{Company: c.Get("X-Company"), Language: "en-US"})
+		c.Locals("session", &session.Session{IsSuper: true, HasRoles: true, Company: c.Get("X-Company"), Language: "en-US"})
 		return c.Next()
 	})
 	app.Get("/api/tables/:table/list", h.ListRecords)

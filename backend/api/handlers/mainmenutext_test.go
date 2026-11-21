@@ -35,7 +35,7 @@ func TestMainMenuText(t *testing.T) {
 	language := "nb-NO"
 	app := fiber.New()
 	app.Use(func(c *fiber.Ctx) error {
-		c.Locals("session", &session.Session{UserID: "HANS", Company: "test", Language: language})
+		c.Locals("session", &session.Session{IsSuper: true, HasRoles: true, UserID: "HANS", Company: "test", Language: language})
 		return c.Next()
 	})
 	app.Get("/api/main-menu-text", h.GetMainMenuText)

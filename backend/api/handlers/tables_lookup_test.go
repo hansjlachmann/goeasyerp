@@ -41,7 +41,7 @@ func newLookupTestApp(t *testing.T, n int) *fiber.App {
 	h := NewTablesHandler(db)
 	app := fiber.New()
 	app.Use(func(c *fiber.Ctx) error {
-		c.Locals("session", &session.Session{Company: "TEST", Language: "en-US"})
+		c.Locals("session", &session.Session{IsSuper: true, HasRoles: true, Company: "TEST", Language: "en-US"})
 		return c.Next()
 	})
 	app.Get("/api/tables/:table/list", h.ListRecords)

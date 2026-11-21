@@ -20,8 +20,11 @@ func TestObjectKey(t *testing.T) {
 
 func TestCanExecute(t *testing.T) {
 	noRoles := &Session{}
-	if !noRoles.CanExecute(ObjectCodeunit, 6) {
-		t.Error("a user without roles may run every codeunit")
+	if noRoles.CanExecute(ObjectCodeunit, 6) {
+		t.Error("a user without roles may run a codeunit")
+	}
+	if noRoles.HasPermission("Customer", PermRead) {
+		t.Error("a user without roles may read a table")
 	}
 	super := &Session{}
 	super.SetPermissions(true, true, nil)

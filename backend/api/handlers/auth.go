@@ -284,6 +284,15 @@ func (h *AuthHandler) CreateInitialUser(c *fiber.Ctx) error {
 	if !user.Insert(true) {
 		return c.Status(500).JSON(apitypes.NewErrorResponse(apperrors.CreateUserFailed().Message("en-US")))
 	}
+	// The first user is the administrator: SUPER in every company (a user without roles may
+	// do nothing)
+	var member gtables.UserMember
+	member.InitWithDBType(h.db, "", h.dbType)
+	member.User_id = user.User_id
+	member.Role_id = types.NewCode(session.SuperRole)
+	if !member.Insert(true) {
+		return c.Status(500).JSON(apitypes.NewErrorResponse(apperrors.CreateUserFailed().Message("en-US")))
+	}
 
 	ts := i18n.GetInstance()
 	response := apitypes.NewSuccessResponse(map[string]interface{}{

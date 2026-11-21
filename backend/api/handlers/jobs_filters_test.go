@@ -43,7 +43,7 @@ func TestJobGetsListFilters(t *testing.T) {
 	})
 	app := fiber.New()
 	app.Use(func(c *fiber.Ctx) error {
-		c.Locals("session", &session.Session{Company: "TEST", Language: "en-US"})
+		c.Locals("session", &session.Session{IsSuper: true, HasRoles: true, Company: "TEST", Language: "en-US"})
 		return c.Next()
 	})
 	app.Post("/api/jobs/start", NewJobsHandlerWithDBType(db, database.DBTypeSQLite).StartJob)
@@ -89,7 +89,7 @@ func TestJobWithoutProgressOpensPage(t *testing.T) {
 	})
 	app := fiber.New()
 	app.Use(func(c *fiber.Ctx) error {
-		c.Locals("session", &session.Session{Company: "TEST", Language: "en-US"})
+		c.Locals("session", &session.Session{IsSuper: true, HasRoles: true, Company: "TEST", Language: "en-US"})
 		return c.Next()
 	})
 	app.Post("/api/jobs/start", NewJobsHandlerWithDBType(db, database.DBTypeSQLite).StartJob)

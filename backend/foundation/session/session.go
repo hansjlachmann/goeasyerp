@@ -53,7 +53,7 @@ type Session struct {
 	Language    string                     // Application language (e.g., "en-US", "de-DE")
 	Menu        string                     // Assigned menu profile (e.g., "admin", "sales")
 	IsSuper     bool                       // True if user has SUPER role (bypasses all permission checks)
-	HasRoles    bool                       // True if user has any role memberships assigned
+	HasRoles    bool                       // True if user has any role memberships in the company
 	Permissions map[string]TablePermission // Effective permissions per table name
 	LoginTime   time.Time                  // When the user logged in to the company (the user time register)
 	transaction *sql.Tx                    // Active transaction (nil if not in transaction)
@@ -151,13 +151,10 @@ func (s *Session) SetPermissions(hasRoles, isSuper bool, permissions map[string]
 	s.Permissions = permissions
 }
 
-// HasPermission checks if the current user has the specified permission on a table.
-// If the user has no roles assigned, all access is allowed (permission system not configured).
+// HasPermission checks if the current user has the specified permission on a table: SUPER has
+// every one, a user without roles in the company none
 func (s *Session) HasPermission(tableName string, op PermissionOperation) bool {
 	if s.IsSuper {
-		return true
-	}
-	if !s.HasRoles {
 		return true
 	}
 	if s.Permissions == nil {
@@ -181,10 +178,10 @@ func (s *Session) HasPermission(tableName string, op PermissionOperation) bool {
 }
 
 // CanExecute reports whether the user may run a codeunit or report (Execute permission on it,
-// classic object permissions). SUPER may run everything, and so may a user without roles
-// (permission system not configured for the user).
+// classic object permissions). SUPER may run everything, a user without roles in the company
+// nothing.
 func (s *Session) CanExecute(objectType string, id int) bool {
-	if s.IsSuper || !s.HasRoles {
+	if s.IsSuper {
 		return true
 	}
 	return s.Permissions[ObjectKey(objectType, id)].Execute

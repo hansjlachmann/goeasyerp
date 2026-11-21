@@ -59,7 +59,7 @@ func TestCodeunitRunsOnListSelection(t *testing.T) {
 	h := NewCodeunitsHandlerWithDBType(db, database.DBTypeSQLite)
 	app := fiber.New()
 	app.Use(func(c *fiber.Ctx) error {
-		c.Locals("session", &session.Session{Company: "TEST", Language: "en-US"})
+		c.Locals("session", &session.Session{IsSuper: true, HasRoles: true, Company: "TEST", Language: "en-US"})
 		return c.Next()
 	})
 	app.Post("/api/codeunits/run", h.RunCodeunit)

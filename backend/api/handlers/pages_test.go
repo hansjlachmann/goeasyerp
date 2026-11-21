@@ -64,7 +64,7 @@ func TestPageCaptionsTranslated(t *testing.T) {
 func TestGetPageTranslatesCopy(t *testing.T) {
 	app := fiber.New()
 	app.Use(func(c *fiber.Ctx) error {
-		c.Locals("session", &session.Session{Company: "TEST", Language: "nb-NO"})
+		c.Locals("session", &session.Session{IsSuper: true, HasRoles: true, Company: "TEST", Language: "nb-NO"})
 		return c.Next()
 	})
 	app.Get("/api/pages/:id", NewPagesHandler().GetPage)

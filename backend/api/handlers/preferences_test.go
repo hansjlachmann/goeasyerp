@@ -30,7 +30,7 @@ func TestPreferencesSaveAndRead(t *testing.T) {
 	appIn := func(company string) *fiber.App {
 		app := fiber.New()
 		app.Use(func(c *fiber.Ctx) error {
-			c.Locals("session", &session.Session{UserID: "HANS", Company: company, Language: "en-US"})
+			c.Locals("session", &session.Session{IsSuper: true, HasRoles: true, UserID: "HANS", Company: company, Language: "en-US"})
 			return c.Next()
 		})
 		app.Get("/api/preferences/:page_id/:type", h.GetPreferences)

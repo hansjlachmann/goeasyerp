@@ -77,7 +77,7 @@ func TestPostedTablesAPI(t *testing.T) {
 	app := fiber.New()
 	app.Use(func(c *fiber.Ctx) error {
 		// SUPER may do everything, but posted records are still written by posting only
-		c.Locals("session", &session.Session{UserID: "ADMIN", Company: "TEST", Language: "en-US"})
+		c.Locals("session", &session.Session{IsSuper: true, HasRoles: true, UserID: "ADMIN", Company: "TEST", Language: "en-US"})
 		return c.Next()
 	})
 	app.Post("/api/tables/:table/insert", h.InsertRecord)
@@ -140,7 +140,7 @@ func TestPostedTablesAPI(t *testing.T) {
 func TestPostedTablePages(t *testing.T) {
 	app := fiber.New()
 	app.Use(func(c *fiber.Ctx) error {
-		c.Locals("session", &session.Session{Company: "TEST", Language: "en-US"})
+		c.Locals("session", &session.Session{IsSuper: true, HasRoles: true, Company: "TEST", Language: "en-US"})
 		return c.Next()
 	})
 	app.Get("/api/pages/:id", NewPagesHandler().GetPage)

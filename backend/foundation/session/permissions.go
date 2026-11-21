@@ -7,10 +7,13 @@ import (
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 )
 
+// SuperRole is the role that may do everything
+const SuperRole = "SUPER"
+
 // LoadPermissions loads and merges a user's permissions in a company: the roles of the user's
 // memberships (User_Member, the company or all companies), then the Permission rows of those
-// roles, merged with OR across roles. It returns (hasRoles, isSuper, permissions): no roles means
-// the permission system is not configured for the user; SUPER needs no rows.
+// roles, merged with OR across roles. It returns (hasRoles, isSuper, permissions): without roles
+// the user may do nothing in the company; SUPER needs no rows.
 func LoadPermissions(db database.Executor, dbType database.DBType, userID, company string) (bool, bool, map[string]TablePermission) {
 	permissions := make(map[string]TablePermission)
 
@@ -31,7 +34,7 @@ func LoadPermissions(db database.Executor, dbType database.DBType, userID, compa
 			continue
 		}
 		roleIDs = append(roleIDs, roleID)
-		if strings.ToUpper(roleID) == "SUPER" {
+		if strings.ToUpper(roleID) == SuperRole {
 			isSuper = true
 		}
 	}

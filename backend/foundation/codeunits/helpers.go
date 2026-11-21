@@ -105,12 +105,11 @@ func CurrentAccess() *session.Session {
 }
 
 // CanReadInCompany reports whether the current user may read a table of another company (code
-// that reads it with ChangeCompany): the user's roles there — without roles in it a user with
-// roles has no access to the company; without a user (internal code) or without roles at all
-// (permission system not configured for the user) it is allowed
+// that reads it with ChangeCompany): the user's roles there — without roles in it the user has
+// no access to the company; without a user (internal code) it is allowed
 func CanReadInCompany(db database.Executor, dbType database.DBType, company, tableName string) bool {
 	access := CurrentAccess()
-	if access == nil || !access.HasRoles {
+	if access == nil {
 		return true
 	}
 	hasRoles, isSuper, perms := session.LoadPermissions(db, dbType, CurrentUserID(), company)

@@ -26,7 +26,7 @@ func TestMySettings(t *testing.T) {
 	h := NewMySettingsHandler(db, database.DBTypeSQLite)
 	app := fiber.New()
 	app.Use(func(c *fiber.Ctx) error {
-		c.Locals("session", &session.Session{UserID: "HANS", Company: "TEST", Language: "en-US"})
+		c.Locals("session", &session.Session{IsSuper: true, HasRoles: true, UserID: "HANS", Company: "TEST", Language: "en-US"})
 		return c.Next()
 	})
 	app.Get("/api/my-settings", h.GetMySettings)

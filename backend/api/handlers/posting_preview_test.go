@@ -55,7 +55,7 @@ func TestPostingPreviewLists(t *testing.T) {
 	appAs := func(userID string) *fiber.App {
 		app := fiber.New()
 		app.Use(func(c *fiber.Ctx) error {
-			c.Locals("session", &session.Session{UserID: userID, Company: "TEST", Language: "en-US"})
+			c.Locals("session", &session.Session{IsSuper: true, HasRoles: true, UserID: userID, Company: "TEST", Language: "en-US"})
 			return c.Next()
 		})
 		app.Use(middleware.UserContext()) // the page trigger runs as the user

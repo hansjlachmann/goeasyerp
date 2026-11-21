@@ -67,7 +67,7 @@ func TestNavigate(t *testing.T) {
 	h := NewTablesHandler(db)
 	app := fiber.New()
 	app.Use(func(c *fiber.Ctx) error {
-		sess := &session.Session{Company: "TEST", Language: "en-US"}
+		sess := &session.Session{IsSuper: true, HasRoles: true, Company: "TEST", Language: "en-US"}
 		if access != nil {
 			sess = access
 		}

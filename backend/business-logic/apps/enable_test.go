@@ -80,7 +80,10 @@ func TestEnableDisableApp(t *testing.T) {
 		t.Error("enabled/disabled apps after enabling Loyalty")
 	}
 
-	// a user with roles who is not SUPER may not switch apps; another server finds the state
+	// a user who is not SUPER — with roles or without — may not switch apps; another server
+	// finds the state
+	fcodeunits.SetCurrentAccess(&session.Session{})
+	refused("without roles", EnableApp, rewards, "Only a SUPER user")
 	fcodeunits.SetCurrentAccess(&session.Session{HasRoles: true})
 	refused("not SUPER", EnableApp, rewards, "Only a SUPER user")
 	extensions.SetDisabled()

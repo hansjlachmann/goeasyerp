@@ -40,7 +40,7 @@ func TestReminderLevelNewRecordAndNoSeriesList(t *testing.T) {
 	h := NewTablesHandler(db)
 	app := fiber.New()
 	app.Use(func(c *fiber.Ctx) error {
-		c.Locals("session", &session.Session{Company: "TEST", Language: "en-US"})
+		c.Locals("session", &session.Session{IsSuper: true, HasRoles: true, Company: "TEST", Language: "en-US"})
 		return c.Next()
 	})
 	app.Post("/api/tables/:table/init", h.InitRecord)
@@ -111,7 +111,7 @@ func TestIntegerKeyPartFromURL(t *testing.T) {
 	h := NewTablesHandler(db)
 	app := fiber.New()
 	app.Use(func(c *fiber.Ctx) error {
-		c.Locals("session", &session.Session{Company: "Test migration01", Language: "en-US"})
+		c.Locals("session", &session.Session{IsSuper: true, HasRoles: true, Company: "Test migration01", Language: "en-US"})
 		return c.Next()
 	})
 	app.Post("/api/tables/:table/insert", h.InsertRecord)
@@ -171,7 +171,7 @@ func TestCustomerNumberTaken(t *testing.T) {
 	h := NewTablesHandler(db)
 	app := fiber.New()
 	app.Use(func(c *fiber.Ctx) error {
-		c.Locals("session", &session.Session{Company: "T", Language: "en-US"})
+		c.Locals("session", &session.Session{IsSuper: true, HasRoles: true, Company: "T", Language: "en-US"})
 		return c.Next()
 	})
 	app.Post("/api/tables/:table/insert", h.InsertRecord)

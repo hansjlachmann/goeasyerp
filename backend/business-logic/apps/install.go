@@ -46,10 +46,10 @@ var newGitHubFetcher = func() *themes.Fetcher { return themes.NewFetcher() }
 // manifestMax: the largest application.yaml read
 const manifestMax = 64 << 10
 
-// superOnly refuses a user with roles who is not SUPER
+// superOnly refuses a user who is not SUPER (internal code without a user is allowed)
 func superOnly(lang string) error {
 	access := fcodeunits.CurrentAccess()
-	if access != nil && access.HasRoles && !access.IsSuper {
+	if access != nil && !access.IsSuper {
 		return errors.New(i18n.GetInstance().Message("ERR_APP_SUPER_ONLY", lang))
 	}
 	return nil

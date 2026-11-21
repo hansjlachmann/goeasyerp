@@ -35,7 +35,7 @@ func newThemesTestApp(t *testing.T, userID string) *fiber.App {
 	h := NewThemesHandler(db, database.DBTypeSQLite)
 	app := fiber.New()
 	app.Use(func(c *fiber.Ctx) error {
-		c.Locals("session", &session.Session{UserID: userID, Company: "TEST", Language: "en-US"})
+		c.Locals("session", &session.Session{IsSuper: true, HasRoles: true, UserID: userID, Company: "TEST", Language: "en-US"})
 		return c.Next()
 	})
 	app.Get("/api/themes", h.ListThemes)

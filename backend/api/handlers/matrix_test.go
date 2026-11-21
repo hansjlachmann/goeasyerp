@@ -54,7 +54,7 @@ func TestMatrix(t *testing.T) {
 
 	app := fiber.New()
 	app.Use(func(c *fiber.Ctx) error {
-		c.Locals("session", &session.Session{Company: "TEST", Language: "en-US"})
+		c.Locals("session", &session.Session{IsSuper: true, HasRoles: true, Company: "TEST", Language: "en-US"})
 		return c.Next()
 	})
 	h := NewPageTriggersHandler(db, database.DBTypeSQLite)
@@ -170,7 +170,7 @@ func TestCalculatedMatrix(t *testing.T) {
 
 	app := fiber.New()
 	app.Use(func(c *fiber.Ctx) error {
-		c.Locals("session", &session.Session{Company: "TEST", Language: "en-US"})
+		c.Locals("session", &session.Session{IsSuper: true, HasRoles: true, Company: "TEST", Language: "en-US"})
 		return c.Next()
 	})
 	app.Post("/api/pages/:id/matrix", NewPageTriggersHandler(db, database.DBTypeSQLite).Matrix)
@@ -224,7 +224,7 @@ func TestMatrixPage(t *testing.T) {
 	}
 	app := fiber.New()
 	app.Use(func(c *fiber.Ctx) error {
-		c.Locals("session", &session.Session{Company: "TEST", Language: "en-US"})
+		c.Locals("session", &session.Session{IsSuper: true, HasRoles: true, Company: "TEST", Language: "en-US"})
 		return c.Next()
 	})
 	h := NewPageTriggersHandler(db, database.DBTypeSQLite)
@@ -291,7 +291,7 @@ func TestItemsByBin(t *testing.T) {
 
 	app := fiber.New()
 	app.Use(func(c *fiber.Ctx) error {
-		c.Locals("session", &session.Session{Company: "TEST", Language: "en-US"})
+		c.Locals("session", &session.Session{IsSuper: true, HasRoles: true, Company: "TEST", Language: "en-US"})
 		return c.Next()
 	})
 	app.Post("/api/pages/:id/matrix", NewPageTriggersHandler(db, database.DBTypeSQLite).Matrix)
@@ -367,7 +367,7 @@ func TestItemsByLocation(t *testing.T) {
 
 	app := fiber.New()
 	app.Use(func(c *fiber.Ctx) error {
-		c.Locals("session", &session.Session{Company: "TEST", Language: "en-US"})
+		c.Locals("session", &session.Session{IsSuper: true, HasRoles: true, Company: "TEST", Language: "en-US"})
 		return c.Next()
 	})
 	app.Post("/api/pages/:id/matrix", NewPageTriggersHandler(db, database.DBTypeSQLite).Matrix)
