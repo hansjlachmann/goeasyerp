@@ -206,6 +206,14 @@ nginx pointing at `localhost:3000`). Set `PUBLISH_HOST=0.0.0.0` only if a proxy 
 machine** connects to them. To see what connects, check the tunnel/proxy configuration and
 `sudo ss -tnp | grep -E ':(3000|8080)'` while the system is in use.
 
+**Client addresses and logins:** the backend limits login attempts per client address and per
+user ID (10 failed logins in 15 minutes lock the user ID for 15 minutes). It takes the client's
+address from `X-Forwarded-For` only on connections from a trusted proxy — `TRUSTED_PROXIES` in
+prod.env (addresses or CIDR ranges; empty: loopback and the private ranges, where the compose
+file's nginx runs). nginx overwrites the header with the address it sees, so a client cannot send
+its own. A proxy on another machine with a public address must be listed in `TRUSTED_PROXIES`, and
+must overwrite the header too.
+
 ## Database roles
 
 The database image makes `openerp` (`POSTGRES_USER`) the database server's superuser: it could

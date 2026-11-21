@@ -90,22 +90,31 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		return c.Status(500).JSON(apitypes.NewErrorResponse(apperrors.CompanyVerifyFailed().Message("en-US")))
 	}
 
+	// A user ID with too many failed logins waits (loginGuard), whatever the password
+	if logins.locked(requestBody.UserID) {
+		return c.Status(fiber.StatusTooManyRequests).JSON(apitypes.NewErrorResponse(apperrors.TooManyRequests().Message("en-US")))
+	}
+
 	var user gtables.User
 	user.InitWithDBType(h.db, company, h.dbType)
 
 	if !user.Get(types.NewCode(requestBody.UserID)) {
+		logins.failed(requestBody.UserID)
 		return c.Status(401).JSON(apitypes.NewErrorResponse(apperrors.InvalidCredentials().Message("en-US")))
 	}
 
 	// Check if user is active
 	if !user.Active {
+		logins.failed(requestBody.UserID)
 		return c.Status(401).JSON(apitypes.NewErrorResponse(apperrors.UserInactive().Message("en-US")))
 	}
 
 	// Verify password
 	if !tables.CheckPassword(&user, requestBody.Password) {
+		logins.failed(requestBody.UserID)
 		return c.Status(401).JSON(apitypes.NewErrorResponse(apperrors.InvalidCredentials().Message("en-US")))
 	}
+	logins.succeeded(requestBody.UserID)
 
 	// Check company access before proceeding (use canonical user ID from DB, not raw input)
 	allowed, _ := h.userHasCompanyAccess(user.User_id.String(), company)

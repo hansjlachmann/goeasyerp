@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/recover"
@@ -45,17 +46,48 @@ func NewServerWithDBType(db *sql.DB, dbType database.DBType) *Server {
 	return NewServerFull(db, dbType, nil)
 }
 
-// NewServerFull creates a new API server with company initializer support
-func NewServerFull(db *sql.DB, dbType database.DBType, companyInit handlers.CompanyInitializer) *Server {
-	app := fiber.New(fiber.Config{
+// defaultTrustedProxies: loopback and the private ranges (Docker and Kubernetes networks), where
+// nginx or an ingress runs
+var defaultTrustedProxies = []string{"127.0.0.1", "::1", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "fc00::/7"}
+
+// trustedProxies reads TRUSTED_PROXIES: addresses or CIDR ranges separated by commas; blank:
+// defaultTrustedProxies
+func trustedProxies(value string) []string {
+	var proxies []string
+	for _, part := range strings.Split(value, ",") {
+		part = strings.TrimSpace(part)
+		if part != "" {
+			proxies = append(proxies, part)
+		}
+	}
+	if len(proxies) == 0 {
+		return defaultTrustedProxies
+	}
+	return proxies
+}
+
+// appConfig is the Fiber configuration of the API server (trusted: TRUSTED_PROXIES)
+func appConfig(trusted string) fiber.Config {
+	return fiber.Config{
 		AppName:      "GoEasyERP API v1.0",
 		ServerHeader: "GoEasyERP",
 		ErrorHandler: customErrorHandler,
-		// Trust the reverse proxy's X-Forwarded-For so c.IP() (used by the rate
-		// limiter) is the real client address rather than the proxy's. Safe only
-		// behind a trusted proxy (nginx) that overwrites this header.
-		ProxyHeader: fiber.HeaderXForwardedFor,
-	})
+		// c.IP() (the rate limiters' key) is the client's address: X-Forwarded-For is read only
+		// on connections from a trusted proxy (nginx, which overwrites the header with the
+		// address it sees) — from any other address the header is ignored, so a client cannot
+		// pick a new address for every request. TRUSTED_PROXIES lists the proxies (addresses or
+		// CIDR ranges, commas); default loopback and the private ranges of Docker and Kubernetes
+		// networks. The first valid address of the header is taken.
+		ProxyHeader:             fiber.HeaderXForwardedFor,
+		EnableTrustedProxyCheck: true,
+		TrustedProxies:          trustedProxies(trusted),
+		EnableIPValidation:      true,
+	}
+}
+
+// NewServerFull creates a new API server with company initializer support
+func NewServerFull(db *sql.DB, dbType database.DBType, companyInit handlers.CompanyInitializer) *Server {
+	app := fiber.New(appConfig(os.Getenv("TRUSTED_PROXIES")))
 
 	jwtConfig := middleware.DefaultJWTConfig()
 	sessionCache := middleware.NewSessionCache()
