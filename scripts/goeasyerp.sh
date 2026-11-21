@@ -86,6 +86,12 @@ if [ "$secret" = replace-this-with-a-long-random-text ]; then
 	say "         encrypts stored passwords; anyone who knows it can sign in tokens for this installation."
 fi
 
+# The app builder's own database password (it may read and change its build tables only)
+if [ -z "$(envValue BUILDER_DB_PASSWORD)" ]; then
+	add="${add}BUILDER_DB_PASSWORD='$(od -An -tx1 -N24 /dev/urandom | tr -d ' \n')'
+"
+fi
+
 ports=$(composePorts)
 oldBind=$(printf '%s' "$ports" | cut -d' ' -f1 | tr -d ':')
 oldPort=$(printf '%s' "$ports" | cut -s -d' ' -f2)

@@ -86,7 +86,7 @@ func main() {
 
 	// Check if we're in Docker/production mode (env vars set)
 	dbHost := os.Getenv("DB_HOST")
-	if config, ok := database.PostgresConfigFromEnv(); ok {
+	if config, ok := database.ServerConfigFromEnv(); ok {
 		// PostgreSQL mode (Docker/production)
 
 		fmt.Printf("Connecting to PostgreSQL at %s:%s...\n", config.Host, config.Port)
@@ -148,6 +148,13 @@ func main() {
 	}
 
 	fmt.Printf("✓ Company entered: %s\n", companyName)
+
+	// PostgreSQL: the app builder's role gets its tables (the server's role owns them)
+	if dbHost != "" {
+		if err := database.GrantBuilder(db.GetConnection()); err != nil {
+			log.Printf("WARNING: database rights of the app builder: %v", err)
+		}
+	}
 
 	fmt.Printf("✓ Per-request JWT sessions enabled\n")
 

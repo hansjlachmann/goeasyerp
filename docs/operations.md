@@ -32,12 +32,14 @@ scripts/prod.sh pull && scripts/prod.sh up -d
 ```bash
 git clone https://github.com/hansjlachmann/goeasyerp.git ~/openerp && cd ~/openerp
 cp prod.env.example prod.env && chmod 600 prod.env
-# edit prod.env: APP_VERSION, JWT_SECRET (openssl rand -hex 32), POSTGRES_PASSWORD (a strong one)
+# edit prod.env: APP_VERSION, JWT_SECRET (openssl rand -hex 32), POSTGRES_PASSWORD (a strong one),
+#                BUILDER_DB_PASSWORD (openssl rand -hex 24)
 ./generate-cert.sh            # or put your own certificate into certs/
 scripts/prod.sh pull && scripts/prod.sh up -d
 ```
 
-On a fresh database `POSTGRES_PASSWORD` becomes the password of the database user `openerp`.
+On a fresh database `POSTGRES_PASSWORD` becomes the password of the database role the server
+works as, `goeasyerp` (see Database roles).
 
 ## Switching an existing installation to prod.env
 
@@ -194,6 +196,32 @@ nginx pointing at `localhost:3000`). Set `PUBLISH_HOST=0.0.0.0` only if a proxy 
 machine** connects to them. To see what connects, check the tunnel/proxy configuration and
 `sudo ss -tnp | grep -E ':(3000|8080)'` while the system is in use.
 
+## Database roles
+
+The database image makes `openerp` (`POSTGRES_USER`) the database server's superuser: it could
+drop every database, read the server's files and run programs there. The backend does not work
+as it. On the first start that finds `openerp` a superuser (a new installation, or the first
+start of a release with this change) the backend:
+
+- makes the role `goeasyerp` with the password it was given (`POSTGRES_PASSWORD`) — the owner of
+  the database and its tables, without superuser rights, and unable to create databases or roles;
+- makes the role `goeasyerp_builder` for the app builder when `BUILDER_DB_PASSWORD` is set — it
+  may read and change the build tables only (App Build; reads App Package, Installed App and App
+  Build Setup);
+- hands `goeasyerp` everything `openerp` owns in the database, and takes `openerp`'s password away.
+
+The log says so (`database: … handed over to goeasyerp`). From then on the backend's settings
+(`DB_USER: openerp` and the password) open only `goeasyerp`: the backend tries it first. The
+superuser `openerp` is reached only inside the database container, which trusts local
+connections — `scripts/prod.sh exec db psql -U openerp`, as the backups do.
+
+Set `BUILDER_DB_PASSWORD` in `prod.env` before the first start of that release: afterwards the
+backend no longer has the right to make the builder's role (it logs how to make it by hand, as
+`openerp` inside the container). Without it the builder works as `goeasyerp`.
+
+`DB_KEEP_SUPERUSER=true` in the backend's environment leaves `DB_USER` as it is (development
+databases whose superuser password tests need).
+
 ## Backups
 
 `scripts/backup.sh` dumps the database through the `db` container (`pg_dump -Fc`) into
@@ -217,15 +245,18 @@ state might still be needed.
 ```bash
 cd ~/openerp
 scripts/prod.sh stop backend                   # no writes during the restore
-scripts/prod.sh exec -T db pg_restore -U openerp -d openerp --clean --if-exists --no-owner < ~/backups/<file>.dump
+scripts/prod.sh exec -T db pg_restore -U goeasyerp -d openerp --clean --if-exists --no-owner < ~/backups/<file>.dump
 scripts/prod.sh start backend
 ```
+
+Restore as `goeasyerp` (`-U goeasyerp`), so the restored tables belong to the backend's role; a
+dump made before the database roles existed restores the same way.
 
 To look at a backup without touching production, restore it into a scratch database:
 
 ```bash
-scripts/prod.sh exec -T db createdb -U openerp restore_test
-scripts/prod.sh exec -T db pg_restore -U openerp -d restore_test --no-owner < ~/backups/<file>.dump
+scripts/prod.sh exec -T db createdb -U openerp -O goeasyerp restore_test
+scripts/prod.sh exec -T db pg_restore -U goeasyerp -d restore_test --no-owner < ~/backups/<file>.dump
 scripts/prod.sh exec -T db psql -U openerp -d restore_test     # look around, then:
 scripts/prod.sh exec -T db dropdb -U openerp restore_test
 ```
@@ -236,10 +267,13 @@ scripts/prod.sh exec -T db dropdb -U openerp restore_test
 change it in the database first, then in `prod.env`, then restart:
 
 ```bash
-scripts/prod.sh exec db psql -U openerp -d openerp -c "ALTER USER openerp PASSWORD 'new-strong-password';"
+scripts/prod.sh exec db psql -U openerp -d openerp -c "ALTER ROLE goeasyerp PASSWORD 'new-strong-password';"
 sed -i "s/^POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=new-strong-password/" prod.env
 scripts/prod.sh up -d                          # backend reconnects with the new password
 ```
+
+The app builder's password the same way: `ALTER ROLE goeasyerp_builder PASSWORD '…'`, then
+`BUILDER_DB_PASSWORD` in `prod.env`.
 
 If the backend logs a password error afterwards, the two do not match: fix `prod.env` and run
 `up -d` again.

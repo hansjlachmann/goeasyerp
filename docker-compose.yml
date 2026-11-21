@@ -29,6 +29,9 @@ services:
       DB_USER: openerp
       DB_PASSWORD: openerp
       DB_NAME: openerp
+      # development: keep openerp the superuser with its password (tests use it); installations
+      # leave this out and the server works as the role goeasyerp (docs/operations.md)
+      DB_KEEP_SUPERUSER: "true"
       COMPANY_NAME: ${COMPANY_NAME:-}
       PORT: 8080
       APP_VERSION: ${APP_VERSION:-dev}

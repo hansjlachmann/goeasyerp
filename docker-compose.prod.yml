@@ -42,6 +42,8 @@ services:
       DB_USER: openerp
       DB_PASSWORD: ${POSTGRES_PASSWORD:-openerp}
       DB_NAME: openerp
+      # the app builder's database role is made with it (the server itself works as the role goeasyerp)
+      BUILDER_DB_PASSWORD: ${BUILDER_DB_PASSWORD:-}
       # The company the server enters at startup (empty: the first company; a new database: main)
       COMPANY_NAME: ${COMPANY_NAME:-}
       PORT: 8080
@@ -74,8 +76,9 @@ services:
     environment:
       DB_HOST: db
       DB_PORT: 5432
-      DB_USER: openerp
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-openerp}
+      # its own role (BUILDER_DB_PASSWORD): the build tables only; without it the server's role
+      DB_USER: ${BUILDER_DB_PASSWORD:+goeasyerp_builder}
+      DB_PASSWORD: ${BUILDER_DB_PASSWORD:-${POSTGRES_PASSWORD:-openerp}}
       DB_NAME: openerp
       APP_BUILDS_DIR: /builds
       # read access to private app repositories on GitHub (empty: public ones only)

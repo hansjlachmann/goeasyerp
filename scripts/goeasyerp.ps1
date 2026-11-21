@@ -124,6 +124,15 @@ function Install-GoEasyERP {
         Write-Host '         encrypts stored passwords; anyone who knows it can sign in tokens for this installation.' -ForegroundColor Yellow
     }
 
+    # The app builder's own database password (it may read and change its build tables only)
+    if (-not $envValues['BUILDER_DB_PASSWORD']) {
+        $bytes = New-Object byte[] 24
+        $rng = New-Object System.Security.Cryptography.RNGCryptoServiceProvider
+        $rng.GetBytes($bytes)
+        $rng.Dispose()
+        $add += "BUILDER_DB_PASSWORD='" + (($bytes | ForEach-Object { $_.ToString('x2') }) -join '') + "'`n"
+    }
+
     $oldBind = $null
     $oldPort = $null
     foreach ($line in $composeLines) {

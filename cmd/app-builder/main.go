@@ -45,7 +45,7 @@ const keepBundles = 3
 const buildTimeout = 60 * time.Minute
 
 func main() {
-	config, ok := database.PostgresConfigFromEnv()
+	config, ok := database.BuilderConfigFromEnv()
 	if !ok {
 		log.Fatal("app-builder needs the server's PostgreSQL database (DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME)")
 	}

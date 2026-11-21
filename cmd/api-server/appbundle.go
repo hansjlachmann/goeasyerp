@@ -29,7 +29,7 @@ func launchAppBundle(starting *appbundle.Starting) *appbundle.Starting {
 	if buildsDir == "" || appbundle.Current() != 0 {
 		return starting
 	}
-	config, ok := database.PostgresConfigFromEnv()
+	config, ok := database.ServerConfigFromEnv()
 	if !ok {
 		return starting
 	}
