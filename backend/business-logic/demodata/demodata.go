@@ -671,6 +671,9 @@ func Create(db database.Executor, company string, dbType database.DBType, opts O
 // IsDemoCompany: the company's data was made by demo data (Company Demo Company), so a new demo
 // run may empty it
 func IsDemoCompany(exec database.Executor, company string, dbType database.DBType) bool {
+	if !companyTableExists(exec, dbType) {
+		return false
+	}
 	companyRec := gtables.NewCompany(ftables.DBSource(exec, "", dbType))
 	if !companyRec.Get(types.Text(company)) {
 		return false
@@ -681,6 +684,9 @@ func IsDemoCompany(exec database.Executor, company string, dbType database.DBTyp
 // markDemoCompany sets the company's Demo Company, in the demo run's transaction (a company
 // without a Company record — package tests — is left alone)
 func markDemoCompany(exec database.Executor, company string, dbType database.DBType) error {
+	if !companyTableExists(exec, dbType) {
+		return nil
+	}
 	companyRec := gtables.NewCompany(ftables.DBSource(exec, "", dbType))
 	if !companyRec.Get(types.Text(company)) {
 		return nil
@@ -1287,4 +1293,18 @@ func customerNos(customers []customerData) []string {
 		nos = append(nos, c.No)
 	}
 	return nos
+}
+
+// companyTableExists: the global Company table is there (package tests make only the company's
+// tables). Asked without reading the table: on PostgreSQL a query of a missing table would end
+// the demo run's transaction.
+func companyTableExists(exec database.Executor, dbType database.DBType) bool {
+	var found bool
+	var err error
+	if dbType == database.DBTypePostgres {
+		err = exec.QueryRow(`SELECT to_regclass('"Company"') IS NOT NULL`).Scan(&found)
+	} else {
+		err = exec.QueryRow(`SELECT COUNT(*) > 0 FROM sqlite_master WHERE type = 'table' AND name = 'Company'`).Scan(&found)
+	}
+	return err == nil && found
 }
