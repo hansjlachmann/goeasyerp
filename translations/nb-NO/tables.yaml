@@ -276,6 +276,7 @@ tables:
     fields:
       name: "Navn"
       display_name: "Visningsnavn"
+      demo_company: "Demoselskap"
 
   # User Role (Table 2000000004)
   user_role:

@@ -16,6 +16,9 @@ page:
         - source: display_name
           width: 300
 
+        - source: demo_company
+          width: 120
+
   actions:
     - name: New
       caption: New

@@ -21,7 +21,10 @@ import (
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/projectjnl"
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/resjnl"
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/session"
 	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
@@ -115,6 +118,7 @@ func TestDemoDataFillsTheMainMenu(t *testing.T) {
 	if err := tables.CreateCompanyTables(db, "demo", database.DBTypeSQLite); err != nil {
 		t.Fatal(err)
 	}
+	insertCompanyRecord(t, db, "demo")
 	opts := demodata.Options{Today: time.Date(2026, 10, 6, 0, 0, 0, 0, time.Local),
 		ItemJnlPostLine: openItemJnlPostLine, BOMJnlPostLine: openBOMJnlPostLine, SalesPost: openSalesPost, PurchPost: openPurchPost,
 		GenJnlPostLine: openGenJnlPostLine, ProjectJnlPostLine: openProjectJnlPostLine, Journals: true,
@@ -366,4 +370,65 @@ func TestDemoDataFillsTheMainMenu(t *testing.T) {
 		_, err := insurancejnl.PostBatch(src, l)
 		return err
 	})
+}
+
+// insertCompanyRecord makes the company's Company record (and the global table), not a demo
+// company
+func insertCompanyRecord(t *testing.T, db *sql.DB, name string) {
+	t.Helper()
+	companyRec := gtables.NewCompany(ftables.DBSource(db, "", database.DBTypeSQLite))
+	if err := companyRec.CreateTableWithDBType(db, "", database.DBTypeSQLite); err != nil {
+		t.Fatal(err)
+	}
+	companyRec.Name = types.Text(name)
+	if err := companyRec.InsertOrError(false); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// Codeunit 901 replaces a company's data only in a demo company, for a SUPER user, run with a
+// dialog (never scheduled)
+func TestDemoDataReplaceIsRefused(t *testing.T) {
+	db, err := sql.Open("sqlite3", ":memory:")
+	if err != nil {
+		t.Fatal(err)
+	}
+	db.SetMaxOpenConns(1)
+	t.Cleanup(func() { _ = db.Close() })
+	if err := tables.CreateCompanyTables(db, "real", database.DBTypeSQLite); err != nil {
+		t.Fatal(err)
+	}
+	insertCompanyRecord(t, db, "real")
+	cust := gtables.NewCustomer(ftables.DBSource(db, "real", database.DBTypeSQLite))
+	cust.No = "REAL1"
+	if err := cust.InsertOrError(false); err != nil {
+		t.Fatal(err)
+	}
+	ts := i18n.GetInstance()
+	c := NewDemoDataCreate(db, "real", database.DBTypeSQLite).(*DemoDataCreate)
+	check := func(want string) {
+		t.Helper()
+		err := c.checkReplace(ts, "en-US")
+		switch {
+		case want == "" && err != nil:
+			t.Fatalf("refused: %v", err)
+		case want != "" && (err == nil || err.Error() != ts.MessageWithParams(want, "en-US", "real")):
+			t.Fatalf("got %v, want %s", err, want)
+		}
+	}
+	fcodeunits.SetCurrentContext("CLERK", "CLERK", "real", "en-US")
+	defer fcodeunits.ClearCurrentContext()
+
+	check("DEMO_DATA_NOT_DEMO_COMPANY")
+	if _, err := db.Exec(`UPDATE "Company" SET demo_company = 1 WHERE name = 'real'`); err != nil {
+		t.Fatal(err)
+	}
+	fcodeunits.SetCurrentAccess(&session.Session{UserID: "CLERK", HasRoles: true})
+	check("DEMO_DATA_REPLACE_SUPER_ONLY")
+	fcodeunits.SetCurrentAccess(&session.Session{UserID: "ADMIN", HasRoles: true, IsSuper: true})
+	check("DEMO_DATA_REPLACE_SCHEDULED")
+	d := fcodeunits.OpenDialogWithID("", "demo-replace-test")
+	fcodeunits.SetCurrentDialog(d)
+	defer fcodeunits.ClearCurrentDialog()
+	check("")
 }

@@ -14,6 +14,7 @@
 //	  — before the triggers of that kind; handled = true skips them (every app's) for the record
 //	OnValidate_Name(rec *gtables.Company) error
 //	OnValidate_Display_name(rec *gtables.Company) error
+//	OnValidate_Demo_company(rec *gtables.Company) error
 package tables
 
 import (
@@ -37,6 +38,7 @@ import (
 type Company struct {
 	Name         types.Text `db:"name,pk"`
 	Display_name types.Text `db:"display_name"`
+	Demo_company bool       `db:"demo_company"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -81,9 +83,11 @@ const CompanyTableName = "Company"
 var Company_FieldNo = struct {
 	Name         int
 	Display_name int
+	Demo_company int
 }{
 	Name:         1,
 	Display_name: 3,
+	Demo_company: 4,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -399,7 +403,8 @@ func (t *Company) IsSetupTable() bool {
 func GetCompanyTableSchema() string {
 	return `
 		name TEXT(100) PRIMARY KEY,
-		display_name TEXT(100)
+		display_name TEXT(100),
+		demo_company INTEGER
 	`
 }
 
@@ -407,7 +412,8 @@ func GetCompanyTableSchema() string {
 func GetCompanyPostgresTableSchema() string {
 	return `
 		name VARCHAR(100) PRIMARY KEY,
-		display_name VARCHAR(100)
+		display_name VARCHAR(100),
+		demo_company BOOLEAN
 	`
 }
 
@@ -1408,6 +1414,7 @@ func (t *Company) setKeyValues(values []interface{}) {
 // from the definition (Init); the primary key keeps its values
 func (t *Company) Init() {
 	t.Display_name = *new(types.Text)
+	t.Demo_company = *new(bool)
 	t.applyDefaults()
 }
 
@@ -1474,6 +1481,8 @@ func (t *Company) fieldRef(i int) any {
 		return &t.Name
 	case 1:
 		return &t.Display_name
+	case 2:
+		return &t.Demo_company
 	}
 	return nil
 }
@@ -1510,6 +1519,21 @@ var companyFields = &tables.TableFields{
 			},
 			Kind:    tables.KindText,
 			Trigger: "OnValidate_Display_name",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "demo_company",
+				Type:       tables.FieldTypeBoolean,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindBool,
+			Trigger: "OnValidate_Demo_company",
 		},
 	},
 }

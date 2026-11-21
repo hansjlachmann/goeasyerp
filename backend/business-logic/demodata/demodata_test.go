@@ -311,6 +311,7 @@ func TestCreateIsRepeatable(t *testing.T) {
 // stays): the same records, not twice as many
 func TestCreateAgainReplacesTheDemo(t *testing.T) {
 	db := newTestDB(t)
+	insertCompanyRecord(t, db, testCompany, database.DBTypeSQLite)
 	first, err := Create(db, testCompany, database.DBTypeSQLite, Options{Today: today})
 	if err != nil {
 		t.Fatalf("first Create: %v", err)

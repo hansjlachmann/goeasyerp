@@ -21,6 +21,15 @@ table:
       caption: Display Name
       length: 100
 
+    # Set when demo data is created in the company: only such a company may be emptied for new
+    # demo data (codeunit 901)
+    - name: demo_company
+      no: 4
+      type: bool
+      db_name: demo_company
+      caption: Demo Company
+      editable: false
+
   keys:
     - name: Primary
       fields: [name]

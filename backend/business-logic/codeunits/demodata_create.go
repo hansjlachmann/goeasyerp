@@ -26,10 +26,11 @@ import (
 //
 // Run from the Job Queue (Run action or the scheduler) in the company to fill. The
 // job's parameter selects the size: SMALL (default), LARGE or HEAVY, and VAT makes it a VAT
-// company instead of a sales tax one ("VAT", "LARGE VAT"). A company that already
-// has customers is emptied and filled again (but its job queue and user setup) — run from
-// the page, after a question; nothing changes if any part fails. Every run is logged as a
-// Job Queue Entry.
+// company instead of a sales tax one ("VAT", "LARGE VAT"). The company is marked a demo
+// company (Company Demo Company). A demo company that already has customers is emptied and
+// filled again (but its job queue and user setup) — by a SUPER user, run from the page, after a
+// question; any other company with customers is refused. Nothing changes if any part fails.
+// Every run is logged as a Job Queue Entry.
 const DemoDataCreateID = 901
 const DemoDataCreateName = "create-demo-data"
 
@@ -70,10 +71,14 @@ func (c *DemoDataCreate) Run(record interface{}) (fcodeunits.Result, error) {
 	lang := fcodeunits.CurrentLanguage()
 	start := types.Now()
 
-	// The demo replaces the company's data: asked when run from the page (a scheduled run
-	// replaces it)
+	// The demo replaces the company's data only in a demo company, for a SUPER user, run from the
+	// page and after a question — never in a scheduled run
 	cust := gtables.NewCustomer(ftables.DBSource(c.db, c.company, c.dbType))
-	if !cust.IsEmpty() && system.GuiAllowed() {
+	if !cust.IsEmpty() {
+		err := c.checkReplace(ts, lang)
+		if err != nil {
+			return fcodeunits.Result{}, err
+		}
 		if !system.Confirm(ts.Message("DEMO_DATA_REPLACE_CONFIRM", lang), c.company) {
 			return fcodeunits.Result{}, nil
 		}
@@ -97,6 +102,22 @@ func (c *DemoDataCreate) Run(record interface{}) (fcodeunits.Result, error) {
 	}
 	return fcodeunits.Message(ts.MessageWithParams("DEMO_DATA_DONE", lang,
 		fmt.Sprint(counts.Customers), fmt.Sprint(counts.LedgerEntries), fmt.Sprint(counts.Vendors), fmt.Sprint(counts.VendorLedgerEntries))), nil
+}
+
+// checkReplace: the company's data may be replaced by new demo data — a demo company (Company
+// Demo Company), a SUPER user (no user: internal code), a run with a dialog
+func (c *DemoDataCreate) checkReplace(ts *i18n.TranslationService, lang string) error {
+	if !demodata.IsDemoCompany(c.db, c.company, c.dbType) {
+		return errors.New(ts.MessageWithParams("DEMO_DATA_NOT_DEMO_COMPANY", lang, c.company))
+	}
+	access := fcodeunits.CurrentAccess()
+	if access != nil && !access.IsSuper {
+		return errors.New(ts.MessageWithParams("DEMO_DATA_REPLACE_SUPER_ONLY", lang, c.company))
+	}
+	if !system.GuiAllowed() {
+		return errors.New(ts.MessageWithParams("DEMO_DATA_REPLACE_SCHEDULED", lang, c.company))
+	}
+	return nil
 }
 
 func (c *DemoDataCreate) create(jobQueue *gtables.JobQueue, ts *i18n.TranslationService, lang string) (demodata.Counts, error) {
@@ -158,7 +179,10 @@ func CreateDemoDataIfEmpty(db database.Executor, company string, dbType database
 func (c *DemoDataCreate) errorMessage(err error, ts *i18n.TranslationService, lang string) string {
 	var sizeErr *demodata.SizeError
 	var insertErr *demodata.InsertError
+	var notDemoErr *demodata.NotDemoCompanyError
 	switch {
+	case errors.As(err, &notDemoErr):
+		return ts.MessageWithParams("DEMO_DATA_NOT_DEMO_COMPANY", lang, notDemoErr.Company)
 	case errors.As(err, &sizeErr):
 		return ts.MessageWithParams("DEMO_DATA_BAD_SIZE", lang, sizeErr.Parameter)
 	case errors.As(err, &insertErr):

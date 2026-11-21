@@ -253,6 +253,14 @@ func (e *InsertError) Error() string {
 
 func (e *InsertError) Unwrap() error { return e.Err }
 
+// NotDemoCompanyError: the company has data, but it was not made by demo data (Company Demo
+// Company not set) — demo data never empties it.
+type NotDemoCompanyError struct{ Company string }
+
+func (e *NotDemoCompanyError) Error() string {
+	return fmt.Sprintf("company %s has data that is not demo data: demo data replaces only a demo company's data", e.Company)
+}
+
 // ---------------------------------------------------------------------------
 // YAML data
 // ---------------------------------------------------------------------------
@@ -438,10 +446,15 @@ func Create(db database.Executor, company string, dbType database.DBType, opts O
 		}
 	}
 
-	// A company that has customers (demo data from an earlier run) is emptied first: the demo
-	// is created again. Without customers, setup records already there are kept.
+	// A company that has customers is emptied first when it is a demo company (demo data from an
+	// earlier run): the demo is created again. Any other company with customers is refused —
+	// its data may be real. Without customers, setup records already there are kept.
 	existing := gtables.NewCustomer(ftables.DBSource(exec, company, dbType))
 	if !existing.IsEmpty() {
+		if !IsDemoCompany(exec, company, dbType) {
+			rollback()
+			return counts, &NotDemoCompanyError{Company: company}
+		}
 		err = clearCompany(exec, company, dbType)
 		if err != nil {
 			rollback()
@@ -639,6 +652,12 @@ func Create(db database.Executor, company string, dbType database.DBType, opts O
 		}
 	}
 
+	err = markDemoCompany(exec, company, dbType)
+	if err != nil {
+		rollback()
+		return Counts{}, err
+	}
+
 	if tx != nil {
 		err := ftables.Commit(tx)
 		if err != nil {
@@ -647,6 +666,30 @@ func Create(db database.Executor, company string, dbType database.DBType, opts O
 	}
 	p.done()
 	return counts, nil
+}
+
+// IsDemoCompany: the company's data was made by demo data (Company Demo Company), so a new demo
+// run may empty it
+func IsDemoCompany(exec database.Executor, company string, dbType database.DBType) bool {
+	companyRec := gtables.NewCompany(ftables.DBSource(exec, "", dbType))
+	if !companyRec.Get(types.Text(company)) {
+		return false
+	}
+	return companyRec.Demo_company
+}
+
+// markDemoCompany sets the company's Demo Company, in the demo run's transaction (a company
+// without a Company record — package tests — is left alone)
+func markDemoCompany(exec database.Executor, company string, dbType database.DBType) error {
+	companyRec := gtables.NewCompany(ftables.DBSource(exec, "", dbType))
+	if !companyRec.Get(types.Text(company)) {
+		return nil
+	}
+	if companyRec.Demo_company {
+		return nil
+	}
+	companyRec.Demo_company = true
+	return companyRec.ModifyOrError(false)
 }
 
 func insertSetup(exec database.Executor, company string, dbType database.DBType, setup setupData, counts *Counts, p *progress) error {

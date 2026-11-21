@@ -207,8 +207,10 @@ year of customer ledger entries. The data is in `backend/business-logic/demodata
 | HEAVY | 200       | ~190,000 (~1,000 per customer, 2 years) | SIFT / FlowField volume tests |
 
 The run is one transaction (all or nothing), produces the same data every time
-(fixed random seed, dates relative to the run date). Run again in a company that
-already has customers, it first deletes all of the company's data except the job
-queue and user setup, and creates the demo again; run from the page it asks first.
-Never run it in a company with real data.
+(fixed random seed, dates relative to the run date), and marks the company as a
+demo company (Companies: Demo Company). Run again in a demo company, it first deletes
+all of the company's data except the job queue and user setup, and creates the demo
+again — only for a user with the role SUPER, run from the page (F9), after a question;
+a scheduled run never does. A company with customers that is not a demo company is
+refused: demo data never deletes real data.
 Every run is logged in Job Queue Entries.

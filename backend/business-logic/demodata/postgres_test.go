@@ -40,6 +40,7 @@ func TestCreateAgainReplacesTheDemoPostgres(t *testing.T) {
 	if err := tables.CreateCompanyTables(db, name, database.DBTypePostgres); err != nil {
 		t.Fatal(err)
 	}
+	insertCompanyRecord(t, db, name, database.DBTypePostgres)
 	first, err := Create(db, name, database.DBTypePostgres, Options{Today: today})
 	if err != nil {
 		t.Fatalf("first Create: %v", err)
