@@ -23,7 +23,7 @@ const EnvHome = "GOEASYERP_HOME"
 
 // Option numbers of the tables read here
 const (
-	buildsByLocalBuilder     = 1 // App Build Setup Builds By
+	buildsByLocalBuilder     = 0 // App Build Setup Builds By (1 before migration 058)
 	installedStatusInstalled = 0 // Installed App Status
 	installedStatusRemoval   = 2 // … Pending Removal
 )
@@ -64,6 +64,11 @@ func Decide(db *sql.DB, dbType database.DBType, buildsDir, version, baseAppID st
 	return d, nil
 }
 
+// BuildsByLocalFirstMigration: the migration that swapped Builds By's options (Local Builder
+// first). The launcher runs before migrations: on the first start of a version that brings it,
+// the stored value still has the old meaning.
+const BuildsByLocalFirstMigration = 58
+
 // LocalBuilder: the installation builds its apps itself (App Build Setup: Builds By = Local
 // Builder); false before the table exists
 func LocalBuilder(db *sql.DB, dbType database.DBType) (bool, error) {
@@ -75,7 +80,22 @@ func LocalBuilder(db *sql.DB, dbType database.DBType) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return buildsBy == buildsByLocalBuilder, nil
+	local := buildsByLocalBuilder
+	if !migrated(db, BuildsByLocalFirstMigration) {
+		local = 1 // the value before the swap
+	}
+	return buildsBy == local, nil
+}
+
+// migrated: the migration has run (a database without the migrations table has none to run:
+// its tables are made new)
+func migrated(db *sql.DB, version int) bool {
+	var n int
+	err := db.QueryRow(`SELECT COUNT(*) FROM "_migrations" WHERE version = ` + strconv.Itoa(version) + ` AND status = 'completed'`).Scan(&n)
+	if err != nil {
+		return missingTable(err)
+	}
+	return n > 0
 }
 
 // appsInstalled: extension apps are installed (Installed, or Pending Removal: still built in)

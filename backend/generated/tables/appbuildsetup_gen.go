@@ -41,7 +41,7 @@ type AppBuildSetupBuilds_by int
 
 // String returns the text representation of AppBuildSetupBuilds_by
 func (o AppBuildSetupBuilds_by) String() string {
-	options := []string{"CI Pipeline", "Local Builder"}
+	options := []string{"Local Builder", "CI Pipeline"}
 	if o >= 0 && int(o) < len(options) {
 		return options[o]
 	}
@@ -101,11 +101,11 @@ const AppBuildSetupTableName = "App_Build_Setup"
 
 // AppBuildSetup_Builds_by provides named constants for the builds_by option field (FieldName.OptionValue syntax)
 var AppBuildSetup_Builds_by = struct {
-	CIPipeline   AppBuildSetupBuilds_by
 	LocalBuilder AppBuildSetupBuilds_by
+	CIPipeline   AppBuildSetupBuilds_by
 }{
-	CIPipeline:   0,
-	LocalBuilder: 1,
+	LocalBuilder: 0,
+	CIPipeline:   1,
 }
 
 // ========================================
@@ -1498,7 +1498,7 @@ var appBuildSetupFields = &tables.TableFields{
 			},
 			Kind:    tables.KindOption,
 			Trigger: "OnValidate_Builds_by",
-			Options: []string{"CI Pipeline", "Local Builder"},
+			Options: []string{"Local Builder", "CI Pipeline"},
 		},
 		{
 			Info: tables.FieldInfo{
@@ -1545,7 +1545,7 @@ func (t *AppBuildSetup) GetFlowFields() []string {
 // GetOptionFields returns Option field names mapped to their option values
 func (t *AppBuildSetup) GetOptionFields() map[string][]string {
 	return map[string][]string{
-		"builds_by": {"CI Pipeline", "Local Builder"},
+		"builds_by": {"Local Builder", "CI Pipeline"},
 	}
 }
 

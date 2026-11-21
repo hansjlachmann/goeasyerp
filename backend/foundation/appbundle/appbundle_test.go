@@ -200,3 +200,43 @@ func TestStartingAnswer(t *testing.T) {
 		t.Errorf("%d %+v", rec.Code, body)
 	}
 }
+
+// Builds By is read before migrations run: until migration 058 has swapped the stored values,
+// 1 is Local Builder; after it (and in a new database) 0 is
+func TestLocalBuilderAcrossTheSwap(t *testing.T) {
+	db, err := sql.Open("sqlite3", ":memory:")
+	if err != nil {
+		t.Fatal(err)
+	}
+	db.SetMaxOpenConns(1)
+	t.Cleanup(func() { _ = db.Close() })
+	if _, err := db.Exec(`CREATE TABLE "App_Build_Setup" (primary_key TEXT PRIMARY KEY, builds_by INTEGER)`); err != nil {
+		t.Fatal(err)
+	}
+	local := func(value int) bool {
+		t.Helper()
+		if _, err := db.Exec(`INSERT OR REPLACE INTO "App_Build_Setup" VALUES ('', ?)`, value); err != nil {
+			t.Fatal(err)
+		}
+		got, err := LocalBuilder(db, database.DBTypeSQLite)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return got
+	}
+	if !local(0) || local(1) {
+		t.Error("without migrations: 0 is Local Builder")
+	}
+	if _, err := db.Exec(`CREATE TABLE "_migrations" (version INTEGER PRIMARY KEY, status TEXT)`); err != nil {
+		t.Fatal(err)
+	}
+	if !local(1) || local(0) {
+		t.Error("before migration 058: 1 is Local Builder")
+	}
+	if _, err := db.Exec(`INSERT INTO "_migrations" VALUES (?, 'completed')`, BuildsByLocalFirstMigration); err != nil {
+		t.Fatal(err)
+	}
+	if !local(0) || local(1) {
+		t.Error("after migration 058: 0 is Local Builder")
+	}
+}

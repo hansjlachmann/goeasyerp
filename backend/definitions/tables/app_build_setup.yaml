@@ -2,7 +2,7 @@ table:
   id: 2000000156
   name: App_Build_Setup
   caption: App Build Setup
-  description: "App Build Setup: how this installation builds its extension apps — by a CI pipeline (the installation repository's workflow reads Build List's apps.yaml) or by its own builder (Build Apps) — and whether apps may be uploaded"
+  description: "App Build Setup: how this installation builds its extension apps — by its own builder (Build Apps; the default) or by a CI pipeline (the installation repository's workflow reads Build List's apps.yaml) — and whether apps may be uploaded"
   global: true
   setup_table: true    # singleton: a single record with a blank Primary Key
   fields:
@@ -13,13 +13,14 @@ table:
       primary_key: true
       length: 20
 
-    # Who builds the program with the apps: a CI pipeline (Build List hands over apps.yaml) or
-    # the installation's own builder (Build Apps). Never both: one owner of the build list.
+    # Who builds the program with the apps: the installation's own builder (Build Apps; the
+    # default) or a CI pipeline (Build List hands over apps.yaml). Never both: one owner of the
+    # build list. (Local Builder was option 1 before migration 058 swapped them.)
     - name: builds_by
       no: 2
       type: Option
       db_name: builds_by
-      options: ["CI Pipeline", "Local Builder"]
+      options: ["Local Builder", "CI Pipeline"]
       default: 0
 
     # Upload App may be used (switch it off where apps come only through the pipeline)
