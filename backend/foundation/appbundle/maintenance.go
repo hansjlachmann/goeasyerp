@@ -21,7 +21,7 @@ import (
 
 // MaintenanceStatus: what the maintenance message tells
 type MaintenanceStatus struct {
-	mu      sync.Mutex
+	mu       sync.Mutex
 	failed   string // the error of the last build of the version, when it failed
 	version  string
 	starting bool // a switch to a newer build: the program is starting (ServeStarting)
