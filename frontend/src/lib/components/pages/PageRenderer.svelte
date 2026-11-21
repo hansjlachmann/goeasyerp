@@ -982,7 +982,9 @@
 	// another card — that card again, on its record), else to the card's list, else back in the
 	// browser's history (in a page frame: the page under it)
 	function handleCardClose() {
-		pageNav.close(returnUrl ?? (page?.page.list_page_id ? `/pages/${page.page.list_page_id}` : undefined));
+		// a card opened from the main menu (no back, no list): back to the main menu — never the
+		// browser's back, which after a page this card opened returned to (Esc) leads into that page again
+		pageNav.close(returnUrl ?? (page?.page.list_page_id ? `/pages/${page.page.list_page_id}` : '/'));
 	}
 </script>
 

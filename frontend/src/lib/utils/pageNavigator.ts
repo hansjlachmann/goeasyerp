@@ -12,7 +12,7 @@ export interface PageNavigator {
 	open(url: string): void;
 	/** this page with another record or other parameters (record navigation, a journal batch) */
 	move(url: string, options?: { replaceState?: boolean }): void;
-	/** back where the page came from — in the browser to url (none: the browser's back) */
+	/** back where the page came from — in the browser to url (none: the main menu) */
 	close(url?: string): void;
 	/** the browser address of this page (in a frame: none) */
 	replaceState(url: string): void;
@@ -25,7 +25,7 @@ export interface PageNavigator {
 export const browserNavigator: PageNavigator = {
 	open: (url) => goto(url),
 	move: (url, options) => goto(url, options),
-	close: (url) => (url ? goto(url) : window.history.back()),
+	close: (url) => goto(url || '/'),
 	replaceState: (url) => replaceState(url, {}),
 	location: () => new URL(window.location.href),
 	framed: false
