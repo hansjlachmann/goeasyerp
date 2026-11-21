@@ -2,6 +2,7 @@ package tables
 
 import (
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/session"
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
@@ -45,5 +46,6 @@ func checkMemberAdmin(rec *gtables.UserMember, company string) error {
 	if !superIn(rec, company) {
 		return apperrors.MemberSuperOnly(company)
 	}
+	session.SecurityChanged()
 	return nil
 }

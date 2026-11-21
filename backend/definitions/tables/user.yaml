@@ -92,6 +92,14 @@ table:
       db_name: last_login
       caption: Last Login
       description: When user last logged in
+
+    - name: sessions_valid_from
+      no: 10
+      type: types.DateTime
+      db_name: sessions_valid_from
+      caption: Sessions Valid From
+      description: Tokens issued before this time are no longer accepted (log out, deactivated, password set by an administrator)
+      editable: false
      
 
   keys:

@@ -2,6 +2,7 @@ package tables
 
 import (
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/session"
 	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
@@ -45,5 +46,6 @@ func checkRolesAdmin(src ftables.Source) error {
 	if !superIn(src, "") {
 		return apperrors.RolesSuperOnly()
 	}
+	session.SecurityChanged()
 	return nil
 }

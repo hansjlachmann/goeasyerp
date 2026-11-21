@@ -21,6 +21,7 @@
 //	OnValidate_Active(rec *gtables.User) error
 //	OnValidate_Created_at(rec *gtables.User) error
 //	OnValidate_Last_login(rec *gtables.User) error
+//	OnValidate_Sessions_valid_from(rec *gtables.User) error
 package tables
 
 import (
@@ -42,15 +43,16 @@ import (
 // (generated from the table definition). Its business logic — the table and field
 // triggers — is in business-logic/tables, registered with RegisterUserLogic.
 type User struct {
-	User_id       types.Code     `db:"user_id,pk"`
-	User_name     types.Text     `db:"user_name"`
-	Email         types.Text     `db:"email"`
-	Password_hash types.Text     `db:"password_hash"`
-	Language      types.Code     `db:"language"`
-	Menu          types.Code     `db:"menu"`
-	Active        bool           `db:"active"`
-	Created_at    types.DateTime `db:"created_at"`
-	Last_login    types.DateTime `db:"last_login"`
+	User_id             types.Code     `db:"user_id,pk"`
+	User_name           types.Text     `db:"user_name"`
+	Email               types.Text     `db:"email"`
+	Password_hash       types.Text     `db:"password_hash"`
+	Language            types.Code     `db:"language"`
+	Menu                types.Code     `db:"menu"`
+	Active              bool           `db:"active"`
+	Created_at          types.DateTime `db:"created_at"`
+	Last_login          types.DateTime `db:"last_login"`
+	Sessions_valid_from types.DateTime `db:"sessions_valid_from"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -93,25 +95,27 @@ const UserTableName = "User"
 // User_FieldNo holds the field numbers of User (FieldNo):
 // User_FieldNo.User_id is 1
 var User_FieldNo = struct {
-	User_id       int
-	User_name     int
-	Email         int
-	Password_hash int
-	Language      int
-	Menu          int
-	Active        int
-	Created_at    int
-	Last_login    int
+	User_id             int
+	User_name           int
+	Email               int
+	Password_hash       int
+	Language            int
+	Menu                int
+	Active              int
+	Created_at          int
+	Last_login          int
+	Sessions_valid_from int
 }{
-	User_id:       1,
-	User_name:     2,
-	Email:         3,
-	Password_hash: 4,
-	Language:      5,
-	Menu:          6,
-	Active:        7,
-	Created_at:    8,
-	Last_login:    9,
+	User_id:             1,
+	User_name:           2,
+	Email:               3,
+	Password_hash:       4,
+	Language:            5,
+	Menu:                6,
+	Active:              7,
+	Created_at:          8,
+	Last_login:          9,
+	Sessions_valid_from: 10,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -443,7 +447,8 @@ func GetUserTableSchema() string {
 		menu TEXT(20),
 		active INTEGER DEFAULT true,
 		created_at TEXT,
-		last_login TEXT
+		last_login TEXT,
+		sessions_valid_from TEXT
 	`
 }
 
@@ -458,7 +463,8 @@ func GetUserPostgresTableSchema() string {
 		menu VARCHAR(20),
 		active BOOLEAN DEFAULT true,
 		created_at TIMESTAMP,
-		last_login TIMESTAMP
+		last_login TIMESTAMP,
+		sessions_valid_from TIMESTAMP
 	`
 }
 
@@ -1467,6 +1473,7 @@ func (t *User) Init() {
 	t.Active = *new(bool)
 	t.Created_at = *new(types.DateTime)
 	t.Last_login = *new(types.DateTime)
+	t.Sessions_valid_from = *new(types.DateTime)
 	t.applyDefaults()
 }
 
@@ -1547,6 +1554,8 @@ func (t *User) fieldRef(i int) any {
 		return &t.Created_at
 	case 8:
 		return &t.Last_login
+	case 9:
+		return &t.Sessions_valid_from
 	}
 	return nil
 }
@@ -1684,6 +1693,21 @@ var userFields = &tables.TableFields{
 			},
 			Kind:    tables.KindDateTime,
 			Trigger: "OnValidate_Last_login",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         10,
+				Name:       "sessions_valid_from",
+				Type:       tables.FieldTypeDateTime,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindDateTime,
+			Trigger: "OnValidate_Sessions_valid_from",
 		},
 	},
 }

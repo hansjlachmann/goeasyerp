@@ -253,6 +253,7 @@ tables:
       created_at: "Created At"
       password: "Password"
       last_login: "Last Login"
+      sessions_valid_from: "Sessions Valid From"
 
   # Language (Table 8)
   language:

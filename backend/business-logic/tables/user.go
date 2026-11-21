@@ -7,6 +7,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/session"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
@@ -19,7 +20,26 @@ func init() { gtables.RegisterUserLogic(userLogic{}) }
 // OnModify: another user is changed (password, active …) only by a SUPER user of every company
 // where that user has roles (securityadmin.go); users change their own record
 func (userLogic) OnModify(rec *gtables.User) error {
-	return checkUserAdmin(rec, rec.XRec().User_id.String())
+	xRec := rec.XRec()
+	err := checkUserAdmin(rec, xRec.User_id.String())
+	if err != nil {
+		return err
+	}
+	revokeUserSessions(rec, xRec)
+	return nil
+}
+
+// revokeUserSessions: a user who is deactivated, or whose password another user set, is logged
+// out everywhere — the tokens issued so far are no longer accepted (Sessions Valid From)
+func revokeUserSessions(rec, xRec *gtables.User) {
+	deactivated := xRec.Active && !rec.Active
+	passwordSet := rec.Password_hash != xRec.Password_hash && !isCurrentUser(xRec.User_id.String())
+	if deactivated || passwordSet {
+		rec.Sessions_valid_from = types.NewDateTimeFromTime(time.Now().Truncate(time.Second))
+	}
+	if rec.Active != xRec.Active || deactivated || passwordSet {
+		session.SecurityChanged()
+	}
 }
 
 // OnRename: as OnModify
@@ -49,6 +69,7 @@ func (userLogic) OnDelete(rec *gtables.User) error {
 	if err != nil {
 		return err
 	}
+	session.SecurityChanged()
 	db, dbType, userID := rec.GetDB(), rec.GetDBType(), rec.User_id.String()
 
 	var prefs gtables.UserPreferences

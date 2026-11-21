@@ -12,13 +12,57 @@ import (
 type CachedSession struct {
 	Session   *session.Session
 	ExpiresAt time.Time
+	CheckedAt time.Time // when the user and the permissions were read
+	Version   int64     // session.SecurityVersion() then
 }
+
+// RevalidateAfter: a cached session's user and permissions are read again after this long, so
+// a removed role, a deactivated user or a log out elsewhere (another server too) takes effect
+// within it; a change on this server takes effect at once (session.SecurityChanged)
+var RevalidateAfter = 30 * time.Second
+
+// stale reports whether the session must be checked again before it is used
+func (e *CachedSession) stale() bool {
+	return time.Since(e.CheckedAt) > RevalidateAfter || e.Version != session.SecurityVersion()
+}
+
+// UserCheck reports whether a token of the user issued at issuedAt is still good: the user
+// exists, is active and the token is not older than the user's Sessions Valid From
+type UserCheck func(userID string, issuedAt time.Time) bool
 
 // SessionCache is a thread-safe in-memory cache for sessions
 type SessionCache struct {
-	mu      sync.RWMutex
-	entries map[string]*CachedSession
-	stop    chan struct{}
+	mu        sync.RWMutex
+	entries   map[string]*CachedSession
+	stop      chan struct{}
+	userCheck UserCheck
+}
+
+// SetUserCheck sets how a token's user is checked (nil: not checked — tests)
+func (sc *SessionCache) SetUserCheck(check UserCheck) {
+	sc.mu.Lock()
+	defer sc.mu.Unlock()
+	sc.userCheck = check
+}
+
+// checkUser runs the user check (true without one)
+func (sc *SessionCache) checkUser(userID string, issuedAt time.Time) bool {
+	sc.mu.RLock()
+	check := sc.userCheck
+	sc.mu.RUnlock()
+	return check == nil || check(userID, issuedAt)
+}
+
+// entry returns a cached entry, or nil if not found/expired
+func (sc *SessionCache) entry(key string) *CachedSession {
+	sc.mu.RLock()
+	defer sc.mu.RUnlock()
+
+	entry, ok := sc.entries[key]
+	if !ok || time.Now().After(entry.ExpiresAt) {
+		return nil
+	}
+	return entry
 }
 
 // NewSessionCache creates a new session cache and starts a background cleanup goroutine
@@ -51,6 +95,8 @@ func (sc *SessionCache) Set(key string, sess *session.Session, ttl time.Duration
 	sc.entries[key] = &CachedSession{
 		Session:   sess,
 		ExpiresAt: time.Now().Add(ttl),
+		CheckedAt: time.Now(),
+		Version:   session.SecurityVersion(),
 	}
 }
 

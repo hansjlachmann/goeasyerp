@@ -79,6 +79,8 @@ func (s *Server) Setup() {
 	s.app.Use(middleware.Logger())
 	// Create a permission loader for the auth middleware (used on cache miss / server restart)
 	permLoader := handlers.NewPermissionLoader(s.db, s.dbType)
+	// a token stays good while its user exists, is active and has not been logged out since
+	s.sessionCache.SetUserCheck(handlers.NewUserCheck(s.db, s.dbType))
 	// each browser tab may work in its own company (X-Company): checked like a company switch
 	s.app.Use(middleware.AuthMiddleware(s.jwtConfig, s.db, s.dbType, s.sessionCache, permLoader, handlers.NewCompanyAccess(s.db, s.dbType)))
 

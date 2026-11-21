@@ -174,6 +174,19 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	return c.JSON(response)
 }
 
+// revokeSessions makes every token of the user issued so far invalid (a copied cookie too):
+// Sessions Valid From becomes now, which every server checks (NewUserCheck)
+func (h *AuthHandler) revokeSessions(userID string) {
+	var user gtables.User
+	user.InitWithDBType(h.db, "", h.dbType)
+	if !user.Get(userID) {
+		return
+	}
+	user.Sessions_valid_from = types.NewDateTimeFromTime(time.Now().Truncate(time.Second))
+	user.Modify(false)
+	session.SecurityChanged()
+}
+
 // Logout ends the current user session
 // POST /api/auth/logout
 func (h *AuthHandler) Logout(c *fiber.Ctx) error {
@@ -183,6 +196,7 @@ func (h *AuthHandler) Logout(c *fiber.Ctx) error {
 	// Remove from cache
 	if sess != nil && sess.GetUserID() != "" {
 		h.registerTime(sess)
+		h.revokeSessions(sess.GetUserID())
 		h.sessionCache.RemoveByUser(sess.GetUserID())
 	}
 

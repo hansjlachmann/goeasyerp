@@ -30,6 +30,14 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
+// issuedAt is when the token was issued (zero: not known)
+func (c *Claims) issuedAt() time.Time {
+	if c.IssuedAt != nil {
+		return c.IssuedAt.Time
+	}
+	return time.Time{}
+}
+
 // LoginTime is when the user logged in to the token's company (tokens without login_at: when
 // the token was issued)
 func (c *Claims) LoginTime() time.Time {
@@ -207,10 +215,23 @@ func AuthMiddleware(config JWTConfig, db *sql.DB, dbType database.DBType, cache 
 			company, loginTime = tab, time.Now()
 		}
 
-		// Try cache first (a cached session's company was checked when it was made)
+		// Try cache first (a cached session's company was checked when it was made); a session
+		// checked too long ago, or before a change to users, roles or permissions, is made again
+		// below — the user, the company access and the permissions read anew
 		cacheKey := claims.UserID + ":" + company
-		if cached := cache.Get(cacheKey); cached != nil {
-			c.Locals("session", cached)
+		if entry := cache.entry(cacheKey); entry != nil {
+			if !entry.stale() {
+				c.Locals("session", entry.Session)
+				return c.Next()
+			}
+			loginTime = entry.Session.GetLoginTime()
+			cache.Remove(cacheKey)
+		}
+		// The user must still exist and be active, and the token must not be older than the
+		// user's Sessions Valid From (log out, deactivated, password set by an administrator)
+		if !cache.checkUser(claims.UserID, claims.issuedAt()) {
+			ClearAuthCookie(c, config)
+			c.Locals("session", (*session.Session)(nil))
 			return c.Next()
 		}
 		if company != claims.Company {

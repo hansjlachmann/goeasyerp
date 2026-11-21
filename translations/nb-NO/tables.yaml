@@ -253,6 +253,7 @@ tables:
       created_at: "Opprettet den"
       password: "Passord"
       last_login: "Siste pålogging"
+      sessions_valid_from: "Økter gyldige fra"
 
   # Language (Table 8)
   language:
