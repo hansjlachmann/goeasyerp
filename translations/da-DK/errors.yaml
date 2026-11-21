@@ -28,6 +28,8 @@ errors:
   ERR_DELETE_TOO_MANY: "Mere end %1 poster er markeret: slet dem i mindre dele (filtrer listen først)."
   ERR_DELETE_TYPE_KEY: "Skriv %2 for at slette %1 %2 — alt, hvad den indeholder, slettes også."
   ERR_DELETE_ONE_AT_A_TIME: "%1: slet én post ad gangen."
+  ERR_DELETE_TYPE_COUNT: "Skriv antallet af poster (%1) for at bekræfte sletningen."
+  ERR_DELETE_COUNT_CHANGED: "Listen har nu %1 poster, ikke de %2, du bekræftede: intet blev slettet. Kontroller listen, og slet igen."
   ERR_COMPANY_DELETE_SUPER_ONLY: "Kun en bruger med rollen SUPER kan slette virksomheden %1."
   ERR_DELETE_RECORD_FAILED: "%1 %2 kan ikke slettes: %3 Intet blev slettet."
   ERR_COPY_TOO_MANY: "Mere end %1 poster: kopiér og indsæt dem i mindre dele (filtrer listen først)."

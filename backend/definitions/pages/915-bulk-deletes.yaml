@@ -1,0 +1,33 @@
+page:
+  id: 915
+  type: List
+  name: Bulk Deletes
+  source_table: Bulk_Delete_Log
+  caption: Bulk Deletes
+  editable: false   # written by the bulk delete itself (DELETE /api/tables/:table/delete-many)
+
+  layout:
+    repeater:
+      fields:
+        - source: entry_no
+          width: 90
+        - source: deleted_at
+          width: 160
+        - source: user_id
+          width: 120
+        - source: company
+          width: 140
+        - source: table_name
+          width: 200
+        - source: no_of_records
+          width: 110
+        - source: filters
+          width: 400
+
+  actions:
+    # the keys of the deleted records as a file (to find them in a backup)
+    - name: Export Keys
+      caption: Export Keys
+      image: Export
+      promoted: true
+      run_object: table:Bulk_Delete_Log.ExportKeys

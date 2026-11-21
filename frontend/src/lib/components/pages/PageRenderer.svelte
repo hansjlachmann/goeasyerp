@@ -910,7 +910,7 @@
 
 	// Delete the records selected on the list (multi-select): one transaction on the server;
 	// when a record cannot be deleted nothing is, and the message names it
-	async function handleListBulkDelete(request: { keys?: string[]; all?: boolean }, count: number) {
+	async function handleListBulkDelete(request: { keys?: string[]; all?: boolean; confirm_count?: number }, count: number) {
 		if (!page) return;
 		try {
 			const deleted = await api.deleteRecords(page.page.source_table, request, request.all ? listQuery() : undefined);
@@ -1273,6 +1273,7 @@
 	confirmText={$confirm.confirmText ?? t(BTN.DELETE)}
 	variant={$confirm.variant ?? 'danger'}
 	typeToConfirm={$confirm.typeToConfirm}
+	typeHint={$confirm.typeHint}
 	onconfirm={confirm.confirm}
 	oncancel={confirm.cancel}
 />

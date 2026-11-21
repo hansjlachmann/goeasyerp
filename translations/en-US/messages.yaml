@@ -515,6 +515,7 @@ messages:
   DLG_DELETE_RECORD_CONFIRM: "Are you sure you want to delete this record?"
   DLG_DELETE_RECORD_KEY_CONFIRM: "Are you sure you want to delete the record %1?"
   DLG_DELETE_TYPE_KEY: "Everything it holds is deleted too, and cannot be brought back. Type %1 to confirm."
+  DLG_DELETE_TYPE_COUNT: "They cannot be brought back. Type the number of records, %1, to confirm."
   DLG_DELETE_RECORDS_TITLE: "Delete Records"
   DLG_DELETE_RECORDS_CONFIRM: "Delete the %1 selected records?"
   DLG_PASTE_RECORDS_TITLE: "Paste Records"

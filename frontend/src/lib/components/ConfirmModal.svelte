@@ -11,6 +11,7 @@
 		variant?: 'danger' | 'warning' | 'info';
 		// the text to type before the button confirms (case-insensitive), e.g. a company's name
 		typeToConfirm?: string;
+		typeHint?: string; // what to say about it (default: DLG_DELETE_TYPE_KEY)
 		onconfirm?: () => void;
 		oncancel?: () => void;
 	}
@@ -26,6 +27,7 @@
 		cancelText,
 		variant = 'danger',
 		typeToConfirm,
+		typeHint,
 		onconfirm,
 		oncancel
 	}: Props = $props();
@@ -83,11 +85,11 @@
 				</p>
 				{#if typeToConfirm}
 					<p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-						{t(DLG.DELETE_TYPE_KEY, typeToConfirm)}
+						{typeHint ?? t(DLG.DELETE_TYPE_KEY, typeToConfirm)}
 					</p>
 					<input
 						type="text"
-						class="mt-2 w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-surface text-fg"
+						class="input mt-2 text-sm"
 						autocomplete="off"
 						spellcheck="false"
 						bind:value={typed}

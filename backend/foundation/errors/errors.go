@@ -38,6 +38,8 @@ const (
 	ErrDeleteTooMany      ErrorCode = "ERR_DELETE_TOO_MANY"
 	ErrDeleteTypeKey      ErrorCode = "ERR_DELETE_TYPE_KEY"
 	ErrDeleteOneAtATime   ErrorCode = "ERR_DELETE_ONE_AT_A_TIME"
+	ErrDeleteTypeCount    ErrorCode = "ERR_DELETE_TYPE_COUNT"
+	ErrDeleteCountChanged ErrorCode = "ERR_DELETE_COUNT_CHANGED"
 	ErrCompanyDeleteSuper ErrorCode = "ERR_COMPANY_DELETE_SUPER_ONLY"
 	ErrDeleteRecordFailed ErrorCode = "ERR_DELETE_RECORD_FAILED"
 	ErrCopyTooMany        ErrorCode = "ERR_COPY_TOO_MANY"
@@ -531,6 +533,18 @@ func DeleteTypeKey(tableCaption, key string) *AppError {
 // time
 func DeleteOneAtATime(tableCaption string) *AppError {
 	return &AppError{Code: ErrDeleteOneAtATime, Params: []string{tableCaption}}
+}
+
+// DeleteTypeCount: a bulk delete of more than a few records without their number typed by the
+// user
+func DeleteTypeCount(count int) *AppError {
+	return &AppError{Code: ErrDeleteTypeCount, Params: []string{strconv.Itoa(count)}}
+}
+
+// DeleteCountChanged: the list holds another number of records than the user confirmed (records
+// were added or deleted since): nothing was deleted
+func DeleteCountChanged(now, confirmed int) *AppError {
+	return &AppError{Code: ErrDeleteCountChanged, Params: []string{strconv.Itoa(now), strconv.Itoa(confirmed)}}
 }
 
 // CompanyDeleteSuperOnly: only a SUPER user deletes a company (with all its data)

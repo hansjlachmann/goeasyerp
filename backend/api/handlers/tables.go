@@ -1370,6 +1370,9 @@ func (h *TablesHandler) DeleteRecords(c *fiber.Ctx) error {
 		Keys    []string `json:"keys"`
 		All     bool     `json:"all"`
 		Confirm string   `json:"confirm"` // the key the user typed (type_to_delete tables)
+		// the number of records the user typed (more than bulkDeleteTypeCount): the delete
+		// goes on only when the list still has that many
+		ConfirmCount int `json:"confirm_count"`
 	}
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(400).JSON(apitypes.NewErrorResponse(apperrors.InvalidRequestBody().Message(language)))
@@ -1407,6 +1410,12 @@ func (h *TablesHandler) DeleteRecords(c *fiber.Ctx) error {
 	}
 	if len(keys) == 0 {
 		return c.JSON(apitypes.NewSuccessResponse(map[string]interface{}{"deleted": 0}))
+	}
+	if len(keys) > bulkDeleteTypeCount && req.ConfirmCount != len(keys) {
+		if req.ConfirmCount == 0 {
+			return c.Status(400).JSON(apitypes.NewErrorResponse(apperrors.DeleteTypeCount(len(keys)).Message(language)))
+		}
+		return c.Status(409).JSON(apitypes.NewErrorResponse(apperrors.DeleteCountChanged(len(keys), req.ConfirmCount).Message(language)))
 	}
 	if pages.GetTableMetadata().IsTypeToDelete(tableName) {
 		if len(keys) > 1 {
@@ -1457,6 +1466,15 @@ func (h *TablesHandler) DeleteRecords(c *fiber.Ctx) error {
 			companies = append(companies, name)
 		}
 	}
+	// the log of bulk deletes, in the delete's transaction (both or neither)
+	filters := ""
+	if req.All {
+		filters, _ = url.QueryUnescape(string(c.Request().URI().QueryString()))
+	}
+	if err := tables.LogBulkDelete(tx, h.dbType, sess.GetUserID(), sessCompany, tableName, filters, keys); err != nil {
+		_ = ftables.Rollback(tx)
+		return c.Status(500).JSON(apitypes.NewErrorResponse(err.Error()))
+	}
 	if err := ftables.Commit(tx); err != nil {
 		return c.Status(500).JSON(apitypes.NewErrorResponse(errorMessage(err, language)))
 	}
@@ -1467,6 +1485,10 @@ func (h *TablesHandler) DeleteRecords(c *fiber.Ctx) error {
 	}
 	return c.JSON(apitypes.NewSuccessResponse(map[string]interface{}{"deleted": len(keys)}))
 }
+
+// bulkDeleteTypeCount: a delete of more records at once needs their number typed by the user
+// (confirm_count), and goes on only while the list still has that many
+const bulkDeleteTypeCount = 10
 
 // rejectSensitiveFields returns an error when data sets a sensitive field (YAML sensitive:
 // true). Such fields are set by the server only (User.password_hash from the virtual

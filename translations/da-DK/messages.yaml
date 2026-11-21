@@ -515,6 +515,7 @@ messages:
   DLG_DELETE_RECORD_CONFIRM: "Er du sikker på, at du vil slette denne post?"
   DLG_DELETE_RECORD_KEY_CONFIRM: "Er du sikker på, at du vil slette posten %1?"
   DLG_DELETE_TYPE_KEY: "Alt, hvad den indeholder, slettes også og kan ikke hentes tilbage. Skriv %1 for at bekræfte."
+  DLG_DELETE_TYPE_COUNT: "De kan ikke hentes tilbage. Skriv antallet af poster, %1, for at bekræfte."
   DLG_DELETE_RECORDS_TITLE: "Slet poster"
   DLG_DELETE_RECORDS_CONFIRM: "Slet de %1 markerede poster?"
   DLG_PASTE_RECORDS_TITLE: "Indsæt poster"

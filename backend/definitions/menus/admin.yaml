@@ -871,6 +871,8 @@ menu:
         page_id: 672
       - name: "Refused Postings"
         page_id: 904
+      - name: "Bulk Deletes"
+        page_id: 915
       - separator: true
       - name: "SMTP Setup"
         page_id: 910

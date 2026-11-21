@@ -55,6 +55,10 @@ func newTablesTestApp(t *testing.T) *fiber.App {
 	if err := (&gtables.Customer{}).CreateTableWithDBType(db, "TEST", database.DBTypeSQLite); err != nil {
 		t.Fatalf("create table: %v", err)
 	}
+	// the log of bulk deletes (global; written by delete-many)
+	if err := (&gtables.BulkDeleteLog{}).CreateTableWithDBType(db, "", database.DBTypeSQLite); err != nil {
+		t.Fatalf("create table: %v", err)
+	}
 
 	h := NewTablesHandler(db)
 	app := fiber.New()

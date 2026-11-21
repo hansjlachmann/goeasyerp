@@ -1,0 +1,64 @@
+table:
+  id: 2000000157
+  name: "Bulk_Delete_Log"
+  caption: Bulk Delete Log
+  global: true               # kept when a company is deleted or its demo data replaced
+  posted: true               # written by the delete itself; the table API does not insert, delete or rename
+  description: "Bulk Delete Log: every delete of several records at once (a list's selection, or all of its query) — when, who, the company, the table, how many, the list's filters and the keys deleted — written in the delete's transaction"
+  lookup_page_id: 915
+  fields:
+    - name: entry_no
+      no: 1
+      type: int
+      db_name: entry_no
+      primary_key: true
+
+    - name: deleted_at
+      no: 2
+      type: types.DateTime
+      db_name: deleted_at
+
+    - name: user_id
+      no: 3
+      type: types.Code
+      db_name: user_id
+      length: 50
+      table_relation:
+        table: User
+        field: user_id
+        validate: false   # the user who deleted; not checked
+
+    - name: company
+      no: 4
+      type: types.Text
+      db_name: company
+      length: 100
+
+    - name: table_name
+      no: 5
+      type: types.Text
+      db_name: table_name
+      length: 100
+
+    - name: no_of_records
+      no: 6
+      type: int
+      db_name: no_of_records
+
+    # the list's filters and search when all of its records were deleted; blank: a selection
+    - name: filters
+      no: 7
+      type: types.Text
+      db_name: filters
+      length: 250
+
+    # the keys of the deleted records (JSON list; Export Keys)
+    - name: deleted_keys
+      no: 8
+      type: "[]byte"
+      db_name: deleted_keys
+
+  keys:
+    - name: Primary
+      fields: [entry_no]
+      clustered: true

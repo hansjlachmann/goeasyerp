@@ -111,7 +111,7 @@
 		onsave?: (record: Record<string, any>, isNew: boolean) => Promise<void>;
 		ondelete?: (record: Record<string, any>) => Promise<void>;
 		// Delete the selected records (multi-select): keys, or all with the list's query
-		onbulkdelete?: (request: { keys?: string[]; all?: boolean }, count: number) => Promise<void>;
+		onbulkdelete?: (request: { keys?: string[]; all?: boolean; confirm_count?: number }, count: number) => Promise<void>;
 		// Insert copied records (Ctrl+V, copy_paste_allowed); returns the inserted keys
 		onpaste?: (records: Record<string, unknown>[]) => Promise<string[]>;
 		onfilter?: (filters: TableFilter[], flowFilters: TableFilter[]) => void;
@@ -3083,10 +3083,19 @@
 		selection = selectRange(anchor, await keysBetween(anchor, row));
 	}
 
-	// Delete the selected records: one confirmation, one transaction on the server
+	// a bulk delete of more records needs their number typed (the server's bulkDeleteTypeCount)
+	const bulkDeleteTypeCount = 10;
+
+	// Delete the selected records: one confirmation, one transaction on the server. More than
+	// bulkDeleteTypeCount records: the user types their number, and the server deletes them only
+	// while the list still has that many (confirm_count)
 	function handleBulkDelete() {
 		const count = selectedCount;
-		const request = selection.all ? { all: true } : { keys: [...selection.keys] };
+		const typeCount = count > bulkDeleteTypeCount ? String(count) : undefined;
+		const request = {
+			...(selection.all ? { all: true } : { keys: [...selection.keys] }),
+			...(typeCount ? { confirm_count: count } : {})
+		};
 		confirm.show(
 			t(DLG.DELETE_RECORDS_TITLE),
 			t(DLG.DELETE_RECORDS_CONFIRM, count.toLocaleString(locale)),
@@ -3099,7 +3108,8 @@
 				clearSelection();
 				allKeysCache = null;
 				selectedIndex = Math.min(Math.max(selectedIndex, 0), displayRecords.length - 1);
-			}
+			},
+			{ typeToConfirm: typeCount, typeHint: typeCount ? t(DLG.DELETE_TYPE_COUNT, typeCount) : undefined }
 		);
 	}
 
@@ -4258,6 +4268,7 @@
 	confirmText={t(BTN.DELETE)}
 	variant="danger"
 	typeToConfirm={$confirm.typeToConfirm}
+	typeHint={$confirm.typeHint}
 	onconfirm={confirm.confirm}
 	oncancel={confirm.cancel}
 />

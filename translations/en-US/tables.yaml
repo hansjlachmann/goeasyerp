@@ -7113,6 +7113,17 @@ tables:
       source_code: "Source Code"
       user_id: "User Name"
       journal_batch_name: "Journal Batch Name"
+  bulk_delete_log:
+    caption: "Bulk Delete Log"
+    fields:
+      entry_no: "Entry No."
+      deleted_at: "Deleted At"
+      user_id: "User ID"
+      company: "Company"
+      table_name: "Table"
+      no_of_records: "No. of Records"
+      filters: "Filters"
+      deleted_keys: "Deleted Keys"
   refused_posting:
     caption: "Refused Posting"
     fields:

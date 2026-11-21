@@ -12,6 +12,8 @@ interface ConfirmState {
 	// The text the user must type before the button confirms (a company's name before it is
 	// deleted with all its data)
 	typeToConfirm?: string;
+	// what the dialog says about the text to type (default: deleting a record that holds data)
+	typeHint?: string;
 }
 
 const initialState: ConfirmState = {
@@ -38,7 +40,7 @@ function createConfirmStore() {
 			title: string,
 			message: string,
 			action: () => Promise<void>,
-			options: { confirmText?: string; variant?: 'danger' | 'warning' | 'info'; typeToConfirm?: string } = {}
+			options: { confirmText?: string; variant?: 'danger' | 'warning' | 'info'; typeToConfirm?: string; typeHint?: string } = {}
 		) {
 			set({
 				open: true,

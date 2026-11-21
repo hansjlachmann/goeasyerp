@@ -111,3 +111,44 @@ func TestDeleteRecords(t *testing.T) {
 		t.Errorf("bad filter = %d, remaining %s", status, remaining())
 	}
 }
+
+// More than bulkDeleteTypeCount records at once: only with their number typed (confirm_count),
+// and only while the list still has that many; every bulk delete is logged with the user, the
+// company, the table, the count, the list's filters and the keys
+func TestDeleteRecordsConfirmCountAndLog(t *testing.T) {
+	app := newTablesTestApp(t)
+	n := bulkDeleteTypeCount + 2
+	for i := 1; i <= n; i++ {
+		postJSON(t, app, "/api/tables/Customer/insert", fmt.Sprintf(`{"no":"K%02d","name":"Bulk %d"}`, i, i))
+	}
+	count := func() int {
+		t.Helper()
+		_, out := getJSON(t, app, "/api/tables/Customer/list")
+		nos, _ := listNos(t, out)
+		return len(nos)
+	}
+	filters := "?filters=" + url.QueryEscape(`[{"field":"name","expression":"Bulk*"}]`)
+	if status, out := deleteJSON(t, app, "/api/tables/Customer/delete-many"+filters, `{"all":true}`); status != 400 || count() != n {
+		t.Fatalf("without the count: %d %v, %d left", status, out["error"], count())
+	}
+	if status, out := deleteJSON(t, app, "/api/tables/Customer/delete-many"+filters, fmt.Sprintf(`{"all":true,"confirm_count":%d}`, n-1)); status != 409 || !strings.Contains(fmt.Sprint(out["error"]), fmt.Sprint(n)) || count() != n {
+		t.Fatalf("another count: %d %v, %d left", status, out["error"], count())
+	}
+	// a small selection needs no count
+	if status, out := deleteJSON(t, app, "/api/tables/Customer/delete-many", `{"keys":["K01","K02"]}`); status != 200 {
+		t.Fatalf("two keys: %d %v", status, out["error"])
+	}
+	if status, out := deleteJSON(t, app, "/api/tables/Customer/delete-many"+filters, fmt.Sprintf(`{"all":true,"confirm_count":%d}`, n-2)); status != 200 || count() != 0 {
+		t.Fatalf("the count typed: %d %v, %d left", status, out["error"], count())
+	}
+
+	_, out := getJSON(t, app, "/api/tables/Bulk_Delete_Log/list")
+	records, _ := out["data"].(map[string]interface{})["records"].([]interface{})
+	if len(records) != 2 {
+		t.Fatalf("log: %d entries, want 2 (%v)", len(records), out)
+	}
+	last := records[1].(map[string]interface{})
+	if last["no_of_records"] != float64(n-2) || last["table_name"] != "Customer" || last["company"] != "TEST" || !strings.Contains(fmt.Sprint(last["filters"]), "Bulk*") {
+		t.Errorf("log entry %v", last)
+	}
+}

@@ -16,8 +16,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/company"
-	"github.com/hansjlachmann/goeasyerp/backend/foundation/pages"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/pages"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/session"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 	_ "github.com/lib/pq"
@@ -68,7 +68,7 @@ func renameDatabases(t *testing.T) []renameDB {
 	for _, d := range out {
 		for _, tbl := range []interface {
 			CreateTableWithDBType(database.Executor, string, database.DBType) error
-		}{&gtables.Company{}, &gtables.UserMember{}} {
+		}{&gtables.Company{}, &gtables.UserMember{}, &gtables.BulkDeleteLog{}} {
 			if err := tbl.CreateTableWithDBType(d.db, "", d.dbType); err != nil {
 				t.Fatalf("%s: create global table: %v", d.dbType, err)
 			}

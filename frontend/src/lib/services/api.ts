@@ -183,7 +183,7 @@ export const api = {
 	 */
 	async deleteRecords(
 		tableName: string,
-		request: { keys?: string[]; all?: boolean },
+		request: { keys?: string[]; all?: boolean; confirm_count?: number },
 		query?: ListOptions
 	): Promise<number> {
 		const params = request.all ? buildQueryString(query) : '';

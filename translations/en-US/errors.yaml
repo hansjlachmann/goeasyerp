@@ -28,6 +28,8 @@ errors:
   ERR_DELETE_TOO_MANY: "More than %1 records are selected: delete them in smaller parts (filter the list first)."
   ERR_DELETE_TYPE_KEY: "Type %2 to delete %1 %2 — everything it holds is deleted too."
   ERR_DELETE_ONE_AT_A_TIME: "%1: delete one record at a time."
+  ERR_DELETE_TYPE_COUNT: "Type the number of records (%1) to confirm the delete."
+  ERR_DELETE_COUNT_CHANGED: "The list now holds %1 records, not the %2 you confirmed: nothing was deleted. Check the list and delete again."
   ERR_COMPANY_DELETE_SUPER_ONLY: "Only a user with the role SUPER may delete company %1."
   ERR_DELETE_RECORD_FAILED: "%1 %2 cannot be deleted: %3 Nothing was deleted."
   ERR_COPY_TOO_MANY: "More than %1 records: copy and paste them in smaller parts (filter the list first)."

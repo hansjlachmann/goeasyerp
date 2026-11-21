@@ -7113,6 +7113,17 @@ tables:
       source_code: "Kildekode"
       user_id: "Brugernavn"
       journal_batch_name: "Kladdenavn"
+  bulk_delete_log:
+    caption: "Log over massesletning"
+    fields:
+      entry_no: "Løbenr."
+      deleted_at: "Slettet"
+      user_id: "Bruger-id"
+      company: "Virksomhed"
+      table_name: "Tabel"
+      no_of_records: "Antal poster"
+      filters: "Filtre"
+      deleted_keys: "Slettede nøgler"
   refused_posting:
     caption: "Afvist bogføring"
     fields:
