@@ -310,6 +310,7 @@ common:
     build_apps: "Build Apps"
     app_builds: "App Builds"
     app_build_setup: "App Build Setup"
+    main_menu_text: "Main Menu Text"
     test: "TEST"
     test_line_1: "Test Line 1"
     test_line_2: "Test Line 2"

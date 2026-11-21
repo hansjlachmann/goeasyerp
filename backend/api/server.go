@@ -1,11 +1,11 @@
 package api
 
 import (
-	"net"
 	"database/sql"
 	"fmt"
 	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 	"log"
+	"net"
 	"os"
 
 	"github.com/gofiber/fiber/v2"
@@ -167,6 +167,9 @@ func (s *Server) Setup() {
 	mySettingsHandler := handlers.NewMySettingsHandler(s.db, s.dbType)
 	api.Get("/my-settings", mySettingsHandler.GetMySettings)
 	api.Put("/my-settings", mySettingsHandler.SaveMySettings)
+	// the company's own text at the top of the main menu (every user, no table permission)
+	mainMenuTextHandler := handlers.NewMainMenuTextHandler(s.db, s.dbType)
+	api.Get("/main-menu-text", mainMenuTextHandler.GetMainMenuText)
 	// the code that runs for a user gets the user's work date and formats
 	fcodeunits.RegionalLoader = handlers.RegionalLoader(s.db, s.dbType)
 	// the captions of the dimension fields use the company's names of its dimensions

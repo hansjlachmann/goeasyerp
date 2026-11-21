@@ -310,6 +310,7 @@ common:
     build_apps: "Bygg apper"
     app_builds: "App-bygg"
     app_build_setup: "Oppsett for app-bygg"
+    main_menu_text: "Hovedmenytekst"
     test: "TEST"
     test_line_1: "Test linje 1"
     test_line_2: "Test linje 2"

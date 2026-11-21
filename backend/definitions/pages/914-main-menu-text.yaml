@@ -1,0 +1,55 @@
+page:
+  id: 914
+  type: List
+  name: Main Menu Text
+  source_table: Main_Menu_Text   # opened from Company Information
+  caption: Main Menu Text
+  editable: true
+  auto_split_key: true      # a new line gets Line No. 10000, 20000 … or halfway between its neighbours
+  delayed_insert: true      # inserted when the user leaves the line
+
+  # The company's text at the top of the main menu, line by line: the lines of the user's
+  # language, else those with a blank Language Code, else the standard welcome text
+  layout:
+    repeater:
+      fields:
+        - source: language_code
+          width: 110
+
+        - source: line_no
+          width: 100
+          visible: false
+
+        - source: text
+          width: 500
+
+        - source: style
+          width: 120
+
+        - source: bold
+          width: 70
+
+        - source: italic
+          width: 70
+
+  actions:
+    - name: New
+      caption: New
+      image: New
+      shortcut: Alt+N
+      promoted: true
+      enabled: true
+
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+      enabled: true
+
+    - name: Delete
+      caption: Delete
+      image: Delete
+      shortcut: Ctrl+D
+      promoted: true
+      enabled: true

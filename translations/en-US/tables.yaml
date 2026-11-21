@@ -554,6 +554,23 @@ tables:
         ci_pipeline: "CI Pipeline"
         local_builder: "Local Builder"
 
+  # Main Menu Text (Table 907)
+  main_menu_text:
+    caption: "Main Menu Text"
+    fields:
+      language_code: "Language Code"
+      line_no: "Line No."
+      text: "Text"
+      style: "Style"
+      bold: "Bold"
+      italic: "Italic"
+    options:
+      style:
+        normal: "Normal"
+        heading: "Heading"
+        large: "Large"
+        small: "Small"
+
   # Currency (Table 4)
   currency:
     caption: "Currency"

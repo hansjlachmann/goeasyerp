@@ -47,6 +47,9 @@ pages:
   app_build_setup:
     caption: "App Build Setup"
 
+  main_menu_text:
+    caption: "Main Menu Text"
+
   # Menu pages
   menus:
     caption: "Menus"

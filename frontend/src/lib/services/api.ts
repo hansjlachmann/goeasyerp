@@ -14,6 +14,7 @@ import type {
 import type { Appearance, AppearanceSettings, ThemeInstallResult, ThemeList } from '$lib/theme/apply';
 import { handleApiResponse, handleApiResponseVoid, handleApiResponseFull, handleApiResponseWithCaptions, type DataWithCaptions } from '$lib/utils/apiHelpers';
 import type { CompanyInfo } from '$lib/utils/company';
+import type { MainMenuTextLine } from '$lib/utils/mainMenuText';
 import { showNotes } from '$lib/utils/notes';
 import { fetchAnswering } from '$lib/utils/questions';
 import { ask } from '$lib/stores/question';
@@ -563,6 +564,13 @@ export const api = {
 	async deleteTheme(code: string): Promise<void> {
 		const response = await fetch(`${API_BASE}/themes/${encodeURIComponent(code)}`, { method: 'DELETE' });
 		await handleApiResponseFull(response, 'delete theme');
+	},
+
+	/** The company's own text at the top of the main menu (none: the standard text) */
+	async getMainMenuText(): Promise<MainMenuTextLine[]> {
+		const response = await fetch(`${API_BASE}/main-menu-text`);
+		const result = await handleApiResponseFull<{ lines: MainMenuTextLine[] }>(response, 'get main menu text');
+		return result.data?.lines ?? [];
 	},
 
 	/** The user's regional settings (My Settings): date and number format, work date */

@@ -47,6 +47,9 @@ pages:
   app_build_setup:
     caption: "Oppsett for app-bygg"
 
+  main_menu_text:
+    caption: "Hovedmenytekst"
+
   # Menu pages
   menus:
     caption: "Menyer"

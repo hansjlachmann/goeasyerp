@@ -554,6 +554,23 @@ tables:
         ci_pipeline: "CI-pipeline"
         local_builder: "Lokal bygger"
 
+  # Main Menu Text (Table 907)
+  main_menu_text:
+    caption: "Hovedmenutekst"
+    fields:
+      language_code: "Sprogkode"
+      line_no: "Linjenr."
+      text: "Tekst"
+      style: "Stil"
+      bold: "Fed"
+      italic: "Kursiv"
+    options:
+      style:
+        normal: "Normal"
+        heading: "Overskrift"
+        large: "Stor"
+        small: "Lille"
+
   # Currency (Table 4)
   currency:
     caption: "Valuta"

@@ -76,3 +76,10 @@ page:
       image: Edit
       shortcut: Ctrl+E
       promoted: true
+
+    # the company's own text at the top of the main menu
+    - name: Main Menu Text
+      caption: Main Menu Text
+      image: Document
+      promoted: true
+      run_page: 914

@@ -1,0 +1,56 @@
+table:
+  id: 907
+  name: "Main_Menu_Text"
+  caption: Main Menu Text
+  description: "Main Menu Text (table 907): the company's own text at the top of the main menu — lines of plain text with a style, in a language or in all languages (blank Language Code); without lines the main menu shows its standard welcome text"
+  lookup_page_id: 914
+  fields:
+    # the language the line is shown in; blank: every language without lines of its own
+    - name: language_code
+      no: 1
+      type: types.Code
+      db_name: language_code
+      length: 10
+      primary_key: true
+      table_relation:
+        table: Language
+        field: code
+        lookup_columns:
+          - source: code
+            width: 100
+          - source: name
+            width: 250
+
+    - name: line_no
+      no: 2
+      type: int
+      db_name: line_no
+      primary_key: true
+
+    # shown as plain text (never HTML); an empty line is a blank line
+    - name: text
+      no: 3
+      type: types.Text
+      db_name: text
+      length: 250
+
+    - name: style
+      no: 4
+      type: Option
+      db_name: style
+      options: ["Normal", "Heading", "Large", "Small"]
+
+    - name: bold
+      no: 5
+      type: bool
+      db_name: bold
+
+    - name: italic
+      no: 6
+      type: bool
+      db_name: italic
+
+  keys:
+    - name: Primary
+      fields: [language_code, line_no]
+      clustered: true

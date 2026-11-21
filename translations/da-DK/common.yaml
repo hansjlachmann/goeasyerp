@@ -310,6 +310,7 @@ common:
     build_apps: "Byg apps"
     app_builds: "App-builds"
     app_build_setup: "Opsætning af app-builds"
+    main_menu_text: "Hovedmenutekst"
     test: "TEST"
     test_line_1: "Test linje 1"
     test_line_2: "Test linje 2"
