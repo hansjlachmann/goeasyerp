@@ -7,11 +7,13 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/session"
 )
 
@@ -152,8 +154,36 @@ func ClearAuthCookie(c *fiber.Ctx, config JWTConfig) {
 	})
 }
 
-// AuthMiddleware reads the JWT cookie, loads/creates a session, and stores it in c.Locals("session")
-func AuthMiddleware(config JWTConfig, db *sql.DB, dbType database.DBType, cache *SessionCache, permLoader PermissionLoader) fiber.Handler {
+// The company of a browser tab: each tab keeps its company and sends it with every request
+// (the header; the query parameter where a request cannot carry one, e.g. an image), so tabs
+// in different companies do not move each other. Without it the request runs in the cookie's
+// company — the one the user chose last, where a new tab starts.
+const (
+	TabCompanyHeader = "X-Company"
+	TabCompanyParam  = "company"
+	// TabCompanyUnavailableHeader marks the answer to a tab whose company is gone or no longer
+	// allowed (409): the tab goes back to the cookie's company — never runs elsewhere silently
+	TabCompanyUnavailableHeader = "X-Tab-Company"
+)
+
+// CompanyAccess reports whether the user may work in the company (role memberships)
+type CompanyAccess func(userID, company string) bool
+
+// tabCompany is the company the request's tab sends ("" none). A copy: Fiber's header and
+// query strings point into the request's buffer, which the next request reuses — the session
+// (cached) keeps this one.
+func tabCompany(c *fiber.Ctx) string {
+	company := strings.TrimSpace(c.Get(TabCompanyHeader))
+	if company == "" {
+		company = strings.TrimSpace(c.Query(TabCompanyParam))
+	}
+	return strings.Clone(company)
+}
+
+// AuthMiddleware reads the JWT cookie, loads/creates a session, and stores it in c.Locals("session").
+// The session's company is the tab's when it sends one (checked with access the first time),
+// else the token's.
+func AuthMiddleware(config JWTConfig, db *sql.DB, dbType database.DBType, cache *SessionCache, permLoader PermissionLoader, access CompanyAccess) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		cookie := c.Cookies(config.CookieName)
 		if cookie == "" {
@@ -170,15 +200,30 @@ func AuthMiddleware(config JWTConfig, db *sql.DB, dbType database.DBType, cache 
 			return c.Next()
 		}
 
-		// Try cache first
-		cacheKey := claims.UserID + ":" + claims.Company
+		company, loginTime := claims.Company, claims.LoginTime()
+		tab := tabCompany(c)
+		if tab != "" && tab != claims.Company {
+			// the tab works in another company: its own session, from now on
+			company, loginTime = tab, time.Now()
+		}
+
+		// Try cache first (a cached session's company was checked when it was made)
+		cacheKey := claims.UserID + ":" + company
 		if cached := cache.Get(cacheKey); cached != nil {
 			c.Locals("session", cached)
 			return c.Next()
 		}
-		// The token's company no longer exists (renamed or deleted by someone else): the
-		// session would read tables that are gone — continue unauthenticated (log in again)
-		if claims.Company != "" && !companyExists(db, claims.Company) {
+		if company != claims.Company {
+			if !companyExists(db, company) || access != nil && !access(claims.UserID, company) {
+				c.Set(TabCompanyUnavailableHeader, "unavailable")
+				return c.Status(fiber.StatusConflict).JSON(fiber.Map{
+					"success": false,
+					"error":   apperrors.CompanyAccessDenied(company).Message(claims.Language),
+				})
+			}
+		} else if company != "" && !companyExists(db, company) {
+			// The token's company no longer exists (renamed or deleted by someone else): the
+			// session would read tables that are gone — continue unauthenticated (log in again)
 			ClearAuthCookie(c, config)
 			c.Locals("session", (*session.Session)(nil))
 			return c.Next()
@@ -186,13 +231,13 @@ func AuthMiddleware(config JWTConfig, db *sql.DB, dbType database.DBType, cache 
 
 		// Build session from claims + DB reference
 		dbWrapper := database.WrapConnection(db, dbType)
-		sess := session.NewSession(dbWrapper, claims.Company, nil)
+		sess := session.NewSession(dbWrapper, company, nil)
 		sess.SetUser(claims.UserID, claims.UserName, claims.Language, claims.Menu)
-		sess.SetLoginTime(claims.LoginTime())
+		sess.SetLoginTime(loginTime)
 
 		// Load permissions (e.g., after server restart when cache is empty)
 		if permLoader != nil {
-			hasRoles, isSuper, perms := permLoader(db, dbType, claims.UserID, claims.Company)
+			hasRoles, isSuper, perms := permLoader(db, dbType, claims.UserID, company)
 			sess.SetPermissions(hasRoles, isSuper, perms)
 		}
 

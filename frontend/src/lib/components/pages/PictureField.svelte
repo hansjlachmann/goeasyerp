@@ -2,6 +2,7 @@
 	// A picture field (a BLOB such as Item.Picture) on a card: shows the stored picture and lets
 	// the user import an image (the server checks and re-encodes it), export or delete it.
 	// The record's JSON only says whether there is a picture; the image has its own endpoint.
+	import { withTabCompanyParam } from '$lib/utils/tabCompany';
 	import { t, PICTURE } from '$lib/services/i18n.svelte';
 	import { confirm } from '$stores/confirm';
 	import { toast } from '$stores/toast';
@@ -58,7 +59,7 @@
 	{#if caption}<span class="picture-caption">{caption}</span>{/if}
 	<div class="picture-box">
 		{#if hasPicture}
-			<img src={`${url}?v=${version}`} alt={caption ?? field} />
+			<img src={withTabCompanyParam(`${url}?v=${version}`)} alt={caption ?? field} />
 		{:else}
 			<span class="picture-none">{t(PICTURE.NONE)}</span>
 		{/if}
@@ -69,7 +70,7 @@
 			<input bind:this={fileInput} type="file" accept="image/png,image/jpeg,image/webp" class="picture-file" onchange={importPicture} />
 		{/if}
 		{#if hasPicture}
-			<a class="picture-button" href={url} download={`${recordId}`}>{t(PICTURE.EXPORT)}</a>
+			<a class="picture-button" href={withTabCompanyParam(url)} download={`${recordId}`}>{t(PICTURE.EXPORT)}</a>
 			{#if editable}
 				<button type="button" class="picture-button" onclick={deletePicture}>{t(PICTURE.DELETE)}</button>
 			{/if}

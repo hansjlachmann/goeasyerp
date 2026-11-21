@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { clearTabCompany } from '$lib/utils/tabCompany';
 	import Wordmark from '$lib/components/brand/Wordmark.svelte';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
@@ -120,11 +121,13 @@
 		try {
 			await api.logout();
 			currentUser.clear();
+			clearTabCompany();
 			goto('/login');
 		} catch (err) {
 			console.error('Logout error:', err);
 			// Even if API call fails, remove local data and redirect
 			currentUser.clear();
+			clearTabCompany();
 			goto('/login');
 		}
 	}

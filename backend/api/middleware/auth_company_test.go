@@ -29,7 +29,7 @@ func TestAuthMiddlewareCompanyGone(t *testing.T) {
 	cache := NewSessionCache()
 	defer cache.Stop()
 	app := fiber.New()
-	app.Use(AuthMiddleware(config, db, database.DBTypeSQLite, cache, nil))
+	app.Use(AuthMiddleware(config, db, database.DBTypeSQLite, cache, nil, nil))
 	app.Get("/", func(c *fiber.Ctx) error {
 		if sess, _ := c.Locals("session").(*session.Session); sess != nil {
 			return c.SendString(sess.GetCompany())
@@ -44,7 +44,7 @@ func TestAuthMiddlewareCompanyGone(t *testing.T) {
 		}
 		req := httptest.NewRequest("GET", "/", nil)
 		req.Header.Set("Cookie", config.CookieName+"="+token)
-		resp, err := app.Test(req)
+		resp, err := app.Test(req, -1)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -97,5 +97,72 @@ func TestSetAuthCookieSignalsSessionChange(t *testing.T) {
 	}
 	if resp.Header.Get(SessionChangedHeader) != "" {
 		t.Error("X-Session-Changed on a response that did not change the session")
+	}
+}
+
+// A tab works in its own company (X-Company, or ?company= where a request cannot carry a
+// header): an allowed company gets its own session; one the user may not enter, or one that
+// is gone, is refused (409, marked) — the request never runs in another company silently
+func TestAuthMiddlewareTabCompany(t *testing.T) {
+	db, err := sql.Open("sqlite3", "file:"+t.Name()+"?mode=memory&cache=shared")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = db.Close() }()
+	if _, err := db.Exec(`CREATE TABLE "Company" (name TEXT PRIMARY KEY); INSERT INTO "Company" VALUES ('alpha'), ('beta'), ('secret')`); err != nil {
+		t.Fatal(err)
+	}
+	config := JWTConfig{SecretKey: []byte("test-secret"), CookieName: "openerp_session", TokenExpiry: time.Hour}
+	cache := NewSessionCache()
+	defer cache.Stop()
+	access := func(userID, company string) bool { return company != "secret" }
+	app := fiber.New()
+	app.Use(AuthMiddleware(config, db, database.DBTypeSQLite, cache, nil, access))
+	app.Get("/", func(c *fiber.Ctx) error {
+		if sess, _ := c.Locals("session").(*session.Session); sess != nil {
+			return c.SendString(sess.GetCompany())
+		}
+		return c.SendString("-")
+	})
+	token, err := GenerateToken(config, "HANS", "Hans", "alpha", "en-US", "", time.Time{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	request := func(path, tab string) (int, string, string) {
+		req := httptest.NewRequest("GET", path, nil)
+		req.Header.Set("Cookie", config.CookieName+"="+token)
+		if tab != "" {
+			req.Header.Set(TabCompanyHeader, tab)
+		}
+		resp, err := app.Test(req, -1)
+		if err != nil {
+			t.Fatal(err)
+		}
+		body := make([]byte, 256)
+		n, _ := resp.Body.Read(body)
+		return resp.StatusCode, string(body[:n]), resp.Header.Get(TabCompanyUnavailableHeader)
+	}
+
+	for _, c := range []struct {
+		path, tab, want string
+	}{
+		{"/", "", "alpha"},             // no tab company: the cookie's
+		{"/", "beta", "beta"},          // the tab's own
+		{"/", "beta", "beta"},          // … again, from the cache
+		{"/", "alpha", "alpha"},        // the cookie's, sent by the tab
+		{"/?company=beta", "", "beta"}, // an image or stream: the parameter
+	} {
+		if code, got, _ := request(c.path, c.tab); code != 200 || got != c.want {
+			t.Errorf("%s tab %q: %d %q, want %q", c.path, c.tab, code, got, c.want)
+		}
+	}
+	for _, tab := range []string{"secret", "gone"} {
+		code, body, marker := request("/", tab)
+		if code != fiber.StatusConflict || marker != "unavailable" || !strings.Contains(body, "error") {
+			t.Errorf("tab %q: %d %q marker %q", tab, code, body, marker)
+		}
+	}
+	if cache.Get("HANS:secret") != nil {
+		t.Error("a refused company got a session")
 	}
 }

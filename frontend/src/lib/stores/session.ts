@@ -1,5 +1,6 @@
 import { writable, derived } from 'svelte/store';
 import type { SessionState } from '$types/session';
+import { getTabCompany, setTabCompany } from '$lib/utils/tabCompany';
 
 // Session store - manages user session state
 function createSessionStore() {
@@ -26,6 +27,8 @@ function createSessionStore() {
 				if (response.ok) {
 					const result = await response.json();
 					const data = result.data; // API returns { success: true, data: { ... } }
+					// a new tab stays in the company it started in (the cookie's, the one chosen last)
+					if (data.user_id && data.company && !getTabCompany()) setTabCompany(data.company);
 					set({
 						database: data.database,
 						company: data.company,
@@ -52,6 +55,7 @@ function createSessionStore() {
 
 		// Set company
 		setCompany(company: string) {
+			setTabCompany(company);
 			update(s => ({ ...s, company }));
 		},
 

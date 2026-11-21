@@ -23,6 +23,7 @@
 	import QuestionDialog from '$lib/components/QuestionDialog.svelte';
 	import MaintenanceNotice from '$lib/components/MaintenanceNotice.svelte';
 	import { installMaintenanceWatch } from '$lib/utils/maintenance';
+	import { installTabCompany } from '$lib/utils/tabCompany';
 	import { regionalVersion } from '$lib/stores/regional';
 	import type { Snippet } from 'svelte';
 
@@ -34,6 +35,8 @@
 
 	// Every API answer is watched for the server's maintenance (before the first call below)
 	installMaintenanceWatch();
+	// … and every API request carries the company this tab works in (tabs in different companies)
+	installTabCompany();
 
 	// Help pages open in a detached window (window.open): no menu bar or breadcrumb
 	const detached = $derived(page.url.pathname.startsWith('/help/'));

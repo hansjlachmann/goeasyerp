@@ -8,6 +8,7 @@
 	import { toast } from '$lib/stores/toast';
 	import { onMount } from 'svelte';
 	import { companyLabel, type CompanyInfo } from '$lib/utils/company';
+	import { setTabCompany } from '$lib/utils/tabCompany';
 
 	let userID = $state('');
 	let password = $state('');
@@ -98,6 +99,8 @@
 		try {
 			const response = await api.login(userID, password, company);
 			if (response.success) {
+				// this tab works in the company logged in to (other tabs keep theirs)
+				setTabCompany(company);
 				// Store user info in store (also saves to localStorage)
 				currentUser.setUser(response.data);
 				// Re-initialize session to get updated language from backend
