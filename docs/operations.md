@@ -91,6 +91,24 @@ An app's code is compiled into the server program, so installing an app takes a 
 Build Setup** (Installed Apps → Build → App Build Setup) chooses who builds. It is one or the
 other, never both: a pipeline building an older list would drop an app uploaded in the UI.
 
+**Which route?**
+
+| | Local builder | CI pipeline |
+|---|---|---|
+| Needs | the builder service, about 2.5 GB of memory while it builds, and 2 GB of disk for its volume | an installation repository on GitHub (and its registry) |
+| A change of the apps | Build Apps in the UI; the server switches by itself | Build List, commit `apps.yaml`, then pull and restart |
+| Build time on a Raspberry Pi (one app) | about 1½ min after an upgrade or an app change, under 20 s for the same apps again | none on the server: GitHub builds, the server only pulls |
+| Choose it for | one-computer installations and small teams that install apps themselves | small servers with many apps or little memory, and production that tests a build in a test environment first (the same image runs in both) |
+
+The first build after an upgrade or an app change compiles most of the server again: an app
+adds fields to the base tables, and the server's table code is one package, so everything that
+uses it changes. That time grows with the number of apps and the base; builds of the same apps
+again come from the build cache.
+
+The builder uses every CPU it gets: **give it no CPU limit** (Docker `cpus:`, a Kubernetes CPU
+limit) — a limit slows the build directly. Set `GOFLAGS=-p=1` in its environment only when a
+small server runs short of memory (fewer packages at a time, a longer build).
+
 ### Local builder (no repository needed)
 
 The installation builds its apps itself. The build list and the build history are in the
@@ -99,9 +117,10 @@ database, so `scripts/backup.sh` covers them.
 1. Start the builder: put `COMPOSE_PROFILES=apps` in `prod.env` (the one-computer trial: in the
    `.env` next to the compose file), then `scripts/prod.sh pull && scripts/prod.sh up -d`.
    The builder image is large (the Go toolchain), so it is downloaded only with this profile.
-   A build needs about **5 GB of memory** while it compiles: the server's generated table code
-   is one large package. The builder compiles it with one thread, `GOGC=25` and two packages at
-   a time to stay there; a server with less memory should use the CI pipeline route below.
+   A build needs about **2.5 GB of memory** while it compiles (the largest compile, the
+   server's generated table code, peaks at about 1.5 GB). The builder compiles that package
+   with one thread, `GOGC=25` and two packages at a time to stay there; a server with less
+   memory should use the CI pipeline route below.
    `GOFLAGS` (`-p=`, `-gcflags`) and `GOGC` in the builder's environment replace these settings.
 2. In App Build Setup, set **Builds By** to *Local Builder*, and **Allow Upload** if apps may
    come as packages.
@@ -138,8 +157,8 @@ and waits in **maintenance** until it is built: the login page says so, and `/he
   backend, which gets `APP_BUILDS_DIR=/builds` too.
 - With more than one backend replica the claim must be ReadWriteMany.
 - Keep the builder's image tag equal to the backend's.
-- Give the builder a memory limit of at least 2.5 GiB and no CPU limit (a CPU limit slows the
-  build directly). A build killed for memory shows in the node's kernel log (`dmesg`) as an
+- Give the builder a memory limit of at least 2.5 GiB and no CPU limit (see "Which route?"
+  above). A build killed for memory shows in the node's kernel log (`dmesg`) as an
   out-of-memory kill of `compile`.
 
 ### CI pipeline (installation repository)
