@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.169](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.168...v0.1.169) (2026-11-21)
+
+
+### Bug Fixes
+
+* the server keeps its port open while it switches to a new app build ([86e035b](https://github.com/hansjlachmann/goeasyerp/commit/86e035b9af7635afaf934029468e4400dea73321))
+
+
+### Performance
+
+* the table generator formats each file once and in parallel ([522b2f2](https://github.com/hansjlachmann/goeasyerp/commit/522b2f218139e24f397ccfae88525ffa39e6317b))
+
 ## [0.1.168](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.167...v0.1.168) (2026-11-20)
 
 
