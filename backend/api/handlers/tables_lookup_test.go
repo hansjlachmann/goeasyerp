@@ -5,6 +5,7 @@ import (
 	"fmt"
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 	"net/url"
+	"sync/atomic"
 	"testing"
 
 	"github.com/gofiber/fiber/v2"
@@ -13,10 +14,19 @@ import (
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 )
 
-// newLookupTestApp has Customer and Payment Terms with n payment terms.
+// lookupTestApps numbers the test apps' databases (several in one test)
+var lookupTestApps atomic.Int32
+
+// newLookupTestApp has Customer and Payment Terms with n payment terms (a SUPER user).
 func newLookupTestApp(t *testing.T, n int) *fiber.App {
 	t.Helper()
-	db, err := sql.Open("sqlite3", fmt.Sprintf("file:%s_%d?mode=memory&cache=shared", t.Name(), n))
+	return newLookupTestAppAs(t, n, &session.Session{IsSuper: true, HasRoles: true, Company: "TEST", Language: "en-US"})
+}
+
+// newLookupTestAppAs is newLookupTestApp for the user of sess
+func newLookupTestAppAs(t *testing.T, n int, sess *session.Session) *fiber.App {
+	t.Helper()
+	db, err := sql.Open("sqlite3", fmt.Sprintf("file:%s_%d_%d?mode=memory&cache=shared", t.Name(), n, lookupTestApps.Add(1)))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -41,7 +51,7 @@ func newLookupTestApp(t *testing.T, n int) *fiber.App {
 	h := NewTablesHandler(db)
 	app := fiber.New()
 	app.Use(func(c *fiber.Ctx) error {
-		c.Locals("session", &session.Session{IsSuper: true, HasRoles: true, Company: "TEST", Language: "en-US"})
+		c.Locals("session", sess)
 		return c.Next()
 	})
 	app.Get("/api/tables/:table/list", h.ListRecords)

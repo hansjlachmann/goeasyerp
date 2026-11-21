@@ -110,3 +110,22 @@ describe('lookupFor New with relation filters', () => {
 		expect(lookupFor(lookups, 'base_unit_of_measure', { no: '' })?.new_path).toBeUndefined();
 	});
 });
+
+describe('lookupFor on-demand rows of a filtered relation', () => {
+	it("sends the record's values of the relation's field filters", () => {
+		const lookups = {
+			unit_of_measure_code: {
+				lazy_url: '/api/tables/Sales_Line/lookup/unit_of_measure_code',
+				filters: [{ column: 'item_no', field: 'no' }, { column: 'blocked', const: '0' }]
+			}
+		};
+		const lookup = lookupFor(lookups, 'unit_of_measure_code', { no: '1000' });
+		expect(lookup?.lazy_url).toBe('/api/tables/Sales_Line/lookup/unit_of_measure_code?record_no=1000');
+		const variant = lookupFor(
+			{ x: { lazy_url: '/api/tables/T/lookup/x?variant=2', filters: [{ column: 'c', field: 'f' }] } },
+			'x',
+			{}
+		);
+		expect(variant?.lazy_url).toBe('/api/tables/T/lookup/x?variant=2&record_f=');
+	});
+});

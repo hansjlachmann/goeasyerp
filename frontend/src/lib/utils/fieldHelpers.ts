@@ -324,12 +324,22 @@ export function lookupFor<
 		filters?: { column: string; field?: string; const?: string }[];
 		rows?: Array<Record<string, any>> | null;
 		new_path?: string;
+		lazy_url?: string;
 	}
 >(lookups: Record<string, L> | undefined, field: string, record: Record<string, any> | undefined): L | undefined {
 	let lookup = lookups?.[field];
 	if (lookup?.variants) {
 		const type = record?.[lookup.variant_field ?? ''];
 		lookup = lookup.variants[String(type ?? '')];
+	}
+	// …loaded on demand: the server filters them, the dropdown sends the record's values
+	if (lookup?.lazy_url && lookup.filters?.some((f) => f.field)) {
+		const params = new URLSearchParams();
+		for (const f of lookup.filters) {
+			if (f.field) params.set(`record_${f.field}`, String(record?.[f.field] ?? ''));
+		}
+		const separator = lookup.lazy_url.includes('?') ? '&' : '?';
+		lookup = { ...lookup, lazy_url: `${lookup.lazy_url}${separator}${params.toString()}` };
 	}
 	// A relation with WHERE filters: only the rows matching the record (a level of its terms)
 	if (lookup?.filters?.length && lookup.rows) {

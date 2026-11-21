@@ -21,6 +21,7 @@ import (
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/flowfilter"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/pages"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/session"
 	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
@@ -203,12 +204,13 @@ type LookupColumn struct {
 }
 
 // getLookupValues fetches lookup values for table relation fields
-func (h *TablesHandler) getLookupValues(tableName string, table ftables.Table, company string) map[string]*LookupData {
+// to the user's session: the rows of a related table come only with Read permission on it
+func (h *TablesHandler) getLookupValues(tableName string, table ftables.Table, company string, sess *session.Session) map[string]*LookupData {
 	lookups := make(map[string]*LookupData)
 
 	for fieldName, relInfo := range table.GetTableRelationFields() {
 		if len(relInfo.Conditions) == 0 {
-			if lookup := h.buildLookup(tableName, fieldName, relInfo, company, ""); lookup != nil {
+			if lookup := h.buildLookup(tableName, fieldName, relInfo, company, "", sess); lookup != nil {
 				lookups[fieldName] = lookup
 			}
 			continue
@@ -217,7 +219,7 @@ func (h *TablesHandler) getLookupValues(tableName string, table ftables.Table, c
 		lookup := &LookupData{VariantField: relInfo.Conditions[0].Field, Variants: map[string]*LookupData{}}
 		for _, cond := range relInfo.Conditions {
 			variant := strconv.Itoa(cond.Value)
-			if v := h.buildLookup(tableName, fieldName, cond.Relation, company, variant); v != nil {
+			if v := h.buildLookup(tableName, fieldName, cond.Relation, company, variant, sess); v != nil {
 				lookup.Variants[variant] = v
 			}
 		}
@@ -229,10 +231,19 @@ func (h *TablesHandler) getLookupValues(tableName string, table ftables.Table, c
 
 // buildLookup is the lookup of one relation (of a conditional relation: one variant, which
 // the on-demand URL names); nil when the related table is not registered
-func (h *TablesHandler) buildLookup(tableName, fieldName string, relInfo ftables.TableRelationInfo, company, variant string) *LookupData {
+// Without Read permission on the related table the lookup has no rows and takes the typed text
+// (FreeText; the save still checks the value exists), and no New.
+func (h *TablesHandler) buildLookup(tableName, fieldName string, relInfo ftables.TableRelationInfo, company, variant string, sess *session.Session) *LookupData {
 	relFactory, ok := gtables.GetTableFactory(relInfo.Table)
 	if !ok {
 		return nil
+	}
+	if !canReadRelated(sess, relInfo.Table) {
+		lookup := &LookupData{Rows: []map[string]interface{}{}, FreeText: true, KeyField: relInfo.Field, SearchTimeout: relInfo.SearchTimeout}
+		for _, col := range relInfo.LookupColumns {
+			lookup.Columns = append(lookup.Columns, LookupColumn{Source: col.Source, Width: col.Width})
+		}
+		return lookup
 	}
 	relTable := relFactory()
 	relTable.InitWithDBType(h.db, company, h.dbType)
@@ -321,6 +332,16 @@ func (h *TablesHandler) buildLookup(tableName, fieldName string, relInfo ftables
 	return lookup
 }
 
+// lookupFilterChars are the characters of filter expressions: a record value holding one is
+// not taken as an exact value
+const lookupFilterChars = "*|&<>=()@'?"
+
+// canReadRelated reports whether the user may see a related table's rows in a lookup (no
+// session: internal code)
+func canReadRelated(sess *session.Session, relatedTable string) bool {
+	return sess == nil || sess.HasPermission(relatedTable, session.PermRead)
+}
+
 // lookupFlowFields calculates the FlowFields among a relation's lookup columns (an object's
 // caption in the user's language) on the related records and returns their names — shown in
 // the dropdown, not searched
@@ -372,6 +393,10 @@ func (h *TablesHandler) LookupRows(c *fiber.Ctx) error {
 	if !ok {
 		return c.Status(404).JSON(apitypes.NewErrorResponse(apperrors.TableNotFound(relInfo.Table).Message(language)))
 	}
+	// the related table's rows: Read permission on it too
+	if !canReadRelated(sess, relInfo.Table) {
+		return c.Status(fiber.StatusForbidden).JSON(apitypes.NewErrorResponse(apperrors.PermissionDenied("read", relInfo.Table).Message(language)))
+	}
 	relTable := relFactory()
 	relTable.InitWithDBType(h.db, company, h.dbType)
 
@@ -387,11 +412,22 @@ func (h *TablesHandler) LookupRows(c *fiber.Ctx) error {
 		}
 	}
 
-	// The relation's constant filters (WHERE Account Type=CONST(Posting)): only those rows
+	// The relation's filters: constants (WHERE Account Type=CONST(Posting)) and the record's
+	// fields (WHERE Item No.=FIELD(No.)), whose values the dropdown sends as record_<field> —
+	// an exact value (blank when not sent); a value with filter characters matches nothing
 	for _, f := range relInfo.Filters {
 		if f.Field == "" {
 			relTable.SetFilter(f.Column, f.Const)
+			continue
 		}
+		value := c.Query("record_"+f.Field, "")
+		if strings.ContainsAny(value, lookupFilterChars) || strings.Contains(value, "..") {
+			return c.JSON(apitypes.NewSuccessResponse(map[string]interface{}{"rows": []map[string]interface{}{}, "total": 0}))
+		}
+		if value == "" {
+			value = "''"
+		}
+		relTable.SetFilter(f.Column, value)
 	}
 	if key := c.Query("key", ""); key != "" {
 		relTable.SetFilter(relInfo.Field, strings.ToUpper(key))
@@ -429,8 +465,8 @@ func (h *TablesHandler) LookupRows(c *fiber.Ctx) error {
 }
 
 // getLookupValuesAsInterface converts lookup data to interface{} map for JSON serialization
-func (h *TablesHandler) getLookupValuesAsInterface(tableName string, table ftables.Table, company string) map[string]interface{} {
-	lookups := h.getLookupValues(tableName, table, company)
+func (h *TablesHandler) getLookupValuesAsInterface(tableName string, table ftables.Table, company string, sess *session.Session) map[string]interface{} {
+	lookups := h.getLookupValues(tableName, table, company, sess)
 	result := make(map[string]interface{})
 	for k, v := range lookups {
 		result[k] = v
@@ -486,7 +522,7 @@ func (h *TablesHandler) GetOptions(c *fiber.Ctx) error {
 	options := optionCaptions(tableName, table, language)
 
 	// Build lookups map for table relation fields
-	lookups := h.getLookupValues(tableName, table, company)
+	lookups := h.getLookupValues(tableName, table, company, sess)
 
 	response := apitypes.NewSuccessResponse(map[string]interface{}{
 		"options": options,
@@ -803,7 +839,7 @@ func (h *TablesHandler) ListRecords(c *fiber.Ctx) error {
 		Fields:     make(map[string]string),
 		FieldTypes: make(map[string]string),
 		Options:    make(map[string]map[string]string),
-		Lookups:    h.getLookupValuesAsInterface(tableName, table, company),
+		Lookups:    h.getLookupValuesAsInterface(tableName, table, company, sess),
 	}
 
 	// Add field captions and types from metadata
@@ -884,7 +920,7 @@ func (h *TablesHandler) GetRecord(c *fiber.Ctx) error {
 		Fields:     make(map[string]string),
 		FieldTypes: make(map[string]string),
 		Options:    make(map[string]map[string]string),
-		Lookups:    h.getLookupValuesAsInterface(tableName, table, company),
+		Lookups:    h.getLookupValuesAsInterface(tableName, table, company, sess),
 	}
 
 	for _, field := range table.GetFields() {
