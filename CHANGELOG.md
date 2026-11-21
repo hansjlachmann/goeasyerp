@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.171](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.170...v0.1.171) (2026-11-21)
+
+
+### Features
+
+* browser tabs can work in different companies at once ([ac00a3b](https://github.com/hansjlachmann/goeasyerp/commit/ac00a3bfc2936fdfea701ce30956a1ac5df0ba85))
+
 ## [0.1.170](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.169...v0.1.170) (2026-11-21)
 
 
