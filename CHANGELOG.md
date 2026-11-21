@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.170](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.169...v0.1.170) (2026-11-21)
+
+
+### Features
+
+* the company's own welcome text on the main menu ([12ad92f](https://github.com/hansjlachmann/goeasyerp/commit/12ad92f5f4ca2dfcc5e897589661de737f47329e))
+
+
+### Documentation
+
+* when to choose the local builder or the CI pipeline for app builds ([0e4140f](https://github.com/hansjlachmann/goeasyerp/commit/0e4140fc01780d721c22e555decf795d0570d133))
+
 ## [0.1.169](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.168...v0.1.169) (2026-11-21)
 
 
