@@ -141,13 +141,16 @@ func (w *worker) recover() {
 	}
 }
 
-// claim takes the oldest request (several builders never take the same one) and marks it
-// Running; 0 when there is none
+// claim takes the oldest request for this builder's version (several builders never take the
+// same one) and marks it Running; 0 when there is none. A request for another version waits for
+// a builder of that version: during an upgrade the new server requests its build while the old
+// builder still runs, and the old builder must not take it (it cannot build it).
 func (w *worker) claim() (int, error) {
 	var no int
 	err := w.db.QueryRow(`UPDATE "App_Build" SET status = $1 WHERE entry_no = (
-		SELECT entry_no FROM "App_Build" WHERE status = $2 ORDER BY entry_no LIMIT 1 FOR UPDATE SKIP LOCKED)
-		RETURNING entry_no`, int(gtables.AppBuild_Status.Running), int(gtables.AppBuild_Status.Requested)).Scan(&no)
+		SELECT entry_no FROM "App_Build" WHERE status = $2 AND base_version = $3
+		ORDER BY entry_no LIMIT 1 FOR UPDATE SKIP LOCKED)
+		RETURNING entry_no`, int(gtables.AppBuild_Status.Running), int(gtables.AppBuild_Status.Requested), w.version).Scan(&no)
 	if errors.Is(err, sql.ErrNoRows) {
 		return 0, nil
 	}

@@ -140,7 +140,9 @@ func TestBuildLog(t *testing.T) {
 	}
 }
 
-// Two builders never take the same request (PostgreSQL: TEST_POSTGRES_DSN)
+// Two builders never take the same request, and a builder takes only the requests for its own
+// version: one for another version waits for a builder of that version (PostgreSQL:
+// TEST_POSTGRES_DSN)
 func TestClaimPostgres(t *testing.T) {
 	dsn := os.Getenv("TEST_POSTGRES_DSN")
 	if dsn == "" {
@@ -157,17 +159,17 @@ func TestClaimPostgres(t *testing.T) {
 	}
 	t.Cleanup(func() { _, _ = db.Exec(`DROP TABLE IF EXISTS "App_Build"`) })
 	src := ftables.DBSource(db, "", database.DBTypePostgres)
-	for no := 1; no <= 2; no++ {
+	for no, version := range map[int]string{1: "1.0.0", 2: "1.0.1", 3: "1.0.0"} {
 		rec := gtables.NewAppBuild(src)
 		rec.Init()
 		rec.Entry_no = no
 		rec.Status = gtables.AppBuild_Status.Requested
-		rec.Base_version = types.NewText("1.0.0")
+		rec.Base_version = types.NewText(version)
 		if err := rec.InsertOrError(false); err != nil {
 			t.Fatal(err)
 		}
 	}
-	w := &worker{db: db, b: &builder{buildsDir: t.TempDir()}}
+	w := &worker{db: db, b: &builder{buildsDir: t.TempDir()}, version: "1.0.0"}
 	a, err := w.claim()
 	if err != nil {
 		t.Fatal(err)
@@ -177,10 +179,17 @@ func TestClaimPostgres(t *testing.T) {
 		t.Fatal(err)
 	}
 	c, _ := w.claim()
-	if a != 1 || b != 2 || c != 0 {
-		t.Errorf("claims %d %d %d, want 1 2 0", a, b, c)
+	if a != 1 || b != 3 || c != 0 {
+		t.Errorf("claims %d %d %d, want 1 3 0", a, b, c)
 	}
 	rec := gtables.NewAppBuild(src)
+	if !rec.Get(2) || rec.Status != gtables.AppBuild_Status.Requested {
+		t.Errorf("the request for another version was taken: %+v", rec)
+	}
+	other := &worker{db: db, b: w.b, version: "1.0.1"}
+	if d, _ := other.claim(); d != 2 {
+		t.Errorf("the builder of 1.0.1 claims %d, want 2", d)
+	}
 	if !rec.Get(1) || rec.Status != gtables.AppBuild_Status.Running {
 		t.Errorf("claimed build %+v", rec)
 	}
