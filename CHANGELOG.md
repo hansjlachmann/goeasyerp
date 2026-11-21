@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.178](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.177...v0.1.178) (2026-11-21)
+
+
+### Bug Fixes
+
+* dropdowns show a related table's rows only to users who may read it ([7ecc374](https://github.com/hansjlachmann/goeasyerp/commit/7ecc374c6d742f242f8d6f4054082d8ea5367541))
+* only SUPER users administer users, roles and permissions ([c97a54e](https://github.com/hansjlachmann/goeasyerp/commit/c97a54ed75c45de8e3fa1a34d991f245969b626a))
+* permission checks for functions, company creation, validate and statistics ([f275ed2](https://github.com/hansjlachmann/goeasyerp/commit/f275ed2bfae2a91bf7c47943f65a786a968cb3db))
+* removed rights, deactivated users and log outs take effect at once ([de883cd](https://github.com/hansjlachmann/goeasyerp/commit/de883cd03126d87a177b54bc1240ec94b83a7f36))
+* the login limit can no longer be avoided with a forged client address ([8f78c83](https://github.com/hansjlachmann/goeasyerp/commit/8f78c835b1b748a6cfcf4bb15e5c2e0a5e2ac83a))
+
 ## [0.1.177](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.176...v0.1.177) (2026-11-21)
 
 
