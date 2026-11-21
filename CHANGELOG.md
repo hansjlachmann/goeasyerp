@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.174](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.173...v0.1.174) (2026-11-21)
+
+
+### Bug Fixes
+
+* the server no longer works as a PostgreSQL superuser ([90781b0](https://github.com/hansjlachmann/goeasyerp/commit/90781b03848d1a08ada22439ad209b4b40988755))
+
 ## [0.1.173](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.172...v0.1.173) (2026-11-21)
 
 
