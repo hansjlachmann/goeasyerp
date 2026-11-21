@@ -20,6 +20,7 @@ type TableMetadata struct {
 	lookupPages    map[string]int                     // table name -> lookup_page_id (the lookup's "New" opens it)
 	autoKeys       map[string]bool                    // table name -> auto_key (OnInsert assigns a blank key)
 	postedTables   map[string]bool                    // table name -> posted (written by posting only)
+	typeToDelete   map[string]bool                    // table name -> a delete names the record (type_to_delete)
 	editableFields map[string]map[string]bool         // table name -> fields with editable: true (a posted table's fields the user may change)
 	flowFields     map[string]map[string]FlowFieldDef // table name -> FlowField -> its source table and filters (the drilldown)
 	mu             sync.RWMutex
@@ -34,6 +35,7 @@ type tableDefYAML struct {
 		LookupPageID      int             `yaml:"lookup_page_id"`
 		AutoKey           bool            `yaml:"auto_key"`
 		Posted            bool            `yaml:"posted"`
+		TypeToDelete      bool            `yaml:"type_to_delete"`
 	} `yaml:"table"`
 }
 
@@ -86,6 +88,7 @@ func GetTableMetadata() *TableMetadata {
 			lookupPages:    make(map[string]int),
 			autoKeys:       make(map[string]bool),
 			postedTables:   make(map[string]bool),
+			typeToDelete:   make(map[string]bool),
 			editableFields: make(map[string]map[string]bool),
 			flowFields:     make(map[string]map[string]FlowFieldDef),
 		}
@@ -184,6 +187,9 @@ func (tm *TableMetadata) loadTableFile(filePath string) error {
 	if tableDef.Table.Posted {
 		tm.postedTables[metadataKey(tableDef.Table.Name)] = true
 	}
+	if tableDef.Table.TypeToDelete {
+		tm.typeToDelete[metadataKey(tableDef.Table.Name)] = true
+	}
 	if len(tableDef.Table.DataCaptionFields) > 0 {
 		if tm.captionFields == nil {
 			tm.captionFields = make(map[string][]string)
@@ -261,6 +267,15 @@ func (tm *TableMetadata) IsPosted(tableName string) bool {
 	tm.mu.RLock()
 	defer tm.mu.RUnlock()
 	return tm.postedTables[metadataKey(tableName)]
+}
+
+// IsTypeToDelete reports whether deleting a record of the table needs its key typed by the user
+// (type_to_delete: true — a Company, whose delete drops all its data): the table API deletes
+// one record at a time, and only when the request names it
+func (tm *TableMetadata) IsTypeToDelete(tableName string) bool {
+	tm.mu.RLock()
+	defer tm.mu.RUnlock()
+	return tm.typeToDelete[metadataKey(tableName)]
 }
 
 // IsPostedFieldEditable reports whether the user may change a field of a posted table: only

@@ -9,6 +9,9 @@ interface ConfirmState {
 	// Button text and style (default: a red "Delete", the usual confirmation)
 	confirmText?: string;
 	variant?: 'danger' | 'warning' | 'info';
+	// The text the user must type before the button confirms (a company's name before it is
+	// deleted with all its data)
+	typeToConfirm?: string;
 }
 
 const initialState: ConfirmState = {
@@ -35,7 +38,7 @@ function createConfirmStore() {
 			title: string,
 			message: string,
 			action: () => Promise<void>,
-			options: { confirmText?: string; variant?: 'danger' | 'warning' | 'info' } = {}
+			options: { confirmText?: string; variant?: 'danger' | 'warning' | 'info'; typeToConfirm?: string } = {}
 		) {
 			set({
 				open: true,

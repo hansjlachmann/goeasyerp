@@ -50,6 +50,7 @@ export interface PageMetadata {
 	primary_key_fields?: string[];
 	has_record_triggers?: boolean;
 	posted?: boolean; // written by posting only (ledger entries): no new records, no delete
+	type_to_delete?: boolean; // a delete needs the record's key typed (Company: drops all its data)
 	setup_table?: boolean; // a single record with a blank key (setup): the card opens on it
 	auto_key?: boolean; // the table's OnInsert assigns a blank key (a number series): a new record is saved without one
 	number_from_series?: boolean; // a card: a new record gets the next number of its series when the blank No. is left (the tip)

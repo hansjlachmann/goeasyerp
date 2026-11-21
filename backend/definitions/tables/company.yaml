@@ -4,6 +4,8 @@ table:
   caption: Company
   description: Company definitions
   global: true  # Global table - no company prefix
+  # A delete drops all the company's data: the user types its name to confirm (one at a time)
+  type_to_delete: true
   fields:
     - name: name
       no: 1

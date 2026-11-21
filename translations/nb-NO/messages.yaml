@@ -510,6 +510,7 @@ messages:
   # Dialog Messages
   DLG_DELETE_RECORD_CONFIRM: "Er du sikker på at du vil slette denne posten?"
   DLG_DELETE_RECORD_KEY_CONFIRM: "Er du sikker på at du vil slette posten %1?"
+  DLG_DELETE_TYPE_KEY: "Alt den inneholder, slettes også og kan ikke hentes tilbake. Skriv %1 for å bekrefte."
   DLG_DELETE_RECORDS_TITLE: "Slett poster"
   DLG_DELETE_RECORDS_CONFIRM: "Slette de %1 merkede postene?"
   DLG_PASTE_RECORDS_TITLE: "Lim inn poster"

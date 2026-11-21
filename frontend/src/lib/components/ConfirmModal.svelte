@@ -9,6 +9,8 @@
 		confirmText?: string;
 		cancelText?: string;
 		variant?: 'danger' | 'warning' | 'info';
+		// the text to type before the button confirms (case-insensitive), e.g. a company's name
+		typeToConfirm?: string;
 		onconfirm?: () => void;
 		oncancel?: () => void;
 	}
@@ -23,9 +25,27 @@
 		confirmText,
 		cancelText,
 		variant = 'danger',
+		typeToConfirm,
 		onconfirm,
 		oncancel
 	}: Props = $props();
+
+	let typed = $state('');
+	// a new question starts with an empty field
+	$effect(() => {
+		if (open) typed = '';
+	});
+	const confirmed = $derived(
+		!typeToConfirm || typed.trim().toLowerCase() === typeToConfirm.trim().toLowerCase()
+	);
+
+	function confirmIfTyped() {
+		if (confirmed) onconfirm?.();
+	}
+
+	function autofocus(node: HTMLInputElement) {
+		node.focus();
+	}
 
 	const variantColors = {
 		danger: 'bg-red-600 hover:bg-red-700',
@@ -61,6 +81,25 @@
 				<p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
 					{message ?? t(DLG.CONFIRM_DEFAULT)}
 				</p>
+				{#if typeToConfirm}
+					<p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+						{t(DLG.DELETE_TYPE_KEY, typeToConfirm)}
+					</p>
+					<input
+						type="text"
+						class="mt-2 w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-surface text-fg"
+						autocomplete="off"
+						spellcheck="false"
+						bind:value={typed}
+						use:autofocus
+						onkeydown={(e) => {
+							if (e.key === 'Enter') {
+								e.preventDefault();
+								confirmIfTyped();
+							}
+						}}
+					/>
+				{/if}
 			</div>
 		</div>
 		<div class="mt-6 flex justify-end gap-3">
@@ -73,8 +112,9 @@
 			</button>
 			<button
 				type="button"
-				class="px-4 py-2 text-sm font-medium text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 {variantColors[variant]}"
-				onclick={onconfirm}
+				class="px-4 py-2 text-sm font-medium text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed {variantColors[variant]}"
+				disabled={!confirmed}
+				onclick={confirmIfTyped}
 			>
 				{confirmText ?? t(BTN.CONFIRM)}
 			</button>

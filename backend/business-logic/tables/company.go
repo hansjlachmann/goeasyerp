@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/company"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -15,6 +16,16 @@ import (
 type companyLogic struct{}
 
 func init() { gtables.RegisterCompanyLogic(companyLogic{}) }
+
+// OnDelete: deleting a company drops all its data (the API drops its tables after the delete):
+// a SUPER user only (code without a user — tests, setup — may)
+func (companyLogic) OnDelete(rec *gtables.Company) error {
+	access := fcodeunits.CurrentAccess()
+	if access != nil && !access.IsSuper {
+		return apperrors.CompanyDeleteSuperOnly(rec.Name.String())
+	}
+	return nil
+}
 
 // OnRename: the name prefixes every table of the company ("name$Customer"), so the
 // company's data moves with it: its tables, indexes and sequences are renamed and its

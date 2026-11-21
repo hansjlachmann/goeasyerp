@@ -73,6 +73,9 @@ type PageMetadata struct {
 	// Posted (populated at request time): the source table is written by posting only (posted:
 	// true — ledger entries, registers); the page starts no new records and has no New/Delete
 	Posted bool `yaml:"-" json:"posted,omitempty"`
+	// TypeToDelete (populated at request time): a delete of the source table's records needs the
+	// record's key typed by the user (type_to_delete: true in the table YAML — Company)
+	TypeToDelete bool `yaml:"-" json:"type_to_delete,omitempty"`
 	// PrimaryKeyFields is populated at request time from table metadata so the
 	// frontend knows the record key even when the PK is not shown (e.g. setup tables).
 	PrimaryKeyFields []string `yaml:"-" json:"primary_key_fields,omitempty"`

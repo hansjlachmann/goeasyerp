@@ -14,7 +14,9 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/company"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/pages"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/session"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
@@ -146,12 +148,19 @@ func companyApp(d renameDB) *fiber.App {
 	h := NewTablesHandlerWithDBType(d.db, d.dbType)
 	app := fiber.New()
 	app.Use(func(c *fiber.Ctx) error {
-		c.Locals("session", &session.Session{IsSuper: true, HasRoles: true, Company: c.Get("X-Company"), Language: "en-US"})
+		// X-Clerk: a user who is not SUPER (the triggers see the user's access, as with
+		// middleware.UserContext)
+		sess := &session.Session{UserID: "ADMIN", IsSuper: c.Get("X-Clerk") == "", HasRoles: true, Company: c.Get("X-Company"), Language: "en-US"}
+		c.Locals("session", sess)
+		fcodeunits.SetCurrentContext(sess.UserID, sess.UserID, sess.Company, "en-US")
+		fcodeunits.SetCurrentAccess(sess)
+		defer fcodeunits.ClearCurrentContext()
 		return c.Next()
 	})
 	app.Get("/api/tables/:table/list", h.ListRecords)
 	app.Put("/api/tables/:table/modify/:id", h.ModifyRecord)
 	app.Delete("/api/tables/:table/delete/:id", h.DeleteRecord)
+	app.Delete("/api/tables/:table/delete-many", h.DeleteRecords)
 	return app
 }
 
@@ -362,7 +371,7 @@ func TestDeleteCompanyDropsOnlyItsObjects(t *testing.T) {
 			newCompany(t, d, "axb")
 			wantTables, wantIndexes := companyObjects(t, d, "axb")
 
-			if status, out := call(t, app, "DELETE", "/api/tables/Company/delete/a_b", "axb", ""); status != 200 {
+			if status, out := call(t, app, "DELETE", "/api/tables/Company/delete/a_b?confirm=a_b", "axb", ""); status != 200 {
 				t.Fatalf("delete: %d %v", status, out["error"])
 			}
 			if n, i := companyObjects(t, d, "a_b"); n+i != 0 {
@@ -380,6 +389,53 @@ func TestDeleteCompanyDropsOnlyItsObjects(t *testing.T) {
 			// Its tables can be listed by exact name
 			if names, err := company.Tables(d.db, d.dbType, "axb"); err != nil || len(names) != wantTables {
 				t.Errorf("company.Tables(axb) = %v, %v", names, err)
+			}
+		})
+	}
+}
+
+// Deleting a company drops all its data: only a SUPER user, one company at a time, with its name
+// typed (confirm); a refused delete keeps the company and its tables
+func TestDeleteCompanyIsGuarded(t *testing.T) {
+	if !pages.GetTableMetadata().IsTypeToDelete("Company") {
+		t.Fatal("Company must be type_to_delete")
+	}
+	for _, d := range renameDatabases(t) {
+		t.Run(string(d.dbType), func(t *testing.T) {
+			app := companyApp(d)
+			newCompany(t, d, "keep1")
+			newCompany(t, d, "keep2")
+			wantTables, _ := companyObjects(t, d, "keep1")
+			for _, c := range []struct {
+				name, method, target, body, clerk string
+			}{
+				{"no name typed", "DELETE", "/api/tables/Company/delete/keep1", "", ""},
+				{"another name typed", "DELETE", "/api/tables/Company/delete/keep1?confirm=keep2", "", ""},
+				{"two at once", "DELETE", "/api/tables/Company/delete-many", `{"keys":["keep1","keep2"],"confirm":"keep1"}`, ""},
+				{"one of many without its name", "DELETE", "/api/tables/Company/delete-many", `{"keys":["keep1"]}`, ""},
+				{"not SUPER", "DELETE", "/api/tables/Company/delete/keep1?confirm=keep1", "", "1"},
+			} {
+				req := httptest.NewRequest(c.method, c.target, strings.NewReader(c.body))
+				req.Header.Set("Content-Type", "application/json")
+				req.Header.Set("X-Company", "keep2")
+				req.Header.Set("X-Clerk", c.clerk)
+				resp, err := app.Test(req, -1)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if resp.StatusCode == 200 {
+					t.Errorf("%s: deleted", c.name)
+				}
+				if n, _ := companyObjects(t, d, "keep1"); n != wantTables {
+					t.Fatalf("%s: keep1 has %d tables, want %d", c.name, n, wantTables)
+				}
+			}
+			// one company, its name typed (any letter case), by SUPER: deleted
+			if status, out := call(t, app, "DELETE", "/api/tables/Company/delete-many", "keep2", `{"keys":["keep1"],"confirm":"KEEP1"}`); status != 200 {
+				t.Fatalf("delete-many: %d %v", status, out["error"])
+			}
+			if n, _ := companyObjects(t, d, "keep1"); n != 0 {
+				t.Errorf("keep1 still has %d tables", n)
 			}
 		})
 	}

@@ -36,6 +36,9 @@ const (
 	ErrThemeWrongMode     ErrorCode = "ERR_THEME_WRONG_MODE"
 	ErrFilterInvalid      ErrorCode = "ERR_FILTER_INVALID"
 	ErrDeleteTooMany      ErrorCode = "ERR_DELETE_TOO_MANY"
+	ErrDeleteTypeKey      ErrorCode = "ERR_DELETE_TYPE_KEY"
+	ErrDeleteOneAtATime   ErrorCode = "ERR_DELETE_ONE_AT_A_TIME"
+	ErrCompanyDeleteSuper ErrorCode = "ERR_COMPANY_DELETE_SUPER_ONLY"
 	ErrDeleteRecordFailed ErrorCode = "ERR_DELETE_RECORD_FAILED"
 	ErrCopyTooMany        ErrorCode = "ERR_COPY_TOO_MANY"
 	ErrSelectionTooMany   ErrorCode = "ERR_SELECTION_TOO_MANY"
@@ -516,6 +519,23 @@ func FilterInvalid(table, field, expr string) *AppError {
 // DeleteTooMany: a bulk delete selected more records than one delete may remove
 func DeleteTooMany(max int) *AppError {
 	return &AppError{Code: ErrDeleteTooMany, Params: []string{strconv.Itoa(max)}}
+}
+
+// DeleteTypeKey: a record whose delete must name it (type_to_delete) was deleted without its key
+// typed by the user
+func DeleteTypeKey(tableCaption, key string) *AppError {
+	return &AppError{Code: ErrDeleteTypeKey, Params: []string{tableCaption, key}}
+}
+
+// DeleteOneAtATime: records whose delete must name them (type_to_delete) are deleted one at a
+// time
+func DeleteOneAtATime(tableCaption string) *AppError {
+	return &AppError{Code: ErrDeleteOneAtATime, Params: []string{tableCaption}}
+}
+
+// CompanyDeleteSuperOnly: only a SUPER user deletes a company (with all its data)
+func CompanyDeleteSuperOnly(name string) *AppError {
+	return &AppError{Code: ErrCompanyDeleteSuper, Params: []string{name}}
 }
 
 // DeleteRecordFailed: a record of a bulk delete could not be deleted (reason: its trigger's

@@ -2411,6 +2411,8 @@
 	async function handleDelete() {
 		if (selectedRecord) {
 			const deleted = selectedRecord;
+			// a table whose delete drops more than the record (a Company): its key typed first
+			const typeToConfirm = page.page.type_to_delete && !deleted._isNew ? getRecordId(deleted, primaryKeyField, primaryKeyFieldsList) || undefined : undefined;
 			confirm.show(
 				t(DLG.DELETE_RECORD_TITLE),
 				t(DLG.DELETE_RECORD_KEY_CONFIRM, recordKeyText(deleted, primaryKeyFieldsList, captions, options)),
@@ -2444,7 +2446,8 @@
 						currentCellRow = last;
 						focusCellSelectedElement(currentCellRow, currentCellCol);
 					}
-				}
+				},
+				{ typeToConfirm }
 			);
 		}
 	}
@@ -2700,11 +2703,13 @@
 				const deleteRecordId = getRecordId(modalRecord, primaryKeyField, primaryKeyFieldsList);
 				if (!deleteRecordId) break;
 				// Same translated confirmation as Delete on the list (not the browser's confirm())
+				// a table whose delete drops more than the record (a Company): its key typed first
+				const typeToConfirm = page.page.type_to_delete ? deleteRecordId : undefined;
 				confirm.show(t(DLG.DELETE_RECORD_TITLE), t(DLG.DELETE_RECORD_KEY_CONFIRM, recordKeyText(modalRecord, primaryKeyFieldsList, captions, options)), async () => {
 					// Mark as deleted BEFORE the API call to prevent any pending auto-saves
 					modalRecordDeleted = true;
 					try {
-						await api.deleteRecord(page.page.source_table, deleteRecordId);
+						await api.deleteRecord(page.page.source_table, deleteRecordId, typeToConfirm);
 						// Closing with changes reloads the list window (rows and record count)
 						modalHadChanges = true;
 						closeModal();
@@ -2715,7 +2720,7 @@
 						// Reset flag if delete failed
 						modalRecordDeleted = false;
 					}
-				});
+				}, { typeToConfirm });
 				break;
 			}
 			case 'Refresh':
@@ -4252,6 +4257,7 @@
 	message={$confirm.message}
 	confirmText={t(BTN.DELETE)}
 	variant="danger"
+	typeToConfirm={$confirm.typeToConfirm}
 	onconfirm={confirm.confirm}
 	oncancel={confirm.cancel}
 />

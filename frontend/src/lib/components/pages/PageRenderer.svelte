@@ -723,7 +723,7 @@
 						t(DLG.DELETE_RECORD_KEY_CONFIRM, recordKeyText(record, primaryKeyFieldsList, captions, options)),
 						async () => {
 							try {
-								await api.deleteRecord(page!.page.source_table, deleteId);
+								await api.deleteRecord(page!.page.source_table, deleteId, typedKey(deleteId));
 								toast.success(t(MSG.RECORD_DELETED_SUCCESS));
 								// Navigate back to the list page if available
 								if (page!.page.type === 'Card') {
@@ -736,7 +736,8 @@
 								console.error('Delete error:', err);
 								toast.error(err instanceof Error && err.message ? err.message : t(ERR.FAILED_DELETE));
 							}
-						}
+						},
+						{ typeToConfirm: typedKey(deleteId) }
 					);
 				}
 				break;
@@ -835,13 +836,14 @@
 						t(DLG.DELETE_RECORD_KEY_CONFIRM, recordKeyText(selectedRecord, primaryKeyFieldsList, captions, options)),
 						async () => {
 							try {
-								await api.deleteRecord(page!.page.source_table, deleteRecordId!);
+								await api.deleteRecord(page!.page.source_table, deleteRecordId!, typedKey(deleteRecordId!));
 								await loadListData();
 								toast.success(t(MSG.RECORD_DELETED));
 							} catch (err) {
 								toast.error(err instanceof Error && err.message ? err.message : t(ERR.FAILED_DELETE));
 							}
-						}
+						},
+						{ typeToConfirm: typedKey(deleteRecordId!) }
 					);
 				}
 				break;
@@ -878,6 +880,12 @@
 	}
 
 	// Handle delete from list page
+	// The key the user must type before a delete (and sends with it): a table whose delete drops
+	// more than the record (type_to_delete — a Company and all its data); undefined otherwise
+	function typedKey(id: string): string | undefined {
+		return page?.page.type_to_delete ? id : undefined;
+	}
+
 	async function handleListDelete(deletedRecord: Record<string, any>) {
 		if (!page) return;
 
@@ -888,7 +896,8 @@
 				toast.error('Cannot delete: record has no ID');
 				return;
 			}
-			await api.deleteRecord(page.page.source_table, recordId);
+			// the list asked for the key to be typed (type_to_delete)
+			await api.deleteRecord(page.page.source_table, recordId, typedKey(recordId));
 			await loadListData();
 			onlineschange?.();
 			toast.success(t(MSG.RECORD_DELETED));
@@ -1263,6 +1272,7 @@
 	message={$confirm.message}
 	confirmText={$confirm.confirmText ?? t(BTN.DELETE)}
 	variant={$confirm.variant ?? 'danger'}
+	typeToConfirm={$confirm.typeToConfirm}
 	onconfirm={confirm.confirm}
 	oncancel={confirm.cancel}
 />

@@ -1107,6 +1107,9 @@ func (h *TablesHandler) DeleteRecord(c *fiber.Ctx) error {
 	if msg := refusePosted(tableName, language); msg != "" {
 		return c.Status(403).JSON(apitypes.NewErrorResponse(msg))
 	}
+	if msg := refuseUntypedDelete(tableName, tableCaption, id, c.Query("confirm"), language); msg != "" {
+		return c.Status(400).JSON(apitypes.NewErrorResponse(msg))
+	}
 
 	// Delete record (a Company with all its tables and SIFT objects, in one transaction)
 	deleted, txErr := h.deleteInTransaction(tableName, table)
@@ -1364,8 +1367,9 @@ func (h *TablesHandler) DeleteRecords(c *fiber.Ctx) error {
 	tableCaption := i18n.GetInstance().TableCaption(tableName, language)
 
 	var req struct {
-		Keys []string `json:"keys"`
-		All  bool     `json:"all"`
+		Keys    []string `json:"keys"`
+		All     bool     `json:"all"`
+		Confirm string   `json:"confirm"` // the key the user typed (type_to_delete tables)
 	}
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(400).JSON(apitypes.NewErrorResponse(apperrors.InvalidRequestBody().Message(language)))
@@ -1403,6 +1407,14 @@ func (h *TablesHandler) DeleteRecords(c *fiber.Ctx) error {
 	}
 	if len(keys) == 0 {
 		return c.JSON(apitypes.NewSuccessResponse(map[string]interface{}{"deleted": 0}))
+	}
+	if pages.GetTableMetadata().IsTypeToDelete(tableName) {
+		if len(keys) > 1 {
+			return c.Status(400).JSON(apitypes.NewErrorResponse(apperrors.DeleteOneAtATime(tableCaption).Message(language)))
+		}
+		if msg := refuseUntypedDelete(tableName, tableCaption, keys[0], req.Confirm, language); msg != "" {
+			return c.Status(400).JSON(apitypes.NewErrorResponse(msg))
+		}
 	}
 
 	tx, err := h.db.Begin()
@@ -1758,6 +1770,19 @@ func errorMessage(err error, language string) string {
 		return appErr.Message(language)
 	}
 	return err.Error()
+}
+
+// refuseUntypedDelete is the message refusing a delete of a type_to_delete record (a Company,
+// whose delete drops all its data) whose key the user did not type — confirm is what was typed
+// —, "" when the delete may go on
+func refuseUntypedDelete(tableName, tableCaption, key, confirm, language string) string {
+	if !pages.GetTableMetadata().IsTypeToDelete(tableName) {
+		return ""
+	}
+	if strings.EqualFold(strings.TrimSpace(confirm), strings.TrimSpace(key)) && key != "" {
+		return ""
+	}
+	return apperrors.DeleteTypeKey(tableCaption, key).Message(language)
 }
 
 // refusePosted is the message refusing an insert, delete or rename on a posted table (posted:

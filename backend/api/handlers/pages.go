@@ -106,6 +106,7 @@ func (h *PagesHandler) GetPage(c *fiber.Ctx) error {
 			pageDef.Page.NumberFromSeries = newCardGetsNumber(sess, pageID, pageDef.Page.SourceTable)
 		}
 		pageDef.Page.Posted = pages.GetTableMetadata().IsPosted(pageDef.Page.SourceTable)
+		pageDef.Page.TypeToDelete = pages.GetTableMetadata().IsTypeToDelete(pageDef.Page.SourceTable)
 		if pageDef.Page.Posted {
 			// posted entries are not entered or deleted on a page (the table API refuses it)
 			actions := pageDef.Page.Actions[:0]

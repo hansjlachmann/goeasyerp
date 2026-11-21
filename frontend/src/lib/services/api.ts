@@ -319,8 +319,11 @@ export const api = {
 		return handleApiResponse<T>(response, `modify ${tableName} ${id}`);
 	},
 
-	async deleteRecord(tableName: string, id: string): Promise<void> {
-		const response = await fetch(recordUrl(tableName, 'delete', id), {
+	// confirm: the key the user typed, for a table whose delete must name the record
+	// (page type_to_delete — a Company)
+	async deleteRecord(tableName: string, id: string, confirm?: string): Promise<void> {
+		const url = recordUrl(tableName, 'delete', id) + (confirm !== undefined ? `?confirm=${encodeURIComponent(confirm)}` : '');
+		const response = await fetch(url, {
 			method: 'DELETE'
 		});
 		return handleApiResponseVoid(response, `delete ${tableName} ${id}`);
