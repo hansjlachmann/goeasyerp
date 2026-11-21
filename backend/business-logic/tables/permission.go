@@ -14,10 +14,30 @@ type permissionLogic struct{}
 
 func init() { gtables.RegisterPermissionLogic(permissionLogic{}) }
 
-// OnInsert fills the key of a report or codeunit row
+// OnInsert fills the key of a report or codeunit row; a role's permissions hold in every
+// company, so only a SUPER user of all companies changes them (securityadmin.go)
 func (permissionLogic) OnInsert(rec *gtables.Permission) error {
+	err := checkRolesAdmin(rec)
+	if err != nil {
+		return err
+	}
 	setPermissionObjectKey(rec)
 	return nil
+}
+
+// OnModify: a SUPER user of all companies only
+func (permissionLogic) OnModify(rec *gtables.Permission) error {
+	return checkRolesAdmin(rec)
+}
+
+// OnDelete: a SUPER user of all companies only
+func (permissionLogic) OnDelete(rec *gtables.Permission) error {
+	return checkRolesAdmin(rec)
+}
+
+// OnRename: a SUPER user of all companies only
+func (permissionLogic) OnRename(rec *gtables.Permission) error {
+	return checkRolesAdmin(rec)
 }
 
 // OnValidate_Object_type: a report or codeunit row is keyed by its object

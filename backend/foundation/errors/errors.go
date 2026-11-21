@@ -41,6 +41,10 @@ const (
 	ErrDeleteTypeCount    ErrorCode = "ERR_DELETE_TYPE_COUNT"
 	ErrDeleteCountChanged ErrorCode = "ERR_DELETE_COUNT_CHANGED"
 	ErrCompanyDeleteSuper ErrorCode = "ERR_COMPANY_DELETE_SUPER_ONLY"
+	ErrRolesSuperOnly     ErrorCode = "ERR_ROLES_SUPER_ONLY"
+	ErrMemberSuperOnly    ErrorCode = "ERR_MEMBER_SUPER_ONLY"
+	ErrMemberAllSuperOnly ErrorCode = "ERR_MEMBER_ALL_SUPER_ONLY"
+	ErrUserSuperOnly      ErrorCode = "ERR_USER_SUPER_ONLY"
 	ErrReportNotScheduled ErrorCode = "ERR_REPORT_NOT_SCHEDULED"
 	ErrDateComprGLFilter  ErrorCode = "ERR_DATE_COMPR_GL_FILTER"
 	ErrDeleteRecordFailed ErrorCode = "ERR_DELETE_RECORD_FAILED"
@@ -564,6 +568,27 @@ func DateComprGLFilter(filter string) *AppError {
 // CompanyDeleteSuperOnly: only a SUPER user deletes a company (with all its data)
 func CompanyDeleteSuperOnly(name string) *AppError {
 	return &AppError{Code: ErrCompanyDeleteSuper, Params: []string{name}}
+}
+
+// RolesSuperOnly: roles and their permissions hold for every company, so only a user who is
+// SUPER in all companies changes them
+func RolesSuperOnly() *AppError {
+	return &AppError{Code: ErrRolesSuperOnly}
+}
+
+// MemberSuperOnly: a role in a company is given or removed only by a user who is SUPER there
+// (blank company: in all companies)
+func MemberSuperOnly(company string) *AppError {
+	if company == "" {
+		return &AppError{Code: ErrMemberAllSuperOnly}
+	}
+	return &AppError{Code: ErrMemberSuperOnly, Params: []string{company}}
+}
+
+// UserSuperOnly: another user is changed only by a user who is SUPER wherever that user has
+// roles
+func UserSuperOnly(userID string) *AppError {
+	return &AppError{Code: ErrUserSuperOnly, Params: []string{userID}}
 }
 
 // DeleteRecordFailed: a record of a bulk delete could not be deleted (reason: its trigger's

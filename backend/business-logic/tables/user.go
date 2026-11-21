@@ -16,12 +16,39 @@ type userLogic struct{}
 
 func init() { gtables.RegisterUserLogic(userLogic{}) }
 
+// OnModify: another user is changed (password, active …) only by a SUPER user of every company
+// where that user has roles (securityadmin.go); users change their own record
+func (userLogic) OnModify(rec *gtables.User) error {
+	return checkUserAdmin(rec, rec.XRec().User_id.String())
+}
+
+// OnRename: as OnModify
+func (userLogic) OnRename(rec *gtables.User) error {
+	return checkUserAdmin(rec, rec.XRec().User_id.String())
+}
+
+// checkUserAdmin refuses changing another user without being SUPER wherever that user has
+// roles
+func checkUserAdmin(rec *gtables.User, userID string) error {
+	if isCurrentUser(userID) {
+		return nil
+	}
+	if !canAdministerUser(rec, userID) {
+		return apperrors.UserSuperOnly(userID)
+	}
+	return nil
+}
+
 // OnDelete deletes the user's preferences, appearance and theme list so they don't
 // remain orphaned. They are global tables (company ""), deleted regardless of the
 // session's company. SetRange is an exact match, so a user ID containing filter
 // characters (*, |, ..) cannot widen the delete. An installed theme nobody has any more
 // stays until it is deleted on the Themes page.
 func (userLogic) OnDelete(rec *gtables.User) error {
+	err := checkUserAdmin(rec, rec.User_id.String())
+	if err != nil {
+		return err
+	}
 	db, dbType, userID := rec.GetDB(), rec.GetDBType(), rec.User_id.String()
 
 	var prefs gtables.UserPreferences

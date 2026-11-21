@@ -1,33 +1,49 @@
 package tables
 
 import (
+	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
-// userMemberLogic is the business logic of table 2000000003 User_Member.
-// Add a trigger when it is needed: the available triggers are listed at the
-// top of generated/tables/usermember_gen.go. The field rules of the definition
-// (required, length, range) are checked after OnInsert and OnModify.
+// userMemberLogic is the business logic of table 2000000003 User_Member: a user's role in a
+// company (blank: all companies). Only a user who is SUPER in that company gives or removes
+// one (securityadmin.go).
 type userMemberLogic struct{}
 
 func init() { gtables.RegisterUserMemberLogic(userMemberLogic{}) }
 
-// OnInsert runs before a new record is inserted
+// OnInsert: the role is given by a SUPER user of its company
 func (userMemberLogic) OnInsert(rec *gtables.UserMember) error {
-	return nil
+	return checkMemberAdmin(rec, rec.Company.String())
 }
 
-// OnModify runs before a record is modified
+// OnModify: the role before and after is given by a SUPER user of its company
 func (userMemberLogic) OnModify(rec *gtables.UserMember) error {
-	return nil
+	err := checkMemberAdmin(rec, rec.XRec().Company.String())
+	if err != nil {
+		return err
+	}
+	return checkMemberAdmin(rec, rec.Company.String())
 }
 
-// OnDelete runs before a record is deleted
+// OnDelete: the role is removed by a SUPER user of its company
 func (userMemberLogic) OnDelete(rec *gtables.UserMember) error {
-	return nil
+	return checkMemberAdmin(rec, rec.Company.String())
 }
 
-// OnRename runs before a primary key field is changed (rec.OldValue has the old value)
+// OnRename: the role before and after is given by a SUPER user of its company
 func (userMemberLogic) OnRename(rec *gtables.UserMember) error {
+	err := checkMemberAdmin(rec, rec.XRec().Company.String())
+	if err != nil {
+		return err
+	}
+	return checkMemberAdmin(rec, rec.Company.String())
+}
+
+// checkMemberAdmin refuses a user who is not SUPER in company
+func checkMemberAdmin(rec *gtables.UserMember, company string) error {
+	if !superIn(rec, company) {
+		return apperrors.MemberSuperOnly(company)
+	}
 	return nil
 }
