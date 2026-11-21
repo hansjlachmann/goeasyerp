@@ -426,49 +426,16 @@ jobs:
           git diff --staged --quiet || git commit -m "chore: update .env to version ${{ needs.release.outputs.version }}"
           git push
 
-  # The installation's builder of the extension apps (Dockerfile target app-builder), in a job of
-  # its own next to the other images: its arm64 build cache must be compiled on arm64 to be valid
-  # on a Raspberry Pi, so it is built under emulation and takes the longest
+  # The installation's builder of the extension apps (Dockerfile target app-builder), next to the
+  # other images: amd64 and arm64 each built natively on a runner of its own (its build cache must
+  # be compiled on the platform that uses it), then joined — app-builder-image.yml
   docker-builder:
     name: Docker Build & Push (app builder)
-    runs-on: ubuntu-24.04
-    timeout-minutes: 45
     needs: [release]
     if: always() && needs.release.result == 'success' && needs.release.outputs.release_created == 'true'
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Determine tags
-        id: tags
-        run: |
-          TAGS="ghcr.io/${{ github.repository }}/builder:latest"
-          TAGS="$TAGS,ghcr.io/${{ github.repository }}/builder:${{ github.sha }}"
-          TAGS="$TAGS,ghcr.io/${{ github.repository }}/builder:${{ needs.release.outputs.version }}"
-          echo "tags=$TAGS" >> $GITHUB_OUTPUT
-
-      - name: Build and push the app builder
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./Dockerfile
-          target: app-builder
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: ${{ steps.tags.outputs.tags }}
-          cache-from: type=gha,scope=builder
-          cache-to: type=gha,mode=max,scope=builder
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/app-builder-image.yml
+    with:
+      version: ${{ needs.release.outputs.version }}

@@ -1,0 +1,142 @@
+name: App builder image
+
+# The installation's builder of the extension apps (Dockerfile target app-builder), for amd64
+# and arm64. The image's Go build cache must be compiled on the platform it runs on (the cache
+# key includes the compiler), so each platform is built on a runner of its own — natively, an
+# arm64 runner for arm64, no emulation — and the two are joined into one multi-platform image.
+# Called by Build & Release for a release; run by hand (Actions → App builder image → Run
+# workflow) to try a change of this workflow: it pushes only the tag given (e.g. test).
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: The release's version (the image's tag; latest and the commit too)
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      version:
+        description: The tag to push (e.g. test) — never a release's version
+        required: true
+        default: test
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE: ghcr.io/${{ github.repository }}/builder
+
+jobs:
+  build:
+    name: Build (${{ matrix.arch }})
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+
+    steps:
+      - name: Refuse a release's version by hand
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          if echo "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || [ "$VERSION" = latest ]; then
+            echo "::error::$VERSION is a release's tag: a run by hand pushes a test tag only"
+            exit 1
+          fi
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # pushed by its digest only: the tags go on the joined image
+      - name: Build and push
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          target: app-builder
+          platforms: linux/${{ matrix.arch }}
+          outputs: type=image,name=${{ env.IMAGE }},push-by-digest=true,name-canonical=true,push=true
+          cache-from: type=gha,scope=builder-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=builder-${{ matrix.arch }}
+
+      - name: Keep the digest
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/digests"
+          touch "$RUNNER_TEMP/digests/${DIGEST#sha256:}"
+
+      - name: Upload the digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: builder-digest-${{ matrix.arch }}
+          path: ${{ runner.temp }}/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  image:
+    name: Push the image
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Download the digests
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{ runner.temp }}/digests
+          pattern: builder-digest-*
+          merge-multiple: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Join the platforms into one image
+        working-directory: ${{ runner.temp }}/digests
+        env:
+          VERSION: ${{ inputs.version }}
+          RELEASE: ${{ github.event_name != 'workflow_dispatch' }}
+          SHA: ${{ github.sha }}
+        run: |
+          tags=(-t "$IMAGE:$VERSION")
+          if [ "$RELEASE" = true ]; then
+            tags+=(-t "$IMAGE:latest" -t "$IMAGE:$SHA")
+          fi
+          refs=()
+          for digest in *; do
+            refs+=("$IMAGE@sha256:$digest")
+          done
+          if [ "${#refs[@]}" -ne 2 ]; then
+            echo "::error::expected the digests of two platforms, got ${#refs[@]}"
+            exit 1
+          fi
+          docker buildx imagetools create "${tags[@]}" "${refs[@]}"
+          docker buildx imagetools inspect "$IMAGE:$VERSION"
