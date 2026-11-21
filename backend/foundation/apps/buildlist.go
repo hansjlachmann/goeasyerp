@@ -27,6 +27,7 @@ type BuildApp struct {
 	Source        string `yaml:"source,omitempty" json:"source"`
 	Repository    string `yaml:"repository,omitempty" json:"repository,omitempty"`
 	Ref           string `yaml:"ref,omitempty" json:"ref,omitempty"`
+	Commit        string `yaml:"commit,omitempty" json:"commit,omitempty"` // the tag's commit when installed: built exactly, the tag must still point to it
 	Path          string `yaml:"path,omitempty" json:"path,omitempty"`
 	PackageSHA256 string `yaml:"package_sha256,omitempty" json:"package_sha256,omitempty"`
 }

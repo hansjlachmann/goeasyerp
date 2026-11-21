@@ -29,6 +29,7 @@
 //	OnValidate_Source_path(rec *gtables.InstalledApp) error
 //	OnValidate_Manifest(rec *gtables.InstalledApp) error
 //	OnValidate_Source_type(rec *gtables.InstalledApp) error
+//	OnValidate_Source_commit(rec *gtables.InstalledApp) error
 package tables
 
 import (
@@ -106,6 +107,7 @@ type InstalledApp struct {
 	Source_path   types.Text              `db:"source_path"`
 	Manifest      []byte                  `db:"manifest"`
 	Source_type   InstalledAppSource_type `db:"source_type"`
+	Source_commit types.Text              `db:"source_commit"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -189,6 +191,7 @@ var InstalledApp_FieldNo = struct {
 	Source_path   int
 	Manifest      int
 	Source_type   int
+	Source_commit int
 }{
 	App_id:        1,
 	Name:          2,
@@ -207,6 +210,7 @@ var InstalledApp_FieldNo = struct {
 	Source_path:   15,
 	Manifest:      16,
 	Source_type:   17,
+	Source_commit: 18,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -521,6 +525,9 @@ func (t *InstalledApp) CheckFields() error {
 	if err := tables.CheckMaxLength(InstalledAppTableName, "source_path", string(t.Source_path), 100); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(InstalledAppTableName, "source_commit", string(t.Source_commit), 40); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -564,7 +571,8 @@ func GetInstalledAppTableSchema() string {
 		source_ref TEXT(100),
 		source_path TEXT(100),
 		manifest BLOB,
-		source_type INTEGER CHECK (source_type >= 0 AND source_type <= 1)
+		source_type INTEGER CHECK (source_type >= 0 AND source_type <= 1),
+		source_commit TEXT(40)
 	`
 }
 
@@ -587,7 +595,8 @@ func GetInstalledAppPostgresTableSchema() string {
 		source_ref VARCHAR(100),
 		source_path VARCHAR(100),
 		manifest BYTEA,
-		source_type INTEGER CHECK (source_type >= 0 AND source_type <= 1)
+		source_type INTEGER CHECK (source_type >= 0 AND source_type <= 1),
+		source_commit VARCHAR(40)
 	`
 }
 
@@ -1534,6 +1543,7 @@ func (t *InstalledApp) Init() {
 	t.Source_path = *new(types.Text)
 	t.Manifest = *new([]byte)
 	t.Source_type = 0
+	t.Source_commit = *new(types.Text)
 	t.applyDefaults()
 }
 
@@ -1630,6 +1640,8 @@ func (t *InstalledApp) fieldRef(i int) any {
 		return &t.Manifest
 	case 16:
 		return &t.Source_type
+	case 17:
+		return &t.Source_commit
 	}
 	return nil
 }
@@ -1884,6 +1896,21 @@ var installedAppFields = &tables.TableFields{
 			Kind:    tables.KindOption,
 			Trigger: "OnValidate_Source_type",
 			Options: []string{"Git", "Package"},
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         18,
+				Name:       "source_commit",
+				Type:       tables.FieldTypeText,
+				Length:     40,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+				ReadOnly:   true,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Source_commit",
 		},
 	},
 }

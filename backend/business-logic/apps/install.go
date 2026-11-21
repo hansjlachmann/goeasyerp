@@ -77,7 +77,12 @@ func InstallApp(rec *gtables.InstalledApp) (fcodeunits.Result, error) {
 	if err != nil || repo.Ref != "" {
 		return fcodeunits.Result{}, errors.New(ts.Message("ERR_APP_REPOSITORY", lang))
 	}
-	repo.Ref = strings.TrimSpace(values["version"])
+	// only from the owners and repositories App Build Setup names (blank: none)
+	setup := gtables.GetAppBuildSetup(rec)
+	if !fapps.RepositoryAllowed(setup.Allowed_repositories.String(), repo.Owner, repo.Name) {
+		return fcodeunits.Result{}, errors.New(ts.MessageWithParams("ERR_APP_REPOSITORY_NOT_ALLOWED", lang, repo.Owner+"/"+repo.Name))
+	}
+	tag := strings.TrimSpace(values["version"])
 	folder := strings.Trim(strings.TrimSpace(values["folder"]), "/")
 	file := "application.yaml"
 	if folder != "" {
@@ -85,14 +90,23 @@ func InstallApp(rec *gtables.InstalledApp) (fcodeunits.Result, error) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-	data, err := newGitHubFetcher().File(ctx, repo, file, manifestMax)
+	fetcher := newGitHubFetcher()
+	// the app is pinned to the commit its tag points to now: the build takes that commit and
+	// refuses when the tag has moved
+	commit, err := fetcher.TagCommit(ctx, repo, tag)
 	if err != nil {
-		return fcodeunits.Result{}, errors.New(ts.MessageWithParams("ERR_APP_READ", lang, repo.URL()+" ("+repo.Ref+") "+file, err.Error()))
+		return fcodeunits.Result{}, errors.New(ts.MessageWithParams("ERR_APP_TAG", lang, tag, repo.URL(), err.Error()))
 	}
-	// the repository's address without the version: the build clones it at the tag (Source Ref)
+	repo.Ref = commit
+	data, err := fetcher.File(ctx, repo, file, manifestMax)
+	if err != nil {
+		return fcodeunits.Result{}, errors.New(ts.MessageWithParams("ERR_APP_READ", lang, repo.URL()+" ("+tag+") "+file, err.Error()))
+	}
+	// the repository's address without the version: the build fetches the commit (Source
+	// Commit) and checks that the tag (Source Ref) still points to it
 	address := repo
 	address.Ref = ""
-	return installManifest(rec, data, address.URL(), repo.Ref, folder)
+	return installManifest(rec, data, address.URL(), tag, commit, folder)
 }
 
 // UploadApp asks for an app package (a .zip of the app's folder), checks it — the package as
@@ -157,8 +171,8 @@ func uploadPackage(src *gtables.InstalledApp, data []byte) (fcodeunits.Result, e
 
 // installManifest checks an app's application.yaml against the planned apps and records it as
 // Pending Install, taken from a Git repository
-func installManifest(src *gtables.InstalledApp, data []byte, source, ref, folder string) (fcodeunits.Result, error) {
-	return installChecked(src, data, appSource{kind: gtables.InstalledApp_Source_type.Git, source: source, ref: ref, folder: folder})
+func installManifest(src *gtables.InstalledApp, data []byte, source, ref, commit, folder string) (fcodeunits.Result, error) {
+	return installChecked(src, data, appSource{kind: gtables.InstalledApp_Source_type.Git, source: source, ref: ref, commit: commit, folder: folder})
 }
 
 // appSource: where the build takes an app from — a Git repository (source, ref, folder), or a
@@ -167,6 +181,7 @@ type appSource struct {
 	kind   gtables.InstalledAppSource_type
 	source string
 	ref    string
+	commit string // the commit the tag pointed to when the app was chosen (Git)
 	folder string
 	save   func(app *fapps.App) error
 }
@@ -204,7 +219,15 @@ func installChecked(src *gtables.InstalledApp, data []byte, from appSource) (fco
 
 	rec := gtables.NewInstalledApp(src)
 	exists := rec.Get(types.NewText(app.ID))
-	if exists && rec.Status == gtables.InstalledApp_Status.Installed && rec.Version.String() == app.Version {
+	sameVersion := exists && rec.Status == gtables.InstalledApp_Status.Installed && rec.Version.String() == app.Version
+	switch {
+	// the same version again from Git: only to pin an app installed before commits were recorded
+	case sameVersion && from.kind == gtables.InstalledApp_Source_type.Git && rec.Source_type == from.kind && rec.Source != "" && rec.Source_commit == "":
+	case sameVersion && from.kind == gtables.InstalledApp_Source_type.Git && rec.Source_commit != "" && rec.Source_commit.String() != from.commit:
+		// the version's tag points to another commit than the one installed: other code under
+		// the same version — refused (the publisher must give it a new version)
+		return fcodeunits.Result{}, errors.New(ts.MessageWithParams("ERR_APP_TAG_MOVED", lang, app.Name, from.ref, from.commit, rec.Source_commit.String()))
+	case sameVersion:
 		return fcodeunits.Result{}, errors.New(ts.MessageWithParams("ERR_APP_ALREADY_INSTALLED", lang, app.Name, app.Version))
 	}
 	if !exists {
@@ -228,6 +251,7 @@ func installChecked(src *gtables.InstalledApp, data []byte, from appSource) (fco
 	rec.Source = types.NewText(source)
 	rec.Source_ref = types.NewText(ref)
 	rec.Source_path = types.NewText(folder)
+	rec.Source_commit = types.NewText(from.commit)
 	rec.Source_type = from.kind
 	rec.Manifest = data
 	rec.Updated_at = types.NewDateTimeFromTime(time.Now())
@@ -401,6 +425,7 @@ func buildListOf(src *gtables.InstalledApp, base *fapps.App, planned []*fapps.Ap
 			app.Source = fapps.SourceGit
 			app.Repository = repositoryAddress(row.Source.String())
 			app.Ref = row.Source_ref.String()
+			app.Commit = row.Source_commit.String()
 			app.Path = row.Source_path.String()
 		}
 		list.Apps = append(list.Apps, app)

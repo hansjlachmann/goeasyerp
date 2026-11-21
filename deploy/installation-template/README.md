@@ -27,6 +27,8 @@ with the apps compiled in — and pushes it to the repository's package registry
    versions — when you choose it, and shows it as Pending Install / Pending Removal.
 2. **Build List** downloads `apps.yaml`: the base version and the apps of the next build, in
    dependency order. Commit it to this repository (replacing the old one).
+   Each app carries the `commit` its tag pointed to when it was installed: the workflow builds
+   exactly that commit and fails when the tag has moved.
 3. The workflow runs on the push: it checks out the base release and each app at its version
    and builds and pushes the image (`<base version>` and `latest` tags) for linux/amd64 and linux/arm64. The base's build checks
    the apps again (dependencies, number series, prefix) and runs nothing when one is refused.

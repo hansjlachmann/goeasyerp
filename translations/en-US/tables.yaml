@@ -495,6 +495,7 @@ tables:
       source_path: "Repository Folder"
       manifest: "Application File"
       source_type: "Source Type"
+      source_commit: "Repository Commit"
     options:
       status:
         installed: "Installed"
@@ -550,6 +551,7 @@ tables:
       primary_key: "Primary Key"
       builds_by: "Builds By"
       allow_upload: "Allow Upload"
+      allowed_repositories: "Allowed Repositories"
     options:
       builds_by:
         ci_pipeline: "CI Pipeline"

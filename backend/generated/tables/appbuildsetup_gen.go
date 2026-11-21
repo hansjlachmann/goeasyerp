@@ -15,6 +15,7 @@
 //	OnValidate_Primary_key(rec *gtables.AppBuildSetup) error
 //	OnValidate_Builds_by(rec *gtables.AppBuildSetup) error
 //	OnValidate_Allow_upload(rec *gtables.AppBuildSetup) error
+//	OnValidate_Allowed_repositories(rec *gtables.AppBuildSetup) error
 package tables
 
 import (
@@ -57,9 +58,10 @@ func (o AppBuildSetupBuilds_by) IsValid() bool {
 // (generated from the table definition). Its business logic — the table and field
 // triggers — is in business-logic/tables, registered with RegisterAppBuildSetupLogic.
 type AppBuildSetup struct {
-	Primary_key  types.Code             `db:"primary_key,pk"`
-	Builds_by    AppBuildSetupBuilds_by `db:"builds_by"`
-	Allow_upload bool                   `db:"allow_upload"`
+	Primary_key          types.Code             `db:"primary_key,pk"`
+	Builds_by            AppBuildSetupBuilds_by `db:"builds_by"`
+	Allow_upload         bool                   `db:"allow_upload"`
+	Allowed_repositories types.Text             `db:"allowed_repositories"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -115,13 +117,15 @@ var AppBuildSetup_Builds_by = struct {
 // AppBuildSetup_FieldNo holds the field numbers of App_Build_Setup (FieldNo):
 // AppBuildSetup_FieldNo.Primary_key is 1
 var AppBuildSetup_FieldNo = struct {
-	Primary_key  int
-	Builds_by    int
-	Allow_upload int
+	Primary_key          int
+	Builds_by            int
+	Allow_upload         int
+	Allowed_repositories int
 }{
-	Primary_key:  1,
-	Builds_by:    2,
-	Allow_upload: 3,
+	Primary_key:          1,
+	Builds_by:            2,
+	Allow_upload:         3,
+	Allowed_repositories: 4,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -411,6 +415,9 @@ func (t *AppBuildSetup) CheckFields() error {
 	if err := tables.CheckMaxLength(AppBuildSetupTableName, "primary_key", string(t.Primary_key), 20); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(AppBuildSetupTableName, "allowed_repositories", string(t.Allowed_repositories), 250); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -452,7 +459,8 @@ func GetAppBuildSetupTableSchema() string {
 	return `
 		primary_key TEXT(20) PRIMARY KEY,
 		builds_by INTEGER CHECK (builds_by >= 0 AND builds_by <= 1),
-		allow_upload INTEGER
+		allow_upload INTEGER,
+		allowed_repositories TEXT(250)
 	`
 }
 
@@ -461,7 +469,8 @@ func GetAppBuildSetupPostgresTableSchema() string {
 	return `
 		primary_key VARCHAR(20) PRIMARY KEY,
 		builds_by INTEGER CHECK (builds_by >= 0 AND builds_by <= 1),
-		allow_upload BOOLEAN
+		allow_upload BOOLEAN,
+		allowed_repositories VARCHAR(250)
 	`
 }
 
@@ -1394,6 +1403,7 @@ func (t *AppBuildSetup) setKeyValues(values []interface{}) {
 func (t *AppBuildSetup) Init() {
 	t.Builds_by = 0
 	t.Allow_upload = *new(bool)
+	t.Allowed_repositories = *new(types.Text)
 	t.applyDefaults()
 }
 
@@ -1462,6 +1472,8 @@ func (t *AppBuildSetup) fieldRef(i int) any {
 		return &t.Builds_by
 	case 2:
 		return &t.Allow_upload
+	case 3:
+		return &t.Allowed_repositories
 	}
 	return nil
 }
@@ -1513,6 +1525,20 @@ var appBuildSetupFields = &tables.TableFields{
 			},
 			Kind:    tables.KindBool,
 			Trigger: "OnValidate_Allow_upload",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         4,
+				Name:       "allowed_repositories",
+				Type:       tables.FieldTypeText,
+				Length:     250,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Allowed_repositories",
 		},
 	},
 }

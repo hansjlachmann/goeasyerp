@@ -30,6 +30,14 @@ table:
       db_name: allow_upload
       default: false
 
+    # The GitHub owners ("acme") and repositories ("acme/loyalty") Install App may install apps
+    # from, separated by commas; blank: none. Uploaded packages are governed by Allow Upload.
+    - name: allowed_repositories
+      no: 4
+      type: types.Text
+      db_name: allowed_repositories
+      length: 250
+
   keys:
     - name: Primary
       fields: [primary_key]

@@ -218,3 +218,19 @@ func TestLowMemoryBuild(t *testing.T) {
 		t.Errorf("package %s", tablesPackage)
 	}
 }
+
+// git ls-remote's output: an annotated tag's commit is its peeled line, a lightweight tag's its
+// own line; a missing tag gives ""
+func TestTagCommit(t *testing.T) {
+	const ref = "refs/tags/v1.0.0"
+	annotated := "21d5557e4793918bab97857044982e9def703cbf\trefs/tags/v1.0.0\n69250db6b66b1a974fd9c4d45d34dd5e53b6e4dc\trefs/tags/v1.0.0^{}\n"
+	if got := tagCommit(annotated, ref); got != "69250db6b66b1a974fd9c4d45d34dd5e53b6e4dc" {
+		t.Errorf("annotated: %q", got)
+	}
+	if got := tagCommit("69250db6b66b1a974fd9c4d45d34dd5e53b6e4dc\trefs/tags/v1.0.0\n", ref); got != "69250db6b66b1a974fd9c4d45d34dd5e53b6e4dc" {
+		t.Errorf("lightweight: %q", got)
+	}
+	if got := tagCommit("69250db6b66b1a974fd9c4d45d34dd5e53b6e4dc\trefs/tags/v1.0.10\n", ref); got != "" {
+		t.Errorf("another tag: %q", got)
+	}
+}

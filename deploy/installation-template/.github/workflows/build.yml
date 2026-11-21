@@ -50,11 +50,30 @@ jobs:
             id=$(yq ".apps[$i].id" installation/apps.yaml)
             repository=$(yq ".apps[$i].repository" installation/apps.yaml)
             ref=$(yq ".apps[$i].ref" installation/apps.yaml)
+            commit=$(yq ".apps[$i].commit // \"\"" installation/apps.yaml)
             folder=$(yq ".apps[$i].path // \"\"" installation/apps.yaml)
             case "$repository" in https://github.com/*) ;; *) echo "app $id: not a GitHub repository: $repository"; exit 1 ;; esac
             url="$repository"
             if [ -n "$APPS_TOKEN" ]; then url="https://x-access-token:${APPS_TOKEN}@${repository#https://}"; fi
-            git clone --quiet --depth 1 --branch "$ref" "$url" "app-$i"
+            if [ -z "$commit" ]; then
+              # installed before commits were recorded: built at the tag as it is now
+              echo "::warning::app $id has no recorded commit: built at the tag $ref (install it again to pin it)"
+              git -c advice.detachedHead=false clone --quiet --depth 1 --branch "$ref" "$url" "app-$i"
+            else
+              # exactly the commit recorded at install, and only while the tag still points to it
+              case "$commit" in *[!0-9a-f]*) echo "app $id: not a commit: $commit"; exit 1 ;; esac
+              [ ${#commit} -eq 40 ] || { echo "app $id: not a commit: $commit"; exit 1; }
+              refs=$(git ls-remote -- "$url" "refs/tags/$ref" "refs/tags/$ref^{}")
+              now=$(printf '%s\n' "$refs" | awk -v r="refs/tags/$ref^{}" '$2 == r {print $1}')
+              [ -n "$now" ] || now=$(printf '%s\n' "$refs" | awk -v r="refs/tags/$ref" '$2 == r {print $1}')
+              if [ "$now" != "$commit" ]; then
+                echo "app $id: the tag $ref now points to '${now}', not to $commit, which was installed — refused"
+                exit 1
+              fi
+              git init --quiet "app-$i"
+              git -C "app-$i" fetch --quiet --depth 1 -- "$url" "$commit"
+              git -C "app-$i" -c advice.detachedHead=false checkout --quiet FETCH_HEAD
+            fi
             cp -r "app-$i/${folder:-.}" "base/apps/$id"
             echo "✓ $(yq ".apps[$i].name" installation/apps.yaml) $(yq ".apps[$i].version" installation/apps.yaml)"
           done

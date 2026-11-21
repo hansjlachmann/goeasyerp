@@ -66,10 +66,12 @@ func TestInstallUninstall(t *testing.T) {
 		}
 		return rec
 	}
-	install := func(data []byte) error {
-		_, err := installManifest(src, data, "https://github.com/acme/app", "v1", "extensions")
+	const commitA, commitB = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+	installAt := func(data []byte, commit string) error {
+		_, err := installManifest(src, data, "https://github.com/acme/app", "v1", commit, "extensions")
 		return err
 	}
+	install := func(data []byte) error { return installAt(data, commitA) }
 	wantErr := func(what string, err error, want string) {
 		t.Helper()
 		if err == nil || !strings.Contains(err.Error(), want) {
@@ -81,13 +83,36 @@ func TestInstallUninstall(t *testing.T) {
 	if err := install(rewards); err != nil {
 		t.Fatal(err)
 	}
-	if r := row(rewardsID); r == nil || r.Status != gtables.InstalledApp_Status.PendingInstall || len(r.Manifest) == 0 || r.Source_ref != "v1" {
+	if r := row(rewardsID); r == nil || r.Status != gtables.InstalledApp_Status.PendingInstall || len(r.Manifest) == 0 || r.Source_ref != "v1" || r.Source_commit != commitA {
 		t.Fatalf("Rewards row %+v", r)
 	}
 	wantErr("a missing dependency", install(manifest("aaaaaaaa-0000-4000-8000-000000000013", "Gifts", "1.0.0", "gf", "{from: 52000, to: 52099}", onBase, "{id: aaaaaaaa-0000-4000-8000-0000000000ff, name: Shop}")), "Gifts needs Shop")
 	wantErr("overlapping series", install(manifest("aaaaaaaa-0000-4000-8000-000000000014", "Other", "1.0.0", "ot", "{from: 50050, to: 50150}", onBase)), "overlaps")
 	wantErr("without a prefix", install(manifest("aaaaaaaa-0000-4000-8000-000000000015", "Plain", "1.0.0", "", "{from: 53000, to: 53099}", onBase)), "prefix")
-	wantErr("the same version again", install(manifest(loyaltyID, "Loyalty", "1.0.0", "lp", "{from: 50000, to: 50099}", onBase)), "installed already")
+	loyalty100 := manifest(loyaltyID, "Loyalty", "1.0.0", "lp", "{from: 50000, to: 50099}", onBase)
+	wantErr("the same version again (no source)", install(loyalty100), "installed already")
+	// installed from Git at commit A: the same version again at A is installed already, its tag
+	// moved to B is refused; installed before commits were recorded, it may be installed again to
+	// pin it
+	lr := row(loyaltyID)
+	lr.Source = "https://github.com/acme/app"
+	lr.Source_commit = commitA
+	if err := lr.ModifyOrError(false); err != nil {
+		t.Fatal(err)
+	}
+	wantErr("the same version again", install(loyalty100), "installed already")
+	wantErr("the tag moved", installAt(loyalty100, commitB), "now points to commit "+commitB)
+	lr = row(loyaltyID)
+	lr.Source_commit = ""
+	if err := lr.ModifyOrError(false); err != nil {
+		t.Fatal(err)
+	}
+	if err := installAt(loyalty100, commitB); err != nil || row(loyaltyID).Source_commit != commitB {
+		t.Fatalf("pin Loyalty 1.0.0: %v", err)
+	}
+	if _, err := CancelPending(row(loyaltyID)); err != nil {
+		t.Fatal(err)
+	}
 	wantErr("an update below a dependent's need", install(manifest(loyaltyID, "Loyalty", "0.9.0", "lp", "{from: 50000, to: 50099}", onBase)), "Rewards needs Loyalty version 1.0.0")
 
 	// an update of Loyalty, then the build list: base version, Loyalty before Rewards
@@ -102,7 +127,7 @@ func TestInstallUninstall(t *testing.T) {
 	list, _ := base64.StdEncoding.DecodeString(res.Data["file"].(string))
 	text := string(list)
 	if !strings.Contains(text, "version: "+base.Version) || strings.Index(text, "name: Loyalty") > strings.Index(text, "name: Rewards") ||
-		!strings.Contains(text, "version: 1.1.0") || !strings.Contains(text, "repository: https://github.com/acme/app") {
+		!strings.Contains(text, "version: 1.1.0") || !strings.Contains(text, "repository: https://github.com/acme/app") || !strings.Contains(text, "commit: "+commitA) {
 		t.Errorf("build list:\n%s", text)
 	}
 

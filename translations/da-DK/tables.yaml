@@ -495,6 +495,7 @@ tables:
       source_path: "Repository-mappe"
       manifest: "Applikationsfil"
       source_type: "Kildetype"
+      source_commit: "Repository-commit"
     options:
       status:
         installed: "Installeret"
@@ -550,6 +551,7 @@ tables:
       primary_key: "Primær nøgle"
       builds_by: "Bygges af"
       allow_upload: "Tillad upload"
+      allowed_repositories: "Tilladte repositorier"
     options:
       builds_by:
         ci_pipeline: "CI-pipeline"

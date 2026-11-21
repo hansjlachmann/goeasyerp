@@ -13,6 +13,7 @@ page:
         fields:
           - source: builds_by
           - source: allow_upload
+          - source: allowed_repositories
 
   actions:
     - name: Edit

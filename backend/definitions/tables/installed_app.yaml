@@ -141,6 +141,18 @@ table:
       options: ["Git", "Package"]
       editable: false
 
+    # The commit the tag (Source Ref) pointed to when the app was installed: every build takes
+    # exactly this commit, and refuses to build when the tag points elsewhere (a moved tag could
+    # bring other code into the program unseen). Blank for apps installed before (built at the
+    # tag, with a warning) and for packages.
+    - name: source_commit
+      no: 18
+      type: types.Text
+      db_name: source_commit
+      caption: Repository Commit
+      length: 40
+      editable: false
+
   keys:
     - name: Primary
       fields: [app_id]

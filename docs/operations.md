@@ -129,10 +129,15 @@ database, so `scripts/backup.sh` covers them.
    with one thread, `GOGC=25` and two packages at a time to stay there; a server with less
    memory should use the CI pipeline route below.
    `GOFLAGS` (`-p=`, `-gcflags`) and `GOGC` in the builder's environment replace these settings.
-2. In App Build Setup, set **Builds By** to *Local Builder*, and **Allow Upload** if apps may
-   come as packages.
+2. In App Build Setup, set **Builds By** to *Local Builder*, **Allow Upload** if apps may
+   come as packages, and **Allowed Repositories**: the GitHub owners (`acme`) or repositories
+   (`acme/loyalty`) apps may be installed from, separated by commas. Blank allows none. Name only
+   sources you trust: an app's code runs inside the server.
 3. Choose the apps in Installed Apps:
-   - **Install App** takes a repository and a tag;
+   - **Install App** takes a repository and a tag, and pins the app to the commit the tag points
+     to (Repository Commit). Every build takes exactly that commit, and refuses to build when the
+     tag points elsewhere. An app installed before commits were recorded has none: its builds warn, and
+     Install App with the same version pins it;
    - **Upload App** takes an app package (`.zip`, `EXTENSIONS.md` §10);
    - **Uninstall App** removes one.
 4. Run **Build → Build Apps**. The builder builds the program with the apps into the `app_builds`

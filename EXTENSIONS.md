@@ -316,10 +316,16 @@ Setting either one up is described in `docs/operations.md`.
 On **Installed Apps** (Administration → Installed Apps; SUPER only):
 
 - **Install App** asks for the app's GitHub repository, its version (a release tag) and the folder
-  of its `application.yaml`, reads that file from GitHub (`GITHUB_TOKEN` of the server for private
-  repositories), checks it against the installed apps and those already chosen — numbers, prefix,
-  dependencies and their versions — and shows it as **Pending Install**. A newer version of an
-  installed app is an update.
+  of its `application.yaml`. The repository must be allowed in App Build Setup (Allowed
+  Repositories: GitHub owners or owner/repository, blank allows none). It resolves the tag to its
+  commit and records it (Repository Commit), reads `application.yaml` at that commit
+  (`GITHUB_TOKEN` of the server for private repositories), checks it against the installed apps
+  and those already chosen — numbers, prefix, dependencies and their versions — and shows it as
+  **Pending Install**. A newer version of an installed app is an update.
+- **Pinned to a commit:** every build — Build Apps, the automatic build after a base upgrade, the
+  CI pipeline — takes exactly the recorded commit and refuses when the tag now points to another
+  one. A published version never changes: release changes as a new version (a new tag), never by
+  moving a tag.
 - **Uninstall App** marks an app **Pending Removal** (not while another app depends on it).
   **Cancel Pending** takes back a pending install, update or removal.
 - **Build → Build Apps** (Local Builder) asks the builder to build the planned apps. When the

@@ -299,3 +299,45 @@ func (f *Fetcher) File(ctx context.Context, repo Repo, filePath string, max int6
 	}
 	return f.get(ctx, f.API, segs, "application/vnd.github.raw", max, query...)
 }
+
+// TagRe: a version tag name an app may be installed at (letters, digits, . _ -; no path)
+var TagRe = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$`)
+
+// TagCommit is the commit a tag of repo points to — a lightweight tag's own, an annotated tag
+// followed to its commit. ErrNotFound when the repository has no such tag (a branch is not a
+// tag: an app is installed at a tag, and pinned to the tag's commit).
+func (f *Fetcher) TagCommit(ctx context.Context, repo Repo, tag string) (string, error) {
+	if !TagRe.MatchString(tag) {
+		return "", fmt.Errorf("invalid tag %q", tag)
+	}
+	type object struct {
+		Object struct {
+			Type string `json:"type"`
+			SHA  string `json:"sha"`
+		} `json:"object"`
+	}
+	raw, err := f.get(ctx, f.API, []string{"repos", repo.Owner, repo.Name, "git", "ref", "tags", tag}, "application/vnd.github+json", 64<<10)
+	if err != nil {
+		return "", err
+	}
+	// an annotated tag is a tag object pointing to the commit (or, rarely, to another tag)
+	for i := 0; i < 4; i++ {
+		var o object
+		err = json.Unmarshal(raw, &o)
+		if err != nil || !shaRe.MatchString(o.Object.SHA) {
+			return "", fmt.Errorf("unexpected tag from GitHub")
+		}
+		switch o.Object.Type {
+		case "commit":
+			return o.Object.SHA, nil
+		case "tag":
+			raw, err = f.get(ctx, f.API, []string{"repos", repo.Owner, repo.Name, "git", "tags", o.Object.SHA}, "application/vnd.github+json", 64<<10)
+			if err != nil {
+				return "", err
+			}
+		default:
+			return "", fmt.Errorf("tag %s does not point to a commit", tag)
+		}
+	}
+	return "", fmt.Errorf("tag %s does not point to a commit", tag)
+}

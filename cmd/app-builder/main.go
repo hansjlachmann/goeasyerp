@@ -22,6 +22,7 @@ import (
 	"os/exec"
 	"os/signal"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"syscall"
@@ -34,6 +35,7 @@ import (
 	fapps "github.com/hansjlachmann/goeasyerp/backend/foundation/apps"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/themes"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
@@ -291,13 +293,16 @@ func unpack(data []byte, want, dest string) error {
 	return pkg.Extract(dest)
 }
 
-// fetchGit clones the app's repository at its tag (no history) and copies its folder
+// fetchGit takes the app's repository at its commit (no history) and copies its folder: the
+// commit recorded when the app was installed, after checking that its tag still points to it — a
+// moved tag would bring other code into the program unseen. An app installed before commits were
+// recorded is cloned at its tag, with a warning.
 func (f *sourceFetcher) fetchGit(ctx context.Context, app fapps.BuildApp, dest string, log io.Writer) error {
 	repo, err := url.Parse(app.Repository)
 	if err != nil || repo.Scheme != "https" || repo.Host == "" || repo.User != nil {
 		return fmt.Errorf("%q is not an https repository address", app.Repository)
 	}
-	if app.Ref == "" || strings.HasPrefix(app.Ref, "-") {
+	if !themes.TagRe.MatchString(app.Ref) {
 		return fmt.Errorf("%q is not a version tag", app.Ref)
 	}
 	cloneURL := repo.String()
@@ -306,19 +311,84 @@ func (f *sourceFetcher) fetchGit(ctx context.Context, app fapps.BuildApp, dest s
 		withToken.User = url.UserPassword("x-access-token", f.token)
 		cloneURL = withToken.String()
 	}
+	git := func(out io.Writer, args ...string) error {
+		cmd := exec.CommandContext(ctx, "git", args...)
+		cmd.Env = append(os.Environ(), "GIT_TERMINAL_PROMPT=0")
+		cmd.Stdout = out
+		cmd.Stderr = log
+		return cmd.Run()
+	}
 	clone := dest + ".clone"
 	defer func() { _ = os.RemoveAll(clone) }()
-	cmd := exec.CommandContext(ctx, "git", "clone", "--quiet", "--depth", "1", "--branch", app.Ref, "--", cloneURL, clone)
-	cmd.Env = append(os.Environ(), "GIT_TERMINAL_PROMPT=0")
-	cmd.Stdout = log
-	cmd.Stderr = log
-	err = cmd.Run()
-	if err != nil {
-		return fmt.Errorf("git clone %s %s: %w", app.Repository, app.Ref, err)
+	if app.Commit == "" {
+		_, _ = fmt.Fprintf(log, "   WARNING: %s has no recorded commit (installed before commits were recorded): built at the tag %s as it is now — install it again (Install App, the same version) to pin it\n", app.Name, app.Ref)
+		err = git(log, "-c", "advice.detachedHead=false", "clone", "--quiet", "--depth", "1", "--branch", app.Ref, "--", cloneURL, clone)
+		if err != nil {
+			return fmt.Errorf("git clone %s %s: %w", app.Repository, app.Ref, err)
+		}
+	} else {
+		if !commitRe.MatchString(app.Commit) {
+			return fmt.Errorf("%q is not a commit", app.Commit)
+		}
+		var refs strings.Builder
+		tagRef := "refs/tags/" + app.Ref
+		err = git(&refs, "ls-remote", "--", cloneURL, tagRef, tagRef+"^{}")
+		if err != nil {
+			return fmt.Errorf("git ls-remote %s: %w", app.Repository, err)
+		}
+		now := tagCommit(refs.String(), tagRef)
+		switch {
+		case now == "":
+			return fmt.Errorf("the tag %s is not in %s any more", app.Ref, app.Repository)
+		case now != app.Commit:
+			return fmt.Errorf("the tag %s of %s now points to commit %s, not to %s, which was installed — refused: other code under the same version (the publisher must release a new version)", app.Ref, app.Repository, now, app.Commit)
+		}
+		_, _ = fmt.Fprintf(log, "   commit %s (tag %s)\n", app.Commit, app.Ref)
+		for _, args := range [][]string{
+			{"init", "--quiet", clone},
+			{"-C", clone, "fetch", "--quiet", "--depth", "1", "--", cloneURL, app.Commit},
+			{"-C", clone, "-c", "advice.detachedHead=false", "checkout", "--quiet", "FETCH_HEAD"},
+		} {
+			err = git(log, args...)
+			if err != nil {
+				return fmt.Errorf("git %s %s %s: %w", args[len(args)-1], app.Repository, app.Commit, err)
+			}
+		}
+		var head strings.Builder
+		err = git(&head, "-C", clone, "rev-parse", "HEAD")
+		if err != nil || strings.TrimSpace(head.String()) != app.Commit {
+			return fmt.Errorf("%s: fetched %q, not the commit %s", app.Repository, strings.TrimSpace(head.String()), app.Commit)
+		}
 	}
 	folder := filepath.Clean(filepath.FromSlash(app.Path))
 	if filepath.IsAbs(folder) || folder == ".." || strings.HasPrefix(folder, ".."+string(filepath.Separator)) {
 		return fmt.Errorf("%q is not a folder of the repository", app.Path)
 	}
 	return copyTree(filepath.Join(clone, folder), dest, func(rel string, d os.DirEntry) bool { return d.Name() == ".git" })
+}
+
+// commitRe: a full commit id
+var commitRe = regexp.MustCompile(`^[0-9a-f]{40}$`)
+
+// tagCommit is the commit a tag points to in git ls-remote's output for tagRef and tagRef^{}:
+// an annotated tag's peeled line (^{}: its commit), else the lightweight tag's own; "" when the
+// tag is not there
+func tagCommit(lsRemote, tagRef string) string {
+	plain, peeled := "", ""
+	for _, line := range strings.Split(lsRemote, "\n") {
+		fields := strings.Fields(line)
+		if len(fields) != 2 {
+			continue
+		}
+		switch fields[1] {
+		case tagRef:
+			plain = fields[0]
+		case tagRef + "^{}":
+			peeled = fields[0]
+		}
+	}
+	if peeled != "" {
+		return peeled
+	}
+	return plain
 }
