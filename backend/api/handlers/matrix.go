@@ -230,6 +230,7 @@ func (h *PageTriggersHandler) Matrix(c *fiber.Ctx) error {
 		return err
 	}
 	fcodeunits.SetCurrentContext(m.sess.GetUserID(), m.sess.GetUserName(), m.sess.GetCompany(), m.language)
+	fcodeunits.SetCurrentAccess(m.sess) // the triggers' permission checks see the user's
 	defer fcodeunits.ClearCurrentContext()
 	if m.matrix.Calculated {
 		return m.calculated(c)
@@ -372,6 +373,7 @@ func (h *PageTriggersHandler) MatrixValidate(c *fiber.Ctx) error {
 	}
 
 	fcodeunits.SetCurrentContext(m.sess.GetUserID(), m.sess.GetUserName(), m.sess.GetCompany(), m.language)
+	fcodeunits.SetCurrentAccess(m.sess) // the triggers' permission checks see the user's
 	defer fcodeunits.ClearCurrentContext()
 
 	tx, err := ftables.BeginTransaction(h.db)

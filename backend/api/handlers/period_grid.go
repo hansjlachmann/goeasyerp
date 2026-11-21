@@ -103,6 +103,7 @@ func (h *PageTriggersHandler) PeriodGrid(c *fiber.Ctx) error {
 	}
 
 	fcodeunits.SetCurrentContext(sess.GetUserID(), sess.GetUserName(), sess.GetCompany(), language)
+	fcodeunits.SetCurrentAccess(sess) // the triggers' permission checks see the user's
 	defer fcodeunits.ClearCurrentContext()
 
 	viewBy := periods.PeriodType(req.ViewBy)

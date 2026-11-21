@@ -50,6 +50,11 @@ func (h *PageTriggersHandler) FieldStates(c *fiber.Ctx) error {
 	if err := c.BodyParser(&record); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(apitypes.NewErrorResponse(apperrors.InvalidRequestBody().Message(language)))
 	}
+	// the page's values come from its record (and the tables its triggers read): Read on its
+	// source table, as opening the page needs
+	if !sess.HasPermission(page.Page.SourceTable, session.PermRead) {
+		return c.Status(fiber.StatusForbidden).JSON(apitypes.NewErrorResponse(apperrors.PermissionDenied(string(session.PermRead), page.Page.SourceTable).Message(language)))
+	}
 	factory, ok := gtables.GetTableFactory(page.Page.SourceTable)
 	if !ok {
 		return c.Status(fiber.StatusNotFound).JSON(apitypes.NewErrorResponse(apperrors.TableNotFound(page.Page.SourceTable).Message(language)))
@@ -57,8 +62,10 @@ func (h *PageTriggersHandler) FieldStates(c *fiber.Ctx) error {
 	rec := factory()
 	rec.InitWithDBType(h.db, sess.GetCompany(), h.dbType)
 	rec.FromMap(record)
-	// the triggers' texts in the user's language (fcodeunits.CurrentLanguage)
+	// the triggers' texts in the user's language (fcodeunits.CurrentLanguage) and the user's
+	// permissions for their checks
 	fcodeunits.SetCurrentContext(sess.GetUserID(), sess.GetUserName(), sess.GetCompany(), language)
+	fcodeunits.SetCurrentAccess(sess)
 	defer fcodeunits.ClearCurrentContext()
 	control, err := pages.RunAfterGetRecordControl(pageID, rec)
 	if err != nil {

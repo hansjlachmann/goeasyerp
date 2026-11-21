@@ -13,7 +13,9 @@ import (
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/reports"
 	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/functions"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/session"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
 // userCodeunit returns the user its run sees (USERID)
@@ -32,6 +34,18 @@ func readerSession(perms map[string]session.TablePermission) *session.Session {
 	s := &session.Session{UserID: "READER1", Company: "TEST", Language: "en-US"}
 	s.SetPermissions(true, false, perms)
 	return s
+}
+
+// test functions of the permission check (registered once): a table function on Customer and
+// on Job_Queue, codeunit functions on codeunits 6 and 900 (names of their own)
+func init() {
+	noop := functions.ForArgs(func(rec *gtables.Customer, _ functions.Args) (fcodeunits.Result, error) {
+		return fcodeunits.Result{}, nil
+	}, "int")
+	functions.Register("table", "Customer", "PermTest", functions.For(func(rec *gtables.Customer) (fcodeunits.Result, error) { return fcodeunits.Result{}, nil }))
+	functions.Register("table", "Job_Queue", "PermTest", functions.For(func(rec *gtables.JobQueue) (fcodeunits.Result, error) { return fcodeunits.Result{}, nil }))
+	functions.Register("codeunit", "6", "PermTest", functions.For(func(rec *gtables.Customer) (fcodeunits.Result, error) { return fcodeunits.Result{}, nil }), functions.OnTable("Customer"))
+	functions.Register("codeunit", "900", "PermTest", noop, functions.OnTable("Customer"))
 }
 
 func TestRunPermissionError(t *testing.T) {
@@ -54,10 +68,16 @@ func TestRunPermissionError(t *testing.T) {
 		{"row without Execute", 455, 0, "", false},
 		{"report with Execute", 0, 93, "", true},
 		{"report without a row", 0, 94, "", false},
-		{"table function, Modify on the table", 0, 0, "table:Customer.AssistEdit", true},
-		{"table function, read only", 0, 0, "table:Job_Queue.ShowLineNo", false},
-		{"codeunit function with Execute", 0, 0, "codeunit:6.PostLine", true},
-		{"codeunit function without", 0, 0, "codeunit:900.PostLine(1)", false},
+		{"table function, Modify on the table", 0, 0, "table:Customer.PermTest", true},
+		{"table function, read only", 0, 0, "table:Job_Queue.PermTest", false},
+		{"codeunit function with Execute", 0, 0, "codeunit:6.PermTest", true},
+		{"codeunit function without", 0, 0, "codeunit:900.PermTest(1)", false},
+		// the lookup ignores letter case and spaces: the check must too (no bypass by writing
+		// the kind in capitals)
+		{"table function in capitals, read only", 0, 0, "TABLE:Job_Queue.PermTest", false},
+		{"table function with spaces, read only", 0, 0, " Table:Job_Queue.PermTest", false},
+		{"codeunit function in capitals, without", 0, 0, "CODEUNIT:900.PermTest(1)", false},
+		{"a function that is not registered", 0, 0, "table:Customer.NoSuchFunction", false},
 	}
 	for _, tt := range tests {
 		denied := runPermissionError(reader, tt.codeunitID, tt.reportID, tt.function, "en-US")
@@ -71,14 +91,14 @@ func TestRunPermissionError(t *testing.T) {
 	if denied := runPermissionError(super, 7, 0, "", "en-US"); denied != nil {
 		t.Errorf("SUPER denied: %v", denied)
 	}
-	if denied := runPermissionError(super, 0, 0, "table:Job_Queue.ShowLineNo", "en-US"); denied != nil {
+	if denied := runPermissionError(super, 0, 0, "table:Job_Queue.PermTest", "en-US"); denied != nil {
 		t.Errorf("SUPER denied a table function: %v", denied)
 	}
 	noRoles := &session.Session{}
 	if runPermissionError(noRoles, 7, 0, "", "en-US") == nil {
 		t.Error("a user without roles may run a routine")
 	}
-	if runPermissionError(noRoles, 0, 0, "table:Job_Queue.ShowLineNo", "en-US") == nil {
+	if runPermissionError(noRoles, 0, 0, "table:Job_Queue.PermTest", "en-US") == nil {
 		t.Error("a user without roles may run a table function")
 	}
 }

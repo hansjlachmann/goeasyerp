@@ -1720,7 +1720,23 @@ func (h *TablesHandler) ValidateField(c *fiber.Ctx) error {
 		return c.JSON(apitypes.NewSuccessResponse(ftables.PublicMap(table)))
 	}
 
-	// Validate field (runs OnValidate trigger)
+	// Validate field (runs OnValidate trigger) — in a transaction that is always rolled back:
+	// validate only computes the record's new values for the page; a trigger that writes (a
+	// changed customer recreating an order's lines) must not save anything here — saving is
+	// insert/modify, with their permissions and checks
+	setter, ok := table.(interface{ SetDB(database.Executor) })
+	if !ok {
+		return c.Status(500).JSON(apitypes.NewErrorResponse(apperrors.InvalidRequestBody().Message(language)))
+	}
+	tx, err := h.db.Begin()
+	if err != nil {
+		return c.Status(500).JSON(apitypes.NewErrorResponse(err.Error()))
+	}
+	setter.SetDB(tx)
+	defer func() {
+		_ = ftables.Rollback(tx)
+		setter.SetDB(h.db)
+	}()
 	if err := validateByUser(table, req.Field, req.Value); err != nil {
 		return c.JSON(apitypes.APIResponse{
 			Success: false,

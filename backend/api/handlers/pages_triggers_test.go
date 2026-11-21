@@ -3,6 +3,8 @@ package handlers
 import (
 	"database/sql"
 	"fmt"
+	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/gofiber/fiber/v2"
@@ -58,6 +60,34 @@ func TestPageFieldStates(t *testing.T) {
 	if s := states(`{"no":"C1","blocked":true}`); editable(s, "name") != false {
 		t.Errorf("blocked: %v", s)
 	}
+	// the page's values need Read on its source table: a user without it (or without roles) is
+	// refused, whatever key is sent
+	for _, sess := range []*session.Session{
+		func() *session.Session {
+			s := &session.Session{UserID: "CLERK", Company: "TEST", Language: "en-US"}
+			s.SetPermissions(true, false, map[string]session.TablePermission{"VENDOR": {Read: true}})
+			return s
+		}(),
+		{UserID: "NOROLES", Company: "TEST", Language: "en-US"},
+	} {
+		denied := fiber.New()
+		user := sess
+		denied.Use(func(c *fiber.Ctx) error {
+			c.Locals("session", user)
+			return c.Next()
+		})
+		denied.Post("/api/pages/:id/field-states", NewPageTriggersHandler(db, database.DBTypeSQLite).FieldStates)
+		req := httptest.NewRequest("POST", "/api/pages/151/field-states", strings.NewReader(`{"no":"C1"}`))
+		req.Header.Set("Content-Type", "application/json")
+		resp, err := denied.Test(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if resp.StatusCode != fiber.StatusForbidden {
+			t.Errorf("%s: field states %d, want 403", user.UserID, resp.StatusCode)
+		}
+	}
+
 	if !pages.HasRecordTriggers(151) || pages.HasRecordTriggers(22) {
 		t.Error("HasRecordTriggers")
 	}

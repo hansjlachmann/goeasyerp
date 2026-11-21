@@ -556,6 +556,15 @@ func (h *AuthHandler) CompanyChanged(c *fiber.Ctx, oldName, newName string) {
 // CreateCompany creates a new company
 // POST /api/auth/companies
 func (h *AuthHandler) CreateCompany(c *fiber.Ctx) error {
+	// a new company makes every company table: a logged-in SUPER user only (the Companies page
+	// is the usual way, with its table permissions)
+	sess := getSession(c)
+	if sess == nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(apitypes.NewErrorResponse(apperrors.NoActiveSession().Message("en-US")))
+	}
+	if !sess.IsSuper {
+		return c.Status(fiber.StatusForbidden).JSON(apitypes.NewErrorResponse(apperrors.PermissionDenied(string(session.PermInsert), "Company").Message(sess.GetLanguage())))
+	}
 	var requestBody struct {
 		Name        string `json:"name"`
 		DisplayName string `json:"display_name"`

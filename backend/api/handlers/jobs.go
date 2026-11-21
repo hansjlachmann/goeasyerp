@@ -473,21 +473,28 @@ func runPermissionError(sess *session.Session, codeunitID, reportID int, functio
 	}
 	switch {
 	case function != "":
-		if fn, ok := functions.Lookup(function); ok && fn.Print {
+		// the function as registered (its kind and object), never the text as sent: the lookup
+		// ignores letter case and spaces, so "TABLE:X.F" finds table:X.F — the check must see
+		// the same function
+		fn, ok := functions.Lookup(function)
+		if !ok {
+			return apperrors.PermissionDenied("execute", function)
+		}
+		if fn.Print {
 			return nil // it checks Execute on the reports it prints
 		}
-		kind, rest, _ := strings.Cut(function, ":")
-		object, _, _ := strings.Cut(rest, ".")
-		switch kind {
+		switch fn.ObjectType {
 		case "table":
-			if !sess.HasPermission(object, session.PermModify) {
-				return apperrors.PermissionDenied(string(session.PermModify), object)
+			if !sess.HasPermission(fn.Object, session.PermModify) {
+				return apperrors.PermissionDenied(string(session.PermModify), fn.Object)
 			}
 		case "codeunit":
-			id, err := strconv.Atoi(object)
-			if err == nil && !sess.CanExecute(session.ObjectCodeunit, id) {
+			id, err := strconv.Atoi(fn.Object)
+			if err != nil || !sess.CanExecute(session.ObjectCodeunit, id) {
 				return apperrors.NoPermissionCodeunit(id, codeunits.List()[id])
 			}
+		default:
+			return apperrors.PermissionDenied("execute", function)
 		}
 	case reportID != 0:
 		if !sess.CanExecute(session.ObjectReport, reportID) {
@@ -508,17 +515,18 @@ func runObjectEnabled(codeunitID, reportID int, function string) bool {
 	switch {
 	case function != "":
 		fn, ok := functions.Lookup(function)
-		if ok && !extensions.Enabled(fn.App) {
+		if !ok {
+			return true // refused by runPermissionError: not registered
+		}
+		if !extensions.Enabled(fn.App) {
 			return false
 		}
-		kind, rest, _ := strings.Cut(function, ":")
-		object, _, _ := strings.Cut(rest, ".")
-		id, err := strconv.Atoi(object)
-		if kind == "codeunit" && err == nil {
+		id, err := strconv.Atoi(fn.Object)
+		if fn.ObjectType == "codeunit" && err == nil {
 			return extensions.ObjectEnabled(fapps.Codeunit, id)
 		}
-		if kind == "table" {
-			return tableEnabled(object)
+		if fn.ObjectType == "table" {
+			return tableEnabled(fn.Object)
 		}
 		return true
 	case reportID != 0:
