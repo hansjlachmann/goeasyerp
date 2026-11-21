@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 )
 
 // TableDefinition represents a table that can be initialized
@@ -73,7 +74,7 @@ func (or *ObjectRegistry) InitializeCompanyTablesWithDBType(db *sql.DB, companyN
 		}
 
 		// Build full table name (Company$TableName)
-		fullTableName := fmt.Sprintf("%s$%s", companyName, tableDef.GetTableName())
+		fullTableName := ftables.CompanyTable(companyName, tableDef.GetTableName())
 
 		// Check if table exists (company-scoped: "company$Table")
 		exists, err := tableExists(db, fullTableName, dbType)

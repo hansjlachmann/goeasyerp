@@ -466,7 +466,7 @@ func (t *EntrySummary) CreateTable(db database.Executor, company string) error {
 // CreateTableWithDBType creates the Entry_Summary table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *EntrySummary) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, EntrySummaryTableName)
+	tableName := tables.CompanyTable(company, EntrySummaryTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetEntrySummaryPostgresTableSchema()
@@ -488,7 +488,7 @@ func (t *EntrySummary) CreateTableWithDBType(db database.Executor, company strin
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *EntrySummary) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, EntrySummaryTableName)
+	tableName := tables.CompanyTable(company, EntrySummaryTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -511,7 +511,7 @@ func entrySummarySIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *EntrySummary) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, EntrySummaryTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, EntrySummaryTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range entrySummarySIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, EntrySummaryTableName, tableName, spec)
@@ -677,7 +677,7 @@ func (t *EntrySummary) InsertAll(records []*EntrySummary, runTrigger bool) error
 		}
 		rows = append(rows, entrySummaryFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, EntrySummaryTableName)
+	tableName := tables.CompanyTable(t.company, EntrySummaryTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, entrySummaryFields.Columns(), rows)
 }
 
@@ -885,7 +885,7 @@ func (t *EntrySummary) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, EntrySummaryTableName),
+		Table:     tables.CompanyTable(t.company, EntrySummaryTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

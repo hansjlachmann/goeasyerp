@@ -593,7 +593,7 @@ func (t *ReminderFinChargeEntry) CreateTable(db database.Executor, company strin
 // CreateTableWithDBType creates the Reminder_Fin_Charge_Entry table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *ReminderFinChargeEntry) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, ReminderFinChargeEntryTableName)
+	tableName := tables.CompanyTable(company, ReminderFinChargeEntryTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetReminderFinChargeEntryPostgresTableSchema()
@@ -615,7 +615,7 @@ func (t *ReminderFinChargeEntry) CreateTableWithDBType(db database.Executor, com
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *ReminderFinChargeEntry) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, ReminderFinChargeEntryTableName)
+	tableName := tables.CompanyTable(company, ReminderFinChargeEntryTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -650,7 +650,7 @@ func reminderFinChargeEntrySIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *ReminderFinChargeEntry) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, ReminderFinChargeEntryTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, ReminderFinChargeEntryTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range reminderFinChargeEntrySIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, ReminderFinChargeEntryTableName, tableName, spec)
@@ -816,7 +816,7 @@ func (t *ReminderFinChargeEntry) InsertAll(records []*ReminderFinChargeEntry, ru
 		}
 		rows = append(rows, reminderFinChargeEntryFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ReminderFinChargeEntryTableName)
+	tableName := tables.CompanyTable(t.company, ReminderFinChargeEntryTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, reminderFinChargeEntryFields.Columns(), rows)
 }
 
@@ -1024,7 +1024,7 @@ func (t *ReminderFinChargeEntry) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, ReminderFinChargeEntryTableName),
+		Table:     tables.CompanyTable(t.company, ReminderFinChargeEntryTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

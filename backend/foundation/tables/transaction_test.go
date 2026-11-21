@@ -189,3 +189,13 @@ func TestOnRefusedCommit(t *testing.T) {
 		t.Errorf("refused commit %v, reported %v", err, reported)
 	}
 }
+
+// A quote in a company name is doubled: the name cannot end the quoted identifier
+func TestCompanyTable(t *testing.T) {
+	if got := CompanyTable("cronus", "Customer"); got != "cronus$Customer" {
+		t.Errorf("%q", got)
+	}
+	if got := CompanyTable(`x"; DROP TABLE "User`, "Customer"); got != `x""; DROP TABLE ""User$Customer` {
+		t.Errorf("%q", got)
+	}
+}

@@ -536,7 +536,7 @@ func (t *CurrencyExchangeRate) CreateTable(db database.Executor, company string)
 // CreateTableWithDBType creates the Currency_Exchange_Rate table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *CurrencyExchangeRate) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, CurrencyExchangeRateTableName)
+	tableName := tables.CompanyTable(company, CurrencyExchangeRateTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetCurrencyExchangeRatePostgresTableSchema()
@@ -558,7 +558,7 @@ func (t *CurrencyExchangeRate) CreateTableWithDBType(db database.Executor, compa
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *CurrencyExchangeRate) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, CurrencyExchangeRateTableName)
+	tableName := tables.CompanyTable(company, CurrencyExchangeRateTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -581,7 +581,7 @@ func currencyExchangeRateSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *CurrencyExchangeRate) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, CurrencyExchangeRateTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, CurrencyExchangeRateTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range currencyExchangeRateSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, CurrencyExchangeRateTableName, tableName, spec)
@@ -744,7 +744,7 @@ func (t *CurrencyExchangeRate) InsertAll(records []*CurrencyExchangeRate, runTri
 		}
 		rows = append(rows, currencyExchangeRateFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, CurrencyExchangeRateTableName)
+	tableName := tables.CompanyTable(t.company, CurrencyExchangeRateTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, currencyExchangeRateFields.Columns(), rows)
 }
 
@@ -952,7 +952,7 @@ func (t *CurrencyExchangeRate) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, CurrencyExchangeRateTableName),
+		Table:     tables.CompanyTable(t.company, CurrencyExchangeRateTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

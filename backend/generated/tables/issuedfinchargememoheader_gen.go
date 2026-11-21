@@ -766,7 +766,7 @@ func (t *IssuedFinChargeMemoHeader) CreateTable(db database.Executor, company st
 // CreateTableWithDBType creates the Issued_Fin_Charge_Memo_Header table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *IssuedFinChargeMemoHeader) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, IssuedFinChargeMemoHeaderTableName)
+	tableName := tables.CompanyTable(company, IssuedFinChargeMemoHeaderTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetIssuedFinChargeMemoHeaderPostgresTableSchema()
@@ -788,7 +788,7 @@ func (t *IssuedFinChargeMemoHeader) CreateTableWithDBType(db database.Executor, 
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *IssuedFinChargeMemoHeader) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, IssuedFinChargeMemoHeaderTableName)
+	tableName := tables.CompanyTable(company, IssuedFinChargeMemoHeaderTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -817,7 +817,7 @@ func issuedFinChargeMemoHeaderSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *IssuedFinChargeMemoHeader) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, IssuedFinChargeMemoHeaderTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, IssuedFinChargeMemoHeaderTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range issuedFinChargeMemoHeaderSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, IssuedFinChargeMemoHeaderTableName, tableName, spec)
@@ -983,7 +983,7 @@ func (t *IssuedFinChargeMemoHeader) InsertAll(records []*IssuedFinChargeMemoHead
 		}
 		rows = append(rows, issuedFinChargeMemoHeaderFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, IssuedFinChargeMemoHeaderTableName)
+	tableName := tables.CompanyTable(t.company, IssuedFinChargeMemoHeaderTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, issuedFinChargeMemoHeaderFields.Columns(), rows)
 }
 
@@ -1072,14 +1072,14 @@ func (t *IssuedFinChargeMemoHeader) renameReferences(field string, oldValue, new
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {
-		tables := []string{ref.table}
+		targets := []string{ref.table}
 		if !ref.global {
-			tables = tables[:0]
+			targets = targets[:0]
 			for _, c := range companies {
-				tables = append(tables, c+"$"+ref.table)
+				targets = append(targets, tables.CompanyTable(c, ref.table))
 			}
 		}
-		for _, tbl := range tables {
+		for _, tbl := range targets {
 			stmt := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s = ?`, tbl, ref.column, ref.column)
 			args := []interface{}{newValue, oldValue}
 			if ref.condColumn != "" {
@@ -1140,7 +1140,7 @@ func (t *IssuedFinChargeMemoHeader) flow() *tables.FlowRec {
 		DB:         t.db,
 		Company:    t.company,
 		Postgres:   t.dbType == database.DBTypePostgres,
-		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, IssuedFinChargeMemoHeaderTableName) + "\"",
+		Outer:      "\"" + tables.CompanyTable(t.company, IssuedFinChargeMemoHeaderTableName) + "\"",
 		One:        t.flowFieldOf,
 	}
 }
@@ -1305,7 +1305,7 @@ func (t *IssuedFinChargeMemoHeader) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, IssuedFinChargeMemoHeaderTableName),
+		Table:     tables.CompanyTable(t.company, IssuedFinChargeMemoHeaderTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

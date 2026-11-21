@@ -496,7 +496,7 @@ func (t *RefusedPosting) CreateTable(db database.Executor, company string) error
 // CreateTableWithDBType creates the Refused_Posting table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *RefusedPosting) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, RefusedPostingTableName)
+	tableName := tables.CompanyTable(company, RefusedPostingTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetRefusedPostingPostgresTableSchema()
@@ -518,7 +518,7 @@ func (t *RefusedPosting) CreateTableWithDBType(db database.Executor, company str
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *RefusedPosting) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, RefusedPostingTableName)
+	tableName := tables.CompanyTable(company, RefusedPostingTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -541,7 +541,7 @@ func refusedPostingSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *RefusedPosting) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, RefusedPostingTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, RefusedPostingTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range refusedPostingSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, RefusedPostingTableName, tableName, spec)
@@ -707,7 +707,7 @@ func (t *RefusedPosting) InsertAll(records []*RefusedPosting, runTrigger bool) e
 		}
 		rows = append(rows, refusedPostingFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, RefusedPostingTableName)
+	tableName := tables.CompanyTable(t.company, RefusedPostingTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, refusedPostingFields.Columns(), rows)
 }
 
@@ -915,7 +915,7 @@ func (t *RefusedPosting) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, RefusedPostingTableName),
+		Table:     tables.CompanyTable(t.company, RefusedPostingTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

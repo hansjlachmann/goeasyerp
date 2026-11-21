@@ -458,7 +458,7 @@ func (t *RequisitionWkshName) CreateTable(db database.Executor, company string) 
 // CreateTableWithDBType creates the Requisition_Wksh_Name table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *RequisitionWkshName) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, RequisitionWkshNameTableName)
+	tableName := tables.CompanyTable(company, RequisitionWkshNameTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetRequisitionWkshNamePostgresTableSchema()
@@ -480,7 +480,7 @@ func (t *RequisitionWkshName) CreateTableWithDBType(db database.Executor, compan
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *RequisitionWkshName) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, RequisitionWkshNameTableName)
+	tableName := tables.CompanyTable(company, RequisitionWkshNameTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -503,7 +503,7 @@ func requisitionWkshNameSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *RequisitionWkshName) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, RequisitionWkshNameTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, RequisitionWkshNameTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range requisitionWkshNameSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, RequisitionWkshNameTableName, tableName, spec)
@@ -666,7 +666,7 @@ func (t *RequisitionWkshName) InsertAll(records []*RequisitionWkshName, runTrigg
 		}
 		rows = append(rows, requisitionWkshNameFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, RequisitionWkshNameTableName)
+	tableName := tables.CompanyTable(t.company, RequisitionWkshNameTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, requisitionWkshNameFields.Columns(), rows)
 }
 
@@ -874,7 +874,7 @@ func (t *RequisitionWkshName) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, RequisitionWkshNameTableName),
+		Table:     tables.CompanyTable(t.company, RequisitionWkshNameTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

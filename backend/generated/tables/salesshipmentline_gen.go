@@ -1033,7 +1033,7 @@ func (t *SalesShipmentLine) CreateTable(db database.Executor, company string) er
 // CreateTableWithDBType creates the Sales_Shipment_Line table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *SalesShipmentLine) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, SalesShipmentLineTableName)
+	tableName := tables.CompanyTable(company, SalesShipmentLineTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetSalesShipmentLinePostgresTableSchema()
@@ -1055,7 +1055,7 @@ func (t *SalesShipmentLine) CreateTableWithDBType(db database.Executor, company 
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *SalesShipmentLine) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, SalesShipmentLineTableName)
+	tableName := tables.CompanyTable(company, SalesShipmentLineTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -1084,7 +1084,7 @@ func salesShipmentLineSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *SalesShipmentLine) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, SalesShipmentLineTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, SalesShipmentLineTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range salesShipmentLineSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, SalesShipmentLineTableName, tableName, spec)
@@ -1250,7 +1250,7 @@ func (t *SalesShipmentLine) InsertAll(records []*SalesShipmentLine, runTrigger b
 		}
 		rows = append(rows, salesShipmentLineFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, SalesShipmentLineTableName)
+	tableName := tables.CompanyTable(t.company, SalesShipmentLineTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, salesShipmentLineFields.Columns(), rows)
 }
 
@@ -1458,7 +1458,7 @@ func (t *SalesShipmentLine) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, SalesShipmentLineTableName),
+		Table:     tables.CompanyTable(t.company, SalesShipmentLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

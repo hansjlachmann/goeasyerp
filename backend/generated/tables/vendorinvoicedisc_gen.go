@@ -473,7 +473,7 @@ func (t *VendorInvoiceDisc) CreateTable(db database.Executor, company string) er
 // CreateTableWithDBType creates the Vendor_Invoice_Disc table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *VendorInvoiceDisc) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, VendorInvoiceDiscTableName)
+	tableName := tables.CompanyTable(company, VendorInvoiceDiscTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetVendorInvoiceDiscPostgresTableSchema()
@@ -495,7 +495,7 @@ func (t *VendorInvoiceDisc) CreateTableWithDBType(db database.Executor, company 
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *VendorInvoiceDisc) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, VendorInvoiceDiscTableName)
+	tableName := tables.CompanyTable(company, VendorInvoiceDiscTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -518,7 +518,7 @@ func vendorInvoiceDiscSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *VendorInvoiceDisc) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, VendorInvoiceDiscTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, VendorInvoiceDiscTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range vendorInvoiceDiscSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, VendorInvoiceDiscTableName, tableName, spec)
@@ -682,7 +682,7 @@ func (t *VendorInvoiceDisc) InsertAll(records []*VendorInvoiceDisc, runTrigger b
 		}
 		rows = append(rows, vendorInvoiceDiscFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, VendorInvoiceDiscTableName)
+	tableName := tables.CompanyTable(t.company, VendorInvoiceDiscTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, vendorInvoiceDiscFields.Columns(), rows)
 }
 
@@ -890,7 +890,7 @@ func (t *VendorInvoiceDisc) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, VendorInvoiceDiscTableName),
+		Table:     tables.CompanyTable(t.company, VendorInvoiceDiscTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

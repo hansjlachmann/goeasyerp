@@ -1538,7 +1538,7 @@ func filterSetExpr(refs []FlowFilter) string {
 
 // getTableNameVarCode returns the Go code to set the tableName variable
 // For global tables: tableName := StructNameTableName
-// For company tables: tableName := fmt.Sprintf("%s$%s", t.company, StructNameTableName)
+// For company tables: tableName := tables.CompanyTable(t.company, StructNameTableName)
 func getTableNameVarCode(isGlobal bool, structName, companyVar string) string {
 	if isGlobal {
 		return fmt.Sprintf("tableName := %sTableName", structName)
@@ -2392,7 +2392,7 @@ func (t *{{ .StructName }}) CreateTableWithDBType(db database.Executor, company 
 {{- if .Table.Global }}
 	tableName := {{ .StructName }}TableName
 {{- else }}
-	tableName := fmt.Sprintf("%s$%s", company, {{ .StructName }}TableName)
+	tableName := tables.CompanyTable(company, {{ .StructName }}TableName)
 {{- end }}
 	var schema string
 	if dbType == database.DBTypePostgres {
@@ -2419,7 +2419,7 @@ func (t *{{ .StructName }}) SyncKeys(db database.Executor, company string, dbTyp
 	tableName := {{ .StructName }}TableName
 	siftCompany := ""
 {{- else }}
-	tableName := fmt.Sprintf("%s$%s", company, {{ .StructName }}TableName)
+	tableName := tables.CompanyTable(company, {{ .StructName }}TableName)
 	siftCompany := company
 {{- end }}
 {{- range .Table.Keys }}
@@ -2463,7 +2463,7 @@ func (t *{{ .StructName }}) VerifySIFT(repair bool) ([]sift.VerifyResult, error)
 {{- if .Table.Global }}
 	tableName, siftCompany := {{ .StructName }}TableName, ""
 {{- else }}
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, {{ .StructName }}TableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, {{ .StructName }}TableName), t.company
 {{- end }}
 	var results []sift.VerifyResult
 	for _, spec := range {{ lowerFirst .StructName }}SIFTSpecs() {
@@ -2656,7 +2656,7 @@ func (t *{{ .StructName }}) InsertAll(records []*{{ .StructName }}, runTrigger b
 {{- if .Table.Global }}
 	tableName := {{ .StructName }}TableName
 {{- else }}
-	tableName := fmt.Sprintf("%s$%s", t.company, {{ .StructName }}TableName)
+	tableName := tables.CompanyTable(t.company, {{ .StructName }}TableName)
 {{- end }}
 	return tables.InsertRows(t.exec(), t.dbType, tableName, {{ lowerFirst .StructName }}Fields.Columns(), rows)
 }
@@ -2707,7 +2707,7 @@ func (t *{{ .StructName }}) EncryptStoredSecrets() (int, error) {
 {{- if .Table.Global }}
 	tableName := {{ .StructName }}TableName
 {{- else }}
-	tableName := fmt.Sprintf("%s$%s", t.company, {{ .StructName }}TableName)
+	tableName := tables.CompanyTable(t.company, {{ .StructName }}TableName)
 {{- end }}
 	done := 0
 {{- range .EncryptedFields }}
@@ -2882,14 +2882,14 @@ func (t *{{ .StructName }}) renameReferences(field string, oldValue, newValue in
 	companies := []string{t.company}
 {{- end }}
 	for _, ref := range references[field] {
-		tables := []string{ref.table}
+		targets := []string{ref.table}
 		if !ref.global {
-			tables = tables[:0]
+			targets = targets[:0]
 			for _, c := range companies {
-				tables = append(tables, c+"$"+ref.table)
+				targets = append(targets, tables.CompanyTable(c, ref.table))
 			}
 		}
-		for _, tbl := range tables {
+		for _, tbl := range targets {
 			stmt := fmt.Sprintf(` + "`UPDATE \"%s\" SET %s = ? WHERE %s = ?`" + `, tbl, ref.column, ref.column)
 			args := []interface{}{newValue, oldValue}
 			if ref.condColumn != "" {
@@ -2985,7 +2985,7 @@ func (t *{{ .StructName }}) flow() *tables.FlowRec {
 		DB:         t.db,
 		Company:    t.company,
 		Postgres:   t.dbType == database.DBTypePostgres,
-		Outer:      "\"" + {{- if .Table.Global }}{{ .StructName }}TableName{{- else }}fmt.Sprintf("%s$%s", t.company, {{ .StructName }}TableName){{- end }} + "\"",
+		Outer:      "\"" + {{- if .Table.Global }}{{ .StructName }}TableName{{- else }}tables.CompanyTable(t.company, {{ .StructName }}TableName){{- end }} + "\"",
 		One:        t.flowFieldOf,
 	}
 }
@@ -3159,7 +3159,7 @@ func (t *{{ .StructName }}) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     {{- if .Table.Global }}{{ .StructName }}TableName{{- else }}fmt.Sprintf("%s$%s", t.company, {{ .StructName }}TableName){{- end }},
+		Table:     {{- if .Table.Global }}{{ .StructName }}TableName{{- else }}tables.CompanyTable(t.company, {{ .StructName }}TableName){{- end }},
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

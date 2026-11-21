@@ -444,7 +444,7 @@ func (t *UnitOfMeasure) CreateTable(db database.Executor, company string) error 
 // CreateTableWithDBType creates the Unit_of_Measure table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *UnitOfMeasure) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, UnitOfMeasureTableName)
+	tableName := tables.CompanyTable(company, UnitOfMeasureTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetUnitOfMeasurePostgresTableSchema()
@@ -466,7 +466,7 @@ func (t *UnitOfMeasure) CreateTableWithDBType(db database.Executor, company stri
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *UnitOfMeasure) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, UnitOfMeasureTableName)
+	tableName := tables.CompanyTable(company, UnitOfMeasureTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -489,7 +489,7 @@ func unitOfMeasureSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *UnitOfMeasure) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, UnitOfMeasureTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, UnitOfMeasureTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range unitOfMeasureSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, UnitOfMeasureTableName, tableName, spec)
@@ -655,7 +655,7 @@ func (t *UnitOfMeasure) InsertAll(records []*UnitOfMeasure, runTrigger bool) err
 		}
 		rows = append(rows, unitOfMeasureFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, UnitOfMeasureTableName)
+	tableName := tables.CompanyTable(t.company, UnitOfMeasureTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, unitOfMeasureFields.Columns(), rows)
 }
 
@@ -744,14 +744,14 @@ func (t *UnitOfMeasure) renameReferences(field string, oldValue, newValue interf
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {
-		tables := []string{ref.table}
+		targets := []string{ref.table}
 		if !ref.global {
-			tables = tables[:0]
+			targets = targets[:0]
 			for _, c := range companies {
-				tables = append(tables, c+"$"+ref.table)
+				targets = append(targets, tables.CompanyTable(c, ref.table))
 			}
 		}
-		for _, tbl := range tables {
+		for _, tbl := range targets {
 			stmt := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s = ?`, tbl, ref.column, ref.column)
 			args := []interface{}{newValue, oldValue}
 			if ref.condColumn != "" {
@@ -957,7 +957,7 @@ func (t *UnitOfMeasure) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, UnitOfMeasureTableName),
+		Table:     tables.CompanyTable(t.company, UnitOfMeasureTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

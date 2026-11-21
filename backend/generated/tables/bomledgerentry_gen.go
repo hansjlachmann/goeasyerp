@@ -525,7 +525,7 @@ func (t *BOMLedgerEntry) CreateTable(db database.Executor, company string) error
 // CreateTableWithDBType creates the BOM_Ledger_Entry table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *BOMLedgerEntry) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, BOMLedgerEntryTableName)
+	tableName := tables.CompanyTable(company, BOMLedgerEntryTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetBOMLedgerEntryPostgresTableSchema()
@@ -547,7 +547,7 @@ func (t *BOMLedgerEntry) CreateTableWithDBType(db database.Executor, company str
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *BOMLedgerEntry) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, BOMLedgerEntryTableName)
+	tableName := tables.CompanyTable(company, BOMLedgerEntryTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -582,7 +582,7 @@ func bOMLedgerEntrySIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *BOMLedgerEntry) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, BOMLedgerEntryTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, BOMLedgerEntryTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range bOMLedgerEntrySIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, BOMLedgerEntryTableName, tableName, spec)
@@ -748,7 +748,7 @@ func (t *BOMLedgerEntry) InsertAll(records []*BOMLedgerEntry, runTrigger bool) e
 		}
 		rows = append(rows, bOMLedgerEntryFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, BOMLedgerEntryTableName)
+	tableName := tables.CompanyTable(t.company, BOMLedgerEntryTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, bOMLedgerEntryFields.Columns(), rows)
 }
 
@@ -956,7 +956,7 @@ func (t *BOMLedgerEntry) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, BOMLedgerEntryTableName),
+		Table:     tables.CompanyTable(t.company, BOMLedgerEntryTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

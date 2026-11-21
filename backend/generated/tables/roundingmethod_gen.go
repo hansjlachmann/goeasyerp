@@ -515,7 +515,7 @@ func (t *RoundingMethod) CreateTable(db database.Executor, company string) error
 // CreateTableWithDBType creates the Rounding_Method table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *RoundingMethod) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, RoundingMethodTableName)
+	tableName := tables.CompanyTable(company, RoundingMethodTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetRoundingMethodPostgresTableSchema()
@@ -537,7 +537,7 @@ func (t *RoundingMethod) CreateTableWithDBType(db database.Executor, company str
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *RoundingMethod) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, RoundingMethodTableName)
+	tableName := tables.CompanyTable(company, RoundingMethodTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -560,7 +560,7 @@ func roundingMethodSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *RoundingMethod) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, RoundingMethodTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, RoundingMethodTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range roundingMethodSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, RoundingMethodTableName, tableName, spec)
@@ -723,7 +723,7 @@ func (t *RoundingMethod) InsertAll(records []*RoundingMethod, runTrigger bool) e
 		}
 		rows = append(rows, roundingMethodFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, RoundingMethodTableName)
+	tableName := tables.CompanyTable(t.company, RoundingMethodTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, roundingMethodFields.Columns(), rows)
 }
 
@@ -931,7 +931,7 @@ func (t *RoundingMethod) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, RoundingMethodTableName),
+		Table:     tables.CompanyTable(t.company, RoundingMethodTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

@@ -436,7 +436,7 @@ func (t *Territory) CreateTable(db database.Executor, company string) error {
 // CreateTableWithDBType creates the Territory table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *Territory) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, TerritoryTableName)
+	tableName := tables.CompanyTable(company, TerritoryTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetTerritoryPostgresTableSchema()
@@ -458,7 +458,7 @@ func (t *Territory) CreateTableWithDBType(db database.Executor, company string, 
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *Territory) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, TerritoryTableName)
+	tableName := tables.CompanyTable(company, TerritoryTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -481,7 +481,7 @@ func territorySIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *Territory) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, TerritoryTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, TerritoryTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range territorySIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, TerritoryTableName, tableName, spec)
@@ -647,7 +647,7 @@ func (t *Territory) InsertAll(records []*Territory, runTrigger bool) error {
 		}
 		rows = append(rows, territoryFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, TerritoryTableName)
+	tableName := tables.CompanyTable(t.company, TerritoryTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, territoryFields.Columns(), rows)
 }
 
@@ -736,14 +736,14 @@ func (t *Territory) renameReferences(field string, oldValue, newValue interface{
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {
-		tables := []string{ref.table}
+		targets := []string{ref.table}
 		if !ref.global {
-			tables = tables[:0]
+			targets = targets[:0]
 			for _, c := range companies {
-				tables = append(tables, c+"$"+ref.table)
+				targets = append(targets, tables.CompanyTable(c, ref.table))
 			}
 		}
-		for _, tbl := range tables {
+		for _, tbl := range targets {
 			stmt := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s = ?`, tbl, ref.column, ref.column)
 			args := []interface{}{newValue, oldValue}
 			if ref.condColumn != "" {
@@ -936,7 +936,7 @@ func (t *Territory) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, TerritoryTableName),
+		Table:     tables.CompanyTable(t.company, TerritoryTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

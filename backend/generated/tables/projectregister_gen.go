@@ -474,7 +474,7 @@ func (t *ProjectRegister) CreateTable(db database.Executor, company string) erro
 // CreateTableWithDBType creates the Project_Register table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *ProjectRegister) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, ProjectRegisterTableName)
+	tableName := tables.CompanyTable(company, ProjectRegisterTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetProjectRegisterPostgresTableSchema()
@@ -496,7 +496,7 @@ func (t *ProjectRegister) CreateTableWithDBType(db database.Executor, company st
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *ProjectRegister) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, ProjectRegisterTableName)
+	tableName := tables.CompanyTable(company, ProjectRegisterTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -531,7 +531,7 @@ func projectRegisterSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *ProjectRegister) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, ProjectRegisterTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, ProjectRegisterTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range projectRegisterSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, ProjectRegisterTableName, tableName, spec)
@@ -697,7 +697,7 @@ func (t *ProjectRegister) InsertAll(records []*ProjectRegister, runTrigger bool)
 		}
 		rows = append(rows, projectRegisterFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ProjectRegisterTableName)
+	tableName := tables.CompanyTable(t.company, ProjectRegisterTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, projectRegisterFields.Columns(), rows)
 }
 
@@ -905,7 +905,7 @@ func (t *ProjectRegister) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, ProjectRegisterTableName),
+		Table:     tables.CompanyTable(t.company, ProjectRegisterTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

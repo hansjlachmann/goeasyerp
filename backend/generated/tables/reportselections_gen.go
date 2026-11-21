@@ -532,7 +532,7 @@ func (t *ReportSelections) CreateTable(db database.Executor, company string) err
 // CreateTableWithDBType creates the Report_Selections table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *ReportSelections) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, ReportSelectionsTableName)
+	tableName := tables.CompanyTable(company, ReportSelectionsTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetReportSelectionsPostgresTableSchema()
@@ -554,7 +554,7 @@ func (t *ReportSelections) CreateTableWithDBType(db database.Executor, company s
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *ReportSelections) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, ReportSelectionsTableName)
+	tableName := tables.CompanyTable(company, ReportSelectionsTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -577,7 +577,7 @@ func reportSelectionsSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *ReportSelections) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, ReportSelectionsTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, ReportSelectionsTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range reportSelectionsSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, ReportSelectionsTableName, tableName, spec)
@@ -740,7 +740,7 @@ func (t *ReportSelections) InsertAll(records []*ReportSelections, runTrigger boo
 		}
 		rows = append(rows, reportSelectionsFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ReportSelectionsTableName)
+	tableName := tables.CompanyTable(t.company, ReportSelectionsTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, reportSelectionsFields.Columns(), rows)
 }
 
@@ -835,7 +835,7 @@ func (t *ReportSelections) flow() *tables.FlowRec {
 		DB:         t.db,
 		Company:    t.company,
 		Postgres:   t.dbType == database.DBTypePostgres,
-		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, ReportSelectionsTableName) + "\"",
+		Outer:      "\"" + tables.CompanyTable(t.company, ReportSelectionsTableName) + "\"",
 		One:        t.flowFieldOf,
 	}
 }
@@ -985,7 +985,7 @@ func (t *ReportSelections) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, ReportSelectionsTableName),
+		Table:     tables.CompanyTable(t.company, ReportSelectionsTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

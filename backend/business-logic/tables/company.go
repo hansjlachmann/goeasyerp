@@ -17,6 +17,17 @@ type companyLogic struct{}
 
 func init() { gtables.RegisterCompanyLogic(companyLogic{}) }
 
+// OnInsert: the name prefixes every table of the company ("name$Customer") and goes into SQL as
+// part of their names: only a-z, 0-9, _ and - (lower case, 2–50 characters), as a rename
+func (companyLogic) OnInsert(rec *gtables.Company) error {
+	name, err := company.NormalizeName(rec.Name.String())
+	if err != nil {
+		return err
+	}
+	rec.Name = types.NewText(name)
+	return nil
+}
+
 // OnDelete: deleting a company drops all its data (the API drops its tables after the delete):
 // a SUPER user only (code without a user — tests, setup — may)
 func (companyLogic) OnDelete(rec *gtables.Company) error {

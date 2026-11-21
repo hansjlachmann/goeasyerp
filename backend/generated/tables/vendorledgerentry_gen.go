@@ -918,7 +918,7 @@ func (t *VendorLedgerEntry) CreateTable(db database.Executor, company string) er
 // CreateTableWithDBType creates the Vendor Ledger Entry table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *VendorLedgerEntry) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, VendorLedgerEntryTableName)
+	tableName := tables.CompanyTable(company, VendorLedgerEntryTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetVendorLedgerEntryPostgresTableSchema()
@@ -940,7 +940,7 @@ func (t *VendorLedgerEntry) CreateTableWithDBType(db database.Executor, company 
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *VendorLedgerEntry) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, VendorLedgerEntryTableName)
+	tableName := tables.CompanyTable(company, VendorLedgerEntryTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -987,7 +987,7 @@ func vendorLedgerEntrySIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *VendorLedgerEntry) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, VendorLedgerEntryTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, VendorLedgerEntryTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range vendorLedgerEntrySIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, VendorLedgerEntryTableName, tableName, spec)
@@ -1153,7 +1153,7 @@ func (t *VendorLedgerEntry) InsertAll(records []*VendorLedgerEntry, runTrigger b
 		}
 		rows = append(rows, vendorLedgerEntryFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, VendorLedgerEntryTableName)
+	tableName := tables.CompanyTable(t.company, VendorLedgerEntryTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, vendorLedgerEntryFields.Columns(), rows)
 }
 
@@ -1361,7 +1361,7 @@ func (t *VendorLedgerEntry) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, VendorLedgerEntryTableName),
+		Table:     tables.CompanyTable(t.company, VendorLedgerEntryTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

@@ -999,7 +999,7 @@ func (t *PurchRcptLine) CreateTable(db database.Executor, company string) error 
 // CreateTableWithDBType creates the Purch_Rcpt_Line table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *PurchRcptLine) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, PurchRcptLineTableName)
+	tableName := tables.CompanyTable(company, PurchRcptLineTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetPurchRcptLinePostgresTableSchema()
@@ -1021,7 +1021,7 @@ func (t *PurchRcptLine) CreateTableWithDBType(db database.Executor, company stri
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *PurchRcptLine) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, PurchRcptLineTableName)
+	tableName := tables.CompanyTable(company, PurchRcptLineTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -1050,7 +1050,7 @@ func purchRcptLineSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *PurchRcptLine) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, PurchRcptLineTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, PurchRcptLineTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range purchRcptLineSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, PurchRcptLineTableName, tableName, spec)
@@ -1215,7 +1215,7 @@ func (t *PurchRcptLine) InsertAll(records []*PurchRcptLine, runTrigger bool) err
 		}
 		rows = append(rows, purchRcptLineFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, PurchRcptLineTableName)
+	tableName := tables.CompanyTable(t.company, PurchRcptLineTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, purchRcptLineFields.Columns(), rows)
 }
 
@@ -1423,7 +1423,7 @@ func (t *PurchRcptLine) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, PurchRcptLineTableName),
+		Table:     tables.CompanyTable(t.company, PurchRcptLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

@@ -712,7 +712,7 @@ func (t *PhysInventoryLedgerEntry) CreateTable(db database.Executor, company str
 // CreateTableWithDBType creates the Phys_Inventory_Ledger_Entry table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *PhysInventoryLedgerEntry) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, PhysInventoryLedgerEntryTableName)
+	tableName := tables.CompanyTable(company, PhysInventoryLedgerEntryTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetPhysInventoryLedgerEntryPostgresTableSchema()
@@ -734,7 +734,7 @@ func (t *PhysInventoryLedgerEntry) CreateTableWithDBType(db database.Executor, c
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *PhysInventoryLedgerEntry) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, PhysInventoryLedgerEntryTableName)
+	tableName := tables.CompanyTable(company, PhysInventoryLedgerEntryTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -775,7 +775,7 @@ func physInventoryLedgerEntrySIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *PhysInventoryLedgerEntry) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, PhysInventoryLedgerEntryTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, PhysInventoryLedgerEntryTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range physInventoryLedgerEntrySIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, PhysInventoryLedgerEntryTableName, tableName, spec)
@@ -941,7 +941,7 @@ func (t *PhysInventoryLedgerEntry) InsertAll(records []*PhysInventoryLedgerEntry
 		}
 		rows = append(rows, physInventoryLedgerEntryFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, PhysInventoryLedgerEntryTableName)
+	tableName := tables.CompanyTable(t.company, PhysInventoryLedgerEntryTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, physInventoryLedgerEntryFields.Columns(), rows)
 }
 
@@ -1149,7 +1149,7 @@ func (t *PhysInventoryLedgerEntry) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, PhysInventoryLedgerEntryTableName),
+		Table:     tables.CompanyTable(t.company, PhysInventoryLedgerEntryTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

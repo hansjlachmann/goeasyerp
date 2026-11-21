@@ -651,7 +651,7 @@ func (t *PurchasesPayablesSetup) CreateTable(db database.Executor, company strin
 // CreateTableWithDBType creates the Purchases_Payables_Setup table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *PurchasesPayablesSetup) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, PurchasesPayablesSetupTableName)
+	tableName := tables.CompanyTable(company, PurchasesPayablesSetupTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetPurchasesPayablesSetupPostgresTableSchema()
@@ -673,7 +673,7 @@ func (t *PurchasesPayablesSetup) CreateTableWithDBType(db database.Executor, com
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *PurchasesPayablesSetup) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, PurchasesPayablesSetupTableName)
+	tableName := tables.CompanyTable(company, PurchasesPayablesSetupTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -696,7 +696,7 @@ func purchasesPayablesSetupSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *PurchasesPayablesSetup) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, PurchasesPayablesSetupTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, PurchasesPayablesSetupTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range purchasesPayablesSetupSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, PurchasesPayablesSetupTableName, tableName, spec)
@@ -866,7 +866,7 @@ func (t *PurchasesPayablesSetup) InsertAll(records []*PurchasesPayablesSetup, ru
 		}
 		rows = append(rows, purchasesPayablesSetupFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, PurchasesPayablesSetupTableName)
+	tableName := tables.CompanyTable(t.company, PurchasesPayablesSetupTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, purchasesPayablesSetupFields.Columns(), rows)
 }
 
@@ -1074,7 +1074,7 @@ func (t *PurchasesPayablesSetup) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, PurchasesPayablesSetupTableName),
+		Table:     tables.CompanyTable(t.company, PurchasesPayablesSetupTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

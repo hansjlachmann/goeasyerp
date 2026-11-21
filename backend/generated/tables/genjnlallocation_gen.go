@@ -686,7 +686,7 @@ func (t *GenJnlAllocation) CreateTable(db database.Executor, company string) err
 // CreateTableWithDBType creates the Gen_Jnl_Allocation table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *GenJnlAllocation) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, GenJnlAllocationTableName)
+	tableName := tables.CompanyTable(company, GenJnlAllocationTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetGenJnlAllocationPostgresTableSchema()
@@ -708,7 +708,7 @@ func (t *GenJnlAllocation) CreateTableWithDBType(db database.Executor, company s
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *GenJnlAllocation) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, GenJnlAllocationTableName)
+	tableName := tables.CompanyTable(company, GenJnlAllocationTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -737,7 +737,7 @@ func genJnlAllocationSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *GenJnlAllocation) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, GenJnlAllocationTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, GenJnlAllocationTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range genJnlAllocationSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, GenJnlAllocationTableName, tableName, spec)
@@ -902,7 +902,7 @@ func (t *GenJnlAllocation) InsertAll(records []*GenJnlAllocation, runTrigger boo
 		}
 		rows = append(rows, genJnlAllocationFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, GenJnlAllocationTableName)
+	tableName := tables.CompanyTable(t.company, GenJnlAllocationTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, genJnlAllocationFields.Columns(), rows)
 }
 
@@ -997,7 +997,7 @@ func (t *GenJnlAllocation) flow() *tables.FlowRec {
 		DB:         t.db,
 		Company:    t.company,
 		Postgres:   t.dbType == database.DBTypePostgres,
-		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, GenJnlAllocationTableName) + "\"",
+		Outer:      "\"" + tables.CompanyTable(t.company, GenJnlAllocationTableName) + "\"",
 		One:        t.flowFieldOf,
 	}
 }
@@ -1147,7 +1147,7 @@ func (t *GenJnlAllocation) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, GenJnlAllocationTableName),
+		Table:     tables.CompanyTable(t.company, GenJnlAllocationTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

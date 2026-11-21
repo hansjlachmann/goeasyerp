@@ -556,7 +556,7 @@ func (t *SetupChecklistLine) CreateTable(db database.Executor, company string) e
 // CreateTableWithDBType creates the Setup_Checklist_Line table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *SetupChecklistLine) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, SetupChecklistLineTableName)
+	tableName := tables.CompanyTable(company, SetupChecklistLineTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetSetupChecklistLinePostgresTableSchema()
@@ -578,7 +578,7 @@ func (t *SetupChecklistLine) CreateTableWithDBType(db database.Executor, company
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *SetupChecklistLine) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, SetupChecklistLineTableName)
+	tableName := tables.CompanyTable(company, SetupChecklistLineTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -613,7 +613,7 @@ func setupChecklistLineSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *SetupChecklistLine) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, SetupChecklistLineTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, SetupChecklistLineTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range setupChecklistLineSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, SetupChecklistLineTableName, tableName, spec)
@@ -779,7 +779,7 @@ func (t *SetupChecklistLine) InsertAll(records []*SetupChecklistLine, runTrigger
 		}
 		rows = append(rows, setupChecklistLineFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, SetupChecklistLineTableName)
+	tableName := tables.CompanyTable(t.company, SetupChecklistLineTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, setupChecklistLineFields.Columns(), rows)
 }
 
@@ -874,7 +874,7 @@ func (t *SetupChecklistLine) flow() *tables.FlowRec {
 		DB:         t.db,
 		Company:    t.company,
 		Postgres:   t.dbType == database.DBTypePostgres,
-		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, SetupChecklistLineTableName) + "\"",
+		Outer:      "\"" + tables.CompanyTable(t.company, SetupChecklistLineTableName) + "\"",
 		One:        t.flowFieldOf,
 	}
 }
@@ -1024,7 +1024,7 @@ func (t *SetupChecklistLine) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, SetupChecklistLineTableName),
+		Table:     tables.CompanyTable(t.company, SetupChecklistLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

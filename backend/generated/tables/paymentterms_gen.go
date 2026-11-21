@@ -475,7 +475,7 @@ func (t *PaymentTerms) CreateTable(db database.Executor, company string) error {
 // CreateTableWithDBType creates the Payment Terms table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *PaymentTerms) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, PaymentTermsTableName)
+	tableName := tables.CompanyTable(company, PaymentTermsTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetPaymentTermsPostgresTableSchema()
@@ -497,7 +497,7 @@ func (t *PaymentTerms) CreateTableWithDBType(db database.Executor, company strin
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *PaymentTerms) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, PaymentTermsTableName)
+	tableName := tables.CompanyTable(company, PaymentTermsTableName)
 	siftCompany := company
 	_ = tableName // no keys: nothing to index
 	var keys []sift.Key
@@ -515,7 +515,7 @@ func paymentTermsSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *PaymentTerms) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, PaymentTermsTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, PaymentTermsTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range paymentTermsSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, PaymentTermsTableName, tableName, spec)
@@ -682,7 +682,7 @@ func (t *PaymentTerms) InsertAll(records []*PaymentTerms, runTrigger bool) error
 		}
 		rows = append(rows, paymentTermsFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, PaymentTermsTableName)
+	tableName := tables.CompanyTable(t.company, PaymentTermsTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, paymentTermsFields.Columns(), rows)
 }
 
@@ -771,14 +771,14 @@ func (t *PaymentTerms) renameReferences(field string, oldValue, newValue interfa
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {
-		tables := []string{ref.table}
+		targets := []string{ref.table}
 		if !ref.global {
-			tables = tables[:0]
+			targets = targets[:0]
 			for _, c := range companies {
-				tables = append(tables, c+"$"+ref.table)
+				targets = append(targets, tables.CompanyTable(c, ref.table))
 			}
 		}
-		for _, tbl := range tables {
+		for _, tbl := range targets {
 			stmt := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s = ?`, tbl, ref.column, ref.column)
 			args := []interface{}{newValue, oldValue}
 			if ref.condColumn != "" {
@@ -979,7 +979,7 @@ func (t *PaymentTerms) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, PaymentTermsTableName),
+		Table:     tables.CompanyTable(t.company, PaymentTermsTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

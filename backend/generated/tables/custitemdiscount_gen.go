@@ -458,7 +458,7 @@ func (t *CustItemDiscount) CreateTable(db database.Executor, company string) err
 // CreateTableWithDBType creates the Cust_Item_Discount table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *CustItemDiscount) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, CustItemDiscountTableName)
+	tableName := tables.CompanyTable(company, CustItemDiscountTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetCustItemDiscountPostgresTableSchema()
@@ -480,7 +480,7 @@ func (t *CustItemDiscount) CreateTableWithDBType(db database.Executor, company s
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *CustItemDiscount) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, CustItemDiscountTableName)
+	tableName := tables.CompanyTable(company, CustItemDiscountTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -509,7 +509,7 @@ func custItemDiscountSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *CustItemDiscount) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, CustItemDiscountTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, CustItemDiscountTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range custItemDiscountSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, CustItemDiscountTableName, tableName, spec)
@@ -672,7 +672,7 @@ func (t *CustItemDiscount) InsertAll(records []*CustItemDiscount, runTrigger boo
 		}
 		rows = append(rows, custItemDiscountFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, CustItemDiscountTableName)
+	tableName := tables.CompanyTable(t.company, CustItemDiscountTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, custItemDiscountFields.Columns(), rows)
 }
 
@@ -880,7 +880,7 @@ func (t *CustItemDiscount) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, CustItemDiscountTableName),
+		Table:     tables.CompanyTable(t.company, CustItemDiscountTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

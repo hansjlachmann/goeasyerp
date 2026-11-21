@@ -529,7 +529,7 @@ func (t *ResourceCost) CreateTable(db database.Executor, company string) error {
 // CreateTableWithDBType creates the Resource_Cost table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *ResourceCost) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, ResourceCostTableName)
+	tableName := tables.CompanyTable(company, ResourceCostTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetResourceCostPostgresTableSchema()
@@ -551,7 +551,7 @@ func (t *ResourceCost) CreateTableWithDBType(db database.Executor, company strin
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *ResourceCost) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, ResourceCostTableName)
+	tableName := tables.CompanyTable(company, ResourceCostTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -574,7 +574,7 @@ func resourceCostSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *ResourceCost) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, ResourceCostTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, ResourceCostTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range resourceCostSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, ResourceCostTableName, tableName, spec)
@@ -738,7 +738,7 @@ func (t *ResourceCost) InsertAll(records []*ResourceCost, runTrigger bool) error
 		}
 		rows = append(rows, resourceCostFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ResourceCostTableName)
+	tableName := tables.CompanyTable(t.company, ResourceCostTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, resourceCostFields.Columns(), rows)
 }
 
@@ -946,7 +946,7 @@ func (t *ResourceCost) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, ResourceCostTableName),
+		Table:     tables.CompanyTable(t.company, ResourceCostTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

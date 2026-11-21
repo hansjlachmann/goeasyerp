@@ -459,7 +459,7 @@ func (t *GenProductPostingGroup) CreateTable(db database.Executor, company strin
 // CreateTableWithDBType creates the Gen_Product_Posting_Group table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *GenProductPostingGroup) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, GenProductPostingGroupTableName)
+	tableName := tables.CompanyTable(company, GenProductPostingGroupTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetGenProductPostingGroupPostgresTableSchema()
@@ -481,7 +481,7 @@ func (t *GenProductPostingGroup) CreateTableWithDBType(db database.Executor, com
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *GenProductPostingGroup) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, GenProductPostingGroupTableName)
+	tableName := tables.CompanyTable(company, GenProductPostingGroupTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -504,7 +504,7 @@ func genProductPostingGroupSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *GenProductPostingGroup) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, GenProductPostingGroupTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, GenProductPostingGroupTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range genProductPostingGroupSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, GenProductPostingGroupTableName, tableName, spec)
@@ -671,7 +671,7 @@ func (t *GenProductPostingGroup) InsertAll(records []*GenProductPostingGroup, ru
 		}
 		rows = append(rows, genProductPostingGroupFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, GenProductPostingGroupTableName)
+	tableName := tables.CompanyTable(t.company, GenProductPostingGroupTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, genProductPostingGroupFields.Columns(), rows)
 }
 
@@ -760,14 +760,14 @@ func (t *GenProductPostingGroup) renameReferences(field string, oldValue, newVal
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {
-		tables := []string{ref.table}
+		targets := []string{ref.table}
 		if !ref.global {
-			tables = tables[:0]
+			targets = targets[:0]
 			for _, c := range companies {
-				tables = append(tables, c+"$"+ref.table)
+				targets = append(targets, tables.CompanyTable(c, ref.table))
 			}
 		}
-		for _, tbl := range tables {
+		for _, tbl := range targets {
 			stmt := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s = ?`, tbl, ref.column, ref.column)
 			args := []interface{}{newValue, oldValue}
 			if ref.condColumn != "" {
@@ -986,7 +986,7 @@ func (t *GenProductPostingGroup) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, GenProductPostingGroupTableName),
+		Table:     tables.CompanyTable(t.company, GenProductPostingGroupTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

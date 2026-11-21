@@ -474,7 +474,7 @@ func (t *ResourceRegister) CreateTable(db database.Executor, company string) err
 // CreateTableWithDBType creates the Resource_Register table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *ResourceRegister) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, ResourceRegisterTableName)
+	tableName := tables.CompanyTable(company, ResourceRegisterTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetResourceRegisterPostgresTableSchema()
@@ -496,7 +496,7 @@ func (t *ResourceRegister) CreateTableWithDBType(db database.Executor, company s
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *ResourceRegister) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, ResourceRegisterTableName)
+	tableName := tables.CompanyTable(company, ResourceRegisterTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -531,7 +531,7 @@ func resourceRegisterSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *ResourceRegister) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, ResourceRegisterTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, ResourceRegisterTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range resourceRegisterSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, ResourceRegisterTableName, tableName, spec)
@@ -697,7 +697,7 @@ func (t *ResourceRegister) InsertAll(records []*ResourceRegister, runTrigger boo
 		}
 		rows = append(rows, resourceRegisterFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ResourceRegisterTableName)
+	tableName := tables.CompanyTable(t.company, ResourceRegisterTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, resourceRegisterFields.Columns(), rows)
 }
 
@@ -786,14 +786,14 @@ func (t *ResourceRegister) renameReferences(field string, oldValue, newValue int
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {
-		tables := []string{ref.table}
+		targets := []string{ref.table}
 		if !ref.global {
-			tables = tables[:0]
+			targets = targets[:0]
 			for _, c := range companies {
-				tables = append(tables, c+"$"+ref.table)
+				targets = append(targets, tables.CompanyTable(c, ref.table))
 			}
 		}
-		for _, tbl := range tables {
+		for _, tbl := range targets {
 			stmt := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s = ?`, tbl, ref.column, ref.column)
 			args := []interface{}{newValue, oldValue}
 			if ref.condColumn != "" {
@@ -967,7 +967,7 @@ func (t *ResourceRegister) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, ResourceRegisterTableName),
+		Table:     tables.CompanyTable(t.company, ResourceRegisterTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

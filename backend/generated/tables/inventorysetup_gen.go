@@ -465,7 +465,7 @@ func (t *InventorySetup) CreateTable(db database.Executor, company string) error
 // CreateTableWithDBType creates the Inventory_Setup table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *InventorySetup) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, InventorySetupTableName)
+	tableName := tables.CompanyTable(company, InventorySetupTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetInventorySetupPostgresTableSchema()
@@ -487,7 +487,7 @@ func (t *InventorySetup) CreateTableWithDBType(db database.Executor, company str
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *InventorySetup) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, InventorySetupTableName)
+	tableName := tables.CompanyTable(company, InventorySetupTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -510,7 +510,7 @@ func inventorySetupSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *InventorySetup) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, InventorySetupTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, InventorySetupTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range inventorySetupSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, InventorySetupTableName, tableName, spec)
@@ -676,7 +676,7 @@ func (t *InventorySetup) InsertAll(records []*InventorySetup, runTrigger bool) e
 		}
 		rows = append(rows, inventorySetupFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, InventorySetupTableName)
+	tableName := tables.CompanyTable(t.company, InventorySetupTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, inventorySetupFields.Columns(), rows)
 }
 
@@ -884,7 +884,7 @@ func (t *InventorySetup) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, InventorySetupTableName),
+		Table:     tables.CompanyTable(t.company, InventorySetupTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

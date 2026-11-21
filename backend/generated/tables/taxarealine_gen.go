@@ -453,7 +453,7 @@ func (t *TaxAreaLine) CreateTable(db database.Executor, company string) error {
 // CreateTableWithDBType creates the Tax_Area_Line table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *TaxAreaLine) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, TaxAreaLineTableName)
+	tableName := tables.CompanyTable(company, TaxAreaLineTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetTaxAreaLinePostgresTableSchema()
@@ -475,7 +475,7 @@ func (t *TaxAreaLine) CreateTableWithDBType(db database.Executor, company string
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *TaxAreaLine) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, TaxAreaLineTableName)
+	tableName := tables.CompanyTable(company, TaxAreaLineTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -510,7 +510,7 @@ func taxAreaLineSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *TaxAreaLine) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, TaxAreaLineTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, TaxAreaLineTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range taxAreaLineSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, TaxAreaLineTableName, tableName, spec)
@@ -673,7 +673,7 @@ func (t *TaxAreaLine) InsertAll(records []*TaxAreaLine, runTrigger bool) error {
 		}
 		rows = append(rows, taxAreaLineFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, TaxAreaLineTableName)
+	tableName := tables.CompanyTable(t.company, TaxAreaLineTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, taxAreaLineFields.Columns(), rows)
 }
 
@@ -768,7 +768,7 @@ func (t *TaxAreaLine) flow() *tables.FlowRec {
 		DB:         t.db,
 		Company:    t.company,
 		Postgres:   t.dbType == database.DBTypePostgres,
-		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, TaxAreaLineTableName) + "\"",
+		Outer:      "\"" + tables.CompanyTable(t.company, TaxAreaLineTableName) + "\"",
 		One:        t.flowFieldOf,
 	}
 }
@@ -918,7 +918,7 @@ func (t *TaxAreaLine) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, TaxAreaLineTableName),
+		Table:     tables.CompanyTable(t.company, TaxAreaLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

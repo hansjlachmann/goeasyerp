@@ -1141,7 +1141,7 @@ func (t *SalesInvoiceHeader) CreateTable(db database.Executor, company string) e
 // CreateTableWithDBType creates the Sales_Invoice_Header table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *SalesInvoiceHeader) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, SalesInvoiceHeaderTableName)
+	tableName := tables.CompanyTable(company, SalesInvoiceHeaderTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetSalesInvoiceHeaderPostgresTableSchema()
@@ -1163,7 +1163,7 @@ func (t *SalesInvoiceHeader) CreateTableWithDBType(db database.Executor, company
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *SalesInvoiceHeader) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, SalesInvoiceHeaderTableName)
+	tableName := tables.CompanyTable(company, SalesInvoiceHeaderTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -1192,7 +1192,7 @@ func salesInvoiceHeaderSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *SalesInvoiceHeader) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, SalesInvoiceHeaderTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, SalesInvoiceHeaderTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range salesInvoiceHeaderSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, SalesInvoiceHeaderTableName, tableName, spec)
@@ -1358,7 +1358,7 @@ func (t *SalesInvoiceHeader) InsertAll(records []*SalesInvoiceHeader, runTrigger
 		}
 		rows = append(rows, salesInvoiceHeaderFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, SalesInvoiceHeaderTableName)
+	tableName := tables.CompanyTable(t.company, SalesInvoiceHeaderTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, salesInvoiceHeaderFields.Columns(), rows)
 }
 
@@ -1453,7 +1453,7 @@ func (t *SalesInvoiceHeader) flow() *tables.FlowRec {
 		DB:         t.db,
 		Company:    t.company,
 		Postgres:   t.dbType == database.DBTypePostgres,
-		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, SalesInvoiceHeaderTableName) + "\"",
+		Outer:      "\"" + tables.CompanyTable(t.company, SalesInvoiceHeaderTableName) + "\"",
 		One:        t.flowFieldOf,
 	}
 }
@@ -1618,7 +1618,7 @@ func (t *SalesInvoiceHeader) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, SalesInvoiceHeaderTableName),
+		Table:     tables.CompanyTable(t.company, SalesInvoiceHeaderTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

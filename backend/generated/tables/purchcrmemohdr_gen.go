@@ -1105,7 +1105,7 @@ func (t *PurchCrMemoHdr) CreateTable(db database.Executor, company string) error
 // CreateTableWithDBType creates the Purch_Cr_Memo_Hdr table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *PurchCrMemoHdr) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, PurchCrMemoHdrTableName)
+	tableName := tables.CompanyTable(company, PurchCrMemoHdrTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetPurchCrMemoHdrPostgresTableSchema()
@@ -1127,7 +1127,7 @@ func (t *PurchCrMemoHdr) CreateTableWithDBType(db database.Executor, company str
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *PurchCrMemoHdr) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, PurchCrMemoHdrTableName)
+	tableName := tables.CompanyTable(company, PurchCrMemoHdrTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -1156,7 +1156,7 @@ func purchCrMemoHdrSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *PurchCrMemoHdr) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, PurchCrMemoHdrTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, PurchCrMemoHdrTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range purchCrMemoHdrSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, PurchCrMemoHdrTableName, tableName, spec)
@@ -1322,7 +1322,7 @@ func (t *PurchCrMemoHdr) InsertAll(records []*PurchCrMemoHdr, runTrigger bool) e
 		}
 		rows = append(rows, purchCrMemoHdrFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, PurchCrMemoHdrTableName)
+	tableName := tables.CompanyTable(t.company, PurchCrMemoHdrTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, purchCrMemoHdrFields.Columns(), rows)
 }
 
@@ -1417,7 +1417,7 @@ func (t *PurchCrMemoHdr) flow() *tables.FlowRec {
 		DB:         t.db,
 		Company:    t.company,
 		Postgres:   t.dbType == database.DBTypePostgres,
-		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, PurchCrMemoHdrTableName) + "\"",
+		Outer:      "\"" + tables.CompanyTable(t.company, PurchCrMemoHdrTableName) + "\"",
 		One:        t.flowFieldOf,
 	}
 }
@@ -1582,7 +1582,7 @@ func (t *PurchCrMemoHdr) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, PurchCrMemoHdrTableName),
+		Table:     tables.CompanyTable(t.company, PurchCrMemoHdrTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

@@ -1290,7 +1290,7 @@ func (t *PurchaseHeader) CreateTable(db database.Executor, company string) error
 // CreateTableWithDBType creates the Purchase_Header table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *PurchaseHeader) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, PurchaseHeaderTableName)
+	tableName := tables.CompanyTable(company, PurchaseHeaderTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetPurchaseHeaderPostgresTableSchema()
@@ -1312,7 +1312,7 @@ func (t *PurchaseHeader) CreateTableWithDBType(db database.Executor, company str
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *PurchaseHeader) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, PurchaseHeaderTableName)
+	tableName := tables.CompanyTable(company, PurchaseHeaderTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -1341,7 +1341,7 @@ func purchaseHeaderSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *PurchaseHeader) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, PurchaseHeaderTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, PurchaseHeaderTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range purchaseHeaderSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, PurchaseHeaderTableName, tableName, spec)
@@ -1504,7 +1504,7 @@ func (t *PurchaseHeader) InsertAll(records []*PurchaseHeader, runTrigger bool) e
 		}
 		rows = append(rows, purchaseHeaderFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, PurchaseHeaderTableName)
+	tableName := tables.CompanyTable(t.company, PurchaseHeaderTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, purchaseHeaderFields.Columns(), rows)
 }
 
@@ -1593,14 +1593,14 @@ func (t *PurchaseHeader) renameReferences(field string, oldValue, newValue inter
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {
-		tables := []string{ref.table}
+		targets := []string{ref.table}
 		if !ref.global {
-			tables = tables[:0]
+			targets = targets[:0]
 			for _, c := range companies {
-				tables = append(tables, c+"$"+ref.table)
+				targets = append(targets, tables.CompanyTable(c, ref.table))
 			}
 		}
-		for _, tbl := range tables {
+		for _, tbl := range targets {
 			stmt := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s = ?`, tbl, ref.column, ref.column)
 			args := []interface{}{newValue, oldValue}
 			if ref.condColumn != "" {
@@ -1661,7 +1661,7 @@ func (t *PurchaseHeader) flow() *tables.FlowRec {
 		DB:         t.db,
 		Company:    t.company,
 		Postgres:   t.dbType == database.DBTypePostgres,
-		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, PurchaseHeaderTableName) + "\"",
+		Outer:      "\"" + tables.CompanyTable(t.company, PurchaseHeaderTableName) + "\"",
 		One:        t.flowFieldOf,
 	}
 }
@@ -1826,7 +1826,7 @@ func (t *PurchaseHeader) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, PurchaseHeaderTableName),
+		Table:     tables.CompanyTable(t.company, PurchaseHeaderTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

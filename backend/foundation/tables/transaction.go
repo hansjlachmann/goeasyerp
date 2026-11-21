@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 )
@@ -35,10 +36,18 @@ func LockTable(db database.Executor, dbType database.DBType, company, table stri
 	}
 	name := table
 	if company != "" {
-		name = company + "$" + table
+		name = CompanyTable(company, table)
 	}
 	_, err := db.Exec(`SELECT pg_advisory_xact_lock(hashtext($1))`, name)
 	if err != nil {
 		log.Printf("LockTable %s: %v", name, err)
 	}
+}
+
+// CompanyTable is the physical name of a company's table ("company$Table") as it goes between
+// double quotes in SQL: a double quote in the company part is doubled, so no company name can
+// end the quoted identifier (company names are checked when a company is created or renamed —
+// this keeps a name that slipped past from becoming SQL)
+func CompanyTable(company, table string) string {
+	return strings.ReplaceAll(company, `"`, `""`) + "$" + table
 }

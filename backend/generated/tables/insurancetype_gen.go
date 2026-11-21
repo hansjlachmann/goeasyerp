@@ -444,7 +444,7 @@ func (t *InsuranceType) CreateTable(db database.Executor, company string) error 
 // CreateTableWithDBType creates the Insurance_Type table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *InsuranceType) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, InsuranceTypeTableName)
+	tableName := tables.CompanyTable(company, InsuranceTypeTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetInsuranceTypePostgresTableSchema()
@@ -466,7 +466,7 @@ func (t *InsuranceType) CreateTableWithDBType(db database.Executor, company stri
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *InsuranceType) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, InsuranceTypeTableName)
+	tableName := tables.CompanyTable(company, InsuranceTypeTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -489,7 +489,7 @@ func insuranceTypeSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *InsuranceType) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, InsuranceTypeTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, InsuranceTypeTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range insuranceTypeSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, InsuranceTypeTableName, tableName, spec)
@@ -655,7 +655,7 @@ func (t *InsuranceType) InsertAll(records []*InsuranceType, runTrigger bool) err
 		}
 		rows = append(rows, insuranceTypeFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, InsuranceTypeTableName)
+	tableName := tables.CompanyTable(t.company, InsuranceTypeTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, insuranceTypeFields.Columns(), rows)
 }
 
@@ -744,14 +744,14 @@ func (t *InsuranceType) renameReferences(field string, oldValue, newValue interf
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {
-		tables := []string{ref.table}
+		targets := []string{ref.table}
 		if !ref.global {
-			tables = tables[:0]
+			targets = targets[:0]
 			for _, c := range companies {
-				tables = append(tables, c+"$"+ref.table)
+				targets = append(targets, tables.CompanyTable(c, ref.table))
 			}
 		}
-		for _, tbl := range tables {
+		for _, tbl := range targets {
 			stmt := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s = ?`, tbl, ref.column, ref.column)
 			args := []interface{}{newValue, oldValue}
 			if ref.condColumn != "" {
@@ -942,7 +942,7 @@ func (t *InsuranceType) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, InsuranceTypeTableName),
+		Table:     tables.CompanyTable(t.company, InsuranceTypeTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

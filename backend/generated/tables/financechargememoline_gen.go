@@ -684,7 +684,7 @@ func (t *FinanceChargeMemoLine) CreateTable(db database.Executor, company string
 // CreateTableWithDBType creates the Finance_Charge_Memo_Line table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *FinanceChargeMemoLine) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, FinanceChargeMemoLineTableName)
+	tableName := tables.CompanyTable(company, FinanceChargeMemoLineTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetFinanceChargeMemoLinePostgresTableSchema()
@@ -706,7 +706,7 @@ func (t *FinanceChargeMemoLine) CreateTableWithDBType(db database.Executor, comp
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *FinanceChargeMemoLine) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, FinanceChargeMemoLineTableName)
+	tableName := tables.CompanyTable(company, FinanceChargeMemoLineTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -735,7 +735,7 @@ func financeChargeMemoLineSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *FinanceChargeMemoLine) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, FinanceChargeMemoLineTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, FinanceChargeMemoLineTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range financeChargeMemoLineSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, FinanceChargeMemoLineTableName, tableName, spec)
@@ -898,7 +898,7 @@ func (t *FinanceChargeMemoLine) InsertAll(records []*FinanceChargeMemoLine, runT
 		}
 		rows = append(rows, financeChargeMemoLineFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, FinanceChargeMemoLineTableName)
+	tableName := tables.CompanyTable(t.company, FinanceChargeMemoLineTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, financeChargeMemoLineFields.Columns(), rows)
 }
 
@@ -1106,7 +1106,7 @@ func (t *FinanceChargeMemoLine) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, FinanceChargeMemoLineTableName),
+		Table:     tables.CompanyTable(t.company, FinanceChargeMemoLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

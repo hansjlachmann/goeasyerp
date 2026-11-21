@@ -485,7 +485,7 @@ func (t *BOMJournalBatch) CreateTable(db database.Executor, company string) erro
 // CreateTableWithDBType creates the BOM_Journal_Batch table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *BOMJournalBatch) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, BOMJournalBatchTableName)
+	tableName := tables.CompanyTable(company, BOMJournalBatchTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetBOMJournalBatchPostgresTableSchema()
@@ -507,7 +507,7 @@ func (t *BOMJournalBatch) CreateTableWithDBType(db database.Executor, company st
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *BOMJournalBatch) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, BOMJournalBatchTableName)
+	tableName := tables.CompanyTable(company, BOMJournalBatchTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -530,7 +530,7 @@ func bOMJournalBatchSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *BOMJournalBatch) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, BOMJournalBatchTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, BOMJournalBatchTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range bOMJournalBatchSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, BOMJournalBatchTableName, tableName, spec)
@@ -693,7 +693,7 @@ func (t *BOMJournalBatch) InsertAll(records []*BOMJournalBatch, runTrigger bool)
 		}
 		rows = append(rows, bOMJournalBatchFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, BOMJournalBatchTableName)
+	tableName := tables.CompanyTable(t.company, BOMJournalBatchTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, bOMJournalBatchFields.Columns(), rows)
 }
 
@@ -901,7 +901,7 @@ func (t *BOMJournalBatch) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, BOMJournalBatchTableName),
+		Table:     tables.CompanyTable(t.company, BOMJournalBatchTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

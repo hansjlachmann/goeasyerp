@@ -781,7 +781,7 @@ func (t *IssuedReminderHeader) CreateTable(db database.Executor, company string)
 // CreateTableWithDBType creates the Issued_Reminder_Header table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *IssuedReminderHeader) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, IssuedReminderHeaderTableName)
+	tableName := tables.CompanyTable(company, IssuedReminderHeaderTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetIssuedReminderHeaderPostgresTableSchema()
@@ -803,7 +803,7 @@ func (t *IssuedReminderHeader) CreateTableWithDBType(db database.Executor, compa
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *IssuedReminderHeader) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, IssuedReminderHeaderTableName)
+	tableName := tables.CompanyTable(company, IssuedReminderHeaderTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -832,7 +832,7 @@ func issuedReminderHeaderSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *IssuedReminderHeader) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, IssuedReminderHeaderTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, IssuedReminderHeaderTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range issuedReminderHeaderSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, IssuedReminderHeaderTableName, tableName, spec)
@@ -998,7 +998,7 @@ func (t *IssuedReminderHeader) InsertAll(records []*IssuedReminderHeader, runTri
 		}
 		rows = append(rows, issuedReminderHeaderFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, IssuedReminderHeaderTableName)
+	tableName := tables.CompanyTable(t.company, IssuedReminderHeaderTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, issuedReminderHeaderFields.Columns(), rows)
 }
 
@@ -1087,14 +1087,14 @@ func (t *IssuedReminderHeader) renameReferences(field string, oldValue, newValue
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {
-		tables := []string{ref.table}
+		targets := []string{ref.table}
 		if !ref.global {
-			tables = tables[:0]
+			targets = targets[:0]
 			for _, c := range companies {
-				tables = append(tables, c+"$"+ref.table)
+				targets = append(targets, tables.CompanyTable(c, ref.table))
 			}
 		}
-		for _, tbl := range tables {
+		for _, tbl := range targets {
 			stmt := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s = ?`, tbl, ref.column, ref.column)
 			args := []interface{}{newValue, oldValue}
 			if ref.condColumn != "" {
@@ -1155,7 +1155,7 @@ func (t *IssuedReminderHeader) flow() *tables.FlowRec {
 		DB:         t.db,
 		Company:    t.company,
 		Postgres:   t.dbType == database.DBTypePostgres,
-		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, IssuedReminderHeaderTableName) + "\"",
+		Outer:      "\"" + tables.CompanyTable(t.company, IssuedReminderHeaderTableName) + "\"",
 		One:        t.flowFieldOf,
 	}
 }
@@ -1320,7 +1320,7 @@ func (t *IssuedReminderHeader) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, IssuedReminderHeaderTableName),
+		Table:     tables.CompanyTable(t.company, IssuedReminderHeaderTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

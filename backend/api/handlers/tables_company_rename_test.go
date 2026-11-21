@@ -440,3 +440,40 @@ func TestDeleteCompanyIsGuarded(t *testing.T) {
 		})
 	}
 }
+
+// A new company's name goes into SQL as part of its tables' names: the insert takes only a-z,
+// 0-9, _ and - (lower case) — a name with a quote and SQL is refused before any table is made
+func TestInsertCompanyNameChecked(t *testing.T) {
+	for _, d := range renameDatabases(t) {
+		t.Run(string(d.dbType), func(t *testing.T) {
+			h := NewTablesHandlerWithDBType(d.db, d.dbType)
+			app := fiber.New()
+			app.Use(func(c *fiber.Ctx) error {
+				c.Locals("session", &session.Session{UserID: "ADMIN", IsSuper: true, HasRoles: true, Language: "en-US"})
+				return c.Next()
+			})
+			app.Post("/api/tables/:table/insert", h.InsertRecord)
+			for _, bad := range []string{`x" (a int); DROP TABLE "User_Member"; --`, "a b", "x", "ÆØÅ"} {
+				body, _ := json.Marshal(map[string]string{"name": bad})
+				status, out := call(t, app, "POST", "/api/tables/Company/insert", "", string(body))
+				if status == 200 {
+					t.Errorf("%q inserted: %v", bad, out)
+				}
+			}
+			var n int
+			if err := d.db.QueryRow(`SELECT COUNT(*) FROM "Company"`).Scan(&n); err != nil || n != 0 {
+				t.Fatalf("companies after the refused inserts: %d %v", n, err)
+			}
+			if err := d.db.QueryRow(`SELECT COUNT(*) FROM "User_Member"`).Scan(&n); err != nil {
+				t.Fatalf("User_Member is gone: %v", err)
+			}
+			if status, out := call(t, app, "POST", "/api/tables/Company/insert", "", `{"name":" My-Co_2 "}`); status != 200 {
+				t.Fatalf("a valid name: %d %v", status, out["error"])
+			}
+			var name string
+			if err := d.db.QueryRow(`SELECT name FROM "Company"`).Scan(&name); err != nil || name != "my-co_2" {
+				t.Errorf("stored %q (%v), want my-co_2", name, err)
+			}
+		})
+	}
+}

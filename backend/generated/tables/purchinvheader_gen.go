@@ -1105,7 +1105,7 @@ func (t *PurchInvHeader) CreateTable(db database.Executor, company string) error
 // CreateTableWithDBType creates the Purch_Inv_Header table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *PurchInvHeader) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, PurchInvHeaderTableName)
+	tableName := tables.CompanyTable(company, PurchInvHeaderTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetPurchInvHeaderPostgresTableSchema()
@@ -1127,7 +1127,7 @@ func (t *PurchInvHeader) CreateTableWithDBType(db database.Executor, company str
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *PurchInvHeader) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, PurchInvHeaderTableName)
+	tableName := tables.CompanyTable(company, PurchInvHeaderTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -1156,7 +1156,7 @@ func purchInvHeaderSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *PurchInvHeader) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, PurchInvHeaderTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, PurchInvHeaderTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range purchInvHeaderSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, PurchInvHeaderTableName, tableName, spec)
@@ -1322,7 +1322,7 @@ func (t *PurchInvHeader) InsertAll(records []*PurchInvHeader, runTrigger bool) e
 		}
 		rows = append(rows, purchInvHeaderFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, PurchInvHeaderTableName)
+	tableName := tables.CompanyTable(t.company, PurchInvHeaderTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, purchInvHeaderFields.Columns(), rows)
 }
 
@@ -1417,7 +1417,7 @@ func (t *PurchInvHeader) flow() *tables.FlowRec {
 		DB:         t.db,
 		Company:    t.company,
 		Postgres:   t.dbType == database.DBTypePostgres,
-		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, PurchInvHeaderTableName) + "\"",
+		Outer:      "\"" + tables.CompanyTable(t.company, PurchInvHeaderTableName) + "\"",
 		One:        t.flowFieldOf,
 	}
 }
@@ -1582,7 +1582,7 @@ func (t *PurchInvHeader) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, PurchInvHeaderTableName),
+		Table:     tables.CompanyTable(t.company, PurchInvHeaderTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

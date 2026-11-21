@@ -523,7 +523,7 @@ func (t *TaxDetail) CreateTable(db database.Executor, company string) error {
 // CreateTableWithDBType creates the Tax_Detail table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *TaxDetail) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, TaxDetailTableName)
+	tableName := tables.CompanyTable(company, TaxDetailTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetTaxDetailPostgresTableSchema()
@@ -545,7 +545,7 @@ func (t *TaxDetail) CreateTableWithDBType(db database.Executor, company string, 
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *TaxDetail) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, TaxDetailTableName)
+	tableName := tables.CompanyTable(company, TaxDetailTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -568,7 +568,7 @@ func taxDetailSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *TaxDetail) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, TaxDetailTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, TaxDetailTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range taxDetailSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, TaxDetailTableName, tableName, spec)
@@ -733,7 +733,7 @@ func (t *TaxDetail) InsertAll(records []*TaxDetail, runTrigger bool) error {
 		}
 		rows = append(rows, taxDetailFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, TaxDetailTableName)
+	tableName := tables.CompanyTable(t.company, TaxDetailTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, taxDetailFields.Columns(), rows)
 }
 
@@ -941,7 +941,7 @@ func (t *TaxDetail) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, TaxDetailTableName),
+		Table:     tables.CompanyTable(t.company, TaxDetailTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

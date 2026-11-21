@@ -582,7 +582,7 @@ func (t *OrderAddress) CreateTable(db database.Executor, company string) error {
 // CreateTableWithDBType creates the Order_Address table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *OrderAddress) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, OrderAddressTableName)
+	tableName := tables.CompanyTable(company, OrderAddressTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetOrderAddressPostgresTableSchema()
@@ -604,7 +604,7 @@ func (t *OrderAddress) CreateTableWithDBType(db database.Executor, company strin
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *OrderAddress) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, OrderAddressTableName)
+	tableName := tables.CompanyTable(company, OrderAddressTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -627,7 +627,7 @@ func orderAddressSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *OrderAddress) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, OrderAddressTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, OrderAddressTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range orderAddressSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, OrderAddressTableName, tableName, spec)
@@ -790,7 +790,7 @@ func (t *OrderAddress) InsertAll(records []*OrderAddress, runTrigger bool) error
 		}
 		rows = append(rows, orderAddressFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, OrderAddressTableName)
+	tableName := tables.CompanyTable(t.company, OrderAddressTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, orderAddressFields.Columns(), rows)
 }
 
@@ -998,7 +998,7 @@ func (t *OrderAddress) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, OrderAddressTableName),
+		Table:     tables.CompanyTable(t.company, OrderAddressTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

@@ -510,7 +510,7 @@ func (t *ReminderCommentLine) CreateTable(db database.Executor, company string) 
 // CreateTableWithDBType creates the Reminder_Comment_Line table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *ReminderCommentLine) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, ReminderCommentLineTableName)
+	tableName := tables.CompanyTable(company, ReminderCommentLineTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetReminderCommentLinePostgresTableSchema()
@@ -532,7 +532,7 @@ func (t *ReminderCommentLine) CreateTableWithDBType(db database.Executor, compan
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *ReminderCommentLine) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, ReminderCommentLineTableName)
+	tableName := tables.CompanyTable(company, ReminderCommentLineTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -555,7 +555,7 @@ func reminderCommentLineSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *ReminderCommentLine) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, ReminderCommentLineTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, ReminderCommentLineTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range reminderCommentLineSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, ReminderCommentLineTableName, tableName, spec)
@@ -719,7 +719,7 @@ func (t *ReminderCommentLine) InsertAll(records []*ReminderCommentLine, runTrigg
 		}
 		rows = append(rows, reminderCommentLineFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ReminderCommentLineTableName)
+	tableName := tables.CompanyTable(t.company, ReminderCommentLineTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, reminderCommentLineFields.Columns(), rows)
 }
 
@@ -927,7 +927,7 @@ func (t *ReminderCommentLine) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, ReminderCommentLineTableName),
+		Table:     tables.CompanyTable(t.company, ReminderCommentLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

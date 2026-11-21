@@ -666,7 +666,7 @@ func (t *JobQueue) CreateTable(db database.Executor, company string) error {
 // CreateTableWithDBType creates the Job_Queue table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *JobQueue) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, JobQueueTableName)
+	tableName := tables.CompanyTable(company, JobQueueTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetJobQueuePostgresTableSchema()
@@ -688,7 +688,7 @@ func (t *JobQueue) CreateTableWithDBType(db database.Executor, company string, d
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *JobQueue) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, JobQueueTableName)
+	tableName := tables.CompanyTable(company, JobQueueTableName)
 	siftCompany := company
 	_ = tableName // no keys: nothing to index
 	var keys []sift.Key
@@ -706,7 +706,7 @@ func jobQueueSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *JobQueue) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, JobQueueTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, JobQueueTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range jobQueueSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, JobQueueTableName, tableName, spec)
@@ -872,7 +872,7 @@ func (t *JobQueue) InsertAll(records []*JobQueue, runTrigger bool) error {
 		}
 		rows = append(rows, jobQueueFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, JobQueueTableName)
+	tableName := tables.CompanyTable(t.company, JobQueueTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, jobQueueFields.Columns(), rows)
 }
 
@@ -961,14 +961,14 @@ func (t *JobQueue) renameReferences(field string, oldValue, newValue interface{}
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {
-		tables := []string{ref.table}
+		targets := []string{ref.table}
 		if !ref.global {
-			tables = tables[:0]
+			targets = targets[:0]
 			for _, c := range companies {
-				tables = append(tables, c+"$"+ref.table)
+				targets = append(targets, tables.CompanyTable(c, ref.table))
 			}
 		}
-		for _, tbl := range tables {
+		for _, tbl := range targets {
 			stmt := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s = ?`, tbl, ref.column, ref.column)
 			args := []interface{}{newValue, oldValue}
 			if ref.condColumn != "" {
@@ -1029,7 +1029,7 @@ func (t *JobQueue) flow() *tables.FlowRec {
 		DB:         t.db,
 		Company:    t.company,
 		Postgres:   t.dbType == database.DBTypePostgres,
-		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, JobQueueTableName) + "\"",
+		Outer:      "\"" + tables.CompanyTable(t.company, JobQueueTableName) + "\"",
 		One:        t.flowFieldOf,
 	}
 }
@@ -1194,7 +1194,7 @@ func (t *JobQueue) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, JobQueueTableName),
+		Table:     tables.CompanyTable(t.company, JobQueueTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

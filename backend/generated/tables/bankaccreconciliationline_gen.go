@@ -572,7 +572,7 @@ func (t *BankAccReconciliationLine) CreateTable(db database.Executor, company st
 // CreateTableWithDBType creates the Bank_Acc_Reconciliation_Line table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *BankAccReconciliationLine) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, BankAccReconciliationLineTableName)
+	tableName := tables.CompanyTable(company, BankAccReconciliationLineTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetBankAccReconciliationLinePostgresTableSchema()
@@ -594,7 +594,7 @@ func (t *BankAccReconciliationLine) CreateTableWithDBType(db database.Executor, 
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *BankAccReconciliationLine) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, BankAccReconciliationLineTableName)
+	tableName := tables.CompanyTable(company, BankAccReconciliationLineTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -623,7 +623,7 @@ func bankAccReconciliationLineSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *BankAccReconciliationLine) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, BankAccReconciliationLineTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, BankAccReconciliationLineTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range bankAccReconciliationLineSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, BankAccReconciliationLineTableName, tableName, spec)
@@ -787,7 +787,7 @@ func (t *BankAccReconciliationLine) InsertAll(records []*BankAccReconciliationLi
 		}
 		rows = append(rows, bankAccReconciliationLineFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, BankAccReconciliationLineTableName)
+	tableName := tables.CompanyTable(t.company, BankAccReconciliationLineTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, bankAccReconciliationLineFields.Columns(), rows)
 }
 
@@ -995,7 +995,7 @@ func (t *BankAccReconciliationLine) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, BankAccReconciliationLineTableName),
+		Table:     tables.CompanyTable(t.company, BankAccReconciliationLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

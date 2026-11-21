@@ -684,7 +684,7 @@ func (t *IssuedFinChargeMemoLine) CreateTable(db database.Executor, company stri
 // CreateTableWithDBType creates the Issued_Fin_Charge_Memo_Line table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *IssuedFinChargeMemoLine) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, IssuedFinChargeMemoLineTableName)
+	tableName := tables.CompanyTable(company, IssuedFinChargeMemoLineTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetIssuedFinChargeMemoLinePostgresTableSchema()
@@ -706,7 +706,7 @@ func (t *IssuedFinChargeMemoLine) CreateTableWithDBType(db database.Executor, co
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *IssuedFinChargeMemoLine) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, IssuedFinChargeMemoLineTableName)
+	tableName := tables.CompanyTable(company, IssuedFinChargeMemoLineTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -735,7 +735,7 @@ func issuedFinChargeMemoLineSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *IssuedFinChargeMemoLine) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, IssuedFinChargeMemoLineTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, IssuedFinChargeMemoLineTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range issuedFinChargeMemoLineSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, IssuedFinChargeMemoLineTableName, tableName, spec)
@@ -898,7 +898,7 @@ func (t *IssuedFinChargeMemoLine) InsertAll(records []*IssuedFinChargeMemoLine, 
 		}
 		rows = append(rows, issuedFinChargeMemoLineFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, IssuedFinChargeMemoLineTableName)
+	tableName := tables.CompanyTable(t.company, IssuedFinChargeMemoLineTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, issuedFinChargeMemoLineFields.Columns(), rows)
 }
 
@@ -1106,7 +1106,7 @@ func (t *IssuedFinChargeMemoLine) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, IssuedFinChargeMemoLineTableName),
+		Table:     tables.CompanyTable(t.company, IssuedFinChargeMemoLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

@@ -498,7 +498,7 @@ func (t *FinanceChargeText) CreateTable(db database.Executor, company string) er
 // CreateTableWithDBType creates the Finance_Charge_Text table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *FinanceChargeText) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, FinanceChargeTextTableName)
+	tableName := tables.CompanyTable(company, FinanceChargeTextTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetFinanceChargeTextPostgresTableSchema()
@@ -520,7 +520,7 @@ func (t *FinanceChargeText) CreateTableWithDBType(db database.Executor, company 
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *FinanceChargeText) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, FinanceChargeTextTableName)
+	tableName := tables.CompanyTable(company, FinanceChargeTextTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -543,7 +543,7 @@ func financeChargeTextSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *FinanceChargeText) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, FinanceChargeTextTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, FinanceChargeTextTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range financeChargeTextSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, FinanceChargeTextTableName, tableName, spec)
@@ -707,7 +707,7 @@ func (t *FinanceChargeText) InsertAll(records []*FinanceChargeText, runTrigger b
 		}
 		rows = append(rows, financeChargeTextFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, FinanceChargeTextTableName)
+	tableName := tables.CompanyTable(t.company, FinanceChargeTextTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, financeChargeTextFields.Columns(), rows)
 }
 
@@ -915,7 +915,7 @@ func (t *FinanceChargeText) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, FinanceChargeTextTableName),
+		Table:     tables.CompanyTable(t.company, FinanceChargeTextTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

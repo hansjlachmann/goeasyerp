@@ -576,7 +576,7 @@ func (t *DateComprRegister) CreateTable(db database.Executor, company string) er
 // CreateTableWithDBType creates the Date_Compr_Register table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *DateComprRegister) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, DateComprRegisterTableName)
+	tableName := tables.CompanyTable(company, DateComprRegisterTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetDateComprRegisterPostgresTableSchema()
@@ -598,7 +598,7 @@ func (t *DateComprRegister) CreateTableWithDBType(db database.Executor, company 
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *DateComprRegister) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, DateComprRegisterTableName)
+	tableName := tables.CompanyTable(company, DateComprRegisterTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -627,7 +627,7 @@ func dateComprRegisterSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *DateComprRegister) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, DateComprRegisterTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, DateComprRegisterTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range dateComprRegisterSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, DateComprRegisterTableName, tableName, spec)
@@ -793,7 +793,7 @@ func (t *DateComprRegister) InsertAll(records []*DateComprRegister, runTrigger b
 		}
 		rows = append(rows, dateComprRegisterFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, DateComprRegisterTableName)
+	tableName := tables.CompanyTable(t.company, DateComprRegisterTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, dateComprRegisterFields.Columns(), rows)
 }
 
@@ -888,7 +888,7 @@ func (t *DateComprRegister) flow() *tables.FlowRec {
 		DB:         t.db,
 		Company:    t.company,
 		Postgres:   t.dbType == database.DBTypePostgres,
-		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, DateComprRegisterTableName) + "\"",
+		Outer:      "\"" + tables.CompanyTable(t.company, DateComprRegisterTableName) + "\"",
 		One:        t.flowFieldOf,
 	}
 }
@@ -1038,7 +1038,7 @@ func (t *DateComprRegister) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, DateComprRegisterTableName),
+		Table:     tables.CompanyTable(t.company, DateComprRegisterTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

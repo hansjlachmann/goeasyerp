@@ -458,7 +458,7 @@ func (t *FAReclassJournalBatch) CreateTable(db database.Executor, company string
 // CreateTableWithDBType creates the FA_Reclass_Journal_Batch table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *FAReclassJournalBatch) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, FAReclassJournalBatchTableName)
+	tableName := tables.CompanyTable(company, FAReclassJournalBatchTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetFAReclassJournalBatchPostgresTableSchema()
@@ -480,7 +480,7 @@ func (t *FAReclassJournalBatch) CreateTableWithDBType(db database.Executor, comp
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *FAReclassJournalBatch) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, FAReclassJournalBatchTableName)
+	tableName := tables.CompanyTable(company, FAReclassJournalBatchTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -503,7 +503,7 @@ func fAReclassJournalBatchSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *FAReclassJournalBatch) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, FAReclassJournalBatchTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, FAReclassJournalBatchTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range fAReclassJournalBatchSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, FAReclassJournalBatchTableName, tableName, spec)
@@ -666,7 +666,7 @@ func (t *FAReclassJournalBatch) InsertAll(records []*FAReclassJournalBatch, runT
 		}
 		rows = append(rows, fAReclassJournalBatchFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, FAReclassJournalBatchTableName)
+	tableName := tables.CompanyTable(t.company, FAReclassJournalBatchTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, fAReclassJournalBatchFields.Columns(), rows)
 }
 
@@ -874,7 +874,7 @@ func (t *FAReclassJournalBatch) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, FAReclassJournalBatchTableName),
+		Table:     tables.CompanyTable(t.company, FAReclassJournalBatchTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

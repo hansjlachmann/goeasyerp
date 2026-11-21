@@ -445,7 +445,7 @@ func (t *WorkType) CreateTable(db database.Executor, company string) error {
 // CreateTableWithDBType creates the Work_Type table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *WorkType) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, WorkTypeTableName)
+	tableName := tables.CompanyTable(company, WorkTypeTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetWorkTypePostgresTableSchema()
@@ -467,7 +467,7 @@ func (t *WorkType) CreateTableWithDBType(db database.Executor, company string, d
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *WorkType) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, WorkTypeTableName)
+	tableName := tables.CompanyTable(company, WorkTypeTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -490,7 +490,7 @@ func workTypeSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *WorkType) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, WorkTypeTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, WorkTypeTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range workTypeSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, WorkTypeTableName, tableName, spec)
@@ -656,7 +656,7 @@ func (t *WorkType) InsertAll(records []*WorkType, runTrigger bool) error {
 		}
 		rows = append(rows, workTypeFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, WorkTypeTableName)
+	tableName := tables.CompanyTable(t.company, WorkTypeTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, workTypeFields.Columns(), rows)
 }
 
@@ -745,14 +745,14 @@ func (t *WorkType) renameReferences(field string, oldValue, newValue interface{}
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {
-		tables := []string{ref.table}
+		targets := []string{ref.table}
 		if !ref.global {
-			tables = tables[:0]
+			targets = targets[:0]
 			for _, c := range companies {
-				tables = append(tables, c+"$"+ref.table)
+				targets = append(targets, tables.CompanyTable(c, ref.table))
 			}
 		}
-		for _, tbl := range tables {
+		for _, tbl := range targets {
 			stmt := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s = ?`, tbl, ref.column, ref.column)
 			args := []interface{}{newValue, oldValue}
 			if ref.condColumn != "" {
@@ -954,7 +954,7 @@ func (t *WorkType) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, WorkTypeTableName),
+		Table:     tables.CompanyTable(t.company, WorkTypeTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

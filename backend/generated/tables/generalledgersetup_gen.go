@@ -786,7 +786,7 @@ func (t *GeneralLedgerSetup) CreateTable(db database.Executor, company string) e
 // CreateTableWithDBType creates the General_Ledger_Setup table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *GeneralLedgerSetup) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, GeneralLedgerSetupTableName)
+	tableName := tables.CompanyTable(company, GeneralLedgerSetupTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetGeneralLedgerSetupPostgresTableSchema()
@@ -808,7 +808,7 @@ func (t *GeneralLedgerSetup) CreateTableWithDBType(db database.Executor, company
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *GeneralLedgerSetup) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, GeneralLedgerSetupTableName)
+	tableName := tables.CompanyTable(company, GeneralLedgerSetupTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -831,7 +831,7 @@ func generalLedgerSetupSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *GeneralLedgerSetup) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, GeneralLedgerSetupTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, GeneralLedgerSetupTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range generalLedgerSetupSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, GeneralLedgerSetupTableName, tableName, spec)
@@ -1000,7 +1000,7 @@ func (t *GeneralLedgerSetup) InsertAll(records []*GeneralLedgerSetup, runTrigger
 		}
 		rows = append(rows, generalLedgerSetupFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, GeneralLedgerSetupTableName)
+	tableName := tables.CompanyTable(t.company, GeneralLedgerSetupTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, generalLedgerSetupFields.Columns(), rows)
 }
 
@@ -1095,7 +1095,7 @@ func (t *GeneralLedgerSetup) flow() *tables.FlowRec {
 		DB:         t.db,
 		Company:    t.company,
 		Postgres:   t.dbType == database.DBTypePostgres,
-		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, GeneralLedgerSetupTableName) + "\"",
+		Outer:      "\"" + tables.CompanyTable(t.company, GeneralLedgerSetupTableName) + "\"",
 		One:        t.flowFieldOf,
 	}
 }
@@ -1266,7 +1266,7 @@ func (t *GeneralLedgerSetup) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, GeneralLedgerSetupTableName),
+		Table:     tables.CompanyTable(t.company, GeneralLedgerSetupTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

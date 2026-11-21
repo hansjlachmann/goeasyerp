@@ -611,7 +611,7 @@ func (t *ProjectBudgetEntry) CreateTable(db database.Executor, company string) e
 // CreateTableWithDBType creates the Project_Budget_Entry table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *ProjectBudgetEntry) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, ProjectBudgetEntryTableName)
+	tableName := tables.CompanyTable(company, ProjectBudgetEntryTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetProjectBudgetEntryPostgresTableSchema()
@@ -633,7 +633,7 @@ func (t *ProjectBudgetEntry) CreateTableWithDBType(db database.Executor, company
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *ProjectBudgetEntry) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, ProjectBudgetEntryTableName)
+	tableName := tables.CompanyTable(company, ProjectBudgetEntryTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -712,7 +712,7 @@ func projectBudgetEntrySIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *ProjectBudgetEntry) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, ProjectBudgetEntryTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, ProjectBudgetEntryTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range projectBudgetEntrySIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, ProjectBudgetEntryTableName, tableName, spec)
@@ -878,7 +878,7 @@ func (t *ProjectBudgetEntry) InsertAll(records []*ProjectBudgetEntry, runTrigger
 		}
 		rows = append(rows, projectBudgetEntryFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ProjectBudgetEntryTableName)
+	tableName := tables.CompanyTable(t.company, ProjectBudgetEntryTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, projectBudgetEntryFields.Columns(), rows)
 }
 
@@ -1086,7 +1086,7 @@ func (t *ProjectBudgetEntry) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, ProjectBudgetEntryTableName),
+		Table:     tables.CompanyTable(t.company, ProjectBudgetEntryTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

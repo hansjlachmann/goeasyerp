@@ -503,7 +503,7 @@ func (t *DepreciationTableHeader) CreateTable(db database.Executor, company stri
 // CreateTableWithDBType creates the Depreciation_Table_Header table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *DepreciationTableHeader) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, DepreciationTableHeaderTableName)
+	tableName := tables.CompanyTable(company, DepreciationTableHeaderTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetDepreciationTableHeaderPostgresTableSchema()
@@ -525,7 +525,7 @@ func (t *DepreciationTableHeader) CreateTableWithDBType(db database.Executor, co
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *DepreciationTableHeader) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, DepreciationTableHeaderTableName)
+	tableName := tables.CompanyTable(company, DepreciationTableHeaderTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -548,7 +548,7 @@ func depreciationTableHeaderSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *DepreciationTableHeader) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, DepreciationTableHeaderTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, DepreciationTableHeaderTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range depreciationTableHeaderSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, DepreciationTableHeaderTableName, tableName, spec)
@@ -714,7 +714,7 @@ func (t *DepreciationTableHeader) InsertAll(records []*DepreciationTableHeader, 
 		}
 		rows = append(rows, depreciationTableHeaderFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, DepreciationTableHeaderTableName)
+	tableName := tables.CompanyTable(t.company, DepreciationTableHeaderTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, depreciationTableHeaderFields.Columns(), rows)
 }
 
@@ -803,14 +803,14 @@ func (t *DepreciationTableHeader) renameReferences(field string, oldValue, newVa
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {
-		tables := []string{ref.table}
+		targets := []string{ref.table}
 		if !ref.global {
-			tables = tables[:0]
+			targets = targets[:0]
 			for _, c := range companies {
-				tables = append(tables, c+"$"+ref.table)
+				targets = append(targets, tables.CompanyTable(c, ref.table))
 			}
 		}
-		for _, tbl := range tables {
+		for _, tbl := range targets {
 			stmt := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s = ?`, tbl, ref.column, ref.column)
 			args := []interface{}{newValue, oldValue}
 			if ref.condColumn != "" {
@@ -1002,7 +1002,7 @@ func (t *DepreciationTableHeader) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, DepreciationTableHeaderTableName),
+		Table:     tables.CompanyTable(t.company, DepreciationTableHeaderTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

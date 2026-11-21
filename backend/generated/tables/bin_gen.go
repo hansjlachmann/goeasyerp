@@ -450,7 +450,7 @@ func (t *Bin) CreateTable(db database.Executor, company string) error {
 // CreateTableWithDBType creates the Bin table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *Bin) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, BinTableName)
+	tableName := tables.CompanyTable(company, BinTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetBinPostgresTableSchema()
@@ -472,7 +472,7 @@ func (t *Bin) CreateTableWithDBType(db database.Executor, company string, dbType
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *Bin) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, BinTableName)
+	tableName := tables.CompanyTable(company, BinTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -495,7 +495,7 @@ func binSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *Bin) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, BinTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, BinTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range binSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, BinTableName, tableName, spec)
@@ -658,7 +658,7 @@ func (t *Bin) InsertAll(records []*Bin, runTrigger bool) error {
 		}
 		rows = append(rows, binFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, BinTableName)
+	tableName := tables.CompanyTable(t.company, BinTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, binFields.Columns(), rows)
 }
 
@@ -866,7 +866,7 @@ func (t *Bin) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, BinTableName),
+		Table:     tables.CompanyTable(t.company, BinTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

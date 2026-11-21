@@ -54,7 +54,7 @@ func RefuseDeleteWhenUsed(db database.Executor, dbType database.DBType, rec Dele
 		if !ref.Global {
 			tables = tables[:0]
 			for _, company := range companies {
-				tables = append(tables, company+"$"+ref.Table)
+				tables = append(tables, CompanyTable(company, ref.Table))
 			}
 		}
 		for _, table := range tables {

@@ -577,7 +577,7 @@ func (t *ExtendedTextHeader) CreateTable(db database.Executor, company string) e
 // CreateTableWithDBType creates the Extended_Text_Header table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *ExtendedTextHeader) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, ExtendedTextHeaderTableName)
+	tableName := tables.CompanyTable(company, ExtendedTextHeaderTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetExtendedTextHeaderPostgresTableSchema()
@@ -599,7 +599,7 @@ func (t *ExtendedTextHeader) CreateTableWithDBType(db database.Executor, company
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *ExtendedTextHeader) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, ExtendedTextHeaderTableName)
+	tableName := tables.CompanyTable(company, ExtendedTextHeaderTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -628,7 +628,7 @@ func extendedTextHeaderSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *ExtendedTextHeader) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, ExtendedTextHeaderTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, ExtendedTextHeaderTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range extendedTextHeaderSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, ExtendedTextHeaderTableName, tableName, spec)
@@ -803,7 +803,7 @@ func (t *ExtendedTextHeader) InsertAll(records []*ExtendedTextHeader, runTrigger
 		}
 		rows = append(rows, extendedTextHeaderFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ExtendedTextHeaderTableName)
+	tableName := tables.CompanyTable(t.company, ExtendedTextHeaderTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, extendedTextHeaderFields.Columns(), rows)
 }
 
@@ -1011,7 +1011,7 @@ func (t *ExtendedTextHeader) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, ExtendedTextHeaderTableName),
+		Table:     tables.CompanyTable(t.company, ExtendedTextHeaderTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

@@ -840,7 +840,7 @@ func (t *FAJournalLine) CreateTable(db database.Executor, company string) error 
 // CreateTableWithDBType creates the FA_Journal_Line table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *FAJournalLine) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, FAJournalLineTableName)
+	tableName := tables.CompanyTable(company, FAJournalLineTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetFAJournalLinePostgresTableSchema()
@@ -862,7 +862,7 @@ func (t *FAJournalLine) CreateTableWithDBType(db database.Executor, company stri
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *FAJournalLine) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, FAJournalLineTableName)
+	tableName := tables.CompanyTable(company, FAJournalLineTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -891,7 +891,7 @@ func fAJournalLineSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *FAJournalLine) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, FAJournalLineTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, FAJournalLineTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range fAJournalLineSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, FAJournalLineTableName, tableName, spec)
@@ -1055,7 +1055,7 @@ func (t *FAJournalLine) InsertAll(records []*FAJournalLine, runTrigger bool) err
 		}
 		rows = append(rows, fAJournalLineFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, FAJournalLineTableName)
+	tableName := tables.CompanyTable(t.company, FAJournalLineTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, fAJournalLineFields.Columns(), rows)
 }
 
@@ -1263,7 +1263,7 @@ func (t *FAJournalLine) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, FAJournalLineTableName),
+		Table:     tables.CompanyTable(t.company, FAJournalLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

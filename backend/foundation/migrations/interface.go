@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 )
 
 // Migration represents a database migration
@@ -56,7 +57,7 @@ func (ctx *Context) SetTx(tx *sql.Tx) {
 // tableName should be the base name (e.g., "Customer"), not the full name
 func (ctx *Context) ForEachCompanyTable(tableName string, fn func(fullTableName string) error) error {
 	for _, company := range ctx.Companies {
-		fullTableName := fmt.Sprintf("%s$%s", company, tableName)
+		fullTableName := ftables.CompanyTable(company, tableName)
 		if err := fn(fullTableName); err != nil {
 			return fmt.Errorf("failed on table %s: %w", fullTableName, err)
 		}

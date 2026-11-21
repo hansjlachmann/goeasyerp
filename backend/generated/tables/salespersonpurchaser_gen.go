@@ -450,7 +450,7 @@ func (t *SalespersonPurchaser) CreateTable(db database.Executor, company string)
 // CreateTableWithDBType creates the Salesperson_Purchaser table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *SalespersonPurchaser) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, SalespersonPurchaserTableName)
+	tableName := tables.CompanyTable(company, SalespersonPurchaserTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetSalespersonPurchaserPostgresTableSchema()
@@ -472,7 +472,7 @@ func (t *SalespersonPurchaser) CreateTableWithDBType(db database.Executor, compa
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *SalespersonPurchaser) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, SalespersonPurchaserTableName)
+	tableName := tables.CompanyTable(company, SalespersonPurchaserTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -495,7 +495,7 @@ func salespersonPurchaserSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *SalespersonPurchaser) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, SalespersonPurchaserTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, SalespersonPurchaserTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range salespersonPurchaserSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, SalespersonPurchaserTableName, tableName, spec)
@@ -661,7 +661,7 @@ func (t *SalespersonPurchaser) InsertAll(records []*SalespersonPurchaser, runTri
 		}
 		rows = append(rows, salespersonPurchaserFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, SalespersonPurchaserTableName)
+	tableName := tables.CompanyTable(t.company, SalespersonPurchaserTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, salespersonPurchaserFields.Columns(), rows)
 }
 
@@ -750,14 +750,14 @@ func (t *SalespersonPurchaser) renameReferences(field string, oldValue, newValue
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {
-		tables := []string{ref.table}
+		targets := []string{ref.table}
 		if !ref.global {
-			tables = tables[:0]
+			targets = targets[:0]
 			for _, c := range companies {
-				tables = append(tables, c+"$"+ref.table)
+				targets = append(targets, tables.CompanyTable(c, ref.table))
 			}
 		}
-		for _, tbl := range tables {
+		for _, tbl := range targets {
 			stmt := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s = ?`, tbl, ref.column, ref.column)
 			args := []interface{}{newValue, oldValue}
 			if ref.condColumn != "" {
@@ -965,7 +965,7 @@ func (t *SalespersonPurchaser) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, SalespersonPurchaserTableName),
+		Table:     tables.CompanyTable(t.company, SalespersonPurchaserTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

@@ -118,7 +118,7 @@ func (r *FlowRec) entries(ff *FlowFieldMeta) string {
 	if ff.SourceGlobal {
 		return ff.Source
 	}
-	return fmt.Sprintf("%s$%s", r.Company, ff.Source)
+	return CompanyTable(r.Company, ff.Source)
 }
 
 // source is the table a Sum/Count reads: the SIFT totals of a key covering the filters, else

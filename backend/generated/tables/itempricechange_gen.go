@@ -521,7 +521,7 @@ func (t *ItemPriceChange) CreateTable(db database.Executor, company string) erro
 // CreateTableWithDBType creates the Item_Price_Change table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *ItemPriceChange) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, ItemPriceChangeTableName)
+	tableName := tables.CompanyTable(company, ItemPriceChangeTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetItemPriceChangePostgresTableSchema()
@@ -543,7 +543,7 @@ func (t *ItemPriceChange) CreateTableWithDBType(db database.Executor, company st
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *ItemPriceChange) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, ItemPriceChangeTableName)
+	tableName := tables.CompanyTable(company, ItemPriceChangeTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -566,7 +566,7 @@ func itemPriceChangeSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *ItemPriceChange) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, ItemPriceChangeTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, ItemPriceChangeTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range itemPriceChangeSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, ItemPriceChangeTableName, tableName, spec)
@@ -735,7 +735,7 @@ func (t *ItemPriceChange) InsertAll(records []*ItemPriceChange, runTrigger bool)
 		}
 		rows = append(rows, itemPriceChangeFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ItemPriceChangeTableName)
+	tableName := tables.CompanyTable(t.company, ItemPriceChangeTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, itemPriceChangeFields.Columns(), rows)
 }
 
@@ -943,7 +943,7 @@ func (t *ItemPriceChange) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, ItemPriceChangeTableName),
+		Table:     tables.CompanyTable(t.company, ItemPriceChangeTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

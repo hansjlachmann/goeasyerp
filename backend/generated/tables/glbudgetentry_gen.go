@@ -510,7 +510,7 @@ func (t *GLBudgetEntry) CreateTable(db database.Executor, company string) error 
 // CreateTableWithDBType creates the G_L_Budget_Entry table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *GLBudgetEntry) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, GLBudgetEntryTableName)
+	tableName := tables.CompanyTable(company, GLBudgetEntryTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetGLBudgetEntryPostgresTableSchema()
@@ -532,7 +532,7 @@ func (t *GLBudgetEntry) CreateTableWithDBType(db database.Executor, company stri
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *GLBudgetEntry) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, GLBudgetEntryTableName)
+	tableName := tables.CompanyTable(company, GLBudgetEntryTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -584,7 +584,7 @@ func gLBudgetEntrySIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *GLBudgetEntry) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, GLBudgetEntryTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, GLBudgetEntryTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range gLBudgetEntrySIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, GLBudgetEntryTableName, tableName, spec)
@@ -750,7 +750,7 @@ func (t *GLBudgetEntry) InsertAll(records []*GLBudgetEntry, runTrigger bool) err
 		}
 		rows = append(rows, gLBudgetEntryFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, GLBudgetEntryTableName)
+	tableName := tables.CompanyTable(t.company, GLBudgetEntryTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, gLBudgetEntryFields.Columns(), rows)
 }
 
@@ -958,7 +958,7 @@ func (t *GLBudgetEntry) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, GLBudgetEntryTableName),
+		Table:     tables.CompanyTable(t.company, GLBudgetEntryTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

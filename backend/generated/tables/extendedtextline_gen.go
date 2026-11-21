@@ -514,7 +514,7 @@ func (t *ExtendedTextLine) CreateTable(db database.Executor, company string) err
 // CreateTableWithDBType creates the Extended_Text_Line table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *ExtendedTextLine) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, ExtendedTextLineTableName)
+	tableName := tables.CompanyTable(company, ExtendedTextLineTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetExtendedTextLinePostgresTableSchema()
@@ -536,7 +536,7 @@ func (t *ExtendedTextLine) CreateTableWithDBType(db database.Executor, company s
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *ExtendedTextLine) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, ExtendedTextLineTableName)
+	tableName := tables.CompanyTable(company, ExtendedTextLineTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -559,7 +559,7 @@ func extendedTextLineSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *ExtendedTextLine) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, ExtendedTextLineTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, ExtendedTextLineTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range extendedTextLineSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, ExtendedTextLineTableName, tableName, spec)
@@ -725,7 +725,7 @@ func (t *ExtendedTextLine) InsertAll(records []*ExtendedTextLine, runTrigger boo
 		}
 		rows = append(rows, extendedTextLineFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ExtendedTextLineTableName)
+	tableName := tables.CompanyTable(t.company, ExtendedTextLineTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, extendedTextLineFields.Columns(), rows)
 }
 
@@ -933,7 +933,7 @@ func (t *ExtendedTextLine) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, ExtendedTextLineTableName),
+		Table:     tables.CompanyTable(t.company, ExtendedTextLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

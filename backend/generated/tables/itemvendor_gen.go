@@ -495,7 +495,7 @@ func (t *ItemVendor) CreateTable(db database.Executor, company string) error {
 // CreateTableWithDBType creates the Item_Vendor table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *ItemVendor) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, ItemVendorTableName)
+	tableName := tables.CompanyTable(company, ItemVendorTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetItemVendorPostgresTableSchema()
@@ -517,7 +517,7 @@ func (t *ItemVendor) CreateTableWithDBType(db database.Executor, company string,
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *ItemVendor) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, ItemVendorTableName)
+	tableName := tables.CompanyTable(company, ItemVendorTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -546,7 +546,7 @@ func itemVendorSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *ItemVendor) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, ItemVendorTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, ItemVendorTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range itemVendorSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, ItemVendorTableName, tableName, spec)
@@ -711,7 +711,7 @@ func (t *ItemVendor) InsertAll(records []*ItemVendor, runTrigger bool) error {
 		}
 		rows = append(rows, itemVendorFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ItemVendorTableName)
+	tableName := tables.CompanyTable(t.company, ItemVendorTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, itemVendorFields.Columns(), rows)
 }
 
@@ -919,7 +919,7 @@ func (t *ItemVendor) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, ItemVendorTableName),
+		Table:     tables.CompanyTable(t.company, ItemVendorTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

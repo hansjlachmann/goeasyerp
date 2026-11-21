@@ -1472,7 +1472,7 @@ func (t *ReservationSetup) CreateTable(db database.Executor, company string) err
 // CreateTableWithDBType creates the Reservation_Setup table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *ReservationSetup) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, ReservationSetupTableName)
+	tableName := tables.CompanyTable(company, ReservationSetupTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetReservationSetupPostgresTableSchema()
@@ -1494,7 +1494,7 @@ func (t *ReservationSetup) CreateTableWithDBType(db database.Executor, company s
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *ReservationSetup) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, ReservationSetupTableName)
+	tableName := tables.CompanyTable(company, ReservationSetupTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -1517,7 +1517,7 @@ func reservationSetupSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *ReservationSetup) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, ReservationSetupTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, ReservationSetupTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range reservationSetupSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, ReservationSetupTableName, tableName, spec)
@@ -1683,7 +1683,7 @@ func (t *ReservationSetup) InsertAll(records []*ReservationSetup, runTrigger boo
 		}
 		rows = append(rows, reservationSetupFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ReservationSetupTableName)
+	tableName := tables.CompanyTable(t.company, ReservationSetupTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, reservationSetupFields.Columns(), rows)
 }
 
@@ -1891,7 +1891,7 @@ func (t *ReservationSetup) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, ReservationSetupTableName),
+		Table:     tables.CompanyTable(t.company, ReservationSetupTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

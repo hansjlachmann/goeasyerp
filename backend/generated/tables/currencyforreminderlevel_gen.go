@@ -464,7 +464,7 @@ func (t *CurrencyForReminderLevel) CreateTable(db database.Executor, company str
 // CreateTableWithDBType creates the Currency_for_Reminder_Level table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *CurrencyForReminderLevel) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, CurrencyForReminderLevelTableName)
+	tableName := tables.CompanyTable(company, CurrencyForReminderLevelTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetCurrencyForReminderLevelPostgresTableSchema()
@@ -486,7 +486,7 @@ func (t *CurrencyForReminderLevel) CreateTableWithDBType(db database.Executor, c
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *CurrencyForReminderLevel) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, CurrencyForReminderLevelTableName)
+	tableName := tables.CompanyTable(company, CurrencyForReminderLevelTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -509,7 +509,7 @@ func currencyForReminderLevelSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *CurrencyForReminderLevel) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, CurrencyForReminderLevelTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, CurrencyForReminderLevelTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range currencyForReminderLevelSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, CurrencyForReminderLevelTableName, tableName, spec)
@@ -673,7 +673,7 @@ func (t *CurrencyForReminderLevel) InsertAll(records []*CurrencyForReminderLevel
 		}
 		rows = append(rows, currencyForReminderLevelFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, CurrencyForReminderLevelTableName)
+	tableName := tables.CompanyTable(t.company, CurrencyForReminderLevelTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, currencyForReminderLevelFields.Columns(), rows)
 }
 
@@ -881,7 +881,7 @@ func (t *CurrencyForReminderLevel) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, CurrencyForReminderLevelTableName),
+		Table:     tables.CompanyTable(t.company, CurrencyForReminderLevelTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

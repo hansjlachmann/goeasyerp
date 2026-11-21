@@ -790,7 +790,7 @@ func (t *BankAccountLedgerEntry) CreateTable(db database.Executor, company strin
 // CreateTableWithDBType creates the Bank_Account_Ledger_Entry table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *BankAccountLedgerEntry) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, BankAccountLedgerEntryTableName)
+	tableName := tables.CompanyTable(company, BankAccountLedgerEntryTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetBankAccountLedgerEntryPostgresTableSchema()
@@ -812,7 +812,7 @@ func (t *BankAccountLedgerEntry) CreateTableWithDBType(db database.Executor, com
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *BankAccountLedgerEntry) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, BankAccountLedgerEntryTableName)
+	tableName := tables.CompanyTable(company, BankAccountLedgerEntryTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -887,7 +887,7 @@ func bankAccountLedgerEntrySIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *BankAccountLedgerEntry) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, BankAccountLedgerEntryTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range bankAccountLedgerEntrySIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, BankAccountLedgerEntryTableName, tableName, spec)
@@ -1053,7 +1053,7 @@ func (t *BankAccountLedgerEntry) InsertAll(records []*BankAccountLedgerEntry, ru
 		}
 		rows = append(rows, bankAccountLedgerEntryFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName)
+	tableName := tables.CompanyTable(t.company, BankAccountLedgerEntryTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, bankAccountLedgerEntryFields.Columns(), rows)
 }
 
@@ -1142,14 +1142,14 @@ func (t *BankAccountLedgerEntry) renameReferences(field string, oldValue, newVal
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {
-		tables := []string{ref.table}
+		targets := []string{ref.table}
 		if !ref.global {
-			tables = tables[:0]
+			targets = targets[:0]
 			for _, c := range companies {
-				tables = append(tables, c+"$"+ref.table)
+				targets = append(targets, tables.CompanyTable(c, ref.table))
 			}
 		}
-		for _, tbl := range tables {
+		for _, tbl := range targets {
 			stmt := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s = ?`, tbl, ref.column, ref.column)
 			args := []interface{}{newValue, oldValue}
 			if ref.condColumn != "" {
@@ -1323,7 +1323,7 @@ func (t *BankAccountLedgerEntry) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, BankAccountLedgerEntryTableName),
+		Table:     tables.CompanyTable(t.company, BankAccountLedgerEntryTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

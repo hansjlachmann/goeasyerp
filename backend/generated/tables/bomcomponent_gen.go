@@ -582,7 +582,7 @@ func (t *BOMComponent) CreateTable(db database.Executor, company string) error {
 // CreateTableWithDBType creates the BOM_Component table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *BOMComponent) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, BOMComponentTableName)
+	tableName := tables.CompanyTable(company, BOMComponentTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetBOMComponentPostgresTableSchema()
@@ -604,7 +604,7 @@ func (t *BOMComponent) CreateTableWithDBType(db database.Executor, company strin
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *BOMComponent) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, BOMComponentTableName)
+	tableName := tables.CompanyTable(company, BOMComponentTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -633,7 +633,7 @@ func bOMComponentSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *BOMComponent) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, BOMComponentTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, BOMComponentTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range bOMComponentSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, BOMComponentTableName, tableName, spec)
@@ -796,7 +796,7 @@ func (t *BOMComponent) InsertAll(records []*BOMComponent, runTrigger bool) error
 		}
 		rows = append(rows, bOMComponentFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, BOMComponentTableName)
+	tableName := tables.CompanyTable(t.company, BOMComponentTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, bOMComponentFields.Columns(), rows)
 }
 
@@ -891,7 +891,7 @@ func (t *BOMComponent) flow() *tables.FlowRec {
 		DB:         t.db,
 		Company:    t.company,
 		Postgres:   t.dbType == database.DBTypePostgres,
-		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, BOMComponentTableName) + "\"",
+		Outer:      "\"" + tables.CompanyTable(t.company, BOMComponentTableName) + "\"",
 		One:        t.flowFieldOf,
 	}
 }
@@ -1041,7 +1041,7 @@ func (t *BOMComponent) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, BOMComponentTableName),
+		Table:     tables.CompanyTable(t.company, BOMComponentTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

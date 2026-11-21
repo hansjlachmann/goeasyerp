@@ -485,7 +485,7 @@ func (t *InsuranceJournalBatch) CreateTable(db database.Executor, company string
 // CreateTableWithDBType creates the Insurance_Journal_Batch table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *InsuranceJournalBatch) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, InsuranceJournalBatchTableName)
+	tableName := tables.CompanyTable(company, InsuranceJournalBatchTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetInsuranceJournalBatchPostgresTableSchema()
@@ -507,7 +507,7 @@ func (t *InsuranceJournalBatch) CreateTableWithDBType(db database.Executor, comp
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *InsuranceJournalBatch) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, InsuranceJournalBatchTableName)
+	tableName := tables.CompanyTable(company, InsuranceJournalBatchTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -530,7 +530,7 @@ func insuranceJournalBatchSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *InsuranceJournalBatch) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, InsuranceJournalBatchTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, InsuranceJournalBatchTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range insuranceJournalBatchSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, InsuranceJournalBatchTableName, tableName, spec)
@@ -693,7 +693,7 @@ func (t *InsuranceJournalBatch) InsertAll(records []*InsuranceJournalBatch, runT
 		}
 		rows = append(rows, insuranceJournalBatchFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, InsuranceJournalBatchTableName)
+	tableName := tables.CompanyTable(t.company, InsuranceJournalBatchTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, insuranceJournalBatchFields.Columns(), rows)
 }
 
@@ -901,7 +901,7 @@ func (t *InsuranceJournalBatch) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, InsuranceJournalBatchTableName),
+		Table:     tables.CompanyTable(t.company, InsuranceJournalBatchTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

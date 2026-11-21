@@ -515,7 +515,7 @@ func (t *ResourcePrice) CreateTable(db database.Executor, company string) error 
 // CreateTableWithDBType creates the Resource_Price table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *ResourcePrice) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, ResourcePriceTableName)
+	tableName := tables.CompanyTable(company, ResourcePriceTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetResourcePricePostgresTableSchema()
@@ -537,7 +537,7 @@ func (t *ResourcePrice) CreateTableWithDBType(db database.Executor, company stri
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *ResourcePrice) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, ResourcePriceTableName)
+	tableName := tables.CompanyTable(company, ResourcePriceTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -560,7 +560,7 @@ func resourcePriceSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *ResourcePrice) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, ResourcePriceTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, ResourcePriceTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range resourcePriceSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, ResourcePriceTableName, tableName, spec)
@@ -726,7 +726,7 @@ func (t *ResourcePrice) InsertAll(records []*ResourcePrice, runTrigger bool) err
 		}
 		rows = append(rows, resourcePriceFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ResourcePriceTableName)
+	tableName := tables.CompanyTable(t.company, ResourcePriceTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, resourcePriceFields.Columns(), rows)
 }
 
@@ -934,7 +934,7 @@ func (t *ResourcePrice) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, ResourcePriceTableName),
+		Table:     tables.CompanyTable(t.company, ResourcePriceTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

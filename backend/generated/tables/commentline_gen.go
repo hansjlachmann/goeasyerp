@@ -522,7 +522,7 @@ func (t *CommentLine) CreateTable(db database.Executor, company string) error {
 // CreateTableWithDBType creates the Comment_Line table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *CommentLine) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, CommentLineTableName)
+	tableName := tables.CompanyTable(company, CommentLineTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetCommentLinePostgresTableSchema()
@@ -544,7 +544,7 @@ func (t *CommentLine) CreateTableWithDBType(db database.Executor, company string
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *CommentLine) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, CommentLineTableName)
+	tableName := tables.CompanyTable(company, CommentLineTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -567,7 +567,7 @@ func commentLineSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *CommentLine) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, CommentLineTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, CommentLineTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range commentLineSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, CommentLineTableName, tableName, spec)
@@ -731,7 +731,7 @@ func (t *CommentLine) InsertAll(records []*CommentLine, runTrigger bool) error {
 		}
 		rows = append(rows, commentLineFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, CommentLineTableName)
+	tableName := tables.CompanyTable(t.company, CommentLineTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, commentLineFields.Columns(), rows)
 }
 
@@ -939,7 +939,7 @@ func (t *CommentLine) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, CommentLineTableName),
+		Table:     tables.CompanyTable(t.company, CommentLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

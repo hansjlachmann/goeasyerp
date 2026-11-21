@@ -456,7 +456,7 @@ func (t *AccountingPeriod) CreateTable(db database.Executor, company string) err
 // CreateTableWithDBType creates the Accounting_Period table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *AccountingPeriod) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, AccountingPeriodTableName)
+	tableName := tables.CompanyTable(company, AccountingPeriodTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetAccountingPeriodPostgresTableSchema()
@@ -478,7 +478,7 @@ func (t *AccountingPeriod) CreateTableWithDBType(db database.Executor, company s
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *AccountingPeriod) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, AccountingPeriodTableName)
+	tableName := tables.CompanyTable(company, AccountingPeriodTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -513,7 +513,7 @@ func accountingPeriodSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *AccountingPeriod) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, AccountingPeriodTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, AccountingPeriodTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range accountingPeriodSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, AccountingPeriodTableName, tableName, spec)
@@ -679,7 +679,7 @@ func (t *AccountingPeriod) InsertAll(records []*AccountingPeriod, runTrigger boo
 		}
 		rows = append(rows, accountingPeriodFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, AccountingPeriodTableName)
+	tableName := tables.CompanyTable(t.company, AccountingPeriodTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, accountingPeriodFields.Columns(), rows)
 }
 
@@ -887,7 +887,7 @@ func (t *AccountingPeriod) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, AccountingPeriodTableName),
+		Table:     tables.CompanyTable(t.company, AccountingPeriodTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

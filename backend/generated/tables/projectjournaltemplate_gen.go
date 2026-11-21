@@ -510,7 +510,7 @@ func (t *ProjectJournalTemplate) CreateTable(db database.Executor, company strin
 // CreateTableWithDBType creates the Project_Journal_Template table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *ProjectJournalTemplate) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, ProjectJournalTemplateTableName)
+	tableName := tables.CompanyTable(company, ProjectJournalTemplateTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetProjectJournalTemplatePostgresTableSchema()
@@ -532,7 +532,7 @@ func (t *ProjectJournalTemplate) CreateTableWithDBType(db database.Executor, com
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *ProjectJournalTemplate) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, ProjectJournalTemplateTableName)
+	tableName := tables.CompanyTable(company, ProjectJournalTemplateTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -555,7 +555,7 @@ func projectJournalTemplateSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *ProjectJournalTemplate) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, ProjectJournalTemplateTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, ProjectJournalTemplateTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range projectJournalTemplateSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, ProjectJournalTemplateTableName, tableName, spec)
@@ -721,7 +721,7 @@ func (t *ProjectJournalTemplate) InsertAll(records []*ProjectJournalTemplate, ru
 		}
 		rows = append(rows, projectJournalTemplateFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, ProjectJournalTemplateTableName)
+	tableName := tables.CompanyTable(t.company, ProjectJournalTemplateTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, projectJournalTemplateFields.Columns(), rows)
 }
 
@@ -810,14 +810,14 @@ func (t *ProjectJournalTemplate) renameReferences(field string, oldValue, newVal
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {
-		tables := []string{ref.table}
+		targets := []string{ref.table}
 		if !ref.global {
-			tables = tables[:0]
+			targets = targets[:0]
 			for _, c := range companies {
-				tables = append(tables, c+"$"+ref.table)
+				targets = append(targets, tables.CompanyTable(c, ref.table))
 			}
 		}
-		for _, tbl := range tables {
+		for _, tbl := range targets {
 			stmt := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s = ?`, tbl, ref.column, ref.column)
 			args := []interface{}{newValue, oldValue}
 			if ref.condColumn != "" {
@@ -991,7 +991,7 @@ func (t *ProjectJournalTemplate) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, ProjectJournalTemplateTableName),
+		Table:     tables.CompanyTable(t.company, ProjectJournalTemplateTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

@@ -1301,7 +1301,7 @@ func (t *PurchaseLine) CreateTable(db database.Executor, company string) error {
 // CreateTableWithDBType creates the Purchase_Line table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *PurchaseLine) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, PurchaseLineTableName)
+	tableName := tables.CompanyTable(company, PurchaseLineTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetPurchaseLinePostgresTableSchema()
@@ -1323,7 +1323,7 @@ func (t *PurchaseLine) CreateTableWithDBType(db database.Executor, company strin
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *PurchaseLine) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, PurchaseLineTableName)
+	tableName := tables.CompanyTable(company, PurchaseLineTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -1358,7 +1358,7 @@ func purchaseLineSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *PurchaseLine) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, PurchaseLineTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, PurchaseLineTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range purchaseLineSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, PurchaseLineTableName, tableName, spec)
@@ -1524,7 +1524,7 @@ func (t *PurchaseLine) InsertAll(records []*PurchaseLine, runTrigger bool) error
 		}
 		rows = append(rows, purchaseLineFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, PurchaseLineTableName)
+	tableName := tables.CompanyTable(t.company, PurchaseLineTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, purchaseLineFields.Columns(), rows)
 }
 
@@ -1732,7 +1732,7 @@ func (t *PurchaseLine) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, PurchaseLineTableName),
+		Table:     tables.CompanyTable(t.company, PurchaseLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

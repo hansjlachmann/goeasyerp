@@ -442,7 +442,7 @@ func (t *TariffNumber) CreateTable(db database.Executor, company string) error {
 // CreateTableWithDBType creates the Tariff_Number table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *TariffNumber) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, TariffNumberTableName)
+	tableName := tables.CompanyTable(company, TariffNumberTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetTariffNumberPostgresTableSchema()
@@ -464,7 +464,7 @@ func (t *TariffNumber) CreateTableWithDBType(db database.Executor, company strin
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *TariffNumber) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, TariffNumberTableName)
+	tableName := tables.CompanyTable(company, TariffNumberTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -487,7 +487,7 @@ func tariffNumberSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *TariffNumber) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, TariffNumberTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, TariffNumberTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range tariffNumberSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, TariffNumberTableName, tableName, spec)
@@ -653,7 +653,7 @@ func (t *TariffNumber) InsertAll(records []*TariffNumber, runTrigger bool) error
 		}
 		rows = append(rows, tariffNumberFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, TariffNumberTableName)
+	tableName := tables.CompanyTable(t.company, TariffNumberTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, tariffNumberFields.Columns(), rows)
 }
 
@@ -742,14 +742,14 @@ func (t *TariffNumber) renameReferences(field string, oldValue, newValue interfa
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {
-		tables := []string{ref.table}
+		targets := []string{ref.table}
 		if !ref.global {
-			tables = tables[:0]
+			targets = targets[:0]
 			for _, c := range companies {
-				tables = append(tables, c+"$"+ref.table)
+				targets = append(targets, tables.CompanyTable(c, ref.table))
 			}
 		}
-		for _, tbl := range tables {
+		for _, tbl := range targets {
 			stmt := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s = ?`, tbl, ref.column, ref.column)
 			args := []interface{}{newValue, oldValue}
 			if ref.condColumn != "" {
@@ -941,7 +941,7 @@ func (t *TariffNumber) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, TariffNumberTableName),
+		Table:     tables.CompanyTable(t.company, TariffNumberTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

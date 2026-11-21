@@ -672,7 +672,7 @@ func (t *InsCoverageLedgerEntry) CreateTable(db database.Executor, company strin
 // CreateTableWithDBType creates the Ins_Coverage_Ledger_Entry table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *InsCoverageLedgerEntry) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, InsCoverageLedgerEntryTableName)
+	tableName := tables.CompanyTable(company, InsCoverageLedgerEntryTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetInsCoverageLedgerEntryPostgresTableSchema()
@@ -694,7 +694,7 @@ func (t *InsCoverageLedgerEntry) CreateTableWithDBType(db database.Executor, com
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *InsCoverageLedgerEntry) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, InsCoverageLedgerEntryTableName)
+	tableName := tables.CompanyTable(company, InsCoverageLedgerEntryTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -763,7 +763,7 @@ func insCoverageLedgerEntrySIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *InsCoverageLedgerEntry) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, InsCoverageLedgerEntryTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, InsCoverageLedgerEntryTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range insCoverageLedgerEntrySIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, InsCoverageLedgerEntryTableName, tableName, spec)
@@ -929,7 +929,7 @@ func (t *InsCoverageLedgerEntry) InsertAll(records []*InsCoverageLedgerEntry, ru
 		}
 		rows = append(rows, insCoverageLedgerEntryFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, InsCoverageLedgerEntryTableName)
+	tableName := tables.CompanyTable(t.company, InsCoverageLedgerEntryTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, insCoverageLedgerEntryFields.Columns(), rows)
 }
 
@@ -1018,14 +1018,14 @@ func (t *InsCoverageLedgerEntry) renameReferences(field string, oldValue, newVal
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {
-		tables := []string{ref.table}
+		targets := []string{ref.table}
 		if !ref.global {
-			tables = tables[:0]
+			targets = targets[:0]
 			for _, c := range companies {
-				tables = append(tables, c+"$"+ref.table)
+				targets = append(targets, tables.CompanyTable(c, ref.table))
 			}
 		}
-		for _, tbl := range tables {
+		for _, tbl := range targets {
 			stmt := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s = ?`, tbl, ref.column, ref.column)
 			args := []interface{}{newValue, oldValue}
 			if ref.condColumn != "" {
@@ -1199,7 +1199,7 @@ func (t *InsCoverageLedgerEntry) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, InsCoverageLedgerEntryTableName),
+		Table:     tables.CompanyTable(t.company, InsCoverageLedgerEntryTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

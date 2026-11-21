@@ -470,7 +470,7 @@ func (t *EntryApplicationGL) CreateTable(db database.Executor, company string) e
 // CreateTableWithDBType creates the Entry_Application_GL table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *EntryApplicationGL) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, EntryApplicationGLTableName)
+	tableName := tables.CompanyTable(company, EntryApplicationGLTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetEntryApplicationGLPostgresTableSchema()
@@ -492,7 +492,7 @@ func (t *EntryApplicationGL) CreateTableWithDBType(db database.Executor, company
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *EntryApplicationGL) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, EntryApplicationGLTableName)
+	tableName := tables.CompanyTable(company, EntryApplicationGLTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -515,7 +515,7 @@ func entryApplicationGLSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *EntryApplicationGL) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, EntryApplicationGLTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, EntryApplicationGLTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range entryApplicationGLSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, EntryApplicationGLTableName, tableName, spec)
@@ -678,7 +678,7 @@ func (t *EntryApplicationGL) InsertAll(records []*EntryApplicationGL, runTrigger
 		}
 		rows = append(rows, entryApplicationGLFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, EntryApplicationGLTableName)
+	tableName := tables.CompanyTable(t.company, EntryApplicationGLTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, entryApplicationGLFields.Columns(), rows)
 }
 
@@ -886,7 +886,7 @@ func (t *EntryApplicationGL) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, EntryApplicationGLTableName),
+		Table:     tables.CompanyTable(t.company, EntryApplicationGLTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

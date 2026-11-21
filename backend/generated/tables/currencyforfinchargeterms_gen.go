@@ -458,7 +458,7 @@ func (t *CurrencyForFinChargeTerms) CreateTable(db database.Executor, company st
 // CreateTableWithDBType creates the Currency_for_Fin_Charge_Terms table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *CurrencyForFinChargeTerms) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, CurrencyForFinChargeTermsTableName)
+	tableName := tables.CompanyTable(company, CurrencyForFinChargeTermsTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetCurrencyForFinChargeTermsPostgresTableSchema()
@@ -480,7 +480,7 @@ func (t *CurrencyForFinChargeTerms) CreateTableWithDBType(db database.Executor, 
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *CurrencyForFinChargeTerms) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, CurrencyForFinChargeTermsTableName)
+	tableName := tables.CompanyTable(company, CurrencyForFinChargeTermsTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -503,7 +503,7 @@ func currencyForFinChargeTermsSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *CurrencyForFinChargeTerms) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, CurrencyForFinChargeTermsTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, CurrencyForFinChargeTermsTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range currencyForFinChargeTermsSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, CurrencyForFinChargeTermsTableName, tableName, spec)
@@ -666,7 +666,7 @@ func (t *CurrencyForFinChargeTerms) InsertAll(records []*CurrencyForFinChargeTer
 		}
 		rows = append(rows, currencyForFinChargeTermsFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, CurrencyForFinChargeTermsTableName)
+	tableName := tables.CompanyTable(t.company, CurrencyForFinChargeTermsTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, currencyForFinChargeTermsFields.Columns(), rows)
 }
 
@@ -874,7 +874,7 @@ func (t *CurrencyForFinChargeTerms) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, CurrencyForFinChargeTermsTableName),
+		Table:     tables.CompanyTable(t.company, CurrencyForFinChargeTermsTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

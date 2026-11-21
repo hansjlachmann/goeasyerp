@@ -916,7 +916,7 @@ func (t *GLEntry) CreateTable(db database.Executor, company string) error {
 // CreateTableWithDBType creates the G_L_Entry table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *GLEntry) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, GLEntryTableName)
+	tableName := tables.CompanyTable(company, GLEntryTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetGLEntryPostgresTableSchema()
@@ -938,7 +938,7 @@ func (t *GLEntry) CreateTableWithDBType(db database.Executor, company string, db
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *GLEntry) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, GLEntryTableName)
+	tableName := tables.CompanyTable(company, GLEntryTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -996,7 +996,7 @@ func gLEntrySIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *GLEntry) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, GLEntryTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, GLEntryTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range gLEntrySIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, GLEntryTableName, tableName, spec)
@@ -1162,7 +1162,7 @@ func (t *GLEntry) InsertAll(records []*GLEntry, runTrigger bool) error {
 		}
 		rows = append(rows, gLEntryFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, GLEntryTableName)
+	tableName := tables.CompanyTable(t.company, GLEntryTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, gLEntryFields.Columns(), rows)
 }
 
@@ -1370,7 +1370,7 @@ func (t *GLEntry) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, GLEntryTableName),
+		Table:     tables.CompanyTable(t.company, GLEntryTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

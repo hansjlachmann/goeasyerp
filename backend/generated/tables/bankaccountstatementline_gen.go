@@ -566,7 +566,7 @@ func (t *BankAccountStatementLine) CreateTable(db database.Executor, company str
 // CreateTableWithDBType creates the Bank_Account_Statement_Line table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *BankAccountStatementLine) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, BankAccountStatementLineTableName)
+	tableName := tables.CompanyTable(company, BankAccountStatementLineTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetBankAccountStatementLinePostgresTableSchema()
@@ -588,7 +588,7 @@ func (t *BankAccountStatementLine) CreateTableWithDBType(db database.Executor, c
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *BankAccountStatementLine) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, BankAccountStatementLineTableName)
+	tableName := tables.CompanyTable(company, BankAccountStatementLineTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -617,7 +617,7 @@ func bankAccountStatementLineSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *BankAccountStatementLine) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, BankAccountStatementLineTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, BankAccountStatementLineTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range bankAccountStatementLineSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, BankAccountStatementLineTableName, tableName, spec)
@@ -781,7 +781,7 @@ func (t *BankAccountStatementLine) InsertAll(records []*BankAccountStatementLine
 		}
 		rows = append(rows, bankAccountStatementLineFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, BankAccountStatementLineTableName)
+	tableName := tables.CompanyTable(t.company, BankAccountStatementLineTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, bankAccountStatementLineFields.Columns(), rows)
 }
 
@@ -989,7 +989,7 @@ func (t *BankAccountStatementLine) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, BankAccountStatementLineTableName),
+		Table:     tables.CompanyTable(t.company, BankAccountStatementLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

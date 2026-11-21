@@ -739,7 +739,7 @@ func (t *FinanceChargeMemoHeader) CreateTable(db database.Executor, company stri
 // CreateTableWithDBType creates the Finance_Charge_Memo_Header table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *FinanceChargeMemoHeader) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, FinanceChargeMemoHeaderTableName)
+	tableName := tables.CompanyTable(company, FinanceChargeMemoHeaderTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetFinanceChargeMemoHeaderPostgresTableSchema()
@@ -761,7 +761,7 @@ func (t *FinanceChargeMemoHeader) CreateTableWithDBType(db database.Executor, co
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *FinanceChargeMemoHeader) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, FinanceChargeMemoHeaderTableName)
+	tableName := tables.CompanyTable(company, FinanceChargeMemoHeaderTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -790,7 +790,7 @@ func financeChargeMemoHeaderSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *FinanceChargeMemoHeader) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, FinanceChargeMemoHeaderTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, FinanceChargeMemoHeaderTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range financeChargeMemoHeaderSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, FinanceChargeMemoHeaderTableName, tableName, spec)
@@ -956,7 +956,7 @@ func (t *FinanceChargeMemoHeader) InsertAll(records []*FinanceChargeMemoHeader, 
 		}
 		rows = append(rows, financeChargeMemoHeaderFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, FinanceChargeMemoHeaderTableName)
+	tableName := tables.CompanyTable(t.company, FinanceChargeMemoHeaderTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, financeChargeMemoHeaderFields.Columns(), rows)
 }
 
@@ -1045,14 +1045,14 @@ func (t *FinanceChargeMemoHeader) renameReferences(field string, oldValue, newVa
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {
-		tables := []string{ref.table}
+		targets := []string{ref.table}
 		if !ref.global {
-			tables = tables[:0]
+			targets = targets[:0]
 			for _, c := range companies {
-				tables = append(tables, c+"$"+ref.table)
+				targets = append(targets, tables.CompanyTable(c, ref.table))
 			}
 		}
-		for _, tbl := range tables {
+		for _, tbl := range targets {
 			stmt := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s = ?`, tbl, ref.column, ref.column)
 			args := []interface{}{newValue, oldValue}
 			if ref.condColumn != "" {
@@ -1113,7 +1113,7 @@ func (t *FinanceChargeMemoHeader) flow() *tables.FlowRec {
 		DB:         t.db,
 		Company:    t.company,
 		Postgres:   t.dbType == database.DBTypePostgres,
-		Outer:      "\"" + fmt.Sprintf("%s$%s", t.company, FinanceChargeMemoHeaderTableName) + "\"",
+		Outer:      "\"" + tables.CompanyTable(t.company, FinanceChargeMemoHeaderTableName) + "\"",
 		One:        t.flowFieldOf,
 	}
 }
@@ -1278,7 +1278,7 @@ func (t *FinanceChargeMemoHeader) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, FinanceChargeMemoHeaderTableName),
+		Table:     tables.CompanyTable(t.company, FinanceChargeMemoHeaderTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

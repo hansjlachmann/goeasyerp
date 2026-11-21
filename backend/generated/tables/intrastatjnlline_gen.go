@@ -709,7 +709,7 @@ func (t *IntrastatJnlLine) CreateTable(db database.Executor, company string) err
 // CreateTableWithDBType creates the Intrastat_Jnl_Line table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *IntrastatJnlLine) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, IntrastatJnlLineTableName)
+	tableName := tables.CompanyTable(company, IntrastatJnlLineTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetIntrastatJnlLinePostgresTableSchema()
@@ -731,7 +731,7 @@ func (t *IntrastatJnlLine) CreateTableWithDBType(db database.Executor, company s
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *IntrastatJnlLine) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, IntrastatJnlLineTableName)
+	tableName := tables.CompanyTable(company, IntrastatJnlLineTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -772,7 +772,7 @@ func intrastatJnlLineSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *IntrastatJnlLine) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, IntrastatJnlLineTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, IntrastatJnlLineTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range intrastatJnlLineSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, IntrastatJnlLineTableName, tableName, spec)
@@ -936,7 +936,7 @@ func (t *IntrastatJnlLine) InsertAll(records []*IntrastatJnlLine, runTrigger boo
 		}
 		rows = append(rows, intrastatJnlLineFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, IntrastatJnlLineTableName)
+	tableName := tables.CompanyTable(t.company, IntrastatJnlLineTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, intrastatJnlLineFields.Columns(), rows)
 }
 
@@ -1144,7 +1144,7 @@ func (t *IntrastatJnlLine) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, IntrastatJnlLineTableName),
+		Table:     tables.CompanyTable(t.company, IntrastatJnlLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

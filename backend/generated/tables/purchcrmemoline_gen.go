@@ -1048,7 +1048,7 @@ func (t *PurchCrMemoLine) CreateTable(db database.Executor, company string) erro
 // CreateTableWithDBType creates the Purch_Cr_Memo_Line table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *PurchCrMemoLine) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, PurchCrMemoLineTableName)
+	tableName := tables.CompanyTable(company, PurchCrMemoLineTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetPurchCrMemoLinePostgresTableSchema()
@@ -1070,7 +1070,7 @@ func (t *PurchCrMemoLine) CreateTableWithDBType(db database.Executor, company st
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *PurchCrMemoLine) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, PurchCrMemoLineTableName)
+	tableName := tables.CompanyTable(company, PurchCrMemoLineTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -1099,7 +1099,7 @@ func purchCrMemoLineSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *PurchCrMemoLine) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, PurchCrMemoLineTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, PurchCrMemoLineTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range purchCrMemoLineSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, PurchCrMemoLineTableName, tableName, spec)
@@ -1264,7 +1264,7 @@ func (t *PurchCrMemoLine) InsertAll(records []*PurchCrMemoLine, runTrigger bool)
 		}
 		rows = append(rows, purchCrMemoLineFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, PurchCrMemoLineTableName)
+	tableName := tables.CompanyTable(t.company, PurchCrMemoLineTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, purchCrMemoLineFields.Columns(), rows)
 }
 
@@ -1472,7 +1472,7 @@ func (t *PurchCrMemoLine) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, PurchCrMemoLineTableName),
+		Table:     tables.CompanyTable(t.company, PurchCrMemoLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

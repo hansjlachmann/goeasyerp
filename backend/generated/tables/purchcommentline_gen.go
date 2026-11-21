@@ -522,7 +522,7 @@ func (t *PurchCommentLine) CreateTable(db database.Executor, company string) err
 // CreateTableWithDBType creates the Purch_Comment_Line table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *PurchCommentLine) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, PurchCommentLineTableName)
+	tableName := tables.CompanyTable(company, PurchCommentLineTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetPurchCommentLinePostgresTableSchema()
@@ -544,7 +544,7 @@ func (t *PurchCommentLine) CreateTableWithDBType(db database.Executor, company s
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *PurchCommentLine) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, PurchCommentLineTableName)
+	tableName := tables.CompanyTable(company, PurchCommentLineTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -567,7 +567,7 @@ func purchCommentLineSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *PurchCommentLine) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, PurchCommentLineTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, PurchCommentLineTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range purchCommentLineSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, PurchCommentLineTableName, tableName, spec)
@@ -731,7 +731,7 @@ func (t *PurchCommentLine) InsertAll(records []*PurchCommentLine, runTrigger boo
 		}
 		rows = append(rows, purchCommentLineFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, PurchCommentLineTableName)
+	tableName := tables.CompanyTable(t.company, PurchCommentLineTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, purchCommentLineFields.Columns(), rows)
 }
 
@@ -939,7 +939,7 @@ func (t *PurchCommentLine) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, PurchCommentLineTableName),
+		Table:     tables.CompanyTable(t.company, PurchCommentLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

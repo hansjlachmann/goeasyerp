@@ -690,7 +690,7 @@ func (t *IssuedReminderLine) CreateTable(db database.Executor, company string) e
 // CreateTableWithDBType creates the Issued_Reminder_Line table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *IssuedReminderLine) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, IssuedReminderLineTableName)
+	tableName := tables.CompanyTable(company, IssuedReminderLineTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetIssuedReminderLinePostgresTableSchema()
@@ -712,7 +712,7 @@ func (t *IssuedReminderLine) CreateTableWithDBType(db database.Executor, company
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *IssuedReminderLine) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, IssuedReminderLineTableName)
+	tableName := tables.CompanyTable(company, IssuedReminderLineTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -741,7 +741,7 @@ func issuedReminderLineSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *IssuedReminderLine) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, IssuedReminderLineTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, IssuedReminderLineTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range issuedReminderLineSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, IssuedReminderLineTableName, tableName, spec)
@@ -904,7 +904,7 @@ func (t *IssuedReminderLine) InsertAll(records []*IssuedReminderLine, runTrigger
 		}
 		rows = append(rows, issuedReminderLineFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, IssuedReminderLineTableName)
+	tableName := tables.CompanyTable(t.company, IssuedReminderLineTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, issuedReminderLineFields.Columns(), rows)
 }
 
@@ -1112,7 +1112,7 @@ func (t *IssuedReminderLine) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, IssuedReminderLineTableName),
+		Table:     tables.CompanyTable(t.company, IssuedReminderLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

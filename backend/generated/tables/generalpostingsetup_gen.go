@@ -572,7 +572,7 @@ func (t *GeneralPostingSetup) CreateTable(db database.Executor, company string) 
 // CreateTableWithDBType creates the General_Posting_Setup table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *GeneralPostingSetup) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, GeneralPostingSetupTableName)
+	tableName := tables.CompanyTable(company, GeneralPostingSetupTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetGeneralPostingSetupPostgresTableSchema()
@@ -594,7 +594,7 @@ func (t *GeneralPostingSetup) CreateTableWithDBType(db database.Executor, compan
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *GeneralPostingSetup) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, GeneralPostingSetupTableName)
+	tableName := tables.CompanyTable(company, GeneralPostingSetupTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -623,7 +623,7 @@ func generalPostingSetupSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *GeneralPostingSetup) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, GeneralPostingSetupTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, GeneralPostingSetupTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range generalPostingSetupSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, GeneralPostingSetupTableName, tableName, spec)
@@ -786,7 +786,7 @@ func (t *GeneralPostingSetup) InsertAll(records []*GeneralPostingSetup, runTrigg
 		}
 		rows = append(rows, generalPostingSetupFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, GeneralPostingSetupTableName)
+	tableName := tables.CompanyTable(t.company, GeneralPostingSetupTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, generalPostingSetupFields.Columns(), rows)
 }
 
@@ -994,7 +994,7 @@ func (t *GeneralPostingSetup) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, GeneralPostingSetupTableName),
+		Table:     tables.CompanyTable(t.company, GeneralPostingSetupTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

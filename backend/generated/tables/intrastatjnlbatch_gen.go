@@ -488,7 +488,7 @@ func (t *IntrastatJnlBatch) CreateTable(db database.Executor, company string) er
 // CreateTableWithDBType creates the Intrastat_Jnl_Batch table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *IntrastatJnlBatch) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, IntrastatJnlBatchTableName)
+	tableName := tables.CompanyTable(company, IntrastatJnlBatchTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetIntrastatJnlBatchPostgresTableSchema()
@@ -510,7 +510,7 @@ func (t *IntrastatJnlBatch) CreateTableWithDBType(db database.Executor, company 
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *IntrastatJnlBatch) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, IntrastatJnlBatchTableName)
+	tableName := tables.CompanyTable(company, IntrastatJnlBatchTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -533,7 +533,7 @@ func intrastatJnlBatchSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *IntrastatJnlBatch) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, IntrastatJnlBatchTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, IntrastatJnlBatchTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range intrastatJnlBatchSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, IntrastatJnlBatchTableName, tableName, spec)
@@ -696,7 +696,7 @@ func (t *IntrastatJnlBatch) InsertAll(records []*IntrastatJnlBatch, runTrigger b
 		}
 		rows = append(rows, intrastatJnlBatchFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, IntrastatJnlBatchTableName)
+	tableName := tables.CompanyTable(t.company, IntrastatJnlBatchTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, intrastatJnlBatchFields.Columns(), rows)
 }
 
@@ -904,7 +904,7 @@ func (t *IntrastatJnlBatch) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, IntrastatJnlBatchTableName),
+		Table:     tables.CompanyTable(t.company, IntrastatJnlBatchTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

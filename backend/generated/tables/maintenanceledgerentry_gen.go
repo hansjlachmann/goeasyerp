@@ -899,7 +899,7 @@ func (t *MaintenanceLedgerEntry) CreateTable(db database.Executor, company strin
 // CreateTableWithDBType creates the Maintenance_Ledger_Entry table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *MaintenanceLedgerEntry) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, MaintenanceLedgerEntryTableName)
+	tableName := tables.CompanyTable(company, MaintenanceLedgerEntryTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetMaintenanceLedgerEntryPostgresTableSchema()
@@ -921,7 +921,7 @@ func (t *MaintenanceLedgerEntry) CreateTableWithDBType(db database.Executor, com
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *MaintenanceLedgerEntry) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, MaintenanceLedgerEntryTableName)
+	tableName := tables.CompanyTable(company, MaintenanceLedgerEntryTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -1001,7 +1001,7 @@ func maintenanceLedgerEntrySIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *MaintenanceLedgerEntry) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, MaintenanceLedgerEntryTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, MaintenanceLedgerEntryTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range maintenanceLedgerEntrySIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, MaintenanceLedgerEntryTableName, tableName, spec)
@@ -1167,7 +1167,7 @@ func (t *MaintenanceLedgerEntry) InsertAll(records []*MaintenanceLedgerEntry, ru
 		}
 		rows = append(rows, maintenanceLedgerEntryFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, MaintenanceLedgerEntryTableName)
+	tableName := tables.CompanyTable(t.company, MaintenanceLedgerEntryTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, maintenanceLedgerEntryFields.Columns(), rows)
 }
 
@@ -1256,14 +1256,14 @@ func (t *MaintenanceLedgerEntry) renameReferences(field string, oldValue, newVal
 	}
 	companies := []string{t.company}
 	for _, ref := range references[field] {
-		tables := []string{ref.table}
+		targets := []string{ref.table}
 		if !ref.global {
-			tables = tables[:0]
+			targets = targets[:0]
 			for _, c := range companies {
-				tables = append(tables, c+"$"+ref.table)
+				targets = append(targets, tables.CompanyTable(c, ref.table))
 			}
 		}
-		for _, tbl := range tables {
+		for _, tbl := range targets {
 			stmt := fmt.Sprintf(`UPDATE "%s" SET %s = ? WHERE %s = ?`, tbl, ref.column, ref.column)
 			args := []interface{}{newValue, oldValue}
 			if ref.condColumn != "" {
@@ -1437,7 +1437,7 @@ func (t *MaintenanceLedgerEntry) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, MaintenanceLedgerEntryTableName),
+		Table:     tables.CompanyTable(t.company, MaintenanceLedgerEntryTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}

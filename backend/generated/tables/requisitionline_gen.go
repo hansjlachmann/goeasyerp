@@ -838,7 +838,7 @@ func (t *RequisitionLine) CreateTable(db database.Executor, company string) erro
 // CreateTableWithDBType creates the Requisition_Line table for the specified company with the given database type
 // The db parameter can be either *sql.DB or *sql.Tx
 func (t *RequisitionLine) CreateTableWithDBType(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, RequisitionLineTableName)
+	tableName := tables.CompanyTable(company, RequisitionLineTableName)
 	var schema string
 	if dbType == database.DBTypePostgres {
 		schema = GetRequisitionLinePostgresTableSchema()
@@ -860,7 +860,7 @@ func (t *RequisitionLine) CreateTableWithDBType(db database.Executor, company st
 // missing indexes and builds, rebuilds or drops the SIFT totals of keys with
 // sum_index_fields (sift.Sync; unchanged keys cost one query).
 func (t *RequisitionLine) SyncKeys(db database.Executor, company string, dbType database.DBType) error {
-	tableName := fmt.Sprintf("%s$%s", company, RequisitionLineTableName)
+	tableName := tables.CompanyTable(company, RequisitionLineTableName)
 	siftCompany := company
 	// Index "company$Table$key"; a global table's indexes are shared by all companies:
 	// "Table$key" (a company prefix created a copy of every index per company)
@@ -895,7 +895,7 @@ func requisitionLineSIFTSpecs() []sift.KeySpec {
 // VerifySIFT compares the table's SIFT totals with its entries (Verify SIFT codeunit); with
 // repair it rebuilds the keys whose totals differ.
 func (t *RequisitionLine) VerifySIFT(repair bool) ([]sift.VerifyResult, error) {
-	tableName, siftCompany := fmt.Sprintf("%s$%s", t.company, RequisitionLineTableName), t.company
+	tableName, siftCompany := tables.CompanyTable(t.company, RequisitionLineTableName), t.company
 	var results []sift.VerifyResult
 	for _, spec := range requisitionLineSIFTSpecs() {
 		n, err := sift.VerifyKey(t.db, t.dbType, siftCompany, RequisitionLineTableName, tableName, spec)
@@ -1060,7 +1060,7 @@ func (t *RequisitionLine) InsertAll(records []*RequisitionLine, runTrigger bool)
 		}
 		rows = append(rows, requisitionLineFields.RowValues(r.fieldRef))
 	}
-	tableName := fmt.Sprintf("%s$%s", t.company, RequisitionLineTableName)
+	tableName := tables.CompanyTable(t.company, RequisitionLineTableName)
 	return tables.InsertRows(t.exec(), t.dbType, tableName, requisitionLineFields.Columns(), rows)
 }
 
@@ -1268,7 +1268,7 @@ func (t *RequisitionLine) rec() *tables.Rec {
 		Exec:      t.exec(),
 		Buffered:  t.temp != nil || inTx,
 		Postgres:  t.dbType == database.DBTypePostgres,
-		Table:     fmt.Sprintf("%s$%s", t.company, RequisitionLineTableName),
+		Table:     tables.CompanyTable(t.company, RequisitionLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
 	}
