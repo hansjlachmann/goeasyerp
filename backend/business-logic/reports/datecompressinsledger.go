@@ -34,6 +34,7 @@ func (r *dateCompressInsLedger) Definition() *Definition {
 		OptionsCaption: "OPTIONS",
 		Options:        append(dateComprOptions(true, r.fields), Option{Name: "only_index_entries", Type: "bool", Default: "false"}),
 		Transaction:    true,
+		DeletesEntries: true,
 		OnInitReport:   r.onInitReport,
 		OnPreReport: func(run *Run) error {
 			r.read(run)

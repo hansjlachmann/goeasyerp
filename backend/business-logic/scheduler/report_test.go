@@ -102,6 +102,24 @@ func TestRunReportJob(t *testing.T) {
 	if after := getJob(t, db, "NOREPORT"); after.Status != gtables.JobQueue_Status.Error {
 		t.Errorf("a missing report: status %v, want Error", after.Status)
 	}
+
+	// a report that deletes entries (date compression) never runs as a scheduled job: it asks
+	// first, and there is nobody to ask — the job goes to Error and nothing is run
+	seedJob(t, db, "COMPRESS", gtables.JobQueue_Recurrence.Once, 0)
+	job = getJob(t, db, "COMPRESS")
+	job.Object_type_to_run = gtables.JobQueue_Object_type_to_run.Report
+	job.Object_id_to_run = reports.DateCompressGeneralLedgerID
+	if !job.Modify(false) {
+		t.Fatal("modify job")
+	}
+	registers := gtables.NewDateComprRegister(src).Count()
+	s.runJob(testCompany, &job)
+	if after := getJob(t, db, "COMPRESS"); after.Status != gtables.JobQueue_Status.Error {
+		t.Errorf("a scheduled date compression: status %v, want Error", after.Status)
+	}
+	if gtables.NewDateComprRegister(src).Count() != registers {
+		t.Error("the scheduled date compression ran")
+	}
 }
 
 // The parameter's options and data item filters

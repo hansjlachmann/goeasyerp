@@ -41,6 +41,8 @@ const (
 	ErrDeleteTypeCount    ErrorCode = "ERR_DELETE_TYPE_COUNT"
 	ErrDeleteCountChanged ErrorCode = "ERR_DELETE_COUNT_CHANGED"
 	ErrCompanyDeleteSuper ErrorCode = "ERR_COMPANY_DELETE_SUPER_ONLY"
+	ErrReportNotScheduled ErrorCode = "ERR_REPORT_NOT_SCHEDULED"
+	ErrDateComprGLFilter  ErrorCode = "ERR_DATE_COMPR_GL_FILTER"
 	ErrDeleteRecordFailed ErrorCode = "ERR_DELETE_RECORD_FAILED"
 	ErrCopyTooMany        ErrorCode = "ERR_COPY_TOO_MANY"
 	ErrSelectionTooMany   ErrorCode = "ERR_SELECTION_TOO_MANY"
@@ -545,6 +547,18 @@ func DeleteTypeCount(count int) *AppError {
 // were added or deleted since): nothing was deleted
 func DeleteCountChanged(now, confirmed int) *AppError {
 	return &AppError{Code: ErrDeleteCountChanged, Params: []string{strconv.Itoa(now), strconv.Itoa(confirmed)}}
+}
+
+// ReportNotScheduled: a report that deletes entries for good (date compression) runs only from
+// its page, after its question — never as a scheduled job
+func ReportNotScheduled(reportID int) *AppError {
+	return &AppError{Code: ErrReportNotScheduled, Params: []string{strconv.Itoa(reportID)}}
+}
+
+// DateComprGLFilter: the G/L date compression takes no filters (an account filter would move
+// one side of each transaction to another date)
+func DateComprGLFilter(filter string) *AppError {
+	return &AppError{Code: ErrDateComprGLFilter, Params: []string{filter}}
 }
 
 // CompanyDeleteSuperOnly: only a SUPER user deletes a company (with all its data)

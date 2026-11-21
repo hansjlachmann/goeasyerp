@@ -70,6 +70,9 @@ type Definition struct {
 	// Transaction: the report's writes are one unit (a posting) — after the request page it
 	// runs in a transaction, committed at the end and rolled back when it fails
 	Transaction bool
+	// DeletesEntries: the report deletes entries for good (date compression, deleting ledger
+	// entries) — it runs only from its page, after its question, never as a scheduled job
+	DeletesEntries bool
 }
 
 // Option is a field of the request page
@@ -197,6 +200,16 @@ func Get(id int) (Factory, bool) {
 	defer registryMu.RUnlock()
 	f, ok := registry[id]
 	return f, ok
+}
+
+// DeletesEntries reports whether a report deletes entries for good (Definition.DeletesEntries):
+// it runs only from its page, never as a scheduled job
+func DeletesEntries(id int) bool {
+	factory, ok := Get(id)
+	if !ok {
+		return false
+	}
+	return factory().Definition().DeletesEntries
 }
 
 // List returns the registered reports: number → name

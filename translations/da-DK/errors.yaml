@@ -28,6 +28,8 @@ errors:
   ERR_DELETE_TOO_MANY: "Mere end %1 poster er markeret: slet dem i mindre dele (filtrer listen først)."
   ERR_DELETE_TYPE_KEY: "Skriv %2 for at slette %1 %2 — alt, hvad den indeholder, slettes også."
   ERR_DELETE_ONE_AT_A_TIME: "%1: slet én post ad gangen."
+  ERR_REPORT_NOT_SCHEDULED: "Rapport %1 sletter poster permanent og spørger først: kør den fra dens side (eller Kør i opgavekøen), ikke som en planlagt opgave."
+  ERR_DATE_COMPR_GL_FILTER: "Datokomprimer finans komprimerer alle finanskonti sammen, uden filtre (%1): en konto komprimeret alene ville flytte den ene side af sine transaktioner til en anden dato, og datoerne ville ikke balancere."
   ERR_DELETE_TYPE_COUNT: "Skriv antallet af poster (%1) for at bekræfte sletningen."
   ERR_DELETE_COUNT_CHANGED: "Listen har nu %1 poster, ikke de %2, du bekræftede: intet blev slettet. Kontroller listen, og slet igen."
   ERR_COMPANY_DELETE_SUPER_ONLY: "Kun en bruger med rollen SUPER kan slette virksomheden %1."

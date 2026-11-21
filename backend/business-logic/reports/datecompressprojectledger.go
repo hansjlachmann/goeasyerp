@@ -3,6 +3,7 @@ package reports
 import (
 	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
@@ -37,6 +38,7 @@ func (r *dateCompressProjectLedger) Definition() *Definition {
 		OptionsCaption: "OPTIONS",
 		Options:        dateComprOptions(true, r.fields),
 		Transaction:    true,
+		DeletesEntries: true,
 		OnInitReport:   r.onInitReport,
 		OnPreReport: func(run *Run) error {
 			r.read(run)
@@ -46,9 +48,12 @@ func (r *dateCompressProjectLedger) Definition() *Definition {
 		DataItems: []*DataItem{{
 			Name: "Project_Ledger_Entry", Table: gtables.ProjectLedgerEntryTableName, Key: []string{"project_no", "posting_date"},
 			RequestFilterFields: []string{"project_no", "project_posting_group"},
-			OnPreDataItem:       Trigger(r.onPreDataItem),
-			OnAfterGetRecord:    Trigger(r.onAfterGetRecord),
-			OnPostDataItem:      Trigger(r.onPostDataItem),
+			// closed entries only: open usage is yet to be invoiced or applied (Get Project
+			// Usage, Applies-to ID), which needs the entry itself
+			TableView:        []ftables.FieldFilter{{Field: "open", Expression: "false"}},
+			OnPreDataItem:    Trigger(r.onPreDataItem),
+			OnAfterGetRecord: Trigger(r.onAfterGetRecord),
+			OnPostDataItem:   Trigger(r.onPostDataItem),
 		}},
 	}
 }

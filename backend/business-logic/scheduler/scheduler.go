@@ -269,6 +269,10 @@ func (s *Scheduler) executeReport(company string, job *gtables.JobQueue) (*jobqu
 	if _, ok := reports.Get(job.Object_id_to_run); !ok {
 		return nil, fmt.Errorf("report %d not found", job.Object_id_to_run)
 	}
+	// a report that deletes entries for good asks first: never without someone to ask
+	if reports.DeletesEntries(job.Object_id_to_run) {
+		return nil, apperrors.ReportNotScheduled(job.Object_id_to_run)
+	}
 	options, filters := reports.ParseJobParameter(job.Parameter.String())
 	start := types.Now()
 	result, err := reports.Execute(job.Object_id_to_run, s.db, company, s.dbType, reports.RunOptions{Options: options, Filters: filters, Output: reports.OutputPDF})

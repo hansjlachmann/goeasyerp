@@ -34,6 +34,7 @@ func (r *dateCompressVend) Definition() *Definition {
 		OptionsCaption: "OPTIONS",
 		Options:        dateComprOptions(true, r.fields),
 		Transaction:    true,
+		DeletesEntries: true,
 		OnInitReport:   r.onInitReport,
 		OnPreReport: func(run *Run) error {
 			r.read(run)

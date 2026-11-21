@@ -1,7 +1,9 @@
 package reports
 
 import (
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
@@ -27,13 +29,15 @@ func (r *deletePhysInventoryLedger) Definition() *Definition {
 			{Name: "starting_date", Type: "date"},
 			{Name: "ending_date", Type: "date", Required: true},
 		},
-		Transaction: true,
+		Transaction:    true,
+		DeletesEntries: true,
 		OnInitReport: func(run *Run) error {
 			run.SetOption("ending_date", system.Today().String())
 			return nil
 		},
 		OnPreReport: func(run *Run) error {
 			r.read(run)
+			r.filter = requestFilter(run, "Phys_Inventory_Ledger_Entry")
 			return nil
 		},
 		DataItems: []*DataItem{{
@@ -79,7 +83,29 @@ func (r *deletePhysInventoryLedger) onAfterGetRecord(physInvtLedgEntry *gtables.
 	return nil
 }
 
+// onPostDataItem: the run is recorded in the Date Compr. Register (who, when, the period, the
+// filter, how many entries were deleted), as the other deleting reports do
 func (r *deletePhysInventoryLedger) onPostDataItem(physInvtLedgEntry *gtables.PhysInventoryLedgerEntry, run *Run) error {
 	r.window.Close()
-	return nil
+	if r.noOfDeleted == 0 {
+		return nil
+	}
+	dateComprReg := r.dateComprReg
+	dateComprReg.Reset()
+	no := 0
+	if dateComprReg.FindLast() {
+		no = dateComprReg.No
+	}
+	dateComprReg.Init()
+	dateComprReg.No = no + 1
+	dateComprReg.Table_id = r.tableID
+	dateComprReg.Creation_date = system.Today()
+	dateComprReg.Starting_date = r.entrdDateComprJnl.Starting_date
+	dateComprReg.Ending_date = r.entrdDateComprJnl.Ending_date
+	dateComprReg.Period_length = gtables.DateComprRegister_Period_length.Day
+	dateComprReg.Retain_field_contents = types.Text(run.Text("ALL_RECORDS_DELETED"))
+	dateComprReg.Filter = types.Text(system.CopyStr(r.filter, 1, dateComprReg.MaxStrLen("filter")))
+	dateComprReg.No_records_deleted = r.noOfDeleted
+	dateComprReg.User_id = types.Code(fcodeunits.CurrentUserID())
+	return dateComprReg.InsertOrError(false)
 }

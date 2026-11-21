@@ -2,6 +2,7 @@ package reports
 
 import (
 	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
+	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
@@ -37,6 +38,7 @@ func (r *dateCompressGL) Definition() *Definition {
 		OptionsCaption: "OPTIONS",
 		Options:        dateComprOptions(true, r.fields),
 		Transaction:    true,
+		DeletesEntries: true,
 		OnInitReport:   r.onInitReport,
 		OnPreReport: func(run *Run) error {
 			r.read(run)
@@ -45,15 +47,20 @@ func (r *dateCompressGL) Definition() *Definition {
 		},
 		DataItems: []*DataItem{{
 			Name: "G_L_Entry", Table: gtables.GLEntryTableName, Key: []string{"gl_account_no", "posting_date"},
-			RequestFilterFields: []string{"gl_account_no"},
-			OnPreDataItem:       Trigger(r.onPreDataItem),
-			OnAfterGetRecord:    Trigger(r.onAfterGetRecord),
-			OnPostDataItem:      Trigger(r.onPostDataItem),
+			// no filters: every transaction's entries are compressed together, so each date and
+			// transaction stays balanced (an account filter moved one side of a transaction to
+			// the period's first day, and the G/L Balance Check failed)
+			OnPreDataItem:    Trigger(r.onPreDataItem),
+			OnAfterGetRecord: Trigger(r.onAfterGetRecord),
+			OnPostDataItem:   Trigger(r.onPostDataItem),
 		}},
 	}
 }
 
 func (r *dateCompressGL) onPreDataItem(glEntry *gtables.GLEntry, run *Run) error {
+	if r.filter != "" {
+		return apperrors.DateComprGLFilter(r.filter)
+	}
 	err := r.confirm(run)
 	if err != nil {
 		return err
@@ -90,6 +97,11 @@ func (r *dateCompressGL) onAfterGetRecord(glEntry *gtables.GLEntry, run *Run) er
 	// compressed with an entry before it
 	stillThere := gtables.NewGLEntry(run)
 	if !stillThere.Get(glEntry.Entry_no) {
+		return Skip()
+	}
+	// a closing entry (C31-12, Close Income Statement) stays as it is: its date is not in the
+	// period's date filter, so its group would find no entries and make an empty entry
+	if glEntry.Posting_date.IsClosing() {
 		return Skip()
 	}
 

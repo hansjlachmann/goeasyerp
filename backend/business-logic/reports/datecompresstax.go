@@ -3,6 +3,7 @@ package reports
 import (
 	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/system"
+	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
@@ -33,6 +34,7 @@ func (r *dateCompressTax) Definition() *Definition {
 		OptionsCaption: "OPTIONS",
 		Options:        dateComprOptions(false, r.fields),
 		Transaction:    true,
+		DeletesEntries: true,
 		OnInitReport:   r.onInitReport,
 		OnPreReport: func(run *Run) error {
 			r.read(run)
@@ -43,9 +45,18 @@ func (r *dateCompressTax) Definition() *Definition {
 			Name: "Tax_Entry", Table: gtables.TaxEntryTableName,
 			Key:                 []string{"type", "closed", "tax_bus_posting_group", "tax_prod_posting_group", "tax_jurisdiction_code", "use_tax", "posting_date"},
 			RequestFilterFields: []string{"type", "tax_bus_posting_group", "tax_prod_posting_group", "tax_jurisdiction_code", "use_tax", "closed"},
-			OnPreDataItem:       Trigger(r.onPreDataItem),
-			OnAfterGetRecord:    Trigger(r.onAfterGetRecord),
-			OnPostDataItem:      Trigger(r.onPostDataItem),
+			// settled entries only, and none with unrealized tax still to realize: an open entry
+			// is yet to be settled, and an unrealized one is realized later through its own
+			// entry (Transaction No., Unrealized Tax Entry No.), which a compressed entry no
+			// longer has
+			TableView: []ftables.FieldFilter{
+				{Field: "closed", Expression: "true"},
+				{Field: "remaining_unrealized_amount", Expression: "0"},
+				{Field: "remaining_unrealized_base", Expression: "0"},
+			},
+			OnPreDataItem:    Trigger(r.onPreDataItem),
+			OnAfterGetRecord: Trigger(r.onAfterGetRecord),
+			OnPostDataItem:   Trigger(r.onPostDataItem),
 		}},
 	}
 }

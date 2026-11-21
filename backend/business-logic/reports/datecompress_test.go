@@ -278,15 +278,131 @@ func TestDateComprGLBudgetAndDeletes(t *testing.T) {
 	}
 
 	options := map[string]string{"starting_date": "2025-01-01", "ending_date": "2025-12-31"}
-	runCompression(t, src, reports.DeleteCheckLedgerEntriesID, options)
 	checkLedgEntry := gtables.NewCheckLedgerEntry(src)
 	checkLedgEntry.SetRange("check_date", types.NewDate(2025, 1, 1), types.NewDate(2025, 12, 31))
 	checkLedgEntry.SetFilter("entry_status", "<>1")
-	if n := checkLedgEntry.Count(); n != 0 {
-		t.Errorf("%d check ledger entries of the closed year left", n)
+	checkLedgEntry.SetRange("open", true)
+	openBefore := checkLedgEntry.Count()
+	runCompression(t, src, reports.DeleteCheckLedgerEntriesID, options)
+	// the closed checks of the closed year are deleted; the open ones (not reconciled) stay
+	if n := checkLedgEntry.Count(); n != openBefore {
+		t.Errorf("%d open check ledger entries left, %d before", n, openBefore)
 	}
+	checkLedgEntry.SetRange("open", false)
+	if n := checkLedgEntry.Count(); n != 0 {
+		t.Errorf("%d closed check ledger entries of the closed year left", n)
+	}
+	registersBefore := gtables.NewDateComprRegister(src).Count()
+	physBefore := countIn(gtables.NewPhysInventoryLedgerEntry(src), "posting_date")
 	runCompression(t, src, reports.DeletePhysInventoryLedgerID, options)
 	if n := countIn(gtables.NewPhysInventoryLedgerEntry(src), "posting_date"); n != 0 {
 		t.Errorf("%d phys. inventory ledger entries of the closed year left", n)
 	}
+	if physBefore > 0 {
+		last := lastComprRegister(t, src)
+		if gtables.NewDateComprRegister(src).Count() != registersBefore+1 || last.Table_id != gtables.PhysInventoryLedgerEntryTableID || last.No_records_deleted != physBefore {
+			t.Errorf("Delete Phys. Inventory Ledger's register: table %d, %d deleted (want %d)", last.Table_id, last.No_records_deleted, physBefore)
+		}
+	}
+}
+
+// The guards of the deleting reports: never as a scheduled job; the G/L compression takes no
+// filter; open and unrealized tax entries and open project entries are not compressed
+func TestDateCompressionGuards(t *testing.T) {
+	for _, id := range []int{reports.DateCompressGeneralLedgerID, reports.DateCompressTaxEntriesID, reports.DeleteCheckLedgerEntriesID, reports.DeletePhysInventoryLedgerID, reports.DateComprGLBudgetEntriesID} {
+		if !reports.DeletesEntries(id) {
+			t.Errorf("report %d must be marked DeletesEntries", id)
+		}
+	}
+	if reports.DeletesEntries(reports.DeleteEmptyGLRegistersID) {
+		t.Error("Delete Empty G/L Registers deletes no entries")
+	}
+
+	src := postingCompany(t)
+	options := map[string]string{"starting_date": "2025-01-01", "ending_date": "2025-12-31", "period_length": "2"}
+	glEntry := gtables.NewGLEntry(src)
+	before := glEntry.Count()
+	_, err := reports.Execute(reports.DateCompressGeneralLedgerID, src.GetDB(), src.GetCompany(), src.GetDBType(), reports.RunOptions{Options: options,
+		Filters: map[string][]ftables.FieldFilter{"G_L_Entry": {{Field: "gl_account_no", Expression: "6000"}}}})
+	if err == nil || glEntry.Count() != before {
+		t.Fatalf("G/L compression with an account filter: %v, %d entries (%d before)", err, glEntry.Count(), before)
+	}
+
+	// entries of the closed year (the demo has none): a settled tax entry, an open one, a settled
+	// one with unrealized tax still to realize; a closed and an open project entry
+	for i, c := range []struct {
+		closed     bool
+		unrealized string
+	}{{true, "0"}, {false, "0"}, {true, "25"}, {true, "0"}} {
+		taxEntry := gtables.NewTaxEntry(src)
+		taxEntry.Entry_no = 900001 + i
+		taxEntry.Posting_date = types.NewDate(2025, 3, 10+i)
+		taxEntry.Type = gtables.TaxEntry_Type.Sale
+		taxEntry.Base = types.MustDecimal("-100")
+		taxEntry.Amount = types.MustDecimal("-25")
+		taxEntry.Closed = c.closed
+		taxEntry.Remaining_unrealized_amount = types.MustDecimal(c.unrealized)
+		if err := taxEntry.InsertOrError(false); err != nil {
+			t.Fatal(err)
+		}
+	}
+	project := gtables.NewProject(src)
+	if !project.FindFirst() {
+		t.Fatal("no demo project")
+	}
+	for i, open := range []bool{false, true, false} {
+		projectLedgEntry := gtables.NewProjectLedgerEntry(src)
+		projectLedgEntry.Entry_no = 900001 + i
+		projectLedgEntry.Project_no = project.No
+		projectLedgEntry.Posting_date = types.NewDate(2025, 3, 10+i)
+		projectLedgEntry.Quantity = types.MustDecimal("1")
+		projectLedgEntry.Open = open
+		if open {
+			projectLedgEntry.Remaining_amount = types.MustDecimal("10")
+		}
+		if err := projectLedgEntry.InsertOrError(false); err != nil {
+			t.Fatal(err)
+		}
+	}
+	openTax := func() int {
+		taxEntry := gtables.NewTaxEntry(src)
+		taxEntry.SetRange("closed", false)
+		return taxEntry.Count()
+	}
+	openTaxBefore := openTax()
+	unrealized := func() int {
+		taxEntry := gtables.NewTaxEntry(src)
+		taxEntry.SetFilter("remaining_unrealized_amount", "<>0")
+		return taxEntry.Count()
+	}
+	unrealizedBefore := unrealized()
+	settled := func() int {
+		taxEntry := gtables.NewTaxEntry(src)
+		taxEntry.SetRange("entry_no", 900001, 900004)
+		return taxEntry.Count()
+	}
+	openProject := func() int {
+		projectLedgEntry := gtables.NewProjectLedgerEntry(src)
+		projectLedgEntry.SetRange("open", true)
+		return projectLedgEntry.Count()
+	}
+	openProjectBefore := openProject()
+	runCompression(t, src, reports.DateCompressTaxEntriesID, options)
+	runCompression(t, src, reports.DateCompressProjectLedgerID, options)
+	if openTax() != openTaxBefore || openTaxBefore == 0 {
+		t.Errorf("open tax entries %d → %d", openTaxBefore, openTax())
+	}
+	if unrealized() != unrealizedBefore || unrealizedBefore == 0 {
+		t.Errorf("tax entries with unrealized tax %d → %d", unrealizedBefore, unrealized())
+	}
+	if settled() != 2 {
+		t.Errorf("%d of the 4 test tax entries left, want the open and the unrealized one (the two settled ones compressed)", settled())
+	}
+	if !gtables.NewProjectLedgerEntry(src).Get(900002) {
+		t.Error("the open project entry was compressed")
+	}
+	if openProject() != openProjectBefore || openProjectBefore == 0 {
+		t.Errorf("open project entries %d → %d", openProjectBefore, openProject())
+	}
+	t.Logf("open tax entries kept: %d, open project entries kept: %d", openTaxBefore, openProjectBefore)
 }

@@ -35,7 +35,8 @@ func (r *deleteCheckLedgerEntries) Definition() *Definition {
 			{Name: "starting_date", Type: "date"},
 			{Name: "ending_date", Type: "date", Required: true},
 		},
-		Transaction: true,
+		Transaction:    true,
+		DeletesEntries: true,
 		OnInitReport: func(run *Run) error {
 			run.SetOption("ending_date", system.Today().String())
 			return nil
@@ -48,7 +49,12 @@ func (r *deleteCheckLedgerEntries) Definition() *Definition {
 		},
 		DataItems: []*DataItem{{
 			Name: "Check_Ledger_Entry", Table: gtables.CheckLedgerEntryTableName, Key: []string{"bank_account_no", "check_date"},
-			TableView:           []ftables.FieldFilter{{Field: "entry_status", Expression: "<>" + strconv.Itoa(int(gtables.CheckLedgerEntry_Entry_status.Printed))}},
+			// not printed, and no longer open: reconciled on a bank statement or voided — an open
+			// check is still to be reconciled or financially voided, which needs its entry
+			TableView: []ftables.FieldFilter{
+				{Field: "entry_status", Expression: "<>" + strconv.Itoa(int(gtables.CheckLedgerEntry_Entry_status.Printed))},
+				{Field: "open", Expression: "false"},
+			},
 			RequestFilterFields: []string{"bank_account_no", "bank_payment_type"},
 			OnPreDataItem:       Trigger(r.onPreDataItem),
 			OnAfterGetRecord:    Trigger(r.onAfterGetRecord),
