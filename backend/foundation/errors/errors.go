@@ -51,6 +51,7 @@ const (
 	ErrCopyTooMany        ErrorCode = "ERR_COPY_TOO_MANY"
 	ErrSelectionTooMany   ErrorCode = "ERR_SELECTION_TOO_MANY"
 	ErrTooManyRequests    ErrorCode = "ERR_TOO_MANY_REQUESTS"
+	ErrCrossSiteRequest   ErrorCode = "ERR_CROSS_SITE_REQUEST"
 	ErrInconsistent       ErrorCode = "ERR_INCONSISTENT"
 	ErrPostedTable        ErrorCode = "ERR_POSTED_TABLE"
 	ErrGLNotBalanced      ErrorCode = "ERR_GL_NOT_BALANCED"
@@ -939,4 +940,10 @@ func PageNotFound(pageID string) *AppError {
 // TooManyRequests: a client sent more requests than the rate limit allows
 func TooManyRequests() *AppError {
 	return &AppError{Code: ErrTooManyRequests}
+}
+
+// CrossSiteRequest: a change sent from another site (a form or script of another web site
+// acting with the user's session), refused
+func CrossSiteRequest() *AppError {
+	return &AppError{Code: ErrCrossSiteRequest}
 }

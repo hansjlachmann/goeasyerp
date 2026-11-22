@@ -106,8 +106,11 @@ func NewServerFull(db *sql.DB, dbType database.DBType, companyInit handlers.Comp
 func (s *Server) Setup() {
 	// Global middleware
 	s.app.Use(recover.New()) // Panic recovery
-	s.app.Use(middleware.CORS())
-	s.app.Use(middleware.RateLimit()) // Generous global rate limit (per client IP)
+	corsOrigins := middleware.CORSOrigins()
+	s.app.Use(middleware.CORS(corsOrigins))
+	s.app.Use(middleware.SecurityHeaders())             // nosniff, no framing, no-store (S25, S27)
+	s.app.Use(middleware.SameOriginWrites(corsOrigins)) // no changes sent by other web sites (S26)
+	s.app.Use(middleware.RateLimit())                   // Generous global rate limit (per client IP)
 	s.app.Use(middleware.Logger())
 	// Create a permission loader for the auth middleware (used on cache miss / server restart)
 	permLoader := handlers.NewPermissionLoader(s.db, s.dbType)

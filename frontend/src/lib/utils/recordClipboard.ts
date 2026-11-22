@@ -20,6 +20,16 @@ export function saveClipboard(clip: RecordClipboard): void {
 	sessionStorage.setItem(CLIPBOARD_KEY, JSON.stringify(clip));
 }
 
+/** Forgets the copied records — at log out, so the next user of the browser cannot paste them (S27) */
+export function clearClipboard(): void {
+	if (!hasStorage()) return;
+	try {
+		sessionStorage.removeItem(CLIPBOARD_KEY);
+	} catch {
+		// storage not available: nothing kept
+	}
+}
+
 export function loadClipboard(): RecordClipboard | null {
 	if (!hasStorage()) return null;
 	try {

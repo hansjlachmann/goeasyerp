@@ -423,9 +423,9 @@ func (r *importExportGLBudget) onPreDataItem(glBudgetEntry *gtables.GLBudgetEntr
 
 func (r *importExportGLBudget) onAfterGetRecord(glBudgetEntry *gtables.GLBudgetEntry, run *Run) error {
 	r.exported++
-	return r.csvWriter.Write([]string{glBudgetEntry.Gl_account_no.String(), glBudgetEntry.Date.String(),
-		glBudgetEntry.Dimension_1_code.String(), glBudgetEntry.Dimension_2_code.String(),
-		glBudgetEntry.Amount.String(), glBudgetEntry.Description.String(), glBudgetEntry.Business_unit_code.String()})
+	return r.csvWriter.Write([]string{spreadsheetSafe(glBudgetEntry.Gl_account_no.String()), glBudgetEntry.Date.String(),
+		spreadsheetSafe(glBudgetEntry.Dimension_1_code.String()), spreadsheetSafe(glBudgetEntry.Dimension_2_code.String()),
+		glBudgetEntry.Amount.String(), spreadsheetSafe(glBudgetEntry.Description.String()), spreadsheetSafe(glBudgetEntry.Business_unit_code.String())})
 }
 
 func (r *importExportGLBudget) onPostReport(run *Run) error {
@@ -461,6 +461,9 @@ func (r *importExportGLBudget) importFile(run *Run) error {
 		lineNo := strconv.Itoa(i + 1)
 		for len(line) < len(glBudgetFileColumns) {
 			line = append(line, "")
+		}
+		for col := range line {
+			line[col] = spreadsheetText(line[col]) // the ' the export put before texts like =…
 		}
 		var date types.Date
 		ok := system.Evaluate(&date, strings.TrimSpace(line[1]))

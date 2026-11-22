@@ -1,6 +1,15 @@
 import type { Handle } from '@sveltejs/kit';
+import { PAGE_HEADERS, proxyHeaders } from '$lib/server/headers';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://backend:8080';
+
+function clientAddressOf(getClientAddress: () => string): string {
+	try {
+		return getClientAddress();
+	} catch {
+		return '';
+	}
+}
 
 export const handle: Handle = async ({ event, resolve }) => {
 	// Proxy /api requests to the backend
@@ -10,7 +19,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 		try {
 			const response = await fetch(backendUrl, {
 				method: event.request.method,
-				headers: event.request.headers,
+				headers: proxyHeaders(event.request.headers, clientAddressOf(event.getClientAddress)),
 				body: event.request.method !== 'GET' && event.request.method !== 'HEAD'
 					? await event.request.text()
 					: undefined,
@@ -31,5 +40,9 @@ export const handle: Handle = async ({ event, resolve }) => {
 		}
 	}
 
-	return resolve(event);
+	const response = await resolve(event);
+	for (const [name, value] of Object.entries(PAGE_HEADERS)) {
+		if (!response.headers.has(name)) response.headers.set(name, value);
+	}
+	return response;
 };

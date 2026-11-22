@@ -214,6 +214,23 @@ file's nginx runs). nginx overwrites the header with the address it sees, so a c
 its own. A proxy on another machine with a public address must be listed in `TRUSTED_PROXIES`, and
 must overwrite the header too.
 
+The frontend's own `/api` pass-through (used when a proxy sends everything to the frontend, e.g. a
+Kubernetes ingress) drops the client's `X-Forwarded-For` and sends the address it sees itself. When
+a proxy stands in front of the frontend, tell the frontend to read the address from that proxy's
+header: `ADDRESS_HEADER=X-Forwarded-For` with `XFF_DEPTH=1` (the number of proxies in front of it),
+else every user shares the proxy's address.
+
+**Browser security headers:** the frontend sends a Content Security Policy (scripts only from the
+app), `X-Frame-Options: SAMEORIGIN` (other sites cannot frame it), `nosniff`, `Referrer-Policy` and
+`Permissions-Policy`; the backend sends `no-store` (answers hold company data and are not kept in
+the browser's cache), `nosniff` and `DENY` for framing, and refuses changes sent from another web
+site (cross-site request forgery: a request whose `Sec-Fetch-Site` is `cross-site`/`same-site`, or
+whose `Origin` names another host). nginx adds HSTS (`Strict-Transport-Security`, a year): once a
+browser has seen it, it opens the site with https only — make sure the certificate is renewed in
+time. `CORS_ORIGINS` (commas) lists other origins whose pages may call the API with the user's
+session; empty (the default) allows none, which is right when the app is served from the same
+address as the API.
+
 ## Database roles
 
 The database image makes `openerp` (`POSTGRES_USER`) the database server's superuser: it could

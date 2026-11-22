@@ -1,9 +1,21 @@
 // Text to the system clipboard: a list cell's value or rows (Ctrl+C), pasted into another
 // program as text (rows as tab-separated lines, as a spreadsheet expects them)
 
+// A number as lists show it: a sign, digits, the user's group and decimal separators, a % —
+// it starts with - or + but is no formula, and stays a number in the spreadsheet
+const NUMBER = /^[+-]?[\d.,'\s\u00a0\u202f]*\d[\d.,'\s\u00a0\u202f]*%?$/;
+
+/** A text as a spreadsheet takes it as text (S29): a value starting with = + - @ (or a tab or
+ *  line break before them) would run as a formula when the file is opened — e.g. a customer
+ *  named =HYPERLINK(…) —, so it gets a leading ' (the spreadsheet's mark for text, not shown).
+ *  Numbers are left as they are. */
+export function spreadsheetSafe(value: string): string {
+	return /^[=+\-@\t\r]/.test(value) && !NUMBER.test(value) ? `'${value}` : value;
+}
+
 // A value as one tab-separated field: tabs and line breaks would split it into other cells
 export function tsvField(value: string): string {
-	return value.replace(/[\t\r\n]+/g, ' ');
+	return spreadsheetSafe(value).replace(/[\t\r\n]+/g, ' ');
 }
 
 // The column captions and the rows as tab-separated lines

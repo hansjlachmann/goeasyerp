@@ -1,8 +1,10 @@
 import type { ErrorDetails } from '$lib/services/jobs';
 import { downloadBlob } from '$lib/utils/printout';
+import { spreadsheetSafe } from '$lib/utils/clipboard';
 
 /** A CSV cell: quoted when it holds the separator, a quote or a line break */
-function csvCell(value: string): string {
+function csvCell(text: string): string {
+	const value = spreadsheetSafe(text);
 	return /[";\r\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
 }
 

@@ -24,6 +24,28 @@ const config = {
 			precompress: false,
 			envPrefix: 'VITE_'
 		}),
+		// Content Security Policy (S25): scripts only from the app itself — SvelteKit adds a nonce
+		// to its own inline start-up script and to app.html's (%sveltekit.nonce%); styles may be
+		// inline (Svelte style attributes); pictures, fonts and frames from the app, data: and
+		// blob: (the print preview and print frame show a PDF made in the browser); the API on
+		// the same origin; no plugins but that PDF, no <base>, forms only to the app, framed by
+		// the app only (clickjacking).
+		csp: {
+			mode: 'auto',
+			directives: {
+				'default-src': ['self'],
+				'script-src': ['self'],
+				'style-src': ['self', 'unsafe-inline'],
+				'img-src': ['self', 'data:', 'blob:'],
+				'font-src': ['self', 'data:'],
+				'connect-src': ['self'],
+				'frame-src': ['self', 'blob:'],
+				'object-src': ['self', 'blob:'],
+				'base-uri': ['self'],
+				'form-action': ['self'],
+				'frame-ancestors': ['self']
+			}
+		},
 		alias: {
 			$components: 'src/lib/components',
 			$stores: 'src/lib/stores',
