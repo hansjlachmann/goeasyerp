@@ -79,7 +79,7 @@ ENV APP_BUILDS_DIR=/builds
 ENTRYPOINT ["app-builder"]
 
 # Runtime stage (the default target: the last stage)
-FROM alpine:3.21
+FROM alpine:3.24
 
 WORKDIR /app
 
