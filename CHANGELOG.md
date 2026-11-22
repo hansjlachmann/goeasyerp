@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.179](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.178...v0.1.179) (2026-11-21)
+
+
+### Bug Fixes
+
+* jobs belong to their user, one first user, quieter logins ([d3baccf](https://github.com/hansjlachmann/goeasyerp/commit/d3baccf8f82c72d538c12bc99110374928391eff))
+
 ## [0.1.178](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.177...v0.1.178) (2026-11-21)
 
 
