@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.180](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.179...v0.1.180) (2026-11-22)
+
+
+### Bug Fixes
+
+* refuse a known or missing JWT secret; pinned CI actions and dependency scans ([b94730d](https://github.com/hansjlachmann/goeasyerp/commit/b94730dbdb2bfb58f1b64c2823c83d984c392383))
+* security headers, no changes from other sites, safer exports ([6c26b45](https://github.com/hansjlachmann/goeasyerp/commit/6c26b45db36bf4525beb63e6743241f28a4db0da))
+* the login page finishes its first-user check; fiber and brotli security updates ([b983c38](https://github.com/hansjlachmann/goeasyerp/commit/b983c383f942165892c1fdbde5e61ef29fa2dbb1))
+
+
+### CI/CD
+
+* the npm audit runs also when govulncheck found something ([3e6c60c](https://github.com/hansjlachmann/goeasyerp/commit/3e6c60cb2197e86070068752e168ed60ea78aaf8))
+
 ## [0.1.179](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.178...v0.1.179) (2026-11-21)
 
 
