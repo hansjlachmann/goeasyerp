@@ -1,0 +1,16 @@
+# golangci-lint v2. The checks the project ran with v1's defaults: errcheck, govet, ineffassign,
+# staticcheck (its SA checks and the former gosimple's S checks) and unused, with v1's usual
+# exclusions; v2's style and quick-fix checks are left out.
+version: "2"
+linters:
+  default: standard
+  settings:
+    staticcheck:
+      checks: ["SA*", "S*", "-ST*"]
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling

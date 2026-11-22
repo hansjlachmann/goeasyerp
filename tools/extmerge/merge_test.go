@@ -134,8 +134,8 @@ func TestMergeTranslations(t *testing.T) {
 // dependency order; an app's go.mod must require the base
 func TestGoWiring(t *testing.T) {
 	dir, opts := twoApps(t, rewardsApp)
-	writeFile(t, filepath.Join(dir, "apps", "loyalty", "go.mod"), "module example.com/loyalty\n\ngo 1.24.0\n\nrequire (\n\tgithub.com/hansjlachmann/goeasyerp v0.1.160 // the base\n\tgithub.com/other/x v1.0.0\n)\n")
-	writeFile(t, filepath.Join(dir, "apps", "rewards", "go.mod"), "module example.com/rewards\n\ngo 1.24.0\n\nrequire github.com/hansjlachmann/goeasyerp v0.1.170\n")
+	writeFile(t, filepath.Join(dir, "apps", "loyalty", "go.mod"), "module example.com/loyalty\n\ngo 1.26.0\n\nrequire (\n\tgithub.com/hansjlachmann/goeasyerp v0.1.160 // the base\n\tgithub.com/other/x v1.0.0\n)\n")
+	writeFile(t, filepath.Join(dir, "apps", "rewards", "go.mod"), "module example.com/rewards\n\ngo 1.26.0\n\nrequire github.com/hansjlachmann/goeasyerp v0.1.170\n")
 	opts.goRoot = filepath.Join(dir, "repo")
 	if err := os.MkdirAll(filepath.Join(opts.goRoot, "backend", "installedapps"), 0755); err != nil {
 		t.Fatal(err)
@@ -156,7 +156,7 @@ func TestGoWiring(t *testing.T) {
 		t.Errorf("apps_gen.go:\n%s", code)
 	}
 
-	writeFile(t, filepath.Join(dir, "apps", "rewards", "go.mod"), "module example.com/rewards\n\ngo 1.24.0\n")
+	writeFile(t, filepath.Join(dir, "apps", "rewards", "go.mod"), "module example.com/rewards\n\ngo 1.26.0\n")
 	if err := merge(opts); err == nil || !strings.Contains(err.Error(), "must require github.com/hansjlachmann/goeasyerp") {
 		t.Errorf("an app not requiring the base: %v", err)
 	}

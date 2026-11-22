@@ -1,7 +1,7 @@
 # Build stage — on the build machine's own platform, cross-compiling the program for the image's
 # (TARGETOS/TARGETARCH): Go builds an arm64 program on amd64 natively, much faster than building
 # under emulation; only the runtime stage below is per platform
-FROM --platform=$BUILDPLATFORM golang:1.24-alpine AS builder
+FROM --platform=$BUILDPLATFORM golang:1.26-alpine AS builder
 ARG TARGETOS
 ARG TARGETARCH
 
@@ -56,7 +56,7 @@ RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go build -ldflags
 # with (cmd/app-builder build.go: -trimpath, one compile thread for the table code) — other
 # flags give other cache keys, and nothing filled here would be used. The builder adds this
 # cache to its own in the builds volume (cache.go).
-FROM golang:1.24-alpine AS app-builder
+FROM golang:1.26-alpine AS app-builder
 
 RUN apk add --no-cache git ca-certificates
 

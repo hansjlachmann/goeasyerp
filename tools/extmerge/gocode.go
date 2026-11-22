@@ -63,7 +63,7 @@ func writeGoWiring(ordered []*apps.App, dirOf map[string]string, root string, ve
 	}
 
 	var work strings.Builder
-	work.WriteString("// Written by extmerge: the base module and the extension apps' modules\ngo 1.24.0\n\nuse (\n\t.\n")
+	work.WriteString("// Written by extmerge: the base module and the extension apps' modules\ngo 1.26.0\n\nuse (\n\t.\n")
 	for _, g := range withCode {
 		fmt.Fprintf(&work, "\t%s\n", g.dir)
 	}

@@ -144,9 +144,9 @@ jobs:
 
       # (go vet: golangci-lint's govet linter, enabled by default)
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@55c2c1448f86e01eaae002a5a3a9624417608d84 # v6.5.2
+        uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
         with:
-          version: latest
+          version: v2.15.0
           # the default 1 minute is too short for the generated table code without a warm cache
           args: --timeout=10m
 
@@ -351,7 +351,7 @@ jobs:
   security:
     name: Security scan
     # Known vulnerabilities in the Go modules and the Go version the release images are built
-    # with (golang:1.24-alpine: the latest 1.24 patch), and in the frontend's production
+    # with (golang:1.26-alpine: the latest 1.26 patch), and in the frontend's production
     # dependencies. It does not hold the release back: a new advisory must not stop a fix from
     # shipping — a red run here is the signal to update (Dependabot opens the pull requests).
     runs-on: ubuntu-24.04
@@ -362,12 +362,15 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
         with:
-          go-version: '1.24'
+          go-version: '1.26'
           check-latest: true
           cache: false
       - name: govulncheck
-        # v1.1.4: the newest that builds with Go 1.24 (the vulnerability database is read live)
-        run: go run golang.org/x/vuln/cmd/govulncheck@v1.1.4 ./...
+        # GOTOOLCHAIN=local: the scan reports on the latest 1.26 patch set up above, as the
+        # images have it (the vulnerability database is read live)
+        env:
+          GOTOOLCHAIN: local
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.10.0 ./...
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         if: ${{ !cancelled() }} # the npm check also when govulncheck found something
         with:

@@ -34,7 +34,7 @@ updates:
     schedule:
       interval: weekly
     ignore:
-      # Go and Node follow the project's runtimes (Go 1.24, Node.js 22): only their patches
+      # Go and Node follow the project's runtimes (Go 1.26, Node.js 22): only their patches
       - dependency-name: golang
         update-types: [version-update:semver-major, version-update:semver-minor]
       - dependency-name: node
