@@ -369,9 +369,11 @@ jobs:
         # v1.1.4: the newest that builds with Go 1.24 (the vulnerability database is read live)
         run: go run golang.org/x/vuln/cmd/govulncheck@v1.1.4 ./...
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        if: ${{ !cancelled() }} # the npm check also when govulncheck found something
         with:
           node-version: 22
       - name: npm audit (production dependencies)
+        if: ${{ !cancelled() }}
         working-directory: frontend
         run: npm audit --omit=dev --audit-level=high
 
