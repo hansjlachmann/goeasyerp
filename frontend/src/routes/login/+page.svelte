@@ -67,6 +67,9 @@
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({ user_id: '', user_name: '', password: '' })
 				});
+				// read the answer: an unread body keeps the request open (API answers are no-store,
+				// so the browser's cache does not take it)
+				await testResponse.text().catch(() => '');
 
 				if (testResponse.status === 403) {
 					// Users already exist
