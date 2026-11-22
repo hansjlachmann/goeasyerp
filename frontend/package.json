@@ -22,7 +22,7 @@
     "@testing-library/svelte": "^5.4.2",
     "@types/node": "^22.19.0",
     "@vitest/coverage-v8": "^5.1.1",
-    "autoprefixer": "^10.6.2",
+    "autoprefixer": "^10.7.0",
     "jsdom": "^24.0.0",
     "postcss": "^8.4.33",
     "svelte": "^5.0.0",
