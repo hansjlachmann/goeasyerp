@@ -519,9 +519,8 @@ func (r *Rec) CalcSums(fieldNames []string) error {
 			return fmt.Errorf("CalcSums: %s is not a decimal or integer field of %s", name, r.Fields.Table)
 		}
 		column := r.Fields.Fields[i].Info.Name
-		query := r.Placeholders(fmt.Sprintf(`SELECT CAST(COALESCE(SUM(%s), 0) AS TEXT) FROM "%s" WHERE %s`, column, r.Table, where), len(args))
-		var total string
-		if err := r.Exec.QueryRow(query, args...).Scan(&total); err != nil {
+		total, err := r.sumColumn(column, where, args)
+		if err != nil {
 			return fmt.Errorf("CalcSums %s.%s: %w", r.Fields.Table, column, err)
 		}
 		switch p := r.Ref(i).(type) {
@@ -540,4 +539,25 @@ func (r *Rec) CalcSums(fieldNames []string) error {
 		}
 	}
 	return nil
+}
+
+// sumColumn is the column's total within the filters as text. PostgreSQL sums numerics
+// exactly. SQLite stores decimals as TEXT and sums them as REAL, so the total carries float
+// noise (42437.54000000000003); it is rounded to 15 significant digits, the precision a
+// REAL holds exactly and the text older SQLite versions printed themselves.
+func (r *Rec) sumColumn(column, where string, args []interface{}) (string, error) {
+	sum := "COALESCE(SUM(" + column + "), 0)"
+	if r.Postgres {
+		query := r.Placeholders(fmt.Sprintf(`SELECT CAST(%s AS TEXT) FROM "%s" WHERE %s`, sum, r.Table, where), len(args))
+		var total string
+		err := r.Exec.QueryRow(query, args...).Scan(&total)
+		return total, err
+	}
+	query := fmt.Sprintf(`SELECT %s FROM "%s" WHERE %s`, sum, r.Table, where)
+	var total float64
+	err := r.Exec.QueryRow(query, args...).Scan(&total)
+	if err != nil {
+		return "", err
+	}
+	return strconv.FormatFloat(total, 'g', 15, 64), nil
 }
