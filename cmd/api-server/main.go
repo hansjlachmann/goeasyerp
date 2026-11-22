@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/api"
+	"github.com/hansjlachmann/goeasyerp/backend/api/middleware"
 	blapps "github.com/hansjlachmann/goeasyerp/backend/business-logic/apps"
 	blcodeunits "github.com/hansjlachmann/goeasyerp/backend/business-logic/codeunits"
 	blmigrations "github.com/hansjlachmann/goeasyerp/backend/business-logic/migrations"
@@ -42,6 +43,16 @@ func getEnv(key, defaultValue string) string {
 
 func main() {
 	fmt.Println("=== OpenERP API Server ===")
+
+	// A JWT_SECRET anyone could know (an example text, a short one, or none on a database
+	// server) would let anyone sign a session for any user: refuse to start (S36)
+	jwtWarning, err := middleware.CheckJWTSecret()
+	if err != nil {
+		log.Fatalf("%v", err)
+	}
+	if jwtWarning != "" {
+		log.Println(jwtWarning)
+	}
 
 	// The installation's own builds of its extension apps: the bundle of this version runs
 	// instead of this program (or the server waits in maintenance until it is built)

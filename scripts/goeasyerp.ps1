@@ -99,12 +99,26 @@ function Install-GoEasyERP {
 
     $add = ''
     $secret = $envValues['JWT_SECRET']
+    $dropSecret = $false
+    if ($secret -eq 'replace-this-with-a-long-random-text') {
+        # the example text of an older compose file: public, so anyone could sign in as any
+        # user; the server no longer starts with it (a new one is made below)
+        Write-Host 'Warning: JWT_SECRET was the example text of the compose file; a new one is made.' -ForegroundColor Yellow
+        Write-Host '         Everyone logs in again; a password stored in SMTP Setup must be entered again.' -ForegroundColor Yellow
+        $secret = $null
+        $dropSecret = $true
+    }
     if (-not $secret) {
         $secret = Get-ComposeValue 'JWT_SECRET'
+        if ($secret -eq 'replace-this-with-a-long-random-text') {
+            Write-Host 'Warning: JWT_SECRET of docker-compose.yml was its example text; a new one is made.' -ForegroundColor Yellow
+            Write-Host '         A password stored in SMTP Setup must be entered again.' -ForegroundColor Yellow
+            $secret = $null
+        }
         if ($secret) {
             Write-Host 'Taking JWT_SECRET over from docker-compose.yml.'
         } else {
-            if (Get-Docker volume inspect goeasyerp_postgres_data) {
+            if (-not $dropSecret -and (Get-Docker volume inspect goeasyerp_postgres_data)) {
                 Write-Host 'Warning: a GoEasyERP database exists but its JWT_SECRET was not found; a new one is made.' -ForegroundColor Yellow
                 Write-Host '         Passwords stored encrypted (SMTP Setup) must be entered again.' -ForegroundColor Yellow
             }
@@ -119,9 +133,12 @@ function Install-GoEasyERP {
         }
         $add += "JWT_SECRET='$secret'`n"
     }
-    if ($secret -eq 'replace-this-with-a-long-random-text') {
-        Write-Host 'Warning: JWT_SECRET is still the example text of the compose file. It is kept, because it' -ForegroundColor Yellow
-        Write-Host '         encrypts stored passwords; anyone who knows it can sign in tokens for this installation.' -ForegroundColor Yellow
+    if ($dropSecret) {
+        # the old line goes: the new secret is added below
+        $kept = [System.IO.File]::ReadAllLines($envFile) | Where-Object { $_ -notmatch '^\s*JWT_SECRET\s*=' }
+        $text = ''
+        if ($kept) { $text = (@($kept) -join "`n") + "`n" }
+        [System.IO.File]::WriteAllText($envFile, $text, $utf8)
     }
 
     # The app builder's own database password (it may read and change its build tables only)

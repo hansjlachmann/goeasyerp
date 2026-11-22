@@ -1,3 +1,5 @@
+# Development stack (backend, frontend, PostgreSQL, nginx). Needs JWT_SECRET in the shell:
+#   export JWT_SECRET=$(openssl rand -hex 32) && docker compose up
 services:
   db:
     image: postgres:16-alpine
@@ -35,7 +37,9 @@ services:
       COMPANY_NAME: ${COMPANY_NAME:-}
       PORT: 8080
       APP_VERSION: ${APP_VERSION:-dev}
-      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      # signs the sessions: set it in the shell first (export JWT_SECRET=$(openssl rand -hex 32));
+      # the server refuses to start without one, or with a known example text
+      JWT_SECRET: ${JWT_SECRET:?export JWT_SECRET=$(openssl rand -hex 32) before docker compose up}
     depends_on:
       db:
         condition: service_healthy

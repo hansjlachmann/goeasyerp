@@ -66,12 +66,26 @@ newEnv=
 add=
 
 secret=$(envValue JWT_SECRET)
+dropSecret=
+if [ "$secret" = replace-this-with-a-long-random-text ]; then
+	# the example text of an older compose file: public, so anyone could sign in as any user;
+	# the server no longer starts with it (a new one is made below)
+	say "Warning: JWT_SECRET was the example text of the compose file; a new one is made."
+	say "         Everyone logs in again; a password stored in SMTP Setup must be entered again."
+	secret=
+	dropSecret=yes
+fi
 if [ -z "$secret" ]; then
 	secret=$(composeValue JWT_SECRET)
+	if [ "$secret" = replace-this-with-a-long-random-text ]; then
+		say "Warning: JWT_SECRET of docker-compose.yml was its example text; a new one is made."
+		say "         A password stored in SMTP Setup must be entered again."
+		secret=
+	fi
 	if [ -n "$secret" ]; then
 		say "Taking JWT_SECRET over from docker-compose.yml."
 	else
-		if docker volume inspect goeasyerp_postgres_data >/dev/null 2>&1; then
+		if [ -z "$dropSecret" ] && docker volume inspect goeasyerp_postgres_data >/dev/null 2>&1; then
 			say "Warning: a GoEasyERP database exists but its JWT_SECRET was not found; a new one is made."
 			say "         Passwords stored encrypted (SMTP Setup) must be entered again."
 		fi
@@ -81,9 +95,10 @@ if [ -z "$secret" ]; then
 	add="${add}JWT_SECRET='$secret'
 "
 fi
-if [ "$secret" = replace-this-with-a-long-random-text ]; then
-	say "Warning: JWT_SECRET is still the example text of the compose file. It is kept, because it"
-	say "         encrypts stored passwords; anyone who knows it can sign in tokens for this installation."
+if [ -n "$dropSecret" ]; then
+	# the old line goes: the new secret is added below
+	grep -v '^[[:space:]]*JWT_SECRET[[:space:]]*=' .env >.env.tmp || true
+	cat .env.tmp >.env && rm -f .env.tmp
 fi
 
 # The app builder's own database password (it may read and change its build tables only)

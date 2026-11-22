@@ -1,0 +1,41 @@
+# Dependency updates (S44, S45): Dependabot opens a pull request per group once a week — minor
+# and patch updates together, each major update on its own; security updates come at once.
+# The actions stay pinned by commit SHA; Dependabot moves the SHA and its version comment.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+    groups:
+      frontend-minor:
+        update-types: [minor, patch]
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: gomod
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      go-minor:
+        update-types: [minor, patch]
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        update-types: [minor, patch]
+
+  - package-ecosystem: docker
+    directories: [/, /frontend]
+    schedule:
+      interval: weekly
+    ignore:
+      # Go and Node follow the project's runtimes (Go 1.24, Node.js 22): only their patches
+      - dependency-name: golang
+        update-types: [version-update:semver-major, version-update:semver-minor]
+      - dependency-name: node
+        update-types: [version-update:semver-major]

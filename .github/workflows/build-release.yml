@@ -11,11 +11,10 @@ on:
     - cron: '17 2 * * *'
   workflow_dispatch:
 
+# Every job reads only; the jobs that write say what they need (a taken-over action or a test
+# run cannot change the repository or push images)
 permissions:
-  contents: write
-  pull-requests: write
-  issues: write # release-please labels its release PRs through the Issues API
-  packages: write
+  contents: read
 
 jobs:
   # A release changes only version files: the release-please PR and its merge commit carry the
@@ -25,13 +24,16 @@ jobs:
   changes:
     name: Changes
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: read # the files of a pull request
     outputs:
       release_only: ${{ steps.check.outputs.release_only }}
       go: ${{ steps.parts.outputs.go }}
       frontend: ${{ steps.parts.outputs.frontend }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 2
 
@@ -120,10 +122,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
         with:
           go-version-file: go.mod
           cache: true
@@ -142,7 +144,7 @@ jobs:
 
       # (go vet: golangci-lint's govet linter, enabled by default)
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@55c2c1448f86e01eaae002a5a3a9624417608d84 # v6.5.2
         with:
           version: latest
           # the default 1 minute is too short for the generated table code without a warm cache
@@ -188,10 +190,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
         with:
           go-version-file: go.mod
           cache: true
@@ -224,7 +226,7 @@ jobs:
         run: go test -v $RACE -timeout 45m -coverprofile=coverage.out $PACKAGES
 
       - name: Upload Go coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
         with:
           files: coverage.out
           flags: backend
@@ -259,10 +261,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '22'
           cache: 'npm'
@@ -278,7 +280,7 @@ jobs:
         run: npm run test:coverage
 
       - name: Upload frontend coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
         with:
           directory: frontend/coverage
           flags: frontend
@@ -288,7 +290,7 @@ jobs:
         run: npm run build
 
       - name: Set up Go (API server for the E2E tests)
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
         with:
           go-version-file: go.mod
           cache: true
@@ -339,16 +341,47 @@ jobs:
         run: cat "$RUNNER_TEMP/api-server.log"
 
       - name: Upload Playwright report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
           path: frontend/playwright-report/
           retention-days: 30
 
+  security:
+    name: Security scan
+    # Known vulnerabilities in the Go modules and the Go version the release images are built
+    # with (golang:1.24-alpine: the latest 1.24 patch), and in the frontend's production
+    # dependencies. It does not hold the release back: a new advisory must not stop a fix from
+    # shipping — a red run here is the signal to update (Dependabot opens the pull requests).
+    runs-on: ubuntu-24.04
+    needs: changes
+    if: needs.changes.outputs.release_only != 'true'
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
+        with:
+          go-version: '1.24'
+          check-latest: true
+          cache: false
+      - name: govulncheck
+        # v1.1.4: the newest that builds with Go 1.24 (the vulnerability database is read live)
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.1.4 ./...
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+      - name: npm audit (production dependencies)
+        working-directory: frontend
+        run: npm audit --omit=dev --audit-level=high
+
   release:
     name: Release Please
     runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write # release-please labels its release PRs through the Issues API
     needs: [changes, backend, backend-tests, frontend]
     # after the tests, or without them for a release's own commit (skipped, see Changes)
     if: >-
@@ -366,7 +399,7 @@ jobs:
     steps:
       - name: Release Please
         id: release
-        uses: googleapis/release-please-action@v4
+        uses: googleapis/release-please-action@5c625bfb5d1ff62eadeeb3772007f7f66fdcf071 # v4.4.1
         with:
           # A repository token (secret RELEASE_TOKEN: Contents, Pull requests and Issues read/write):
           # the Actions token can no longer create releases here. Falls back to it when unset.
@@ -377,6 +410,9 @@ jobs:
   docker:
     name: Docker Build & Push
     runs-on: ubuntu-24.04
+    permissions:
+      contents: write # the .env version commit
+      packages: write
     # The multi-arch build (arm64 under QEMU) has hung for hours (0.1.68, 0.1.82); a normal run
     # takes ~7 minutes (0.1.85). Fail fast so the job can simply be re-run. The frontend image
     # no longer runs npm under QEMU (frontend/Dockerfile), which was what hung.
@@ -390,16 +426,16 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
 
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -435,7 +471,7 @@ jobs:
           fi
 
       - name: Build and push backend
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
         with:
           context: .
           file: ./Dockerfile
@@ -448,7 +484,7 @@ jobs:
           cache-to: type=gha,mode=max,scope=backend
 
       - name: Build and push frontend
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
         with:
           context: ./frontend
           file: ./frontend/Dockerfile

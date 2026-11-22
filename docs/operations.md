@@ -315,8 +315,11 @@ If the backend logs a password error afterwards, the two do not match: fix `prod
 
 ## JWT secret
 
-`JWT_SECRET` signs the session cookies. Without it the backend generates a random key on every
-start (and logs a warning): sessions do not survive a restart. Set it once
+`JWT_SECRET` signs the session cookies — whoever knows it can make a session for any user. The
+backend refuses to start with a database server (`DB_HOST`) and no `JWT_SECRET`, with one
+shorter than 16 characters, or with an example text from the repository (it warns below 32);
+only a development start without a database server uses a random key (sessions then end at
+every restart). Set it once
 (`openssl rand -hex 32`) and keep it; changing it logs everyone out once — and, unless
 `OPENERP_ENCRYPTION_KEY` is set, the SMTP password has to be entered again (next section).
 
