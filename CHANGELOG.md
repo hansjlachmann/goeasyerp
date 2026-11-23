@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.181](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.180...v0.1.181) (2026-11-23)
+
+
+### Bug Fixes
+
+* build with Go 1.26 for its security fixes; golang.org/x/image v0.48.0 ([bb2f2b5](https://github.com/hansjlachmann/goeasyerp/commit/bb2f2b501461320200d543c16efc5a0e360dd604))
+* SQLite totals of decimal fields no longer carry float noise ([b28c2cd](https://github.com/hansjlachmann/goeasyerp/commit/b28c2cd4b9ce47f02af85e5ba71319d0e724ebae))
+
+
+### CI/CD
+
+* Dependabot watches the images the compose files pin ([941498b](https://github.com/hansjlachmann/goeasyerp/commit/941498bad8bd6be6db080d46c964aff8bcadded3))
+
 ## [0.1.180](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.179...v0.1.180) (2026-11-22)
 
 
