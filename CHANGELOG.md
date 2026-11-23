@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.182](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.181...v0.1.182) (2026-11-23)
+
+
+### Features
+
+* Company Information opens the Main Menu Text with Alt+M ([c68fafe](https://github.com/hansjlachmann/goeasyerp/commit/c68fafe186601060462b84e67bb042b7d98f5335))
+* the main menu shows only the company's own text, without the keyboard box ([ec6e147](https://github.com/hansjlachmann/goeasyerp/commit/ec6e1477f1a771a896da4c819a9e6664d74209e3))
+
+
+### Bug Fixes
+
+* the app loads a new version by itself after an upgrade ([bd6fca4](https://github.com/hansjlachmann/goeasyerp/commit/bd6fca4caedb4c1552a0487bd4f780641a043bce))
+
 ## [0.1.181](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.180...v0.1.181) (2026-11-23)
 
 
