@@ -103,9 +103,6 @@ messages:
   # Home Page
   HOME_TITLE: "Velkommen til GoEasyERP"
   HOME_DESCRIPTION: "Et moderne, raskt og tastatur-drevet ERP-system med åpen kildekode"
-  HOME_SHORTCUTS_TITLE: "Jobb raskere med tastaturet"
-  HOME_SHORTCUTS_TEXT: "Vi oppfordrer deg til å lære deg hurtigtastene: de optimaliserer arbeidsflyten og gjør deg mer effektiv i det daglige arbeidet."
-  HOME_SHORTCUTS_LINK: "Vis hurtigtastene"
   HELP_MENU_SEARCH: "Søk i menyen"
   HOME_MENU_NOT_AVAILABLE: "Ikke tilgjengelig ennå"
   HOME_MENU_NO_PERMISSION: "Du har ikke tillatelse til å kjøre dette"

@@ -4,7 +4,6 @@
 	import { fetchMenu, clearMenuCache } from '$lib/services/pages';
 	import { t, HOME, MSG } from '$lib/services/i18n.svelte';
 	import type { MenuDefinition } from '$lib/types/pages';
-	import { openShortcutHelp } from '$lib/utils/shortcutHelp';
 	import MainMenu from '$lib/components/menu/MainMenu.svelte';
 	import Tip from '$lib/components/Tip.svelte';
 	import { TIPS } from '$lib/utils/tips';
@@ -56,11 +55,6 @@
 					{t(HOME.DESCRIPTION)}
 				</p>
 			{/if}
-			<div class="shortcuts-tip">
-				<p class="font-semibold text-fg">⌨ {t(HOME.SHORTCUTS_TITLE)}</p>
-				<p class="text-gray-600 dark:text-gray-400">{t(HOME.SHORTCUTS_TEXT)}</p>
-				<button type="button" class="shortcuts-link" onclick={openShortcutHelp}>{t(HOME.SHORTCUTS_LINK)} ↗</button>
-			</div>
 		</div>
 
 		<!-- The main menu: modules and their menus -->
@@ -89,18 +83,5 @@
 
 	.menu-tip {
 		@apply mb-3 mx-auto max-w-4xl;
-	}
-
-	/* the keyboard tip, close under the description, without a frame */
-	.shortcuts-tip {
-		@apply mt-2 mx-auto max-w-2xl text-sm space-y-1;
-	}
-
-	.shortcuts-link {
-		@apply text-primary-600 hover:underline font-medium;
-	}
-
-	:global(.dark) .shortcuts-link {
-		@apply text-primary-400;
 	}
 </style>
