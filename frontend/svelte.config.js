@@ -46,6 +46,11 @@ const config = {
 				'frame-ancestors': ['self']
 			}
 		},
+		// The browser asks every minute whether a new version is on the server (the build's
+		// version.json); the app then loads it by itself (src/lib/utils/appUpdate.ts)
+		version: {
+			pollInterval: 60_000
+		},
 		alias: {
 			$components: 'src/lib/components',
 			$stores: 'src/lib/stores',

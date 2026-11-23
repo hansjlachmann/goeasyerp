@@ -24,6 +24,8 @@
 	import MaintenanceNotice from '$lib/components/MaintenanceNotice.svelte';
 	import { installMaintenanceWatch } from '$lib/utils/maintenance';
 	import { installTabCompany } from '$lib/utils/tabCompany';
+	import { installAppUpdateReload, reloadForUpdate, reloadsAtOnce } from '$lib/utils/appUpdate';
+	import { updated } from '$app/state';
 	import { regionalVersion } from '$lib/stores/regional';
 	import type { Snippet } from 'svelte';
 
@@ -37,6 +39,11 @@
 	installMaintenanceWatch();
 	// … and every API request carries the company this tab works in (tabs in different companies)
 	installTabCompany();
+	// … and a new version on the server is loaded by itself (utils/appUpdate.ts)
+	installAppUpdateReload();
+	$effect(() => {
+		if (updated.current && reloadsAtOnce(page.url.pathname)) reloadForUpdate();
+	});
 
 	// Help pages open in a detached window (window.open): no menu bar or breadcrumb
 	const detached = $derived(page.url.pathname.startsWith('/help/'));
