@@ -81,5 +81,6 @@ page:
     - name: Main Menu Text
       caption: Main Menu Text
       image: Document
+      shortcut: Alt+M
       promoted: true
       run_page: 914
