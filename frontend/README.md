@@ -42,8 +42,7 @@ web/
 │   └── app.css              # Global styles (Tailwind)
 ├── static/                  # Static assets
 ├── package.json
-├── svelte.config.js
-├── vite.config.js
+├── vite.config.js           # Vite and SvelteKit configuration (adapter, CSP, version check)
 ├── tailwind.config.js
 └── tsconfig.json
 ```
@@ -52,7 +51,7 @@ web/
 
 ### Prerequisites
 
-- Node.js 18+ and npm (or yarn/pnpm)
+- Node.js 22.17+ and npm (or yarn/pnpm)
 - Go backend API server running on port 8080
 
 ### Setup

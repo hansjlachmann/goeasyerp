@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
-	import { t, MENU } from '$lib/services/i18n.svelte';
-	import { companyLabel, filterCompanies, type CompanyInfo } from '$lib/utils/company';
+	import { t, MENU } from '#lib/services/i18n.svelte.js';
+	import { companyLabel, filterCompanies, type CompanyInfo } from '#lib/utils/company.js';
 
 	// Switch Company dialog (Ctrl+O). Typing filters the list,
 	// ArrowUp/Down move, Enter switches, Escape closes. Companies show their display

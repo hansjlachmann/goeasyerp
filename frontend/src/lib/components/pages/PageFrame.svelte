@@ -2,8 +2,8 @@
 	// A page in a page frame (PageFrames): the page of its URL, as the routes show it, with the
 	// frame's navigator
 	import PageRenderer from './PageRenderer.svelte';
-	import { setPageNavigator, type PageNavigator } from '$lib/utils/pageNavigator';
-	import { parsePagePath } from '$lib/utils/pageUrl';
+	import { setPageNavigator, type PageNavigator } from '#lib/utils/pageNavigator.js';
+	import { parsePagePath } from '#lib/utils/pageUrl.js';
 
 	let { url, pageNav }: { url: string; pageNav: PageNavigator } = $props();
 

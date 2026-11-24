@@ -1,43 +1,43 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import Modal from '../Modal.svelte';
-	import { pageNavigator } from '$lib/utils/pageNavigator';
-	import type { PageDefinition, Field, FieldState, Action } from '$lib/types/pages';
-	import type { LookupData } from '$lib/types/api';
+	import { pageNavigator } from '#lib/utils/pageNavigator.js';
+	import type { PageDefinition, Field, FieldState, Action } from '#lib/types/pages.js';
+	import type { LookupData } from '#lib/types/api.js';
 	import FieldRenderer from './FieldRenderer.svelte';
-	import Button from '$lib/components/Button.svelte';
-	import PageHeader from '$lib/components/PageHeader.svelte';
-	import Card from '$lib/components/Card.svelte';
+	import Button from '#lib/components/Button.svelte';
+	import PageHeader from '#lib/components/PageHeader.svelte';
+	import Card from '#lib/components/Card.svelte';
 	import CustomizeFieldsModal from './CustomizeFieldsModal.svelte';
-	import Tip from '$lib/components/Tip.svelte';
-	import { TIPS } from '$lib/utils/tips';
-	import PlusIcon from '$lib/components/icons/PlusIcon.svelte';
-	import NavigationButtons from '$lib/components/NavigationButtons.svelte';
-	import { shortcuts, createShortcutMap, normalizeShortcut } from '$lib/utils/shortcuts';
-	import { currentUser } from '$lib/stores/user';
-	import { lookupFor, getFieldCaption, isItemVisible, isBlobType, type ItemCustomization } from '$lib/utils/fieldHelpers';
-	import { loadPageCustomizations, savePageCustomizations, layoutVersion, syncPageLayout } from '$lib/utils/customizationStorage';
-	import { getRecordId, isNewRecord, deepCopy, getPrimaryKeyField, getPrimaryKeyFields, stripInternalFields, hasRecordChanged, sameFieldValue } from '$lib/utils/recordHelpers';
-	import { runPagePath, type RunPageAction } from '$lib/utils/runPage';
-	import { withReturn } from '$lib/utils/returnUrl';
-	import { toast } from '$lib/stores/toast';
-	import { api } from '$lib/services/api';
-	import { t, ERR, MSG, LIST, CARD, HOME } from '$lib/services/i18n.svelte';
+	import Tip from '#lib/components/Tip.svelte';
+	import { TIPS } from '#lib/utils/tips.js';
+	import PlusIcon from '#lib/components/icons/PlusIcon.svelte';
+	import NavigationButtons from '#lib/components/NavigationButtons.svelte';
+	import { shortcuts, createShortcutMap, normalizeShortcut } from '#lib/utils/shortcuts.js';
+	import { currentUser } from '#lib/stores/user.js';
+	import { lookupFor, getFieldCaption, isItemVisible, isBlobType, type ItemCustomization } from '#lib/utils/fieldHelpers.js';
+	import { loadPageCustomizations, savePageCustomizations, layoutVersion, syncPageLayout } from '#lib/utils/customizationStorage.js';
+	import { getRecordId, isNewRecord, deepCopy, getPrimaryKeyField, getPrimaryKeyFields, stripInternalFields, hasRecordChanged, sameFieldValue } from '#lib/utils/recordHelpers.js';
+	import { runPagePath, type RunPageAction } from '#lib/utils/runPage.js';
+	import { withReturn } from '#lib/utils/returnUrl.js';
+	import { toast } from '#lib/stores/toast.js';
+	import { api } from '#lib/services/api.js';
+	import { t, ERR, MSG, LIST, CARD, HOME } from '#lib/services/i18n.svelte.js';
 	import PictureField from './PictureField.svelte';
 	import PeriodGrid from './PeriodGrid.svelte';
 	import MatrixGrid from './MatrixGrid.svelte';
-	import { handleFieldEnterKey, getFieldControls, arrowLeavesField, fieldInDirection, focusField, type ArrowDirection } from '$lib/utils/fieldNavigation';
-	import { cardFields, wrapTarget, restoreTarget } from '$lib/utils/cardFocus';
+	import { handleFieldEnterKey, getFieldControls, arrowLeavesField, fieldInDirection, focusField, type ArrowDirection } from '#lib/utils/fieldNavigation.js';
+	import { cardFields, wrapTarget, restoreTarget } from '#lib/utils/cardFocus.js';
 	import { tick } from 'svelte';
 	import { isModalOpen, isInTopModal } from '../Modal.svelte';
-	import { getJson, setJson } from '$lib/utils/storage';
+	import { getJson, setJson } from '#lib/utils/storage.js';
 	import PageRenderer from './PageRenderer.svelte';
 	import PageFrames from './PageFrames.svelte';
 	import ActionButton from '../ActionButton.svelte';
 	import ActionMenu from '../ActionMenu.svelte';
 	import ObjectRunner from '../ObjectRunner.svelte';
-	import type { Subpage } from '$lib/types/pages';
-	import type { FixedFilter } from '$lib/types/api';
+	import type { Subpage } from '#lib/types/pages.js';
+	import type { FixedFilter } from '#lib/types/api.js';
 
 	interface Props {
 		page: PageDefinition;
@@ -60,7 +60,7 @@
 		onclearerror?: () => void; // Callback to clear the error state
 		navigationEnabled?: boolean;
 		// FlowFilters the record was read with (a modal card: its list's, ISO): FlowField drilldowns apply them
-		flowFilters?: import('$lib/types/api').TableFilter[];
+		flowFilters?: import('#lib/types/api.js').TableFilter[];
 		initialEditMode?: boolean;
 		canNavigateFirst?: boolean;
 		canNavigatePrevious?: boolean;
@@ -383,8 +383,8 @@
 	// DrillDown on a card field (No. of Ledger Entries, Balance): the page behind the value opens
 	// in a modal over the card, filtered to this record (drilldown_filter_field = this record's
 	// drilldown_filter_value); Esc or the close button returns to the card
-	let drilldown = $state<{ pageId: number; filters: import('$lib/types/api').TableFilter[] } | null>(null);
-	async function openDrilldown(field: import('$lib/types/pages').Field) {
+	let drilldown = $state<{ pageId: number; filters: import('#lib/types/api.js').TableFilter[] } | null>(null);
+	async function openDrilldown(field: import('#lib/types/pages.js').Field) {
 		// a drilldown function (classic OnDrillDown code, on_drilldown): run with the card's
 		// saved record, quietly — the page it opens shows
 		if (field.on_drilldown) {
@@ -402,7 +402,7 @@
 			}
 			return;
 		}
-		const filters: import('$lib/types/api').TableFilter[] = [];
+		const filters: import('#lib/types/api.js').TableFilter[] = [];
 		if (field.drilldown_filter_field && field.drilldown_filter_value) {
 			const value = record?.[field.drilldown_filter_value];
 			if (value === undefined || value === null || value === '') return;

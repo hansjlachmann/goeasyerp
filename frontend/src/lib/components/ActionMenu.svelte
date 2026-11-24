@@ -4,8 +4,8 @@
 	// the headings), Enter picks, Esc / Tab close.
 	import ActionButton from './ActionButton.svelte';
 	import MenuPanel from './MenuPanel.svelte';
-	import type { Action } from '$lib/types/pages';
-	import { t, HOME } from '$lib/services/i18n.svelte';
+	import type { Action } from '#lib/types/pages.js';
+	import { t, HOME } from '#lib/services/i18n.svelte.js';
 
 	interface Props {
 		action: Action;

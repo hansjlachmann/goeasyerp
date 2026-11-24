@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { breadcrumb } from '$lib/stores/breadcrumb';
-	import { fetchMenu, clearMenuCache } from '$lib/services/pages';
-	import { t, HOME, MSG } from '$lib/services/i18n.svelte';
-	import type { MenuDefinition } from '$lib/types/pages';
-	import MainMenu from '$lib/components/menu/MainMenu.svelte';
-	import Tip from '$lib/components/Tip.svelte';
-	import { TIPS } from '$lib/utils/tips';
-	import { api } from '$lib/services/api';
-	import { mainMenuTextClass, type MainMenuTextLine } from '$lib/utils/mainMenuText';
+	import { breadcrumb } from '#lib/stores/breadcrumb.js';
+	import { fetchMenu, clearMenuCache } from '#lib/services/pages.js';
+	import { t, HOME, MSG } from '#lib/services/i18n.svelte.js';
+	import type { MenuDefinition } from '#lib/types/pages.js';
+	import MainMenu from '#lib/components/menu/MainMenu.svelte';
+	import Tip from '#lib/components/Tip.svelte';
+	import { TIPS } from '#lib/utils/tips.js';
+	import { api } from '#lib/services/api.js';
+	import { mainMenuTextClass, type MainMenuTextLine } from '#lib/utils/mainMenuText.js';
 
 	let menu: MenuDefinition | null = $state(null);
 	let loading = $state(true);

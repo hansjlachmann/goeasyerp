@@ -1,5 +1,3 @@
-/** @type {import('tailwindcss').Config} */
-
 // Colors are CSS variables holding RGB triplets ("18 18 18"), set in src/app.css: the
 // default values are the classic ERP palette (light and dark mode, sampled from
 // the reference screenshots), and a theme
@@ -16,10 +14,13 @@
 // Accent (--accent-N, teal): 400 = dark-mode links, 500 = tiles, 600 = light-mode
 // links/actions, 900 = dark-mode notification bar.
 const steps = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
+/** @param {string} name */
 const scale = (name) =>
 	Object.fromEntries(steps.map((n) => [n, `rgb(var(--${name}-${n}) / <alpha-value>)`]));
+/** @param {string} name */
 const color = (name) => `rgb(var(--${name}) / <alpha-value>)`;
 
+/** @type {import('tailwindcss').Config} */
 export default {
 	content: ['./src/**/*.{html,js,svelte,ts}'],
 	darkMode: 'class',

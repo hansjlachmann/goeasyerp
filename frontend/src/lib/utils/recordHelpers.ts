@@ -1,5 +1,5 @@
 // Record utility functions
-import type { PageDefinition, Field } from '$lib/types/pages';
+import type { PageDefinition, Field } from '#lib/types/pages.js';
 
 /**
  * Get the primary key field name from a page definition

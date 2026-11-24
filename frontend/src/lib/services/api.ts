@@ -1,5 +1,5 @@
-import type { NavigationQuery } from '$lib/utils/recordNavigation';
-import type { FieldState, MatrixColumn, MatrixRow, PeriodGridRow } from '$lib/types/pages';
+import type { NavigationQuery } from '#lib/utils/recordNavigation.js';
+import type { FieldState, MatrixColumn, MatrixRow, PeriodGridRow } from '#lib/types/pages.js';
 import type {
 	ApiResponse,
 	ListResponse,
@@ -10,14 +10,14 @@ import type {
 	ValidateFieldResult,
 	TableFilter,
 	FixedFilter
-} from '$types/api';
-import type { Appearance, AppearanceSettings, ThemeInstallResult, ThemeList } from '$lib/theme/apply';
-import { handleApiResponse, handleApiResponseVoid, handleApiResponseFull, handleApiResponseWithCaptions, type DataWithCaptions } from '$lib/utils/apiHelpers';
-import type { CompanyInfo } from '$lib/utils/company';
-import type { MainMenuTextLine } from '$lib/utils/mainMenuText';
-import { showNotes } from '$lib/utils/notes';
-import { fetchAnswering } from '$lib/utils/questions';
-import { ask } from '$lib/stores/question';
+} from '#lib/types/api.js';
+import type { Appearance, AppearanceSettings, ThemeInstallResult, ThemeList } from '#lib/theme/apply.js';
+import { handleApiResponse, handleApiResponseVoid, handleApiResponseFull, handleApiResponseWithCaptions, type DataWithCaptions } from '#lib/utils/apiHelpers.js';
+import type { CompanyInfo } from '#lib/utils/company.js';
+import type { MainMenuTextLine } from '#lib/utils/mainMenuText.js';
+import { showNotes } from '#lib/utils/notes.js';
+import { fetchAnswering } from '#lib/utils/questions.js';
+import { ask } from '#lib/stores/question.js';
 
 const API_BASE = '/api';
 

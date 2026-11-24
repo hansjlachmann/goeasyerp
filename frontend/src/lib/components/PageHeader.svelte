@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Button from './Button.svelte';
-	import { t, HELP, MODAL } from '$lib/services/i18n.svelte';
+	import { t, HELP, MODAL } from '#lib/services/i18n.svelte.js';
 	import type { Snippet } from 'svelte';
 
 	interface Action {

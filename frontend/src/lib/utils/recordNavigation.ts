@@ -1,7 +1,7 @@
 // Card navigation (First/Previous/Next/Last, Ctrl+Up/Down) moves through the records the list
 // showed, in its order: the list's filters, search and sort go with the card — as a prop to the
 // modal card, as ?nav=<JSON> to a card page — and /ids applies them.
-import type { ListOptions, TableFilter } from '$lib/types/api';
+import type { ListOptions, TableFilter } from '#lib/types/api.js';
 
 export type NavigationQuery = Pick<ListOptions, 'filters' | 'fixed_filters' | 'search' | 'search_fields' | 'sort_by' | 'sort_order'>;
 

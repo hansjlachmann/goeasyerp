@@ -1,19 +1,19 @@
 <script lang="ts">
-	import type { PageDefinition, Field } from '$lib/types/pages';
-	import type { TableFilter } from '$lib/types/api';
-	import Button from '$lib/components/Button.svelte';
-	import Card from '$lib/components/Card.svelte';
+	import type { PageDefinition, Field } from '#lib/types/pages.js';
+	import type { TableFilter } from '#lib/types/api.js';
+	import Button from '#lib/components/Button.svelte';
+	import Card from '#lib/components/Card.svelte';
 	import ConfirmModal from '../ConfirmModal.svelte';
-	import { currentUser } from '$lib/stores/user';
-	import { getFieldCaption as getFieldCaptionUtil } from '$lib/utils/fieldHelpers';
-	import { getJson, setJson } from '$lib/utils/storage';
-	import { t, BTN, FILTER as FLT } from '$lib/services/i18n.svelte';
-	import { toast } from '$lib/stores/toast';
-	import { currentLanguage } from '$lib/stores/session';
+	import { currentUser } from '#lib/stores/user.js';
+	import { getFieldCaption as getFieldCaptionUtil } from '#lib/utils/fieldHelpers.js';
+	import { getJson, setJson } from '#lib/utils/storage.js';
+	import { t, BTN, FILTER as FLT } from '#lib/services/i18n.svelte.js';
+	import { toast } from '#lib/stores/toast.js';
+	import { currentLanguage } from '#lib/stores/session.js';
 	import { get } from 'svelte/store';
 	import { onMount, tick } from 'svelte';
-	import { toApiFlowFilter, dateFilterHint } from '$lib/utils/flowFilter';
-	import { datePattern } from '$lib/utils/regional';
+	import { toApiFlowFilter, dateFilterHint } from '#lib/utils/flowFilter.js';
+	import { datePattern } from '#lib/utils/regional.js';
 
 	interface Props {
 		page: PageDefinition;

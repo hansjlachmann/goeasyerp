@@ -3,14 +3,14 @@
 	// tips are shown. Each change
 	// is saved at once (the backend keeps them per user; the work date goes back to today at the
 	// next login) and the app shows dates and numbers with them.
-	import Modal from '$components/Modal.svelte';
-	import DateInput from '$components/DateInput.svelte';
-	import { t, MYSET, BTN } from '$lib/services/i18n.svelte';
-	import { toast } from '$lib/stores/toast';
-	import { regional, saveRegional } from '$lib/stores/regional';
-	import { currentLanguage } from '$lib/stores/session';
-	import { formatDateRegional, formatNumberText } from '$lib/utils/regional';
-	import type { MySettings } from '$lib/services/api';
+	import Modal from '#lib/components/Modal.svelte';
+	import DateInput from '#lib/components/DateInput.svelte';
+	import { t, MYSET, BTN } from '#lib/services/i18n.svelte.js';
+	import { toast } from '#lib/stores/toast.js';
+	import { regional, saveRegional } from '#lib/stores/regional.js';
+	import { currentLanguage } from '#lib/stores/session.js';
+	import { formatDateRegional, formatNumberText } from '#lib/utils/regional.js';
+	import type { MySettings } from '#lib/services/api.js';
 
 	interface Props {
 		onclose: () => void;

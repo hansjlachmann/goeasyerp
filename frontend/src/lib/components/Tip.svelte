@@ -1,10 +1,10 @@
 <script lang="ts">
 	// A tip for new users (utils/tips.ts): shown while tips are on (My Settings) and the tip was
 	// not closed in this session. × closes it; "Don't show tips" switches tips off for the user.
-	import { t, TIP } from '$lib/services/i18n.svelte';
-	import { showTips, saveRegional } from '$lib/stores/regional';
-	import { tipClosed, closeTip, type TipDef } from '$lib/utils/tips';
-	import { toast } from '$lib/stores/toast';
+	import { t, TIP } from '#lib/services/i18n.svelte.js';
+	import { showTips, saveRegional } from '#lib/stores/regional.js';
+	import { tipClosed, closeTip, type TipDef } from '#lib/utils/tips.js';
+	import { toast } from '#lib/stores/toast.js';
 
 	interface Props {
 		tip: TipDef;

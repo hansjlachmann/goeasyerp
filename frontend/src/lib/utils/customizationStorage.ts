@@ -7,7 +7,7 @@
  */
 
 import { writable } from 'svelte/store';
-import { api } from '$lib/services/api';
+import { api } from '#lib/services/api.js';
 import { getJson, setJson, getBoolean, setBoolean, remove } from './storage';
 
 /**

@@ -1,17 +1,17 @@
 <script lang="ts">
 	import Modal from './Modal.svelte';
 	import Button from './Button.svelte';
-	import { t, MSG, DLG, BTN } from '$lib/services/i18n.svelte';
-	import { currentLanguage } from '$lib/stores/session';
+	import { t, MSG, DLG, BTN } from '#lib/services/i18n.svelte.js';
+	import { currentLanguage } from '#lib/stores/session.js';
 	import RequestFilters from './RequestFilters.svelte';
-	import type { RequestDataItem, RequestFilter, RequestInputField } from '$lib/types/pages';
+	import type { RequestDataItem, RequestFilter, RequestInputField } from '#lib/types/pages.js';
 	import LookupDropdown from './pages/LookupDropdown.svelte';
 	import DateInput from './DateInput.svelte';
 	import ErrorDetailsDialog from './ErrorDetailsDialog.svelte';
-	import { readFileBase64 } from '$lib/utils/fileInput';
-	import { apiFieldFilters } from '$lib/utils/flowFilter';
-	import { isDateType } from '$lib/utils/fieldHelpers';
-	import type { ErrorDetails } from '$lib/services/jobs';
+	import { readFileBase64 } from '#lib/utils/fileInput.js';
+	import { apiFieldFilters } from '#lib/utils/flowFilter.js';
+	import { isDateType } from '#lib/utils/fieldHelpers.js';
+	import type { ErrorDetails } from '#lib/services/jobs.js';
 
 	type InputField = RequestInputField;
 

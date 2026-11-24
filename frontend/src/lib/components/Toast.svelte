@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { ToastType } from '$lib/stores/toast';
+	import type { ToastType } from '#lib/stores/toast.js';
 
 	interface Props {
 		message: string;

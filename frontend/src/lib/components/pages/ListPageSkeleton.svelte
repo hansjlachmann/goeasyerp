@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Skeleton from '$lib/components/Skeleton.svelte';
-	import Spinner from '$lib/components/Spinner.svelte';
-	import ProgressBar from '$lib/components/ProgressBar.svelte';
+	import Skeleton from '#lib/components/Skeleton.svelte';
+	import Spinner from '#lib/components/Spinner.svelte';
+	import ProgressBar from '#lib/components/ProgressBar.svelte';
 
 	interface Props {
 		rows?: number;

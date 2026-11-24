@@ -1,5 +1,5 @@
-import type { Handle } from '@sveltejs/kit';
-import { PAGE_HEADERS, proxyHeaders } from '$lib/server/headers';
+import type { Handle } from '@sveltejs/kit/hooks';
+import { PAGE_HEADERS, proxyHeaders } from '#lib/server/headers.js';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://backend:8080';
 

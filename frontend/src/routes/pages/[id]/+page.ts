@@ -1,5 +1,5 @@
 import type { PageLoad } from './$types';
-import { parsePageUrl } from '$lib/utils/pageUrl';
+import { parsePageUrl } from '#lib/utils/pageUrl.js';
 
 export const load: PageLoad = ({ params, url }) => {
 	const page = parsePageUrl(url, parseInt(params.id, 10));

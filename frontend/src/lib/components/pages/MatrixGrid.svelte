@@ -7,19 +7,19 @@
 	// Keys: arrows move the selected cell, typing / F2 / Enter edit it, Enter / Tab confirm,
 	// Esc cancels; Show Entries opens the cell's entries.
 	import { untrack, tick } from 'svelte';
-	import { api } from '$lib/services/api';
-	import { t, PERIOD, ERR } from '$lib/services/i18n.svelte';
-	import { currentLanguage } from '$lib/stores/session';
-	import { cellStyle, formatDate, formatDecimal } from '$lib/utils/fieldHelpers';
-	import { fromDecimalInput, toDecimalInput } from '$lib/utils/regional';
-	import { matrixCellValue, roundingFactors } from '$lib/utils/matrix';
-	import type { Action, Matrix, MatrixColumn, MatrixRow } from '$lib/types/pages';
-	import type { TableFilter } from '$lib/types/api';
-	import { toast } from '$lib/stores/toast';
-	import { runPagePath } from '$lib/utils/runPage';
-	import { withReturn } from '$lib/utils/returnUrl';
-	import { pageNavigator } from '$lib/utils/pageNavigator';
-	import { getShortcutKey, normalizeShortcut } from '$lib/utils/shortcuts';
+	import { api } from '#lib/services/api.js';
+	import { t, PERIOD, ERR } from '#lib/services/i18n.svelte.js';
+	import { currentLanguage } from '#lib/stores/session.js';
+	import { cellStyle, formatDate, formatDecimal } from '#lib/utils/fieldHelpers.js';
+	import { fromDecimalInput, toDecimalInput } from '#lib/utils/regional.js';
+	import { matrixCellValue, roundingFactors } from '#lib/utils/matrix.js';
+	import type { Action, Matrix, MatrixColumn, MatrixRow } from '#lib/types/pages.js';
+	import type { TableFilter } from '#lib/types/api.js';
+	import { toast } from '#lib/stores/toast.js';
+	import { runPagePath } from '#lib/utils/runPage.js';
+	import { withReturn } from '#lib/utils/returnUrl.js';
+	import { pageNavigator } from '#lib/utils/pageNavigator.js';
+	import { getShortcutKey, normalizeShortcut } from '#lib/utils/shortcuts.js';
 	import ActionButton from '../ActionButton.svelte';
 	import ActionMenu from '../ActionMenu.svelte';
 	import ObjectRunner from '../ObjectRunner.svelte';

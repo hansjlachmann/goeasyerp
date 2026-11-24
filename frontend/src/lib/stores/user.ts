@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import { getJson, setJson, remove } from '$lib/utils/storage';
+import { getJson, setJson, remove } from '#lib/utils/storage.js';
 
 interface User {
 	user_id: string;

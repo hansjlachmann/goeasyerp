@@ -1,7 +1,7 @@
 // Column header menu of list pages: sort, "Filter to This Value", clear filter, hide,
 // drag to reorder. Pure helpers, kept out of ListPage so they are unit-tested.
-import type { TableFilter } from '$lib/types/api';
-import type { ItemCustomization } from '$lib/utils/fieldHelpers';
+import type { TableFilter } from '#lib/types/api.js';
+import type { ItemCustomization } from '#lib/utils/fieldHelpers.js';
 
 /**
  * The filter expression that matches value exactly, or null when there is none: a blank

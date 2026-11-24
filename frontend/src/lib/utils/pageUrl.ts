@@ -2,8 +2,8 @@
 // and the page's own parameters) or /pages/<id>/<record> (a card: nav, edit) — the routes'
 // loaders and the page frames read it the same way
 
-import { safeReturnUrl } from '$lib/utils/returnUrl';
-import { parseNavigationQuery, type NavigationQuery } from '$lib/utils/recordNavigation';
+import { safeReturnUrl } from '#lib/utils/returnUrl.js';
+import { parseNavigationQuery, type NavigationQuery } from '#lib/utils/recordNavigation.js';
 
 export interface PageUrlProps {
 	pageId: number;

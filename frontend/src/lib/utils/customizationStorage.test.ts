@@ -11,7 +11,7 @@ vi.mock('./storage', () => ({
 	setBoolean: (key: string, value: boolean) => localStorage.setItem(key, value ? 'true' : 'false'),
 	remove: (key: string) => localStorage.removeItem(key)
 }));
-vi.mock('$lib/services/api', () => ({ api: { savePreference, getPreferences } }));
+vi.mock('#lib/services/api.js', () => ({ api: { savePreference, getPreferences } }));
 
 const storage = await import('./customizationStorage');
 

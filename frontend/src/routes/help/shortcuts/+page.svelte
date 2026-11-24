@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { t, HELP } from '$lib/services/i18n.svelte';
-	import { shortcutHelpSections } from '$lib/utils/shortcutHelp';
+	import { t, HELP } from '#lib/services/i18n.svelte.js';
+	import { shortcutHelpSections } from '#lib/utils/shortcutHelp.js';
 
 	// Keyboard Shortcuts help, opened from the user menu as a detached window
 	// (window.open). The root layout renders it without the menu bar.

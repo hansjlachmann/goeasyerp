@@ -5,12 +5,12 @@
 	// rows (POST /api/pages/:id/period-grid); a value's drilldown opens its page filtered to the
 	// record and the row's dates.
 	import { untrack } from 'svelte';
-	import { api } from '$lib/services/api';
-	import { t, PERIOD } from '$lib/services/i18n.svelte';
-	import { currentLanguage } from '$lib/stores/session';
-	import { formatDate, formatDecimal } from '$lib/utils/fieldHelpers';
-	import type { Field, PeriodGrid, PeriodGridRow } from '$lib/types/pages';
-	import type { TableFilter } from '$lib/types/api';
+	import { api } from '#lib/services/api.js';
+	import { t, PERIOD } from '#lib/services/i18n.svelte.js';
+	import { currentLanguage } from '#lib/stores/session.js';
+	import { formatDate, formatDecimal } from '#lib/utils/fieldHelpers.js';
+	import type { Field, PeriodGrid, PeriodGridRow } from '#lib/types/pages.js';
+	import type { TableFilter } from '#lib/types/api.js';
 
 	interface Props {
 		pageId: number;

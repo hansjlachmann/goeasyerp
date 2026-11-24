@@ -2,7 +2,7 @@
 	// The GoEasyERP wordmark ("Go" amber, "EasyERP" slate or off-white), from frontend/static
 	// (the source files are in goeasyerp-brand/). Variants: slate on light backgrounds, off-white
 	// on slate (the app bar); auto follows the light/dark mode.
-	import { base } from '$app/paths';
+	import { asset } from '$app/paths';
 
 	interface Props {
 		variant?: 'slate' | 'offwhite' | 'auto';
@@ -14,10 +14,10 @@
 </script>
 
 {#if variant === 'auto'}
-	<img class="wordmark light-only" src="{base}/goeasyerp-wordmark-slate.svg" {alt} style:height />
-	<img class="wordmark dark-only" src="{base}/goeasyerp-wordmark-offwhite.svg" {alt} style:height />
+	<img class="wordmark light-only" src={asset('goeasyerp-wordmark-slate.svg')} {alt} style:height />
+	<img class="wordmark dark-only" src={asset('goeasyerp-wordmark-offwhite.svg')} {alt} style:height />
 {:else}
-	<img class="wordmark" src="{base}/goeasyerp-wordmark-{variant}.svg" {alt} style:height />
+	<img class="wordmark" src={asset(`goeasyerp-wordmark-${variant}.svg`)} {alt} style:height />
 {/if}
 
 <style>

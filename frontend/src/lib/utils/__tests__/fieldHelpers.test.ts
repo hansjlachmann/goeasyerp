@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { LookupData } from '$lib/types/api';
+import type { LookupData } from '#lib/types/api.js';
 import { isAdvancedLookup, lookupFor, formatLookupValue, isCodeType, toDateTimeInput, fromDateTimeInput, isBlobType } from '../fieldHelpers';
 
 describe('isAdvancedLookup', () => {

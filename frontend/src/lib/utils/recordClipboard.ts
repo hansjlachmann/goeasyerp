@@ -3,7 +3,7 @@
 // table — in the same company with new keys from the list's filters, or in another company.
 // The copied records are kept in the browser tab (sessionStorage): they survive a company
 // switch (a full page load) and are gone when the tab is closed.
-import type { TableFilter } from '$lib/types/api';
+import type { TableFilter } from '#lib/types/api.js';
 
 export const CLIPBOARD_KEY = 'openerp-record-clipboard';
 

@@ -16,12 +16,8 @@ const FAIL_FROM = LEVELS.moderate;
 
 // Advisories reviewed and found not to apply to GoEasyERP. Each entry needs a reason; remove
 // it when the package is updated past the advisory (the script reports entries no longer seen).
-const REVIEWED = {
-	// SvelteKit remote functions (form / query.batch): the frontend uses none ($app/server,
-	// *.remote.ts). Fixed in Kit 3.1.1.
-	'GHSA-3r8g-jcqq-3p5j': 'remote functions `form`: not used',
-	'GHSA-6cf5-gc4q-fm3x': 'remote functions `query.batch`: not used'
-};
+/** @type {Record<string, string>} */
+const REVIEWED = {};
 
 function audit() {
 	try {

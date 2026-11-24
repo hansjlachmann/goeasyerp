@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { cn } from '$utils/cn';
+	import { cn } from '#lib/utils/cn.js';
 
 	interface Props {
 		variant?: 'primary' | 'secondary' | 'danger' | 'success';

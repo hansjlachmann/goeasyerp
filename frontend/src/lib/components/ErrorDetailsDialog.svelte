@@ -2,11 +2,11 @@
 	// What lies behind an error (Show Entries on the error dialog): the sections the server sent —
 	// e.g. the totals per posting date and document (those that do not balance marked) and the
 	// G/L entries of a posting that does not balance —, read-only, with Export (CSV) and Close.
-	import Modal from '$components/Modal.svelte';
-	import Button from '$components/Button.svelte';
-	import { t, BTN } from '$lib/services/i18n.svelte';
-	import type { ErrorDetails } from '$lib/services/jobs';
-	import { downloadErrorDetails } from '$lib/utils/errorDetails';
+	import Modal from '#lib/components/Modal.svelte';
+	import Button from '#lib/components/Button.svelte';
+	import { t, BTN } from '#lib/services/i18n.svelte.js';
+	import type { ErrorDetails } from '#lib/services/jobs.js';
+	import { downloadErrorDetails } from '#lib/utils/errorDetails.js';
 
 	interface Props {
 		details: ErrorDetails;

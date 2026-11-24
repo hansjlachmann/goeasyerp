@@ -1,6 +1,6 @@
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 import { goto } from '$app/navigation';
-import { getString } from '$lib/utils/storage';
+import { getString } from '#lib/utils/storage.js';
 
 export const ssr = false; // Disable server-side rendering for this app
 

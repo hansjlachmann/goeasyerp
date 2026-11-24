@@ -7,12 +7,12 @@
 	// (YYYY-MM-DD, '' blank); other attributes (data-row, data-col, class, tabindex …) go on the
 	// input, so lists and cards focus it like any input.
 	import type { HTMLInputAttributes } from 'svelte/elements';
-	import { floating } from '$lib/actions/floating';
-	import { dateEntryToIso, isoDate } from '$lib/utils/dateEntry';
-	import { formatDateRegional, datePattern, getWorkDate } from '$lib/utils/regional';
-	import { currentLanguage } from '$lib/stores/session';
-	import { toast } from '$lib/stores/toast';
-	import { t, DATE } from '$lib/services/i18n.svelte';
+	import { floating } from '#lib/actions/floating.js';
+	import { dateEntryToIso, isoDate } from '#lib/utils/dateEntry.js';
+	import { formatDateRegional, datePattern, getWorkDate } from '#lib/utils/regional.js';
+	import { currentLanguage } from '#lib/stores/session.js';
+	import { toast } from '#lib/stores/toast.js';
+	import { t, DATE } from '#lib/services/i18n.svelte.js';
 
 	interface Props extends Omit<HTMLInputAttributes, 'value' | 'onchange' | 'onblur' | 'onkeydown'> {
 		value: string | null | undefined;

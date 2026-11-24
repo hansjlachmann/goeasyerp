@@ -2,7 +2,7 @@
 // listed here — a tip's id, its text key and where it shows — so new ones are added in one place.
 // A tip closed with × stays closed for the browser session; "Don't show tips" switches the
 // setting off for the user (saved on the server).
-import { TIP } from '$lib/services/i18n.svelte';
+import { TIP } from '#lib/services/i18n.svelte.js';
 
 export interface TipDef {
 	id: string;

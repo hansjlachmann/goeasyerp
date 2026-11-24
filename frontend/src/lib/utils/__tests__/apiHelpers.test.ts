@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const { initialize } = vi.hoisted(() => ({ initialize: vi.fn(async () => {}) }));
-vi.mock('$stores/session', () => ({ session: { initialize } }));
+vi.mock('#lib/stores/session.js', () => ({ session: { initialize } }));
 
 import { handleApiResponse } from '../apiHelpers';
 

@@ -1,7 +1,7 @@
 // Page and menu API service
 
-import type { PageDefinition, MenuDefinition } from '$lib/types/pages';
-import { handleApiResponse } from '$lib/utils/apiHelpers';
+import type { PageDefinition, MenuDefinition } from '#lib/types/pages.js';
+import { handleApiResponse } from '#lib/utils/apiHelpers.js';
 
 const API_BASE = '/api';
 

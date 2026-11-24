@@ -13,7 +13,7 @@
 	import type { Snippet } from 'svelte';
 	import Modal from '../Modal.svelte';
 	import PageFrame from './PageFrame.svelte';
-	import { pageNavigator, setPageNavigator, type PageNavigator } from '$lib/utils/pageNavigator';
+	import { pageNavigator, setPageNavigator, type PageNavigator } from '#lib/utils/pageNavigator.js';
 
 	let { children, onclosed }: { children: Snippet; onclosed?: () => void } = $props();
 

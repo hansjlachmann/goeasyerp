@@ -4,8 +4,8 @@
 	import { tick } from 'svelte';
 	import Modal from './Modal.svelte';
 	import Button from './Button.svelte';
-	import { t, DLG, BTN } from '$lib/services/i18n.svelte';
-	import { question } from '$lib/stores/question';
+	import { t, DLG, BTN } from '#lib/services/i18n.svelte.js';
+	import { question } from '#lib/stores/question.js';
 
 	let body = $state<HTMLDivElement | null>(null);
 	let returnFocus: HTMLElement | null = null;

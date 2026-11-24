@@ -3,8 +3,8 @@
 	// any field of the table can be added ("Filter..."), each filter is a field and an expression
 	// in the same filter syntax (the server applies them as the list does)
 	import { tick } from 'svelte';
-	import { t, FILTER as FLT } from '$lib/services/i18n.svelte';
-	import type { RequestDataItem, RequestFilter } from '$lib/types/pages';
+	import { t, FILTER as FLT } from '#lib/services/i18n.svelte.js';
+	import type { RequestDataItem, RequestFilter } from '#lib/types/pages.js';
 
 	interface Props {
 		item: RequestDataItem;

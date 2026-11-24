@@ -1,7 +1,7 @@
 // Headers of the SvelteKit server's answers and of its /api proxy (hooks.server.ts)
 
 // Headers every page answer carries (S25), wherever the app runs — behind nginx, a Kubernetes
-// ingress or the dev server. The Content Security Policy comes from SvelteKit (svelte.config.js).
+// ingress or the dev server. The Content Security Policy comes from SvelteKit (vite.config.js).
 export const PAGE_HEADERS: Record<string, string> = {
 	'X-Frame-Options': 'SAMEORIGIN', // only the app frames its pages (clickjacking)
 	'X-Content-Type-Options': 'nosniff',

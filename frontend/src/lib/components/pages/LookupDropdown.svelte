@@ -1,15 +1,15 @@
 <script lang="ts">
-	import { dropdownPageSize, pageIndex } from '$utils/dropdownPaging';
-	import { cn } from '$lib/utils/cn';
-	import { toast } from '$lib/stores/toast';
-	import { t, ERR, MSG } from '$lib/services/i18n.svelte';
-	import type { LookupColumn } from '$lib/types/api';
-	import { clickOutside } from '$lib/actions/clickOutside';
-	import { floating } from '$lib/actions/floating';
-	import { api } from '$lib/services/api';
-	import { pageNavigator } from '$lib/utils/pageNavigator';
-	import { withReturn } from '$lib/utils/returnUrl';
-	import type { TableFilter } from '$lib/types/api';
+	import { dropdownPageSize, pageIndex } from '#lib/utils/dropdownPaging.js';
+	import { cn } from '#lib/utils/cn.js';
+	import { toast } from '#lib/stores/toast.js';
+	import { t, ERR, MSG } from '#lib/services/i18n.svelte.js';
+	import type { LookupColumn } from '#lib/types/api.js';
+	import { clickOutside } from '#lib/actions/clickOutside.js';
+	import { floating } from '#lib/actions/floating.js';
+	import { api } from '#lib/services/api.js';
+	import { pageNavigator } from '#lib/utils/pageNavigator.js';
+	import { withReturn } from '#lib/utils/returnUrl.js';
+	import type { TableFilter } from '#lib/types/api.js';
 	import Modal from '../Modal.svelte';
 	import PageRenderer from './PageRenderer.svelte';
 	import PageFrames from './PageFrames.svelte';

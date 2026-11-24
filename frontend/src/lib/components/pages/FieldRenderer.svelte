@@ -1,12 +1,12 @@
 <script lang="ts">
-	import type { Field } from '$lib/types/pages';
-	import type { LookupData } from '$lib/types/api';
-	import { cn } from '$lib/utils/cn';
-	import { getFieldStyleClasses, formatValue, formatOptionValue, formatLookupValue, isAdvancedLookup as isAdvancedLookupData, isDateType, isDateTimeType, isDecimalType, isNumberType, formatDate, formatDateTime, formatDecimal, toDateTimeInput, fromDateTimeInput } from '$lib/utils/fieldHelpers';
-	import { toDecimalInput, fromDecimalInput } from '$lib/utils/regional';
+	import type { Field } from '#lib/types/pages.js';
+	import type { LookupData } from '#lib/types/api.js';
+	import { cn } from '#lib/utils/cn.js';
+	import { getFieldStyleClasses, formatValue, formatOptionValue, formatLookupValue, isAdvancedLookup as isAdvancedLookupData, isDateType, isDateTimeType, isDecimalType, isNumberType, formatDate, formatDateTime, formatDecimal, toDateTimeInput, fromDateTimeInput } from '#lib/utils/fieldHelpers.js';
+	import { toDecimalInput, fromDecimalInput } from '#lib/utils/regional.js';
 	import DateInput from '../DateInput.svelte';
-	import { currentLanguage } from '$lib/stores/session';
-	import { t, MSG } from '$lib/services/i18n.svelte';
+	import { currentLanguage } from '#lib/stores/session.js';
+	import { t, MSG } from '#lib/services/i18n.svelte.js';
 	import LookupDropdown from './LookupDropdown.svelte';
 	import OptionDropdown from './OptionDropdown.svelte';
 

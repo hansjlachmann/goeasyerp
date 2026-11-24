@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { visibleRows, searchMenu, parentKeys } from '../mainMenu';
-import type { MenuGroup } from '$lib/types/pages';
+import type { MenuGroup } from '#lib/types/pages.js';
 
 const modules: MenuGroup[] = [
 	{

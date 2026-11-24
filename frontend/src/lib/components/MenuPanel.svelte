@@ -6,9 +6,9 @@
 	// items (not the headings), Enter picks, Esc / Tab close; a click outside closes it.
 	import { onMount, tick } from 'svelte';
 	import ActionIcon from './icons/ActionIcon.svelte';
-	import { portal } from '$lib/actions/portal';
-	import type { Action, MenuEntry } from '$lib/types/pages';
-	import { t, HOME } from '$lib/services/i18n.svelte';
+	import { portal } from '#lib/actions/portal.js';
+	import type { Action, MenuEntry } from '#lib/types/pages.js';
+	import { t, HOME } from '#lib/services/i18n.svelte.js';
 
 	interface Props {
 		actions: MenuEntry[];

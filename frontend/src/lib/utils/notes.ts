@@ -1,4 +1,4 @@
-import { toast } from '$lib/stores/toast';
+import { toast } from '#lib/stores/toast.js';
 
 /** The header the API sends a request's notes in (the server's middleware.NotesHeader) */
 export const NOTES_HEADER = 'X-App-Notes';

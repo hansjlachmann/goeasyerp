@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import type { MenuGroup as MenuGroupType } from '$lib/types/pages';
-	import { clickOutside } from '$lib/actions/clickOutside';
+	import type { MenuGroup as MenuGroupType } from '#lib/types/pages.js';
+	import { clickOutside } from '#lib/actions/clickOutside.js';
 
 	interface Props {
 		group: MenuGroupType;

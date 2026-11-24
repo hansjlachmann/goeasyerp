@@ -1,24 +1,24 @@
 <script lang="ts">
-	import { clearTabCompany } from '$lib/utils/tabCompany';
-	import { clearClipboard } from '$lib/utils/recordClipboard';
-	import Wordmark from '$lib/components/brand/Wordmark.svelte';
+	import { clearTabCompany } from '#lib/utils/tabCompany.js';
+	import { clearClipboard } from '#lib/utils/recordClipboard.js';
+	import Wordmark from '#lib/components/brand/Wordmark.svelte';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { theme, loadAppearance, clearAppearance } from '$lib/stores/theme';
-	import { regional, loadRegional, clearRegional } from '$lib/stores/regional';
+	import { theme, loadAppearance, clearAppearance } from '#lib/stores/theme.js';
+	import { regional, loadRegional, clearRegional } from '#lib/stores/regional.js';
 	import MySettingsDialog from './MySettingsDialog.svelte';
-	import { formatDate } from '$lib/utils/fieldHelpers';
-	import { currentUser } from '$lib/stores/user';
-	import { session, currentCompany } from '$stores/session';
-	import { api } from '$lib/services/api';
-	import { t, MSG, MENU } from '$lib/services/i18n.svelte';
-	import { toast } from '$lib/stores/toast';
-	import { companySwitchOpen } from '$lib/stores/companySwitch';
-	import { getShortcutKey } from '$lib/utils/shortcuts';
+	import { formatDate } from '#lib/utils/fieldHelpers.js';
+	import { currentUser } from '#lib/stores/user.js';
+	import { session, currentCompany } from '#lib/stores/session.js';
+	import { api } from '#lib/services/api.js';
+	import { t, MSG, MENU } from '#lib/services/i18n.svelte.js';
+	import { toast } from '#lib/stores/toast.js';
+	import { companySwitchOpen } from '#lib/stores/companySwitch.js';
+	import { getShortcutKey } from '#lib/utils/shortcuts.js';
 	import CompanySwitchDialog from './CompanySwitchDialog.svelte';
 	import AppearanceDialog from './AppearanceDialog.svelte';
-	import { openShortcutHelp as openShortcutWindow } from '$lib/utils/shortcutHelp';
-	import { companyLabel, companyLabelFor, type CompanyInfo } from '$lib/utils/company';
+	import { openShortcutHelp as openShortcutWindow } from '#lib/utils/shortcutHelp.js';
+	import { companyLabel, companyLabelFor, type CompanyInfo } from '#lib/utils/company.js';
 
 	// Ctrl+O opens the Switch Company dialog. Browsers let the page take
 	// Ctrl+O (unlike Ctrl+N/T/W), so it never reaches the browser's Open File dialog.

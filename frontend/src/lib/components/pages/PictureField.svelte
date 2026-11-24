@@ -2,10 +2,10 @@
 	// A picture field (a BLOB such as Item.Picture) on a card: shows the stored picture and lets
 	// the user import an image (the server checks and re-encodes it), export or delete it.
 	// The record's JSON only says whether there is a picture; the image has its own endpoint.
-	import { withTabCompanyParam } from '$lib/utils/tabCompany';
-	import { t, PICTURE } from '$lib/services/i18n.svelte';
-	import { confirm } from '$stores/confirm';
-	import { toast } from '$stores/toast';
+	import { withTabCompanyParam } from '#lib/utils/tabCompany.js';
+	import { t, PICTURE } from '#lib/services/i18n.svelte.js';
+	import { confirm } from '#lib/stores/confirm.js';
+	import { toast } from '#lib/stores/toast.js';
 
 	interface Props {
 		table: string;

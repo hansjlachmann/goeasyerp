@@ -6,8 +6,8 @@
 // record's fields (Navigate's Document No. and Posting Date). null when a filter needs a value
 // the record does not have (no row selected); an optional filter with a blank value is left out.
 
-import type { RunPageFilter } from '$lib/types/pages';
-import { withReturn } from '$lib/utils/returnUrl';
+import type { RunPageFilter } from '#lib/types/pages.js';
+import { withReturn } from '#lib/utils/returnUrl.js';
 
 export interface RunPageAction {
 	run_page?: number;

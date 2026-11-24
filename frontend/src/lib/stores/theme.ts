@@ -1,7 +1,7 @@
 import { writable, get } from 'svelte/store';
-import { browser } from '$app/environment';
-import { getString, setString } from '$lib/utils/storage';
-import { api } from '$lib/services/api';
+import { browser } from '$app/env';
+import { getString, setString } from '#lib/utils/storage.js';
+import { api } from '#lib/services/api.js';
 import {
 	applyLayout,
 	applyMode,
@@ -13,7 +13,7 @@ import {
 	type Mode,
 	type Theme,
 	type ThemeCache
-} from '$lib/theme/apply';
+} from '#lib/theme/apply.js';
 
 // Same keys and default as the inline script in app.html (dark unless "light" is saved)
 const THEME_STORAGE_KEY = 'theme';

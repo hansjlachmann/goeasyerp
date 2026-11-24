@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { dropdownPageSize, pageIndex } from '$utils/dropdownPaging';
-	import { cn } from '$lib/utils/cn';
-	import { clickOutside } from '$lib/actions/clickOutside';
-	import { floating } from '$lib/actions/floating';
+	import { dropdownPageSize, pageIndex } from '#lib/utils/dropdownPaging.js';
+	import { cn } from '#lib/utils/cn.js';
+	import { clickOutside } from '#lib/actions/clickOutside.js';
+	import { floating } from '#lib/actions/floating.js';
 
 	interface Props {
 		// On a card: ↑/↓ on the closed field move to the field above/below (Alt+↓ / F4 open it)

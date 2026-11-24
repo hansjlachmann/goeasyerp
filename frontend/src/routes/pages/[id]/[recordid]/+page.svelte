@@ -1,5 +1,5 @@
 <script lang="ts">
-	import PageRenderer from '$lib/components/pages/PageRenderer.svelte';
+	import PageRenderer from '#lib/components/pages/PageRenderer.svelte';
 
 	// Get page props from SvelteKit
 	let { data } = $props();

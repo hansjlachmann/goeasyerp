@@ -1,7 +1,7 @@
 // API response handling utilities
 
-import type { ApiResponse, CaptionData } from '$types/api';
-import { session } from '$stores/session';
+import type { ApiResponse, CaptionData } from '#lib/types/api.js';
+import { session } from '#lib/stores/session.js';
 
 /**
  * The backend sends X-Session-Changed when a response re-issued the session cookie (e.g.

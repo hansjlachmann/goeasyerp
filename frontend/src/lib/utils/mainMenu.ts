@@ -1,7 +1,7 @@
 // The main menu (Main Menu, classic forms 330–337): modules, each with its menu of entries —
 // pages, reports/codeunits, sub-menus (Setup, Activities …) and separators. These helpers give
 // the rows a module shows with its sub-menus expanded or not, and the menu search.
-import type { MenuGroup, MenuItem } from '$lib/types/pages';
+import type { MenuGroup, MenuItem } from '#lib/types/pages.js';
 
 export interface MenuRow {
 	item: MenuItem;

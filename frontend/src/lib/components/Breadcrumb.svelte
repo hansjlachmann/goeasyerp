@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { breadcrumb, type BreadcrumbItem } from '$lib/stores/breadcrumb';
+	import { breadcrumb, type BreadcrumbItem } from '#lib/stores/breadcrumb.js';
 
 	let items: BreadcrumbItem[] = $state([]);
 

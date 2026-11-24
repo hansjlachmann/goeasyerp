@@ -17,7 +17,7 @@
 
 <script lang="ts">
 	import { tick } from 'svelte';
-	import { portal } from '$lib/actions/portal';
+	import { portal } from '#lib/actions/portal.js';
 	import type { Snippet } from 'svelte';
 
 	interface Props {

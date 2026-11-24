@@ -3,9 +3,9 @@
 // (formatDate, formatDecimal, the date entry). regionalVersion changes when the formats change,
 // so the page is drawn again with them.
 import { writable, derived, get } from 'svelte/store';
-import { browser } from '$app/environment';
-import { api, type MySettings } from '$lib/services/api';
-import { setRegional, setRegionalLanguage } from '$lib/utils/regional';
+import { browser } from '$app/env';
+import { api, type MySettings } from '#lib/services/api.js';
+import { setRegional, setRegionalLanguage } from '#lib/utils/regional.js';
 import { currentLanguage } from './session';
 
 const cacheKey = 'regional-cache';

@@ -14,7 +14,7 @@ import {
 	type Theme,
 	type ThemeTokens
 } from '../apply';
-import { APPEARANCE, MENU } from '$lib/services/i18n.svelte';
+import { APPEARANCE, MENU } from '#lib/services/i18n.svelte.js';
 
 const tokens = (over: Partial<ThemeTokens> = {}): ThemeTokens => ({
 	version: 1,

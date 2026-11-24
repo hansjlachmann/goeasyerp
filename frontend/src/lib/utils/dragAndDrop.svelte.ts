@@ -3,7 +3,7 @@
  * Provides reactive state and handlers for drag-and-drop reordering
  */
 
-import type { Field } from '$lib/types/pages';
+import type { Field } from '#lib/types/pages.js';
 
 export interface DragItem<T = any> {
 	field: Field;

@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import Modal from '$components/Modal.svelte';
-	import { api } from '$lib/services/api';
-	import { t, APPEARANCE } from '$lib/services/i18n.svelte';
-	import { toast } from '$lib/stores/toast';
-	import { confirm } from '$lib/stores/confirm';
-	import { appearance, chooseTheme, loadAppearance, saveAppearance } from '$lib/stores/theme';
-	import { FONT_SIZES, FONTS, themeAssetUrl, type AppearanceSettings, type Theme, type ThemeList } from '$lib/theme/apply';
+	import Modal from '#lib/components/Modal.svelte';
+	import { api } from '#lib/services/api.js';
+	import { t, APPEARANCE } from '#lib/services/i18n.svelte.js';
+	import { toast } from '#lib/stores/toast.js';
+	import { confirm } from '#lib/stores/confirm.js';
+	import { appearance, chooseTheme, loadAppearance, saveAppearance } from '#lib/stores/theme.js';
+	import { FONT_SIZES, FONTS, themeAssetUrl, type AppearanceSettings, type Theme, type ThemeList } from '#lib/theme/apply.js';
 
 	/** Gallery of community themes (opens in a new tab; the user copies a repository URL from it) */
 	const OMARCHY_THEMES_URL = 'https://omarchy.org/themes/';

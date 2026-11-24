@@ -7,14 +7,14 @@
 	import ProgressModal from './ProgressModal.svelte';
 	import PageRenderer from './pages/PageRenderer.svelte';
 	import PageFrames from './pages/PageFrames.svelte';
-	import { startJob, type ErrorDetails } from '$lib/services/jobs';
-	import { printoutOf } from '$lib/utils/printout';
+	import { startJob, type ErrorDetails } from '#lib/services/jobs.js';
+	import { printoutOf } from '#lib/utils/printout.js';
 	import { goto } from '$app/navigation';
-	import { openPagePath } from '$lib/utils/runPage';
-	import { toast } from '$lib/stores/toast';
-	import { t, MSG, ERR, BTN } from '$lib/services/i18n.svelte';
-	import type { DialogResult } from '$lib/types/api';
-	import type { RequestDataItem, RequestInputField } from '$lib/types/pages';
+	import { openPagePath } from '#lib/utils/runPage.js';
+	import { toast } from '#lib/stores/toast.js';
+	import { t, MSG, ERR, BTN } from '#lib/services/i18n.svelte.js';
+	import type { DialogResult } from '#lib/types/api.js';
+	import type { RequestDataItem, RequestInputField } from '#lib/types/pages.js';
 
 	interface Props {
 		// After a run: refresh = the result asked for it (or an async job ran)
@@ -40,11 +40,11 @@
 	let inputCallback = $state<((v: Record<string, string> | null) => void) | undefined>(undefined);
 	let runPage = $state<{
 		pageId: number;
-		filters: import('$lib/types/api').TableFilter[];
+		filters: import('#lib/types/api.js').TableFilter[];
 		select?: string;
 		lookupMode: boolean;
-		flowFilters?: import('$lib/types/api').TableFilter[]; // the record's FlowFilters (SetTableView)
-		fixedFilters?: import('$lib/types/api').FixedFilter[]; // its filters of the groups other than 0 (kept)
+		flowFilters?: import('#lib/types/api.js').TableFilter[]; // the record's FlowFilters (SetTableView)
+		fixedFilters?: import('#lib/types/api.js').FixedFilter[]; // its filters of the groups other than 0 (kept)
 		params?: Record<string, string>; // the page's parameters (Page.SetParam)
 		respond: (values: Record<string, string> | null) => void;
 	} | null>(null);
@@ -132,11 +132,11 @@
 						const data = event.data ?? {};
 						runPage = {
 							pageId: Number(data.page_id),
-							filters: (data.filters as import('$lib/types/api').TableFilter[]) ?? [],
+							filters: (data.filters as import('#lib/types/api.js').TableFilter[]) ?? [],
 							select: (data.select as string) || undefined,
 							lookupMode: data.lookup_mode === true,
-							flowFilters: (data.flow_filters as import('$lib/types/api').TableFilter[]) ?? [],
-							fixedFilters: (data.fixed_filters as import('$lib/types/api').FixedFilter[]) ?? [],
+							flowFilters: (data.flow_filters as import('#lib/types/api.js').TableFilter[]) ?? [],
+							fixedFilters: (data.fixed_filters as import('#lib/types/api.js').FixedFilter[]) ?? [],
 							params: (data.params as Record<string, string>) ?? undefined,
 							respond
 						};

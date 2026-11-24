@@ -1,6 +1,6 @@
 import { writable, derived } from 'svelte/store';
-import type { SessionState } from '$types/session';
-import { getTabCompany, setTabCompany } from '$lib/utils/tabCompany';
+import type { SessionState } from '#lib/types/session.js';
+import { getTabCompany, setTabCompany } from '#lib/utils/tabCompany.js';
 
 // Session store - manages user session state
 function createSessionStore() {

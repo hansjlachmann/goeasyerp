@@ -3,12 +3,12 @@
  * Uses Server-Sent Events (SSE) for real-time progress updates
  */
 
-import { t, ERR, MSG } from '$lib/services/i18n.svelte';
-import { toast } from '$lib/stores/toast';
-import { buildQueryString } from '$lib/services/api';
-import type { ListOptions } from '$lib/types/api';
-import { downloadBlob, downloadPdf, handlePrintout, pdfBlob, printoutsOf, resultFileOf } from '$lib/utils/printout';
-import { withTabCompanyParam } from '$lib/utils/tabCompany';
+import { t, ERR, MSG } from '#lib/services/i18n.svelte.js';
+import { toast } from '#lib/stores/toast.js';
+import { buildQueryString } from '#lib/services/api.js';
+import type { ListOptions } from '#lib/types/api.js';
+import { downloadBlob, downloadPdf, handlePrintout, pdfBlob, printoutsOf, resultFileOf } from '#lib/utils/printout.js';
+import { withTabCompanyParam } from '#lib/utils/tabCompany.js';
 
 /** An answer to a codeunit's question was refused by the server: show why */
 async function answerRefused(res: Response): Promise<void> {

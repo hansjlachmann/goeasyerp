@@ -1,6 +1,6 @@
 import { runPagePath } from './runPage';
 import { formatDateRegional, formatNumberText } from './regional';
-import type { Field } from '$lib/types/pages';
+import type { Field } from '#lib/types/pages.js';
 
 // --- Date/DateTime type detection and formatting ---
 

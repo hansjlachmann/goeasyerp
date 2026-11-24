@@ -1,10 +1,10 @@
 <script lang="ts">
-	import Modal from '$lib/components/Modal.svelte';
-	import Button from '$lib/components/Button.svelte';
-	import type { PageDefinition, Field } from '$lib/types/pages';
-	import { createDragAndDrop, type DragItem } from '$lib/utils/dragAndDrop.svelte';
-	import { t, BTN, CUSTOMIZE } from '$lib/services/i18n.svelte';
-	import { getFieldCaption } from '$lib/utils/fieldHelpers';
+	import Modal from '#lib/components/Modal.svelte';
+	import Button from '#lib/components/Button.svelte';
+	import type { PageDefinition, Field } from '#lib/types/pages.js';
+	import { createDragAndDrop, type DragItem } from '#lib/utils/dragAndDrop.svelte.js';
+	import { t, BTN, CUSTOMIZE } from '#lib/services/i18n.svelte.js';
+	import { getFieldCaption } from '#lib/utils/fieldHelpers.js';
 
 	export interface ItemCustomization {
 		visible: boolean;

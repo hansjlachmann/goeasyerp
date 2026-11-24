@@ -6,8 +6,8 @@
 	// be loaded during maintenance); the loaded translations are the fallback.
 	import { onDestroy } from 'svelte';
 	import Button from './Button.svelte';
-	import { t } from '$lib/services/i18n.svelte';
-	import { maintenance, maintenanceOver, checkInterval } from '$lib/utils/maintenance';
+	import { t } from '#lib/services/i18n.svelte.js';
+	import { maintenance, maintenanceOver, checkInterval } from '#lib/utils/maintenance.js';
 
 	let checking = $state(false);
 	let timer: ReturnType<typeof setInterval> | null = null;

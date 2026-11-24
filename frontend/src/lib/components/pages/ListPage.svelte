@@ -1,22 +1,22 @@
 <script lang="ts">
-	import { rootFontScale, scaledWidth, watchRootLayout } from '$lib/utils/fontScale';
-	import type { PageDefinition, Field } from '$lib/types/pages';
-	import { navigationQuery, type NavigationQuery } from '$lib/utils/recordNavigation';
-	import type { TableFilter, LookupData, DialogResult, ListOptions } from '$lib/types/api';
-	import { pageNavigator } from '$lib/utils/pageNavigator';
-	import { toast } from '$lib/stores/toast';
-	import { confirm } from '$lib/stores/confirm';
-	import { t, MSG, ERR, DLG, BTN, LIST, HOME } from '$lib/services/i18n.svelte';
-	import PageHeader from '$lib/components/PageHeader.svelte';
+	import { rootFontScale, scaledWidth, watchRootLayout } from '#lib/utils/fontScale.js';
+	import type { PageDefinition, Field } from '#lib/types/pages.js';
+	import { navigationQuery, type NavigationQuery } from '#lib/utils/recordNavigation.js';
+	import type { TableFilter, LookupData, DialogResult, ListOptions } from '#lib/types/api.js';
+	import { pageNavigator } from '#lib/utils/pageNavigator.js';
+	import { toast } from '#lib/stores/toast.js';
+	import { confirm } from '#lib/stores/confirm.js';
+	import { t, MSG, ERR, DLG, BTN, LIST, HOME } from '#lib/services/i18n.svelte.js';
+	import PageHeader from '#lib/components/PageHeader.svelte';
 	import ModalCardPage from './ModalCardPage.svelte';
 	import PageRenderer from './PageRenderer.svelte';
 	import PageFrames from './PageFrames.svelte';
 	import ActionMenu from '../ActionMenu.svelte';
 	import MenuPanel from '../MenuPanel.svelte';
 	import ActionButton from '../ActionButton.svelte';
-	import { newLineNo, newLineNoAbove } from '$lib/utils/autoSplitKey';
-	import type { FixedFilter } from '$lib/types/api';
-	import type { RequestDataItem, RequestInputField, Action, MenuEntry } from '$lib/types/pages';
+	import { newLineNo, newLineNoAbove } from '#lib/utils/autoSplitKey.js';
+	import type { FixedFilter } from '#lib/types/api.js';
+	import type { RequestDataItem, RequestInputField, Action, MenuEntry } from '#lib/types/pages.js';
 	import LookupDropdown from './LookupDropdown.svelte';
 	import OptionDropdown from './OptionDropdown.svelte';
 	import CustomizeFieldsModal from './CustomizeFieldsModal.svelte';
@@ -24,32 +24,32 @@
 	import ConfirmModal from '../ConfirmModal.svelte';
 	import Modal, { isModalOpen, isInTopModal } from '../Modal.svelte';
 	import ProgressModal from '../ProgressModal.svelte';
-	import { startJob, type SyncJobResult, type ErrorDetails } from '$lib/services/jobs';
-	import { printoutOf } from '$lib/utils/printout';
-	import { toDecimalInput, fromDecimalInput } from '$lib/utils/regional';
-	import { headerFieldInput, headerValueTyped } from '$lib/utils/headerFields';
-	import { captionWithBreaks, longestCaptionWord } from '$lib/utils/columnHeader';
-	import { apiFieldFilters } from '$lib/utils/flowFilter';
+	import { startJob, type SyncJobResult, type ErrorDetails } from '#lib/services/jobs.js';
+	import { printoutOf } from '#lib/utils/printout.js';
+	import { toDecimalInput, fromDecimalInput } from '#lib/utils/regional.js';
+	import { headerFieldInput, headerValueTyped } from '#lib/utils/headerFields.js';
+	import { captionWithBreaks, longestCaptionWord } from '#lib/utils/columnHeader.js';
+	import { apiFieldFilters } from '#lib/utils/flowFilter.js';
 	import DateInput from '../DateInput.svelte';
 	import ObjectRunner from '../ObjectRunner.svelte';
-	import { shortcuts, normalizeShortcut, getShortcutKey, commonShortcuts } from '$lib/utils/shortcuts';
-	import { cn } from '$lib/utils/cn';
-	import { api } from '$lib/services/api';
-	import { currentUser } from '$lib/stores/user';
-	import { companySwitchOpen } from '$lib/stores/companySwitch';
+	import { shortcuts, normalizeShortcut, getShortcutKey, commonShortcuts } from '#lib/utils/shortcuts.js';
+	import { cn } from '#lib/utils/cn.js';
+	import { api } from '#lib/services/api.js';
+	import { currentUser } from '#lib/stores/user.js';
+	import { companySwitchOpen } from '#lib/stores/companySwitch.js';
 	import { get } from 'svelte/store';
-	import { getFieldCaption, formatValue, formatOptionValue, formatLookupValue, isAdvancedLookup, isItemVisible, isDateType, isDateTimeType, isDecimalType, isNumberType, isCodeType, formatDate, formatDateTime, formatDecimal, cellStyle, lookupFor, toDateTimeInput, fromDateTimeInput, type ItemCustomization } from '$lib/utils/fieldHelpers';
-	import { currentLanguage, currentCompany } from '$lib/stores/session';
-	import { loadPageCustomizations, savePageCustomizations, loadColumnWidths, saveColumnWidths, loadRowNumbersPreference, saveRowNumbersPreference, layoutVersion } from '$lib/utils/customizationStorage';
+	import { getFieldCaption, formatValue, formatOptionValue, formatLookupValue, isAdvancedLookup, isItemVisible, isDateType, isDateTimeType, isDecimalType, isNumberType, isCodeType, formatDate, formatDateTime, formatDecimal, cellStyle, lookupFor, toDateTimeInput, fromDateTimeInput, type ItemCustomization } from '#lib/utils/fieldHelpers.js';
+	import { currentLanguage, currentCompany } from '#lib/stores/session.js';
+	import { loadPageCustomizations, savePageCustomizations, loadColumnWidths, saveColumnWidths, loadRowNumbersPreference, saveRowNumbersPreference, layoutVersion } from '#lib/utils/customizationStorage.js';
 	import { tick, untrack } from 'svelte';
-	import { withReturn } from '$lib/utils/returnUrl';
-	import { runPagePath, openPagePath, filteredPagePath } from '$lib/utils/runPage';
-	import { apiFlowFilters } from '$lib/utils/flowFilter';
+	import { withReturn } from '#lib/utils/returnUrl.js';
+	import { runPagePath, openPagePath, filteredPagePath } from '#lib/utils/runPage.js';
+	import { apiFlowFilters } from '#lib/utils/flowFilter.js';
 	import ColumnHeaderMenu, { type ColumnMenuItem } from './ColumnHeaderMenu.svelte';
-	import { keyValuesFromFilters, loadClipboard, recordsToPaste, saveClipboard, singleValueFilters } from '$lib/utils/recordClipboard';
-	import { filterValueFor, hideColumn, moveColumn, withFilter, withoutFilter } from '$lib/utils/columnHeader';
-	import { moveCursor, ROW_SELECTOR, type CursorMove } from '$lib/utils/listCursor';
-	import { copyText, rowsToTsv } from '$lib/utils/clipboard';
+	import { keyValuesFromFilters, loadClipboard, recordsToPaste, saveClipboard, singleValueFilters } from '#lib/utils/recordClipboard.js';
+	import { filterValueFor, hideColumn, moveColumn, withFilter, withoutFilter } from '#lib/utils/columnHeader.js';
+	import { moveCursor, ROW_SELECTOR, type CursorMove } from '#lib/utils/listCursor.js';
+	import { copyText, rowsToTsv } from '#lib/utils/clipboard.js';
 	import {
 		emptySelection,
 		isMultiSelection,
@@ -60,9 +60,9 @@
 		selectRange,
 		toggleKey,
 		type ListSelection
-	} from '$lib/utils/selection';
-	import { needsShift, windowOffsetFor, windowSize, type ListWindowRequest } from '$lib/utils/listWindow';
-	import { getRecordId, getRecordKey, getPrimaryKeyField, getPrimaryKeyFields, recordKeyText, deepCopy, hasRecordChanged, canInsertNewRecord, hasUserEdits, sameFieldValue, shouldInsertNewRecord, stripInternalFields, findSelectedRecord, applyServerValues, newRecordContext, rowFieldEditable, rowFieldVisible } from '$lib/utils/recordHelpers';
+	} from '#lib/utils/selection.js';
+	import { needsShift, windowOffsetFor, windowSize, type ListWindowRequest } from '#lib/utils/listWindow.js';
+	import { getRecordId, getRecordKey, getPrimaryKeyField, getPrimaryKeyFields, recordKeyText, deepCopy, hasRecordChanged, canInsertNewRecord, hasUserEdits, sameFieldValue, shouldInsertNewRecord, stripInternalFields, findSelectedRecord, applyServerValues, newRecordContext, rowFieldEditable, rowFieldVisible } from '#lib/utils/recordHelpers.js';
 
 	interface Props {
 		page: PageDefinition;
@@ -242,11 +242,11 @@
 	// A page the running codeunit opened (RunModal): shown in a modal until the user closes it
 	let runPage = $state<{
 		pageId: number;
-		filters: import('$lib/types/api').TableFilter[];
+		filters: import('#lib/types/api.js').TableFilter[];
 		select?: string;
 		lookupMode: boolean;
-		flowFilters?: import('$lib/types/api').TableFilter[]; // the record's FlowFilters (SetTableView)
-		fixedFilters?: import('$lib/types/api').FixedFilter[]; // its filters of the groups other than 0 (kept)
+		flowFilters?: import('#lib/types/api.js').TableFilter[]; // the record's FlowFilters (SetTableView)
+		fixedFilters?: import('#lib/types/api.js').FixedFilter[]; // its filters of the groups other than 0 (kept)
 		params?: Record<string, string>; // the page's parameters (Page.SetParam)
 		respond: (values: Record<string, string> | null) => void;
 	} | null>(null);
@@ -766,11 +766,11 @@
 					const data = event.data ?? {};
 					runPage = {
 						pageId: Number(data.page_id),
-						filters: (data.filters as import('$lib/types/api').TableFilter[]) ?? [],
+						filters: (data.filters as import('#lib/types/api.js').TableFilter[]) ?? [],
 						select: (data.select as string) || undefined,
 						lookupMode: data.lookup_mode === true,
-						flowFilters: (data.flow_filters as import('$lib/types/api').TableFilter[]) ?? [],
-						fixedFilters: (data.fixed_filters as import('$lib/types/api').FixedFilter[]) ?? [],
+						flowFilters: (data.flow_filters as import('#lib/types/api.js').TableFilter[]) ?? [],
+						fixedFilters: (data.fixed_filters as import('#lib/types/api.js').FixedFilter[]) ?? [],
 						params: (data.params as Record<string, string>) ?? undefined,
 						respond
 					};
@@ -3465,7 +3465,7 @@
 	// Apply filters
 	// DrillDown on a FlowField without filters of its own: the server gives the page and the
 	// FlowField's filters for the row (a total account's Totaling, the list's FlowFilters)
-	async function openFlowFieldDrilldown(field: import('$lib/types/pages').Field, record: Record<string, any>) {
+	async function openFlowFieldDrilldown(field: import('#lib/types/pages.js').Field, record: Record<string, any>) {
 		try {
 			const result = await api.drilldown(
 				page.page.id,
@@ -3481,7 +3481,7 @@
 
 	// A cell with a drilldown: a saved row's field that drills down (a FlowField also when 0; a
 	// drilldown function, on_drilldown, also when blank)
-	function hasDrilldown(field: import('$lib/types/pages').Field, record: Record<string, any> | undefined): boolean {
+	function hasDrilldown(field: import('#lib/types/pages.js').Field, record: Record<string, any> | undefined): boolean {
 		if (!record || record._isNew || !(field.drilldown || field.drilldown_page_field || field.on_drilldown)) return false;
 		if (field.on_drilldown) return true;
 		const value = record[field.source];
@@ -3489,7 +3489,7 @@
 	}
 
 	// DrillDown (a click on the cell, or Alt+↓ on it): the entries behind the value
-	function openDrilldown(field: import('$lib/types/pages').Field, record: Record<string, any>) {
+	function openDrilldown(field: import('#lib/types/pages.js').Field, record: Record<string, any>) {
 		// a drilldown function (classic OnDrillDown code): run with the saved row, quietly — the
 		// page it opens shows; the list reloads when it changed something
 		if (field.on_drilldown) {

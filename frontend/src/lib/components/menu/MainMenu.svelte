@@ -11,9 +11,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { onMount, tick } from 'svelte';
-	import type { MenuDefinition, MenuItem } from '$lib/types/pages';
-	import { t, HOME } from '$lib/services/i18n.svelte';
-	import { visibleRows, searchMenu, parentKeys, type MenuRow, type MenuSearchResult } from '$lib/utils/mainMenu';
+	import type { MenuDefinition, MenuItem } from '#lib/types/pages.js';
+	import { t, HOME } from '#lib/services/i18n.svelte.js';
+	import { visibleRows, searchMenu, parentKeys, type MenuRow, type MenuSearchResult } from '#lib/utils/mainMenu.js';
 	import ObjectRunner from '../ObjectRunner.svelte';
 
 	interface Props {

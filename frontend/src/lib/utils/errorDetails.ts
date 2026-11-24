@@ -1,6 +1,6 @@
-import type { ErrorDetails } from '$lib/services/jobs';
-import { downloadBlob } from '$lib/utils/printout';
-import { spreadsheetSafe } from '$lib/utils/clipboard';
+import type { ErrorDetails } from '#lib/services/jobs.js';
+import { downloadBlob } from '#lib/utils/printout.js';
+import { spreadsheetSafe } from '#lib/utils/clipboard.js';
 
 /** A CSV cell: quoted when it holds the separator, a quote or a line break */
 function csvCell(text: string): string {

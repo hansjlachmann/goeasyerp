@@ -1,5 +1,5 @@
 // A new version on the server: the browser loads it by itself. SvelteKit checks the server's
-// version every minute (svelte.config.js, version.pollInterval) and sets updated.current; the
+// version every minute (vite.config.js, version.pollInterval) and sets updated.current; the
 // page is then loaded again where that loses nothing — the login page at once, any other page
 // on its next navigation (a card or list being edited keeps its input, a report or routine
 // started from the main menu its dialog, until the user moves on). Without it a tab open

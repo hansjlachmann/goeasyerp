@@ -1,23 +1,23 @@
 <script lang="ts">
-	import { pageNavigator } from '$lib/utils/pageNavigator';
-	import { withNavigationQuery, type NavigationQuery } from '$lib/utils/recordNavigation';
+	import { pageNavigator } from '#lib/utils/pageNavigator.js';
+	import { withNavigationQuery, type NavigationQuery } from '#lib/utils/recordNavigation.js';
 	import { onMount } from 'svelte';
-	import type { PageDefinition } from '$lib/types/pages';
-	import type { LookupData, FixedFilter, TableFilter } from '$lib/types/api';
-	import type { HeaderField } from '$lib/types/pages';
-	import { fetchPage } from '$lib/services/pages';
-	import { api } from '$lib/services/api';
-	import { currentUser } from '$lib/stores/user';
-	import { toast } from '$lib/stores/toast';
-	import { confirm } from '$lib/stores/confirm';
-	import { breadcrumb } from '$lib/stores/breadcrumb';
-	import { cardTitle, formatDate, isDateType } from '$lib/utils/fieldHelpers';
-	import { t, MSG, ERR, DLG, BTN, PAGE_ERR, FILTER as FLT } from '$lib/services/i18n.svelte';
+	import type { PageDefinition } from '#lib/types/pages.js';
+	import type { LookupData, FixedFilter, TableFilter } from '#lib/types/api.js';
+	import type { HeaderField } from '#lib/types/pages.js';
+	import { fetchPage } from '#lib/services/pages.js';
+	import { api } from '#lib/services/api.js';
+	import { currentUser } from '#lib/stores/user.js';
+	import { toast } from '#lib/stores/toast.js';
+	import { confirm } from '#lib/stores/confirm.js';
+	import { breadcrumb } from '#lib/stores/breadcrumb.js';
+	import { cardTitle, formatDate, isDateType } from '#lib/utils/fieldHelpers.js';
+	import { t, MSG, ERR, DLG, BTN, PAGE_ERR, FILTER as FLT } from '#lib/services/i18n.svelte.js';
 	import Button from '../Button.svelte';
 	import CardPage from './CardPage.svelte';
 	import MatrixGrid from './MatrixGrid.svelte';
 	import OptionDropdown from './OptionDropdown.svelte';
-	import { withReturn } from '$lib/utils/returnUrl';
+	import { withReturn } from '#lib/utils/returnUrl.js';
 	import ListPage from './ListPage.svelte';
 	import PageRenderer from './PageRenderer.svelte';
 	import PageFrames from './PageFrames.svelte';
@@ -25,15 +25,15 @@
 	import CardPageSkeleton from './CardPageSkeleton.svelte';
 	import ConfirmModal from '../ConfirmModal.svelte';
 	import Modal from '../Modal.svelte';
-	import { getRecordId, getRecordLabel, getPrimaryKeyField, getPrimaryKeyFields, recordKeyText, canInsertNewRecord, deepCopy, applyServerValues } from '$lib/utils/recordHelpers';
-	import { createNavigationActions } from '$lib/utils/navigationHelpers';
-	import { getJson } from '$lib/utils/storage';
-	import { syncPageLayout } from '$lib/utils/customizationStorage';
-	import { estimateRowsPerPage, windowSize, windowOffsetFor, type ListWindowRequest } from '$lib/utils/listWindow';
-	import { apiFlowFilters, apiFieldFilters, toApiFlowFilter } from '$lib/utils/flowFilter';
-	import { currentLanguage } from '$lib/stores/session';
+	import { getRecordId, getRecordLabel, getPrimaryKeyField, getPrimaryKeyFields, recordKeyText, canInsertNewRecord, deepCopy, applyServerValues } from '#lib/utils/recordHelpers.js';
+	import { createNavigationActions } from '#lib/utils/navigationHelpers.js';
+	import { getJson } from '#lib/utils/storage.js';
+	import { syncPageLayout } from '#lib/utils/customizationStorage.js';
+	import { estimateRowsPerPage, windowSize, windowOffsetFor, type ListWindowRequest } from '#lib/utils/listWindow.js';
+	import { apiFlowFilters, apiFieldFilters, toApiFlowFilter } from '#lib/utils/flowFilter.js';
+	import { currentLanguage } from '#lib/stores/session.js';
 	import { get } from 'svelte/store';
-	import { maintenance } from '$lib/utils/maintenance';
+	import { maintenance } from '#lib/utils/maintenance.js';
 
 	interface Props {
 		pageid: number;
@@ -50,9 +50,9 @@
 		// filtered (initialFilters) and read-only, and onclose reports how it was closed — in
 		// lookup mode Enter / double-click picks a record ('LookupOK'), Esc cancels
 		embedded?: boolean;
-		initialFilters?: import('$lib/types/api').TableFilter[];
+		initialFilters?: import('#lib/types/api.js').TableFilter[];
 		// the record's FlowFilters (ISO; SetTableView): a card's period grid starts with them
-		initialFlowFilters?: import('$lib/types/api').TableFilter[];
+		initialFlowFilters?: import('#lib/types/api.js').TableFilter[];
 		lookupMode?: boolean;
 		// Embedded but editable: a page's own lookup (a journal's template or batch list), where
 		// the user may also add and change records, as on the page itself
@@ -68,7 +68,7 @@
 		// editable only while the card is (no New/Edit/Delete otherwise), and the card's Edit is
 		// the lines' Edit too (the subpage shows none)
 		parentEditMode?: boolean;
-		fixedFilters?: import('$lib/types/api').FixedFilter[];
+		fixedFilters?: import('#lib/types/api.js').FixedFilter[];
 		newRecordDefaults?: Record<string, any>;
 		onexit?: () => void;
 		onlineschange?: () => void;
@@ -369,13 +369,13 @@
 
 	// Filters for list pages - parse initialFilter if provided (format: "field=expression")
 	// svelte-ignore state_referenced_locally - the initial filters only set the starting state
-	let currentFilters: import('$lib/types/api').TableFilter[] = $state(initialFilters ?? parseInitialFilter(initialFilter));
+	let currentFilters: import('#lib/types/api.js').TableFilter[] = $state(initialFilters ?? parseInitialFilter(initialFilter));
 	// FlowFilters as typed in the filter pane (e.g. Date Filter "01.01.26..31.03.26"); sent as ISO
 	// svelte-ignore state_referenced_locally - the URL's FlowFilters only set the starting state
-	let currentFlowFilters: import('$lib/types/api').TableFilter[] = $state(parseInitialFilter(initialFlowFilter));
+	let currentFlowFilters: import('#lib/types/api.js').TableFilter[] = $state(parseInitialFilter(initialFlowFilter));
 
-	function parseInitialFilter(filter: string | string[] | undefined): import('$lib/types/api').TableFilter[] {
-		const filters: import('$lib/types/api').TableFilter[] = [];
+	function parseInitialFilter(filter: string | string[] | undefined): import('#lib/types/api.js').TableFilter[] {
+		const filters: import('#lib/types/api.js').TableFilter[] = [];
 		for (const f of Array.isArray(filter) ? filter : filter ? [filter] : []) {
 			const eqIndex = f.indexOf('=');
 			if (eqIndex > 0) filters.push({ field: f.substring(0, eqIndex), expression: f.substring(eqIndex + 1) });
@@ -579,7 +579,7 @@
 	// The list's query: filters, FlowFilters, search over the visible stored fields, sort.
 	// Shared by the windows of the list and "delete all selected", so both mean the same records.
 	function listQuery(visibleFields = getVisibleFields(), flowFields = new Set(page?.page.flow_fields ?? [])) {
-		const query: import('$lib/types/api').ListOptions = {};
+		const query: import('#lib/types/api.js').ListOptions = {};
 		if (!page) return query;
 		if (currentFilters.length > 0) {
 			query.filters = apiFilters(currentFilters);
@@ -618,7 +618,7 @@
 			const flowFields = new Set(page.page.flow_fields ?? []);
 
 			// Load records with only visible fields to avoid expensive FlowField calculations
-			const listOptions: import('$lib/types/api').ListOptions = {
+			const listOptions: import('#lib/types/api.js').ListOptions = {
 				...listQuery(visibleFields, flowFields),
 				offset,
 				limit: windowLimit
@@ -942,7 +942,7 @@
 	}
 
 	// Handle filter change from list page
-	async function handleFilterChange(filters: import('$lib/types/api').TableFilter[], flowFilters: import('$lib/types/api').TableFilter[] = []) {
+	async function handleFilterChange(filters: import('#lib/types/api.js').TableFilter[], flowFilters: import('#lib/types/api.js').TableFilter[] = []) {
 		currentFilters = filters;
 		currentFlowFilters = flowFilters;
 		keepFiltersInUrl();

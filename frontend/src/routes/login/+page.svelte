@@ -1,14 +1,14 @@
 <script lang="ts">
-	import Wordmark from '$lib/components/brand/Wordmark.svelte';
+	import Wordmark from '#lib/components/brand/Wordmark.svelte';
 	import { goto } from '$app/navigation';
-	import { api } from '$lib/services/api';
-	import { t, MSG, ERR, LOGIN, PLC, loadTranslations } from '$lib/services/i18n.svelte';
-	import { currentUser } from '$lib/stores/user';
-	import { session } from '$stores/session';
-	import { toast } from '$lib/stores/toast';
+	import { api } from '#lib/services/api.js';
+	import { t, MSG, ERR, LOGIN, PLC, loadTranslations } from '#lib/services/i18n.svelte.js';
+	import { currentUser } from '#lib/stores/user.js';
+	import { session } from '#lib/stores/session.js';
+	import { toast } from '#lib/stores/toast.js';
 	import { onMount } from 'svelte';
-	import { companyLabel, type CompanyInfo } from '$lib/utils/company';
-	import { setTabCompany } from '$lib/utils/tabCompany';
+	import { companyLabel, type CompanyInfo } from '#lib/utils/company.js';
+	import { setTabCompany } from '#lib/utils/tabCompany.js';
 
 	let userID = $state('');
 	let password = $state('');

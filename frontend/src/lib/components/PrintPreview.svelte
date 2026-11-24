@@ -4,8 +4,8 @@
 	// Close closes it.
 	import Modal from './Modal.svelte';
 	import Button from './Button.svelte';
-	import { t, BTN, DLG } from '$lib/services/i18n.svelte';
-	import { printPreview, printPdf, downloadPdf, closePreview } from '$lib/utils/printout';
+	import { t, BTN, DLG } from '#lib/services/i18n.svelte.js';
+	import { printPreview, printPdf, downloadPdf, closePreview } from '#lib/utils/printout.js';
 
 	const preview = $derived($printPreview);
 

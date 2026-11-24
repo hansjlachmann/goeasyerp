@@ -1,16 +1,16 @@
 <script lang="ts">
-	import Modal from '$lib/components/Modal.svelte';
+	import Modal from '#lib/components/Modal.svelte';
 	import CardPage from './CardPage.svelte';
-	import NavigationButtons from '$lib/components/NavigationButtons.svelte';
-	import type { PageDefinition } from '$lib/types/pages';
-	import type { LookupData } from '$lib/types/api';
-	import { api } from '$lib/services/api';
+	import NavigationButtons from '#lib/components/NavigationButtons.svelte';
+	import type { PageDefinition } from '#lib/types/pages.js';
+	import type { LookupData } from '#lib/types/api.js';
+	import { api } from '#lib/services/api.js';
 	import { onMount, untrack } from 'svelte';
-	import { getRecordId, getPrimaryKeyField } from '$lib/utils/recordHelpers';
-	import { cardTitle } from '$lib/utils/fieldHelpers';
-	import { createNavigationActions, canNavigatePrevious, canNavigateNext } from '$lib/utils/navigationHelpers';
-	import { withNavigationQuery, type NavigationQuery } from '$lib/utils/recordNavigation';
-	import { t, MODAL } from '$lib/services/i18n.svelte';
+	import { getRecordId, getPrimaryKeyField } from '#lib/utils/recordHelpers.js';
+	import { cardTitle } from '#lib/utils/fieldHelpers.js';
+	import { createNavigationActions, canNavigatePrevious, canNavigateNext } from '#lib/utils/navigationHelpers.js';
+	import { withNavigationQuery, type NavigationQuery } from '#lib/utils/recordNavigation.js';
+	import { t, MODAL } from '#lib/services/i18n.svelte.js';
 
 	interface Props {
 		open?: boolean;
@@ -32,7 +32,7 @@
 		// Moved to another record (Previous/Next): it is the saved state to compare edits with
 		onnavigate?: (record: Record<string, any>) => void;
 		// The list's FlowFilters (ISO): the card's FlowField drilldowns apply them
-		flowFilters?: import('$lib/types/api').TableFilter[];
+		flowFilters?: import('#lib/types/api.js').TableFilter[];
 	}
 
 	let {
