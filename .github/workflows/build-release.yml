@@ -386,6 +386,16 @@ jobs:
         if: ${{ !cancelled() }}
         working-directory: frontend
         run: node scripts/audit-server-packages.mjs
+      - name: Compose files are valid
+        # docker compose reads every compose file the way an installation does (a message with
+        # ": " in a ${VAR:?…} once broke docker-compose.prod.yml without any test noticing)
+        if: ${{ !cancelled() }}
+        run: |
+          printf 'APP_VERSION=ci\nJWT_SECRET=ci-check-only\nPOSTGRES_PASSWORD=ci-check-only\n' > "$RUNNER_TEMP/compose.env"
+          for f in docker-compose.yml docker-compose.prod.yml docker-compose.local.yml; do
+            echo "$f"
+            docker compose --env-file "$RUNNER_TEMP/compose.env" -f "$f" --profile apps config -q
+          done
 
   release:
     name: Release Please

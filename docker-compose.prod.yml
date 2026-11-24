@@ -13,7 +13,7 @@ services:
     environment:
       POSTGRES_USER: openerp
       # Only applied when the volume is created; to change it later see docs/operations.md
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in prod.env (openssl rand -hex 24; an existing database: docs/operations.md, Changing the database password)}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in prod.env - make one with openssl rand -hex 24, or for an existing database see docs/operations.md, Changing the database password}
       POSTGRES_DB: openerp
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -40,7 +40,7 @@ services:
       DB_HOST: db
       DB_PORT: 5432
       DB_USER: openerp
-      DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in prod.env (openssl rand -hex 24; an existing database: docs/operations.md, Changing the database password)}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in prod.env - make one with openssl rand -hex 24, or for an existing database see docs/operations.md, Changing the database password}
       DB_NAME: openerp
       # at most this many database connections at once (empty: 40; PostgreSQL allows 100)
       DB_MAX_CONNS: ${DB_MAX_CONNS:-}
