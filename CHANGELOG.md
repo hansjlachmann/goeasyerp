@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.186](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.185...v0.1.186) (2026-11-24)
+
+
+### Bug Fixes
+
+* failed logins lock the address, not the user; a known address always gets in ([0e536d2](https://github.com/hansjlachmann/goeasyerp/commit/0e536d29444e650bea5cd35e5a7f0ab0ecb4ba3c))
+
 ## [0.1.185](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.184...v0.1.185) (2026-11-24)
 
 
