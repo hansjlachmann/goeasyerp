@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.184](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.183...v0.1.184) (2026-11-24)
+
+
+### Miscellaneous
+
+* release 0.1.184 ([91738b9](https://github.com/hansjlachmann/goeasyerp/commit/91738b9fade8038394efde2907ff496bfbea63ff))
+
 ## [0.1.183](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.182...v0.1.183) (2026-11-24)
 
 
