@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.185](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.184...v0.1.185) (2026-11-24)
+
+
+### Bug Fixes
+
+* limits on database connections, list sizes and parallel routines ([e3fdfef](https://github.com/hansjlachmann/goeasyerp/commit/e3fdfef35b16b1fd8c369651cad1d194c09507a7))
+
 ## [0.1.184](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.183...v0.1.184) (2026-11-24)
 
 
