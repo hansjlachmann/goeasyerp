@@ -42,6 +42,7 @@ errors:
   ERR_SELECTION_TOO_MANY: "Mer enn %1 poster er merket: merk færre (filtrer listen først)."
   ERR_TOO_MANY_REQUESTS: "For mange forespørsler. Vent litt og prøv igjen."
   ERR_CROSS_SITE_REQUEST: "Forespørselen kom fra et annet nettsted og ble avvist. Åpne GoEasyERP direkte og prøv igjen."
+  ERR_TOO_MANY_JOBS: "Du har allerede %1 rutiner eller rapporter som kjører. Vent til en av dem er ferdig, eller lukk vinduet, og prøv igjen."
   ERR_INCONSISTENT: "Transaksjonen kan ikke fullføres fordi den ville etterlate inkonsistens i: %1. Ingenting ble lagret."
   ERR_POSTED_TABLE: "%1 skrives bare ved bokføring: postene kan ikke registreres, slettes eller gis nytt navn."
   ERR_GL_NOT_BALANCED: "Transaksjonen kan ikke fullføres fordi finanspostene ikke går i balanse: bilag %1 den %2 avviker med %3. Ingenting ble lagret."

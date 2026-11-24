@@ -42,6 +42,8 @@ services:
       DB_USER: openerp
       DB_PASSWORD: ${POSTGRES_PASSWORD:-openerp}
       DB_NAME: openerp
+      # at most this many database connections at once (empty: 40; PostgreSQL allows 100)
+      DB_MAX_CONNS: ${DB_MAX_CONNS:-}
       # the app builder's database role is made with it (the server itself works as the role goeasyerp)
       BUILDER_DB_PASSWORD: ${BUILDER_DB_PASSWORD:-}
       # The company the server enters at startup (empty: the first company; a new database: main)

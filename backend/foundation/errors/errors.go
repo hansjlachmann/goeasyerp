@@ -52,6 +52,7 @@ const (
 	ErrSelectionTooMany   ErrorCode = "ERR_SELECTION_TOO_MANY"
 	ErrTooManyRequests    ErrorCode = "ERR_TOO_MANY_REQUESTS"
 	ErrCrossSiteRequest   ErrorCode = "ERR_CROSS_SITE_REQUEST"
+	ErrTooManyJobs        ErrorCode = "ERR_TOO_MANY_JOBS"
 	ErrInconsistent       ErrorCode = "ERR_INCONSISTENT"
 	ErrPostedTable        ErrorCode = "ERR_POSTED_TABLE"
 	ErrGLNotBalanced      ErrorCode = "ERR_GL_NOT_BALANCED"
@@ -946,4 +947,9 @@ func TooManyRequests() *AppError {
 // acting with the user's session), refused
 func CrossSiteRequest() *AppError {
 	return &AppError{Code: ErrCrossSiteRequest}
+}
+
+// TooManyJobs: the user already runs as many routines and reports (limit) as one user may at once
+func TooManyJobs(limit int) *AppError {
+	return &AppError{Code: ErrTooManyJobs, Params: []string{strconv.Itoa(limit)}}
 }

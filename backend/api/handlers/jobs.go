@@ -172,11 +172,18 @@ func (h *JobsHandler) StartJob(c *fiber.Ctx) error {
 	// itself: it ends within syncWait without sending the browser anything. Otherwise (it asks
 	// something, opens a page, shows progress or a note, or takes longer) the browser follows
 	// the job by its ID, as for a run with progress.
+	// At most maxJobsPerUser runs of one user at once, maxRunningJobs on the server — more
+	// wait for a free slot (S33, jobs_limit.go)
+	if !runningJobs.admit(userID) {
+		return c.Status(fiber.StatusTooManyRequests).JSON(apitypes.NewErrorResponse(apperrors.TooManyJobs(maxJobsPerUser).Message(language)))
+	}
 	dialog := fcodeunits.OpenDialog("Processing...")
 	dialog.SetOwner(userID, company) // only this user, in this company, follows it
 	jobID := dialog.JobID()
 	done := make(chan jobOutcome, 1)
 	go func() {
+		runningJobs.start()
+		defer runningJobs.done(userID)
 		defer func() {
 			if r := recover(); r != nil {
 				done <- jobOutcome{err: fmt.Errorf("panic: %v", r)}

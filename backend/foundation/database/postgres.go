@@ -4,9 +4,40 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"strconv"
+	"time"
 
 	_ "github.com/lib/pq"
 )
+
+// The server's connection pool (S31): at most DefaultMaxConns connections at once (DB_MAX_CONNS),
+// so a burst of requests or long jobs waits for a free connection instead of using up
+// PostgreSQL's max_connections (100 by default) — which would refuse everybody, the scheduler,
+// the app builder, backups and psql included. Idle connections are kept for a while and closed
+// after IdleConnTime.
+const (
+	DefaultMaxConns  = 40
+	DefaultIdleConns = 10
+	IdleConnTime     = 5 * time.Minute
+)
+
+// MaxConnsFromEnv: DB_MAX_CONNS when it is a whole number from 2 up, else DefaultMaxConns (a
+// pool of one connection would hang a request that opens a transaction and reads beside it)
+func MaxConnsFromEnv() int {
+	n, err := strconv.Atoi(os.Getenv("DB_MAX_CONNS"))
+	if err != nil || n < 2 {
+		return DefaultMaxConns
+	}
+	return n
+}
+
+// limitPool sets the pool limits on a connection the server works with
+func limitPool(conn *sql.DB) {
+	maxConns := MaxConnsFromEnv()
+	conn.SetMaxOpenConns(maxConns)
+	conn.SetMaxIdleConns(min(DefaultIdleConns, maxConns))
+	conn.SetConnMaxIdleTime(IdleConnTime)
+}
 
 // PostgresConfig holds PostgreSQL connection configuration
 type PostgresConfig struct {
@@ -70,6 +101,7 @@ func CreatePostgresDatabase(config *PostgresConfig) (*Database, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to PostgreSQL: %w", err)
 	}
+	limitPool(conn)
 
 	// Test the connection
 	if err := conn.Ping(); err != nil {
@@ -109,6 +141,7 @@ func OpenPostgresDatabase(config *PostgresConfig) (*Database, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to PostgreSQL: %w", err)
 	}
+	limitPool(conn)
 
 	// Test the connection
 	if err := conn.Ping(); err != nil {

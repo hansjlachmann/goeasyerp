@@ -531,6 +531,14 @@ func (h *TablesHandler) GetOptions(c *fiber.Ctx) error {
 	return c.JSON(response)
 }
 
+// The most rows a list answers without a window (no limit/page_size) and the most keys /ids
+// answers (S30): the app's lists always ask for a window; /ids serves card navigation and
+// finding a record's window, keys only (about 10 MB at most)
+var (
+	maxUnwindowedRows = 10000
+	maxRecordIDs      = 200000
+)
+
 // GetRecordIDs returns only the IDs from a table (lightweight for navigation)
 // GET /api/tables/:table/ids
 func (h *TablesHandler) GetRecordIDs(c *fiber.Ctx) error {
@@ -568,7 +576,9 @@ func (h *TablesHandler) GetRecordIDs(c *fiber.Ctx) error {
 		return c.Status(400).JSON(apitypes.NewErrorResponse(err.Error()))
 	}
 
-	// Collect IDs (the full key, comma-separated for composite keys, as the frontend's getRecordId)
+	// Collect IDs (the full key, comma-separated for composite keys, as the frontend's getRecordId),
+	// at most maxRecordIDs (S30): one more is read to tell a cut-off answer (truncated)
+	table.SetPage(maxRecordIDs+1, 0)
 	ids := make([]string, 0)
 	if table.FindSet() {
 		for {
@@ -579,9 +589,14 @@ func (h *TablesHandler) GetRecordIDs(c *fiber.Ctx) error {
 			}
 		}
 	}
+	truncated := len(ids) > maxRecordIDs
+	if truncated {
+		ids = ids[:maxRecordIDs]
+	}
 
 	response := apitypes.NewSuccessResponse(map[string]interface{}{
-		"ids": ids,
+		"ids":       ids,
+		"truncated": truncated,
 	})
 	return c.JSON(response)
 }
@@ -780,8 +795,9 @@ func (h *TablesHandler) ListRecords(c *fiber.Ctx) error {
 	}
 
 	// Pagination window (opt-in): offset/limit (list page windows) or page/page_size.
-	// Then total is the full filtered count. Without either the entire result set is
-	// returned (small tables, callers that need every row).
+	// Then total is the full filtered count. Without either the result set is returned
+	// whole up to maxUnwindowedRows (S30: a million ledger entries as JSON would run the
+	// server out of memory); one more row is read to tell a cut-off answer (truncated).
 	const maxPageSize = 1000
 	offset := max(c.QueryInt("offset", 0), 0)
 	limit := min(max(c.QueryInt("limit", 0), 0), maxPageSize)
@@ -798,6 +814,8 @@ func (h *TablesHandler) ListRecords(c *fiber.Ctx) error {
 	if limit > 0 {
 		total = table.Count() // full filtered count, before applying the window
 		table.SetPage(limit, offset)
+	} else {
+		table.SetPage(maxUnwindowedRows+1, 0)
 	}
 
 	// Collect records (non-nil so an empty result serializes as [] rather than null,
@@ -808,6 +826,11 @@ func (h *TablesHandler) ListRecords(c *fiber.Ctx) error {
 		for table.Next() {
 			records = append(records, ftables.PublicMap(table))
 		}
+	}
+
+	truncated := limit == 0 && len(records) > maxUnwindowedRows
+	if truncated {
+		records = records[:maxUnwindowedRows]
 	}
 
 	// FlowFields for all rows at once (one grouped query per FlowField, not one query
@@ -870,6 +893,7 @@ func (h *TablesHandler) ListRecords(c *fiber.Ctx) error {
 		"page":      respPage,
 		"page_size": respPageSize,
 		"offset":    respOffset,
+		"truncated": truncated,
 	}, captions)
 	return c.JSON(response)
 }

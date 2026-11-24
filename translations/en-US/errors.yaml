@@ -42,6 +42,7 @@ errors:
   ERR_SELECTION_TOO_MANY: "More than %1 records are selected: select fewer (filter the list first)."
   ERR_TOO_MANY_REQUESTS: "Too many requests. Please wait a moment and try again."
   ERR_CROSS_SITE_REQUEST: "This request came from another web site and was refused. Open GoEasyERP directly and try again."
+  ERR_TOO_MANY_JOBS: "You already have %1 routines or reports running. Wait until one of them has finished, or close its window, and try again."
   ERR_INCONSISTENT: "The transaction cannot be completed because it would leave inconsistencies in: %1. Nothing was saved."
   ERR_POSTED_TABLE: "%1 is written by posting only: its records cannot be entered, deleted or renamed."
   ERR_GL_NOT_BALANCED: "The transaction cannot be completed because the G/L entries do not balance: document %1 on %2 is off by %3. Nothing was saved."

@@ -257,6 +257,14 @@ backend no longer has the right to make the builder's role (it logs how to make 
 `DB_KEEP_SUPERUSER=true` in the backend's environment leaves `DB_USER` as it is (development
 databases whose superuser password tests need).
 
+**Connections.** The backend opens at most 40 database connections at once (`DB_MAX_CONNS` in
+`prod.env`; PostgreSQL allows 100 by default). A burst of requests or long reports then waits
+for a free connection instead of using up PostgreSQL's connections, which would refuse
+everybody — the scheduler, the app builder, backups and psql included. Raise it together with
+PostgreSQL's `max_connections` only for many users at once. The same goes for routines and
+reports: a user runs at most 4 at once (a fifth is refused with a message), the server at most 16
+(more wait for a free one).
+
 ## Backups
 
 `scripts/backup.sh` dumps the database through the `db` container (`pg_dump -Fc`) into
