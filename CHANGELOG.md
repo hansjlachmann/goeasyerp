@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.183](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.182...v0.1.183) (2026-11-24)
+
+
+### CI/CD
+
+* the security scan also audits SvelteKit and adapter-node, which run in the frontend server ([c357dfc](https://github.com/hansjlachmann/goeasyerp/commit/c357dfc2e3931b8b4ebefd96fe82c38fe7f522cb))
+
 ## [0.1.182](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.181...v0.1.182) (2026-11-23)
 
 
