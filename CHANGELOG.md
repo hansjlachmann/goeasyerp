@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.187](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.186...v0.1.187) (2026-11-24)
+
+
+### Bug Fixes
+
+* the database password is required, and the trial script replaces openerp with a password of its own ([3b43549](https://github.com/hansjlachmann/goeasyerp/commit/3b43549e2c994bb77614e7f190e254a86b68f40e))
+
 ## [0.1.186](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.185...v0.1.186) (2026-11-24)
 
 
