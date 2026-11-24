@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.189](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.188...v0.1.189) (2026-11-24)
+
+
+### Bug Fixes
+
+* the certificate files belong to root, so nginx can read them without extra rights ([2a8f12f](https://github.com/hansjlachmann/goeasyerp/commit/2a8f12f6d78114a911166bfc462e2ea62e4f5eb9))
+
 ## [0.1.188](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.187...v0.1.188) (2026-11-24)
 
 
