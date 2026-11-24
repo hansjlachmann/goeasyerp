@@ -352,8 +352,9 @@ jobs:
     name: Security scan
     # Known vulnerabilities in the Go modules and the Go version the release images are built
     # with (golang:1.26-alpine: the latest 1.26 patch), and in the frontend's production
-    # dependencies. It does not hold the release back: a new advisory must not stop a fix from
-    # shipping — a red run here is the signal to update (Dependabot opens the pull requests).
+    # dependencies and the dev dependencies bundled into its server (SvelteKit, adapter-node).
+    # It does not hold the release back: a new advisory must not stop a fix from shipping — a
+    # red run here is the signal to update (Dependabot opens the pull requests).
     runs-on: ubuntu-24.04
     needs: changes
     if: needs.changes.outputs.release_only != 'true'
@@ -379,6 +380,12 @@ jobs:
         if: ${{ !cancelled() }}
         working-directory: frontend
         run: npm audit --omit=dev --audit-level=high
+      - name: npm audit (dev dependencies bundled into the server)
+        # SvelteKit and adapter-node are dev dependencies whose code runs in the frontend server:
+        # the step above never sees them (frontend/scripts/audit-server-packages.mjs)
+        if: ${{ !cancelled() }}
+        working-directory: frontend
+        run: node scripts/audit-server-packages.mjs
 
   release:
     name: Release Please
