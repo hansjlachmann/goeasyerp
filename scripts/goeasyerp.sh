@@ -7,9 +7,10 @@
 #
 # What it does, in the folder (default ~/goeasyerp, or GOEASYERP_DIR / the first argument):
 #   1. checks that Docker runs Linux containers and has "docker compose";
-#   2. keeps the settings in .env — a new installation gets a random JWT_SECRET; an older
-#      installation's docker-compose.yml gives its JWT_SECRET, port and ORIGIN (the secret also
-#      encrypts stored passwords, so it must never change);
+#   2. keeps the settings in .env — a new installation gets a random JWT_SECRET and database
+#      password; an older installation's docker-compose.yml gives its JWT_SECRET, port and ORIGIN
+#      (the secret also encrypts stored passwords, so it must never change), and its database
+#      gets a password of its own instead of the public "openerp" (after the backup);
 #   3. backs the database up into backups/ when GoEasyERP already runs;
 #   4. downloads the latest docker-compose.yml (the old one stays as docker-compose.yml.bak);
 #   5. docker compose pull, docker compose up -d, and waits until GoEasyERP answers.
@@ -101,6 +102,19 @@ if [ -n "$dropSecret" ]; then
 	cat .env.tmp >.env && rm -f .env.tmp
 fi
 
+# The database password (S6). A new installation gets a random one. An installation made before
+# has the public "openerp": the new one is set in the database first (after the backup below),
+# and written to .env only once the database has it.
+dbPassword=
+if [ -z "$(envValue POSTGRES_PASSWORD)" ]; then
+	dbPassword=$(od -An -tx1 -N24 /dev/urandom | tr -d ' \n')
+	if ! docker volume inspect goeasyerp_postgres_data >/dev/null 2>&1; then
+		add="${add}POSTGRES_PASSWORD='$dbPassword'
+"
+		dbPassword=
+	fi
+fi
+
 # The app builder's own database password (it may read and change its build tables only)
 if [ -z "$(envValue BUILDER_DB_PASSWORD)" ]; then
 	add="${add}BUILDER_DB_PASSWORD='$(od -An -tx1 -N24 /dev/urandom | tr -d ' \n')'
@@ -129,6 +143,7 @@ if [ -n "$newEnv" ]; then
 	cat >.env <<EOF
 # GoEasyERP settings, read by docker compose (docker-compose.yml in this folder).
 # Keep JWT_SECRET: it also encrypts stored passwords (SMTP Setup); a new one makes them unreadable.
+# POSTGRES_PASSWORD is the database's: to change it, change it in the database first.
 ${add}# The port GoEasyERP is opened on, and from where: 127.0.0.1 this computer only, 0.0.0.0 the network too
 #GOEASYERP_PORT=8000
 #GOEASYERP_BIND=127.0.0.1
@@ -151,6 +166,27 @@ if [ -f docker-compose.yml ] && [ -n "$(docker compose ps -q --status running db
 		fail "the backup failed; nothing was changed."
 	docker compose cp "db:/tmp/$file" "backups/$file" >/dev/null || fail "the backup could not be copied; nothing was changed."
 	docker compose exec -T db rm -f "/tmp/$file" </dev/null || true
+fi
+
+# --- The database's own password (an installation made before it had "openerp") -------------
+if [ -n "$dbPassword" ]; then
+	[ -f docker-compose.yml ] || fail "a GoEasyERP database exists, but there is no docker-compose.yml here: run this in the folder it was installed in, or put POSTGRES_PASSWORD=<its password> into .env."
+	say "Giving the database a password of its own (it had the one everybody knows) ..."
+	docker compose up -d db >/dev/null 2>&1 || fail "the database does not start; nothing was changed."
+	i=0
+	until docker compose exec -T db pg_isready -U openerp -q </dev/null; do
+		i=$((i + 1))
+		[ $i -lt 30 ] || fail "the database does not answer; nothing was changed."
+		sleep 2
+	done
+	# the role the server works as (goeasyerp); an installation from before it: still openerp
+	role=$(docker compose exec -T db psql -U openerp -d openerp -tA -c "SELECT CASE WHEN EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'goeasyerp') THEN 'goeasyerp' ELSE 'openerp' END" </dev/null) ||
+		fail "the database could not be read; nothing was changed."
+	role=$(printf '%s' "$role" | tr -d '\r\n ')
+	docker compose exec -T db psql -U openerp -d openerp -v ON_ERROR_STOP=1 -q -c "ALTER ROLE $role PASSWORD '$dbPassword'" </dev/null >/dev/null ||
+		fail "the database's password could not be set; nothing was changed."
+	printf "POSTGRES_PASSWORD='%s'\n" "$dbPassword" >>.env
+	say "The database has a new password (kept in .env)."
 fi
 
 upgrade=

@@ -7,9 +7,10 @@
 #
 # What it does, in the folder (default C:\GoEasyERP, or $env:GOEASYERP_DIR):
 #   1. checks that Docker Desktop runs Linux containers and has "docker compose";
-#   2. keeps the settings in .env - a new installation gets a random JWT_SECRET; an older
-#      installation's docker-compose.yml gives its JWT_SECRET, port and ORIGIN (the secret also
-#      encrypts stored passwords, so it must never change);
+#   2. keeps the settings in .env - a new installation gets a random JWT_SECRET and database
+#      password; an older installation's docker-compose.yml gives its JWT_SECRET, port and ORIGIN
+#      (the secret also encrypts stored passwords, so it must never change), and its database
+#      gets a password of its own instead of the public "openerp" (after the backup);
 #   3. backs the database up into backups\ when GoEasyERP already runs;
 #   4. downloads the latest docker-compose.yml (the old one stays as docker-compose.yml.bak);
 #   5. docker compose pull, docker compose up -d, and waits until GoEasyERP answers.
@@ -141,6 +142,22 @@ function Install-GoEasyERP {
         [System.IO.File]::WriteAllText($envFile, $text, $utf8)
     }
 
+    # The database password (S6). A new installation gets a random one. An installation made
+    # before has the public "openerp": the new one is set in the database first (after the
+    # backup below), and written to .env only once the database has it.
+    $dbPassword = $null
+    if (-not $envValues['POSTGRES_PASSWORD']) {
+        $bytes = New-Object byte[] 24
+        $rng = New-Object System.Security.Cryptography.RNGCryptoServiceProvider
+        $rng.GetBytes($bytes)
+        $rng.Dispose()
+        $dbPassword = ($bytes | ForEach-Object { $_.ToString('x2') }) -join ''
+        if (-not (Get-Docker volume inspect goeasyerp_postgres_data)) {
+            $add += "POSTGRES_PASSWORD='$dbPassword'`n"
+            $dbPassword = $null
+        }
+    }
+
     # The app builder's own database password (it may read and change its build tables only)
     if (-not $envValues['BUILDER_DB_PASSWORD']) {
         $bytes = New-Object byte[] 24
@@ -176,6 +193,7 @@ function Install-GoEasyERP {
     if (-not (Test-Path $envFile)) {
         $text = "# GoEasyERP settings, read by docker compose (docker-compose.yml in this folder).`n" +
             "# Keep JWT_SECRET: it also encrypts stored passwords (SMTP Setup); a new one makes them unreadable.`n" +
+            "# POSTGRES_PASSWORD is the database's: to change it, change it in the database first.`n" +
             $add +
             "# The port GoEasyERP is opened on, and from where: 127.0.0.1 this computer only, 0.0.0.0 the network too`n" +
             "#GOEASYERP_PORT=8000`n" +
@@ -206,6 +224,32 @@ function Install-GoEasyERP {
             throw 'the backup could not be copied; nothing was changed.'
         }
         Invoke-Docker compose exec -T db rm -f "/tmp/$file" | Out-Null
+    }
+
+    # --- The database's own password (an installation made before it had "openerp") -----------
+    if ($dbPassword) {
+        if (-not $upgrade) {
+            throw "a GoEasyERP database exists, but there is no docker-compose.yml in $dir`: run this for the folder it was installed in, or put POSTGRES_PASSWORD=<its password> into .env."
+        }
+        Write-Host 'Giving the database a password of its own (it had the one everybody knows) ...'
+        if ((Invoke-Docker compose up -d db) -ne 0) { throw 'the database does not start; nothing was changed.' }
+        $ready = $false
+        for ($i = 0; $i -lt 30; $i++) {
+            if ((Invoke-Docker compose exec -T db pg_isready -U openerp -q) -eq 0) { $ready = $true; break }
+            Start-Sleep -Seconds 2
+        }
+        if (-not $ready) { throw 'the database does not answer; nothing was changed.' }
+        # the role the server works as (goeasyerp); an installation from before it: still openerp
+        $role = Get-Docker compose exec -T db psql -U openerp -d openerp -tA -c "SELECT CASE WHEN EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'goeasyerp') THEN 'goeasyerp' ELSE 'openerp' END"
+        if ($role -ne 'goeasyerp' -and $role -ne 'openerp') { throw 'the database could not be read; nothing was changed.' }
+        if ((Invoke-Docker compose exec -T db psql -U openerp -d openerp -v ON_ERROR_STOP=1 -q -c "ALTER ROLE $role PASSWORD '$dbPassword'") -ne 0) {
+            throw "the database's password could not be set; nothing was changed."
+        }
+        $line = "POSTGRES_PASSWORD='$dbPassword'`n"
+        $existing = [System.IO.File]::ReadAllText($envFile)
+        if ($existing.Length -gt 0 -and -not $existing.EndsWith("`n")) { $line = "`n" + $line }
+        [System.IO.File]::AppendAllText($envFile, $line, $utf8)
+        Write-Host 'The database has a new password (kept in .env).'
     }
 
     # --- The compose file ---------------------------------------------------------------------

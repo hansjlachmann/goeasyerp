@@ -53,6 +53,10 @@ func main() {
 	if jwtWarning != "" {
 		log.Println(jwtWarning)
 	}
+	// A database password anyone knows (S6): warned for now, refused by a later release
+	if dbWarning := database.PasswordWarning(); dbWarning != "" {
+		log.Println(dbWarning)
+	}
 
 	// The installation's own builds of its extension apps: the bundle of this version runs
 	// instead of this program (or the server waits in maintenance until it is built)

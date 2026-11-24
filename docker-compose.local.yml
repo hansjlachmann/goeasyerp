@@ -7,8 +7,10 @@
 #
 # By hand:
 #   1. Save this file as docker-compose.yml in a folder of its own, e.g. C:\GoEasyERP
-#   2. Next to it create a file .env with the line  JWT_SECRET=<any long random text>
-#      (keep it: it also encrypts stored passwords) and, if wanted, GOEASYERP_PORT=8000,
+#   2. Next to it create a file .env with the lines  JWT_SECRET=<any long random text>
+#      (keep it: it also encrypts stored passwords) and POSTGRES_PASSWORD=<another long random
+#      text> (the database's password; it takes effect when the database is made — to change it
+#      later, change it in the database first), and, if wanted, GOEASYERP_PORT=8000,
 #      GOEASYERP_BIND=127.0.0.1 (0.0.0.0: other computers too) and
 #      GOEASYERP_ORIGIN=http://<computer name>:8000 (the address the users open)
 #   3. In that folder:  docker compose up -d
@@ -28,7 +30,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: openerp
-      POSTGRES_PASSWORD: openerp
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in the file .env next to docker-compose.yml - run the GoEasyERP install script again, it sets it}
       POSTGRES_DB: openerp
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -45,7 +47,7 @@ services:
       DB_HOST: db
       DB_PORT: 5432
       DB_USER: openerp
-      DB_PASSWORD: openerp
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in the file .env next to docker-compose.yml - run the GoEasyERP install script again, it sets it}
       DB_NAME: openerp
       # the app builder's database role is made with it (the server itself works as the role goeasyerp)
       BUILDER_DB_PASSWORD: ${BUILDER_DB_PASSWORD:-}
@@ -72,7 +74,7 @@ services:
       DB_PORT: 5432
       # its own role (BUILDER_DB_PASSWORD): the build tables only; without it the server's role
       DB_USER: ${BUILDER_DB_PASSWORD:+goeasyerp_builder}
-      DB_PASSWORD: ${BUILDER_DB_PASSWORD:-openerp}
+      DB_PASSWORD: ${BUILDER_DB_PASSWORD:-${POSTGRES_PASSWORD}}
       DB_NAME: openerp
       APP_BUILDS_DIR: /builds
     volumes:

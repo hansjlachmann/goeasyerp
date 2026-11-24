@@ -32,7 +32,7 @@ scripts/prod.sh pull && scripts/prod.sh up -d
 ```bash
 git clone https://github.com/hansjlachmann/goeasyerp.git ~/openerp && cd ~/openerp
 cp prod.env.example prod.env && chmod 600 prod.env
-# edit prod.env: APP_VERSION, JWT_SECRET (openssl rand -hex 32), POSTGRES_PASSWORD (a strong one),
+# edit prod.env: APP_VERSION, JWT_SECRET (openssl rand -hex 32), POSTGRES_PASSWORD (openssl rand -hex 24),
 #                BUILDER_DB_PASSWORD (openssl rand -hex 24)
 ./generate-cert.sh            # or put your own certificate into certs/
 scripts/prod.sh pull && scripts/prod.sh up -d
@@ -59,7 +59,7 @@ cp prod.env.example prod.env && chmod 600 prod.env
 # edit prod.env:
 #   APP_VERSION=<release to run>
 #   JWT_SECRET=<output of: openssl rand -hex 32>
-#   POSTGRES_PASSWORD=openerp                  # keep the current password for now
+#   POSTGRES_PASSWORD=openerp                  # the current one for now; change it afterwards (below)
 #   PUBLISH_HOST=127.0.0.1                     # see "Ports" below before closing the ports
 
 scripts/prod.sh pull && scripts/prod.sh up -d
@@ -309,20 +309,35 @@ scripts/prod.sh exec -T db dropdb -U openerp restore_test
 
 ## Changing the database password
 
-`POSTGRES_PASSWORD` is only applied when the volume is created. On an existing installation
-change it in the database first, then in `prod.env`, then restart:
+`POSTGRES_PASSWORD` is required (the compose file refuses to start without it) and is only
+applied when the database volume is created. Installations made before it was required run
+with `openerp`, which everyone can read in this repository: the backend logs "WARNING: the
+database password is "openerp" …" at every start, and a later release will refuse to start with
+it. Change it — the database first, then `prod.env`, then restart:
 
 ```bash
-scripts/prod.sh exec db psql -U openerp -d openerp -c "ALTER ROLE goeasyerp PASSWORD 'new-strong-password';"
-sed -i "s/^POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=new-strong-password/" prod.env
-scripts/prod.sh up -d                          # backend reconnects with the new password
+cd ~/openerp
+NEWPW=$(openssl rand -hex 24)
+scripts/prod.sh exec -T db psql -U openerp -d openerp -v ON_ERROR_STOP=1 -c "ALTER ROLE goeasyerp PASSWORD '$NEWPW';"
+sed -i "s/^POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=$NEWPW/" prod.env
+unset NEWPW
+scripts/prod.sh up -d                          # backend and builder reconnect with the new password
+scripts/prod.sh logs backend --since 5m | grep -iE "password|error"
 ```
+
+`psql -U openerp` works inside the database container only (it trusts local connections); the
+server's role is `goeasyerp` (Database roles). Without `ON_ERROR_STOP` a failed `ALTER ROLE`
+would go unnoticed and the new `prod.env` would lock the backend out.
 
 The app builder's password the same way: `ALTER ROLE goeasyerp_builder PASSWORD '…'`, then
 `BUILDER_DB_PASSWORD` in `prod.env`.
 
-If the backend logs a password error afterwards, the two do not match: fix `prod.env` and run
-`up -d` again.
+If the backend logs a password error afterwards, the two do not match: put the password the
+database has into `prod.env` and run `up -d` again.
+
+The one-computer trial does this by itself: its install script (`scripts/goeasyerp.sh` /
+`.ps1`) gives an installation that has no `POSTGRES_PASSWORD` in its `.env` a random one — set in
+the database first (after its backup), then written to `.env`.
 
 ## JWT secret
 

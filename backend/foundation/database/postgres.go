@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -187,4 +188,31 @@ func CreateOrOpenPostgresDatabase(config *PostgresConfig) (*Database, error) {
 
 	// If open failed, try to create
 	return CreatePostgresDatabase(config)
+}
+
+// knownPasswords are database passwords anyone can read in the repository's compose files and
+// docs (S6)
+var knownPasswords = []string{"openerp", "postgres", "password", "changeme"}
+
+// PasswordWarning: a warning when the server's database password (DB_PASSWORD) is one anyone
+// knows — empty without one, or on a development database (DB_KEEP_SUPERUSER, whose password
+// the tests use)
+func PasswordWarning() string {
+	if os.Getenv("DB_HOST") == "" || os.Getenv(EnvKeepSuperuser) == "true" {
+		return ""
+	}
+	return passwordWarning(os.Getenv("DB_PASSWORD"))
+}
+
+func passwordWarning(password string) string {
+	password = strings.TrimSpace(password)
+	if password == "" {
+		password = "openerp" // PostgresConfigFromEnv's default
+	}
+	for _, known := range knownPasswords {
+		if strings.EqualFold(password, known) {
+			return fmt.Sprintf("WARNING: the database password is %q, which everyone can read in GoEasyERP's files — anyone who reaches the database can read and change all data. Change it: docs/operations.md, \"Changing the database password\" (a later release will refuse to start with it)", known)
+		}
+	}
+	return ""
 }

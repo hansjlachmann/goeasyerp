@@ -30,8 +30,9 @@ After 2-3 minutes open http://localhost:8000 and create the first user.
 The script works in a folder of its own — `C:\GoEasyERP` on Windows, `~/goeasyerp` elsewhere
 (another one: `$env:GOEASYERP_DIR = 'D:\GoEasyERP'` before the line in PowerShell,
 `… | GOEASYERP_DIR=/srv/goeasyerp sh` in a shell). It checks that Docker runs Linux containers, keeps
-the settings in `.env` (a new installation gets a random `JWT_SECRET`; an installation made by hand
-with an older `docker-compose.yml` keeps its secret, port and address), backs the database up into
+the settings in `.env` (a new installation gets a random `JWT_SECRET` and database password; an
+installation made by hand with an older `docker-compose.yml` keeps its secret, port and address,
+and its database gets a password of its own instead of `openerp`), backs the database up into
 `backups/` when GoEasyERP already runs, downloads the latest `docker-compose.yml` (the old one stays
 as `docker-compose.yml.bak`), and starts GoEasyERP. Run the line again to upgrade.
 
@@ -51,9 +52,11 @@ sh goeasyerp.sh
 
 Without the script: save
 [`docker-compose.local.yml`](https://raw.githubusercontent.com/hansjlachmann/goeasyerp/main/docker-compose.local.yml)
-as `docker-compose.yml` in a folder of its own, create a file `.env` next to it with the line
-`JWT_SECRET=<any long random text>`, and run `docker compose up -d` in that folder. Upgrade: save
-the new file over it, then `docker compose pull` and `docker compose up -d`.
+as `docker-compose.yml` in a folder of its own, create a file `.env` next to it with the lines
+`JWT_SECRET=<any long random text>` and `POSTGRES_PASSWORD=<another long random text>`, and run
+`docker compose up -d` in that folder. Upgrade: save the new file over it, then `docker compose
+pull` and `docker compose up -d` (an installation from before `POSTGRES_PASSWORD` was required:
+run the script once, which changes the password in the database and keeps it in `.env`).
 
 Stop with `docker compose stop`, start again with `docker compose start` (in the folder). Never run
 `docker compose down -v`: it deletes the database. Keep `JWT_SECRET` in `.env`: it also encrypts
