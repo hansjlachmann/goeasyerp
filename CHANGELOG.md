@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.188](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.187...v0.1.188) (2026-11-24)
+
+
+### Bug Fixes
+
+* containers run without root rights they do not need; logs rotate; requests are limited to 8 MB ([ad7cf23](https://github.com/hansjlachmann/goeasyerp/commit/ad7cf23ac5abe15c31f585c4da083982c52c3550))
+* docker-compose.prod.yml is valid YAML again; CI checks every compose file ([b88ac4b](https://github.com/hansjlachmann/goeasyerp/commit/b88ac4bc1dc84562a3aaf01fcfbaf1e02c4243ae))
+
 ## [0.1.187](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.186...v0.1.187) (2026-11-24)
 
 
