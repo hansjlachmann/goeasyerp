@@ -234,6 +234,30 @@ time. `CORS_ORIGINS` (commas) lists other origins whose pages may call the API w
 session; empty (the default) allows none, which is right when the app is served from the same
 address as the API.
 
+## Containers and limits
+
+The compose files run every container with only the rights it needs:
+
+- **Users:** the backend runs as user 65532 and the frontend as `node`, not as root. postgres and
+  nginx start as root and change to their own users (`postgres`, `nginx`). The app builder still
+  runs as root.
+- **Capabilities:** every container drops all Linux capabilities. postgres gets back the five it
+  needs to change to its user (`CHOWN`, `DAC_OVERRIDE`, `FOWNER`, `SETUID`, `SETGID`). nginx gets
+  back `CHOWN`, `SETUID`, `SETGID` and `NET_BIND_SERVICE` (ports 80/443).
+- **No new privileges:** no container can gain rights through a setuid program
+  (`no-new-privileges`).
+- **Read-only file systems:** the backend, the frontend and (on the server) nginx have read-only
+  file systems, with `/tmp` and nginx's cache and pid directories in memory. The database keeps a
+  writable one, because the trial install script copies its backups out of `/tmp`.
+
+**Logs:** Docker keeps at most 5 files of 10 MB per container (`json-file`, rotated). Older lines
+are gone, so copy what you need with `docker compose logs <service> > file` in time.
+
+**Requests:** nginx and the backend refuse a request body over 8 MB (answer 413). The backend
+gives a client 2 minutes to send a request, and closes an idle connection after 2 minutes. Answers
+have no time limit, so long jobs and their progress streams are not cut off. nginx waits up to an
+hour for `/api` answers.
+
 ## Database roles
 
 The database image makes `openerp` (`POSTGRES_USER`) the database server's superuser: it could

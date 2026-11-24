@@ -113,5 +113,10 @@ ENV DB_USER=openerp
 ENV DB_PASSWORD=openerp
 ENV DB_NAME=openerp
 
+# Not root (S41): a code-execution bug in the server would otherwise be root in its container.
+# The server writes nothing in the image (its data is in the database, the app builds come
+# read-only from the builds volume), so the files stay root's.
+USER 65532:65532
+
 # Run the application
 CMD ["./api-server"]

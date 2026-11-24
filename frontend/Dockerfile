@@ -39,5 +39,8 @@ ENV PORT=3000
 ENV ORIGIN=http://localhost:3000
 ENV BODY_SIZE_LIMIT=5242880
 
+# Not root (S41): the node image's own user; the server only reads its files
+USER node
+
 # Run the application
 CMD ["node", "build"]

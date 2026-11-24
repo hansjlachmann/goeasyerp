@@ -6,9 +6,37 @@
 #   scripts/prod.sh up -d
 # Operations (upgrade, backup, restore, reboot): docs/operations.md
 
+# Every container's log is rotated: at most 5 files of 10 MB (S34; Docker keeps everything
+# otherwise, and a flood of requests fills the disk)
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
+# Containers without root rights they do not need (S41): no capabilities, no setuid
+# programs, a read-only file system with /tmp in memory (the backend and frontend images run as
+# users of their own too)
+x-hardened: &hardened
+  read_only: true
+  tmpfs:
+    - /tmp
+  cap_drop:
+    - ALL
+  security_opt:
+    - no-new-privileges:true
+
 services:
   db:
     image: postgres:16-alpine
+    logging: *logging
+    # postgres starts as root and changes to its own user: these five capabilities, nothing else
+    # (its file system stays writable — the install script copies backups out of its /tmp)
+    cap_drop:
+      - ALL
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETUID, SETGID]
+    security_opt:
+      - no-new-privileges:true
     restart: unless-stopped # start again after a host reboot
     environment:
       POSTGRES_USER: openerp
@@ -30,6 +58,8 @@ services:
     # With extension apps: the installation's own backend image (BACKEND_IMAGE in prod.env, built
     # by its installation repository); else the base release's
     image: ${BACKEND_IMAGE:-ghcr.io/hansjlachmann/goeasyerp/backend:${APP_VERSION:-latest}}
+    logging: *logging
+    <<: *hardened
     restart: unless-stopped
     ports:
       # Users go through nginx (80/443). Published on PUBLISH_HOST (default 127.0.0.1) for a
@@ -74,6 +104,9 @@ services:
   # Apps). Started only with the profile apps: COMPOSE_PROFILES=apps in prod.env
   builder:
     image: ghcr.io/hansjlachmann/goeasyerp/builder:${APP_VERSION:-latest}
+    logging: *logging
+    security_opt:
+      - no-new-privileges:true
     profiles: ["apps"]
     restart: unless-stopped
     environment:
@@ -94,6 +127,8 @@ services:
 
   frontend:
     image: ghcr.io/hansjlachmann/goeasyerp/frontend:${APP_VERSION:-latest}
+    logging: *logging
+    <<: *hardened
     restart: unless-stopped
     ports:
       - "${PUBLISH_HOST:-127.0.0.1}:3000:3000"
@@ -106,6 +141,18 @@ services:
   nginx:
     # a fixed nginx version (raise it for nginx security releases: 1.31.9 fixes the 2026-11 HTTP/2 flaws)
     image: nginx:1.31.9-alpine
+    logging: *logging
+    # the master process starts as root, binds 80/443 and runs its workers as the user nginx
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx
+      - /var/run
+      - /tmp
+    cap_drop:
+      - ALL
+    cap_add: [CHOWN, SETUID, SETGID, NET_BIND_SERVICE]
+    security_opt:
+      - no-new-privileges:true
     restart: unless-stopped
     ports:
       - "80:80"

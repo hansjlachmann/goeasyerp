@@ -8,6 +8,7 @@ import (
 	"net"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/recover"
@@ -82,8 +83,19 @@ func appConfig(trusted string) fiber.Config {
 		EnableTrustedProxyCheck: true,
 		TrustedProxies:          trustedProxies(trusted),
 		EnableIPValidation:      true,
+		// Request size and time (S34): the largest upload is a picture (6 MB) or an app package
+		// (2 MB, base64 in JSON); nginx allows the same (client_max_body_size 8m). A request must
+		// arrive within ReadTimeout and an idle keep-alive connection closes after IdleTimeout.
+		// No WriteTimeout: a job's progress stream (/api/jobs/:id/events) stays open while the
+		// job runs.
+		BodyLimit:   maxRequestBody,
+		ReadTimeout: 2 * time.Minute,
+		IdleTimeout: 2 * time.Minute,
 	}
 }
+
+// maxRequestBody: the largest request body the API takes
+const maxRequestBody = 8 << 20
 
 // NewServerFull creates a new API server with company initializer support
 func NewServerFull(db *sql.DB, dbType database.DBType, companyInit handlers.CompanyInitializer) *Server {
