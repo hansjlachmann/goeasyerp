@@ -75,6 +75,5 @@ func TestLoginDoesNotRevealUsers(t *testing.T) {
 	if inactive, _ := login("KARI", "secret1"); inactive == wrong {
 		t.Errorf("the right password of an inactive user: %q, want the inactive message", inactive)
 	}
-	logins.succeeded("NOBODY")
-	logins.succeeded("KARI")
+	logins = newLoginGuard() // the failures above must not lock or brake other tests
 }

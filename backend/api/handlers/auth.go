@@ -91,8 +91,10 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		return c.Status(500).JSON(apitypes.NewErrorResponse(apperrors.CompanyVerifyFailed().Message("en-US")))
 	}
 
-	// A user ID with too many failed logins waits (loginGuard), whatever the password
-	if logins.locked(requestBody.UserID) {
+	// A user ID with too many failed logins from this address, or braked after failures from
+	// everywhere, waits (loginGuard, S32), whatever the password
+	address := c.IP()
+	if logins.locked(requestBody.UserID, address) {
 		return c.Status(fiber.StatusTooManyRequests).JSON(apitypes.NewErrorResponse(apperrors.TooManyRequests().Message("en-US")))
 	}
 
@@ -104,18 +106,18 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	// only the right password learns that a user is not active
 	if !user.Get(types.NewCode(requestBody.UserID)) {
 		checkDummyPassword(requestBody.Password)
-		logins.failed(requestBody.UserID)
+		logins.failed(requestBody.UserID, address)
 		return c.Status(401).JSON(apitypes.NewErrorResponse(apperrors.InvalidCredentials().Message("en-US")))
 	}
 	if !tables.CheckPassword(&user, requestBody.Password) {
-		logins.failed(requestBody.UserID)
+		logins.failed(requestBody.UserID, address)
 		return c.Status(401).JSON(apitypes.NewErrorResponse(apperrors.InvalidCredentials().Message("en-US")))
 	}
 	if !user.Active {
-		logins.failed(requestBody.UserID)
+		logins.failed(requestBody.UserID, address)
 		return c.Status(401).JSON(apitypes.NewErrorResponse(apperrors.UserInactive().Message("en-US")))
 	}
-	logins.succeeded(requestBody.UserID)
+	logins.succeeded(requestBody.UserID, address)
 
 	// Check company access before proceeding (use canonical user ID from DB, not raw input)
 	allowed, _ := h.userHasCompanyAccess(user.User_id.String(), company)

@@ -206,8 +206,11 @@ nginx pointing at `localhost:3000`). Set `PUBLISH_HOST=0.0.0.0` only if a proxy 
 machine** connects to them. To see what connects, check the tunnel/proxy configuration and
 `sudo ss -tnp | grep -E ':(3000|8080)'` while the system is in use.
 
-**Client addresses and logins:** the backend limits login attempts per client address and per
-user ID (10 failed logins in 15 minutes lock the user ID for 15 minutes). It takes the client's
+**Client addresses and logins:** the backend limits login attempts per client address and per user
+ID: 10 failed logins of a user ID from one address within 15 minutes lock that address for that
+user ID for 15 minutes; after 10 failed logins of a user ID from anywhere, each further attempt
+waits a little longer (1, 2, 4 … up to 60 seconds) — except from an address the user has logged in
+from before, so others' guessing never locks a user out of their usual place. It takes the client's
 address from `X-Forwarded-For` only on connections from a trusted proxy — `TRUSTED_PROXIES` in
 prod.env (addresses or CIDR ranges; empty: loopback and the private ranges, where the compose
 file's nginx runs). nginx overwrites the header with the address it sees, so a client cannot send
