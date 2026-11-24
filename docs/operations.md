@@ -89,6 +89,16 @@ release that raises it (an nginx security fix) says so in its notes. After `git 
 `scripts/prod.sh pull && scripts/prod.sh up -d` starts the new nginx; check it with
 `scripts/prod.sh exec nginx nginx -v`.
 
+**Certificate files (from 0.1.188):** nginx's master process runs without the capability that lets
+root read other users' files, so `certs/` must be readable by root as owner. A key owned by your
+user with mode 600 stops nginx with "cannot load certificate key … Permission denied". Before the
+first upgrade to 0.1.188 or later, and after every certificate renewal:
+
+```bash
+sudo chown root:root certs/*
+scripts/prod.sh up -d
+```
+
 **Rollback:** set the previous `APP_VERSION` and `pull` + `up -d`. If a migration changed data in a
 way the old version cannot read, restore the backup taken before the upgrade (see below).
 
@@ -249,6 +259,8 @@ The compose files run every container with only the rights it needs:
 - **Read-only file systems:** the backend, the frontend and (on the server) nginx have read-only
   file systems, with `/tmp` and nginx's cache and pid directories in memory. The database keeps a
   writable one, because the trial install script copies its backups out of `/tmp`.
+  nginx's master has no capability to read files of other users: the files in `certs/` must
+  belong to root (see "Certificate files" under Upgrading).
 
 **Logs:** Docker keeps at most 5 files of 10 MB per container (`json-file`, rotated). Older lines
 are gone, so copy what you need with `docker compose logs <service> > file` in time.

@@ -19,6 +19,14 @@ openssl req -x509 -nodes -days 3650 \
   -subj "/C=NO/ST=Internal/L=Internal/O=GoEasyERP/CN=$IP" \
   -addext "subjectAltName=IP:$IP,IP:127.0.0.1"
 
+# nginx reads the key as root without the right to read other users' files: root must own them
+if [ "$(id -u)" -eq 0 ]; then
+  chown root:root "$CERT_DIR/selfsigned.key" "$CERT_DIR/selfsigned.crt"
+else
+  echo "Giving the certificate files to root (nginx reads them as root):"
+  sudo chown root:root "$CERT_DIR/selfsigned.key" "$CERT_DIR/selfsigned.crt"
+fi
+
 echo "Certificate generated:"
 echo "  $CERT_DIR/selfsigned.crt"
 echo "  $CERT_DIR/selfsigned.key"
