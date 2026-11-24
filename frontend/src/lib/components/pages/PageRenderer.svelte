@@ -1279,6 +1279,7 @@
 />
 
 <style>
+	@reference '../../../app.css';
 	.matrix-page {
 		padding: 1rem 1.5rem;
 	}

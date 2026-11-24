@@ -120,6 +120,7 @@
 </div>
 
 <style>
+	@reference '../../app.css';
 	.request-filters {
 		@apply space-y-2;
 	}
@@ -146,7 +147,7 @@
 	}
 
 	.remove-filter-icon {
-		@apply p-0.5 rounded hover:bg-gray-200;
+		@apply p-0.5 rounded-sm hover:bg-gray-200;
 		@apply text-gray-400;
 	}
 
@@ -157,10 +158,10 @@
 
 	.filter-expression-input {
 		@apply w-full px-3 py-2 text-sm;
-		@apply border border-gray-300 rounded;
+		@apply border border-gray-300 rounded-sm;
 		@apply bg-surface;
 		@apply text-gray-900;
-		@apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+		@apply focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent;
 	}
 
 	:global(.dark) .filter-expression-input {
@@ -177,7 +178,7 @@
 		@apply flex items-center gap-2 px-3 py-1.5 text-left;
 		@apply text-sm text-blue-600;
 		@apply hover:bg-blue-50;
-		@apply rounded transition-colors;
+		@apply rounded-sm transition-colors;
 	}
 
 	:global(.dark) .add-filter-btn {
@@ -187,10 +188,10 @@
 
 	.field-selector-inline {
 		@apply w-full px-3 py-2 text-sm;
-		@apply border border-blue-500 rounded;
+		@apply border border-blue-500 rounded-sm;
 		@apply bg-surface;
 		@apply text-gray-900;
-		@apply focus:outline-none focus:ring-2 focus:ring-blue-500;
+		@apply focus:outline-hidden focus:ring-2 focus:ring-blue-500;
 	}
 
 	:global(.dark) .field-selector-inline {

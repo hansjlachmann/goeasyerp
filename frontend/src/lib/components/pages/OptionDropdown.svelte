@@ -217,6 +217,7 @@
 </div>
 
 <style>
+	@reference '../../../app.css';
 	.option-dropdown {
 		position: relative;
 		width: 100%;
@@ -226,7 +227,7 @@
 		@apply w-full px-3 py-2 pr-8 text-left bg-surface border border-gray-300 rounded-md;
 		@apply text-gray-900 text-base cursor-pointer;
 		@apply transition-all duration-150;
-		@apply outline-none;
+		@apply outline-hidden;
 		@apply flex items-center justify-between;
 		min-height: 2.5rem;
 		position: relative;
@@ -316,7 +317,7 @@
 		width: max-content; /* the longest option on one line */
 		max-height: 300px;
 		margin-top: 2px;
-		@apply bg-surface border border-gray-300 rounded shadow-lg;
+		@apply bg-surface border border-gray-300 rounded-sm shadow-lg;
 		overflow: hidden;
 	}
 

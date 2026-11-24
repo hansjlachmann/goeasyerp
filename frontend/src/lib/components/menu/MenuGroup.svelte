@@ -37,7 +37,7 @@
 {#if isFlatItem}
 	<!-- Flat menu item - direct link, no dropdown -->
 	<button
-		class="menu-button px-4 py-2 hover:bg-appbar-fg/10 rounded transition-colors flex items-center gap-2"
+		class="menu-button px-4 py-2 hover:bg-appbar-fg/10 rounded-sm transition-colors flex items-center gap-2"
 		onclick={handleFlatItemClick}
 	>
 		{#if group.icon}
@@ -49,7 +49,7 @@
 	<!-- Grouped menu item - has dropdown -->
 	<div class="menu-group relative" use:clickOutside={{ callback: closeMenu, enabled: isOpen }}>
 		<button
-			class="menu-button px-4 py-2 hover:bg-appbar-fg/10 rounded transition-colors flex items-center gap-2"
+			class="menu-button px-4 py-2 hover:bg-appbar-fg/10 rounded-sm transition-colors flex items-center gap-2"
 			onclick={toggleMenu}
 		>
 			{#if group.icon}
@@ -100,6 +100,7 @@
 {/if}
 
 <style>
+	@reference '../../../app.css';
 	.menu-group {
 		@apply relative;
 	}
@@ -124,7 +125,7 @@
 	}
 
 	.menu-item {
-		@apply border-none outline-none;
+		@apply border-none outline-hidden;
 	}
 
 	.menu-item:first-child {

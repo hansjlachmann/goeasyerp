@@ -627,12 +627,13 @@
 />
 
 <style>
+	@reference '../../../app.css';
 	.totals-title {
 		margin-top: 1rem;
 	}
 
 	.filter-pane {
-		@apply w-80 flex-shrink-0;
+		@apply w-80 shrink-0;
 	}
 
 	.filter-header {
@@ -648,7 +649,7 @@
 	}
 
 	.close-btn {
-		@apply p-1 rounded hover:bg-gray-100;
+		@apply p-1 rounded-sm hover:bg-gray-100;
 		@apply text-gray-600;
 		@apply transition-colors;
 	}
@@ -680,7 +681,7 @@
 	}
 
 	.view-item {
-		@apply w-full flex items-center gap-2 px-3 py-2 text-left rounded;
+		@apply w-full flex items-center gap-2 px-3 py-2 text-left rounded-sm;
 		@apply text-sm text-blue-600;
 		@apply hover:bg-blue-50;
 		@apply transition-colors;
@@ -720,10 +721,10 @@
 
 	.rename-input {
 		@apply w-full px-2 py-1 text-sm;
-		@apply border border-blue-500 rounded;
+		@apply border border-blue-500 rounded-sm;
 		@apply bg-surface;
 		@apply text-gray-900;
-		@apply focus:outline-none focus:ring-2 focus:ring-blue-500;
+		@apply focus:outline-hidden focus:ring-2 focus:ring-blue-500;
 	}
 
 	:global(.dark) .rename-input {
@@ -732,7 +733,7 @@
 	}
 
 	.preset-menu-btn {
-		@apply p-1 rounded opacity-0;
+		@apply p-1 rounded-sm opacity-0;
 		@apply hover:bg-gray-200;
 		@apply text-gray-500;
 		@apply transition-opacity;
@@ -817,7 +818,7 @@
 	}
 
 	.remove-filter-icon {
-		@apply p-0.5 rounded hover:bg-gray-200;
+		@apply p-0.5 rounded-sm hover:bg-gray-200;
 		@apply text-gray-400;
 		@apply opacity-0 hover:opacity-100;
 	}
@@ -833,10 +834,10 @@
 
 	.filter-expression-input {
 		@apply w-full px-3 py-2 text-sm;
-		@apply border border-gray-300 rounded;
+		@apply border border-gray-300 rounded-sm;
 		@apply bg-surface;
 		@apply text-gray-900;
-		@apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+		@apply focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent;
 	}
 
 	:global(.dark) .filter-expression-input {
@@ -853,7 +854,7 @@
 		@apply flex items-center gap-2 px-3 py-2 text-left;
 		@apply text-sm text-blue-600;
 		@apply hover:bg-blue-50;
-		@apply rounded transition-colors;
+		@apply rounded-sm transition-colors;
 	}
 
 	:global(.dark) .add-filter-btn {
@@ -863,10 +864,10 @@
 
 	.field-selector-inline {
 		@apply w-full px-3 py-2 text-sm;
-		@apply border border-blue-500 rounded;
+		@apply border border-blue-500 rounded-sm;
 		@apply bg-surface;
 		@apply text-gray-900;
-		@apply focus:outline-none focus:ring-2 focus:ring-blue-500;
+		@apply focus:outline-hidden focus:ring-2 focus:ring-blue-500;
 	}
 
 	:global(.dark) .field-selector-inline {
@@ -884,7 +885,7 @@
 	}
 
 	.filter-help code {
-		@apply px-1 py-0.5 bg-gray-100 rounded;
+		@apply px-1 py-0.5 bg-gray-100 rounded-sm;
 		@apply text-xs font-mono;
 	}
 

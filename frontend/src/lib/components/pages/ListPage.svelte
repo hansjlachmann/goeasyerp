@@ -3809,7 +3809,7 @@
 							<td class="row-number-cell">{windowOffset + index + 1}</td>
 						{/if}
 						{#each visibleColumns() as field, colIndex}
-							<td data-cursor-col={colIndex} class={cn('p-0 border-r border-b border-gray-300 dark:border-gray-600', isDecimalType(fieldTypes[field.source]) && 'amount', isNumberType(fieldTypes[field.source]) && 'numeric', isNavigation && !multiSelected && selectedIndex === index && cursorColumn() === colIndex && 'cell-cursor')}>
+							<td data-cursor-col={colIndex} class={cn('p-0 border-r border-b border-gray-200 dark:border-gray-700', isDecimalType(fieldTypes[field.source]) && 'amount', isNumberType(fieldTypes[field.source]) && 'numeric', isNavigation && !multiSelected && selectedIndex === index && cursorColumn() === colIndex && 'cell-cursor')}>
 								{#if isCellEditing && currentCellRow === index && currentCellCol === colIndex}
 									<!-- Cell-Editing Mode - Active input for this specific cell -->
 									{#if typeof record[field.source] === 'boolean' || fieldTypes[field.source] === 'bool'}
@@ -4160,7 +4160,7 @@
 							<td class="row-number-cell"></td>
 						{/if}
 						{#each visibleColumns() as _field}
-							<td class="p-0 border-r border-b border-gray-300 dark:border-gray-600">
+							<td class="p-0 border-r border-b border-gray-200 dark:border-gray-700">
 								<div class="read-cell-content"></div>
 							</td>
 						{/each}
@@ -4329,25 +4329,25 @@
 		<div class="p-6">
 			<div class="flex items-start gap-4">
 				{#if dialogData.type === 'info'}
-					<div class="flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+					<div class="shrink-0 w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
 						<svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 						</svg>
 					</div>
 				{:else if dialogData.type === 'success'}
-					<div class="flex-shrink-0 w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+					<div class="shrink-0 w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
 						<svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
 						</svg>
 					</div>
 				{:else if dialogData.type === 'warning'}
-					<div class="flex-shrink-0 w-10 h-10 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
+					<div class="shrink-0 w-10 h-10 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
 						<svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
 						</svg>
 					</div>
 				{:else if dialogData.type === 'error'}
-					<div class="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+					<div class="shrink-0 w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
 						<svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
 						</svg>
@@ -4360,7 +4360,7 @@
 			</div>
 			<div class="mt-6 flex justify-end">
 				<button
-					class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+					class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
 					onclick={closeDialog}
 				>
 					{t(BTN.OK)}
@@ -4371,6 +4371,7 @@
 {/if}
 
 <style>
+	@reference '../../../app.css';
 	.list-page {
 		@apply flex flex-col gap-4;
 		height: calc(100vh - 180px); /* Account for menu, breadcrumb, padding */
@@ -4753,7 +4754,7 @@
 		font-variant-numeric: tabular-nums;
 	}
 	.status-bar {
-		@apply px-4 py-2 bg-gray-50 border-t border-gray-200 rounded-b;
+		@apply px-4 py-2 bg-gray-50 border-t border-gray-200 rounded-b-sm;
 	}
 
 	:global(.dark) .status-bar {
@@ -4939,7 +4940,7 @@
 	.search-input {
 		@apply pl-9 pr-8 py-1.5 text-sm rounded-md border border-gray-300;
 		@apply bg-surface text-gray-900;
-		@apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+		@apply focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
 		width: 200px;
 		transition: width 0.2s ease;
 	}
@@ -4968,7 +4969,7 @@
 	}
 
 	.clear-search-btn {
-		@apply absolute right-2 p-0.5 rounded text-gray-400 hover:text-gray-600;
+		@apply absolute right-2 p-0.5 rounded-sm text-gray-400 hover:text-gray-600;
 		@apply hover:bg-gray-100 transition-colors;
 	}
 

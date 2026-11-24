@@ -14,6 +14,7 @@
 </div>
 
 <style>
+	@reference '../../../app.css';
 	.page-container {
 		@apply h-full w-full p-6;
 	}

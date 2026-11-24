@@ -122,9 +122,10 @@
 {/if}
 
 <style>
+	@reference '../../app.css';
 	.modal-backdrop {
 		@apply fixed inset-0 z-50 flex items-center justify-center;
-		@apply bg-black/50 backdrop-blur-sm;
+		@apply bg-black/50 backdrop-blur-xs;
 		@apply p-4;
 	}
 

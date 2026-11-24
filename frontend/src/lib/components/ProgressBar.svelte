@@ -84,6 +84,7 @@
 </div>
 
 <style>
+	@reference '../../app.css';
 	.progress-container {
 		@apply flex items-center gap-2;
 	}

@@ -306,6 +306,7 @@
 </Modal>
 
 <style>
+	@reference '../../../app.css';
 	.modal-header {
 		@apply flex items-center justify-between px-6 py-4;
 		@apply border-b border-gray-200;
@@ -331,7 +332,7 @@
 	}
 
 	.control-btn {
-		@apply p-2 rounded;
+		@apply p-2 rounded-sm;
 		@apply text-gray-600;
 		@apply transition-colors;
 	}

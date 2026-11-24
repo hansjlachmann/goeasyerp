@@ -64,6 +64,7 @@
 </div>
 
 <style>
+	@reference '../../../app.css';
 	.skeleton-page {
 		@apply flex flex-col h-full gap-4;
 	}
@@ -128,7 +129,7 @@
 	}
 
 	.skeleton-status {
-		@apply px-4 py-2 bg-gray-50 border-t border-gray-200 rounded-b;
+		@apply px-4 py-2 bg-gray-50 border-t border-gray-200 rounded-b-sm;
 	}
 
 	:global(.dark) .skeleton-status {

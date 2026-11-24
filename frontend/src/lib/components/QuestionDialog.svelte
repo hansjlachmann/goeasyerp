@@ -38,6 +38,7 @@
 </Modal>
 
 <style>
+	@reference '../../app.css';
 	.question {
 		@apply p-5;
 		min-width: min(28rem, calc(100vw - 2rem));

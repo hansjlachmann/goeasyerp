@@ -371,6 +371,7 @@
 </div>
 
 <style>
+	@reference '../../../app.css';
 	.period-grid {
 		display: flex;
 		flex-direction: column;

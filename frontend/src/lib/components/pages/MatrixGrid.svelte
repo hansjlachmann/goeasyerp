@@ -600,6 +600,7 @@
 <ObjectRunner bind:this={runner} ondone={(refresh) => { if (refresh) load(); }} />
 
 <style>
+	@reference '../../../app.css';
 	.matrix {
 		display: flex;
 		flex-direction: column;

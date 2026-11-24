@@ -1,10 +1,13 @@
 import adapter from '@sveltejs/adapter-node';
 import { sveltekit } from '@sveltejs/kit/vite';
+import tailwindcss from '@tailwindcss/vite';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
 	plugins: [
+		// Tailwind CSS 4 (its theme is in src/app.css)
+		tailwindcss(),
 		// SvelteKit's configuration (SvelteKit 3: here, no svelte.config.js)
 		sveltekit({
 			preprocess: vitePreprocess(),

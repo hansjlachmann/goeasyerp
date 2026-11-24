@@ -1,9 +1,88 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+/* Tailwind's colors are the theme's CSS variables (RGB triplets, defined below), so a theme
+   (src/lib/theme) changes every gray/blue/primary class at run time; `inline` makes the
+   classes read the variables where they are used, not their values on :root. Opacity modifiers
+   (bg-gray-900/50) work on them through color-mix(). Fonts: the font-sans and font-mono
+   classes read --font-sans / --font-mono, set below and by Appearance.
+   Neutrals (--gray-N): each step serves its light-mode role (text/borders on white) and its
+   dark-mode role (surfaces/borders/text on the dark page):
+     50  light: secondary bg, dark: primary text   100 light: hover background
+     200 light: neutral tile, borders              300 light: divider
+     400 dark: secondary text                      500 muted text
+     600 light: secondary text                     700 dark: separators, inputs
+     800 dark: raised surface                      900 dark: page background
+   Accent (--accent-N): 400 = dark-mode links, 500 = tiles and main actions, 600 =
+   light-mode links/actions, 900 = dark-mode notification bar. */
+@theme inline {
+	--color-gray-50: rgb(var(--gray-50));
+	--color-gray-100: rgb(var(--gray-100));
+	--color-gray-200: rgb(var(--gray-200));
+	--color-gray-300: rgb(var(--gray-300));
+	--color-gray-400: rgb(var(--gray-400));
+	--color-gray-500: rgb(var(--gray-500));
+	--color-gray-600: rgb(var(--gray-600));
+	--color-gray-700: rgb(var(--gray-700));
+	--color-gray-800: rgb(var(--gray-800));
+	--color-gray-900: rgb(var(--gray-900));
+	--color-gray-950: rgb(var(--gray-950));
+	--color-blue-50: rgb(var(--accent-50));
+	--color-blue-100: rgb(var(--accent-100));
+	--color-blue-200: rgb(var(--accent-200));
+	--color-blue-300: rgb(var(--accent-300));
+	--color-blue-400: rgb(var(--accent-400));
+	--color-blue-500: rgb(var(--accent-500));
+	--color-blue-600: rgb(var(--accent-600));
+	--color-blue-700: rgb(var(--accent-700));
+	--color-blue-800: rgb(var(--accent-800));
+	--color-blue-900: rgb(var(--accent-900));
+	--color-blue-950: rgb(var(--accent-950));
+	--color-primary-50: rgb(var(--accent-50));
+	--color-primary-100: rgb(var(--accent-100));
+	--color-primary-200: rgb(var(--accent-200));
+	--color-primary-300: rgb(var(--accent-300));
+	--color-primary-400: rgb(var(--accent-400));
+	--color-primary-500: rgb(var(--accent-500));
+	--color-primary-600: rgb(var(--accent-600));
+	--color-primary-700: rgb(var(--accent-700));
+	--color-primary-800: rgb(var(--accent-800));
+	--color-primary-900: rgb(var(--accent-900));
+	--color-primary-950: rgb(var(--accent-950));
+	--color-surface: rgb(var(--surface)); /* panels, cards, dropdowns (light mode: white) */
+	--color-page: rgb(var(--page-bg)); /* page background */
+	--color-fg: rgb(var(--fg)); /* body text */
+	--color-heading: rgb(var(--heading)); /* page and section titles (light mode) */
+	--color-appbar: rgb(var(--appbar)); /* app bar */
+	--color-appbar-fg: rgb(var(--appbar-fg));
+}
+
+/* Dark mode by the class on <html> (stores/theme.ts), not the system setting */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Tailwind 3's defaults the components were written for: borders in the light gray (not the
+   text color), placeholders in gray, buttons with the pointer */
+@layer base {
+	*,
+	::after,
+	::before,
+	::backdrop,
+	::file-selector-button {
+		border-color: var(--color-gray-200, currentColor);
+	}
+
+	input::placeholder,
+	textarea::placeholder {
+		color: var(--color-gray-400);
+	}
+
+	button:not(:disabled),
+	[role='button']:not(:disabled) {
+		cursor: pointer;
+	}
+}
 
 /* Color tokens: RGB triplets, used as rgb(var(--x)) or rgb(var(--x) / alpha) and by the
-   Tailwind colors (tailwind.config.js). The defaults are the GoEasyERP brand colours (themes
+   Tailwind colors (@theme above). The defaults are the GoEasyERP brand colours (themes
    GoEasyERP Light/Dark, backend/foundation/themes/tokens.go — kept equal by
    TestDefaultTokensMatchAppCSS); a theme (src/lib/theme) overrides them on <html>. Keep
    component colors on these variables. */
@@ -106,7 +185,7 @@
 
 	/* Disable default focus for mouse users */
 	*:focus:not(:focus-visible) {
-		@apply outline-none;
+		@apply outline-hidden;
 	}
 }
 
@@ -114,8 +193,8 @@
 	/* button - flat, minimal design */
 	.btn {
 		@apply inline-flex items-center px-4 py-2 font-medium transition-colors;
-		@apply border border-transparent rounded;
-		@apply focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+		@apply border border-transparent rounded-sm;
+		@apply focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2;
 		@apply disabled:opacity-50 disabled:cursor-not-allowed;
 	}
 
@@ -146,8 +225,8 @@
 
 	/* input */
 	.input {
-		@apply w-full px-3 py-2 border border-gray-300 rounded;
-		@apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+		@apply w-full px-3 py-2 border border-gray-300 rounded-sm;
+		@apply focus:outline-hidden focus:ring-2 focus:ring-primary-500 focus:border-transparent;
 		@apply disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed;
 	}
 
@@ -168,7 +247,7 @@
 
 	/* Card component */
 	.card {
-		@apply bg-surface rounded-lg shadow-sm border border-gray-200;
+		@apply bg-surface rounded-lg shadow-xs border border-gray-200;
 	}
 
 	.dark .card {

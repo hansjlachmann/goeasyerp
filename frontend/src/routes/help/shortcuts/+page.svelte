@@ -37,7 +37,7 @@
 		<button
 			type="button"
 			onclick={close}
-			class="text-sm px-3 py-1.5 rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+			class="text-sm px-3 py-1.5 rounded-sm border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
 		>
 			{t(HELP.CLOSE)}
 		</button>

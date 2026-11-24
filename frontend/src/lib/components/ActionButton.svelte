@@ -37,6 +37,7 @@
 </button>
 
 <style>
+	@reference '../../app.css';
 	/* One size for every action button; no border (the hover stays as on all buttons) */
 	.action-btn {
 		@apply h-8 px-2.5 py-0 gap-1.5 text-sm;

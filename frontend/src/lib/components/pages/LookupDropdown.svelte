@@ -606,6 +606,7 @@
 {/if}
 
 <style>
+	@reference '../../../app.css';
 	.new-pick-page {
 		height: 70vh;
 		display: flex;
@@ -631,7 +632,7 @@
 		opacity: 0.6;
 	}
 	.lookup-new-btn {
-		@apply flex items-center gap-1 px-2 py-1 text-sm rounded text-blue-600 hover:bg-blue-50;
+		@apply flex items-center gap-1 px-2 py-1 text-sm rounded-sm text-blue-600 hover:bg-blue-50;
 	}
 
 	:global(.dark) .lookup-new-btn {
@@ -643,8 +644,8 @@
 	}
 
 	.lookup-input {
-		@apply w-full px-2 py-1 pr-8 text-left bg-surface border border-gray-300 rounded;
-		@apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+		@apply w-full px-2 py-1 pr-8 text-left bg-surface border border-gray-300 rounded-sm;
+		@apply focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
 		@apply disabled:opacity-50 disabled:cursor-not-allowed;
 		min-height: 2rem;
 		font-size: 0.875rem;
@@ -664,7 +665,7 @@
 		@apply absolute right-0 top-0 bottom-0 px-2;
 		@apply flex items-center justify-center;
 		@apply bg-transparent border-none cursor-pointer;
-		@apply hover:bg-gray-100 rounded-r;
+		@apply hover:bg-gray-100 rounded-r-sm;
 		@apply disabled:opacity-50 disabled:cursor-not-allowed;
 	}
 
@@ -722,7 +723,7 @@
 		min-width: 100%;
 		max-height: 300px;
 		margin-top: 2px;
-		@apply bg-surface border border-gray-300 rounded shadow-lg;
+		@apply bg-surface border border-gray-300 rounded-sm shadow-lg;
 		overflow: hidden;
 	}
 

@@ -1144,6 +1144,7 @@
 {/if}
 
 <style>
+	@reference '../../../app.css';
 	.card-tip {
 		@apply mb-3;
 	}
@@ -1326,7 +1327,7 @@
 	}
 
 	.error-icon {
-		@apply w-5 h-5 text-red-600 flex-shrink-0;
+		@apply w-5 h-5 text-red-600 shrink-0;
 	}
 
 	:global(.dark) .error-icon {
@@ -1347,7 +1348,7 @@
 
 	.error-clear-btn {
 		@apply px-3 py-1.5 text-sm font-medium;
-		@apply bg-red-600 text-white rounded;
+		@apply bg-red-600 text-white rounded-sm;
 		@apply hover:bg-red-700 transition-colors;
 	}
 

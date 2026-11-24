@@ -388,6 +388,7 @@
 {/if}
 
 <style>
+	@reference '../../app.css';
 	.progress-modal {
 		@apply p-6 min-w-[320px];
 	}
@@ -450,7 +451,7 @@
 	}
 
 	.error-icon {
-		@apply w-5 h-5 text-red-500 flex-shrink-0 mt-0.5;
+		@apply w-5 h-5 text-red-500 shrink-0 mt-0.5;
 	}
 
 	.error-message {
@@ -478,7 +479,7 @@
 	}
 
 	.confirm-icon {
-		@apply w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5;
+		@apply w-5 h-5 text-blue-500 shrink-0 mt-0.5;
 	}
 
 	.confirm-message {
@@ -515,7 +516,7 @@
 	}
 
 	.option-choice {
-		@apply flex items-center gap-2 px-2 py-1 text-sm rounded cursor-pointer text-gray-900;
+		@apply flex items-center gap-2 px-2 py-1 text-sm rounded-sm cursor-pointer text-gray-900;
 	}
 
 	.option-choice:hover {
@@ -537,7 +538,7 @@
 	.input-control {
 		@apply w-full px-3 py-2 text-sm border border-gray-300 rounded-md;
 		@apply bg-surface text-gray-900;
-		@apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+		@apply focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
 	}
 
 	.input-multiline {

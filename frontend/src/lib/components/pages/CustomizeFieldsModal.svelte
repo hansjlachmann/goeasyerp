@@ -222,6 +222,7 @@
 </Modal>
 
 <style>
+	@reference '../../../app.css';
 	.customize-modal {
 		@apply flex flex-col h-full max-h-[80vh];
 	}
@@ -315,7 +316,7 @@
 	}
 
 	.field-checkbox input[type='checkbox'] {
-		@apply w-5 h-5 rounded border-gray-300 text-blue-600;
+		@apply w-5 h-5 rounded-sm border-gray-300 text-blue-600;
 		@apply focus:ring-2 focus:ring-blue-500 focus:ring-offset-0;
 		@apply cursor-pointer;
 	}
@@ -353,7 +354,7 @@
 	}
 
 	.section-select {
-		@apply text-sm px-2 py-1 rounded border border-gray-300;
+		@apply text-sm px-2 py-1 rounded-sm border border-gray-300;
 		@apply bg-surface text-gray-900;
 		@apply focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
 		@apply cursor-pointer;

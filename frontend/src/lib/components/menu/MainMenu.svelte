@@ -295,6 +295,7 @@
 <ObjectRunner bind:this={runner} />
 
 <style>
+	@reference '../../../app.css';
 	/* Dark mode: :global(.dark) — the dark: variants of @apply do not reach a scoped style */
 	.main-menu {
 		@apply grid gap-6;
@@ -304,16 +305,16 @@
 		@apply flex flex-col gap-1 border-r border-gray-200 pr-4;
 	}
 	.module {
-		@apply text-left rounded px-3 py-2 text-gray-700 hover:bg-gray-100;
+		@apply text-left rounded-sm px-3 py-2 text-gray-700 hover:bg-gray-100;
 	}
 	.module.selected {
 		@apply bg-blue-50 text-heading font-semibold;
 	}
 	.module:focus {
-		@apply outline-none ring-2 ring-blue-400;
+		@apply outline-hidden ring-2 ring-blue-400;
 	}
 	.search {
-		@apply mt-4 rounded border border-gray-300 bg-transparent px-3 py-1.5 text-sm;
+		@apply mt-4 rounded-sm border border-gray-300 bg-transparent px-3 py-1.5 text-sm;
 	}
 	.entries {
 		@apply flex flex-col items-start;
@@ -322,10 +323,10 @@
 		@apply text-lg font-semibold text-gray-700 mb-2;
 	}
 	.entry {
-		@apply flex items-baseline gap-2 rounded py-0.5 pr-2 text-left text-heading hover:underline;
+		@apply flex items-baseline gap-2 rounded-sm py-0.5 pr-2 text-left text-heading hover:underline;
 	}
 	.entry:focus {
-		@apply outline-none bg-blue-50 underline;
+		@apply outline-hidden bg-blue-50 underline;
 	}
 	.entry.submenu {
 		@apply font-semibold text-gray-700;

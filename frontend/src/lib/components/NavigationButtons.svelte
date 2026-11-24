@@ -59,6 +59,7 @@
 </button>
 
 <style>
+	@reference '../../app.css';
 	:global(.edge-nav-btn) {
 		@apply absolute top-1/2 -translate-y-1/2 z-50;
 		@apply w-9 h-9 rounded-full;
@@ -69,7 +70,7 @@
 		@apply transition-all duration-200;
 		@apply hover:bg-gray-600;
 		@apply hover:scale-110;
-		@apply focus:outline-none focus:ring-2 focus:ring-blue-500;
+		@apply focus:outline-hidden focus:ring-2 focus:ring-blue-500;
 	}
 
 	:global(.dark) :global(.edge-nav-btn) {

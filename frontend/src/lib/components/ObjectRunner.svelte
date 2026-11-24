@@ -267,7 +267,7 @@
 			<p class="mt-2 text-gray-600 dark:text-gray-300" class:text-red-600={d.type === 'error'}>{d.message}</p>
 			<div class="mt-6 flex justify-end">
 				<button
-					class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+					class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
 					onclick={closeDialog}
 				>
 					{t(BTN.OK)}

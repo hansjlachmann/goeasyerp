@@ -71,7 +71,7 @@
 <Modal {open} onclose={oncancel}>
 	<div class="p-6">
 		<div class="flex items-start gap-4">
-			<div class="flex-shrink-0 {iconColors[variant]}">
+			<div class="shrink-0 {iconColors[variant]}">
 				<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					{@html variantIcons[variant]}
 				</svg>
@@ -107,14 +107,14 @@
 		<div class="mt-6 flex justify-end gap-3">
 			<button
 				type="button"
-				class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-surface dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+				class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-surface dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
 				onclick={oncancel}
 			>
 				{cancelText ?? t(BTN.CANCEL)}
 			</button>
 			<button
 				type="button"
-				class="px-4 py-2 text-sm font-medium text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed {variantColors[variant]}"
+				class="px-4 py-2 text-sm font-medium text-white rounded-md focus:outline-hidden focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed {variantColors[variant]}"
 				disabled={!confirmed}
 				onclick={confirmIfTyped}
 			>

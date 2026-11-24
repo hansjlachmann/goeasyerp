@@ -273,7 +273,7 @@
 			<!-- The wordmark: the way home (the main menu) -->
 			<a
 				href="/"
-				class="flex items-center px-4 py-2 hover:bg-appbar-fg/10 rounded transition-colors border-r border-appbar-fg/20 mr-2"
+				class="flex items-center px-4 py-2 hover:bg-appbar-fg/10 rounded-sm transition-colors border-r border-appbar-fg/20 mr-2"
 				title={t(MENU.HOME)}
 				aria-label={t(MENU.HOME)}
 			>
@@ -308,7 +308,7 @@
 					<button
 						data-user-menu
 						onclick={toggleUserMenu}
-						class="flex items-center gap-2 px-3 py-2 hover:bg-appbar-fg/10 rounded transition-colors"
+						class="flex items-center gap-2 px-3 py-2 hover:bg-appbar-fg/10 rounded-sm transition-colors"
 						title={t(MENU.USER_MENU)}
 					>
 						<svg
@@ -602,7 +602,7 @@
 			<!-- Theme toggle button -->
 			<button
 				onclick={toggleTheme}
-				class="flex items-center gap-2 px-3 py-2 hover:bg-appbar-fg/10 rounded transition-colors"
+				class="flex items-center gap-2 px-3 py-2 hover:bg-appbar-fg/10 rounded-sm transition-colors"
 				title={currentTheme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
 				aria-label="Toggle theme"
 			>
@@ -666,13 +666,14 @@
 {/if}
 
 <style>
+	@reference '../../../app.css';
 	.menu-bar {
 		@apply flex items-center px-4 py-2 shadow-md;
 		min-height: 3rem;
 	}
 	/* the work date when it is not today: a reminder (opens My Settings) */
 	.work-date {
-		@apply px-2 py-0.5 rounded font-semibold;
+		@apply px-2 py-0.5 rounded-sm font-semibold;
 		background: rgb(var(--accent-600));
 		color: rgb(var(--surface));
 	}

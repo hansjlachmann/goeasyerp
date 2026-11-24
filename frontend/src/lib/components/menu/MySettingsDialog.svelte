@@ -93,6 +93,7 @@
 </Modal>
 
 <style>
+	@reference '../../../app.css';
 	.show-tips {
 		@apply flex items-center gap-2 mt-2 cursor-pointer;
 	}

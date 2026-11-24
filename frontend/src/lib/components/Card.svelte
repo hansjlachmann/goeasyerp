@@ -95,9 +95,10 @@
 </div>
 
 <style>
+	@reference '../../app.css';
 	.card {
 		@apply bg-surface border border-gray-200 rounded-lg;
-		@apply shadow-sm;
+		@apply shadow-xs;
 	}
 
 	:global(.dark) .card {
@@ -128,7 +129,7 @@
 	}
 
 	.card-header.collapsible:focus {
-		@apply outline-none ring-2 ring-inset ring-blue-500;
+		@apply outline-hidden ring-2 ring-inset ring-blue-500;
 	}
 
 	.card-header.collapsed {

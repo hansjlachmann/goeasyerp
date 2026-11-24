@@ -43,7 +43,6 @@ web/
 ├── static/                  # Static assets
 ├── package.json
 ├── vite.config.js           # Vite and SvelteKit configuration (adapter, CSP, version check)
-├── tailwind.config.js
 └── tsconfig.json
 ```
 

@@ -19,6 +19,7 @@
 {/if}
 
 <style>
+	@reference '../../../app.css';
 	.action-icon {
 		@apply h-4 w-4 shrink-0;
 	}

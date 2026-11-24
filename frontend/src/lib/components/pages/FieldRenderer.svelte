@@ -355,6 +355,7 @@
 {/if}
 
 <style>
+	@reference '../../../app.css';
 	/* DrillDown: the value opens the entries behind it */
 	.drilldown-link {
 		color: rgb(var(--accent-600));
@@ -416,7 +417,7 @@
 		@apply bg-surface border border-gray-300 rounded-md;
 		@apply text-gray-900 text-base;
 		@apply transition-all duration-150;
-		@apply outline-none;
+		@apply outline-hidden;
 	}
 
 	.field-group :global(select.select) {

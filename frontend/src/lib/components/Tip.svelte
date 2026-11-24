@@ -38,6 +38,7 @@
 {/if}
 
 <style>
+	@reference '../../app.css';
 	.tip {
 		@apply flex items-center gap-2 rounded-md px-3 py-2 text-sm;
 		background-color: rgb(var(--accent-50));

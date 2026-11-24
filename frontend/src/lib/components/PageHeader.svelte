@@ -84,6 +84,7 @@
 </div>
 
 <style>
+	@reference '../../app.css';
 	.page-header {
 		@apply bg-surface border-b border-gray-200 px-6 py-4;
 		position: relative;

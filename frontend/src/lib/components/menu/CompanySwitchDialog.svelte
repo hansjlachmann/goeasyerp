@@ -117,7 +117,7 @@
 				autocomplete="off"
 				placeholder={t(MENU.SWITCH_COMPANY_FILTER)}
 				aria-label={t(MENU.SWITCH_COMPANY_FILTER)}
-				class="w-full px-2 py-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 bg-surface dark:bg-gray-900 text-gray-900 dark:text-gray-50 focus:outline-none focus:border-blue-600 dark:focus:border-blue-400"
+				class="w-full px-2 py-1.5 text-sm rounded-sm border border-gray-300 dark:border-gray-600 bg-surface dark:bg-gray-900 text-gray-900 dark:text-gray-50 focus:outline-hidden focus:border-blue-600 dark:focus:border-blue-400"
 			/>
 		</div>
 		<ul bind:this={listElement} class="max-h-72 overflow-y-auto pb-2" role="listbox">

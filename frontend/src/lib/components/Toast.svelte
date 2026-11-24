@@ -32,6 +32,7 @@
 </div>
 
 <style>
+	@reference '../../app.css';
 	.toast {
 		@apply flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg;
 		@apply border min-w-[300px] max-w-[450px];
@@ -90,7 +91,7 @@
 	}
 
 	.toast-icon {
-		@apply flex-shrink-0;
+		@apply shrink-0;
 	}
 
 	.toast-icon svg {
@@ -118,7 +119,7 @@
 	}
 
 	.toast-close {
-		@apply flex-shrink-0 p-1 rounded hover:bg-black/10 transition-colors;
+		@apply shrink-0 p-1 rounded-sm hover:bg-black/10 transition-colors;
 	}
 
 	:global(.dark) .toast-close:hover {

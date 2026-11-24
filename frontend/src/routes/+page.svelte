@@ -72,6 +72,7 @@
 </div>
 
 <style>
+	@reference '../app.css';
 	/* the company's own lines, spaced like the standard heading and text */
 	.own-text {
 		@apply space-y-1 whitespace-pre-wrap;

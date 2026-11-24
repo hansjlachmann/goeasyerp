@@ -52,6 +52,7 @@
 </div>
 
 <style>
+	@reference '../../../app.css';
 	.skeleton-page {
 		@apply flex flex-col h-full gap-4;
 	}

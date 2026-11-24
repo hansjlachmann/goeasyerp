@@ -80,6 +80,7 @@
 </div>
 
 <style>
+	@reference '../../app.css';
 	.action-menu {
 		@apply relative inline-block;
 	}

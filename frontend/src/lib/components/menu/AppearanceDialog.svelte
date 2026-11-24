@@ -340,6 +340,7 @@
 </Modal>
 
 <style>
+	@reference '../../../app.css';
 	.appearance-dialog {
 		@apply p-6 max-h-[85vh] overflow-y-auto;
 	}
@@ -416,7 +417,7 @@
 	}
 
 	.theme-preview {
-		@apply rounded overflow-hidden h-24 flex flex-col;
+		@apply rounded-sm overflow-hidden h-24 flex flex-col;
 	}
 
 	.pv-appbar {
@@ -424,19 +425,19 @@
 	}
 
 	.pv-appbar span {
-		@apply block h-1 w-8 rounded-sm opacity-80;
+		@apply block h-1 w-8 rounded-xs opacity-80;
 	}
 
 	.pv-panel {
-		@apply m-2 flex-1 rounded border p-2 flex flex-col gap-1.5;
+		@apply m-2 flex-1 rounded-sm border p-2 flex flex-col gap-1.5;
 	}
 
 	.pv-title {
-		@apply h-1.5 w-12 rounded-sm;
+		@apply h-1.5 w-12 rounded-xs;
 	}
 
 	.pv-row {
-		@apply h-1 w-full rounded-sm opacity-70;
+		@apply h-1 w-full rounded-xs opacity-70;
 	}
 
 	.pv-row.short {
@@ -448,7 +449,7 @@
 	}
 
 	.pv-selected span {
-		@apply block h-1 w-3/4 rounded-sm opacity-70;
+		@apply block h-1 w-3/4 rounded-xs opacity-70;
 	}
 
 	.theme-name {
@@ -469,7 +470,7 @@
 	}
 
 	.text-controls select {
-		@apply px-2 py-1.5 text-sm rounded border border-gray-300 bg-surface text-fg;
+		@apply px-2 py-1.5 text-sm rounded-sm border border-gray-300 bg-surface text-fg;
 	}
 
 	:global(.dark) .text-controls select {
@@ -483,7 +484,7 @@
 	}
 
 	.wallpaper-option {
-		@apply h-20 rounded border-2 border-gray-200 overflow-hidden text-sm text-fg;
+		@apply h-20 rounded-sm border-2 border-gray-200 overflow-hidden text-sm text-fg;
 		@apply hover:border-primary-500 focus-visible:border-primary-500;
 	}
 
@@ -565,7 +566,7 @@
 	}
 
 	.install-input {
-		@apply flex-1 px-3 py-1.5 text-sm rounded border border-gray-300 bg-surface text-fg;
+		@apply flex-1 px-3 py-1.5 text-sm rounded-sm border border-gray-300 bg-surface text-fg;
 	}
 
 	:global(.dark) .install-input {
@@ -573,7 +574,7 @@
 	}
 
 	.install-btn {
-		@apply px-4 py-1.5 text-sm rounded bg-primary-600 text-white hover:bg-primary-700 disabled:opacity-50;
+		@apply px-4 py-1.5 text-sm rounded-sm bg-primary-600 text-white hover:bg-primary-700 disabled:opacity-50;
 	}
 
 	:global(.dark) .install-btn {

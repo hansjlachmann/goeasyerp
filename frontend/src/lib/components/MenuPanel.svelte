@@ -174,6 +174,7 @@
 </div>
 
 <style>
+	@reference '../../app.css';
 	.menu {
 		position: fixed;
 		z-index: 1000;
@@ -188,7 +189,7 @@
 
 	.menu-item {
 		@apply w-full flex items-center justify-between gap-4 px-3 py-1.5 text-sm text-left;
-		@apply text-gray-800 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none;
+		@apply text-gray-800 hover:bg-gray-100 focus:bg-gray-100 focus:outline-hidden;
 	}
 
 	:global(.dark) .menu-item {

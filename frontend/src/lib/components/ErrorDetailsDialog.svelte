@@ -54,6 +54,7 @@
 </Modal>
 
 <style>
+	@reference '../../app.css';
 	.error-details {
 		@apply p-6 flex flex-col gap-4;
 	}
