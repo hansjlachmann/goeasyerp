@@ -1027,6 +1027,9 @@ func (t *TaxPostingSetup) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, TaxPostingSetupTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   TaxPostingSetupTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

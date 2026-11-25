@@ -1370,6 +1370,9 @@ func (t *Currency) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, CurrencyTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   CurrencyTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

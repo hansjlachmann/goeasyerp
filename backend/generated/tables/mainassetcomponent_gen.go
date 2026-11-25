@@ -883,6 +883,9 @@ func (t *MainAssetComponent) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, MainAssetComponentTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   MainAssetComponentTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

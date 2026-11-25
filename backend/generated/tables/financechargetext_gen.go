@@ -918,6 +918,9 @@ func (t *FinanceChargeText) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, FinanceChargeTextTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   FinanceChargeTextTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

@@ -878,6 +878,9 @@ func (t *ItemVariant) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, ItemVariantTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   ItemVariantTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

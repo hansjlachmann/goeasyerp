@@ -1200,6 +1200,9 @@ func (t *DepreciationBook) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, DepreciationBookTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   DepreciationBookTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

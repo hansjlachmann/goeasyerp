@@ -937,6 +937,9 @@ func (t *ResourcePrice) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, ResourcePriceTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   ResourcePriceTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

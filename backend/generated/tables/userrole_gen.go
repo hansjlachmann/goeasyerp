@@ -951,6 +951,9 @@ func (t *UserRole) rec() *tables.Rec {
 		Table:     UserRoleTableName,
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   UserRoleTableID,
+		Company:   "",
+		Temporary: t.temp != nil,
 	}
 }
 

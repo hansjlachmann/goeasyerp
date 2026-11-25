@@ -936,6 +936,9 @@ func (t *ExtendedTextLine) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, ExtendedTextLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   ExtendedTextLineTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

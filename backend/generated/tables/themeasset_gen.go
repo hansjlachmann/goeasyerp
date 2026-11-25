@@ -897,6 +897,9 @@ func (t *ThemeAsset) rec() *tables.Rec {
 		Table:     ThemeAssetTableName,
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   ThemeAssetTableID,
+		Company:   "",
+		Temporary: t.temp != nil,
 	}
 }
 

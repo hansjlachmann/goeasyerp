@@ -1,0 +1,26 @@
+table:
+  id: 402
+  name: Change_Log_Setup
+  caption: Change Log Setup
+  description: "Change Log Setup (S47): whether the change log records changes — of the tables set up in Change Log Setup (Table), and while a table has no line there, of the built-in list of security and money tables (users, roles, permissions, companies, apps, SMTP, bank accounts, posting setups and groups). SUPER users only."
+  global: true
+  setup_table: true    # singleton: a single record with a blank Primary Key
+  fields:
+    - name: primary_key
+      no: 1
+      type: types.Code
+      db_name: primary_key
+      primary_key: true
+      length: 10
+
+    # on by default: a new installation records the built-in tables' changes from the start
+    - name: change_log_activated
+      no: 2
+      type: bool
+      db_name: change_log_activated
+      default: true
+
+  keys:
+    - name: Primary
+      fields: [primary_key]
+      clustered: true

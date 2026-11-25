@@ -906,6 +906,9 @@ func (t *BulkDeleteLog) rec() *tables.Rec {
 		Table:     BulkDeleteLogTableName,
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   BulkDeleteLogTableID,
+		Company:   "",
+		Temporary: t.temp != nil,
 	}
 }
 

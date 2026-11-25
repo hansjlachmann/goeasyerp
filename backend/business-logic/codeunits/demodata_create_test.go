@@ -46,6 +46,8 @@ var demoDataNotNeeded = map[string]bool{
 	"Refused_Posting":      true, // written only when the balance check refuses a posting
 	"Bulk_Delete_Log":      true, // written only by deletes of several records at once
 	"Security_Event":       true, // written only by the server (logins, refusals …)
+	"Change_Log_Setup":     true, // a setup of the installation (on by default without a record)
+	"Change_Log_Entry":     true, // written only by changes of the tables the change log records
 }
 
 type menuEntry struct {

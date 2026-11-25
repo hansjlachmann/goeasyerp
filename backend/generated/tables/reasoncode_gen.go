@@ -981,6 +981,9 @@ func (t *ReasonCode) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, ReasonCodeTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   ReasonCodeTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

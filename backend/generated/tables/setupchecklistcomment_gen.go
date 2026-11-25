@@ -923,6 +923,9 @@ func (t *SetupChecklistComment) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, SetupChecklistCommentTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   SetupChecklistCommentTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

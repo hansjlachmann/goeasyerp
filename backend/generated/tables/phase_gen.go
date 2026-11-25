@@ -963,6 +963,9 @@ func (t *Phase) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, PhaseTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   PhaseTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

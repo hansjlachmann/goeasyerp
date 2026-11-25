@@ -1140,6 +1140,9 @@ func (t *EntryApplication) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, EntryApplicationTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   EntryApplicationTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

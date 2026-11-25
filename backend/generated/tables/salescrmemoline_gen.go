@@ -1410,6 +1410,9 @@ func (t *SalesCrMemoLine) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, SalesCrMemoLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   SalesCrMemoLineTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

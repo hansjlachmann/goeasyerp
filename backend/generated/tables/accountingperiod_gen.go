@@ -890,6 +890,9 @@ func (t *AccountingPeriod) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, AccountingPeriodTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   AccountingPeriodTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

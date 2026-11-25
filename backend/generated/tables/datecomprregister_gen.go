@@ -1041,6 +1041,9 @@ func (t *DateComprRegister) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, DateComprRegisterTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   DateComprRegisterTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

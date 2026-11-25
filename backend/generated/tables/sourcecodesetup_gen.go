@@ -1244,6 +1244,9 @@ func (t *SourceCodeSetup) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, SourceCodeSetupTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   SourceCodeSetupTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

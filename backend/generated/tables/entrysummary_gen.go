@@ -888,6 +888,9 @@ func (t *EntrySummary) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, EntrySummaryTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   EntrySummaryTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

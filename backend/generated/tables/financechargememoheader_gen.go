@@ -1281,6 +1281,9 @@ func (t *FinanceChargeMemoHeader) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, FinanceChargeMemoHeaderTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   FinanceChargeMemoHeaderTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

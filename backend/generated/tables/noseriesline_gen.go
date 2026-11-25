@@ -931,6 +931,9 @@ func (t *NoSeriesLine) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, NoSeriesLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   NoSeriesLineTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

@@ -918,6 +918,9 @@ func (t *RefusedPosting) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, RefusedPostingTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   RefusedPostingTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

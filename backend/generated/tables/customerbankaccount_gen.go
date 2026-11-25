@@ -1048,6 +1048,9 @@ func (t *CustomerBankAccount) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, CustomerBankAccountTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   CustomerBankAccountTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

@@ -988,6 +988,9 @@ func (t *ReportSelections) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, ReportSelectionsTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   ReportSelectionsTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

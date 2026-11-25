@@ -1120,6 +1120,9 @@ func (t *AccSchedColumn) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, AccSchedColumnTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   AccSchedColumnTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

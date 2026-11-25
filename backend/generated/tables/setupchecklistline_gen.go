@@ -1027,6 +1027,9 @@ func (t *SetupChecklistLine) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, SetupChecklistLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   SetupChecklistLineTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

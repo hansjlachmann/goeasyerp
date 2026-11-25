@@ -1894,6 +1894,9 @@ func (t *ReservationSetup) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, ReservationSetupTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   ReservationSetupTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

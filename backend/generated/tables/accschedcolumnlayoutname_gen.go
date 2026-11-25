@@ -928,6 +928,9 @@ func (t *AccSchedColumnLayoutName) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, AccSchedColumnLayoutNameTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   AccSchedColumnLayoutNameTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

@@ -272,6 +272,20 @@ also deletes events older than a year. The Parameter changes the limits: `REFUSA
 findings without marking anything. The events hold personal data (user IDs, addresses): keep
 `KEEP_DAYS` as short as your rules allow.
 
+**Change log:** every change of a record in the tables that matter for security and money is
+recorded field by field — who, when, in which company, the record's key, the value before and
+after: users and their roles, roles and permissions, companies, installed apps, App Build Setup,
+SMTP Setup, bank accounts and the customers' and vendors' bank accounts, the general and tax
+posting setups, the posting groups, and the change log's own setup. Administration → Change Log
+Entries lists them. A secret (a password, the SMTP password) and a picture are recorded only as
+"(changed)", never their value. The entries are written in the change's own transaction (a change
+that is undone leaves none), and nobody can delete them through the app. Administration → Change Log
+Setup switches it off (Change Log Activated) or, under Tables, sets up other tables: per table,
+insertions, modifications and deletions with all fields or some fields (Fields). A table with a
+line there follows the line instead of the built-in list. Only SUPER users may change the setup.
+Changes made by code that writes many records at once (bulk inserts of demo data and imports) are
+not recorded.
+
 **Browser security headers:** the frontend sends a Content Security Policy (scripts only from the
 app), `X-Frame-Options: SAMEORIGIN` (other sites cannot frame it), `nosniff`, `Referrer-Policy` and
 `Permissions-Policy`; the backend sends `no-store` (answers hold company data and are not kept in

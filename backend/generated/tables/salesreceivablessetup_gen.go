@@ -1187,6 +1187,9 @@ func (t *SalesReceivablesSetup) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, SalesReceivablesSetupTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   SalesReceivablesSetupTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

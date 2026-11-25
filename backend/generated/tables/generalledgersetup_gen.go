@@ -1269,6 +1269,9 @@ func (t *GeneralLedgerSetup) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, GeneralLedgerSetupTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   GeneralLedgerSetupTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

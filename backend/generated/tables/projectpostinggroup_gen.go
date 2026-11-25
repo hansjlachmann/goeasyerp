@@ -981,6 +981,9 @@ func (t *ProjectPostingGroup) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, ProjectPostingGroupTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   ProjectPostingGroupTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

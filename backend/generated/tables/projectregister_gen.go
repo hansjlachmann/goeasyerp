@@ -908,6 +908,9 @@ func (t *ProjectRegister) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, ProjectRegisterTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   ProjectRegisterTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

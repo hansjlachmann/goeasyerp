@@ -974,6 +974,9 @@ func (t *GLRegister) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, GLRegisterTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   GLRegisterTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

@@ -1,0 +1,91 @@
+table:
+  id: 405
+  name: Change_Log_Entry
+  caption: Change Log Entry
+  description: "Change Log Entry (S47): one changed field of a record — when, who, the company, the table, the record's key, the field, insertion/modification/deletion, the value before and after (secrets only as changed). Written in the change's own transaction (foundation/tables changelog.go, business-logic/tables changelog.go)."
+  global: true               # kept when a company is deleted; the company is a field
+  posted: true               # written by the change itself; the table API does not insert, delete or rename
+  lookup_page_id: 595
+  fields:
+    - name: entry_no
+      no: 1
+      type: int
+      db_name: entry_no
+      primary_key: true
+
+    - name: date_and_time
+      no: 2
+      type: types.DateTime
+      db_name: date_and_time
+
+    - name: user_id
+      no: 3
+      type: types.Code
+      db_name: user_id
+      length: 50
+      table_relation:
+        table: User
+        field: user_id
+        validate: false
+
+    - name: company
+      no: 4
+      type: types.Text
+      db_name: company
+      length: 100
+
+    - name: table_no
+      no: 5
+      type: int
+      db_name: table_no
+
+    - name: table_name
+      no: 6
+      type: types.Text
+      db_name: table_name
+      length: 100
+
+    # the record's primary key values, comma separated (after a rename: the new key)
+    - name: primary_key
+      no: 7
+      type: types.Text
+      db_name: primary_key
+      length: 250
+
+    - name: field_no
+      no: 8
+      type: int
+      db_name: field_no
+
+    - name: field_name
+      no: 9
+      type: types.Text
+      db_name: field_name
+      length: 100
+
+    - name: type_of_change
+      no: 10
+      type: Option
+      db_name: type_of_change
+      options: ["Insertion", "Modification", "Deletion"]
+
+    - name: old_value
+      no: 11
+      type: types.Text
+      db_name: old_value
+      length: 250
+
+    - name: new_value
+      no: 12
+      type: types.Text
+      db_name: new_value
+      length: 250
+
+  keys:
+    - name: Primary
+      fields: [entry_no]
+      clustered: true
+    - name: Table
+      fields: [table_no, primary_key]
+    - name: Time
+      fields: [date_and_time]

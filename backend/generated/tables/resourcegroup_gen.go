@@ -1081,6 +1081,9 @@ func (t *ResourceGroup) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, ResourceGroupTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   ResourceGroupTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

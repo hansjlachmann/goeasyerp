@@ -953,6 +953,9 @@ func (t *EntryExitPoint) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, EntryExitPointTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   EntryExitPointTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

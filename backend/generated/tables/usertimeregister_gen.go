@@ -871,6 +871,9 @@ func (t *UserTimeRegister) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, UserTimeRegisterTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   UserTimeRegisterTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

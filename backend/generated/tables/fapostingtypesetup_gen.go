@@ -982,6 +982,9 @@ func (t *FAPostingTypeSetup) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, FAPostingTypeSetupTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   FAPostingTypeSetupTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

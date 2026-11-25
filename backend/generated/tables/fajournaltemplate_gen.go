@@ -1000,6 +1000,9 @@ func (t *FAJournalTemplate) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, FAJournalTemplateTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   FAJournalTemplateTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

@@ -877,6 +877,9 @@ func (t *CurrencyForFinChargeTerms) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, CurrencyForFinChargeTermsTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   CurrencyForFinChargeTermsTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

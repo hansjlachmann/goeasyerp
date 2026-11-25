@@ -40,6 +40,11 @@ type Rec struct {
 	Table     string // the SQL table name (with the company prefix)
 	ForUpdate string // " FOR UPDATE" after LockTable (PostgreSQL)
 	Store     func() // StoreOldValues
+	// what the change log needs (changelog.go): the table's number, the company ("" a global
+	// table), and whether the record is temporary (never logged)
+	TableID   int
+	Company   string
+	Temporary bool
 }
 
 // SelectList returns the stored fields' columns, comma separated, in the definition's order

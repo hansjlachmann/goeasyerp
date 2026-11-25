@@ -1093,6 +1093,9 @@ func (t *TaxJurisdiction) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, TaxJurisdictionTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   TaxJurisdictionTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

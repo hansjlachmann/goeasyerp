@@ -1044,6 +1044,9 @@ func (t *BOMComponent) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, BOMComponentTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   BOMComponentTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

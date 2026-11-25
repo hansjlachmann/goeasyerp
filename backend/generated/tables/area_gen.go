@@ -945,6 +945,9 @@ func (t *Area) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, AreaTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   AreaTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

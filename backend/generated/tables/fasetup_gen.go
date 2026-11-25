@@ -919,6 +919,9 @@ func (t *FASetup) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, FASetupTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   FASetupTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

@@ -884,6 +884,9 @@ func (t *CurrencyForReminderLevel) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, CurrencyForReminderLevelTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   CurrencyForReminderLevelTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

@@ -875,6 +875,10 @@ menu:
         page_id: 915
       - name: "Security Events"
         page_id: 916
+      - name: "Change Log Setup"
+        page_id: 592
+      - name: "Change Log Entries"
+        page_id: 595
       - separator: true
       - name: "SMTP Setup"
         page_id: 910

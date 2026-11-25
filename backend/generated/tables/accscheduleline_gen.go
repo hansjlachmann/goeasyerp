@@ -1079,6 +1079,9 @@ func (t *AccScheduleLine) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, AccScheduleLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   AccScheduleLineTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

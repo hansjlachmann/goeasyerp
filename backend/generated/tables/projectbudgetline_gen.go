@@ -1120,6 +1120,9 @@ func (t *ProjectBudgetLine) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, ProjectBudgetLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   ProjectBudgetLineTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

@@ -1697,6 +1697,9 @@ func (t *GLAccount) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, GLAccountTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   GLAccountTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

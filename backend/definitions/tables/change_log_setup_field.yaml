@@ -1,0 +1,49 @@
+table:
+  id: 404
+  name: Change_Log_Setup_Field
+  caption: Change Log Setup (Field)
+  description: "Change Log Setup (Field) (S47): the fields of a table whose changes the change log records when the table's line says Some Fields. SUPER users only."
+  global: true
+  fields:
+    - name: table_no
+      no: 1
+      type: int
+      db_name: table_no
+      primary_key: true
+      table_relation:
+        table: Change_Log_Setup_Table
+        field: table_no
+
+    - name: field_no
+      no: 2
+      type: int
+      db_name: field_no
+      primary_key: true
+
+    # the field's name, filled in from the table's definition
+    - name: field_name
+      no: 3
+      type: types.Text
+      db_name: field_name
+      length: 100
+      editable: false
+
+    - name: log_insertion
+      no: 4
+      type: bool
+      db_name: log_insertion
+
+    - name: log_modification
+      no: 5
+      type: bool
+      db_name: log_modification
+
+    - name: log_deletion
+      no: 6
+      type: bool
+      db_name: log_deletion
+
+  keys:
+    - name: Primary
+      fields: [table_no, field_no]
+      clustered: true

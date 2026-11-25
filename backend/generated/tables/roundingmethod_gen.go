@@ -934,6 +934,9 @@ func (t *RoundingMethod) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, RoundingMethodTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   RoundingMethodTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

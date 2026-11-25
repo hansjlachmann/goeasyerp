@@ -1150,6 +1150,9 @@ func (t *GenJnlAllocation) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, GenJnlAllocationTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   GenJnlAllocationTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

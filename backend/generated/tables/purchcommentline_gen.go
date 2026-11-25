@@ -942,6 +942,9 @@ func (t *PurchCommentLine) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, PurchCommentLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   PurchCommentLineTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

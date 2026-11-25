@@ -1,0 +1,31 @@
+page:
+  id: 593
+  type: List
+  name: Change Log Setup (Table) List
+  source_table: Change_Log_Setup_Table
+  caption: Change Log Setup (Table) List
+  editable: true    # SUPER users only (the table's triggers)
+
+  layout:
+    repeater:
+      fields:
+        - source: table_no
+          width: 100
+        - source: table_caption
+          width: 240
+        - source: log_insertion
+          width: 130
+        - source: log_modification
+          width: 130
+        - source: log_deletion
+          width: 130
+
+  actions:
+    # the fields recorded when a change type says Some Fields
+    - name: Fields
+      caption: Fields
+      image: Rows
+      promoted: true
+      run_page: 594
+      run_page_filter_field: table_no
+      run_page_filter_value: table_no

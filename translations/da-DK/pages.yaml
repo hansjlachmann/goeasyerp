@@ -1359,6 +1359,14 @@ pages:
     caption: "Massesletninger"
   security_events:
     caption: "Sikkerhedshændelser"
+  change_log_setup:
+    caption: "Opsætning af ændringslog"
+  change_log_setup_table_list:
+    caption: "Opsætning af ændringslog (tabel)"
+  change_log_setup_field_list:
+    caption: "Opsætning af ændringslog (felt)"
+  change_log_entries:
+    caption: "Ændringslogposter"
   refused_postings:
     caption: "Afviste bogføringer"
 

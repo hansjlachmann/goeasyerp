@@ -904,6 +904,9 @@ func (t *ReminderLevel) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, ReminderLevelTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   ReminderLevelTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

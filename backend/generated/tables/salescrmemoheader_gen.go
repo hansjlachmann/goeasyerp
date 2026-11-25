@@ -1603,6 +1603,9 @@ func (t *SalesCrMemoHeader) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, SalesCrMemoHeaderTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   SalesCrMemoHeaderTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

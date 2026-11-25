@@ -1,0 +1,24 @@
+page:
+  id: 594
+  type: List
+  name: Change Log Setup (Field) List
+  source_table: Change_Log_Setup_Field
+  caption: Change Log Setup (Field) List
+  editable: true    # SUPER users only (the table's triggers)
+  delayed_insert: true
+
+  layout:
+    repeater:
+      fields:
+        - source: table_no
+          width: 100
+        - source: field_no
+          width: 100
+        - source: field_name
+          width: 220
+        - source: log_insertion
+          width: 120
+        - source: log_modification
+          width: 120
+        - source: log_deletion
+          width: 120

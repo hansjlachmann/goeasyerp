@@ -1457,6 +1457,9 @@ func (t *ProjectLedgerEntry) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, ProjectLedgerEntryTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   ProjectLedgerEntryTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

@@ -979,6 +979,9 @@ func (t *SecurityEvent) rec() *tables.Rec {
 		Table:     SecurityEventTableName,
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   SecurityEventTableID,
+		Company:   "",
+		Temporary: t.temp != nil,
 	}
 }
 

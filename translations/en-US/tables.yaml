@@ -7114,6 +7114,58 @@ tables:
       source_code: "Source Code"
       user_id: "User Name"
       journal_batch_name: "Journal Batch Name"
+  change_log_setup:
+    caption: "Change Log Setup"
+    fields:
+      primary_key: "Primary Key"
+      change_log_activated: "Change Log Activated"
+  change_log_setup_table:
+    caption: "Change Log Setup (Table)"
+    fields:
+      table_no: "Table No."
+      table_caption: "Table Caption"
+      log_insertion: "Log Insertion"
+      log_modification: "Log Modification"
+      log_deletion: "Log Deletion"
+    options:
+      log_insertion:
+        some_fields: "Some Fields"
+        all_fields: "All Fields"
+      log_modification:
+        some_fields: "Some Fields"
+        all_fields: "All Fields"
+      log_deletion:
+        some_fields: "Some Fields"
+        all_fields: "All Fields"
+  change_log_setup_field:
+    caption: "Change Log Setup (Field)"
+    fields:
+      table_no: "Table No."
+      field_no: "Field No."
+      field_name: "Field Name"
+      log_insertion: "Log Insertion"
+      log_modification: "Log Modification"
+      log_deletion: "Log Deletion"
+  change_log_entry:
+    caption: "Change Log Entry"
+    fields:
+      entry_no: "Entry No."
+      date_and_time: "Date and Time"
+      user_id: "User ID"
+      company: "Company"
+      table_no: "Table No."
+      table_name: "Table Caption"
+      primary_key: "Primary Key"
+      field_no: "Field No."
+      field_name: "Field Caption"
+      type_of_change: "Type of Change"
+      old_value: "Old Value"
+      new_value: "New Value"
+    options:
+      type_of_change:
+        insertion: "Insertion"
+        modification: "Modification"
+        deletion: "Deletion"
   security_event:
     caption: "Security Event"
     fields:

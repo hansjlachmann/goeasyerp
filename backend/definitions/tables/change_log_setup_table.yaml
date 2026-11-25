@@ -1,0 +1,63 @@
+table:
+  id: 403
+  name: Change_Log_Setup_Table
+  caption: Change Log Setup (Table)
+  description: "Change Log Setup (Table) (S47): per table which insertions, modifications and deletions the change log records — none, some fields (Change Log Setup (Field)) or all fields. A table with a line here is no longer logged by the built-in list. SUPER users only."
+  global: true
+  fields:
+    - name: table_no
+      no: 1
+      type: int
+      db_name: table_no
+      primary_key: true
+      table_relation:
+        table: Object
+        field: id
+        filters:
+          type: {const: 1}
+        lookup_columns:
+          - source: id
+          - source: caption
+            search: name
+
+    - name: table_caption
+      no: 2
+      type: types.Text
+      db_name: table_caption
+      length: 80
+      flow_field: true
+      calc_formula: Lookup
+      source_table: Object_Translation
+      source_field: object_name
+      flow_filters:
+        - field: object_type
+          type: const
+          value: 1
+        - field: object_id
+          type: field
+          value: table_no
+        - field: language_id
+          type: language
+
+    - name: log_insertion
+      no: 3
+      type: Option
+      db_name: log_insertion
+      options: [" ", "Some Fields", "All Fields"]
+
+    - name: log_modification
+      no: 4
+      type: Option
+      db_name: log_modification
+      options: [" ", "Some Fields", "All Fields"]
+
+    - name: log_deletion
+      no: 5
+      type: Option
+      db_name: log_deletion
+      options: [" ", "Some Fields", "All Fields"]
+
+  keys:
+    - name: Primary
+      fields: [table_no]
+      clustered: true

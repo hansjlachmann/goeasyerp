@@ -1026,6 +1026,9 @@ func (t *FARegister) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, FARegisterTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   FARegisterTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

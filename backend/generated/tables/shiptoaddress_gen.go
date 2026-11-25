@@ -1060,6 +1060,9 @@ func (t *ShipToAddress) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, ShipToAddressTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   ShipToAddressTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

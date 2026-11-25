@@ -920,6 +920,9 @@ func (t *PostCode) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, PostCodeTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   PostCodeTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

@@ -1,0 +1,33 @@
+page:
+  id: 595
+  type: List
+  name: Change Log Entries
+  source_table: Change_Log_Entry
+  caption: Change Log Entries
+  editable: false   # written by the changes themselves (S47)
+
+  layout:
+    repeater:
+      fields:
+        - source: entry_no
+          width: 90
+        - source: date_and_time
+          width: 160
+        - source: user_id
+          width: 110
+        - source: company
+          width: 120
+        - source: table_no
+          width: 80
+        - source: table_name
+          width: 170
+        - source: primary_key
+          width: 160
+        - source: field_name
+          width: 160
+        - source: type_of_change
+          width: 110
+        - source: old_value
+          width: 200
+        - source: new_value
+          width: 200

@@ -904,6 +904,9 @@ func (t *ItemJournalBatch) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, ItemJournalBatchTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   ItemJournalBatchTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

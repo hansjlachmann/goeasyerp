@@ -940,6 +940,9 @@ func (t *TaxStatementTemplate) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, TaxStatementTemplateTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   TaxStatementTemplateTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

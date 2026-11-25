@@ -963,6 +963,9 @@ func (t *Step) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, StepTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   StepTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

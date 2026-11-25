@@ -889,6 +889,9 @@ func (t *EntryApplicationGL) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, EntryApplicationGLTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   EntryApplicationGLTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

@@ -1323,6 +1323,9 @@ func (t *IssuedReminderHeader) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, IssuedReminderHeaderTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   IssuedReminderHeaderTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

@@ -1359,6 +1359,14 @@ pages:
     caption: "Bulk Deletes"
   security_events:
     caption: "Security Events"
+  change_log_setup:
+    caption: "Change Log Setup"
+  change_log_setup_table_list:
+    caption: "Change Log Setup (Table) List"
+  change_log_setup_field_list:
+    caption: "Change Log Setup (Field) List"
+  change_log_entries:
+    caption: "Change Log Entries"
   refused_postings:
     caption: "Refused Postings"
 

@@ -944,6 +944,9 @@ func (t *Permission) rec() *tables.Rec {
 		Table:     PermissionTableName,
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   PermissionTableID,
+		Company:   "",
+		Temporary: t.temp != nil,
 	}
 }
 

@@ -1053,6 +1053,9 @@ func (t *InstalledApp) rec() *tables.Rec {
 		Table:     InstalledAppTableName,
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   InstalledAppTableID,
+		Company:   "",
+		Temporary: t.temp != nil,
 	}
 }
 

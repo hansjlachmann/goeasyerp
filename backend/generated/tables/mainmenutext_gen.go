@@ -922,6 +922,9 @@ func (t *MainMenuText) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, MainMenuTextTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   MainMenuTextTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

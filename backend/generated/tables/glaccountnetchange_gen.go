@@ -875,6 +875,9 @@ func (t *GLAccountNetChange) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, GLAccountNetChangeTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   GLAccountNetChangeTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

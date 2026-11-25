@@ -949,6 +949,9 @@ func (t *StandardText) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, StandardTextTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   StandardTextTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

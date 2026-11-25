@@ -930,6 +930,9 @@ func (t *FinChargeCommentLine) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, FinChargeCommentLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   FinChargeCommentLineTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

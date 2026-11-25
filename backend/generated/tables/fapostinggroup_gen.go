@@ -1320,6 +1320,9 @@ func (t *FAPostingGroup) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, FAPostingGroupTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   FAPostingGroupTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

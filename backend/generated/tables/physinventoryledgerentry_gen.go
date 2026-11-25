@@ -1152,6 +1152,9 @@ func (t *PhysInventoryLedgerEntry) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, PhysInventoryLedgerEntryTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   PhysInventoryLedgerEntryTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

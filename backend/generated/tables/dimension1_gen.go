@@ -998,6 +998,9 @@ func (t *Dimension1) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, Dimension1TableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   Dimension1TableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

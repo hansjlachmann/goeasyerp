@@ -877,6 +877,9 @@ func (t *RequisitionWkshName) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, RequisitionWkshNameTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   RequisitionWkshNameTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

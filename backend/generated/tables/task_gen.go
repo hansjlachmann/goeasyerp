@@ -963,6 +963,9 @@ func (t *Task) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, TaskTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   TaskTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

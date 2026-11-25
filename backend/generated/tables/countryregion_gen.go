@@ -1107,6 +1107,9 @@ func (t *CountryRegion) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, CountryRegionTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   CountryRegionTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

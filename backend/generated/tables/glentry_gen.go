@@ -1373,6 +1373,9 @@ func (t *GLEntry) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, GLEntryTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   GLEntryTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

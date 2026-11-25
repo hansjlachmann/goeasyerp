@@ -998,6 +998,9 @@ func (t *BankAccReconciliationLine) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, BankAccReconciliationLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   BankAccReconciliationLineTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

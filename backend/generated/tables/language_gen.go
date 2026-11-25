@@ -981,6 +981,9 @@ func (t *Language) rec() *tables.Rec {
 		Table:     LanguageTableName,
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   LanguageTableID,
+		Company:   "",
+		Temporary: t.temp != nil,
 	}
 }
 

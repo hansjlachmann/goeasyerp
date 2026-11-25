@@ -869,6 +869,9 @@ func (t *Bin) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, BinTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   BinTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

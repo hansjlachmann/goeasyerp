@@ -1282,6 +1282,9 @@ func (t *FixedAsset) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, FixedAssetTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   FixedAssetTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

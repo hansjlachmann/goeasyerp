@@ -1829,6 +1829,9 @@ func (t *PurchaseHeader) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, PurchaseHeaderTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   PurchaseHeaderTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

@@ -90,6 +90,7 @@ func (r *Rec) Insert() InsertResult {
 	if n, err := result.RowsAffected(); err == nil && n == 0 {
 		return KeyTaken
 	}
+	r.logChange(ChangeInsertion, nil)
 	return Inserted
 }
 
@@ -149,6 +150,7 @@ func (r *Rec) Modify(old map[string]any) ModifyResult {
 		fmt.Printf("Error: Failed to modify %s: %v\n", tf.Table, err)
 		return ModifyFailed
 	}
+	r.logChange(ChangeModification, old)
 	return Modified
 }
 
@@ -163,9 +165,13 @@ func (r *Rec) Delete() bool {
 	}
 	query := fmt.Sprintf(`DELETE FROM "%s" WHERE %s`, r.Table, tf.keyWhere())
 	query = r.Placeholders(query, len(args))
-	if _, err := r.Exec.Exec(query, args...); err != nil {
+	result, err := r.Exec.Exec(query, args...)
+	if err != nil {
 		fmt.Printf("Error: Failed to delete %s: %v\n", tf.Table, err)
 		return false
+	}
+	if n, err := result.RowsAffected(); err != nil || n > 0 {
+		r.logChange(ChangeDeletion, nil)
 	}
 	return true
 }

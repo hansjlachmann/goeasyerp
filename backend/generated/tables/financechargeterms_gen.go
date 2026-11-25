@@ -1112,6 +1112,9 @@ func (t *FinanceChargeTerms) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, FinanceChargeTermsTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   FinanceChargeTermsTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

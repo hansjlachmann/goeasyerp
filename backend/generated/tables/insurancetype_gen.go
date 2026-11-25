@@ -945,6 +945,9 @@ func (t *InsuranceType) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, InsuranceTypeTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   InsuranceTypeTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

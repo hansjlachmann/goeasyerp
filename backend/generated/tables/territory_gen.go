@@ -939,6 +939,9 @@ func (t *Territory) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, TerritoryTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   TerritoryTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

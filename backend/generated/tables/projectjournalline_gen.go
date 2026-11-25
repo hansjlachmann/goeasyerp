@@ -1447,6 +1447,9 @@ func (t *ProjectJournalLine) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, ProjectJournalLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   ProjectJournalLineTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

@@ -1585,6 +1585,9 @@ func (t *PurchCrMemoHdr) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, PurchCrMemoHdrTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   PurchCrMemoHdrTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

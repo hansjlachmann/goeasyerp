@@ -7114,6 +7114,58 @@ tables:
       source_code: "Kildekode"
       user_id: "Brugernavn"
       journal_batch_name: "Kladdenavn"
+  change_log_setup:
+    caption: "Opsætning af ændringslog"
+    fields:
+      primary_key: "Primær nøgle"
+      change_log_activated: "Ændringslog aktiveret"
+  change_log_setup_table:
+    caption: "Opsætning af ændringslog (tabel)"
+    fields:
+      table_no: "Tabelnr."
+      table_caption: "Tabelnavn"
+      log_insertion: "Log oprettelse"
+      log_modification: "Log ændring"
+      log_deletion: "Log sletning"
+    options:
+      log_insertion:
+        some_fields: "Nogle felter"
+        all_fields: "Alle felter"
+      log_modification:
+        some_fields: "Nogle felter"
+        all_fields: "Alle felter"
+      log_deletion:
+        some_fields: "Nogle felter"
+        all_fields: "Alle felter"
+  change_log_setup_field:
+    caption: "Opsætning af ændringslog (felt)"
+    fields:
+      table_no: "Tabelnr."
+      field_no: "Feltnr."
+      field_name: "Feltnavn"
+      log_insertion: "Log oprettelse"
+      log_modification: "Log ændring"
+      log_deletion: "Log sletning"
+  change_log_entry:
+    caption: "Ændringslogpost"
+    fields:
+      entry_no: "Løbenr."
+      date_and_time: "Dato og klokkeslæt"
+      user_id: "Bruger-id"
+      company: "Virksomhed"
+      table_no: "Tabelnr."
+      table_name: "Tabelnavn"
+      primary_key: "Primær nøgle"
+      field_no: "Feltnr."
+      field_name: "Feltnavn"
+      type_of_change: "Ændringstype"
+      old_value: "Gammel værdi"
+      new_value: "Ny værdi"
+    options:
+      type_of_change:
+        insertion: "Oprettelse"
+        modification: "Ændring"
+        deletion: "Sletning"
   security_event:
     caption: "Sikkerhedshændelse"
     fields:

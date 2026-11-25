@@ -994,6 +994,9 @@ func (t *BOMJournalTemplate) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, BOMJournalTemplateTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   BOMJournalTemplateTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

@@ -960,6 +960,9 @@ func (t *UnitOfMeasure) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, UnitOfMeasureTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   UnitOfMeasureTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

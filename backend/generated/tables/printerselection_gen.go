@@ -950,6 +950,9 @@ func (t *PrinterSelection) rec() *tables.Rec {
 		Table:     PrinterSelectionTableName,
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   PrinterSelectionTableID,
+		Company:   "",
+		Temporary: t.temp != nil,
 	}
 }
 

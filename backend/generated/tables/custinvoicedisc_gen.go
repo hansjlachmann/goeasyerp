@@ -893,6 +893,9 @@ func (t *CustInvoiceDisc) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, CustInvoiceDiscTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   CustInvoiceDiscTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

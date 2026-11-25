@@ -2168,6 +2168,9 @@ func (t *GenJournalLine) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, GenJournalLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   GenJournalLineTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

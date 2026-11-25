@@ -1202,6 +1202,9 @@ func (t *InsCoverageLedgerEntry) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, InsCoverageLedgerEntryTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   InsCoverageLedgerEntryTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

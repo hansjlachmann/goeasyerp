@@ -927,6 +927,9 @@ func (t *AppBuildSetup) rec() *tables.Rec {
 		Table:     AppBuildSetupTableName,
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   AppBuildSetupTableID,
+		Company:   "",
+		Temporary: t.temp != nil,
 	}
 }
 

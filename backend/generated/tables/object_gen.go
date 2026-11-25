@@ -791,7 +791,7 @@ func (t *Object) renameReferences(field string, oldValue, newValue interface{}) 
 		condValue  int
 	}
 	references := map[string][]reference{
-		"id": {{"BOM_Journal_Template", false, "page_id", "", 0}, {"Date_Compr_Register", false, "table_id", "", 0}, {"FA_Journal_Template", false, "page_id", "", 0}, {"FA_Journal_Template", false, "maint_posting_report_id", "", 0}, {"FA_Reclass_Journal_Template", false, "page_id", "", 0}, {"Gen_Journal_Template", false, "page_id", "", 0}, {"Insurance_Journal_Template", false, "page_id", "", 0}, {"Intrastat_Jnl_Template", false, "page_id", "", 0}, {"Item_Journal_Template", false, "page_id", "", 0}, {"Job_Queue", false, "object_id_to_run", "object_type_to_run", 0}, {"Job_Queue", false, "object_id_to_run", "object_type_to_run", 1}, {"Permission", true, "object_id", "object_type", 1}, {"Permission", true, "object_id", "object_type", 2}, {"Printer_Selection", true, "report_id", "", 0}, {"Project_Journal_Template", false, "page_id", "", 0}, {"Report_Selections", false, "report_id", "", 0}, {"Req_Wksh_Template", false, "page_id", "", 0}, {"Res_Journal_Template", false, "page_id", "", 0}, {"Setup_Checklist_Line", false, "table_id", "", 0}, {"Setup_Checklist_Line", false, "page_id", "", 0}, {"Tax_Statement_Template", false, "page_id", "", 0}, {"User_Preferences", true, "page_id", "", 0}},
+		"id": {{"BOM_Journal_Template", false, "page_id", "", 0}, {"Change_Log_Setup_Table", true, "table_no", "", 0}, {"Date_Compr_Register", false, "table_id", "", 0}, {"FA_Journal_Template", false, "page_id", "", 0}, {"FA_Journal_Template", false, "maint_posting_report_id", "", 0}, {"FA_Reclass_Journal_Template", false, "page_id", "", 0}, {"Gen_Journal_Template", false, "page_id", "", 0}, {"Insurance_Journal_Template", false, "page_id", "", 0}, {"Intrastat_Jnl_Template", false, "page_id", "", 0}, {"Item_Journal_Template", false, "page_id", "", 0}, {"Job_Queue", false, "object_id_to_run", "object_type_to_run", 0}, {"Job_Queue", false, "object_id_to_run", "object_type_to_run", 1}, {"Permission", true, "object_id", "object_type", 1}, {"Permission", true, "object_id", "object_type", 2}, {"Printer_Selection", true, "report_id", "", 0}, {"Project_Journal_Template", false, "page_id", "", 0}, {"Report_Selections", false, "report_id", "", 0}, {"Req_Wksh_Template", false, "page_id", "", 0}, {"Res_Journal_Template", false, "page_id", "", 0}, {"Setup_Checklist_Line", false, "table_id", "", 0}, {"Setup_Checklist_Line", false, "page_id", "", 0}, {"Tax_Statement_Template", false, "page_id", "", 0}, {"User_Preferences", true, "page_id", "", 0}},
 	}
 	var companies []string
 	rows, err := t.db.Query(`SELECT name FROM "Company"`)
@@ -1029,6 +1029,9 @@ func (t *Object) rec() *tables.Rec {
 		Table:     ObjectTableName,
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   ObjectTableID,
+		Company:   "",
+		Temporary: t.temp != nil,
 	}
 }
 

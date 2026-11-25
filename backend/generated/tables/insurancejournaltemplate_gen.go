@@ -988,6 +988,9 @@ func (t *InsuranceJournalTemplate) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, InsuranceJournalTemplateTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   InsuranceJournalTemplateTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

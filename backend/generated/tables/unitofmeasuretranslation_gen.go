@@ -880,6 +880,9 @@ func (t *UnitOfMeasureTranslation) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, UnitOfMeasureTranslationTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   UnitOfMeasureTranslationTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

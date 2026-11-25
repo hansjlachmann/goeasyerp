@@ -953,6 +953,9 @@ func (t *TransactionType) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, TransactionTypeTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   TransactionTypeTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

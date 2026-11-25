@@ -1014,6 +1014,9 @@ func (t *ExtendedTextHeader) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, ExtendedTextHeaderTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   ExtendedTextHeaderTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

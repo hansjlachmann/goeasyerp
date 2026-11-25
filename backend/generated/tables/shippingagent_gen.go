@@ -969,6 +969,9 @@ func (t *ShippingAgent) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, ShippingAgentTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   ShippingAgentTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

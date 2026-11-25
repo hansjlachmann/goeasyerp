@@ -968,6 +968,9 @@ func (t *TaxArea) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, TaxAreaTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   TaxAreaTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

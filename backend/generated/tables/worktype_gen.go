@@ -957,6 +957,9 @@ func (t *WorkType) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, WorkTypeTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   WorkTypeTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

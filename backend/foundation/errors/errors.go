@@ -41,6 +41,8 @@ const (
 	ErrDeleteTypeCount        ErrorCode = "ERR_DELETE_TYPE_COUNT"
 	ErrDeleteCountChanged     ErrorCode = "ERR_DELETE_COUNT_CHANGED"
 	ErrCompanyDeleteSuper     ErrorCode = "ERR_COMPANY_DELETE_SUPER_ONLY"
+	ErrChangeLogSuperOnly     ErrorCode = "ERR_CHANGE_LOG_SUPER_ONLY"
+	ErrChangeLogFieldUnknown  ErrorCode = "ERR_CHANGE_LOG_FIELD_UNKNOWN"
 	ErrRolesSuperOnly         ErrorCode = "ERR_ROLES_SUPER_ONLY"
 	ErrMemberSuperOnly        ErrorCode = "ERR_MEMBER_SUPER_ONLY"
 	ErrMemberAllSuperOnly     ErrorCode = "ERR_MEMBER_ALL_SUPER_ONLY"
@@ -573,6 +575,16 @@ func ReportNotScheduled(reportID int) *AppError {
 // one side of each transaction to another date)
 func DateComprGLFilter(filter string) *AppError {
 	return &AppError{Code: ErrDateComprGLFilter, Params: []string{filter}}
+}
+
+// ChangeLogSetupSuperOnly: only a SUPER user changes what the change log records (S47)
+func ChangeLogSetupSuperOnly() *AppError {
+	return &AppError{Code: ErrChangeLogSuperOnly}
+}
+
+// ChangeLogFieldUnknown: Change Log Setup (Field) names a field the table does not have
+func ChangeLogFieldUnknown(tableNo, fieldNo string) *AppError {
+	return &AppError{Code: ErrChangeLogFieldUnknown, Params: []string{fieldNo, tableNo}}
 }
 
 // CompanyDeleteSuperOnly: only a SUPER user deletes a company (with all its data)

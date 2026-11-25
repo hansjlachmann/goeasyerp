@@ -7114,6 +7114,58 @@ tables:
       source_code: "Kildekode"
       user_id: "Brukernavn"
       journal_batch_name: "Kladdenavn"
+  change_log_setup:
+    caption: "Oppsett av endringslogg"
+    fields:
+      primary_key: "Primærnøkkel"
+      change_log_activated: "Endringslogg aktivert"
+  change_log_setup_table:
+    caption: "Oppsett av endringslogg (tabell)"
+    fields:
+      table_no: "Tabellnr."
+      table_caption: "Tabellnavn"
+      log_insertion: "Logg oppretting"
+      log_modification: "Logg endring"
+      log_deletion: "Logg sletting"
+    options:
+      log_insertion:
+        some_fields: "Noen felt"
+        all_fields: "Alle felt"
+      log_modification:
+        some_fields: "Noen felt"
+        all_fields: "Alle felt"
+      log_deletion:
+        some_fields: "Noen felt"
+        all_fields: "Alle felt"
+  change_log_setup_field:
+    caption: "Oppsett av endringslogg (felt)"
+    fields:
+      table_no: "Tabellnr."
+      field_no: "Feltnr."
+      field_name: "Feltnavn"
+      log_insertion: "Logg oppretting"
+      log_modification: "Logg endring"
+      log_deletion: "Logg sletting"
+  change_log_entry:
+    caption: "Endringsloggpost"
+    fields:
+      entry_no: "Løpenr."
+      date_and_time: "Dato og klokkeslett"
+      user_id: "Bruker-ID"
+      company: "Selskap"
+      table_no: "Tabellnr."
+      table_name: "Tabellnavn"
+      primary_key: "Primærnøkkel"
+      field_no: "Feltnr."
+      field_name: "Feltnavn"
+      type_of_change: "Endringstype"
+      old_value: "Gammel verdi"
+      new_value: "Ny verdi"
+    options:
+      type_of_change:
+        insertion: "Oppretting"
+        modification: "Endring"
+        deletion: "Sletting"
   security_event:
     caption: "Sikkerhetshendelse"
     fields:

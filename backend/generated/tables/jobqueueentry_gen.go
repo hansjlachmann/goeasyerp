@@ -969,6 +969,9 @@ func (t *JobQueueEntry) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, JobQueueEntryTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   JobQueueEntryTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

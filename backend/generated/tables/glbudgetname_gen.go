@@ -920,6 +920,9 @@ func (t *GLBudgetName) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, GLBudgetNameTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   GLBudgetNameTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

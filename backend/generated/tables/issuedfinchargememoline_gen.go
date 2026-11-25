@@ -1109,6 +1109,9 @@ func (t *IssuedFinChargeMemoLine) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, IssuedFinChargeMemoLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   IssuedFinChargeMemoLineTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

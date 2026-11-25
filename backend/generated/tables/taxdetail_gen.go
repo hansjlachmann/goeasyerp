@@ -944,6 +944,9 @@ func (t *TaxDetail) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, TaxDetailTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   TaxDetailTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

@@ -1001,6 +1001,9 @@ func (t *OrderAddress) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, OrderAddressTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   OrderAddressTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

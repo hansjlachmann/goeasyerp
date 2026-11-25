@@ -907,6 +907,9 @@ func (t *IntrastatJnlBatch) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, IntrastatJnlBatchTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   IntrastatJnlBatchTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

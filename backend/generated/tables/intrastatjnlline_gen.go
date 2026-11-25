@@ -1147,6 +1147,9 @@ func (t *IntrastatJnlLine) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, IntrastatJnlLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   IntrastatJnlLineTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

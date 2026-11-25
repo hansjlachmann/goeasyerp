@@ -870,6 +870,9 @@ func (t *UserMember) rec() *tables.Rec {
 		Table:     UserMemberTableName,
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   UserMemberTableID,
+		Company:   "",
+		Temporary: t.temp != nil,
 	}
 }
 

@@ -974,6 +974,9 @@ func (t *ItemRegister) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, ItemRegisterTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   ItemRegisterTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

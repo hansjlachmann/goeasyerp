@@ -920,6 +920,9 @@ func (t *Maintenance) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, MaintenanceTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   MaintenanceTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

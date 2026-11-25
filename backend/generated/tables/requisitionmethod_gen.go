@@ -1045,6 +1045,9 @@ func (t *RequisitionMethod) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, RequisitionMethodTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   RequisitionMethodTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

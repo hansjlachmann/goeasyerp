@@ -959,6 +959,9 @@ func (t *Menu) rec() *tables.Rec {
 		Table:     MenuTableName,
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   MenuTableID,
+		Company:   "",
+		Temporary: t.temp != nil,
 	}
 }
 

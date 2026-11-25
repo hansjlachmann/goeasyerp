@@ -1,0 +1,28 @@
+page:
+  id: 592
+  type: Card
+  name: Change Log Setup
+  source_table: Change_Log_Setup
+  caption: Change Log Setup
+  editable: true    # SUPER users only (the table's triggers)
+
+  layout:
+    sections:
+      - name: General
+        caption: General
+        fields:
+          - source: change_log_activated
+
+  actions:
+    - name: Edit
+      caption: Edit
+      image: Edit
+      shortcut: Ctrl+E
+      promoted: true
+      enabled: true
+    # which tables are recorded, and how (a table without a line: the built-in list)
+    - name: Tables
+      caption: Tables
+      image: Setup
+      promoted: true
+      run_page: 593

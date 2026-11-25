@@ -1220,6 +1220,9 @@ func (t *ReservationEntry) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, ReservationEntryTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   ReservationEntryTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

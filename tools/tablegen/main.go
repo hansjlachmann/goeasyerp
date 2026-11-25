@@ -3162,6 +3162,9 @@ func (t *{{ .StructName }}) rec() *tables.Rec {
 		Table:     {{- if .Table.Global }}{{ .StructName }}TableName{{- else }}tables.CompanyTable(t.company, {{ .StructName }}TableName){{- end }},
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   {{ .StructName }}TableID,
+		Company:   {{- if .Table.Global }} ""{{- else }} t.company{{- end }},
+		Temporary: t.temp != nil,
 	}
 }
 

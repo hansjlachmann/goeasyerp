@@ -247,6 +247,11 @@ func main() {
 	server.Setup()
 	// Security events (logins, lockouts, refusals …) go into table 2000000158 in batches (S48)
 	stopSecurityLog := securitylog.Start(bltables.SecurityEventWriter(db.GetConnection(), db.GetDBType()))
+	// The change log (S47): who changed which field of the tables Change Log Setup names
+	if err := bltables.EnsureChangeLogSequence(db.GetConnection(), db.GetDBType()); err != nil {
+		log.Fatalf("change log: %v", err)
+	}
+	stopChangeLog := bltables.RegisterChangeLog(db.GetConnection(), db.GetDBType())
 	// Postings the balance check refuses are logged for an administrator (table 904)
 	refusedposting.Register(db.GetConnection(), db.GetDBType())
 
@@ -313,6 +318,7 @@ func main() {
 		log.Printf("Error during shutdown: %v", err)
 	}
 	stopSecurityLog() // what the last requests recorded
+	stopChangeLog()
 
 	fmt.Println("✓ Server stopped")
 	if switching {

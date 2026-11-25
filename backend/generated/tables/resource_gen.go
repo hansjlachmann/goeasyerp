@@ -1433,6 +1433,9 @@ func (t *Resource) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, ResourceTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   ResourceTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

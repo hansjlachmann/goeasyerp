@@ -1154,6 +1154,9 @@ func (t *UserPersonalization) rec() *tables.Rec {
 		Table:     UserPersonalizationTableName,
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   UserPersonalizationTableID,
+		Company:   "",
+		Temporary: t.temp != nil,
 	}
 }
 

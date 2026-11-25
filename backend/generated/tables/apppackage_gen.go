@@ -906,6 +906,9 @@ func (t *AppPackage) rec() *tables.Rec {
 		Table:     AppPackageTableName,
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   AppPackageTableID,
+		Company:   "",
+		Temporary: t.temp != nil,
 	}
 }
 

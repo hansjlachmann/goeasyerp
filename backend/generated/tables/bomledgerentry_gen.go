@@ -959,6 +959,9 @@ func (t *BOMLedgerEntry) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, BOMLedgerEntryTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   BOMLedgerEntryTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

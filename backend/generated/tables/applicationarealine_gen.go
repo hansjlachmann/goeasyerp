@@ -872,6 +872,9 @@ func (t *ApplicationAreaLine) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, ApplicationAreaLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   ApplicationAreaLineTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

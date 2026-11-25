@@ -1115,6 +1115,9 @@ func (t *IssuedReminderLine) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, IssuedReminderLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   IssuedReminderLineTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

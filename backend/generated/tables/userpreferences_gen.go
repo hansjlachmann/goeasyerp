@@ -897,6 +897,9 @@ func (t *UserPreferences) rec() *tables.Rec {
 		Table:     UserPreferencesTableName,
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   UserPreferencesTableID,
+		Company:   "",
+		Temporary: t.temp != nil,
 	}
 }
 

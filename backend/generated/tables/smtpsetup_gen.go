@@ -1001,6 +1001,9 @@ func (t *SMTPSetup) rec() *tables.Rec {
 		Table:     SMTPSetupTableName,
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   SMTPSetupTableID,
+		Company:   "",
+		Temporary: t.temp != nil,
 	}
 }
 

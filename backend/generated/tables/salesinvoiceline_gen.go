@@ -1431,6 +1431,9 @@ func (t *SalesInvoiceLine) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, SalesInvoiceLineTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   SalesInvoiceLineTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

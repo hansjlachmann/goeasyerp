@@ -955,6 +955,9 @@ func (t *CurrencyExchangeRate) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, CurrencyExchangeRateTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   CurrencyExchangeRateTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

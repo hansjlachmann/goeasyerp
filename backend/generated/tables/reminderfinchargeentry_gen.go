@@ -1027,6 +1027,9 @@ func (t *ReminderFinChargeEntry) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, ReminderFinChargeEntryTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   ReminderFinChargeEntryTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

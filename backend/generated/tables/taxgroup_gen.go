@@ -960,6 +960,9 @@ func (t *TaxGroup) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, TaxGroupTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   TaxGroupTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

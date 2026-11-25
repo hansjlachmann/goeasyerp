@@ -994,6 +994,9 @@ func (t *ProjectJournalTemplate) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, ProjectJournalTemplateTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   ProjectJournalTemplateTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

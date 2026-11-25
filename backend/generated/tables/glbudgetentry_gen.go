@@ -961,6 +961,9 @@ func (t *GLBudgetEntry) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, GLBudgetEntryTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   GLBudgetEntryTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

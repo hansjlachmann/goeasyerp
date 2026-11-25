@@ -929,6 +929,9 @@ func (t *DocumentEntry) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, DocumentEntryTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   DocumentEntryTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

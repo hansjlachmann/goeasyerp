@@ -940,6 +940,9 @@ func (t *IntrastatJnlTemplate) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, IntrastatJnlTemplateTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   IntrastatJnlTemplateTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

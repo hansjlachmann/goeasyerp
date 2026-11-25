@@ -875,6 +875,9 @@ func (t *ResourcesSetup) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, ResourcesSetupTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   ResourcesSetupTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

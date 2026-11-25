@@ -941,6 +941,9 @@ func (t *FALocation) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, FALocationTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   FALocationTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

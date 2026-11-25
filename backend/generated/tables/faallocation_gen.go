@@ -1019,6 +1019,9 @@ func (t *FAAllocation) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, FAAllocationTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   FAAllocationTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

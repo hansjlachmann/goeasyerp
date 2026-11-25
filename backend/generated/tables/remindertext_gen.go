@@ -917,6 +917,9 @@ func (t *ReminderText) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, ReminderTextTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   ReminderTextTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

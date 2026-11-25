@@ -983,6 +983,9 @@ func (t *ReqWkshTemplate) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, ReqWkshTemplateTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   ReqWkshTemplateTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

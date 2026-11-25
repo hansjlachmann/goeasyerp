@@ -970,6 +970,9 @@ func (t *InventoryPostingGroup) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, InventoryPostingGroupTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   InventoryPostingGroupTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

@@ -904,6 +904,9 @@ func (t *ResCapacityEntry) rec() *tables.Rec {
 		Table:     tables.CompanyTable(t.company, ResCapacityEntryTableName),
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   ResCapacityEntryTableID,
+		Company:   t.company,
+		Temporary: t.temp != nil,
 	}
 }
 

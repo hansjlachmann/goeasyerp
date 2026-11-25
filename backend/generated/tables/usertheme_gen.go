@@ -860,6 +860,9 @@ func (t *UserTheme) rec() *tables.Rec {
 		Table:     UserThemeTableName,
 		ForUpdate: t.forUpdate(),
 		Store:     t.StoreOldValues,
+		TableID:   UserThemeTableID,
+		Company:   "",
+		Temporary: t.temp != nil,
 	}
 }
 
