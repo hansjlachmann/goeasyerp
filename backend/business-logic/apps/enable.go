@@ -86,6 +86,7 @@ func setDisabled(rec *gtables.InstalledApp, disable bool) (fcodeunits.Result, er
 	lang := fcodeunits.CurrentLanguage()
 	access := fcodeunits.CurrentAccess()
 	if access != nil && !access.IsSuper {
+		recordRefused("enable/disable app (SUPER only)")
 		return fcodeunits.Result{}, errors.New(ts.Message("ERR_APP_SUPER_ONLY", lang))
 	}
 	installedMu.RLock()
@@ -128,9 +129,12 @@ func setDisabled(rec *gtables.InstalledApp, disable bool) (fcodeunits.Result, er
 		return fcodeunits.Result{}, err
 	}
 	key := "APP_ENABLED"
+	action := "enable app "
 	if disable {
 		key = "APP_DISABLED"
+		action = "disable app "
 	}
+	recordAdministration(action + rec.Name.String())
 	text := ts.MessageWithParams(key, lang, rec.Name.String())
 	return fcodeunits.Result{Success: true, Message: text, Refresh: true}, nil
 }

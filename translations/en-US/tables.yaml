@@ -7114,6 +7114,32 @@ tables:
       source_code: "Source Code"
       user_id: "User Name"
       journal_batch_name: "Journal Batch Name"
+  security_event:
+    caption: "Security Event"
+    fields:
+      entry_no: "Entry No."
+      occurred_at: "Occurred At"
+      event: "Event"
+      user_id: "User ID"
+      address: "Address"
+      company: "Company"
+      details: "Details"
+      checked: "Checked"
+    options:
+      event:
+        login: "Login"
+        login_failed: "Login Failed"
+        login_locked: "Login Locked"
+        login_refused: "Login Refused"
+        logout: "Logout"
+        company_refused: "Company Refused"
+        access_refused: "Access Refused"
+        cross_site_refused: "Cross-Site Refused"
+        password_changed: "Password Changed"
+        password_change_failed: "Password Change Failed"
+        first_user: "First User"
+        setup_token_refused: "Setup Token Refused"
+        administration: "Administration"
   bulk_delete_log:
     caption: "Bulk Delete Log"
     fields:

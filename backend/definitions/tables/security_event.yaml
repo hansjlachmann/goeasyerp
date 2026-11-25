@@ -1,0 +1,71 @@
+table:
+  id: 2000000158
+  name: "Security_Event"
+  caption: Security Event
+  global: true               # kept when a company is deleted or its demo data replaced
+  posted: true               # written by the server itself; the table API does not insert, delete or rename
+  description: "Security Event (S48): logins and failed logins, lockouts, log outs, refused requests, password changes, the first user and SUPER-only actions — when, who, from which address, in which company; written by the server in batches (foundation/securitylog), checked by routine 909 Security Event Alerts"
+  lookup_page_id: 916
+  fields:
+    - name: entry_no
+      no: 1
+      type: int
+      db_name: entry_no
+      primary_key: true
+
+    - name: occurred_at
+      no: 2
+      type: types.DateTime
+      db_name: occurred_at
+
+    # the option values are foundation/securitylog's kinds, in the same order (a test checks it)
+    - name: event
+      no: 3
+      type: Option
+      db_name: event
+      options: ["Login", "Login Failed", "Login Locked", "Login Refused", "Logout", "Company Refused", "Access Refused", "Cross-Site Refused", "Password Changed", "Password Change Failed", "First User", "Setup Token Refused", "Administration"]
+
+    # the user, or the user ID typed at a failed login (not checked against User)
+    - name: user_id
+      no: 4
+      type: types.Code
+      db_name: user_id
+      length: 50
+      table_relation:
+        table: User
+        field: user_id
+        validate: false
+
+    # the client's address (blank: an event without a request, e.g. from a routine)
+    - name: address
+      no: 5
+      type: types.Text
+      db_name: address
+      length: 64
+
+    - name: company
+      no: 6
+      type: types.Text
+      db_name: company
+      length: 100
+
+    - name: details
+      no: 7
+      type: types.Text
+      db_name: details
+      length: 250
+
+    # routine 909 has looked at the event (a scheduled run marks what it checked)
+    - name: checked
+      no: 8
+      type: bool
+      db_name: checked
+
+  keys:
+    - name: Primary
+      fields: [entry_no]
+      clustered: true
+    - name: Checked
+      fields: [checked]
+    - name: Occurred
+      fields: [occurred_at]

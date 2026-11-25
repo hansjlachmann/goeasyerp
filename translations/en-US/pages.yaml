@@ -1357,6 +1357,8 @@ pages:
       total_inv_profit_pct: "Total – Profit %"
   bulk_deletes:
     caption: "Bulk Deletes"
+  security_events:
+    caption: "Security Events"
   refused_postings:
     caption: "Refused Postings"
 

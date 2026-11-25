@@ -39,6 +39,7 @@ func init() {
 	objects.Codeunit(902, "Verify SIFT")
 	objects.Codeunit(903, "External Report Runner")
 	objects.Codeunit(904, "G/L Balance Check")
+	objects.Codeunit(909, "Security Event Alerts")
 	objects.Codeunit(990, "Hello World")
 	objects.Codeunit(991, "Progress Demo")
 	objects.Codeunit(5636, "FA. Jnl.-Post")

@@ -50,6 +50,7 @@ const manifestMax = 64 << 10
 func superOnly(lang string) error {
 	access := fcodeunits.CurrentAccess()
 	if access != nil && !access.IsSuper {
+		recordRefused("app action (SUPER only)")
 		return errors.New(i18n.GetInstance().Message("ERR_APP_SUPER_ONLY", lang))
 	}
 	return nil
@@ -263,6 +264,7 @@ func installChecked(src *gtables.InstalledApp, data []byte, from appSource) (fco
 	if err != nil {
 		return fcodeunits.Result{}, err
 	}
+	recordAdministration("install app " + app.Name + " " + app.Version + " from " + source)
 	text := ts.MessageWithParams("APP_PENDING_INSTALL", lang, app.Name, app.Version)
 	return fcodeunits.Result{Success: true, Message: text, Refresh: true}, nil
 }
@@ -337,6 +339,7 @@ func UninstallApp(rec *gtables.InstalledApp) (fcodeunits.Result, error) {
 	if err != nil {
 		return fcodeunits.Result{}, err
 	}
+	recordAdministration("uninstall app " + rec.Name.String())
 	text := ts.MessageWithParams("APP_PENDING_REMOVAL", lang, rec.Name.String())
 	return fcodeunits.Result{Success: true, Message: text, Refresh: true}, nil
 }

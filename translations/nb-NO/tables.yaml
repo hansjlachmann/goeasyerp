@@ -7114,6 +7114,32 @@ tables:
       source_code: "Kildekode"
       user_id: "Brukernavn"
       journal_batch_name: "Kladdenavn"
+  security_event:
+    caption: "Sikkerhetshendelse"
+    fields:
+      entry_no: "Løpenr."
+      occurred_at: "Tidspunkt"
+      event: "Hendelse"
+      user_id: "Bruker-ID"
+      address: "Adresse"
+      company: "Selskap"
+      details: "Detaljer"
+      checked: "Kontrollert"
+    options:
+      event:
+        login: "Pålogging"
+        login_failed: "Mislykket pålogging"
+        login_locked: "Pålogging sperret"
+        login_refused: "Pålogging avvist"
+        logout: "Avlogging"
+        company_refused: "Selskap avvist"
+        access_refused: "Tilgang avvist"
+        cross_site_refused: "Avvist fra annet nettsted"
+        password_changed: "Passord endret"
+        password_change_failed: "Passordendring mislyktes"
+        first_user: "Første bruker"
+        setup_token_refused: "Oppsettsnøkkel avvist"
+        administration: "Administrasjon"
   bulk_delete_log:
     caption: "Logg over massesletting"
     fields:

@@ -264,6 +264,8 @@ codeunits:
     caption: "External Report Runner"
   "904":
     caption: "G/L Balance Check"
+  "909":
+    caption: "Security Event Alerts"
   "906":
     caption: "Posting Preview"
   "907":

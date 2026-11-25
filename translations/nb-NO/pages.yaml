@@ -1357,6 +1357,8 @@ pages:
       total_inv_profit_pct: "Totalt – Fortjeneste %"
   bulk_deletes:
     caption: "Massesletting"
+  security_events:
+    caption: "Sikkerhetshendelser"
   refused_postings:
     caption: "Avviste bokføringer"
 

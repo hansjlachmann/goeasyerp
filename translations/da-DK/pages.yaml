@@ -1357,6 +1357,8 @@ pages:
       total_inv_profit_pct: "I alt – Avancepct."
   bulk_deletes:
     caption: "Massesletninger"
+  security_events:
+    caption: "Sikkerhedshændelser"
   refused_postings:
     caption: "Afviste bogføringer"
 

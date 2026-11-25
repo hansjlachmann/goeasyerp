@@ -264,6 +264,8 @@ codeunits:
     caption: "Ekstern rapportkørsel"
   "904":
     caption: "Kontrol af finansbalancen"
+  "909":
+    caption: "Advarsler om sikkerhedshændelser"
   "906":
     caption: "Vis bogføring"
   "907":

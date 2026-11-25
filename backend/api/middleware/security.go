@@ -9,6 +9,7 @@ import (
 
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/securitylog"
 )
 
 // SecurityHeaders sets the headers every API answer carries (S25, S27): never framed, never
@@ -42,6 +43,9 @@ func SameOriginWrites(allowed []string) fiber.Handler {
 	}
 	return func(c *fiber.Ctx) error {
 		if crossSiteWrite(c.Method(), c.Get("Sec-Fetch-Site"), c.Get(fiber.HeaderOrigin), c.Hostname(), allowedOrigins) {
+			SecurityEventRecorded(c)
+			securitylog.Record(securitylog.Event{Kind: securitylog.CrossSiteRefused, Address: c.IP(),
+				Details: c.Method() + " " + c.Path() + " from " + originOrSite(c.Get(fiber.HeaderOrigin), c.Get("Sec-Fetch-Site"))})
 			ts := i18n.GetInstance()
 			language := acceptedLanguage(c.Get(fiber.HeaderAcceptLanguage), ts.GetSupportedLanguages())
 			if language == "" {
@@ -89,4 +93,15 @@ func hostOnly(host string) string {
 		return h
 	}
 	return strings.Trim(host, "[]")
+}
+
+// originOrSite: where a refused cross-site request came from, for the security event
+func originOrSite(origin, fetchSite string) string {
+	if origin != "" {
+		return origin
+	}
+	if fetchSite != "" {
+		return fetchSite
+	}
+	return "?"
 }

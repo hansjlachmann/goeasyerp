@@ -253,6 +253,25 @@ a proxy stands in front of the frontend, tell the frontend to read the address f
 header: `ADDRESS_HEADER=X-Forwarded-For` with `XFF_DEPTH=1` (the number of proxies in front of it),
 else every user shares the proxy's address.
 
+**Security events:** the backend records logins and failed logins, lockouts, logins refused while
+an address is locked, log outs, refused companies, every request refused for want of permission
+(403), changes refused because another web site sent them, password changes, the first user and
+wrong setup tokens, app installs and removals, enabling and disabling apps, build requests, and
+renamed or deleted companies — with the time, the user, the client's address and the company.
+Administration → Security Events lists them (SUPER users, or a role with read permission on the
+table Security Event). A flood of one kind is cut short: at most five events of a kind per user and
+address a minute, then one event saying how many more there were. Each event is also written to the
+backend's log (`security: …`).
+
+To be told about them, schedule routine 909 Security Event Alerts in the Job Queue (e.g. every
+hour) with a notification e-mail on errors. Each run looks at the events since the last run and
+fails — so the job's e-mail goes out — when it finds a lockout, a wrong setup token, a change sent
+from another site, a user with 20 or more refused requests, or 50 or more failed logins in all. It
+also deletes events older than a year. The Parameter changes the limits: `REFUSALS=20`,
+`FAILED_LOGINS=50`, `KEEP_DAYS=365` (0: keep every event). Check Events on the page shows the same
+findings without marking anything. The events hold personal data (user IDs, addresses): keep
+`KEEP_DAYS` as short as your rules allow.
+
 **Browser security headers:** the frontend sends a Content Security Policy (scripts only from the
 app), `X-Frame-Options: SAMEORIGIN` (other sites cannot frame it), `nosniff`, `Referrer-Policy` and
 `Permissions-Policy`; the backend sends `no-store` (answers hold company data and are not kept in

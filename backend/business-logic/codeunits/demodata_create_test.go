@@ -45,6 +45,7 @@ var demoDataNotNeeded = map[string]bool{
 	"Business_Unit":        true, // consolidation needs a second company
 	"Refused_Posting":      true, // written only when the balance check refuses a posting
 	"Bulk_Delete_Log":      true, // written only by deletes of several records at once
+	"Security_Event":       true, // written only by the server (logins, refusals …)
 }
 
 type menuEntry struct {

@@ -47,6 +47,8 @@ errors:
   ERR_POSTED_TABLE: "%1 is written by posting only: its records cannot be entered, deleted or renamed."
   ERR_GL_NOT_BALANCED: "The transaction cannot be completed because the G/L entries do not balance: document %1 on %2 is off by %3. Nothing was saved."
   ERR_GL_CHECK_FAILED: "The G/L check found problems: posting dates that do not balance: %1, transactions that do not balance: %2, gaps in the entry numbers: %3, register problems: %4."
+  ERR_SECURITY_EVENTS_FOUND: "The security events need your attention: events to look at: %1, users with many refused requests: %2, failed logins: %3."
+  ERR_SECURITY_ALERT_PARAMETER: "The parameter part \"%1\" is not understood. Use REFUSALS=20, FAILED_LOGINS=50 or KEEP_DAYS=365."
   ERR_PREVIEW_EXPIRED: "The posting preview is no longer available. Preview the posting again."
   ERR_FIELD_NOT_EDITABLE: "%1 cannot be changed."
   ERR_MUST_BE_ROUNDED_TO: "%1 must be rounded to the nearest %2."

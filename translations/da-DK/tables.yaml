@@ -7114,6 +7114,32 @@ tables:
       source_code: "Kildekode"
       user_id: "Brugernavn"
       journal_batch_name: "Kladdenavn"
+  security_event:
+    caption: "Sikkerhedshændelse"
+    fields:
+      entry_no: "Løbenr."
+      occurred_at: "Tidspunkt"
+      event: "Hændelse"
+      user_id: "Bruger-id"
+      address: "Adresse"
+      company: "Virksomhed"
+      details: "Detaljer"
+      checked: "Kontrolleret"
+    options:
+      event:
+        login: "Logon"
+        login_failed: "Mislykket logon"
+        login_locked: "Logon spærret"
+        login_refused: "Logon afvist"
+        logout: "Logoff"
+        company_refused: "Virksomhed afvist"
+        access_refused: "Adgang afvist"
+        cross_site_refused: "Afvist fra andet websted"
+        password_changed: "Adgangskode ændret"
+        password_change_failed: "Ændring af adgangskode mislykkedes"
+        first_user: "Første bruger"
+        setup_token_refused: "Opsætningsnøgle afvist"
+        administration: "Administration"
   bulk_delete_log:
     caption: "Log over massesletning"
     fields:

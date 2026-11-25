@@ -47,6 +47,8 @@ errors:
   ERR_POSTED_TABLE: "%1 skrives bare ved bokføring: postene kan ikke registreres, slettes eller gis nytt navn."
   ERR_GL_NOT_BALANCED: "Transaksjonen kan ikke fullføres fordi finanspostene ikke går i balanse: bilag %1 den %2 avviker med %3. Ingenting ble lagret."
   ERR_GL_CHECK_FAILED: "Finanskontrollen fant feil: bokføringsdatoer som ikke går i balanse: %1, transaksjoner som ikke går i balanse: %2, hull i løpenumrene: %3, journalfeil: %4."
+  ERR_SECURITY_EVENTS_FOUND: "Sikkerhetshendelsene trenger oppmerksomhet: hendelser å se på: %1, brukere med mange avviste forespørsler: %2, mislykkede pålogginger: %3."
+  ERR_SECURITY_ALERT_PARAMETER: "Parameterdelen \"%1\" forstås ikke. Bruk REFUSALS=20, FAILED_LOGINS=50 eller KEEP_DAYS=365."
   ERR_PREVIEW_EXPIRED: "Forhåndsvisningen av bokføringen er ikke lenger tilgjengelig. Forhåndsvis bokføringen på nytt."
   ERR_FIELD_NOT_EDITABLE: "%1 kan ikke endres."
   ERR_MUST_BE_ROUNDED_TO: "%1 må avrundes til nærmeste %2."

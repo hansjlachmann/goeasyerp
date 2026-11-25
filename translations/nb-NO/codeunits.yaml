@@ -264,6 +264,8 @@ codeunits:
     caption: "Ekstern rapportkjøring"
   "904":
     caption: "Kontroll av finansbalansen"
+  "909":
+    caption: "Varsler om sikkerhetshendelser"
   "906":
     caption: "Forhåndsvis bokføring"
   "907":

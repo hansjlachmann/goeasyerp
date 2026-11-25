@@ -873,6 +873,8 @@ menu:
         page_id: 904
       - name: "Bulk Deletes"
         page_id: 915
+      - name: "Security Events"
+        page_id: 916
       - separator: true
       - name: "SMTP Setup"
         page_id: 910

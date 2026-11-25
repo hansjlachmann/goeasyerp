@@ -9,6 +9,7 @@ import (
 	"github.com/hansjlachmann/goeasyerp/backend/business-logic/tables"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/securitylog"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/session"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
@@ -36,6 +37,7 @@ func (h *AuthHandler) ChangePassword(c *fiber.Ctx) error {
 	userID := sess.GetUserID()
 	address := c.IP()
 	if logins.locked(userID, address) {
+		recordSecurity(c, securitylog.PasswordChangeFailed, userID, sess.GetCompany(), "address locked")
 		return c.Status(fiber.StatusTooManyRequests).JSON(apitypes.NewErrorResponse(apperrors.TooManyRequests().Message(language)))
 	}
 	var user gtables.User
@@ -44,7 +46,7 @@ func (h *AuthHandler) ChangePassword(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).JSON(apitypes.NewErrorResponse(apperrors.UserNotFound().Message(language)))
 	}
 	if !tables.CheckPassword(&user, requestBody.CurrentPassword) {
-		logins.failed(userID, address)
+		failedLogin(c, securitylog.PasswordChangeFailed, userID, sess.GetCompany(), "wrong current password")
 		return c.Status(fiber.StatusBadRequest).JSON(apitypes.NewErrorResponse(apperrors.PasswordCurrentInvalid().Message(language)))
 	}
 	if err := tables.SetPassword(&user, requestBody.NewPassword); err != nil {
@@ -57,6 +59,7 @@ func (h *AuthHandler) ChangePassword(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(apitypes.NewErrorResponse(apperrors.TableModifyFailed(gtables.UserTableName, userID).Message(language)))
 	}
 	logins.succeeded(userID, address)
+	recordSecurity(c, securitylog.PasswordChanged, userID, sess.GetCompany(), "other sessions ended")
 	session.SecurityChanged()
 	h.sessionCache.RemoveByUser(userID)
 

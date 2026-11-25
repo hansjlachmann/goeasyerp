@@ -18,6 +18,7 @@ import (
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/securitylog"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/session"
 	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
@@ -95,6 +96,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	// everywhere, waits (loginGuard, S32), whatever the password
 	address := c.IP()
 	if logins.locked(requestBody.UserID, address) {
+		recordSecurity(c, securitylog.LoginRefused, requestBody.UserID, company, "")
 		return c.Status(fiber.StatusTooManyRequests).JSON(apitypes.NewErrorResponse(apperrors.TooManyRequests().Message("en-US")))
 	}
 
@@ -106,15 +108,15 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	// only the right password learns that a user is not active
 	if !user.Get(types.NewCode(requestBody.UserID)) {
 		checkDummyPassword(requestBody.Password)
-		logins.failed(requestBody.UserID, address)
+		failedLogin(c, securitylog.LoginFailed, requestBody.UserID, company, "unknown user ID")
 		return c.Status(401).JSON(apitypes.NewErrorResponse(apperrors.InvalidCredentials().Message("en-US")))
 	}
 	if !tables.CheckPassword(&user, requestBody.Password) {
-		logins.failed(requestBody.UserID, address)
+		failedLogin(c, securitylog.LoginFailed, requestBody.UserID, company, "wrong password")
 		return c.Status(401).JSON(apitypes.NewErrorResponse(apperrors.InvalidCredentials().Message("en-US")))
 	}
 	if !user.Active {
-		logins.failed(requestBody.UserID, address)
+		failedLogin(c, securitylog.LoginFailed, requestBody.UserID, company, "user not active")
 		return c.Status(401).JSON(apitypes.NewErrorResponse(apperrors.UserInactive().Message("en-US")))
 	}
 	logins.succeeded(requestBody.UserID, address)
@@ -122,6 +124,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	// Check company access before proceeding (use canonical user ID from DB, not raw input)
 	allowed, _ := h.userHasCompanyAccess(user.User_id.String(), company)
 	if !allowed {
+		recordSecurity(c, securitylog.CompanyRefused, user.User_id.String(), company, "login")
 		return c.Status(403).JSON(apitypes.NewErrorResponse(apperrors.CompanyAccessDenied(company).Message("en-US")))
 	}
 
@@ -152,6 +155,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		return c.Status(500).JSON(apitypes.NewErrorResponse("Failed to create session token"))
 	}
 	middleware.SetAuthCookie(c, h.jwtConfig, token)
+	recordSecurity(c, securitylog.Login, user.User_id.String(), company, "")
 
 	// Cache the session
 	cacheKey := user.User_id.String() + ":" + company
@@ -208,6 +212,7 @@ func (h *AuthHandler) Logout(c *fiber.Ctx) error {
 	// Remove from cache
 	if sess != nil && sess.GetUserID() != "" {
 		h.registerTime(sess)
+		recordSecurity(c, securitylog.Logout, sess.GetUserID(), sess.GetCompany(), "")
 		h.revokeSessions(sess.GetUserID())
 		h.sessionCache.RemoveByUser(sess.GetUserID())
 	}
@@ -303,16 +308,21 @@ func (h *AuthHandler) CreateInitialUser(c *fiber.Ctx) error {
 	user.InitWithDBType(tx, "", h.dbType) // User is a global table: no company
 	user.LockTable()
 	if user.Count() > 0 {
+		middleware.SecurityEventRecorded(c) // the login page asks this on every load: no event
 		return c.Status(403).JSON(apitypes.NewErrorResponse(apperrors.UsersExist().Message("en-US")))
 	}
 	// (after the check above: the login page asks with an empty body whether users exist)
 	// (wrong tokens count as failed logins of the blank user ID: 10 lock the address)
 	if logins.locked("", c.IP()) {
+		recordSecurity(c, securitylog.SetupTokenRefused, requestBody.UserID, "", "address locked")
 		return c.Status(fiber.StatusTooManyRequests).JSON(apitypes.NewErrorResponse(apperrors.TooManyRequests().Message("en-US")))
 	}
 	if !setupTokenValid(requestBody.SetupToken) {
 		if strings.TrimSpace(requestBody.SetupToken) != "" { // the login page's empty question is no guess
-			logins.failed("", c.IP())
+			recordSecurity(c, securitylog.SetupTokenRefused, requestBody.UserID, "", "wrong setup token")
+			if logins.failed("", c.IP()) { // counted for the blank user ID, as the lock above checks
+				recordSecurity(c, securitylog.LoginLocked, requestBody.UserID, "", "setup token")
+			}
 		}
 		return c.Status(fiber.StatusUnauthorized).JSON(apitypes.NewErrorResponse(apperrors.SetupTokenInvalid().Message("en-US")))
 	}
@@ -346,6 +356,7 @@ func (h *AuthHandler) CreateInitialUser(c *fiber.Ctx) error {
 	if err := ftables.Commit(tx); err != nil {
 		return c.Status(500).JSON(apitypes.NewErrorResponse(apperrors.CreateUserFailed().Message("en-US")))
 	}
+	recordSecurity(c, securitylog.FirstUser, user.User_id.String(), "", "SUPER in every company")
 
 	ts := i18n.GetInstance()
 	response := apitypes.NewSuccessResponse(map[string]interface{}{
@@ -522,6 +533,7 @@ func (h *AuthHandler) SetCompany(c *fiber.Ctx) error {
 	if userID != "" {
 		allowed, _ := h.userHasCompanyAccess(userID, requestBody.Company)
 		if !allowed {
+			recordSecurity(c, securitylog.CompanyRefused, userID, requestBody.Company, "company switch")
 			language := getLanguageOrDefault(sess)
 			return c.Status(403).JSON(apitypes.NewErrorResponse(apperrors.CompanyAccessDenied(requestBody.Company).Message(language)))
 		}
@@ -589,6 +601,15 @@ func (h *AuthHandler) GetLanguages(c *fiber.Ctx) error {
 func (h *AuthHandler) CompanyChanged(c *fiber.Ctx, oldName, newName string) {
 	h.sessionCache.RemoveByCompany(oldName)
 	sess := getSession(c)
+	changedBy := ""
+	if sess != nil {
+		changedBy = sess.GetUserID()
+	}
+	if newName == "" {
+		recordSecurity(c, securitylog.Administration, changedBy, oldName, "company deleted")
+	} else {
+		recordSecurity(c, securitylog.Administration, changedBy, oldName, "company renamed to "+newName)
+	}
 	if newName == "" || sess == nil || sess.GetCompany() != oldName || sess.GetUserID() == "" {
 		return
 	}

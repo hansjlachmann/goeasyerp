@@ -61,6 +61,7 @@ func BuildApps(rec *gtables.InstalledApp) (fcodeunits.Result, error) {
 	if err != nil {
 		return fcodeunits.Result{}, err
 	}
+	recordAdministration(fmt.Sprintf("build apps (build %d: %s)", build.Entry_no, build.Apps.String()))
 	text := ts.MessageWithParams("APP_BUILD_REQUESTED", lang, fmt.Sprint(build.Entry_no), build.Apps.String())
 	return fcodeunits.Result{Success: true, Message: text}, nil
 }

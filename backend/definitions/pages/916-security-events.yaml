@@ -1,0 +1,35 @@
+page:
+  id: 916
+  type: List
+  name: Security Events
+  source_table: Security_Event
+  caption: Security Events
+  editable: false   # written by the server itself (foundation/securitylog, S48)
+
+  layout:
+    repeater:
+      fields:
+        - source: entry_no
+          width: 90
+        - source: occurred_at
+          width: 160
+        - source: event
+          width: 170
+        - source: user_id
+          width: 120
+        - source: address
+          width: 150
+        - source: company
+          width: 130
+        - source: details
+          width: 420
+        - source: checked
+          width: 80
+
+  actions:
+    # the routine a Job Queue entry runs: the findings since the last run as an error
+    - name: Check Events
+      caption: Check Events
+      image: Run
+      promoted: true
+      run_object: codeunit:909

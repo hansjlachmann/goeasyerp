@@ -96,8 +96,9 @@ func (g *loginGuard) knownAddress(userID, address string, now time.Time) bool {
 	return ok && now.Sub(last) < loginKnownAddressTTL
 }
 
-// failed counts a failed login of the user ID from the address
-func (g *loginGuard) failed(userID, address string) {
+// failed counts a failed login of the user ID from the address; true when this failure locks
+// the address for the user ID
+func (g *loginGuard) failed(userID, address string) bool {
 	g.mu.Lock()
 	defer g.mu.Unlock()
 	now := g.now()
@@ -106,13 +107,15 @@ func (g *loginGuard) failed(userID, address string) {
 	f := g.failures[key]
 	if f == nil || now.Sub(f.first) > loginFailureWindow && !now.Before(f.lockedUntil) {
 		if f == nil && !g.room(len(g.failures), now) {
-			return
+			return false
 		}
 		f = &loginFailures{first: now}
 		g.failures[key] = f
 	}
 	f.count++
+	lockedNow := false
 	if f.count >= loginMaxFailures {
+		lockedNow = !now.Before(f.lockedUntil) // not locked already
 		f.lockedUntil = now.Add(loginLockout)
 	}
 
@@ -120,7 +123,7 @@ func (g *loginGuard) failed(userID, address string) {
 	b := g.brakes[user]
 	if b == nil || now.Sub(b.last) > loginBrakeQuietPeriod {
 		if b == nil && !g.room(len(g.brakes), now) {
-			return
+			return lockedNow
 		}
 		b = &loginBrake{}
 		g.brakes[user] = b
@@ -130,6 +133,7 @@ func (g *loginGuard) failed(userID, address string) {
 	if b.count > loginBrakeAfter {
 		b.notBefore = now.Add(brakeDelay(b.count - loginBrakeAfter))
 	}
+	return lockedNow
 }
 
 // brakeDelay: the wait after the n-th failure beyond loginBrakeAfter (1 s, 2 s, 4 s …,
