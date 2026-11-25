@@ -194,24 +194,24 @@ func CreateOrOpenPostgresDatabase(config *PostgresConfig) (*Database, error) {
 // docs (S6)
 var knownPasswords = []string{"openerp", "postgres", "password", "changeme"}
 
-// PasswordWarning: a warning when the server's database password (DB_PASSWORD) is one anyone
-// knows — empty without one, or on a development database (DB_KEEP_SUPERUSER, whose password
-// the tests use)
-func PasswordWarning() string {
+// PasswordRefusal: why the server refuses to start when its database password (DB_PASSWORD) is
+// one anyone knows (S6) — "" when it is its own, without a database server (SQLite), or on a
+// development database (DB_KEEP_SUPERUSER, whose password the tests use)
+func PasswordRefusal() string {
 	if os.Getenv("DB_HOST") == "" || os.Getenv(EnvKeepSuperuser) == "true" {
 		return ""
 	}
-	return passwordWarning(os.Getenv("DB_PASSWORD"))
+	return passwordRefusal(os.Getenv("DB_PASSWORD"))
 }
 
-func passwordWarning(password string) string {
+func passwordRefusal(password string) string {
 	password = strings.TrimSpace(password)
 	if password == "" {
 		password = "openerp" // PostgresConfigFromEnv's default
 	}
 	for _, known := range knownPasswords {
 		if strings.EqualFold(password, known) {
-			return fmt.Sprintf("WARNING: the database password is %q, which everyone can read in GoEasyERP's files — anyone who reaches the database can read and change all data. Change it: docs/operations.md, \"Changing the database password\" (a later release will refuse to start with it)", known)
+			return fmt.Sprintf("the database password (DB_PASSWORD) is %q, which everyone can read in GoEasyERP's files — anyone who reaches the database could read and change all data. Give the database a password of its own and set it in DB_PASSWORD (POSTGRES_PASSWORD in prod.env): docs/operations.md, \"Changing the database password\". The one-computer trial's install script does it by itself.", known)
 		}
 	}
 	return ""

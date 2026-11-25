@@ -39,7 +39,7 @@ func TestLimitPool(t *testing.T) {
 	}
 }
 
-func TestPasswordWarning(t *testing.T) {
+func TestPasswordRefusal(t *testing.T) {
 	for _, tc := range []struct {
 		password string
 		warns    bool
@@ -50,25 +50,25 @@ func TestPasswordWarning(t *testing.T) {
 		{"postgres", true},
 		{"9f2c41d0a7b3e5f8c6d1a2b4", false},
 	} {
-		got := passwordWarning(tc.password) != ""
+		got := passwordRefusal(tc.password) != ""
 		if got != tc.warns {
-			t.Errorf("password %q: warning %v, want %v", tc.password, got, tc.warns)
+			t.Errorf("password %q: refused %v, want %v", tc.password, got, tc.warns)
 		}
 	}
 
 	// only a server with a database (DB_HOST), and not a development database
 	t.Setenv("DB_PASSWORD", "openerp")
 	t.Setenv("DB_HOST", "")
-	if PasswordWarning() != "" {
-		t.Error("a warning without DB_HOST (SQLite)")
+	if PasswordRefusal() != "" {
+		t.Error("refused without DB_HOST (SQLite)")
 	}
 	t.Setenv("DB_HOST", "db")
 	t.Setenv(EnvKeepSuperuser, "true")
-	if PasswordWarning() != "" {
-		t.Error("a warning on a development database (DB_KEEP_SUPERUSER)")
+	if PasswordRefusal() != "" {
+		t.Error("refused on a development database (DB_KEEP_SUPERUSER)")
 	}
 	t.Setenv(EnvKeepSuperuser, "")
-	if PasswordWarning() == "" {
-		t.Error("no warning for openerp on a server")
+	if PasswordRefusal() == "" {
+		t.Error("openerp accepted on a server")
 	}
 }

@@ -386,9 +386,10 @@ scripts/prod.sh exec -T db dropdb -U openerp restore_test
 
 `POSTGRES_PASSWORD` is required (the compose file refuses to start without it) and is only
 applied when the database volume is created. Installations made before it was required run
-with `openerp`, which everyone can read in this repository: the backend logs "WARNING: the
-database password is "openerp" …" at every start, and a later release will refuse to start with
-it. Change it — the database first, then `prod.env`, then restart:
+with `openerp`, which everyone can read in this repository. Since 0.1.191 the backend refuses to
+start with it (or with `postgres`, `password`, `changeme`, or none): "Refusing to start: the
+database password (DB_PASSWORD) is "openerp" …". Change it before upgrading — the database first,
+then `prod.env`, then restart:
 
 ```bash
 cd ~/openerp

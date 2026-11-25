@@ -110,7 +110,6 @@ ENV PORT=8080
 ENV DB_HOST=""
 ENV DB_PORT=5432
 ENV DB_USER=openerp
-ENV DB_PASSWORD=openerp
 ENV DB_NAME=openerp
 
 # Not root (S41): a code-execution bug in the server would otherwise be root in its container.

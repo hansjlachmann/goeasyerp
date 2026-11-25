@@ -54,9 +54,9 @@ func main() {
 	if jwtWarning != "" {
 		log.Println(jwtWarning)
 	}
-	// A database password anyone knows (S6): warned for now, refused by a later release
-	if dbWarning := database.PasswordWarning(); dbWarning != "" {
-		log.Println(dbWarning)
+	// A database password anyone knows (S6): the server does not start with it
+	if refusal := database.PasswordRefusal(); refusal != "" {
+		log.Fatalf("Refusing to start: %s", refusal)
 	}
 
 	// The installation's own builds of its extension apps: the bundle of this version runs

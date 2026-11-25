@@ -308,8 +308,11 @@ jobs:
           JOB_QUEUE_ENABLED: 'false'
         run: |
           go build -o "$RUNNER_TEMP/api-server" ./cmd/api-server
-          # a fresh session key and test user password per run (masked in the log)
+          # a fresh session key, database password and test user password per run (masked in
+          # the log; the database trusts the job's connections, but the server refuses a known
+          # or missing password — S6)
           JWT_SECRET=$(openssl rand -hex 32)
+          export DB_PASSWORD=$(openssl rand -hex 16)
           E2E_PASSWORD=$(openssl rand -hex 12)
           echo "::add-mask::$E2E_PASSWORD"
           echo "E2E_PASSWORD=$E2E_PASSWORD" >> "$GITHUB_ENV"
