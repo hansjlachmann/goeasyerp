@@ -13,7 +13,6 @@ import (
 	"errors"
 	"fmt"
 	"mime"
-	"net"
 	netmail "net/mail"
 	"net/smtp"
 	"strconv"
@@ -174,7 +173,7 @@ func (m *SMTPMailer) SendWithAttachments(to []string, subject, body string, atta
 // dial opens the SMTP session as smtp.SendMail does (STARTTLS when the server offers
 // it, then AUTH when a user is set), with timeouts.
 func (m *SMTPMailer) dial() (*smtp.Client, error) {
-	conn, err := net.DialTimeout("tcp", net.JoinHostPort(m.cfg.Host, m.cfg.Port), dialTimeout)
+	conn, err := dialChecked(m.cfg.Host, m.cfg.Port, dialTimeout) // not to loopback, link-local … (S49)
 	if err != nil {
 		return nil, err
 	}

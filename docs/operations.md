@@ -439,6 +439,17 @@ every restart). Set it once
 (`openssl rand -hex 32`) and keep it; changing it logs everyone out once — and, unless
 `OPENERP_ENCRYPTION_KEY` is set, the SMTP password has to be entered again (next section).
 
+## Where the server sends mail (SMTP Setup)
+
+Only SUPER users may change SMTP Setup. Its SMTP server is never an address that reaches the
+server itself (loopback, `0.0.0.0`) or the link-local network — the cloud metadata service
+`169.254.169.254` included — nor a multicast address: such an address is refused when it is
+entered, and a name that resolves to one is refused when the server connects (it connects to the
+address it checked). Otherwise a user who may change the setup could use "Send Test E-mail" to
+find out what listens on the server's network. Private addresses (`10.x`, `172.16–31.x`,
+`192.168.x`, `fd…`) are allowed, for an office's own mail relay; set `SMTP_BLOCK_PRIVATE=true` in
+prod.env when the mail server is outside your network, and they are refused too.
+
 ## Encrypted secrets (SMTP password)
 
 The SMTP password in SMTP Setup is stored encrypted (AES-256-GCM), so a database dump or

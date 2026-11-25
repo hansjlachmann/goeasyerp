@@ -95,6 +95,8 @@ services:
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       THEME_ALLOWED_OWNERS: ${THEME_ALLOWED_OWNERS:-}
       TRUSTED_PROXIES: ${TRUSTED_PROXIES:-}
+      # true: SMTP Setup may not name a private address either (S49; loopback and link-local never)
+      SMTP_BLOCK_PRIVATE: ${SMTP_BLOCK_PRIVATE:-}
       # The builds of the extension apps by the installation's own builder (App Build Setup:
       # Builds By = Local Builder): the server runs the newest one of its version
       APP_BUILDS_DIR: /builds

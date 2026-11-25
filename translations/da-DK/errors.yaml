@@ -51,6 +51,8 @@ errors:
   ERR_SECURITY_ALERT_PARAMETER: "Parameterdelen \"%1\" forstås ikke. Brug REFUSALS=20, FAILED_LOGINS=50 eller KEEP_DAYS=365."
   ERR_CHANGE_LOG_SUPER_ONLY: "Kun en bruger med rollen SUPER må ændre, hvad ændringsloggen registrerer."
   ERR_CHANGE_LOG_FIELD_UNKNOWN: "Tabel %2 har ikke felt %1."
+  ERR_SMTP_SETUP_SUPER_ONLY: "Kun en bruger med rollen SUPER må ændre SMTP-opsætningen."
+  ERR_SMTP_SERVER_NOT_ALLOWED: "%1 kan ikke være SMTP-server: %2."
   ERR_PREVIEW_EXPIRED: "Eksemplet på bogføringen er ikke længere tilgængeligt. Vis eksemplet på bogføringen igen."
   ERR_FIELD_NOT_EDITABLE: "%1 kan ikke ændres."
   ERR_MUST_BE_ROUNDED_TO: "%1 skal afrundes til nærmeste %2."

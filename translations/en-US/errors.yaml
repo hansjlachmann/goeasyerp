@@ -51,6 +51,8 @@ errors:
   ERR_SECURITY_ALERT_PARAMETER: "The parameter part \"%1\" is not understood. Use REFUSALS=20, FAILED_LOGINS=50 or KEEP_DAYS=365."
   ERR_CHANGE_LOG_SUPER_ONLY: "Only a user with the role SUPER may change what the change log records."
   ERR_CHANGE_LOG_FIELD_UNKNOWN: "Table %2 has no field %1."
+  ERR_SMTP_SETUP_SUPER_ONLY: "Only a user with the role SUPER may change the SMTP Setup."
+  ERR_SMTP_SERVER_NOT_ALLOWED: "%1 cannot be the SMTP server: %2."
   ERR_PREVIEW_EXPIRED: "The posting preview is no longer available. Preview the posting again."
   ERR_FIELD_NOT_EDITABLE: "%1 cannot be changed."
   ERR_MUST_BE_ROUNDED_TO: "%1 must be rounded to the nearest %2."

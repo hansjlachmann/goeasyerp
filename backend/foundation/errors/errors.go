@@ -41,6 +41,8 @@ const (
 	ErrDeleteTypeCount        ErrorCode = "ERR_DELETE_TYPE_COUNT"
 	ErrDeleteCountChanged     ErrorCode = "ERR_DELETE_COUNT_CHANGED"
 	ErrCompanyDeleteSuper     ErrorCode = "ERR_COMPANY_DELETE_SUPER_ONLY"
+	ErrSMTPSetupSuperOnly     ErrorCode = "ERR_SMTP_SETUP_SUPER_ONLY"
+	ErrSMTPServerNotAllowed   ErrorCode = "ERR_SMTP_SERVER_NOT_ALLOWED"
 	ErrChangeLogSuperOnly     ErrorCode = "ERR_CHANGE_LOG_SUPER_ONLY"
 	ErrChangeLogFieldUnknown  ErrorCode = "ERR_CHANGE_LOG_FIELD_UNKNOWN"
 	ErrRolesSuperOnly         ErrorCode = "ERR_ROLES_SUPER_ONLY"
@@ -575,6 +577,17 @@ func ReportNotScheduled(reportID int) *AppError {
 // one side of each transaction to another date)
 func DateComprGLFilter(filter string) *AppError {
 	return &AppError{Code: ErrDateComprGLFilter, Params: []string{filter}}
+}
+
+// SMTPSetupSuperOnly: only a SUPER user changes where the server sends mail (S49)
+func SMTPSetupSuperOnly() *AppError {
+	return &AppError{Code: ErrSMTPSetupSuperOnly}
+}
+
+// SMTPServerNotAllowed: the SMTP server entered is an address the server does not connect to
+// (loopback, link-local …; the reason in English)
+func SMTPServerNotAllowed(server, reason string) *AppError {
+	return &AppError{Code: ErrSMTPServerNotAllowed, Params: []string{server, reason}}
 }
 
 // ChangeLogSetupSuperOnly: only a SUPER user changes what the change log records (S47)

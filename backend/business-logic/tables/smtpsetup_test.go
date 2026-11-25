@@ -2,11 +2,14 @@ package tables
 
 import (
 	"errors"
-	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 	"strings"
 	"testing"
 
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
+	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/session"
+	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/secrets"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/types"
 )
@@ -112,5 +115,42 @@ func TestEncryptStoredSecrets(t *testing.T) {
 	}
 	if n, _ := gtables.EncryptStoredSecrets(db, database.DBTypeSQLite, nil); n != 0 {
 		t.Error("an encrypted password was encrypted again")
+	}
+}
+
+// Only SUPER users change SMTP Setup, and its server cannot be an address the server refuses
+// to connect to (S49)
+func TestSMTPSetupGuards(t *testing.T) {
+	db := newTestDB(t)
+	var setup gtables.SMTPSetup
+	if err := setup.CreateTableWithDBType(db, "", database.DBTypeSQLite); err != nil {
+		t.Fatal(err)
+	}
+	setup.InitWithDBType(db, "", database.DBTypeSQLite)
+	if err := setup.Validate("smtp_server", "169.254.169.254"); err == nil {
+		t.Error("the cloud metadata address accepted as SMTP server")
+	}
+	if err := setup.Validate("smtp_server", "127.0.0.1"); err == nil {
+		t.Error("loopback accepted as SMTP server")
+	}
+	if err := setup.Validate("smtp_server", "192.168.1.20"); err != nil {
+		t.Errorf("a private relay refused: %v", err)
+	}
+	if err := setup.Validate("smtp_server", "smtp.example.com"); err != nil {
+		t.Errorf("a name refused: %v", err)
+	}
+
+	fcodeunits.SetCurrentAccess(&session.Session{UserID: "CLERK", HasRoles: true})
+	t.Cleanup(fcodeunits.ClearCurrentContext)
+	if setup.Insert(true) {
+		t.Fatal("a user without SUPER changed SMTP Setup")
+	}
+	var appErr *apperrors.AppError
+	if !errors.As(setup.TriggerError(), &appErr) || appErr.Code != apperrors.ErrSMTPSetupSuperOnly {
+		t.Errorf("error %v", setup.TriggerError())
+	}
+	fcodeunits.SetCurrentAccess(&session.Session{UserID: "ADMIN", HasRoles: true, IsSuper: true})
+	if !setup.Insert(true) {
+		t.Errorf("a SUPER user: %v", setup.TriggerError())
 	}
 }
