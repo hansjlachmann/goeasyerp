@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.190](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.189...v0.1.190) (2026-11-25)
+
+
+### Features
+
+* the first user needs a setup token; stronger passwords and Change Password; sessions end after 2 hours idle ([e642248](https://github.com/hansjlachmann/goeasyerp/commit/e642248391d7e97f380126a0909bb7d9b9ab8a2b))
+
 ## [0.1.189](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.188...v0.1.189) (2026-11-24)
 
 
