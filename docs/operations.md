@@ -41,6 +41,17 @@ scripts/prod.sh pull && scripts/prod.sh up -d
 On a fresh database `POSTGRES_PASSWORD` becomes the password of the database role the server
 works as, `goeasyerp` (see Database roles).
 
+**The first user** (the administrator, SUPER in every company) is made on the login page with the
+installation's setup token, so nobody else who reaches a new installation can claim it.
+`SETUP_TOKEN` in prod.env sets it. If it is empty, the backend makes a random token and writes it
+to its log at every start while there is no user yet:
+
+```bash
+scripts/prod.sh logs backend | grep "setup token"
+```
+
+Ten wrong tokens from one address lock that address for 15 minutes, like failed logins.
+
 ## Switching an existing installation to prod.env
 
 Installations set up before `prod.env` existed run `docker compose -f docker-compose.prod.yml`
@@ -215,6 +226,15 @@ to 3000/8080 — or when only a tunnel/proxy **on the same host** does (e.g. `cl
 nginx pointing at `localhost:3000`). Set `PUBLISH_HOST=0.0.0.0` only if a proxy **on another
 machine** connects to them. To see what connects, check the tunnel/proxy configuration and
 `sudo ss -tnp | grep -E ':(3000|8080)'` while the system is in use.
+
+**Sessions and passwords:** a session ends after 2 hours without requests, and always 24 hours
+after the login. Set the idle limit with `SESSION_IDLE_TIMEOUT` in prod.env, e.g. `30m` or `8h`;
+`0` leaves only the 24 hours. While the user works, the browser's token is renewed every few
+minutes. A password has at least 10 characters, is not one of the commonly used passwords and does
+not contain the user ID. Users change their own password from the user menu (Change Password).
+That needs the current password and logs the user out everywhere else. An administrator setting a
+user's password on the User card also logs that user out everywhere. Existing passwords keep
+working; the rules apply when a password is set.
 
 **Client addresses and logins:** the backend limits login attempts per client address and per user
 ID: 10 failed logins of a user ID from one address within 15 minutes lock that address for that

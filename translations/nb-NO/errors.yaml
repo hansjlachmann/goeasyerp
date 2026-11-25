@@ -196,6 +196,10 @@ errors:
   ERR_USER_NOT_FOUND: "Bruker ikke funnet"
   ERR_USER_REQUIRED: "Bruker-ID og passord er påkrevd"
   ERR_USERS_EXIST: "Brukere finnes allerede. Bruk brukeradministrasjonen."
+  ERR_SETUP_TOKEN_INVALID: "Oppsettsnøkkelen mangler eller er feil. Den står i serverloggen (setup token), eller i SETUP_TOKEN i serverens innstillinger."
+  ERR_PASSWORD_TOO_COMMON: "Dette passordet er for vanlig. Velg et annet."
+  ERR_PASSWORD_HAS_USER_ID: "Passordet kan ikke inneholde bruker-ID-en."
+  ERR_PASSWORD_CURRENT_INVALID: "Det nåværende passordet er feil."
   ERR_CREATE_USER_FAILED: "Kunne ikke opprette bruker"
 
   # Request/Input

@@ -158,6 +158,17 @@ function Install-GoEasyERP {
         }
     }
 
+    # The setup token: the first user (the administrator) is made on the login page with it (S37)
+    $setupToken = $envValues['SETUP_TOKEN']
+    if (-not $setupToken) {
+        $bytes = New-Object byte[] 16
+        $rng = New-Object System.Security.Cryptography.RNGCryptoServiceProvider
+        $rng.GetBytes($bytes)
+        $rng.Dispose()
+        $setupToken = ($bytes | ForEach-Object { $_.ToString('x2') }) -join ''
+        $add += "SETUP_TOKEN='$setupToken'`n"
+    }
+
     # The app builder's own database password (it may read and change its build tables only)
     if (-not $envValues['BUILDER_DB_PASSWORD']) {
         $bytes = New-Object byte[] 24
@@ -194,6 +205,7 @@ function Install-GoEasyERP {
         $text = "# GoEasyERP settings, read by docker compose (docker-compose.yml in this folder).`n" +
             "# Keep JWT_SECRET: it also encrypts stored passwords (SMTP Setup); a new one makes them unreadable.`n" +
             "# POSTGRES_PASSWORD is the database's: to change it, change it in the database first.`n" +
+            "# SETUP_TOKEN: asked on the login page when the first user (the administrator) is made.`n" +
             $add +
             "# The port GoEasyERP is opened on, and from where: 127.0.0.1 this computer only, 0.0.0.0 the network too`n" +
             "#GOEASYERP_PORT=8000`n" +
@@ -282,7 +294,8 @@ function Install-GoEasyERP {
             if ($upgrade) {
                 Write-Host "GoEasyERP is upgraded and running: open $origin" -ForegroundColor Green
             } else {
-                Write-Host "GoEasyERP is running: open $origin and create the first user." -ForegroundColor Green
+                Write-Host "GoEasyERP is running: open $origin and create the first user" -ForegroundColor Green
+                Write-Host "with the setup token $setupToken (it is in .env too)." -ForegroundColor Green
             }
             return
         } catch {

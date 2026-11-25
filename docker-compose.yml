@@ -40,6 +40,10 @@ services:
       # signs the sessions: set it in the shell first (export JWT_SECRET=$(openssl rand -hex 32));
       # the server refuses to start without one, or with a known example text
       JWT_SECRET: ${JWT_SECRET:?export JWT_SECRET=$(openssl rand -hex 32) before docker compose up}
+      # the first user needs it on the login page (S37); empty: a random one in the backend log
+      SETUP_TOKEN: ${SETUP_TOKEN:-}
+      # a session without requests ends after this (S39; e.g. 30m, 8h; empty: 2h; 0: never)
+      SESSION_IDLE_TIMEOUT: ${SESSION_IDLE_TIMEOUT:-}
     depends_on:
       db:
         condition: service_healthy

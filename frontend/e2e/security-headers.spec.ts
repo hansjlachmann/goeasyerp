@@ -36,7 +36,7 @@ test("the login page carries the security headers and runs under its CSP", async
 test("lists and cards run under the CSP", async ({ page, request }) => {
   test.skip(!password, "needs the backend with demo data (E2E_PASSWORD)");
   const init = await request.post("/api/auth/init", {
-    data: { user_id: user, user_name: user, email: "", password },
+    data: { user_id: user, user_name: user, email: "", password, setup_token: process.env.SETUP_TOKEN ?? "" },
   });
   expect([200, 403]).toContain(init.status());
 

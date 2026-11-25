@@ -7,6 +7,7 @@
 	import { theme, loadAppearance, clearAppearance } from '#lib/stores/theme.js';
 	import { regional, loadRegional, clearRegional } from '#lib/stores/regional.js';
 	import MySettingsDialog from './MySettingsDialog.svelte';
+	import ChangePasswordDialog from './ChangePasswordDialog.svelte';
 	import { formatDate } from '#lib/utils/fieldHelpers.js';
 	import { currentUser } from '#lib/stores/user.js';
 	import { session, currentCompany } from '#lib/stores/session.js';
@@ -39,6 +40,7 @@
 	let showCompanyDialog = $state(false);
 	let showAppearanceDialog = $state(false);
 	let showMySettingsDialog = $state(false);
+	let showChangePasswordDialog = $state(false);
 	let focusBeforeDialog: HTMLElement | null = null;
 
 	$effect(() => {
@@ -523,6 +525,18 @@
 									{t(MENU.MY_SETTINGS)}
 								</button>
 
+								<!-- Change Password: the user's own password (S38) -->
+								<button
+									onclick={() => { showUserMenu = false; showChangePasswordDialog = true; }}
+									class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+									data-change-password-menu
+								>
+									<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+									</svg>
+									{t(MENU.CHANGE_PASSWORD)}
+								</button>
+
 								<!-- Appearance: themes for light and dark mode -->
 								<button
 									onclick={() => { showUserMenu = false; showAppearanceDialog = true; }}
@@ -649,6 +663,10 @@
 
 {#if showMySettingsDialog}
 	<MySettingsDialog onclose={() => (showMySettingsDialog = false)} />
+{/if}
+
+{#if showChangePasswordDialog}
+	<ChangePasswordDialog onclose={() => (showChangePasswordDialog = false)} />
 {/if}
 
 {#if showAppearanceDialog}

@@ -25,7 +25,8 @@ irm https://raw.githubusercontent.com/hansjlachmann/goeasyerp/main/scripts/goeas
 curl -fsSL https://raw.githubusercontent.com/hansjlachmann/goeasyerp/main/scripts/goeasyerp.sh | sh
 ```
 
-After 2-3 minutes open http://localhost:8000 and create the first user.
+After 2-3 minutes open http://localhost:8000 and create the first user with the setup token the
+script shows (it is in `.env` too).
 
 The script works in a folder of its own — `C:\GoEasyERP` on Windows, `~/goeasyerp` elsewhere
 (another one: `$env:GOEASYERP_DIR = 'D:\GoEasyERP'` before the line in PowerShell,

@@ -93,7 +93,7 @@ func TestSensitiveFieldNotReturned(t *testing.T) {
 	_, responses["list"] = getJSON(t, app, "/api/tables/User/list")
 	_, responses["card"] = getJSON(t, app, "/api/tables/User/card/HANS")
 	_, responses["modify"] = sendJSON(t, app, "PUT", "/api/tables/User/modify/HANS", `{"user_name":"Hans L"}`)
-	_, responses["insert"] = sendJSON(t, app, "POST", "/api/tables/User/insert", `{"user_id":"KARI","user_name":"Kari","password":"other-456"}`)
+	_, responses["insert"] = sendJSON(t, app, "POST", "/api/tables/User/insert", `{"user_id":"KARI","user_name":"Kari","password":"other-4567"}`)
 	_, responses["validate"] = sendJSON(t, app, "POST", "/api/tables/User/validate", `{"field":"user_name","value":"X","record":{"user_id":"HANS"}}`)
 	_, responses["init"] = sendJSON(t, app, "POST", "/api/tables/User/init", `{}`)
 

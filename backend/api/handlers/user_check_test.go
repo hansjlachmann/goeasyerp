@@ -40,7 +40,7 @@ func TestUserCheckRevokesTokens(t *testing.T) {
 	kari.InitWithDBType(db, "", sqlite)
 	kari.User_id = types.NewCode("KARI")
 	kari.Active = true
-	if err := tables.SetPassword(kari, "secret1"); err != nil {
+	if err := tables.SetPassword(kari, "long-secret-1"); err != nil {
 		t.Fatal(err)
 	}
 	if !kari.Insert(true) {
@@ -71,7 +71,7 @@ func TestUserCheckRevokesTokens(t *testing.T) {
 	u := user()
 	u.Sessions_valid_from = types.DateTime{}
 	u.Modify(false)
-	if err := tables.SetPassword(u, "secret2"); err != nil {
+	if err := tables.SetPassword(u, "long-secret-2"); err != nil {
 		t.Fatal(err)
 	}
 	if !u.Modify(true) {

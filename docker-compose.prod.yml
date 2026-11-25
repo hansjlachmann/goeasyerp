@@ -82,6 +82,10 @@ services:
       APP_VERSION: ${APP_VERSION:-latest}
       # Without it every restart logs all users out (random key per start)
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in prod.env (openssl rand -hex 32)}
+      # the first user needs it on the login page (S37); empty: a random one in the backend log
+      SETUP_TOKEN: ${SETUP_TOKEN:-}
+      # a session without requests ends after this (S39; e.g. 30m, 8h; empty: 2h; 0: never)
+      SESSION_IDLE_TIMEOUT: ${SESSION_IDLE_TIMEOUT:-}
       # Encrypts the SMTP password in the database (empty: derived from JWT_SECRET)
       OPENERP_ENCRYPTION_KEY: ${OPENERP_ENCRYPTION_KEY:-}
       # NAV report proxy used by the NAV Report Runner codeunit (empty: http://localhost:5009)

@@ -313,7 +313,11 @@ jobs:
           E2E_PASSWORD=$(openssl rand -hex 12)
           echo "::add-mask::$E2E_PASSWORD"
           echo "E2E_PASSWORD=$E2E_PASSWORD" >> "$GITHUB_ENV"
-          JWT_SECRET=$JWT_SECRET nohup "$RUNNER_TEMP/api-server" > "$RUNNER_TEMP/api-server.log" 2>&1 &
+          # the first user needs the setup token (S37): the E2E tests read it from the environment
+          SETUP_TOKEN=$(openssl rand -hex 16)
+          echo "::add-mask::$SETUP_TOKEN"
+          echo "SETUP_TOKEN=$SETUP_TOKEN" >> "$GITHUB_ENV"
+          SETUP_TOKEN=$SETUP_TOKEN JWT_SECRET=$JWT_SECRET nohup "$RUNNER_TEMP/api-server" > "$RUNNER_TEMP/api-server.log" 2>&1 &
           for i in $(seq 1 120); do
             curl -sf http://localhost:8080/health > /dev/null && exit 0
             sleep 5

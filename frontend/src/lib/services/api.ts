@@ -18,6 +18,7 @@ import type { MainMenuTextLine } from '#lib/utils/mainMenuText.js';
 import { showNotes } from '#lib/utils/notes.js';
 import { fetchAnswering } from '#lib/utils/questions.js';
 import { ask } from '#lib/stores/question.js';
+import { sessionEnded } from '#lib/utils/sessionEnd.js';
 
 const API_BASE = '/api';
 
@@ -27,6 +28,15 @@ const API_BASE = '/api';
 async function fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
 	const response = await fetchAnswering(globalThis.fetch, ask, input, init);
 	showNotes(response);
+	const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+	if (typeof window !== 'undefined' && sessionEnded(url, response.status, window.location.pathname)) {
+		// the session ended (idle limit, logged out elsewhere): a new login, started afresh (the
+		// user store loaded here only: it needs SvelteKit, which this client's tests run without)
+		void import('#lib/stores/user.js').then(({ currentUser }) => {
+			currentUser.clear();
+			window.location.href = '/login';
+		});
+	}
 	return response;
 }
 
@@ -486,6 +496,7 @@ export const api = {
 		user_name: string;
 		email: string;
 		password: string;
+		setup_token: string; // the installation's setup token (S37)
 	}): Promise<ApiResponse> {
 		const response = await fetch(`${API_BASE}/auth/init`, {
 			method: 'POST',
@@ -493,6 +504,16 @@ export const api = {
 			body: JSON.stringify(data)
 		});
 		return handleApiResponseFull(response, 'create initial user');
+	},
+
+	/** The user's own password (S38): the current one and the new one; other sessions end */
+	async changePassword(currentPassword: string, newPassword: string): Promise<ApiResponse> {
+		const response = await fetch(`${API_BASE}/auth/password`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ current_password: currentPassword, new_password: newPassword })
+		});
+		return handleApiResponseFull(response, 'change password');
 	},
 
 	async setLanguage(language: string, persist: boolean = true): Promise<ApiResponse> {

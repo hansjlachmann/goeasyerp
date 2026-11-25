@@ -56,10 +56,48 @@ type PermissionLoader func(db *sql.DB, dbType database.DBType, userID, company s
 
 // JWTConfig holds JWT authentication configuration
 type JWTConfig struct {
-	SecretKey    []byte
-	CookieName   string
-	TokenExpiry  time.Duration
+	SecretKey  []byte
+	CookieName string
+	// TokenExpiry: the longest a session lasts after its login (absolute)
+	TokenExpiry time.Duration
+	// IdleTimeout: a session without a request for this long ends (S39); a token lasts this long
+	// and is renewed while the user works (0: no idle limit, tokens last TokenExpiry)
+	IdleTimeout  time.Duration
 	SecureCookie bool
+}
+
+// DefaultIdleTimeout is the idle limit without SESSION_IDLE_TIMEOUT
+const DefaultIdleTimeout = 2 * time.Hour
+
+// renewAfter: a token is renewed on a request when it is older than this (or a quarter of
+// the idle limit, when that is shorter) — not on every request
+const renewAfter = 5 * time.Minute
+
+// idleTimeoutFromEnv reads SESSION_IDLE_TIMEOUT (a duration like 30m or 8h; 0 none)
+func idleTimeoutFromEnv() time.Duration {
+	value := strings.TrimSpace(os.Getenv("SESSION_IDLE_TIMEOUT"))
+	if value == "" {
+		return DefaultIdleTimeout
+	}
+	d, err := time.ParseDuration(value)
+	if err != nil || d < 0 {
+		log.Printf("WARNING: SESSION_IDLE_TIMEOUT=%q is not a duration (e.g. 30m, 2h): using %s", value, DefaultIdleTimeout)
+		return DefaultIdleTimeout
+	}
+	if d > 0 && d < time.Minute {
+		d = time.Minute
+	}
+	return d
+}
+
+// expiry is when a token issued at now for a login at loginAt ends: the idle limit from now,
+// never after the absolute limit from the login
+func (config JWTConfig) expiry(now, loginAt time.Time) time.Time {
+	end := loginAt.Add(config.TokenExpiry)
+	if config.IdleTimeout > 0 && now.Add(config.IdleTimeout).Before(end) {
+		return now.Add(config.IdleTimeout)
+	}
+	return end
 }
 
 // DefaultJWTConfig returns a JWTConfig populated from environment variables
@@ -82,6 +120,7 @@ func DefaultJWTConfig() JWTConfig {
 		SecretKey:    []byte(secret),
 		CookieName:   "openerp_session",
 		TokenExpiry:  24 * time.Hour,
+		IdleTimeout:  idleTimeoutFromEnv(),
 		SecureCookie: secureCookie,
 	}
 }
@@ -101,7 +140,7 @@ func GenerateToken(config JWTConfig, userID, userName, company, language, menu s
 		Menu:     menu,
 		LoginAt:  loginAt.Unix(),
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(now.Add(config.TokenExpiry)),
+			ExpiresAt: jwt.NewNumericDate(config.expiry(now, loginAt)),
 			IssuedAt:  jwt.NewNumericDate(now),
 		},
 	}
@@ -147,6 +186,52 @@ func SetAuthCookie(c *fiber.Ctx, config JWTConfig, token string) {
 		SameSite: "Lax",
 		MaxAge:   int(config.TokenExpiry.Seconds()),
 	})
+}
+
+// setCookie sets the token cookie without telling the frontend the session changed (a renewal)
+func setCookie(c *fiber.Ctx, config JWTConfig, token string) {
+	c.Cookie(&fiber.Cookie{
+		Name:     config.CookieName,
+		Value:    token,
+		Path:     "/",
+		HTTPOnly: true,
+		Secure:   config.SecureCookie,
+		SameSite: "Lax",
+		MaxAge:   int(config.TokenExpiry.Seconds()),
+	})
+}
+
+// renewToken gives a token that is a while old a new idle limit (S39): a session ends only
+// after IdleTimeout without requests, or at the absolute limit after its login. A token is
+// renewed only after the user check — a token revoked on another server within the session
+// cache's 30 seconds is never renewed past its revocation.
+func renewToken(c *fiber.Ctx, config JWTConfig, cache *SessionCache, claims *Claims) {
+	if config.IdleTimeout <= 0 || claims.ExpiresAt == nil {
+		return
+	}
+	now := time.Now()
+	every := renewAfter
+	if config.IdleTimeout/4 < every {
+		every = config.IdleTimeout / 4
+	}
+	if now.Sub(claims.issuedAt()) < every {
+		return
+	}
+	expires := config.expiry(now, claims.LoginTime())
+	if !expires.After(claims.ExpiresAt.Time) {
+		return // at the absolute limit: no longer
+	}
+	if !cache.checkUser(claims.UserID, claims.issuedAt()) {
+		return
+	}
+	renewed := *claims
+	renewed.IssuedAt = jwt.NewNumericDate(now)
+	renewed.ExpiresAt = jwt.NewNumericDate(expires)
+	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, &renewed).SignedString(config.SecretKey)
+	if err != nil {
+		return
+	}
+	setCookie(c, config, token)
 }
 
 // ClearAuthCookie removes the auth cookie
@@ -221,6 +306,7 @@ func AuthMiddleware(config JWTConfig, db *sql.DB, dbType database.DBType, cache 
 		cacheKey := claims.UserID + ":" + company
 		if entry := cache.entry(cacheKey); entry != nil {
 			if !entry.stale() {
+				renewToken(c, config, cache, claims)
 				c.Locals("session", entry.Session)
 				return c.Next()
 			}
@@ -264,6 +350,7 @@ func AuthMiddleware(config JWTConfig, db *sql.DB, dbType database.DBType, cache 
 
 		// Cache it
 		cache.Set(cacheKey, sess, config.TokenExpiry)
+		renewToken(c, config, cache, claims)
 
 		c.Locals("session", sess)
 		return c.Next()

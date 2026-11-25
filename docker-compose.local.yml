@@ -14,7 +14,8 @@
 #      GOEASYERP_BIND=127.0.0.1 (0.0.0.0: other computers too) and
 #      GOEASYERP_ORIGIN=http://<computer name>:8000 (the address the users open)
 #   3. In that folder:  docker compose up -d
-#   4. Wait 2-3 minutes, open http://localhost:8000 and create the first user
+#   4. Wait 2-3 minutes, open http://localhost:8000 and create the first user with the setup
+#      token: SETUP_TOKEN in .env, or without it the one in  docker compose logs backend
 #
 # Stop: docker compose stop     Start again: docker compose start
 # Upgrade: run the line above again, or take the new version of this file (the settings stay in
@@ -85,6 +86,10 @@ services:
       PORT: 8080
       APP_VERSION: "0.1.189" # x-release-please-version
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in the file .env next to docker-compose.yml}
+      # the first user needs it on the login page (S37); the install script puts one into .env and shows it
+      SETUP_TOKEN: ${SETUP_TOKEN:-}
+      # a session without requests ends after this (S39; e.g. 30m, 8h; empty: 2h; 0: never)
+      SESSION_IDLE_TIMEOUT: ${SESSION_IDLE_TIMEOUT:-}
       # The builds of the extension apps (Installed Apps → Upload App / Build Apps)
       APP_BUILDS_DIR: /builds
     volumes:

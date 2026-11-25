@@ -196,6 +196,10 @@ errors:
   ERR_USER_NOT_FOUND: "User not found"
   ERR_USER_REQUIRED: "User ID and password are required"
   ERR_USERS_EXIST: "Users already exist. Use the user management interface."
+  ERR_SETUP_TOKEN_INVALID: "The setup token is missing or wrong. It is in the server log (setup token), or SETUP_TOKEN in the server's settings."
+  ERR_PASSWORD_TOO_COMMON: "This password is too common. Choose another one."
+  ERR_PASSWORD_HAS_USER_ID: "The password must not contain the user ID."
+  ERR_PASSWORD_CURRENT_INVALID: "The current password is wrong."
   ERR_CREATE_USER_FAILED: "Failed to create user"
 
   # Request/Input

@@ -37,7 +37,7 @@ func TestLoginDoesNotRevealUsers(t *testing.T) {
 	kari.InitWithDBType(db, "", sqlite)
 	kari.User_id = types.NewCode("KARI")
 	kari.Active = false
-	if err := tables.SetPassword(&kari, "secret1"); err != nil {
+	if err := tables.SetPassword(&kari, "long-secret-1"); err != nil {
 		t.Fatal(err)
 	}
 	if !kari.Insert(false) {
@@ -64,7 +64,7 @@ func TestLoginDoesNotRevealUsers(t *testing.T) {
 	}
 
 	checkDummyPassword("") // the dummy hash is made once, before the timing
-	unknown, unknownTook := login("NOBODY", "secret1")
+	unknown, unknownTook := login("NOBODY", "long-secret-1")
 	wrong, wrongTook := login("KARI", "wrong-pw")
 	if unknown != wrong {
 		t.Errorf("unknown user %q, wrong password %q: want the same answer", unknown, wrong)
@@ -72,7 +72,7 @@ func TestLoginDoesNotRevealUsers(t *testing.T) {
 	if unknownTook < wrongTook/3 {
 		t.Errorf("an unknown user is answered in %v, a wrong password in %v: the time tells them apart", unknownTook, wrongTook)
 	}
-	if inactive, _ := login("KARI", "secret1"); inactive == wrong {
+	if inactive, _ := login("KARI", "long-secret-1"); inactive == wrong {
 		t.Errorf("the right password of an inactive user: %q, want the inactive message", inactive)
 	}
 	logins = newLoginGuard() // the failures above must not lock or brake other tests

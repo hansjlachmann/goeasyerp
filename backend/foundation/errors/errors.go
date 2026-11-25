@@ -113,6 +113,12 @@ const (
 	ErrUserRequired       ErrorCode = "ERR_USER_REQUIRED"
 	ErrUsersExist         ErrorCode = "ERR_USERS_EXIST"
 	ErrCreateUserFailed   ErrorCode = "ERR_CREATE_USER_FAILED"
+	// ErrSetupTokenInvalid: the first user needs the installation's setup token (S37)
+	ErrSetupTokenInvalid ErrorCode = "ERR_SETUP_TOKEN_INVALID"
+	// Passwords (S38)
+	ErrPasswordTooCommon      ErrorCode = "ERR_PASSWORD_TOO_COMMON"
+	ErrPasswordHasUserID      ErrorCode = "ERR_PASSWORD_HAS_USER_ID"
+	ErrPasswordCurrentInvalid ErrorCode = "ERR_PASSWORD_CURRENT_INVALID"
 
 	// Request/Input
 	ErrInvalidRequestBody  ErrorCode = "ERR_INVALID_REQUEST_BODY"
@@ -771,6 +777,26 @@ func UserRequired() *AppError {
 // UsersExist creates an error when trying to create first user but users already exist
 func UsersExist() *AppError {
 	return &AppError{Code: ErrUsersExist}
+}
+
+// SetupTokenInvalid: the setup token given for the first user is missing or wrong
+func SetupTokenInvalid() *AppError {
+	return &AppError{Code: ErrSetupTokenInvalid}
+}
+
+// PasswordTooCommon: the password is one of the commonly used passwords
+func PasswordTooCommon() *AppError {
+	return &AppError{Code: ErrPasswordTooCommon}
+}
+
+// PasswordHasUserID: the password contains the user's user ID
+func PasswordHasUserID() *AppError {
+	return &AppError{Code: ErrPasswordHasUserID}
+}
+
+// PasswordCurrentInvalid: the current password given to change it is wrong
+func PasswordCurrentInvalid() *AppError {
+	return &AppError{Code: ErrPasswordCurrentInvalid}
 }
 
 // CreateUserFailed creates an error for failed user creation

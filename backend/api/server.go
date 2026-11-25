@@ -142,6 +142,7 @@ func (s *Server) Setup() {
 	preferencesHandler := handlers.NewPreferencesHandlerWithDBType(s.db, s.dbType)
 	themesHandler := handlers.NewThemesHandler(s.db, s.dbType)
 	authHandler := handlers.NewAuthHandlerFull(s.db, s.dbType, s.companyInit, s.jwtConfig, s.sessionCache)
+	handlers.InitSetupToken(s.db) // S37: the first user needs it
 	codeunitsHandler := handlers.NewCodeunitsHandlerWithDBType(s.db, s.dbType)
 	tablesHandler.OnCompanyChanged(authHandler.CompanyChanged) // renamed/deleted company: sessions follow
 
@@ -152,8 +153,9 @@ func (s *Server) Setup() {
 	// Auth routes
 	api.Post("/auth/login", middleware.LoginRateLimit(), authHandler.Login) // Strict limit: brute-force protection
 	api.Post("/auth/logout", authHandler.Logout)
+	api.Post("/auth/password", authHandler.ChangePassword) // the user's own password (S38)
 	api.Get("/auth/user", authHandler.GetCurrentUser)
-	api.Post("/auth/init", authHandler.CreateInitialUser)
+	api.Post("/auth/init", authHandler.CreateInitialUser) // the setup token is checked by the login guard (wrong ones lock the address)
 	api.Get("/auth/companies", authHandler.ListCompanies)
 	api.Post("/auth/companies", authHandler.CreateCompany)
 	api.Post("/auth/language", authHandler.SetLanguage)

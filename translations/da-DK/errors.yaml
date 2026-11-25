@@ -196,6 +196,10 @@ errors:
   ERR_USER_NOT_FOUND: "Bruger ikke fundet"
   ERR_USER_REQUIRED: "Bruger-ID og adgangskode er påkrævet"
   ERR_USERS_EXIST: "Brugere findes allerede. Brug brugeradministrationen."
+  ERR_SETUP_TOKEN_INVALID: "Opsætningsnøglen mangler eller er forkert. Den står i serverloggen (setup token) eller i SETUP_TOKEN i serverens indstillinger."
+  ERR_PASSWORD_TOO_COMMON: "Denne adgangskode er for almindelig. Vælg en anden."
+  ERR_PASSWORD_HAS_USER_ID: "Adgangskoden må ikke indeholde bruger-id'et."
+  ERR_PASSWORD_CURRENT_INVALID: "Den nuværende adgangskode er forkert."
   ERR_CREATE_USER_FAILED: "Kunne ikke oprette bruger"
 
   # Request/Input

@@ -3,7 +3,8 @@ import { test, expect, type Page } from "@playwright/test";
 // Cursor control on card pages (CLAUDE.md "Cursor control on cards"), on a Sales Order of the
 // demo data. Needs the backend: the API server started with DEMO_DATA (a company filled with
 // demo data) behind the preview's /api proxy, and E2E_PASSWORD — the first user is created
-// with it when the database has none (E2E_USER, default ADMIN). Skipped without them.
+// with it when the database has none (E2E_USER, default ADMIN; SETUP_TOKEN: the server's setup
+// token). Skipped without them.
 const user = process.env.E2E_USER || "ADMIN";
 const password = process.env.E2E_PASSWORD || "";
 
@@ -65,7 +66,7 @@ test("Tab, wrap-around, section toggle and focus guard on a Sales Order card", a
 }) => {
   // The first user, when the database has none (403: users exist)
   const init = await request.post("/api/auth/init", {
-    data: { user_id: user, user_name: user, email: "", password },
+    data: { user_id: user, user_name: user, email: "", password, setup_token: process.env.SETUP_TOKEN ?? "" },
   });
   expect([200, 403]).toContain(init.status());
 

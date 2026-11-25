@@ -1,8 +1,8 @@
 package tables
 
 import (
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/passwords"
 	"time"
-	"unicode/utf8"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -94,8 +94,15 @@ func SetPassword(user *gtables.User, password string) error {
 	if password == "" {
 		return apperrors.FieldRequired(gtables.UserTableName, "password")
 	}
-	if utf8.RuneCountInString(password) < 6 {
-		return apperrors.FieldTooShort(gtables.UserTableName, "password", 6)
+	// the password rules (S38): long enough, not a common password, not the user ID
+	problem := passwords.Check(password, user.User_id.String())
+	switch problem {
+	case passwords.TooShort:
+		return apperrors.FieldTooShort(gtables.UserTableName, "password", passwords.MinLength)
+	case passwords.TooCommon:
+		return apperrors.PasswordTooCommon()
+	case passwords.HasUserID:
+		return apperrors.PasswordHasUserID()
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)

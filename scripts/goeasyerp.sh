@@ -115,6 +115,12 @@ if [ -z "$(envValue POSTGRES_PASSWORD)" ]; then
 	fi
 fi
 
+# The setup token: the first user (the administrator) is made on the login page with it (S37)
+if [ -z "$(envValue SETUP_TOKEN)" ]; then
+	add="${add}SETUP_TOKEN='$(od -An -tx1 -N16 /dev/urandom | tr -d ' \n')'
+"
+fi
+
 # The app builder's own database password (it may read and change its build tables only)
 if [ -z "$(envValue BUILDER_DB_PASSWORD)" ]; then
 	add="${add}BUILDER_DB_PASSWORD='$(od -An -tx1 -N24 /dev/urandom | tr -d ' \n')'
@@ -144,6 +150,7 @@ if [ -n "$newEnv" ]; then
 # GoEasyERP settings, read by docker compose (docker-compose.yml in this folder).
 # Keep JWT_SECRET: it also encrypts stored passwords (SMTP Setup); a new one makes them unreadable.
 # POSTGRES_PASSWORD is the database's: to change it, change it in the database first.
+# SETUP_TOKEN: asked on the login page when the first user (the administrator) is made.
 ${add}# The port GoEasyERP is opened on, and from where: 127.0.0.1 this computer only, 0.0.0.0 the network too
 #GOEASYERP_PORT=8000
 #GOEASYERP_BIND=127.0.0.1
@@ -217,7 +224,8 @@ while [ $i -lt 60 ]; do
 		if [ -n "$upgrade" ]; then
 			say "GoEasyERP is upgraded and running: open $origin"
 		else
-			say "GoEasyERP is running: open $origin and create the first user."
+			say "GoEasyERP is running: open $origin and create the first user"
+			say "with the setup token $(envValue SETUP_TOKEN) (it is in .env too)."
 		fi
 		exit 0
 	fi

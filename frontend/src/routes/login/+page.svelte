@@ -27,6 +27,7 @@
 	let setupEmail = $state('');
 	let setupPassword = $state('');
 	let setupPasswordConfirm = $state('');
+	let setupToken = $state(''); // the installation's setup token (S37)
 
 	onMount(async () => {
 		// Load translations (login page may load before layout's onMount)
@@ -142,7 +143,7 @@
 		error = '';
 
 		// Validation
-		if (!setupUserID || !setupUserName || !setupPassword) {
+		if (!setupToken || !setupUserID || !setupUserName || !setupPassword) {
 			error = t(ERR.SETUP_MISSING_FIELDS);
 			return;
 		}
@@ -152,7 +153,7 @@
 			return;
 		}
 
-		if (setupPassword.length < 6) {
+		if (setupPassword.length < 10) {
 			error = t(ERR.PASSWORD_TOO_SHORT);
 			return;
 		}
@@ -163,7 +164,8 @@
 				user_id: setupUserID,
 				user_name: setupUserName,
 				email: setupEmail,
-				password: setupPassword
+				password: setupPassword,
+				setup_token: setupToken.trim()
 			});
 
 			if (response.success) {
@@ -249,6 +251,20 @@
 
 		{#if setupMode}
 			<!-- Initial Setup Form -->
+			<div class="form-group">
+				<label for="setup-token">{t(LOGIN.SETUP_TOKEN)} *</label>
+				<input
+					id="setup-token"
+					type="text"
+					autocomplete="off"
+					spellcheck="false"
+					bind:value={setupToken}
+					disabled={loading}
+					onkeypress={handleKeyPress}
+				/>
+				<small class="help-text">{t(LOGIN.SETUP_TOKEN_HINT)}</small>
+			</div>
+
 			<div class="form-group">
 				<label for="setup-userid">{t(LOGIN.USER_ID)} *</label>
 				<input

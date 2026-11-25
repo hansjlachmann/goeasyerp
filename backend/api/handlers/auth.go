@@ -281,6 +281,8 @@ func (h *AuthHandler) CreateInitialUser(c *fiber.Ctx) error {
 		UserName string `json:"user_name"`
 		Email    string `json:"email"`
 		Password string `json:"password"`
+		// SetupToken: the installation's setup token (InitSetupToken, S37)
+		SetupToken string `json:"setup_token"`
 	}
 
 	if err := c.BodyParser(&requestBody); err != nil {
@@ -303,6 +305,17 @@ func (h *AuthHandler) CreateInitialUser(c *fiber.Ctx) error {
 	if user.Count() > 0 {
 		return c.Status(403).JSON(apitypes.NewErrorResponse(apperrors.UsersExist().Message("en-US")))
 	}
+	// (after the check above: the login page asks with an empty body whether users exist)
+	// (wrong tokens count as failed logins of the blank user ID: 10 lock the address)
+	if logins.locked("", c.IP()) {
+		return c.Status(fiber.StatusTooManyRequests).JSON(apitypes.NewErrorResponse(apperrors.TooManyRequests().Message("en-US")))
+	}
+	if !setupTokenValid(requestBody.SetupToken) {
+		if strings.TrimSpace(requestBody.SetupToken) != "" { // the login page's empty question is no guess
+			logins.failed("", c.IP())
+		}
+		return c.Status(fiber.StatusUnauthorized).JSON(apitypes.NewErrorResponse(apperrors.SetupTokenInvalid().Message("en-US")))
+	}
 
 	// Create the initial user
 	now := time.Now()
@@ -315,7 +328,7 @@ func (h *AuthHandler) CreateInitialUser(c *fiber.Ctx) error {
 	user.Last_login = types.NewDateTimeFromTime(now) // Initialize to avoid NULL
 
 	if err := tables.SetPassword(&user, requestBody.Password); err != nil {
-		return c.Status(400).JSON(apitypes.NewErrorResponse(err.Error()))
+		return c.Status(400).JSON(apitypes.NewErrorResponse(errorMessage(err, "en-US")))
 	}
 
 	if !user.Insert(true) {
