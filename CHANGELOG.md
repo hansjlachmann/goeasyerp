@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.191](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.190...v0.1.191) (2026-11-25)
+
+
+### Features
+
+* a security event log of logins, lockouts and refusals, with alerts from the Job Queue ([d411293](https://github.com/hansjlachmann/goeasyerp/commit/d41129391b6c197700a6a54da9dbbf7b95a3e098))
+
 ## [0.1.190](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.189...v0.1.190) (2026-11-25)
 
 
