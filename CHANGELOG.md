@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.192](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.191...v0.1.192) (2026-11-25)
+
+
+### Bug Fixes
+
+* SMTP Setup is for SUPER users only, and the server never sends mail to its own or link-local addresses ([cd6bb4b](https://github.com/hansjlachmann/goeasyerp/commit/cd6bb4bb333675f9798d822a3755dab42d5d70ff))
+
 ## [0.1.191](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.190...v0.1.191) (2026-11-25)
 
 

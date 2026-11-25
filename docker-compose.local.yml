@@ -70,7 +70,7 @@ services:
       retries: 10
 
   backend:
-    image: ghcr.io/hansjlachmann/goeasyerp/backend:0.1.191 # x-release-please-version
+    image: ghcr.io/hansjlachmann/goeasyerp/backend:0.1.192 # x-release-please-version
     logging: *logging
     <<: *hardened
     restart: unless-stopped
@@ -84,7 +84,7 @@ services:
       BUILDER_DB_PASSWORD: ${BUILDER_DB_PASSWORD:-}
       COMPANY_NAME: ${COMPANY_NAME:-}
       PORT: 8080
-      APP_VERSION: "0.1.191" # x-release-please-version
+      APP_VERSION: "0.1.192" # x-release-please-version
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in the file .env next to docker-compose.yml}
       # the first user needs it on the login page (S37); the install script puts one into .env and shows it
       SETUP_TOKEN: ${SETUP_TOKEN:-}
@@ -101,7 +101,7 @@ services:
   # Builds the extension apps in this installation. Started only with the profile apps: put
   # COMPOSE_PROFILES=apps in .env (a large download — the Go toolchain —, needed only when apps are installed)
   builder:
-    image: ghcr.io/hansjlachmann/goeasyerp/builder:0.1.191 # x-release-please-version
+    image: ghcr.io/hansjlachmann/goeasyerp/builder:0.1.192 # x-release-please-version
     logging: *logging
     security_opt:
       - no-new-privileges:true
@@ -122,7 +122,7 @@ services:
         condition: service_healthy
 
   frontend:
-    image: ghcr.io/hansjlachmann/goeasyerp/frontend:0.1.191 # x-release-please-version
+    image: ghcr.io/hansjlachmann/goeasyerp/frontend:0.1.192 # x-release-please-version
     logging: *logging
     <<: *hardened
     restart: unless-stopped
