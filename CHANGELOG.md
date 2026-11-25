@@ -5,7 +5,18 @@
 
 ### Features
 
+* a change log of who changed which field in the security and money tables ([63a3acf](https://github.com/hansjlachmann/goeasyerp/commit/63a3acf3dea491661458a7ac2c81e68b2c69ca99))
 * a security event log of logins, lockouts and refusals, with alerts from the Job Queue ([d411293](https://github.com/hansjlachmann/goeasyerp/commit/d41129391b6c197700a6a54da9dbbf7b95a3e098))
+
+
+### Bug Fixes
+
+* the backend refuses to start with a known or missing database password ([76f02a7](https://github.com/hansjlachmann/goeasyerp/commit/76f02a72d9021e547c2a0682d9b50c3af2d6b815))
+
+
+### Documentation
+
+* SECURITY.md — how to report a vulnerability ([9937685](https://github.com/hansjlachmann/goeasyerp/commit/9937685372ed2f2de94a1d7eb81acbc6fd32dd1b))
 
 ## [0.1.190](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.189...v0.1.190) (2026-11-25)
 
