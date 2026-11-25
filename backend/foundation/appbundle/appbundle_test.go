@@ -224,11 +224,28 @@ func TestLocalBuilderAcrossTheSwap(t *testing.T) {
 		}
 		return got
 	}
+	noSetup := func() bool {
+		t.Helper()
+		if _, err := db.Exec(`DELETE FROM "App_Build_Setup"`); err != nil {
+			t.Fatal(err)
+		}
+		got, err := LocalBuilder(db, database.DBTypeSQLite)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return got
+	}
 	if !local(0) || local(1) {
 		t.Error("without migrations: 0 is Local Builder")
 	}
+	if !noSetup() {
+		t.Error("a new database with the setup never saved: not the default Local Builder")
+	}
 	if _, err := db.Exec(`CREATE TABLE "_migrations" (version INTEGER PRIMARY KEY, status TEXT)`); err != nil {
 		t.Fatal(err)
+	}
+	if noSetup() {
+		t.Error("before migration 058 the setup never saved means CI Pipeline (the old default)")
 	}
 	if !local(1) || local(0) {
 		t.Error("before migration 058: 1 is Local Builder")
@@ -238,5 +255,8 @@ func TestLocalBuilderAcrossTheSwap(t *testing.T) {
 	}
 	if !local(0) || local(1) {
 		t.Error("after migration 058: 0 is Local Builder")
+	}
+	if !noSetup() {
+		t.Error("after migration 058 the setup never saved means Local Builder (the default)")
 	}
 }

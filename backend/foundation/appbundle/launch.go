@@ -70,11 +70,15 @@ func Decide(db *sql.DB, dbType database.DBType, buildsDir, version, baseAppID st
 const BuildsByLocalFirstMigration = 58
 
 // LocalBuilder: the installation builds its apps itself (App Build Setup: Builds By = Local
-// Builder); false before the table exists
+// Builder); false before the table exists. A setup never saved has the default, as the page and
+// Build Apps see it: Local Builder since migration 058 (before it the default was CI Pipeline).
 func LocalBuilder(db *sql.DB, dbType database.DBType) (bool, error) {
 	var buildsBy int
 	err := db.QueryRow(`SELECT builds_by FROM "App_Build_Setup" WHERE primary_key = ''`).Scan(&buildsBy)
-	if err == sql.ErrNoRows || err != nil && missingTable(err) {
+	if err == sql.ErrNoRows {
+		return migrated(db, BuildsByLocalFirstMigration), nil
+	}
+	if err != nil && missingTable(err) {
 		return false, nil
 	}
 	if err != nil {

@@ -103,6 +103,11 @@ services:
   builder:
     image: ghcr.io/hansjlachmann/goeasyerp/builder:0.1.192 # x-release-please-version
     logging: *logging
+    # runs as user 65532 (S41): its start gives an older builds volume to that user, then drops to
+    # it — these three capabilities, nothing else (its file system stays writable: builds work in /tmp)
+    cap_drop:
+      - ALL
+    cap_add: [CHOWN, SETUID, SETGID]
     security_opt:
       - no-new-privileges:true
     profiles: ["apps"]

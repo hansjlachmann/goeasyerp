@@ -190,6 +190,10 @@ and waits in **maintenance** until it is built: the login page says so, and `/he
   backend, which gets `APP_BUILDS_DIR=/builds` too.
 - With more than one backend replica the claim must be ReadWriteMany.
 - Keep the builder's image tag equal to the backend's.
+- The builder runs as user 65532. Started as root (no `runAsUser`), it gives the claim to 65532
+  itself and then drops root — a pod that drops capabilities must keep `CHOWN`, `SETUID` and
+  `SETGID`. With `runAsUser: 65532` it starts as 65532 directly; the claim must then be writable
+  by that user (`fsGroup: 65532`, or a claim given to 65532 once).
 - Give the builder a memory limit of at least 2.5 GiB and no CPU limit (see "Which route?"
   above). A build killed for memory shows in the node's kernel log (`dmesg`) as an
   out-of-memory kill of `compile`.
@@ -302,11 +306,13 @@ address as the API.
 The compose files run every container with only the rights it needs:
 
 - **Users:** the backend runs as user 65532 and the frontend as `node`, not as root. postgres and
-  nginx start as root and change to their own users (`postgres`, `nginx`). The app builder still
-  runs as root.
+  nginx start as root and change to their own users (`postgres`, `nginx`). The app builder starts
+  as root only to give its builds volume to user 65532 when something in it belongs to another
+  user (a volume an older builder filled), then runs as 65532.
 - **Capabilities:** every container drops all Linux capabilities. postgres gets back the five it
   needs to change to its user (`CHOWN`, `DAC_OVERRIDE`, `FOWNER`, `SETUID`, `SETGID`). nginx gets
-  back `CHOWN`, `SETUID`, `SETGID` and `NET_BIND_SERVICE` (ports 80/443).
+  back `CHOWN`, `SETUID`, `SETGID` and `NET_BIND_SERVICE` (ports 80/443), the app builder
+  `CHOWN`, `SETUID` and `SETGID`.
 - **No new privileges:** no container can gain rights through a setuid program
   (`no-new-privileges`).
 - **Read-only file systems:** the backend, the frontend and (on the server) nginx have read-only

@@ -58,17 +58,23 @@ RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go build -ldflags
 # cache to its own in the builds volume (cache.go).
 FROM golang:1.26-alpine AS app-builder
 
-RUN apk add --no-cache git ca-certificates
+# su-exec: the entrypoint starts the builder as user 65532 (S41)
+RUN apk add --no-cache git ca-certificates su-exec && \
+    mkdir -p /home/builder /builds /src && \
+    chown 65532:65532 /home/builder /builds /src
 
-ENV CGO_ENABLED=0
+# The builder's user owns its home (the Go build cache, git) and the base source; the module
+# cache /go is writable by everyone in the golang image
+ENV CGO_ENABLED=0 HOME=/home/builder
 WORKDIR /src
+USER 65532:65532
 
-COPY go.mod go.sum ./
+COPY --chown=65532:65532 go.mod go.sum ./
 RUN go mod download
 
-COPY . .
+COPY --chown=65532:65532 . .
 
-RUN go build -o /usr/local/bin/app-builder ./cmd/app-builder && \
+RUN go build -o /home/builder/app-builder ./cmd/app-builder && \
     go build -trimpath -gcflags=github.com/hansjlachmann/goeasyerp/backend/generated/tables=-c=1 -o /dev/null ./cmd/api-server && \
     go build -o /dev/null ./tools/extmerge && \
     go build -o /dev/null ./tools/tablegen/main.go
@@ -76,7 +82,12 @@ RUN go build -o /usr/local/bin/app-builder ./cmd/app-builder && \
 ENV BASE_SOURCE=/src
 ENV APP_BUILDS_DIR=/builds
 
-ENTRYPOINT ["app-builder"]
+# Started as root only to give an older builds volume to 65532, then the builder runs as 65532
+# (deploy/builder/entrypoint.sh); compose drops every capability but CHOWN, SETUID and SETGID
+USER root
+RUN mv /home/builder/app-builder /usr/local/bin/app-builder
+COPY deploy/builder/entrypoint.sh /usr/local/bin/builder-entrypoint
+ENTRYPOINT ["builder-entrypoint"]
 
 # Runtime stage (the default target: the last stage)
 FROM alpine:3.24
