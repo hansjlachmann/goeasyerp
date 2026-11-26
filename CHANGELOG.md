@@ -8,6 +8,11 @@
 * JSON schemas of the YAML definitions; the journals' posting windows show their lines again ([24e44c4](https://github.com/hansjlachmann/goeasyerp/commit/24e44c4c8dfdd38e5c82b094c02dd85f2127eda2))
 
 
+### Performance Improvements
+
+* the development container compiles a table change in about half the time ([689633e](https://github.com/hansjlachmann/goeasyerp/commit/689633e25ee715efed58e18c1d7712be01d9fcab))
+
+
 ### Documentation
 
 * the schema example names the first release with schemas ([55aaeb8](https://github.com/hansjlachmann/goeasyerp/commit/55aaeb80fbe8e6d24c3becbef404678f401d05bd))
