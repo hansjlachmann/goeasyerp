@@ -523,6 +523,7 @@ tables:
       binary_sha256: "Program SHA-256"
       bundle_path: "Bundle Folder"
       error_message: "Error Message"
+      audit_reports: "Audit Reports"
     options:
       status:
         requested: "Requested"

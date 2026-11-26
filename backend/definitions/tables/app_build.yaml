@@ -111,6 +111,14 @@ table:
       length: 250
       editable: false
 
+    # The app audit of each app the build took (S55: JSON of appaudit.Record — the source audit
+    # and the known vulnerabilities); Installed Apps → Audit Report shows an app's latest
+    - name: audit_reports
+      no: 15
+      type: "[]byte"
+      db_name: audit_reports
+      caption: Audit Reports
+
   keys:
     - name: Primary
       fields: [entry_no]

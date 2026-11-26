@@ -103,6 +103,12 @@ page:
           image: History
           run_page: 912
 
+        # the app audit's latest report of the app's source (S55)
+        - name: Audit Report
+          caption: Audit Report
+          image: Document
+          run_object: table:Installed_App.ShowAuditReport
+
         # findings of the app audit a SUPER user approved for one app's exact source (S55)
         - name: App Audit Exceptions
           caption: App Audit Exceptions

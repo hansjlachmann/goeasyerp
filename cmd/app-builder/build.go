@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -13,8 +14,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hansjlachmann/goeasyerp/backend/foundation/appbundle"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/appaudit"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/appbundle"
 	fapps "github.com/hansjlachmann/goeasyerp/backend/foundation/apps"
 )
 
@@ -36,6 +37,36 @@ type buildLog struct {
 	mu      sync.Mutex
 	buf     bytes.Buffer
 	secrets []string
+	// audits: the app audit of each app (App Build: Audit Reports)
+	audits []*appaudit.Record
+}
+
+// addAudit keeps an audit report of the app (its record made by the first)
+func (l *buildLog) addAudit(app fapps.BuildApp, report *appaudit.Report) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	for _, r := range l.audits {
+		if r.AppID == app.ID {
+			r.Reports = append(r.Reports, report)
+			return
+		}
+	}
+	l.audits = append(l.audits, &appaudit.Record{AppID: app.ID, Name: app.Name, Version: app.Version,
+		SourceID: app.SourceID(), Reports: []*appaudit.Report{report}})
+}
+
+// auditReports: the audits as App Build keeps them (nil: none)
+func (l *buildLog) auditReports() []byte {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	if len(l.audits) == 0 {
+		return nil
+	}
+	data, err := json.Marshal(l.audits)
+	if err != nil {
+		return nil
+	}
+	return data
 }
 
 const logMax = 1 << 20
@@ -83,10 +114,54 @@ func auditApp(app fapps.BuildApp, dir string, allowedModules []string, log *buil
 	if err != nil {
 		return fmt.Errorf("%s %s: the app audit: %w", app.Name, app.Version, err)
 	}
+	log.addAudit(app, report)
 	log.Printf("%s   (source %s; app id %s)", strings.TrimRight(report.Text(), "\n"), app.SourceID(), app.ID)
 	if !report.Passed() {
 		return fmt.Errorf("%s %s did not pass the app audit: %d finding(s) refused (see the report in the log; a SUPER user can approve a finding for this source in App Audit Exceptions)",
 			app.Name, app.Version, len(report.Findings)-report.Excepted())
+	}
+	return nil
+}
+
+// checkVulnerabilities runs govulncheck on each app that requires modules besides the base, in
+// the merged build tree src (S55 rule 5: appaudit.AuditVulnerabilities); a known vulnerability
+// the app's code calls in such a module fails the build unless approved for the app's source
+func (b *builder) checkVulnerabilities(ctx context.Context, src string, list fapps.BuildList, log *buildLog) error {
+	baseGoMod, err := os.ReadFile(filepath.Join(src, "go.mod"))
+	if err != nil {
+		return err
+	}
+	run := b.vulns
+	if run == nil {
+		run = appaudit.Govulncheck
+	}
+	for _, app := range list.Apps {
+		dir := filepath.Join(src, "apps", app.ID)
+		appGoMod, err := os.ReadFile(filepath.Join(dir, "go.mod"))
+		if errors.Is(err, os.ErrNotExist) {
+			continue // no Go code
+		}
+		if err != nil {
+			return err
+		}
+		opts := appaudit.Options{}
+		for _, e := range app.AuditExceptions {
+			opts.Exceptions = append(opts.Exceptions, appaudit.Exception{Rule: e.Rule, Key: e.Key})
+		}
+		report, err := appaudit.AuditVulnerabilities(ctx, app.Name+" "+app.Version, dir, appGoMod, baseGoMod, opts, run)
+		if err != nil {
+			return fmt.Errorf("%s %s: checking for known vulnerabilities: %w", app.Name, app.Version, err)
+		}
+		if report == nil {
+			log.Printf("   %s %s requires no module besides the base: no known vulnerabilities of its own to check", app.Name, app.Version)
+			continue
+		}
+		log.addAudit(app, report)
+		log.Printf("%s   (source %s; app id %s)", strings.TrimRight(report.Text(), "\n"), app.SourceID(), app.ID)
+		if !report.Passed() {
+			return fmt.Errorf("%s %s calls code with known vulnerabilities: %d finding(s) refused (see the log; update the module, or a SUPER user approves the finding for this source in App Audit Exceptions)",
+				app.Name, app.Version, len(report.Findings)-report.Excepted())
+		}
 	}
 	return nil
 }
@@ -98,6 +173,8 @@ type builder struct {
 	workDir    string // where builds are made (temporary folders)
 	fetch      fetcher
 	env        []string // extra environment of the go commands
+	// vulns runs govulncheck (nil: the govulncheck program; tests replace it)
+	vulns appaudit.VulnRunner
 }
 
 // build builds the bundle of build no from the build list and returns the program's SHA-256
@@ -158,6 +235,13 @@ func (b *builder) build(ctx context.Context, no int, list fapps.BuildList, log *
 		}
 		steps.start("generate", "Generating the table code")
 		err = b.run(ctx, src, log, "go", "generate", "./backend/generated/tables")
+		if err != nil {
+			return "", err
+		}
+		// known vulnerabilities in the modules the apps bring in (S55): in the merged tree, as the
+		// apps' code compiles only there; nothing is compiled when an app fails
+		steps.start("vulncheck", "Checking the apps' modules for known vulnerabilities")
+		err = b.checkVulnerabilities(ctx, src, list, log)
 		if err != nil {
 			return "", err
 		}

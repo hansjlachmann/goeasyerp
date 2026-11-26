@@ -92,6 +92,24 @@ jobs:
           [ -n "$(ls apps 2>/dev/null)" ] || { echo "no apps"; exit 0; }
           go run ./cmd/app-audit -build-list ../installation/apps.yaml apps/*
 
+      # Known vulnerabilities in the modules the apps bring in (the apps whose go.mod requires
+      # modules besides the base; the base's own are its release's to fix). The apps' code
+      # compiles only merged into the base, so they are merged into a copy first, as the build does.
+      - name: Check the apps' modules for known vulnerabilities
+        working-directory: base
+        run: |
+          [ -n "$(ls apps 2>/dev/null)" ] || { echo "no apps"; exit 0; }
+          cp -r . ../vulncheck
+          cd ../vulncheck
+          go run ./tools/extmerge --core backend/definitions --apps apps --output merged \
+            --translations translations --translations-output merged-translations --go-root .
+          rm -rf backend/definitions translations
+          mv merged backend/definitions
+          mv merged-translations translations
+          go generate ./backend/generated/tables
+          go install golang.org/x/vuln/cmd/govulncheck@v1.10.0
+          go run ./cmd/app-audit -govulncheck -build-list ../installation/apps.yaml apps/*
+
       # the image runs on x86 servers and on ARM (e.g. a Raspberry Pi)
       - uses: docker/setup-qemu-action@v3
 

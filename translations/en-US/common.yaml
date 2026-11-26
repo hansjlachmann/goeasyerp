@@ -314,6 +314,7 @@ common:
     build_apps: "Build Apps"
     app_builds: "App Builds"
     app_audit_exceptions: "App Audit Exceptions"
+    audit_report: "Audit Report"
     app_build_setup: "App Build Setup"
     main_menu_text: "Main Menu Text"
     test: "TEST"

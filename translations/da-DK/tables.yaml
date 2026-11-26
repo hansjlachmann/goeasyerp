@@ -523,6 +523,7 @@ tables:
       binary_sha256: "Program-SHA-256"
       bundle_path: "Pakkemappe"
       error_message: "Fejlmeddelelse"
+      audit_reports: "Revisionsrapporter"
     options:
       status:
         requested: "Bestilt"

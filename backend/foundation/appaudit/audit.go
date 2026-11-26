@@ -61,6 +61,8 @@ type Finding struct {
 type Report struct {
 	App      string    `json:"app"`
 	Findings []Finding `json:"findings"`
+	// Notes: what the audit saw that is not the app's to answer for (printed, never refused)
+	Notes []string `json:"notes,omitempty"`
 }
 
 // Passed: nothing refused (findings that are excepted do not count)
@@ -105,6 +107,9 @@ func (r *Report) Text() string {
 			mark = "approved"
 		}
 		fmt.Fprintf(&b, "  %s [%s] %s: %s (%s)\n", mark, f.Rule, where, f.Detail, f.Key)
+	}
+	for _, n := range r.Notes {
+		fmt.Fprintf(&b, "  note: %s\n", n)
 	}
 	return b.String()
 }

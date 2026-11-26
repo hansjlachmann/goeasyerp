@@ -7,12 +7,14 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
+	"encoding/json"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/appaudit"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/appbundle"
 	fapps "github.com/hansjlachmann/goeasyerp/backend/foundation/apps"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -128,6 +130,10 @@ func TestBuildAuditsTheApp(t *testing.T) {
 	text := string(log.Bytes())
 	if !strings.Contains(text, "REFUSED") || !strings.Contains(text, "evil.go:3") || !strings.Contains(text, "source abc123") {
 		t.Errorf("the report in the log:\n%s", text)
+	}
+	var records []appaudit.Record
+	if err := json.Unmarshal(log.auditReports(), &records); err != nil || len(records) != 1 || records[0].SourceID != "abc123" || records[0].Passed() {
+		t.Errorf("the failed audit kept: %+v, %v", records, err)
 	}
 
 	list.Apps[0].AuditExceptions = []fapps.AuditException{{Rule: "import", Key: "os"}, {Rule: "forbidden", Key: "Getenv"}}
@@ -269,5 +275,54 @@ func TestTagCommit(t *testing.T) {
 	}
 	if got := tagCommit("69250db6b66b1a974fd9c4d45d34dd5e53b6e4dc\trefs/tags/v1.0.10\n", ref); got != "" {
 		t.Errorf("another tag: %q", got)
+	}
+}
+
+// Known vulnerabilities (S55): an app that requires only the base is not scanned; one that
+// brings in a module is, a vulnerability it calls there fails the build, and an exception for
+// the app's source passes it
+func TestBuildChecksVulnerabilities(t *testing.T) {
+	src := t.TempDir()
+	write := func(name, text string) {
+		t.Helper()
+		if err := os.MkdirAll(filepath.Dir(filepath.Join(src, name)), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(src, name), []byte(text), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("go.mod", "module github.com/hansjlachmann/goeasyerp\n\ngo 1.26.0\n")
+	write("apps/plain/go.mod", "module example.com/plain\n\ngo 1.26.0\n\nrequire github.com/hansjlachmann/goeasyerp v0.0.0\n")
+	write("apps/texty/go.mod", "module example.com/texty\n\ngo 1.26.0\n\nrequire (\n\tgithub.com/hansjlachmann/goeasyerp v0.0.0\n\tgolang.org/x/text v0.3.5\n)\n")
+	var scanned []string
+	b := &builder{vulns: func(ctx context.Context, dir string) ([]byte, error) {
+		scanned = append(scanned, filepath.Base(dir))
+		return []byte(`{"finding":{"osv":"GO-2021-0113","fixed_version":"v0.3.7","trace":[{"module":"golang.org/x/text","version":"v0.3.5","package":"golang.org/x/text/language","function":"Parse"}]}}`), nil
+	}}
+	list := fapps.BuildList{Apps: []fapps.BuildApp{
+		{ID: "plain", Name: "Plain", Version: "1.0.0", Commit: "c1"},
+		{ID: "texty", Name: "Texty", Version: "2.0.0", Commit: "c2"},
+		{ID: "nocode", Name: "Definitions Only", Version: "1.0.0"},
+	}}
+	log := &buildLog{}
+	err := b.checkVulnerabilities(context.Background(), src, list, log)
+	if err == nil || !strings.Contains(err.Error(), "Texty 2.0.0 calls code with known vulnerabilities") {
+		t.Fatalf("err = %v", err)
+	}
+	if len(scanned) != 1 || scanned[0] != "texty" {
+		t.Errorf("scanned %v, want only the app with a module of its own", scanned)
+	}
+	if text := string(log.Bytes()); !strings.Contains(text, "GO-2021-0113") || !strings.Contains(text, "source c2") {
+		t.Errorf("log:\n%s", text)
+	}
+	var records []appaudit.Record
+	if err := json.Unmarshal(log.auditReports(), &records); err != nil || len(records) != 1 || records[0].AppID != "texty" ||
+		records[0].SourceID != "c2" || records[0].Passed() || records[0].Reports[0].Findings[0].Key != "GO-2021-0113" {
+		t.Errorf("the audit reports kept: %+v, %v", records, err)
+	}
+	list.Apps[1].AuditExceptions = []fapps.AuditException{{Rule: "vulnerability", Key: "GO-2021-0113"}}
+	if err := b.checkVulnerabilities(context.Background(), src, list, &buildLog{}); err != nil {
+		t.Errorf("with the exception: %v", err)
 	}
 }

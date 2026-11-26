@@ -310,11 +310,22 @@ It refuses:
   the base's behaviour.
 - **Modules:** `go.mod` requires only the base (and the modules App Build Setup's *Allowed Go
   Modules* names), and has no `replace` or `exclude` directives.
+- **Known vulnerabilities in the modules an app brings in:** an app that requires modules besides
+  the base is checked with `govulncheck` once it is merged into the base being built (its code
+  compiles only there): a function with a known vulnerability that the app's code calls in such a
+  module is refused (rule `vulnerability`, the finding names the vulnerability, e.g.
+  `GO-2026-1234`, and the version that fixes it). Vulnerabilities in the base's own modules and
+  the Go standard library are the base's to fix in its releases. To check yourself, merge your
+  app into a base checkout (`go run ./tools/extmerge … --go-root .`, then
+  `go generate ./backend/generated/tables`) and run
+  `go run ./cmd/app-audit -govulncheck apps/your-app` there.
 
 A finding that is right for an app (an import the allowlist does not have yet) can be approved
 by a SUPER user for **exactly one source** — the Git commit or the uploaded package's SHA-256
 the report names — in Installed Apps → App Audit Exceptions. A new version, or a tag that moved,
 is audited afresh. An approval is recorded in the change log and as a security event.
+Installed Apps → Build → Audit Report gives an app's latest report: the one of the latest build
+that took its source, or for an uploaded package no build has taken yet, an audit made then.
 
 The audit does not make an app harmless: an app that passes can still post wrong amounts or
 change records in the companies where it runs. It closes the server-wide powers — other

@@ -74,7 +74,10 @@ RUN go mod download
 
 COPY --chown=65532:65532 . .
 
+# govulncheck: the known vulnerabilities of the modules an app brings in (S55); it reads the Go
+# vulnerability database (vuln.go.dev) when a build checks such an app
 RUN go build -o /home/builder/app-builder ./cmd/app-builder && \
+    go install golang.org/x/vuln/cmd/govulncheck@v1.10.0 && \
     go build -trimpath -gcflags=github.com/hansjlachmann/goeasyerp/backend/generated/tables=-c=1 -o /dev/null ./cmd/api-server && \
     go build -o /dev/null ./tools/extmerge && \
     go build -o /dev/null ./tools/tablegen/main.go

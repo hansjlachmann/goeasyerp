@@ -186,6 +186,7 @@ func (w *worker) buildOne(ctx context.Context, no int) {
 		log.Printf("build %d succeeded", no)
 	}
 	rec.Log = blog.Bytes()
+	rec.Audit_reports = blog.auditReports()
 	err = rec.ModifyOrError(false)
 	if err != nil {
 		log.Printf("build %d: recording the result: %v", no, err)

@@ -26,6 +26,7 @@
 //	OnValidate_Binary_sha256(rec *gtables.AppBuild) error
 //	OnValidate_Bundle_path(rec *gtables.AppBuild) error
 //	OnValidate_Error_message(rec *gtables.AppBuild) error
+//	OnValidate_Audit_reports(rec *gtables.AppBuild) error
 package tables
 
 import (
@@ -100,6 +101,7 @@ type AppBuild struct {
 	Binary_sha256 types.Text      `db:"binary_sha256"`
 	Bundle_path   types.Text      `db:"bundle_path"`
 	Error_message types.Text      `db:"error_message"`
+	Audit_reports []byte          `db:"audit_reports"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -184,6 +186,7 @@ var AppBuild_FieldNo = struct {
 	Binary_sha256 int
 	Bundle_path   int
 	Error_message int
+	Audit_reports int
 }{
 	Entry_no:      1,
 	Status:        2,
@@ -199,6 +202,7 @@ var AppBuild_FieldNo = struct {
 	Binary_sha256: 12,
 	Bundle_path:   13,
 	Error_message: 14,
+	Audit_reports: 15,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -535,7 +539,8 @@ func GetAppBuildTableSchema() string {
 		log BLOB,
 		binary_sha256 TEXT(64),
 		bundle_path TEXT(250),
-		error_message TEXT(250)
+		error_message TEXT(250),
+		audit_reports BLOB
 	`
 }
 
@@ -555,7 +560,8 @@ func GetAppBuildPostgresTableSchema() string {
 		log BYTEA,
 		binary_sha256 VARCHAR(64),
 		bundle_path VARCHAR(250),
-		error_message VARCHAR(250)
+		error_message VARCHAR(250),
+		audit_reports BYTEA
 	`
 }
 
@@ -1502,6 +1508,7 @@ func (t *AppBuild) Init() {
 	t.Binary_sha256 = *new(types.Text)
 	t.Bundle_path = *new(types.Text)
 	t.Error_message = *new(types.Text)
+	t.Audit_reports = *new([]byte)
 	t.applyDefaults()
 }
 
@@ -1592,6 +1599,8 @@ func (t *AppBuild) fieldRef(i int) any {
 		return &t.Bundle_path
 	case 13:
 		return &t.Error_message
+	case 14:
+		return &t.Audit_reports
 	}
 	return nil
 }
@@ -1809,6 +1818,20 @@ var appBuildFields = &tables.TableFields{
 			},
 			Kind:    tables.KindText,
 			Trigger: "OnValidate_Error_message",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         15,
+				Name:       "audit_reports",
+				Type:       tables.FieldTypeBlob,
+				Length:     0,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindBlob,
+			Trigger: "OnValidate_Audit_reports",
 		},
 	},
 }
