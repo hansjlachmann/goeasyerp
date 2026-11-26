@@ -700,9 +700,10 @@ func resolveFields(fields []fcodeunits.InputField, lang string) []fcodeunits.Inp
 	resolved := make([]fcodeunits.InputField, len(fields))
 	for i, f := range fields {
 		resolved[i] = f
-		// Try i18n key first; if no translation found, use label as-is
+		// The label is a message key when one exists (CU_REPORT_DATE), else the text itself — a
+		// key that does not exist comes back as "messages.<key>"
 		translated := ts.Message(f.Label, lang)
-		if translated != f.Label {
+		if translated != f.Label && translated != "messages."+f.Label {
 			resolved[i].Label = translated
 		}
 		// Magic default: "today" → current date ISO
