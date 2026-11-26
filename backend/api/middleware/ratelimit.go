@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"net"
 	"sort"
 	"strconv"
 	"strings"
@@ -8,22 +9,25 @@ import (
 
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/session"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 )
 
-// RateLimit returns a generous, global rate limiter applied to every request.
-// It is keyed by client IP (c.IP()); when running behind a reverse proxy (nginx),
-// the app's ProxyHeader must be set so c.IP() reflects the real client address.
-// State is kept in-memory per process — for multi-instance deployments this would
-// need a shared store (e.g. Redis).
-//
-// Health checks are skipped so liveness/readiness probes are never throttled.
-func RateLimit() fiber.Handler {
+// The limits count per user for logged-in requests and per client address otherwise (S35):
+// an office behind one address (NAT) does not share one budget, and IPv6 addresses count by
+// their /64 network — the block one connection is given — so a client cannot take a new address
+// for every request. The state is kept in memory per process.
+
+// RateLimit returns the generous global limit of every request: 300 a minute per user (a
+// request with a valid session cookie), else per client address (ClientKey). It runs before the
+// session is read, so it checks the cookie's signature itself. Health checks are not limited.
+func RateLimit(config JWTConfig) fiber.Handler {
 	return limiter.New(limiter.Config{
 		Max:          300,
 		Expiration:   1 * time.Minute,
+		KeyGenerator: func(c *fiber.Ctx) string { return requestKey(c, config) },
 		LimitReached: rateLimitReached,
 		Next: func(c *fiber.Ctx) bool {
 			return c.Path() == "/health"
@@ -31,24 +35,66 @@ func RateLimit() fiber.Handler {
 	})
 }
 
-// LoginRateLimit returns a strict limiter for the login endpoint. Login runs a
-// deliberately slow bcrypt password check, so an unbounded endpoint invites both
-// brute-force/credential-stuffing and CPU exhaustion; capping attempts per IP
-// blunts both.
+// requestKey: "user:<ID>" for a request with a valid session cookie, else "addr:<ClientKey>"
+func requestKey(c *fiber.Ctx, config JWTConfig) string {
+	cookie := c.Cookies(config.CookieName)
+	if cookie != "" {
+		claims, err := ParseToken(config, cookie)
+		if err == nil && claims.UserID != "" {
+			return "user:" + strings.ToUpper(claims.UserID)
+		}
+	}
+	return "addr:" + ClientKey(c)
+}
+
+// userOrAddressKey: the session's user (a route after the auth middleware), else the address
+func userOrAddressKey(c *fiber.Ctx) string {
+	sess, ok := c.Locals("session").(*session.Session)
+	if ok && sess != nil && sess.UserID != "" {
+		return "user:" + strings.ToUpper(sess.UserID)
+	}
+	return "addr:" + ClientKey(c)
+}
+
+// ClientKey is the client's address as the limits and the login guard count it: an IPv4
+// address as it is, an IPv6 address as its /64 network ("2001:db8:1:2::/64")
+func ClientKey(c *fiber.Ctx) string {
+	return AddressKey(c.IP())
+}
+
+// AddressKey: see ClientKey (an address that does not parse is returned as it is)
+func AddressKey(address string) string {
+	ip := net.ParseIP(address)
+	if ip == nil {
+		return address
+	}
+	if v4 := ip.To4(); v4 != nil {
+		return v4.String()
+	}
+	return (&net.IPNet{IP: ip.Mask(net.CIDRMask(64, 128)), Mask: net.CIDRMask(64, 128)}).String()
+}
+
+// LoginRateLimit returns the strict limit of the login endpoint: 10 failed logins a minute per
+// client address (successful ones do not count, so an office's users all log in at the start of
+// the day). Login runs a deliberately slow bcrypt check, so unbounded failures would invite both
+// password guessing and CPU exhaustion; the login guard (handlers) adds the per-user-ID locks.
 func LoginRateLimit() fiber.Handler {
 	return limiter.New(limiter.Config{
-		Max:          10,
-		Expiration:   1 * time.Minute,
-		LimitReached: rateLimitReached,
+		Max:                    10,
+		Expiration:             1 * time.Minute,
+		KeyGenerator:           ClientKey,
+		SkipSuccessfulRequests: true,
+		LimitReached:           rateLimitReached,
 	})
 }
 
-// ThemeInstallRateLimit returns a strict limiter for installing/refreshing themes: each
-// request downloads up to 30 MB from GitHub and decodes the images.
+// ThemeInstallRateLimit returns a strict limit for installing/refreshing themes (per user):
+// each request downloads up to 30 MB from GitHub and decodes the images.
 func ThemeInstallRateLimit() fiber.Handler {
 	return limiter.New(limiter.Config{
 		Max:          5,
 		Expiration:   1 * time.Minute,
+		KeyGenerator: userOrAddressKey,
 		LimitReached: rateLimitReached,
 	})
 }

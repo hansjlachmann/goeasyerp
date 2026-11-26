@@ -17,7 +17,7 @@ func recordSecurity(c *fiber.Ctx, kind securitylog.Kind, userID, company, detail
 // failedLogin notes a failed login (and the lockout when it locks the address)
 func failedLogin(c *fiber.Ctx, kind securitylog.Kind, userID, company, details string) {
 	recordSecurity(c, kind, userID, company, details)
-	if logins.failed(userID, c.IP()) {
+	if logins.failed(userID, middleware.ClientKey(c)) {
 		recordSecurity(c, securitylog.LoginLocked, userID, company, "")
 	}
 }

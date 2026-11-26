@@ -35,7 +35,7 @@ func (h *AuthHandler) ChangePassword(c *fiber.Ctx) error {
 	}
 
 	userID := sess.GetUserID()
-	address := c.IP()
+	address := middleware.ClientKey(c) // as the login guard counts it (an IPv6 /64)
 	if logins.locked(userID, address) {
 		recordSecurity(c, securitylog.PasswordChangeFailed, userID, sess.GetCompany(), "address locked")
 		return c.Status(fiber.StatusTooManyRequests).JSON(apitypes.NewErrorResponse(apperrors.TooManyRequests().Message(language)))

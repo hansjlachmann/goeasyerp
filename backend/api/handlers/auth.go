@@ -93,8 +93,9 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	}
 
 	// A user ID with too many failed logins from this address, or braked after failures from
-	// everywhere, waits (loginGuard, S32), whatever the password
-	address := c.IP()
+	// everywhere, waits (loginGuard, S32), whatever the password; an IPv6 address counts by its
+	// /64 network (S35)
+	address := middleware.ClientKey(c)
 	if logins.locked(requestBody.UserID, address) {
 		recordSecurity(c, securitylog.LoginRefused, requestBody.UserID, company, "")
 		return c.Status(fiber.StatusTooManyRequests).JSON(apitypes.NewErrorResponse(apperrors.TooManyRequests().Message("en-US")))
@@ -313,14 +314,14 @@ func (h *AuthHandler) CreateInitialUser(c *fiber.Ctx) error {
 	}
 	// (after the check above: the login page asks with an empty body whether users exist)
 	// (wrong tokens count as failed logins of the blank user ID: 10 lock the address)
-	if logins.locked("", c.IP()) {
+	if logins.locked("", middleware.ClientKey(c)) {
 		recordSecurity(c, securitylog.SetupTokenRefused, requestBody.UserID, "", "address locked")
 		return c.Status(fiber.StatusTooManyRequests).JSON(apitypes.NewErrorResponse(apperrors.TooManyRequests().Message("en-US")))
 	}
 	if !setupTokenValid(requestBody.SetupToken) {
 		if strings.TrimSpace(requestBody.SetupToken) != "" { // the login page's empty question is no guess
 			recordSecurity(c, securitylog.SetupTokenRefused, requestBody.UserID, "", "wrong setup token")
-			if logins.failed("", c.IP()) { // counted for the blank user ID, as the lock above checks
+			if logins.failed("", middleware.ClientKey(c)) { // counted for the blank user ID, as the lock above checks
 				recordSecurity(c, securitylog.LoginLocked, requestBody.UserID, "", "setup token")
 			}
 		}

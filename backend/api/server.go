@@ -123,7 +123,7 @@ func (s *Server) Setup() {
 	s.app.Use(middleware.SecurityHeaders())             // nosniff, no framing, no-store (S25, S27)
 	s.app.Use(middleware.SecurityEvents())              // every 403 answer is a security event (S48)
 	s.app.Use(middleware.SameOriginWrites(corsOrigins)) // no changes sent by other web sites (S26)
-	s.app.Use(middleware.RateLimit())                   // Generous global rate limit (per client IP)
+	s.app.Use(middleware.RateLimit(s.jwtConfig))        // generous global limit: per user, else per address (S35)
 	s.app.Use(middleware.Logger())
 	// Create a permission loader for the auth middleware (used on cache miss / server restart)
 	permLoader := handlers.NewPermissionLoader(s.db, s.dbType)

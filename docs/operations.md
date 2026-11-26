@@ -251,7 +251,11 @@ That needs the current password and logs the user out everywhere else. An admini
 user's password on the User card also logs that user out everywhere. Existing passwords keep
 working; the rules apply when a password is set.
 
-**Client addresses and logins:** the backend limits login attempts per client address and per user
+**Client addresses and logins:** every user may send 300 requests a minute, and so may every
+client address for requests without a session — so an office behind one address does not share
+one budget. A client address may make 10 failed logins a minute (successful logins do not count).
+An IPv6 address counts by its /64 network, the block one connection is given, so a client cannot
+take a new address for every request. The backend also limits login attempts per user
 ID: 10 failed logins of a user ID from one address within 15 minutes lock that address for that
 user ID for 15 minutes; after 10 failed logins of a user ID from anywhere, each further attempt
 waits a little longer (1, 2, 4 … up to 60 seconds) — except from an address the user has logged in
