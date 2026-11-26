@@ -477,9 +477,10 @@ app has — `application.schema.json`, `table.schema.json` (also an app's `custo
 from the Go types that read the files (`go run ./tools/schemagen`), so they know every key,
 describe it with the base's own comments and mark a key nobody reads (a typo) as an error. The
 GoEasyERP VS Code extension uses them; any editor with a YAML language server can too, with a
-line at the top of the file naming the schema of the base version the app builds on:
+line at the top of the file naming the schema of the base version the app builds on (base
+releases from 0.1.195 have them):
 
 ```yaml
-# yaml-language-server: $schema=https://raw.githubusercontent.com/hansjlachmann/goeasyerp/v0.1.194/backend/schemas/page-extension.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/hansjlachmann/goeasyerp/v0.1.195/backend/schemas/page-extension.schema.json
 ```
 
