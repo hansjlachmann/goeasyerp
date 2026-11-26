@@ -534,6 +534,7 @@ tables:
       trigger:
         user: "Bruker"
         base_upgrade: "Oppgradering av basis"
+        development: "Utvikling"
 
   app_package:
     caption: "App-pakke"

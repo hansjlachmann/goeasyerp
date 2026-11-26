@@ -1,0 +1,27 @@
+# GoEasyERP development container (Extension App development): the one-computer installation
+# (docker-compose.local.yml) for developing extension apps in VS Code — with the installation's
+# own app builder and the development endpoint, so the GoEasyERP VS Code extension publishes an
+# app with F5. The VS Code extension's "Create Local Container" sets it up; by hand:
+#
+#   docker compose -f docker-compose.local.yml -f docker-compose.dev.yml up -d
+#
+# with a .env next to them:
+#   JWT_SECRET=<a long random text>          POSTGRES_PASSWORD=<another one>
+#   OPENERP_ENCRYPTION_KEY=<another one>     SETUP_TOKEN=<another one (the first user)>
+#   BUILDER_DB_PASSWORD=<another one>        COMPOSE_PROFILES=apps   (the app builder)
+#   GOEASYERP_PORT=8080
+# Then http://localhost:8080 (this computer only: the port is published on 127.0.0.1).
+#
+# Its own Compose project (goeasyerp-dev): its database and builds are not a trial
+# installation's on the same computer. Never for real data: the development endpoint takes apps
+# from VS Code without a release (it stays off on a database that looks like production).
+
+name: goeasyerp-dev
+
+services:
+  backend:
+    environment:
+      # the development endpoint (/api/dev: publish from VS Code with F5)
+      GOEASYERP_DEV_ENDPOINT: "true"
+      # a demo company to develop against (empty: none; LARGE, LARGE VAT …)
+      DEMO_DATA: ${DEMO_DATA-SMALL}

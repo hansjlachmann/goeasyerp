@@ -97,8 +97,9 @@ func launchAppBundle(starting *appbundle.Starting) *appbundle.Starting {
 	return nil
 }
 
-// watchAppBuilds checks every 30 s for a newer bundle of this version; when there is a verified
-// one it signals switchTo (once)
+// watchAppBuilds checks every 30 s — every 2 s on a server started for development (F5 in VS Code
+// waits for the switch) — for a newer bundle of this version; when there is a verified one it
+// signals switchTo (once)
 func watchAppBuilds(db *sql.DB, switchTo chan<- struct{}) {
 	buildsDir := os.Getenv(appbundle.EnvBuildsDir)
 	if buildsDir == "" {
@@ -110,7 +111,11 @@ func watchAppBuilds(db *sql.DB, switchTo chan<- struct{}) {
 		return
 	}
 	current := appbundle.Current()
-	for range time.Tick(30 * time.Second) {
+	interval := 30 * time.Second
+	if blapps.DevelopmentRequested() {
+		interval = 2 * time.Second
+	}
+	for range time.Tick(interval) {
 		local, err := appbundle.LocalBuilder(db, database.DBTypePostgres)
 		if err != nil || !local {
 			continue

@@ -71,7 +71,7 @@ type AppBuildTrigger int
 
 // String returns the text representation of AppBuildTrigger
 func (o AppBuildTrigger) String() string {
-	options := []string{"User", "Base Upgrade"}
+	options := []string{"User", "Base Upgrade", "Development"}
 	if o >= 0 && int(o) < len(options) {
 		return options[o]
 	}
@@ -80,7 +80,7 @@ func (o AppBuildTrigger) String() string {
 
 // IsValid checks if the AppBuildTrigger value is within valid range
 func (o AppBuildTrigger) IsValid() bool {
-	return o >= 0 && o < 2
+	return o >= 0 && o < 3
 }
 
 // AppBuild represents Table 2000000154: App_Build
@@ -160,9 +160,11 @@ var AppBuild_Status = struct {
 var AppBuild_Trigger = struct {
 	User        AppBuildTrigger
 	BaseUpgrade AppBuildTrigger
+	Development AppBuildTrigger
 }{
 	User:        0,
 	BaseUpgrade: 1,
+	Development: 2,
 }
 
 // ========================================
@@ -529,7 +531,7 @@ func GetAppBuildTableSchema() string {
 		entry_no INTEGER PRIMARY KEY,
 		status INTEGER CHECK (status >= 0 AND status <= 4),
 		base_version TEXT(50),
-		trigger INTEGER CHECK (trigger >= 0 AND trigger <= 1),
+		trigger INTEGER CHECK (trigger >= 0 AND trigger <= 2),
 		requested_by TEXT(50),
 		requested_at TEXT,
 		started_at TEXT,
@@ -550,7 +552,7 @@ func GetAppBuildPostgresTableSchema() string {
 		entry_no INTEGER PRIMARY KEY,
 		status INTEGER CHECK (status >= 0 AND status <= 4),
 		base_version VARCHAR(50),
-		trigger INTEGER CHECK (trigger >= 0 AND trigger <= 1),
+		trigger INTEGER CHECK (trigger >= 0 AND trigger <= 2),
 		requested_by VARCHAR(50),
 		requested_at TIMESTAMP,
 		started_at TIMESTAMP,
@@ -1669,7 +1671,7 @@ var appBuildFields = &tables.TableFields{
 			},
 			Kind:    tables.KindOption,
 			Trigger: "OnValidate_Trigger",
-			Options: []string{"User", "Base Upgrade"},
+			Options: []string{"User", "Base Upgrade", "Development"},
 		},
 		{
 			Info: tables.FieldInfo{
@@ -1865,7 +1867,7 @@ func (t *AppBuild) GetFlowFields() []string {
 func (t *AppBuild) GetOptionFields() map[string][]string {
 	return map[string][]string{
 		"status":  {"Requested", "Running", "Succeeded", "Failed", "Superseded"},
-		"trigger": {"User", "Base Upgrade"},
+		"trigger": {"User", "Base Upgrade", "Development"},
 	}
 }
 

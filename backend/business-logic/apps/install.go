@@ -140,6 +140,12 @@ func UploadApp(rec *gtables.InstalledApp) (fcodeunits.Result, error) {
 
 // uploadPackage checks an app package and records its app as Pending Install from the package
 func uploadPackage(src *gtables.InstalledApp, data []byte) (fcodeunits.Result, error) {
+	return uploadPackageFrom(src, data, false)
+}
+
+// uploadPackageFrom: uploadPackage, for a development publish (development: the same version may
+// come again)
+func uploadPackageFrom(src *gtables.InstalledApp, data []byte, development bool) (fcodeunits.Result, error) {
 	ts := i18n.GetInstance()
 	lang := fcodeunits.CurrentLanguage()
 	pkg, err := fapps.ReadPackage(data)
@@ -173,7 +179,7 @@ func uploadPackage(src *gtables.InstalledApp, data []byte) (fcodeunits.Result, e
 		return pkgRec.InsertOrError(false)
 	}
 	return installChecked(src, pkg.Manifest, appSource{kind: gtables.InstalledApp_Source_type.Package,
-		source: "package " + hash[:12], ref: pkg.App.Version, save: save})
+		source: "package " + hash[:12], ref: pkg.App.Version, save: save, development: development})
 }
 
 // auditPackage runs the app audit on an uploaded package, with App Build Setup's allowed modules
@@ -189,8 +195,19 @@ func auditPackage(src *gtables.InstalledApp, pkg *fapps.Package, hash string) er
 		return nil
 	}
 	lang := fcodeunits.CurrentLanguage()
-	return errors.New(i18n.GetInstance().MessageWithParams("ERR_APP_AUDIT_FAILED", lang, pkg.App.Name, pkg.App.Version, hash, report.Text()))
+	return &AuditError{Report: report, SHA256: hash,
+		message: i18n.GetInstance().MessageWithParams("ERR_APP_AUDIT_FAILED", lang, pkg.App.Name, pkg.App.Version, hash, report.Text())}
 }
+
+// AuditError: a package refused by the app audit — the message for people, the report for a
+// program (the development endpoint gives VS Code the findings with file and line)
+type AuditError struct {
+	Report  *appaudit.Report
+	SHA256  string
+	message string
+}
+
+func (e *AuditError) Error() string { return e.message }
 
 // installManifest checks an app's application.yaml against the planned apps and records it as
 // Pending Install, taken from a Git repository
@@ -207,6 +224,9 @@ type appSource struct {
 	commit string // the commit the tag pointed to when the app was chosen (Git)
 	folder string
 	save   func(app *fapps.App) error
+	// development: published from VS Code (development endpoint) — the same version may be
+	// published again with other code (it replaces the package)
+	development bool
 }
 
 // installChecked checks an app's application.yaml against the planned apps and records it as
@@ -250,6 +270,8 @@ func installChecked(src *gtables.InstalledApp, data []byte, from appSource) (fco
 		// the version's tag points to another commit than the one installed: other code under
 		// the same version — refused (the publisher must give it a new version)
 		return fcodeunits.Result{}, errors.New(ts.MessageWithParams("ERR_APP_TAG_MOVED", lang, app.Name, from.ref, from.commit, rec.Source_commit.String()))
+	// a development publish: the same version again with the developer's changes
+	case sameVersion && from.development && from.kind == gtables.InstalledApp_Source_type.Package:
 	case sameVersion:
 		return fcodeunits.Result{}, errors.New(ts.MessageWithParams("ERR_APP_ALREADY_INSTALLED", lang, app.Name, app.Version))
 	}

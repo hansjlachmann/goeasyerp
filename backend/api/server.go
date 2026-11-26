@@ -14,6 +14,8 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/hansjlachmann/goeasyerp/backend/api/handlers"
 	"github.com/hansjlachmann/goeasyerp/backend/api/middleware"
+	blapps "github.com/hansjlachmann/goeasyerp/backend/business-logic/apps"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/appbundle"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
 )
 
@@ -156,6 +158,17 @@ func (s *Server) Setup() {
 	api.Post("/auth/logout", authHandler.Logout)
 	api.Post("/auth/password", authHandler.ChangePassword) // the user's own password (S38)
 	api.Get("/auth/user", authHandler.GetCurrentUser)
+	// The development endpoint (Extension App development: F5 in VS Code) — only on a server
+	// started for development, never on a database that looks like production
+	if blapps.DevelopmentRequested() {
+		allowed, reason := blapps.DevelopmentAllowed(s.db, s.dbType)
+		if allowed {
+			handlers.NewDevAppsHandler(s.db, s.dbType, blapps.DevelopmentRemoteAllowed()).Register(api)
+			fmt.Printf("✓ Development endpoint on: apps can be published from VS Code (/api/dev)\n")
+		} else {
+			log.Printf("WARNING: %s=true, but the development endpoint stays off: %s", blapps.EnvDevEndpoint, reason)
+		}
+	}
 	api.Post("/auth/init", authHandler.CreateInitialUser) // the setup token is checked by the login guard (wrong ones lock the address)
 	api.Get("/auth/companies", authHandler.ListCompanies)
 	api.Post("/auth/companies", authHandler.CreateCompany)
@@ -248,10 +261,12 @@ func (s *Server) Setup() {
 		})
 	})
 
-	// Version endpoint
+	// Version endpoint; build: the app build the server runs (0: the program without apps) —
+	// VS Code waits for its published build here
 	s.app.Get("/api/version", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
 			"version": Version,
+			"build":   appbundle.Current(),
 		})
 	})
 

@@ -403,6 +403,8 @@ jobs:
             echo "$f"
             docker compose --env-file "$RUNNER_TEMP/compose.env" -f "$f" --profile apps config -q
           done
+          echo "docker-compose.local.yml + docker-compose.dev.yml"
+          docker compose --env-file "$RUNNER_TEMP/compose.env" -f docker-compose.local.yml -f docker-compose.dev.yml --profile apps config -q
 
   running-app-scan:
     name: Security scan of the running app (nightly)

@@ -424,3 +424,47 @@ relation checks of its fields) do not run, the page parts and menu entries it ad
 greyed out, and its pages, reports, routines and functions are refused. The base application cannot
 be disabled; an app cannot be disabled while an enabled app depends on it, nor enabled while an app
 it depends on is disabled. Every server reads the switch again within 30 seconds.
+
+## 12. Developing an app against a local container
+
+An app is developed against GoEasyERP in a local Docker container: the development container,
+which builds the app into the server each time it is published. The GoEasyERP VS Code extension
+publishes with F5; the steps below are what it does, and work by hand too.
+
+**The development container** is the one-computer installation with the app builder and the
+development endpoint (`docker-compose.dev.yml`, over `docker-compose.local.yml`):
+
+```bash
+docker compose -f docker-compose.local.yml -f docker-compose.dev.yml up -d
+```
+
+with a `.env` next to the two files holding `JWT_SECRET`, `POSTGRES_PASSWORD`,
+`OPENERP_ENCRYPTION_KEY`, `SETUP_TOKEN` and `BUILDER_DB_PASSWORD` (long random texts),
+`COMPOSE_PROFILES=apps` (the builder) and `GOEASYERP_PORT=8080`. It runs at
+`http://localhost:8080`, for this computer only, with a demo company (`DEMO_DATA`, default
+`SMALL`; empty for none), as a Compose project of its own (`goeasyerp-dev`: its own database, not
+a trial installation's). Make the first user with the setup token (the login page, or
+`POST /api/auth/init`).
+
+**The development endpoint** exists only on a server started with `GOEASYERP_DEV_ENDPOINT=true`
+(the development compose file sets it) and a database that does not look like production — every
+company with customers is a demo company, and at most 10 users; otherwise the server logs why and
+the routes do not exist. It answers this computer only (the container's network included);
+`GOEASYERP_DEV_ENDPOINT_REMOTE=true` lets other computers publish too (a shared test server).
+Log in as for the pages (`POST /api/auth/login`, the session cookie); a SUPER user publishes.
+
+| Request | Does |
+|---|---|
+| `POST /api/dev/apps` | The app's package (a `.zip` of its folder, as for Upload App) as the body. Checked and audited as Upload App does; the same version may be published again (the package is replaced). Requests a build and answers `{build_no, app_id, name, version, sha256}`. An app the audit refuses: status 422 with `data.findings` (`rule`, `file`, `line`, `key`, `detail`). Refused while another build is requested or running. |
+| `GET /api/dev/builds/<no>[?from=<byte>]` | The build: `status` (Requested, Running, Succeeded, Failed), `done`, `error_message`, `log` (from the byte `from`; `log_size` is where the next request starts), `running_build` and `live` — true once the server runs this build. |
+| `DELETE /api/dev/apps/<app id>` | Unpublishes the app (Uninstall App) and requests the build without it. |
+| `GET /api/version` | `{version, build}`: the base version and the build the server runs (0: none). |
+
+A publish is: package → `POST /api/dev/apps` → read the build until `done` (a failed build's log
+says why) → wait until `/api/version` names the build → open the browser. On a workstation the
+first build of a new container takes about two minutes (the build cache is empty); after that a
+change of the app's code is built in seconds and live in about 15 seconds. While a development
+server is set up the server looks for a new build every 2 seconds (otherwise 30).
+
+Production never takes apps this way: a released version is installed with Install App or Upload
+App (section 10).

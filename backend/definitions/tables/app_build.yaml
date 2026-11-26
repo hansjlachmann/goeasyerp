@@ -36,7 +36,7 @@ table:
       no: 4
       type: Option
       db_name: trigger
-      options: ["User", "Base Upgrade"]
+      options: ["User", "Base Upgrade", "Development"]
       editable: false
 
     - name: requested_by
