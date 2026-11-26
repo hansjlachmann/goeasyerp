@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.195](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.194...v0.1.195) (2026-11-26)
+
+
+### Features
+
+* JSON schemas of the YAML definitions; the journals' posting windows show their lines again ([24e44c4](https://github.com/hansjlachmann/goeasyerp/commit/24e44c4c8dfdd38e5c82b094c02dd85f2127eda2))
+
+
+### Documentation
+
+* the schema example names the first release with schemas ([55aaeb8](https://github.com/hansjlachmann/goeasyerp/commit/55aaeb80fbe8e6d24c3becbef404678f401d05bd))
+
 ## [0.1.194](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.193...v0.1.194) (2026-11-26)
 
 
