@@ -63,13 +63,26 @@ func (m *Migration010RenumberObjects) Up(ctx *fmigrations.Context) error {
 	if err != nil {
 		return err
 	}
-	return renumber(ctx, "User_Preferences", "page_id", RenumberedPages)
+	return renumberPagePreferences(ctx, RenumberedPages)
+}
+
+// renumberPagePreferences changes page numbers in the users' saved page layouts
+// (User_Preferences.page_id). A row of type REPORT holds a report's number there (a request
+// page's saved values) and keeps it: page and report numbers are separate series (page 409 was
+// SMTP Setup, report 409 is Purchase Reservation Avail.; S15).
+func renumberPagePreferences(ctx *fmigrations.Context, numbers map[int]int) error {
+	return renumberWhere(ctx, "User_Preferences", "page_id", numbers, "preference_type <> 'REPORT'")
 }
 
 // renumber changes the numbers in a column of a table (nothing when the table does not exist
 // yet). Old and new numbers overlap (page 10 becomes 900, page 12 becomes 10), and page_id is
 // part of a primary key: the old numbers are first moved out of the way, then to the new ones.
 func renumber(ctx *fmigrations.Context, table, column string, numbers map[int]int) error {
+	return renumberWhere(ctx, table, column, numbers, "")
+}
+
+// renumberWhere renumbers as renumber, in the rows the SQL condition where selects ("": all)
+func renumberWhere(ctx *fmigrations.Context, table, column string, numbers map[int]int, where string) error {
 	exists, err := ctx.TableExists(table)
 	if err != nil || !exists {
 		return err
@@ -86,12 +99,16 @@ func renumber(ctx *fmigrations.Context, table, column string, numbers map[int]in
 		in[i] = fmt.Sprint(old)
 		cases[i] = fmt.Sprintf("WHEN %d THEN %d", old+parked, numbers[old])
 	}
-	park := fmt.Sprintf(`UPDATE "%s" SET %s = %s + %d WHERE %s IN (%s)`, table, column, column, parked, column, strings.Join(in, ", "))
+	only := ""
+	if where != "" {
+		only = " AND (" + where + ")"
+	}
+	park := fmt.Sprintf(`UPDATE "%s" SET %s = %s + %d WHERE %s IN (%s)%s`, table, column, column, parked, column, strings.Join(in, ", "), only)
 	err = ctx.ExecuteSQL(park)
 	if err != nil {
 		return fmt.Errorf("%s.%s: %w", table, column, err)
 	}
-	move := fmt.Sprintf(`UPDATE "%s" SET %s = CASE %s %s END WHERE %s >= %d`, table, column, column, strings.Join(cases, " "), column, parked)
+	move := fmt.Sprintf(`UPDATE "%s" SET %s = CASE %s %s END WHERE %s >= %d%s`, table, column, column, strings.Join(cases, " "), column, parked, only)
 	err = ctx.ExecuteSQL(move)
 	if err != nil {
 		return fmt.Errorf("%s.%s: %w", table, column, err)

@@ -23,6 +23,9 @@ func TestRenumberObjects(t *testing.T) {
 		`CREATE TABLE "User_Preferences" (user_id VARCHAR(50), page_id INTEGER, preference_type VARCHAR(20), preference_name VARCHAR(50), PRIMARY KEY (user_id, page_id, preference_type, preference_name))`,
 		// page 10 (Menus) becomes 900 and page 12 (Countries) becomes 10: the same key twice
 		`INSERT INTO "User_Preferences" VALUES ('HANS', 10, 'COLUMNS', 'DEFAULT'), ('HANS', 12, 'COLUMNS', 'DEFAULT'), ('HANS', 22, 'COLUMNS', 'DEFAULT')`,
+		// a report's saved request page values (type REPORT: page_id is the report number) are
+		// not a page's (S15)
+		`INSERT INTO "User_Preferences" VALUES ('HANS', 12, 'REPORT', 'main')`,
 	} {
 		if _, err := db.Exec(stmt); err != nil {
 			t.Fatal(err)
@@ -63,8 +66,11 @@ func TestRenumberObjects(t *testing.T) {
 	if jobs["DEMO"] != 901 || jobs["SIFT"] != 902 || jobs["MAIL"] != 455 {
 		t.Errorf("job queue %v", jobs)
 	}
-	prefs := query(`SELECT CAST(page_id AS TEXT), page_id FROM "User_Preferences"`)
+	prefs := query(`SELECT CAST(page_id AS TEXT), page_id FROM "User_Preferences" WHERE preference_type <> 'REPORT'`)
 	if len(prefs) != 3 || prefs["900"] != 900 || prefs["10"] != 10 || prefs["22"] != 22 {
 		t.Errorf("preferences %v, want pages 900, 10 and 22", prefs)
+	}
+	if reports := query(`SELECT preference_name, page_id FROM "User_Preferences" WHERE preference_type = 'REPORT'`); reports["main"] != 12 {
+		t.Errorf("report 12's saved values moved: %v", reports)
 	}
 }

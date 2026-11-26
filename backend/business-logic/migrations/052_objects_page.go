@@ -31,7 +31,7 @@ func (m *Migration052ObjectsPage) Description() string {
 var renumberedObjectsPage = map[int]int{358: 908}
 
 func (m *Migration052ObjectsPage) Up(ctx *fmigrations.Context) error {
-	err := renumber(ctx, "User_Preferences", "page_id", renumberedObjectsPage)
+	err := renumberPagePreferences(ctx, renumberedObjectsPage)
 	if err != nil {
 		return err
 	}

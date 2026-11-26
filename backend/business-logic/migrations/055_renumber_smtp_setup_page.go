@@ -29,5 +29,5 @@ func (m *Migration055RenumberSMTPSetupPage) Description() string {
 }
 
 func (m *Migration055RenumberSMTPSetupPage) Up(ctx *fmigrations.Context) error {
-	return renumber(ctx, "User_Preferences", "page_id", RenumberedPages055)
+	return renumberPagePreferences(ctx, RenumberedPages055)
 }

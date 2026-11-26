@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -125,7 +126,11 @@ func (or *ObjectRegistry) InitializeCompanyTablesWithDBType(db *sql.DB, companyN
 			}
 
 			// Also fix any existing NULL values in TEXT/INTEGER columns
-			err = fixNullValues(db, fullTableName, schemaColumns, existingColumns, dbType)
+			var fieldTypes map[string]ftables.FieldType
+			if hasNumbers {
+				fieldTypes = fieldTypesOf(numbered)
+			}
+			err = fixNullValues(db, fullTableName, schemaColumns, existingColumns, fieldTypes)
 			if err != nil {
 				failedTables = append(failedTables, fmt.Sprintf("Table %d (%s): failed to fix NULL values: %v", tableID, tableDef.GetTableName(), err))
 				continue
@@ -193,45 +198,78 @@ func (or *ObjectRegistry) InitializeCompanyTablesWithDBType(db *sql.DB, companyN
 	return nil
 }
 
-// fixNullValues updates NULL values in existing columns to appropriate defaults
-func fixNullValues(db *sql.DB, tableName string, schemaColumns map[string]string, existingColumns map[string]bool, dbType database.DBType) error {
-	for columnName, columnDef := range schemaColumns {
-		// Skip if column doesn't exist yet
+// fixNullValues updates NULL values in existing columns to the blank value of their type. The
+// type is the field's (fieldTypes: the table definition), else the column's declared type —
+// never the column's name (S15: "realized_gains_acc TEXT" is no REAL column, and on SQLite a
+// date is a TEXT column whose NULL is the blank date and must stay NULL). Dates, date-times,
+// blobs and unknown types keep their NULLs.
+func fixNullValues(db *sql.DB, tableName string, schemaColumns map[string]string, existingColumns map[string]bool, fieldTypes map[string]ftables.FieldType) error {
+	names := make([]string, 0, len(schemaColumns))
+	for columnName := range schemaColumns {
+		names = append(names, columnName)
+	}
+	sort.Strings(names)
+	for _, columnName := range names {
 		if !existingColumns[columnName] {
+			continue // the column does not exist yet
+		}
+		defaultValue := blankValue(columnName, schemaColumns[columnName], fieldTypes)
+		if defaultValue == "" {
 			continue
 		}
-
-		// Determine default value based on type
-		var defaultValue string
-		upperDef := strings.ToUpper(columnDef)
-
-		switch {
-		case strings.Contains(upperDef, "BOOLEAN"):
-			defaultValue = "FALSE"
-		case strings.Contains(upperDef, "INTEGER"):
-			defaultValue = "0"
-		case strings.Contains(upperDef, "NUMERIC") || strings.Contains(upperDef, "DECIMAL") || strings.Contains(upperDef, "DOUBLE") || strings.Contains(upperDef, "REAL"):
-			defaultValue = "0"
-		case strings.Contains(upperDef, "TIMESTAMP") || strings.Contains(upperDef, "DATE"):
-			// For timestamps and dates, we skip fixing NULLs as they may be intentionally NULL
-			continue
-		case strings.Contains(upperDef, "TEXT") || strings.Contains(upperDef, "VARCHAR"):
-			defaultValue = "''"
-		default:
-			// Skip unknown types
-			continue
-		}
-
-		if defaultValue != "" {
-			updateSQL := fmt.Sprintf(`UPDATE "%s" SET %s = %s WHERE %s IS NULL`, tableName, columnName, defaultValue, columnName)
-			_, err := db.Exec(updateSQL)
-			if err != nil {
-				return fmt.Errorf("failed to fix NULL values for column %s: %w", columnName, err)
-			}
+		updateSQL := fmt.Sprintf(`UPDATE "%s" SET "%s" = %s WHERE "%s" IS NULL`, tableName, columnName, defaultValue, columnName)
+		_, err := db.Exec(updateSQL)
+		if err != nil {
+			return fmt.Errorf("failed to fix NULL values for column %s: %w", columnName, err)
 		}
 	}
-
 	return nil
+}
+
+// blankValue: the SQL blank value of a column ("" to leave its NULLs alone)
+func blankValue(columnName, columnDef string, fieldTypes map[string]ftables.FieldType) string {
+	if fieldType, ok := fieldTypes[columnName]; ok {
+		switch fieldType {
+		case ftables.FieldTypeBoolean:
+			return "FALSE"
+		case ftables.FieldTypeInteger, ftables.FieldTypeOption, ftables.FieldTypeDecimal:
+			return "0"
+		case ftables.FieldTypeCode, ftables.FieldTypeText:
+			return "''"
+		default: // dates, date-times (NULL is the blank value), blobs
+			return ""
+		}
+	}
+	// no field information: the declared type (the word after the column's name)
+	parts := strings.Fields(strings.ToUpper(columnDef))
+	if len(parts) < 2 {
+		return ""
+	}
+	declared := parts[1]
+	if k := strings.IndexByte(declared, '('); k >= 0 {
+		declared = declared[:k]
+	}
+	switch declared {
+	case "BOOLEAN", "BOOL":
+		return "FALSE"
+	case "INTEGER", "INT", "BIGINT", "SMALLINT", "NUMERIC", "DECIMAL", "DOUBLE", "REAL":
+		return "0"
+	case "VARCHAR":
+		return "''"
+	default: // TEXT (also a date on SQLite), TIMESTAMP, DATE, BLOB, BYTEA …
+		return ""
+	}
+}
+
+// fieldTypesOf: the stored fields' types by column
+func fieldTypesOf(t fieldNumberer) map[string]ftables.FieldType {
+	out := map[string]ftables.FieldType{}
+	for _, f := range t.GetFields() {
+		if !f.FlowField {
+			out[strings.ToLower(f.Name)] = f.Type
+		}
+	}
+	return out
 }
 
 // GetTableCount returns the number of registered tables
@@ -392,7 +430,7 @@ func addMissingColumns(db *sql.DB, tableName string, schemaColumns map[string]st
 				cleanDef = cleanDef + " DEFAULT 0"
 			case strings.Contains(upperDef, "TEXT") || strings.Contains(upperDef, "VARCHAR"):
 				cleanDef = cleanDef + " DEFAULT ''"
-			// TIMESTAMP and DATE don't get defaults, allowing NULL
+				// TIMESTAMP and DATE don't get defaults, allowing NULL
 			}
 		}
 
@@ -420,7 +458,7 @@ func addMissingColumns(db *sql.DB, tableName string, schemaColumns map[string]st
 			defaultValue = "0"
 		case strings.Contains(upperDef, "TEXT") || strings.Contains(upperDef, "VARCHAR"):
 			defaultValue = "''"
-		// TIMESTAMP and DATE don't get default values
+			// TIMESTAMP and DATE don't get default values
 		}
 
 		if defaultValue != "" {

@@ -346,3 +346,33 @@ func (ctx *Context) sqliteColumns(tableName string) ([]sqliteColumn, error) {
 	}
 	return cols, rows.Err()
 }
+
+// ColumnTypes returns a table's columns (lower case) and their SQL types as the database
+// declares them ("character varying(250)", "numeric(38,20)", SQLite's declared type)
+func (ctx *Context) ColumnTypes(tableName string) (map[string]string, error) {
+	out := map[string]string{}
+	if ctx.DBType != database.DBTypePostgres {
+		cols, err := ctx.sqliteColumns(tableName)
+		if err != nil {
+			return nil, err
+		}
+		for _, c := range cols {
+			out[strings.ToLower(c.Name)] = c.Type
+		}
+		return out, nil
+	}
+	rows, err := ctx.tx.Query(`SELECT a.attname, format_type(a.atttypid, a.atttypmod) FROM pg_attribute a
+		WHERE a.attrelid = to_regclass(quote_ident($1)) AND a.attnum > 0 AND NOT a.attisdropped`, tableName)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var name, typ string
+		if err := rows.Scan(&name, &typ); err != nil {
+			return nil, err
+		}
+		out[strings.ToLower(name)] = typ
+	}
+	return out, rows.Err()
+}

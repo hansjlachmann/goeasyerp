@@ -1,10 +1,13 @@
 package migrations
 
 import (
+	"crypto/rand"
 	"database/sql"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"sort"
+	"sync"
 	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/database"
@@ -28,8 +31,13 @@ func NewRunner(db *sql.DB, dbType database.DBType, migrations []Migration, compa
 		podID = envPodID
 	}
 	if podID == "" {
-		podID = fmt.Sprintf("pod-%d", time.Now().UnixNano())
+		podID = "pod"
 	}
+	// unique per process: the lock is renewed and released by its holder's ID only, and two
+	// processes may share a host name (S15)
+	suffix := make([]byte, 4)
+	_, _ = rand.Read(suffix)
+	podID = fmt.Sprintf("%s-%d-%s", podID, os.Getpid(), hex.EncodeToString(suffix))
 
 	return &Runner{
 		db:         db,
@@ -48,11 +56,13 @@ func (r *Runner) Run() error {
 		return fmt.Errorf("failed to ensure infrastructure tables: %w", err)
 	}
 
-	// 2. Acquire distributed lock
+	// 2. Acquire distributed lock, renewed while the migrations run (S15)
 	if err := r.acquireLock(); err != nil {
 		return fmt.Errorf("failed to acquire migration lock: %w", err)
 	}
 	defer r.releaseLock()
+	stopRenewing := r.keepLock()
+	defer stopRenewing()
 
 	// 3. Get applied versions
 	applied, err := GetAppliedVersions(r.db)
@@ -158,12 +168,16 @@ func (r *Runner) runMigration(m Migration, companies []string) error {
 	return nil
 }
 
+// lockWait: how long an instance waits for the lock another one holds (and renews while its
+// migrations run); a holder that stopped lets its lock expire after lockTTL
+const lockWait = 30 * time.Minute
+
 // acquireLock attempts to acquire the distributed migration lock
 func (r *Runner) acquireLock() error {
-	maxRetries := 30
 	retryInterval := 2 * time.Second
+	deadline := time.Now().Add(lockWait)
 
-	for i := 0; i < maxRetries; i++ {
+	for attempt := 1; ; attempt++ {
 		acquired, err := r.tryAcquireLock()
 		if err != nil {
 			return err
@@ -172,14 +186,69 @@ func (r *Runner) acquireLock() error {
 			fmt.Printf("  ✓ Acquired migration lock (pod: %s)\n", r.podID)
 			return nil
 		}
-
-		if i < maxRetries-1 {
-			fmt.Printf("  Waiting for migration lock (attempt %d/%d)...\n", i+1, maxRetries)
-			time.Sleep(retryInterval)
+		if time.Now().After(deadline) {
+			return fmt.Errorf("failed to acquire migration lock within %s (another instance holds it)", lockWait)
 		}
+		if attempt == 1 || attempt%15 == 0 {
+			fmt.Println("  Waiting for the migration lock: another instance is migrating the database...")
+		}
+		time.Sleep(retryInterval)
 	}
+}
 
-	return fmt.Errorf("failed to acquire migration lock after %d attempts", maxRetries)
+// keepLock renews the lock every third of its time to live while the migrations run, so one that
+// takes longer than lockTTL (a column type change or table rebuild on a large database) keeps it —
+// another instance would otherwise take the expired lock and migrate at the same time (S15). The
+// returned function stops renewing. SQLite is one process's file: nothing to renew.
+func (r *Runner) keepLock() (stop func()) {
+	if r.dbType != database.DBTypePostgres {
+		return func() {}
+	}
+	return r.renewEvery(r.lockTTL / 3)
+}
+
+// renewEvery renews the lock every interval until stopped
+func (r *Runner) renewEvery(interval time.Duration) (stop func()) {
+	done := make(chan struct{})
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-done:
+				return
+			case <-ticker.C:
+				held, err := r.renewLock()
+				if err != nil {
+					fmt.Printf("Warning: renewing the migration lock: %v\n", err)
+				} else if !held {
+					fmt.Println("Warning: the migration lock was taken by another instance")
+				}
+			}
+		}
+	}()
+	return func() {
+		close(done)
+		wg.Wait()
+	}
+}
+
+// renewLock moves the lock's expiry on, while this runner holds it (false: it does not)
+func (r *Runner) renewLock() (bool, error) {
+	expiresAt := time.Now().Add(r.lockTTL)
+	query := `UPDATE "_migration_lock" SET expires_at = ? WHERE id = 1 AND locked_by = ?`
+	if r.dbType == database.DBTypePostgres {
+		query = `UPDATE "_migration_lock" SET expires_at = $1 WHERE id = 1 AND locked_by = $2`
+	}
+	result, err := r.db.Exec(query, expiresAt, r.podID)
+	if err != nil {
+		return false, err
+	}
+	n, err := result.RowsAffected()
+	return n > 0, err
 }
 
 // tryAcquireLock attempts to acquire the lock once
