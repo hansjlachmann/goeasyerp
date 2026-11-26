@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.194](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.193...v0.1.194) (2026-11-26)
+
+
+### Features
+
+* apps can be published from VS Code to a local development container ([40aeb0c](https://github.com/hansjlachmann/goeasyerp/commit/40aeb0cb18c5588ade73e960eac652ffc789efd8))
+
 ## [0.1.193](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.192...v0.1.193) (2026-11-26)
 
 
