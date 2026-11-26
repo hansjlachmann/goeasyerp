@@ -7,6 +7,7 @@ page:
   editable: true
   auto_split_key: true      # a new line gets Line No. 10000, 20000 … or halfway between its neighbours
   delayed_insert: true      # inserted when the user leaves the line
+  copy_paste_allowed: true  # Ctrl+C / Ctrl+V copy the lines, e.g. to another company
 
   # The company's text at the top of the main menu, line by line: the lines of the user's
   # language, else those with a blank Language Code, else the standard welcome text
