@@ -37,7 +37,6 @@ page:
 
         - source: app_id
           width: 290
-          primary_key: true
 
         - source: source
           width: 280

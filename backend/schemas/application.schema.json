@@ -1,0 +1,107 @@
+{
+  "$defs": {
+    "AppApp": {
+      "additionalProperties": false,
+      "description": "App is an application.yaml",
+      "properties": {
+        "contact": {
+          "type": "string"
+        },
+        "dependencies": {
+          "items": {
+            "$ref": "#/$defs/AppDependency"
+          },
+          "type": "array"
+        },
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "number_series": {
+          "$ref": "#/$defs/AppApp_number_series"
+        },
+        "prefix": {
+          "description": "Prefix: an extension app's own names start with it — the fields it adds to base tables (lp_loyalty_points), its tables (LP_Loyalty_Tier) and pages (LP Loyalty Tiers) — so two apps cannot clash by name. Required for an extension app; the base application has none.",
+          "type": "string"
+        },
+        "publisher": {
+          "type": "string"
+        },
+        "system_tables": {
+          "description": "SystemTables are the system table numbers (2000000000 range), a section of its own",
+          "items": {
+            "$ref": "#/$defs/AppRange"
+          },
+          "type": "array"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "AppApp_number_series": {
+      "additionalProperties": false,
+      "properties": {
+        "fields": {
+          "items": {
+            "$ref": "#/$defs/AppRange"
+          },
+          "type": "array"
+        },
+        "objects": {
+          "items": {
+            "$ref": "#/$defs/AppRange"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "AppDependency": {
+      "additionalProperties": false,
+      "description": "Dependency is another app this app needs (an extension depends on the base application)",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "min_version": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "AppRange": {
+      "additionalProperties": false,
+      "description": "Range is an inclusive number range",
+      "properties": {
+        "from": {
+          "type": "integer"
+        },
+        "to": {
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "$id": "https://github.com/hansjlachmann/goeasyerp/backend/schemas/application.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "description": "An app's identity, number series, prefix and dependencies (EXTENSIONS.md, section 2).",
+  "properties": {
+    "application": {
+      "$ref": "#/$defs/AppApp"
+    }
+  },
+  "required": [
+    "application"
+  ],
+  "title": "GoEasyERP application.yaml",
+  "type": "object"
+}

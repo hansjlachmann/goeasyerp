@@ -12,7 +12,6 @@ page:
       fields:
         - source: code
           width: 150
-          primary_key: true
 
         - source: description
           width: 300

@@ -1,0 +1,463 @@
+{
+  "$defs": {
+    "TableField": {
+      "additionalProperties": false,
+      "description": "Field represents a single field in a table",
+      "properties": {
+        "auto_timestamp": {
+          "type": "boolean"
+        },
+        "calc_formula": {
+          "description": "Sum, Count, Lookup, Exist, Average, Min, Max",
+          "enum": [
+            "Sum",
+            "Count",
+            "Lookup",
+            "Exist",
+            "Average",
+            "Min",
+            "Max"
+          ],
+          "type": "string"
+        },
+        "caption": {
+          "description": "The field's English caption, for people reading the file (the captions shown come from the translations).",
+          "type": "string"
+        },
+        "caption_class": {
+          "description": "CaptionClass (classic CaptionClass): the caption expression the field's caption is resolved with, \"<area>,<arguments>\" — \"1,<kind>,<n>\" a dimension field (the company's name for dimension n), \"3,<text>\" a free text (i18n/captionclass.go)",
+          "type": "string"
+        },
+        "date_formula": {
+          "description": "DateFormula: a types.Code field that holds a date formula (\"30D\", \"1M+CM\"); the field checks and ValidateField reject a value that is not one (foundation/dateformula), and business logic calculates with it: system.CalcDate(string(rec.Due_date_calculation), d)",
+          "type": "boolean"
+        },
+        "db_name": {
+          "type": "string"
+        },
+        "decimal_places": {
+          "description": "DecimalPlaces (classic DecimalPlaces \"min:max\"): the pages show a decimal with at least min and at most max digits after the point (\"2:5\" → 0.01, 0.00001); storage keeps scale",
+          "type": "string"
+        },
+        "default": {},
+        "description": {
+          "description": "What the field holds, for people reading the file.",
+          "type": "string"
+        },
+        "editable": {
+          "description": "Editable: false (classic Editable=No) — the pages show the field read-only and the API keeps its stored value; business logic (Go) can still set it",
+          "type": "boolean"
+        },
+        "encrypted": {
+          "description": "Encrypted: a masked secret the server has to read back in clear (e.g. the SMTP password it logs in with) is stored encrypted (backend/foundation/secrets, AES-256-GCM) — Insert/Modify/InsertAll encrypt it, Plain<Field>() decrypts it. Requires masked and types.Text. Not for values that are only compared (user passwords: hash them, sensitive).",
+          "type": "boolean"
+        },
+        "flow_field": {
+          "description": "For FlowFields (calculated fields)",
+          "type": "boolean"
+        },
+        "flow_filter": {
+          "description": "FlowFilter (FieldClass FlowFilter): not stored; holds a filter expression the user sets (e.g. Date Filter), applied by FlowFields with a flow filter of type \"filter\"",
+          "type": "boolean"
+        },
+        "flow_filters": {
+          "description": "Filter conditions",
+          "items": {
+            "$ref": "#/$defs/TableFlowFilter"
+          },
+          "type": "array"
+        },
+        "length": {
+          "type": "integer"
+        },
+        "masked": {
+          "description": "Masked (ExtendedDatatype Masked): a secret that can be set through the API but is never read back — responses carry tables.MaskedValue when it has a value (e.g. SMTP_Setup.password); not usable in filters, sorting, search or lookup columns",
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "no": {
+          "description": "Field number (field ID): unique in the table, never changed or reused",
+          "type": "integer"
+        },
+        "options": {
+          "description": "For Option type fields (enum values)",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "precision": {
+          "description": "For Decimal type (total digits)",
+          "type": "integer"
+        },
+        "primary_key": {
+          "type": "boolean"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "reverse_sign": {
+          "description": "ReverseSign (Sum FlowFields): the total with the opposite sign (classic CalcFormula=-Sum, e.g. Customer Payments)",
+          "type": "boolean"
+        },
+        "scale": {
+          "description": "For Decimal type (decimal places)",
+          "type": "integer"
+        },
+        "sensitive": {
+          "description": "Sensitive: never sent by the table API (e.g. User.password_hash), and not usable in filters, sorting, search or lookup columns; the API cannot set it either",
+          "type": "boolean"
+        },
+        "source_field": {
+          "description": "Field to aggregate",
+          "type": "string"
+        },
+        "source_table": {
+          "description": "Table to calculate from",
+          "type": "string"
+        },
+        "table_relation": {
+          "$ref": "#/$defs/TableTableRelation"
+        },
+        "type": {
+          "enum": [
+            "types.Code",
+            "types.Text",
+            "types.Decimal",
+            "types.Date",
+            "types.DateTime",
+            "int",
+            "int64",
+            "bool",
+            "Option",
+            "[]byte",
+            "float64",
+            "string",
+            "time.Time"
+          ],
+          "type": "string"
+        },
+        "validation": {
+          "$ref": "#/$defs/TableValidation"
+        }
+      },
+      "type": "object"
+    },
+    "TableFlowFilter": {
+      "additionalProperties": false,
+      "description": "FlowFilter represents a filter condition for FlowField calculation",
+      "properties": {
+        "field": {
+          "description": "Field name in source table",
+          "type": "string"
+        },
+        "type": {
+          "description": "\"const\", \"field\", \"filter\" (apply a FlowFilter field of this table), \"field_filter\" (a stored field of this table holding a filter, e.g. Totaling) or \"language\" (the current user's language, i18n.SessionLanguage — Object Caption)",
+          "enum": [
+            "const",
+            "field",
+            "filter",
+            "field_filter",
+            "language"
+          ],
+          "type": "string"
+        },
+        "upper_limit": {
+          "description": "UpperLimit (type \"filter\"): only the upper end of the FlowFilter applies — up to the filter's last date, from the start (\"Balance at Date\": Posting Date = UpperLimit(Date Filter))",
+          "type": "boolean"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "description": "A constant value, or the field / FlowFilter field of this table the filter takes its value from."
+        }
+      },
+      "type": "object"
+    },
+    "TableKey": {
+      "additionalProperties": false,
+      "description": "Key represents an index/key on a table",
+      "properties": {
+        "clustered": {
+          "description": "Primary key-like behavior (concept)",
+          "type": "boolean"
+        },
+        "fields": {
+          "description": "Fields in the key (e.g., [\"customer_no\", \"open\"])",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "name": {
+          "description": "Key name (e.g., \"customer_open\")",
+          "type": "string"
+        },
+        "sum_index_fields": {
+          "description": "SumIndexFields (SIFT): the database keeps a totals table for this key with these fields summed, and FlowFields over the key's fields read the totals",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "unique": {
+          "description": "Whether this is a UNIQUE index",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "TableLookupColumn": {
+      "additionalProperties": false,
+      "description": "LookupColumn defines a column to display in the lookup dropdown",
+      "properties": {
+        "search": {
+          "description": "Search (optional): the stored field the dropdown's search looks in for this column — a FlowField is shown, not searched (Object's Caption searches its Name)",
+          "type": "string"
+        },
+        "source": {
+          "description": "Field name to display",
+          "type": "string"
+        },
+        "width": {
+          "description": "Column width in pixels (optional)",
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "TableRelationCondition": {
+      "additionalProperties": false,
+      "description": "RelationCondition is one branch of a conditional table relation",
+      "properties": {
+        "conditions": {
+          "description": "Conditions (classic IF (Type=CONST(x)) Table ELSE IF …): the relation depends on another field of the record — each condition is a relation of its own (Table, Field, lookup columns) that applies when the record's field equals the value; Table/Field stay blank",
+          "items": {
+            "$ref": "#/$defs/TableRelationCondition"
+          },
+          "type": "array"
+        },
+        "display_field": {
+          "description": "Field to show in dropdown (e.g., \"description\") - simple mode",
+          "type": "string"
+        },
+        "field": {
+          "type": "string"
+        },
+        "filters": {
+          "additionalProperties": {
+            "$ref": "#/$defs/TableRelationFilter"
+          },
+          "description": "Filters (classic TableRelation … WHERE (Field=FIELD(x)) / CONST(y)): the related records are those whose column matches this record's field (field) or a constant (const) — for a key part of a composite key (Reminder Level No. of the record's Reminder Terms)",
+          "type": "object"
+        },
+        "lookup_columns": {
+          "description": "Columns to show in dropdown - advanced mode",
+          "items": {
+            "$ref": "#/$defs/TableLookupColumn"
+          },
+          "type": "array"
+        },
+        "search_timeout": {
+          "description": "Auto-clear search after N milliseconds (default: 1500)",
+          "type": "integer"
+        },
+        "table": {
+          "type": "string"
+        },
+        "validate": {
+          "description": "Whether to validate the relation (default: true)",
+          "type": "boolean"
+        },
+        "when": {
+          "$ref": "#/$defs/TableRelationCondition_when"
+        }
+      },
+      "type": "object"
+    },
+    "TableRelationCondition_when": {
+      "additionalProperties": false,
+      "properties": {
+        "equal": {
+          "description": "the option's number",
+          "type": "integer"
+        },
+        "field": {
+          "description": "an option field of the same table (e.g. bal_account_type)",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "TableRelationFilter": {
+      "additionalProperties": false,
+      "description": "RelationFilter is one WHERE condition of a table relation: a field of this record or a constant",
+      "properties": {
+        "const": {},
+        "field": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "TableTableDef_table": {
+      "additionalProperties": false,
+      "properties": {
+        "api_name": {
+          "description": "Name in the API and the pages' source_table (default: name)",
+          "type": "string"
+        },
+        "auto_key": {
+          "description": "The table's key is given by its OnInsert trigger (a number series): a new record is inserted with a blank key.",
+          "type": "boolean"
+        },
+        "caption": {
+          "description": "The table's English caption, for people reading the file (the captions shown come from the translations).",
+          "type": "string"
+        },
+        "data_caption_fields": {
+          "description": "DataCaptionFields (classic DataCaptionFields): fields whose values the pages show in the title of a card (\"Finance Charge Terms – STD Standard finance charge\")",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "description": {
+          "description": "What the table is for, for people reading the file.",
+          "type": "string"
+        },
+        "fields": {
+          "items": {
+            "$ref": "#/$defs/TableField"
+          },
+          "type": "array"
+        },
+        "global": {
+          "description": "If true, table is global (no company prefix)",
+          "type": "boolean"
+        },
+        "history": {
+          "description": "History: a posted document — a record of what happened, kept as it was",
+          "type": "boolean"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "keys": {
+          "items": {
+            "$ref": "#/$defs/TableKey"
+          },
+          "type": "array"
+        },
+        "lookup_page_id": {
+          "description": "The page a lookup of this table opens and its New uses (classic LookupFormID); else its list page with the lowest number.",
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "posted": {
+          "description": "Written by posting only (ledger entries, registers)",
+          "type": "boolean"
+        },
+        "refuse_delete_when_used": {
+          "description": "RefuseDeleteWhenUsed: a delete with triggers is refused while a record refers to this one: \"all\" (any record, for codes such as Payment Terms) or \"current\" (not posted entries and documents: for master data whose OnDelete deals with its entries)",
+          "enum": [
+            "all",
+            "current"
+          ],
+          "type": "string"
+        },
+        "setup_table": {
+          "description": "If true, singleton setup table (single blank-PK record)",
+          "type": "boolean"
+        },
+        "type_to_delete": {
+          "description": "A delete asks the user to type the record's key (Company).",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "TableTableRelation": {
+      "additionalProperties": false,
+      "description": "TableRelation represents a foreign key relationship to another table",
+      "properties": {
+        "conditions": {
+          "description": "Conditions (classic IF (Type=CONST(x)) Table ELSE IF …): the relation depends on another field of the record — each condition is a relation of its own (Table, Field, lookup columns) that applies when the record's field equals the value; Table/Field stay blank",
+          "items": {
+            "$ref": "#/$defs/TableRelationCondition"
+          },
+          "type": "array"
+        },
+        "display_field": {
+          "description": "Field to show in dropdown (e.g., \"description\") - simple mode",
+          "type": "string"
+        },
+        "field": {
+          "type": "string"
+        },
+        "filters": {
+          "additionalProperties": {
+            "$ref": "#/$defs/TableRelationFilter"
+          },
+          "description": "Filters (classic TableRelation … WHERE (Field=FIELD(x)) / CONST(y)): the related records are those whose column matches this record's field (field) or a constant (const) — for a key part of a composite key (Reminder Level No. of the record's Reminder Terms)",
+          "type": "object"
+        },
+        "lookup_columns": {
+          "description": "Columns to show in dropdown - advanced mode",
+          "items": {
+            "$ref": "#/$defs/TableLookupColumn"
+          },
+          "type": "array"
+        },
+        "search_timeout": {
+          "description": "Auto-clear search after N milliseconds (default: 1500)",
+          "type": "integer"
+        },
+        "table": {
+          "type": "string"
+        },
+        "validate": {
+          "description": "Whether to validate the relation (default: true)",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "TableValidation": {
+      "additionalProperties": false,
+      "description": "Validation represents field validation rules Validation is a field's range (classic MinValue / MaxValue): min, max or both; on whole numbers and decimals",
+      "properties": {
+        "max": {},
+        "min": {}
+      },
+      "type": "object"
+    }
+  },
+  "$id": "https://github.com/hansjlachmann/goeasyerp/backend/schemas/table.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "description": "TableDef represents a table definition from YAML",
+  "properties": {
+    "table": {
+      "$ref": "#/$defs/TableTableDef_table"
+    }
+  },
+  "title": "GoEasyERP table definition",
+  "type": "object"
+}

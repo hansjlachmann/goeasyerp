@@ -1,0 +1,28 @@
+{
+  "$defs": {
+    "TranslationNode": {
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "$ref": "#/$defs/TranslationNode"
+          }
+        ]
+      },
+      "type": "object"
+    }
+  },
+  "$id": "https://github.com/hansjlachmann/goeasyerp/backend/schemas/translations.schema.json",
+  "$ref": "#/$defs/TranslationNode",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Texts of a language (translations/<language>/*.yaml): keys in lower case (\"Loyalty Tiers\" → loyalty_tiers), nested, each text a string (EXTENSIONS.md, section 7).",
+  "title": "GoEasyERP translations"
+}

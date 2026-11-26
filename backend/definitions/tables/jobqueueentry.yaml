@@ -8,7 +8,6 @@ table:
       db_name: entry_no
       primary_key: true
       required: true
-      auto_increment: true
 
     - name: job_queue_no
       no: 2

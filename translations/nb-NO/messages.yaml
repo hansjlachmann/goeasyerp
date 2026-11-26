@@ -616,21 +616,13 @@ messages:
   GEN_JNL_POST_WINDOW: "Kladdenavn #1##########\nKontrollerer linjer #2######\nKontrollerer saldo #3###### @4@@@@@@@@@@@@@\nBokfører linjer #5###### @6@@@@@@@@@@@@@"
   GEN_JNL_POST_WINDOW_RECURRING: "Kladdenavn #1##########\nKontrollerer linjer #2######\nKontrollerer saldo #3###### @4@@@@@@@@@@@@@\nBokfører linjer #5###### @6@@@@@@@@@@@@@\nBokfører tilbakeføringer #7###### @8@@@@@@@@@@@@@\nOppdaterer linjer #9###### @10@@@@@@@@@@@@"
   GEN_JNL_APPLY_CHANGE_CURRENCY: "%1 i %2 endres fra %3 til %4.\nVil du fortsette?"
-  ITEM_JNL_POST_WINDOW: "Kladdenavn #1##########
-Kontrollerer linjer #2######
-Bokfører linjer #3###### @4@@@@@@@@@@@@@"
-  RES_JNL_POST_WINDOW: "Kladdenavn #1##########
-Kontrollerer linjer #2######
-Bokfører linjer #3###### @4@@@@@@@@@@@@@"
+  ITEM_JNL_POST_WINDOW: "Kladdenavn #1##########\nKontrollerer linjer #2######\nBokfører linjer #3###### @4@@@@@@@@@@@@@"
+  RES_JNL_POST_WINDOW: "Kladdenavn #1##########\nKontrollerer linjer #2######\nBokfører linjer #3###### @4@@@@@@@@@@@@@"
   RES_JNL_TEMPLATE_DESCRIPTION: "Ressurskladder"
-  PROJECT_JNL_POST_WINDOW: "Kladdenavn #1##########
-Kontrollerer linjer #2######
-Bokfører linjer #3###### @4@@@@@@@@@@@@@"
+  PROJECT_JNL_POST_WINDOW: "Kladdenavn #1##########\nKontrollerer linjer #2######\nBokfører linjer #3###### @4@@@@@@@@@@@@@"
   PROJECT_JNL_TEMPLATE_DESCRIPTION: "Prosjektkladder"
   RECURRING_PROJECT_JNL_TEMPLATE_DESCRIPTION: "Gjentakelseskladd - prosjekt"
-  BOM_JNL_POST_WINDOW: "Kladdenavn #1##########
-Kontrollerer linjer #2######
-Bokfører linjer #3###### @4@@@@@@@@@@@@@"
+  BOM_JNL_POST_WINDOW: "Kladdenavn #1##########\nKontrollerer linjer #2######\nBokfører linjer #3###### @4@@@@@@@@@@@@@"
   FA_JNL_TEMPLATE_DESCRIPTION: "Anleggskladd"
   FA_CANCEL_ENTRIES_CONFIRM: "Vil du annullere de valgte postene?"
   FA_CANCEL_ENTRIES_TRANSFERRED: "Postene er overført til kladden."
@@ -653,9 +645,7 @@ Bokfører linjer #3###### @4@@@@@@@@@@@@@"
   FA_RECLASS_BATCHES_CONFIRM: "Vil du omklassifisere kladdene?"
   FA_RECLASS_BATCHES_DONE: "Kladdene er omklassifisert."
   FA_RECLASS_BATCHES_ERRORS: "Ikke alle kladdene kunne omklassifiseres. Åpne kladdene som fortsatt har linjer, for å se hvorfor."
-  FA_JNL_POST_WINDOW: "Kladdenavn #1##########
-Kontrollerer linjer #2######
-Bokfører linjer #3###### @4@@@@@@@@@@@@@"
+  FA_JNL_POST_WINDOW: "Kladdenavn #1##########\nKontrollerer linjer #2######\nBokfører linjer #3###### @4@@@@@@@@@@@@@"
   BOM_JNL_TEMPLATE_DESCRIPTION: "Stykklistekladd"
   BOM_EXPLODE_CONFIRM: "Vil du utvide stykklisten?"
   BOM_CALC_COST_LEVELS: "Dette stykklistenivået,Alle stykklistenivåer"

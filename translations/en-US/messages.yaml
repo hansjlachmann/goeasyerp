@@ -616,21 +616,13 @@ messages:
   GEN_JNL_POST_WINDOW: "Journal Batch Name #1##########\nChecking lines #2######\nChecking balance #3###### @4@@@@@@@@@@@@@\nPosting lines #5###### @6@@@@@@@@@@@@@"
   GEN_JNL_POST_WINDOW_RECURRING: "Journal Batch Name #1##########\nChecking lines #2######\nChecking balance #3###### @4@@@@@@@@@@@@@\nPosting lines #5###### @6@@@@@@@@@@@@@\nPosting revers. lines #7###### @8@@@@@@@@@@@@@\nUpdating lines #9###### @10@@@@@@@@@@@@"
   GEN_JNL_APPLY_CHANGE_CURRENCY: "The %1 in the %2 will be changed from %3 to %4.\nDo you wish to continue?"
-  ITEM_JNL_POST_WINDOW: "Journal Batch Name #1##########
-Checking lines #2######
-Posting lines #3###### @4@@@@@@@@@@@@@"
-  RES_JNL_POST_WINDOW: "Journal Batch Name #1##########
-Checking lines #2######
-Posting lines #3###### @4@@@@@@@@@@@@@"
+  ITEM_JNL_POST_WINDOW: "Journal Batch Name #1##########\nChecking lines #2######\nPosting lines #3###### @4@@@@@@@@@@@@@"
+  RES_JNL_POST_WINDOW: "Journal Batch Name #1##########\nChecking lines #2######\nPosting lines #3###### @4@@@@@@@@@@@@@"
   RES_JNL_TEMPLATE_DESCRIPTION: "Resource Journals"
-  PROJECT_JNL_POST_WINDOW: "Journal Batch Name #1##########
-Checking lines #2######
-Posting lines #3###### @4@@@@@@@@@@@@@"
+  PROJECT_JNL_POST_WINDOW: "Journal Batch Name #1##########\nChecking lines #2######\nPosting lines #3###### @4@@@@@@@@@@@@@"
   PROJECT_JNL_TEMPLATE_DESCRIPTION: "Project Journals"
   RECURRING_PROJECT_JNL_TEMPLATE_DESCRIPTION: "Recurring Project Journal"
-  BOM_JNL_POST_WINDOW: "Journal Batch Name #1##########
-Checking lines #2######
-Posting lines #3###### @4@@@@@@@@@@@@@"
+  BOM_JNL_POST_WINDOW: "Journal Batch Name #1##########\nChecking lines #2######\nPosting lines #3###### @4@@@@@@@@@@@@@"
   FA_JNL_TEMPLATE_DESCRIPTION: "Fixed Asset Journal"
   FA_CANCEL_ENTRIES_CONFIRM: "Do you want to cancel the selected ledger entries?"
   FA_CANCEL_ENTRIES_TRANSFERRED: "The ledger entries have been transferred to the journal."
@@ -653,9 +645,7 @@ Posting lines #3###### @4@@@@@@@@@@@@@"
   FA_RECLASS_BATCHES_CONFIRM: "Do you want to reclassify the journals?"
   FA_RECLASS_BATCHES_DONE: "The journals were successfully reclassified."
   FA_RECLASS_BATCHES_ERRORS: "It was not possible to reclassify all of the journals. Open the journals that still have lines to see why."
-  FA_JNL_POST_WINDOW: "Journal Batch Name #1##########
-Checking lines #2######
-Posting lines #3###### @4@@@@@@@@@@@@@"
+  FA_JNL_POST_WINDOW: "Journal Batch Name #1##########\nChecking lines #2######\nPosting lines #3###### @4@@@@@@@@@@@@@"
   BOM_JNL_TEMPLATE_DESCRIPTION: "BOM Journal"
   BOM_EXPLODE_CONFIRM: "Do you want to explode the BOM?"
   BOM_CALC_COST_LEVELS: "This BOM level,All BOM levels"

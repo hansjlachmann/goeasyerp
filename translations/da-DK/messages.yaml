@@ -616,21 +616,13 @@ messages:
   GEN_JNL_POST_WINDOW: "Kladdenavn #1##########\nKontrollerer linjer #2######\nKontrollerer saldo #3###### @4@@@@@@@@@@@@@\nBogfører linjer #5###### @6@@@@@@@@@@@@@"
   GEN_JNL_POST_WINDOW_RECURRING: "Kladdenavn #1##########\nKontrollerer linjer #2######\nKontrollerer saldo #3###### @4@@@@@@@@@@@@@\nBogfører linjer #5###### @6@@@@@@@@@@@@@\nBogfører tilbageføringer #7###### @8@@@@@@@@@@@@@\nOpdaterer linjer #9###### @10@@@@@@@@@@@@"
   GEN_JNL_APPLY_CHANGE_CURRENCY: "%1 i %2 ændres fra %3 til %4.\nVil du fortsætte?"
-  ITEM_JNL_POST_WINDOW: "Kladdenavn #1##########
-Kontrollerer linjer #2######
-Bogfører linjer #3###### @4@@@@@@@@@@@@@"
-  RES_JNL_POST_WINDOW: "Kladdenavn #1##########
-Kontrollerer linjer #2######
-Bogfører linjer #3###### @4@@@@@@@@@@@@@"
+  ITEM_JNL_POST_WINDOW: "Kladdenavn #1##########\nKontrollerer linjer #2######\nBogfører linjer #3###### @4@@@@@@@@@@@@@"
+  RES_JNL_POST_WINDOW: "Kladdenavn #1##########\nKontrollerer linjer #2######\nBogfører linjer #3###### @4@@@@@@@@@@@@@"
   RES_JNL_TEMPLATE_DESCRIPTION: "Ressourcekladder"
-  PROJECT_JNL_POST_WINDOW: "Kladdenavn #1##########
-Kontrollerer linjer #2######
-Bogfører linjer #3###### @4@@@@@@@@@@@@@"
+  PROJECT_JNL_POST_WINDOW: "Kladdenavn #1##########\nKontrollerer linjer #2######\nBogfører linjer #3###### @4@@@@@@@@@@@@@"
   PROJECT_JNL_TEMPLATE_DESCRIPTION: "Projektkladder"
   RECURRING_PROJECT_JNL_TEMPLATE_DESCRIPTION: "Gentagelseskladde - projekt"
-  BOM_JNL_POST_WINDOW: "Kladdenavn #1##########
-Kontrollerer linjer #2######
-Bogfører linjer #3###### @4@@@@@@@@@@@@@"
+  BOM_JNL_POST_WINDOW: "Kladdenavn #1##########\nKontrollerer linjer #2######\nBogfører linjer #3###### @4@@@@@@@@@@@@@"
   FA_JNL_TEMPLATE_DESCRIPTION: "Anlægskladde"
   FA_CANCEL_ENTRIES_CONFIRM: "Vil du annullere de valgte poster?"
   FA_CANCEL_ENTRIES_TRANSFERRED: "Posterne er overført til kladden."
@@ -653,9 +645,7 @@ Bogfører linjer #3###### @4@@@@@@@@@@@@@"
   FA_RECLASS_BATCHES_CONFIRM: "Vil du ompostere kladderne?"
   FA_RECLASS_BATCHES_DONE: "Kladderne er omposteret."
   FA_RECLASS_BATCHES_ERRORS: "Ikke alle kladder kunne omposteres. Åbn de kladder, der stadig har linjer, for at se hvorfor."
-  FA_JNL_POST_WINDOW: "Kladdenavn #1##########
-Kontrollerer linjer #2######
-Bogfører linjer #3###### @4@@@@@@@@@@@@@"
+  FA_JNL_POST_WINDOW: "Kladdenavn #1##########\nKontrollerer linjer #2######\nBogfører linjer #3###### @4@@@@@@@@@@@@@"
   BOM_JNL_TEMPLATE_DESCRIPTION: "Styklistekladde"
   BOM_EXPLODE_CONFIRM: "Vil du udfolde styklisten?"
   BOM_CALC_COST_LEVELS: "Dette styklisteniveau,Alle styklisteniveauer"

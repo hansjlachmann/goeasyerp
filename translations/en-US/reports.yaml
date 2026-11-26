@@ -953,8 +953,7 @@ reports:
       SPECIFY_DOCUMENT_DATE: "Document Date must be specified."
       ENTER_POSTING_DATE: "Please enter the posting date."
       DONE: "%1 customers were processed."
-      NOT_ALL_DONE: "It was not possible to create documents for some of the selected customers (%1 processed):
-%2"
+      NOT_ALL_DONE: "It was not possible to create documents for some of the selected customers (%1 processed):\n%2"
   "189":
     caption: "Suggest Reminder Lines"
     options:
@@ -965,8 +964,7 @@ reports:
       SPECIFY_DOCUMENT_DATE: "Document Date must be specified."
       ENTER_POSTING_DATE: "Please enter the posting date."
       DONE: "%1 reminders were processed."
-      NOT_ALL_DONE: "It was not possible to process some of the selected reminders (%1 processed):
-%2"
+      NOT_ALL_DONE: "It was not possible to process some of the selected reminders (%1 processed):\n%2"
   "190":
     caption: "Issue Reminders"
     options:
@@ -978,8 +976,7 @@ reports:
       SPECIFY_DOCUMENT_DATE: "Document Date must be specified."
       ENTER_POSTING_DATE: "Please enter the posting date."
       DONE: "%1 reminders were issued."
-      NOT_ALL_DONE: "It was not possible to issue some of the selected reminders (%1 issued):
-%2"
+      NOT_ALL_DONE: "It was not possible to issue some of the selected reminders (%1 issued):\n%2"
   "187":
     caption: "Update Reminder Text"
     options:
@@ -990,8 +987,7 @@ reports:
       SPECIFY_DOCUMENT_DATE: "Document Date must be specified."
       ENTER_POSTING_DATE: "Please enter the posting date."
       DONE: "%1 reminders were updated."
-      NOT_ALL_DONE: "It was not possible to update some of the selected reminders (%1 updated):
-%2"
+      NOT_ALL_DONE: "It was not possible to update some of the selected reminders (%1 updated):\n%2"
   "191":
     caption: "Create Finance Charge Memos"
     options:
@@ -1003,8 +999,7 @@ reports:
       SPECIFY_DOCUMENT_DATE: "Document Date must be specified."
       ENTER_POSTING_DATE: "Please enter the posting date."
       DONE: "%1 customers were processed."
-      NOT_ALL_DONE: "It was not possible to create documents for some of the selected customers (%1 processed):
-%2"
+      NOT_ALL_DONE: "It was not possible to create documents for some of the selected customers (%1 processed):\n%2"
   "192":
     caption: "Suggest Fin. Charge Memo Lines"
     texts:
@@ -1013,8 +1008,7 @@ reports:
       SPECIFY_DOCUMENT_DATE: "Document Date must be specified."
       ENTER_POSTING_DATE: "Please enter the posting date."
       DONE: "%1 finance charge memos were processed."
-      NOT_ALL_DONE: "It was not possible to process some of the selected finance charge memos (%1 processed):
-%2"
+      NOT_ALL_DONE: "It was not possible to process some of the selected finance charge memos (%1 processed):\n%2"
   "193":
     caption: "Issue Finance Charge Memos"
     options:
@@ -1026,8 +1020,7 @@ reports:
       SPECIFY_DOCUMENT_DATE: "Document Date must be specified."
       ENTER_POSTING_DATE: "Please enter the posting date."
       DONE: "%1 finance charge memos were issued."
-      NOT_ALL_DONE: "It was not possible to issue some of the selected finance charge memos (%1 issued):
-%2"
+      NOT_ALL_DONE: "It was not possible to issue some of the selected finance charge memos (%1 issued):\n%2"
   "186":
     caption: "Update Finance Charge Text"
     texts:
@@ -1036,8 +1029,7 @@ reports:
       SPECIFY_DOCUMENT_DATE: "Document Date must be specified."
       ENTER_POSTING_DATE: "Please enter the posting date."
       DONE: "%1 finance charge memos were updated."
-      NOT_ALL_DONE: "It was not possible to update some of the selected finance charge memos (%1 updated):
-%2"
+      NOT_ALL_DONE: "It was not possible to update some of the selected finance charge memos (%1 updated):\n%2"
   "1":
     caption: "Chart of Accounts"
     texts:

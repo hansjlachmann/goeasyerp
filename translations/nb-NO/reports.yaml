@@ -953,8 +953,7 @@ reports:
       SPECIFY_DOCUMENT_DATE: "Bilagsdato må angis."
       ENTER_POSTING_DATE: "Angi bokføringsdatoen."
       DONE: "%1 kunder ble behandlet."
-      NOT_ALL_DONE: "Det var ikke mulig å opprette dokumenter for noen av de valgte kundene (%1 behandlet):
-%2"
+      NOT_ALL_DONE: "Det var ikke mulig å opprette dokumenter for noen av de valgte kundene (%1 behandlet):\n%2"
   "189":
     caption: "Foreslå purrelinjer"
     options:
@@ -965,8 +964,7 @@ reports:
       SPECIFY_DOCUMENT_DATE: "Bilagsdato må angis."
       ENTER_POSTING_DATE: "Angi bokføringsdatoen."
       DONE: "%1 purringer ble behandlet."
-      NOT_ALL_DONE: "Det var ikke mulig å behandle noen av de valgte purringene (%1 behandlet):
-%2"
+      NOT_ALL_DONE: "Det var ikke mulig å behandle noen av de valgte purringene (%1 behandlet):\n%2"
   "190":
     caption: "Utsted purringer"
     options:
@@ -978,8 +976,7 @@ reports:
       SPECIFY_DOCUMENT_DATE: "Bilagsdato må angis."
       ENTER_POSTING_DATE: "Angi bokføringsdatoen."
       DONE: "%1 purringer ble utstedt."
-      NOT_ALL_DONE: "Det var ikke mulig å utstede noen av de valgte purringene (%1 utstedt):
-%2"
+      NOT_ALL_DONE: "Det var ikke mulig å utstede noen av de valgte purringene (%1 utstedt):\n%2"
   "187":
     caption: "Oppdater purretekst"
     options:
@@ -990,8 +987,7 @@ reports:
       SPECIFY_DOCUMENT_DATE: "Bilagsdato må angis."
       ENTER_POSTING_DATE: "Angi bokføringsdatoen."
       DONE: "%1 purringer ble oppdatert."
-      NOT_ALL_DONE: "Det var ikke mulig å oppdatere noen av de valgte purringene (%1 oppdatert):
-%2"
+      NOT_ALL_DONE: "Det var ikke mulig å oppdatere noen av de valgte purringene (%1 oppdatert):\n%2"
   "191":
     caption: "Opprett rentenotaer"
     options:
@@ -1003,8 +999,7 @@ reports:
       SPECIFY_DOCUMENT_DATE: "Bilagsdato må angis."
       ENTER_POSTING_DATE: "Angi bokføringsdatoen."
       DONE: "%1 kunder ble behandlet."
-      NOT_ALL_DONE: "Det var ikke mulig å opprette dokumenter for noen av de valgte kundene (%1 behandlet):
-%2"
+      NOT_ALL_DONE: "Det var ikke mulig å opprette dokumenter for noen av de valgte kundene (%1 behandlet):\n%2"
   "192":
     caption: "Foreslå rentenotalinjer"
     texts:
@@ -1013,8 +1008,7 @@ reports:
       SPECIFY_DOCUMENT_DATE: "Bilagsdato må angis."
       ENTER_POSTING_DATE: "Angi bokføringsdatoen."
       DONE: "%1 rentenotaer ble behandlet."
-      NOT_ALL_DONE: "Det var ikke mulig å behandle noen av de valgte rentenotaene (%1 behandlet):
-%2"
+      NOT_ALL_DONE: "Det var ikke mulig å behandle noen av de valgte rentenotaene (%1 behandlet):\n%2"
   "193":
     caption: "Utsted rentenotaer"
     options:
@@ -1026,8 +1020,7 @@ reports:
       SPECIFY_DOCUMENT_DATE: "Bilagsdato må angis."
       ENTER_POSTING_DATE: "Angi bokføringsdatoen."
       DONE: "%1 rentenotaer ble utstedt."
-      NOT_ALL_DONE: "Det var ikke mulig å utstede noen av de valgte rentenotaene (%1 utstedt):
-%2"
+      NOT_ALL_DONE: "Det var ikke mulig å utstede noen av de valgte rentenotaene (%1 utstedt):\n%2"
   "186":
     caption: "Oppdater rentenotatekst"
     texts:
@@ -1036,8 +1029,7 @@ reports:
       SPECIFY_DOCUMENT_DATE: "Bilagsdato må angis."
       ENTER_POSTING_DATE: "Angi bokføringsdatoen."
       DONE: "%1 rentenotaer ble oppdatert."
-      NOT_ALL_DONE: "Det var ikke mulig å oppdatere noen av de valgte rentenotaene (%1 oppdatert):
-%2"
+      NOT_ALL_DONE: "Det var ikke mulig å oppdatere noen av de valgte rentenotaene (%1 oppdatert):\n%2"
   "1":
     caption: "Kontoplan"
     texts:

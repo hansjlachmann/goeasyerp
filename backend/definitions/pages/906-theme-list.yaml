@@ -12,7 +12,6 @@ page:
       fields:
         - source: code
           width: 160
-          primary_key: true
 
         - source: name
           width: 180

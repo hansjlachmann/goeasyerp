@@ -17,6 +17,7 @@ import (
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/i18n"
 	ftables "github.com/hansjlachmann/goeasyerp/backend/foundation/tables"
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
+	"github.com/hansjlachmann/goeasyerp/backend/schemas"
 )
 
 // The development endpoint (Extension App development): the GoEasyERP VS Code extension
@@ -27,6 +28,8 @@ import (
 //	POST   /api/dev/apps         the app's package (.zip) as the body → the build requested
 //	GET    /api/dev/builds/:no   the build's status and log (from=<byte> for the log after that)
 //	DELETE /api/dev/apps/:id     unpublish the app → the build requested
+//	GET    /api/dev/schemas      the names of the YAML definitions' JSON schemas (no login)
+//	GET    /api/dev/schemas/:name  one schema (table.schema.json …; no login)
 //
 // The caller logs in as for the pages (POST /api/auth/login, the session cookie); SUPER only.
 
@@ -44,23 +47,46 @@ func NewDevAppsHandler(db *sql.DB, dbType database.DBType, remote bool) *DevApps
 
 // Register adds the routes to the /api group
 func (h *DevAppsHandler) Register(api fiber.Router) {
-	dev := api.Group("/dev", h.guard)
-	dev.Post("/apps", h.Publish)
-	dev.Delete("/apps/:id", h.Unpublish)
-	dev.Get("/builds/:no", h.Build)
+	dev := api.Group("/dev", h.local)
+	dev.Get("/schemas", h.SchemaNames)
+	dev.Get("/schemas/:name", h.Schema)
+	dev.Post("/apps", h.loggedIn, h.Publish)
+	dev.Delete("/apps/:id", h.loggedIn, h.Unpublish)
+	dev.Get("/builds/:no", h.loggedIn, h.Build)
 }
 
-// guard: a logged-in user, from this machine unless remote publishing is allowed
-func (h *DevAppsHandler) guard(c *fiber.Ctx) error {
-	sess := getSession(c)
-	language := getLanguageOrDefault(sess)
+// local: from this machine, unless remote publishing is allowed
+func (h *DevAppsHandler) local(c *fiber.Ctx) error {
 	if !h.remote && !localAddress(c.IP()) {
+		language := getLanguageOrDefault(getSession(c))
 		return c.Status(fiber.StatusForbidden).JSON(apitypes.NewErrorResponse(i18n.GetInstance().Message("ERR_DEV_ENDPOINT_LOCAL_ONLY", language)))
 	}
+	return c.Next()
+}
+
+// loggedIn: a logged-in user
+func (h *DevAppsHandler) loggedIn(c *fiber.Ctx) error {
+	sess := getSession(c)
 	if sess == nil || sess.GetUserID() == "" {
+		language := getLanguageOrDefault(sess)
 		return c.Status(fiber.StatusUnauthorized).JSON(apitypes.NewErrorResponse(apperrors.NoActiveSession().Message(language)))
 	}
 	return c.Next()
+}
+
+// SchemaNames lists the JSON schemas of the YAML definitions (GET /api/dev/schemas)
+func (h *DevAppsHandler) SchemaNames(c *fiber.Ctx) error {
+	return c.JSON(fiber.Map{"success": true, "data": schemas.Names()})
+}
+
+// Schema gives one JSON schema (GET /api/dev/schemas/:name), as application/schema+json
+func (h *DevAppsHandler) Schema(c *fiber.Ctx) error {
+	data, ok := schemas.Get(c.Params("name"))
+	if !ok {
+		return c.Status(fiber.StatusNotFound).JSON(apitypes.NewErrorResponse("no schema " + c.Params("name")))
+	}
+	c.Set(fiber.HeaderContentType, "application/schema+json")
+	return c.Send(data)
 }
 
 // localAddress: the request comes from this machine — loopback, or a private address (the

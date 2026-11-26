@@ -459,6 +459,7 @@ Log in as for the pages (`POST /api/auth/login`, the session cookie); a SUPER us
 | `GET /api/dev/builds/<no>[?from=<byte>]` | The build: `status` (Requested, Running, Succeeded, Failed), `done`, `error_message`, `log` (from the byte `from`; `log_size` is where the next request starts), `running_build` and `live` — true once the server runs this build. |
 | `DELETE /api/dev/apps/<app id>` | Unpublishes the app (Uninstall App) and requests the build without it. |
 | `GET /api/version` | `{version, build}`: the base version and the build the server runs (0: none). |
+| `GET /api/dev/schemas`, `GET /api/dev/schemas/<name>` | The JSON schemas of the YAML files (below); no login. |
 
 A publish is: package → `POST /api/dev/apps` → read the build until `done` (a failed build's log
 says why) → wait until `/api/version` names the build → open the browser. On a workstation the
@@ -468,3 +469,17 @@ server is set up the server looks for a new build every 2 seconds (otherwise 30)
 
 Production never takes apps this way: a released version is installed with Install App or Upload
 App (section 10).
+
+**JSON schemas of the YAML files.** `backend/schemas/` has a JSON schema for each kind of file an
+app has — `application.schema.json`, `table.schema.json` (also an app's `custom/tables`),
+`page.schema.json` (`custom/pages`), `menu.schema.json`, `table-extension.schema.json`,
+`page-extension.schema.json`, `menu-extension.schema.json`, `translations.schema.json` — made
+from the Go types that read the files (`go run ./tools/schemagen`), so they know every key,
+describe it with the base's own comments and mark a key nobody reads (a typo) as an error. The
+GoEasyERP VS Code extension uses them; any editor with a YAML language server can too, with a
+line at the top of the file naming the schema of the base version the app builds on:
+
+```yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/hansjlachmann/goeasyerp/v0.1.194/backend/schemas/page-extension.schema.json
+```
+

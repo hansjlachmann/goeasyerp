@@ -1,0 +1,706 @@
+{
+  "$defs": {
+    "PageAction": {
+      "additionalProperties": false,
+      "description": "Action represents a page action/button",
+      "properties": {
+        "apply_header_fields": {
+          "description": "ApplyHeaderFields (optional): the page's header fields as typed become its parameters and the list loads again — a temporary source page searches again (Navigate's Find)",
+          "type": "boolean"
+        },
+        "caption": {
+          "type": "string"
+        },
+        "enabled": {
+          "description": "Enabled: actions are enabled unless the YAML says enabled: false (a missing value is omitted from the JSON; a plain bool sent false and disabled such actions and their shortcuts)",
+          "type": "boolean"
+        },
+        "image": {
+          "description": "Image: the button's icon — a name of the frontend's action icon set (frontend/src/lib/components/icons/actionIcons.ts: New, Edit, Delete, Post, Print, …); without one the button shows a bullet point",
+          "type": "string"
+        },
+        "items": {
+          "description": "Items: the action is a menu button (a dropdown) with these menu items; each item is an action of its own (run_object, run_page, shortcut). run_object can call a registered function with the current record: \"table:Job_Queue_Entry.ShowLineNo\" (foundation/functions)",
+          "items": {
+            "$ref": "#/$defs/PageAction"
+          },
+          "type": "array"
+        },
+        "name": {
+          "type": "string"
+        },
+        "promoted": {
+          "type": "boolean"
+        },
+        "run_object": {
+          "description": "Run codeunit, report, etc.",
+          "type": "string"
+        },
+        "run_page": {
+          "description": "Open another page",
+          "type": "integer"
+        },
+        "run_page_field": {
+          "description": "RunPageField (optional): the page to open is the number in this record's field (a Navigate line's entries page) instead of run_page",
+          "type": "string"
+        },
+        "run_page_filter_field": {
+          "description": "RunPageFilterField / RunPageFilterValue (optional): open run_page filtered to filter_field = this record's filter_value field (e.g. the customer's ledger entries)",
+          "type": "string"
+        },
+        "run_page_filter_value": {
+          "type": "string"
+        },
+        "run_page_filters": {
+          "description": "RunPageFilters (optional): several filters of run_page — each a field of the opened page set to this record's field (value) or a constant (const, an option by its number); classic RunFormLink=A=FIELD(x),B=CONST(y)",
+          "items": {
+            "$ref": "#/$defs/PageRunPageFilter"
+          },
+          "type": "array"
+        },
+        "run_page_params": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "RunPageParams (optional): page parameters of the opened page (its OnOpenPage / header fields) from this record's fields: parameter → field (Navigate's document_no, posting_date)",
+          "type": "object"
+        },
+        "shortcut": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "PageActionExtension": {
+      "additionalProperties": false,
+      "description": "Action represents a page action/button",
+      "properties": {
+        "after": {
+          "description": "Placed after this one (a field by its source, the others by name); else at the end.",
+          "type": "string"
+        },
+        "apply_header_fields": {
+          "description": "ApplyHeaderFields (optional): the page's header fields as typed become its parameters and the list loads again — a temporary source page searches again (Navigate's Find)",
+          "type": "boolean"
+        },
+        "before": {
+          "description": "Placed before this one (a field by its source, the others by name).",
+          "type": "string"
+        },
+        "caption": {
+          "type": "string"
+        },
+        "enabled": {
+          "description": "Enabled: actions are enabled unless the YAML says enabled: false (a missing value is omitted from the JSON; a plain bool sent false and disabled such actions and their shortcuts)",
+          "type": "boolean"
+        },
+        "image": {
+          "description": "Image: the button's icon — a name of the frontend's action icon set (frontend/src/lib/components/icons/actionIcons.ts: New, Edit, Delete, Post, Print, …); without one the button shows a bullet point",
+          "type": "string"
+        },
+        "in": {
+          "description": "Added to the items of this menu button (at any depth) instead of the page's actions.",
+          "type": "string"
+        },
+        "items": {
+          "description": "Items: the action is a menu button (a dropdown) with these menu items; each item is an action of its own (run_object, run_page, shortcut). run_object can call a registered function with the current record: \"table:Job_Queue_Entry.ShowLineNo\" (foundation/functions)",
+          "items": {
+            "$ref": "#/$defs/PageAction"
+          },
+          "type": "array"
+        },
+        "name": {
+          "type": "string"
+        },
+        "promoted": {
+          "type": "boolean"
+        },
+        "run_object": {
+          "description": "Run codeunit, report, etc.",
+          "type": "string"
+        },
+        "run_page": {
+          "description": "Open another page",
+          "type": "integer"
+        },
+        "run_page_field": {
+          "description": "RunPageField (optional): the page to open is the number in this record's field (a Navigate line's entries page) instead of run_page",
+          "type": "string"
+        },
+        "run_page_filter_field": {
+          "description": "RunPageFilterField / RunPageFilterValue (optional): open run_page filtered to filter_field = this record's filter_value field (e.g. the customer's ledger entries)",
+          "type": "string"
+        },
+        "run_page_filter_value": {
+          "type": "string"
+        },
+        "run_page_filters": {
+          "description": "RunPageFilters (optional): several filters of run_page — each a field of the opened page set to this record's field (value) or a constant (const, an option by its number); classic RunFormLink=A=FIELD(x),B=CONST(y)",
+          "items": {
+            "$ref": "#/$defs/PageRunPageFilter"
+          },
+          "type": "array"
+        },
+        "run_page_params": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "RunPageParams (optional): page parameters of the opened page (its OnOpenPage / header fields) from this record's fields: parameter → field (Navigate's document_no, posting_date)",
+          "type": "object"
+        },
+        "shortcut": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "PageField": {
+      "additionalProperties": false,
+      "description": "Field represents a single field on a page",
+      "properties": {
+        "assist_edit": {
+          "description": "AssistEdit: the field's \"…\" (classic OnAssistEdit) runs this registered function (run_object \"table:Customer.AssistEdit\", registered WithAssistEdit) with the card's record",
+          "type": "string"
+        },
+        "calculated": {
+          "description": "Calculated: not a table field — the page's OnAfterGetRecord trigger fills it per record (page.SetValue; classic page variables shown in a column); read-only, not searchable or sortable. Type (e.g. types.Date) formats it; its caption is tables.<table>.fields.<source>.",
+          "type": "boolean"
+        },
+        "caption": {
+          "description": "Override caption",
+          "type": "string"
+        },
+        "caption_class": {
+          "description": "CaptionClass: the caption expression of a page field (classic CaptionClass, i18n/captionclass.go); empty: the table field's",
+          "type": "string"
+        },
+        "check_box": {
+          "description": "CheckBox: a Yes/No FlowFilter above a matrix shown as a check box (checked: the filter Yes, else none) — a page variable switching the matrix, such as Use Add. Reporting Currency",
+          "type": "boolean"
+        },
+        "decimal_places": {
+          "description": "DecimalPlaces: the \"min:max\" digits after the point the page shows — the page field's own (decimal_places in the page YAML; a calculated field's), else the table field's (filled in at request time)",
+          "type": "string"
+        },
+        "drilldown": {
+          "description": "Page ID to navigate to on click",
+          "type": "integer"
+        },
+        "drilldown_date_field": {
+          "description": "DrilldownDateField: in a period grid, the date field of the drilldown page the row's dates filter (else the grid's)",
+          "type": "string"
+        },
+        "drilldown_filter_field": {
+          "description": "Field on target table to filter",
+          "type": "string"
+        },
+        "drilldown_filter_value": {
+          "description": "Field on current record for filter value",
+          "type": "string"
+        },
+        "drilldown_filters": {
+          "items": {
+            "$ref": "#/$defs/PageRunPageFilter"
+          },
+          "type": "array"
+        },
+        "drilldown_page_field": {
+          "description": "DrilldownPageField / DrilldownFilters: the drilldown opens the page whose number is in this record's field, filtered like an action's run_page_filters (Navigate's No. of Records)",
+          "type": "string"
+        },
+        "editable": {
+          "description": "false: read-only (also from the table field's editable: false)",
+          "type": "boolean"
+        },
+        "importance": {
+          "description": "Promoted, Standard, Additional",
+          "type": "string"
+        },
+        "indent_field": {
+          "description": "IndentField (lists): indent the cell by this field's value of the record, one step per level (the chart of accounts indents names by Indentation)",
+          "type": "string"
+        },
+        "masked": {
+          "description": "Masked (ExtendedDatatype Masked): shown as a password input, never in clear text. Set in the page YAML (e.g. the User card's virtual password field) or taken from the table field's masked: true",
+          "type": "boolean"
+        },
+        "on_after_validate": {
+          "description": "OnAfterValidate: after the field's value is entered and the record saved (classic OnAfterValidate with CurrForm.SAVERECORD), the page runs this registered function with the saved record — quietly: only its questions, the page it opens and errors show (\"table:Sales_Line.ReserveAlways\")",
+          "type": "string"
+        },
+        "on_drilldown": {
+          "description": "OnDrilldown: the field's drilldown is this registered function (classic OnDrillDown with code): a click on the value, or Alt+↓, runs it with the saved record, quietly — the page it opens and errors show (\"table:Sales_Line.ShowReservationEntries\")",
+          "type": "string"
+        },
+        "on_lookup": {
+          "description": "OnLookup: the field's lookup is this registered function (classic OnLookup): it works on the record as the page has it, may open a page (RunModal) and gives the record back with the fields it set (registered like an AssistEdit: ForAssistEdit, WithAssistEdit) — the page takes it and saves (\"table:Sales_Line.SelectItemEntry\"); Alt+↓ / F4 or ▼ in a list cell, the \"…\" on a card",
+          "type": "string"
+        },
+        "source": {
+          "description": "Field name from table",
+          "type": "string"
+        },
+        "style": {
+          "description": "Strong, Attention, Favorable, Unfavorable",
+          "type": "string"
+        },
+        "style_expr": {
+          "$ref": "#/$defs/PageStyleExpr",
+          "description": "StyleExpr (lists): the cell takes Style when the record's field equals / does not equal a value (an option by its number) — bold heading and total accounts"
+        },
+        "table_relation": {
+          "description": "Lookup table",
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "visible": {
+          "description": "Field is visible (default true)",
+          "type": "boolean"
+        },
+        "width": {
+          "description": "Column width (for List pages)",
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "PageFieldExtension": {
+      "additionalProperties": false,
+      "description": "Field represents a single field on a page",
+      "properties": {
+        "after": {
+          "description": "Placed after this one (a field by its source, the others by name); else at the end.",
+          "type": "string"
+        },
+        "assist_edit": {
+          "description": "AssistEdit: the field's \"…\" (classic OnAssistEdit) runs this registered function (run_object \"table:Customer.AssistEdit\", registered WithAssistEdit) with the card's record",
+          "type": "string"
+        },
+        "before": {
+          "description": "Placed before this one (a field by its source, the others by name).",
+          "type": "string"
+        },
+        "calculated": {
+          "description": "Calculated: not a table field — the page's OnAfterGetRecord trigger fills it per record (page.SetValue; classic page variables shown in a column); read-only, not searchable or sortable. Type (e.g. types.Date) formats it; its caption is tables.<table>.fields.<source>.",
+          "type": "boolean"
+        },
+        "caption": {
+          "description": "Override caption",
+          "type": "string"
+        },
+        "caption_class": {
+          "description": "CaptionClass: the caption expression of a page field (classic CaptionClass, i18n/captionclass.go); empty: the table field's",
+          "type": "string"
+        },
+        "check_box": {
+          "description": "CheckBox: a Yes/No FlowFilter above a matrix shown as a check box (checked: the filter Yes, else none) — a page variable switching the matrix, such as Use Add. Reporting Currency",
+          "type": "boolean"
+        },
+        "decimal_places": {
+          "description": "DecimalPlaces: the \"min:max\" digits after the point the page shows — the page field's own (decimal_places in the page YAML; a calculated field's), else the table field's (filled in at request time)",
+          "type": "string"
+        },
+        "drilldown": {
+          "description": "Page ID to navigate to on click",
+          "type": "integer"
+        },
+        "drilldown_date_field": {
+          "description": "DrilldownDateField: in a period grid, the date field of the drilldown page the row's dates filter (else the grid's)",
+          "type": "string"
+        },
+        "drilldown_filter_field": {
+          "description": "Field on target table to filter",
+          "type": "string"
+        },
+        "drilldown_filter_value": {
+          "description": "Field on current record for filter value",
+          "type": "string"
+        },
+        "drilldown_filters": {
+          "items": {
+            "$ref": "#/$defs/PageRunPageFilter"
+          },
+          "type": "array"
+        },
+        "drilldown_page_field": {
+          "description": "DrilldownPageField / DrilldownFilters: the drilldown opens the page whose number is in this record's field, filtered like an action's run_page_filters (Navigate's No. of Records)",
+          "type": "string"
+        },
+        "editable": {
+          "description": "false: read-only (also from the table field's editable: false)",
+          "type": "boolean"
+        },
+        "importance": {
+          "description": "Promoted, Standard, Additional",
+          "type": "string"
+        },
+        "indent_field": {
+          "description": "IndentField (lists): indent the cell by this field's value of the record, one step per level (the chart of accounts indents names by Indentation)",
+          "type": "string"
+        },
+        "masked": {
+          "description": "Masked (ExtendedDatatype Masked): shown as a password input, never in clear text. Set in the page YAML (e.g. the User card's virtual password field) or taken from the table field's masked: true",
+          "type": "boolean"
+        },
+        "on_after_validate": {
+          "description": "OnAfterValidate: after the field's value is entered and the record saved (classic OnAfterValidate with CurrForm.SAVERECORD), the page runs this registered function with the saved record — quietly: only its questions, the page it opens and errors show (\"table:Sales_Line.ReserveAlways\")",
+          "type": "string"
+        },
+        "on_drilldown": {
+          "description": "OnDrilldown: the field's drilldown is this registered function (classic OnDrillDown with code): a click on the value, or Alt+↓, runs it with the saved record, quietly — the page it opens and errors show (\"table:Sales_Line.ShowReservationEntries\")",
+          "type": "string"
+        },
+        "on_lookup": {
+          "description": "OnLookup: the field's lookup is this registered function (classic OnLookup): it works on the record as the page has it, may open a page (RunModal) and gives the record back with the fields it set (registered like an AssistEdit: ForAssistEdit, WithAssistEdit) — the page takes it and saves (\"table:Sales_Line.SelectItemEntry\"); Alt+↓ / F4 or ▼ in a list cell, the \"…\" on a card",
+          "type": "string"
+        },
+        "source": {
+          "description": "Field name from table",
+          "type": "string"
+        },
+        "style": {
+          "description": "Strong, Attention, Favorable, Unfavorable",
+          "type": "string"
+        },
+        "style_expr": {
+          "$ref": "#/$defs/PageStyleExpr",
+          "description": "StyleExpr (lists): the cell takes Style when the record's field equals / does not equal a value (an option by its number) — bold heading and total accounts"
+        },
+        "table_relation": {
+          "description": "Lookup table",
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "visible": {
+          "description": "Field is visible (default true)",
+          "type": "boolean"
+        },
+        "width": {
+          "description": "Column width (for List pages)",
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "PageMatrix": {
+      "additionalProperties": false,
+      "description": "Matrix is a card section of a table's records (rows) against periods (columns): each cell is the row record's FlowField Value with the column's period in its FlowFilter DateFilter (View as Net Change: the period, Balance at Date: up to its end), RecordFilters (a FlowFilter of the row → a field of the card record: the budget) and the Filters the user sets above the matrix. With Editable (and the page's OnMatrixValidate trigger) a value typed into a cell is handed to the trigger with the row's record so filtered.",
+      "properties": {
+        "actions": {
+          "description": "Actions: the actions of a card section's matrix, run on the selected matrix row (a run_page filtered by the row's fields, a function on the row's record) — a matrix page's own actions work on its selected row the same way",
+          "items": {
+            "$ref": "#/$defs/PageAction"
+          },
+          "type": "array"
+        },
+        "calculated": {
+          "description": "Drilldown: a cell opens this page filtered to the row (DrilldownRowField = the row's DrilldownRowValue field — when blank its key: a total account's Totaling), the column's dates (DrilldownDateField), the card record (DrilldownRecordFilters: drilldown page field → card field) and the user's filters Calculated: the columns and the cells come from the page's OnMatrixCalculate trigger (an account schedule's column layout) for one period chosen above the matrix (View by, previous/next) — the period goes into DateFilter; RowFilters (a field of the rows → a field of the card record) select the rows (the schedule's lines)",
+          "type": "boolean"
+        },
+        "card_date_filter": {
+          "description": "CardDateFilter: a calculated matrix whose rows have no date filter (the dimension values of one G/L account) puts its period into this FlowFilter of the card record instead",
+          "type": "string"
+        },
+        "closing_entries": {
+          "description": "ClosingEntries: the matrix offers Closing Entries Include/Exclude (the G/L balance views): a period ends at its closing date, Exclude leaves out the fiscal years' closing dates",
+          "type": "boolean"
+        },
+        "date_filter": {
+          "type": "string"
+        },
+        "drilldown": {
+          "type": "integer"
+        },
+        "drilldown_date_field": {
+          "type": "string"
+        },
+        "drilldown_record_filters": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "drilldown_row_field": {
+          "type": "string"
+        },
+        "drilldown_row_value": {
+          "type": "string"
+        },
+        "editable": {
+          "type": "boolean"
+        },
+        "entry_table": {
+          "description": "EntryTable: the table a value entered writes to (the user needs Insert permission on it)",
+          "type": "string"
+        },
+        "fields": {
+          "description": "Fields: the row's fields before the cells (indent_field / style_expr as on lists)",
+          "items": {
+            "$ref": "#/$defs/PageField"
+          },
+          "type": "array"
+        },
+        "filters": {
+          "description": "Filters: FlowFilter fields of the rows the user filters the matrix by (Dimension 1 Filter); drilldown_filter_field: the field of the drilldown page they filter. A matrix with a CardDateFilter filters the card record instead (its FlowFilters: the account's Budget Filter)",
+          "items": {
+            "$ref": "#/$defs/PageField"
+          },
+          "type": "array"
+        },
+        "no_periods": {
+          "description": "NoPeriods: a calculated matrix whose columns are not periods (Items by Bin: the bins) — no View by, no previous/next",
+          "type": "boolean"
+        },
+        "record_filters": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "row_filters": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "table": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "view_as": {
+          "description": "ViewAs: a calculated matrix offers View as Net Change / Balance at Date (the period, or up to its end, in the rows' date filter)",
+          "type": "boolean"
+        },
+        "view_by": {
+          "description": "ViewBy: the period length the matrix starts with (0 Day … 4 Year, 5 Accounting Period)",
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "PagePeriodGrid": {
+      "additionalProperties": false,
+      "description": "PeriodGrid is a card section listing periods (days … years, accounting periods) — or, with Rows, the records of a table — with the card record's FlowFields calculated for each: the row's period goes into the FlowFilter DateFilter (View as Net Change: the period, Balance at Date: up to its end). Rows from a table (Item Availability by Location) set their key into the FlowFilter Rows.Filter and share the one period chosen above the grid.",
+      "properties": {
+        "closing_entries": {
+          "description": "ClosingEntries: the grid offers Closing Entries Include/Exclude — a period ends at its closing date, Exclude leaves out the fiscal years' closing dates (the G/L balance views)",
+          "type": "boolean"
+        },
+        "columns": {
+          "description": "Columns: FlowFields of the record, or calculated fields its page's OnAfterGetRecord trigger fills for each row; drilldown opens a page filtered to the record (Drilldown filter field/value) and the row's dates (DrilldownDateField)",
+          "items": {
+            "$ref": "#/$defs/PageField"
+          },
+          "type": "array"
+        },
+        "date_filter": {
+          "type": "string"
+        },
+        "drilldown_date_field": {
+          "type": "string"
+        },
+        "filters": {
+          "description": "Filters: FlowFilter fields of the record the user filters the grid by (Location Filter)",
+          "items": {
+            "$ref": "#/$defs/PageField"
+          },
+          "type": "array"
+        },
+        "rows": {
+          "$ref": "#/$defs/PagePeriodGridRows",
+          "description": "Rows: the rows are the records of a table instead of periods"
+        },
+        "view_by": {
+          "description": "ViewBy: the period length the grid starts with (0 Day … 4 Year, 5 Accounting Period)",
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "PagePeriodGridRows": {
+      "additionalProperties": false,
+      "description": "PeriodGridRows are the records a period grid lists (locations, variants): Table's records — those matching Filters (a field of the row table → a field of the card record, the variants of the item) — keyed by Field and named by CaptionField; each row's key goes into the record's FlowFilter Filter",
+      "properties": {
+        "caption_field": {
+          "type": "string"
+        },
+        "drilldown_filter_field": {
+          "description": "DrilldownFilterField: the field of a column's drilldown page the row's key filters (location_code)",
+          "type": "string"
+        },
+        "field": {
+          "type": "string"
+        },
+        "filter": {
+          "type": "string"
+        },
+        "filters": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "table": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "PageRunPageFilter": {
+      "additionalProperties": false,
+      "description": "RunPageFilter is one filter of an action's run_page: Field of the opened page = this record's Value field, or Const, or the range From..To of two of its fields",
+      "properties": {
+        "const": {
+          "type": "string"
+        },
+        "field": {
+          "type": "string"
+        },
+        "from": {
+          "description": "From / To: a range of this record's two fields (from..to), e.g. a G/L Register's From Entry No. .. To Entry No.",
+          "type": "string"
+        },
+        "optional": {
+          "description": "Optional: a blank value sets no filter (otherwise the action needs the value)",
+          "type": "boolean"
+        },
+        "to": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "PageSectionExtension": {
+      "additionalProperties": false,
+      "description": "Section represents a section/group on a Card page",
+      "properties": {
+        "after": {
+          "description": "Placed after this one (a field by its source, the others by name); else at the end.",
+          "type": "string"
+        },
+        "before": {
+          "description": "Placed before this one (a field by its source, the others by name).",
+          "type": "string"
+        },
+        "caption": {
+          "type": "string"
+        },
+        "fields": {
+          "items": {
+            "$ref": "#/$defs/PageFieldExtension"
+          },
+          "type": "array"
+        },
+        "matrix": {
+          "$ref": "#/$defs/PageMatrix",
+          "description": "Matrix: instead of fields, the section shows a table's records against periods (classic matrix forms: G/L Budget by Periods)"
+        },
+        "name": {
+          "type": "string"
+        },
+        "period_grid": {
+          "$ref": "#/$defs/PagePeriodGrid",
+          "description": "PeriodGrid: instead of fields, the section shows the record's FlowFields per period (classic matrix-by-periods forms: Item Availability by Periods, Item Turnover)"
+        },
+        "subpage": {
+          "$ref": "#/$defs/PageSubpage",
+          "description": "Subpage: instead of fields, the section shows a list page with the records linked to the card's record (e.g. a document's lines)"
+        }
+      },
+      "type": "object"
+    },
+    "PageStyleExpr": {
+      "additionalProperties": false,
+      "description": "StyleExpr is a conditional style of a list cell: Style when Field = Equal (or <> NotEqual)",
+      "properties": {
+        "equal": {},
+        "field": {
+          "type": "string"
+        },
+        "not_equal": {},
+        "style": {
+          "description": "Strong, Attention, Favorable, Unfavorable",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "PageSubpage": {
+      "additionalProperties": false,
+      "description": "Subpage is a list page shown in a card, tied to the card's record by Link (SubPageLink)",
+      "properties": {
+        "link": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Link: field of the subpage's table → field of the card's table (e.g. document_no: no); the subpage shows only the records with these values (filter group 2, the user cannot change it), and new records get them",
+          "type": "object"
+        },
+        "page_id": {
+          "description": "the list page",
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "$id": "https://github.com/hansjlachmann/goeasyerp/backend/schemas/page-extension.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "description": "Card fields and sections, list columns and buttons an app adds to a page (pages/<id>-<name>.extend.yaml; EXTENSIONS.md, section 5).",
+  "properties": {
+    "actions": {
+      "items": {
+        "$ref": "#/$defs/PageActionExtension"
+      },
+      "type": "array"
+    },
+    "extends": {
+      "description": "The number of the page that is extended.",
+      "type": "integer"
+    },
+    "layout": {
+      "additionalProperties": false,
+      "properties": {
+        "repeater": {
+          "additionalProperties": false,
+          "properties": {
+            "fields": {
+              "items": {
+                "$ref": "#/$defs/PageFieldExtension"
+              },
+              "type": "array"
+            }
+          },
+          "type": "object"
+        },
+        "sections": {
+          "description": "A card's sections: an existing one (by name) only gets fields; a new one is placed by after/before.",
+          "items": {
+            "$ref": "#/$defs/PageSectionExtension"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "version": {
+      "description": "The extension file's format version.",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "extends"
+  ],
+  "title": "GoEasyERP page extension",
+  "type": "object"
+}

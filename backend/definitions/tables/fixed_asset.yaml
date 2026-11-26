@@ -289,8 +289,6 @@ table:
     - name: fa_location_code
       fields: [fa_location_code]
     - name: dimension_1_code
-      caption_class: "1,1,1"
       fields: [dimension_1_code]
     - name: dimension_2_code
-      caption_class: "1,1,2"
       fields: [dimension_2_code]

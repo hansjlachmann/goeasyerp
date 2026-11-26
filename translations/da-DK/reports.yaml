@@ -953,8 +953,7 @@ reports:
       SPECIFY_DOCUMENT_DATE: "Bilagsdato skal angives."
       ENTER_POSTING_DATE: "Angiv bogføringsdatoen."
       DONE: "%1 debitorer blev behandlet."
-      NOT_ALL_DONE: "Det var ikke muligt at oprette dokumenter for nogle af de valgte debitorer (%1 behandlet):
-%2"
+      NOT_ALL_DONE: "Det var ikke muligt at oprette dokumenter for nogle af de valgte debitorer (%1 behandlet):\n%2"
   "189":
     caption: "Foreslå rykkerlinjer"
     options:
@@ -965,8 +964,7 @@ reports:
       SPECIFY_DOCUMENT_DATE: "Bilagsdato skal angives."
       ENTER_POSTING_DATE: "Angiv bogføringsdatoen."
       DONE: "%1 rykkere blev behandlet."
-      NOT_ALL_DONE: "Det var ikke muligt at behandle nogle af de valgte rykkere (%1 behandlet):
-%2"
+      NOT_ALL_DONE: "Det var ikke muligt at behandle nogle af de valgte rykkere (%1 behandlet):\n%2"
   "190":
     caption: "Udsted rykkere"
     options:
@@ -978,8 +976,7 @@ reports:
       SPECIFY_DOCUMENT_DATE: "Bilagsdato skal angives."
       ENTER_POSTING_DATE: "Angiv bogføringsdatoen."
       DONE: "%1 rykkere blev udstedt."
-      NOT_ALL_DONE: "Det var ikke muligt at udstede nogle af de valgte rykkere (%1 udstedt):
-%2"
+      NOT_ALL_DONE: "Det var ikke muligt at udstede nogle af de valgte rykkere (%1 udstedt):\n%2"
   "187":
     caption: "Opdater rykkertekst"
     options:
@@ -990,8 +987,7 @@ reports:
       SPECIFY_DOCUMENT_DATE: "Bilagsdato skal angives."
       ENTER_POSTING_DATE: "Angiv bogføringsdatoen."
       DONE: "%1 rykkere blev opdateret."
-      NOT_ALL_DONE: "Det var ikke muligt at opdatere nogle af de valgte rykkere (%1 opdateret):
-%2"
+      NOT_ALL_DONE: "Det var ikke muligt at opdatere nogle af de valgte rykkere (%1 opdateret):\n%2"
   "191":
     caption: "Opret rentenotaer"
     options:
@@ -1003,8 +999,7 @@ reports:
       SPECIFY_DOCUMENT_DATE: "Bilagsdato skal angives."
       ENTER_POSTING_DATE: "Angiv bogføringsdatoen."
       DONE: "%1 debitorer blev behandlet."
-      NOT_ALL_DONE: "Det var ikke muligt at oprette dokumenter for nogle af de valgte debitorer (%1 behandlet):
-%2"
+      NOT_ALL_DONE: "Det var ikke muligt at oprette dokumenter for nogle af de valgte debitorer (%1 behandlet):\n%2"
   "192":
     caption: "Foreslå rentenotalinjer"
     texts:
@@ -1013,8 +1008,7 @@ reports:
       SPECIFY_DOCUMENT_DATE: "Bilagsdato skal angives."
       ENTER_POSTING_DATE: "Angiv bogføringsdatoen."
       DONE: "%1 rentenotaer blev behandlet."
-      NOT_ALL_DONE: "Det var ikke muligt at behandle nogle af de valgte rentenotaer (%1 behandlet):
-%2"
+      NOT_ALL_DONE: "Det var ikke muligt at behandle nogle af de valgte rentenotaer (%1 behandlet):\n%2"
   "193":
     caption: "Udsted rentenotaer"
     options:
@@ -1026,8 +1020,7 @@ reports:
       SPECIFY_DOCUMENT_DATE: "Bilagsdato skal angives."
       ENTER_POSTING_DATE: "Angiv bogføringsdatoen."
       DONE: "%1 rentenotaer blev udstedt."
-      NOT_ALL_DONE: "Det var ikke muligt at udstede nogle af de valgte rentenotaer (%1 udstedt):
-%2"
+      NOT_ALL_DONE: "Det var ikke muligt at udstede nogle af de valgte rentenotaer (%1 udstedt):\n%2"
   "186":
     caption: "Opdater rentenotatekst"
     texts:
@@ -1036,8 +1029,7 @@ reports:
       SPECIFY_DOCUMENT_DATE: "Bilagsdato skal angives."
       ENTER_POSTING_DATE: "Angiv bogføringsdatoen."
       DONE: "%1 rentenotaer blev opdateret."
-      NOT_ALL_DONE: "Det var ikke muligt at opdatere nogle af de valgte rentenotaer (%1 opdateret):
-%2"
+      NOT_ALL_DONE: "Det var ikke muligt at opdatere nogle af de valgte rentenotaer (%1 opdateret):\n%2"
   "1":
     caption: "Kontoplan"
     texts:

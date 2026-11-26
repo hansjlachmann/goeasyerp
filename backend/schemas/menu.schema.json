@@ -1,0 +1,73 @@
+{
+  "$defs": {
+    "PageMenuGroup": {
+      "additionalProperties": false,
+      "description": "MenuGroup is a module of the main menu (General Ledger, Sales …): its menu entries, or a direct page",
+      "properties": {
+        "icon": {
+          "type": "string"
+        },
+        "items": {
+          "description": "the module's menu",
+          "items": {
+            "$ref": "#/$defs/PageMenuItem"
+          },
+          "type": "array"
+        },
+        "name": {
+          "type": "string"
+        },
+        "page_id": {
+          "description": "For flat menus (direct item)",
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "PageMenuItem": {
+      "additionalProperties": false,
+      "description": "MenuItem is an entry of a module's menu: it opens a page (PageID), runs a report or codeunit (RunObject \"report:93\", \"codeunit:6\"), holds a sub-menu (Items, e.g. Setup, Activities) or is a separator. Enabled is set when the menu is sent: the entry's object exists and the user may run it (a sub-menu: one of its entries is available); an entry without one is shown greyed out (not built yet, or Denied).",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/PageMenuItem"
+          },
+          "type": "array"
+        },
+        "name": {
+          "type": "string"
+        },
+        "page_id": {
+          "type": "integer"
+        },
+        "run_object": {
+          "type": "string"
+        },
+        "separator": {
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "$id": "https://github.com/hansjlachmann/goeasyerp/backend/schemas/menu.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "description": "MenuDefinition represents the menu structure",
+  "properties": {
+    "menu": {
+      "items": {
+        "$ref": "#/$defs/PageMenuGroup"
+      },
+      "type": "array"
+    }
+  },
+  "title": "GoEasyERP main menu",
+  "type": "object"
+}

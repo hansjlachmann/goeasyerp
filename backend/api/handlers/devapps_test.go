@@ -154,6 +154,32 @@ func TestDevEndpointGuards(t *testing.T) {
 	}
 }
 
+// The schemas are served without a login (they are public), from this machine
+func TestDevEndpointSchemas(t *testing.T) {
+	app, _ := devTestApp(t, nil, false)
+	status, out := devRequest(t, app, "GET", "/api/dev/schemas", "127.0.0.1", nil)
+	names, _ := out["data"].([]interface{})
+	if status != fiber.StatusOK || len(names) < 8 {
+		t.Fatalf("schema names: %d %v", status, out)
+	}
+	req := httptest.NewRequest("GET", "/api/dev/schemas/table.schema.json", nil)
+	req.Header.Set(fiber.HeaderXForwardedFor, "127.0.0.1")
+	resp, err := app.Test(req, -1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode != fiber.StatusOK || resp.Header.Get(fiber.HeaderContentType) != "application/schema+json" || !strings.Contains(string(body), "\"extends_table\"") && !strings.Contains(string(body), "\"fields\"") {
+		t.Errorf("table schema: %d %s", resp.StatusCode, resp.Header.Get(fiber.HeaderContentType))
+	}
+	if status, _ := devRequest(t, app, "GET", "/api/dev/schemas/nothing.json", "127.0.0.1", nil); status != fiber.StatusNotFound {
+		t.Errorf("an unknown schema: %d", status)
+	}
+	if status, _ := devRequest(t, app, "GET", "/api/dev/schemas", "198.51.100.7", nil); status != fiber.StatusForbidden {
+		t.Errorf("schemas from another machine: %d", status)
+	}
+}
+
 func TestLocalAddress(t *testing.T) {
 	for address, want := range map[string]bool{
 		"127.0.0.1": true, "::1": true, "172.18.0.1": true, "192.168.1.5": true, "fd00::1": true,
