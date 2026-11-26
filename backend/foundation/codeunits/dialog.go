@@ -493,9 +493,13 @@ func (d *Dialog) requestInput(title string, fields []InputField, dataItems []Req
 		return nil
 	}
 
-	// Wait for response
+	// Wait for response: an empty answer is Cancel (OK always answers something — the fields, or
+	// "_ok" when there are none), so every caller's "nil on cancel" holds
 	select {
 	case values := <-responseChan:
+		if len(values) == 0 {
+			return nil
+		}
 		return values
 	case <-d.ctx.Done():
 		return nil
