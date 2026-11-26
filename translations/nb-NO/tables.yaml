@@ -546,6 +546,17 @@ tables:
       uploaded_by: "Lastet opp av"
       uploaded_at: "Lastet opp"
 
+  app_audit_exception:
+    caption: "Unntak fra app-revisjon"
+    fields:
+      app_id: "App-ID"
+      version: "Versjon"
+      source_id: "Kilde (commit eller pakkens SHA-256)"
+      rule: "Regel"
+      finding_key: "Funn"
+      reason: "Begrunnelse"
+      approved_by: "Godkjent av"
+      approved_at: "Godkjent"
   app_build_setup:
     caption: "Oppsett for app-bygg"
     fields:
@@ -553,6 +564,7 @@ tables:
       builds_by: "Bygges av"
       allow_upload: "Tillat opplasting"
       allowed_repositories: "Tillatte repositorier"
+      allowed_go_modules: "Tillatte Go-moduler"
     options:
       builds_by:
         ci_pipeline: "CI-pipeline"

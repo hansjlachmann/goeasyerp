@@ -119,6 +119,17 @@ An app's code is compiled into the server program, so installing an app takes a 
 Build Setup** (Installed Apps → Build → App Build Setup) chooses who builds. It is one or the
 other, never both: a pipeline building an older list would drop an app uploaded in the UI.
 
+**The app audit:** every app's code is checked before it is built into the server — by the local
+builder before it merges anything, by Upload App before the package is recorded, and in the CI
+pipeline before the image build (`cmd/app-audit`). An app that fails is not built; the report is
+in the build's log (App Builds → Show Log) or the upload's error. It refuses what would give an
+app the server's powers: the environment (`JWT_SECRET` and the other secrets), files, processes,
+the network, SQL behind the base's checks, other companies, other users' rights (EXTENSIONS.md,
+"What an app's Go code may use"). A SUPER user can approve a finding for one app's exact source
+(Installed Apps → App Audit Exceptions); App Build Setup's *Allowed Go Modules* lists third-party
+modules apps may require (built in unaudited: only modules you trust). It does not make an app
+harmless: an app can still change the data of the companies where it runs.
+
 **Which route?**
 
 | | Local builder | CI pipeline |

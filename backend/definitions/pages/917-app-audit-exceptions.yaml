@@ -1,0 +1,28 @@
+page:
+  id: 917
+  type: List
+  name: App Audit Exceptions
+  source_table: App_Audit_Exception
+  caption: App Audit Exceptions
+  editable: true      # SUPER users only (the table's triggers)
+  delayed_insert: true # the key has five fields: inserted when the line is left
+
+  layout:
+    repeater:
+      fields:
+        - source: app_id
+          width: 260
+        - source: version
+          width: 90
+        - source: source_id
+          width: 200
+        - source: rule
+          width: 100
+        - source: finding_key
+          width: 220
+        - source: reason
+          width: 300
+        - source: approved_by
+          width: 110
+        - source: approved_at
+          width: 160

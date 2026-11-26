@@ -43,6 +43,8 @@ pages:
 
   app_builds:
     caption: "App Builds"
+  app_audit_exceptions:
+    caption: "Undtagelser fra app-revision"
 
   app_build_setup:
     caption: "App Build Setup"

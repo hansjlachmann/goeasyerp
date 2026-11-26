@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/appbundle"
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/appaudit"
 	fapps "github.com/hansjlachmann/goeasyerp/backend/foundation/apps"
 )
 
@@ -71,6 +72,25 @@ func (l *buildLog) Bytes() []byte {
 	return []byte(text)
 }
 
+// auditApp runs the app audit on a fetched app with the build list's allowed modules and the
+// exceptions approved for its exact source; the report goes into the build's log
+func auditApp(app fapps.BuildApp, dir string, allowedModules []string, log *buildLog) error {
+	opts := appaudit.Options{AllowedModules: allowedModules}
+	for _, e := range app.AuditExceptions {
+		opts.Exceptions = append(opts.Exceptions, appaudit.Exception{Rule: e.Rule, Key: e.Key})
+	}
+	report, err := appaudit.AuditDir(app.Name+" "+app.Version, dir, opts)
+	if err != nil {
+		return fmt.Errorf("%s %s: the app audit: %w", app.Name, app.Version, err)
+	}
+	log.Printf("%s   (source %s; app id %s)", strings.TrimRight(report.Text(), "\n"), app.SourceID(), app.ID)
+	if !report.Passed() {
+		return fmt.Errorf("%s %s did not pass the app audit: %d finding(s) refused (see the report in the log; a SUPER user can approve a finding for this source in App Audit Exceptions)",
+			app.Name, app.Version, len(report.Findings)-report.Excepted())
+	}
+	return nil
+}
+
 // builder builds bundles
 type builder struct {
 	baseSource string // the base release's source
@@ -113,6 +133,11 @@ func (b *builder) build(ctx context.Context, no int, list fapps.BuildList, log *
 			}
 			if got.ID != app.ID || got.Version != app.Version {
 				return "", fmt.Errorf("%s: the source holds %s %s, not version %s of this app", app.Name, got.ID, got.Version, app.Version)
+			}
+			// the app audit (S55): nothing of an app that fails it is merged or compiled
+			err = auditApp(app, dest, list.AllowedGoModules, log)
+			if err != nil {
+				return "", err
 			}
 		}
 		steps.start("merge", "Merging the apps into the base")

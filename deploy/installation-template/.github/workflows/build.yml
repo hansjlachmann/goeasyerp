@@ -78,6 +78,20 @@ jobs:
             echo "✓ $(yq ".apps[$i].name" installation/apps.yaml) $(yq ".apps[$i].version" installation/apps.yaml)"
           done
 
+      # the app audit (S55): every app's code is checked before it is built into the server —
+      # with the allowed Go modules and the exceptions approved in GoEasyERP (apps.yaml); an app
+      # that fails it stops the build
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: base/go.mod
+          cache: false
+
+      - name: Audit the apps
+        working-directory: base
+        run: |
+          [ -n "$(ls apps 2>/dev/null)" ] || { echo "no apps"; exit 0; }
+          go run ./cmd/app-audit -build-list ../installation/apps.yaml apps/*
+
       # the image runs on x86 servers and on ARM (e.g. a Raspberry Pi)
       - uses: docker/setup-qemu-action@v3
 

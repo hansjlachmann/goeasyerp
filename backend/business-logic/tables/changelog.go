@@ -35,6 +35,7 @@ var defaultChangeLogTables = []int{
 	gtables.BankAccountPostingGroupTableID, gtables.FAPostingGroupTableID, gtables.ProjectPostingGroupTableID,
 	gtables.GenBusinessPostingGroupTableID, gtables.GenProductPostingGroupTableID,
 	gtables.ChangeLogSetupTableID, gtables.ChangeLogSetupTableTableID, gtables.ChangeLogSetupFieldTableID,
+	gtables.AppAuditExceptionTableID,
 }
 
 // defaultSkippedFields are fields of the default tables that change on their own (every login

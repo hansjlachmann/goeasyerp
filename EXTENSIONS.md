@@ -272,6 +272,56 @@ routines and reports register with numbers from its series, as the base applicat
 English text shown to users), and no posting that would leave the general ledger out of balance
 (the base refuses it).
 
+### What an app's Go code may use (the app audit)
+
+Every app is audited before an installation builds it into the server — by the installation's
+builder, by Upload App (before the package is recorded) and in an installation repository's CI
+pipeline. An app that fails is not built. Run the same audit on your app before you release it:
+
+```bash
+go run github.com/hansjlachmann/goeasyerp/cmd/app-audit path/to/your-app
+```
+
+The audit reads the source (`*_test.go` files are left out: they are not built into the server).
+It refuses:
+
+- **Getting around Go's rules:** `import "unsafe"`, cgo (`import "C"`, `#cgo`), `//go:linkname`,
+  `//go:generate` and other compiler directives (`//go:build`, `//go:embed` and `//go:noinline` are
+  allowed, but an app's files have no build constraints: every file is built), assembly, C and
+  object files.
+- **Standard library packages outside the allowlist:** computation is allowed (`strings`,
+  `strconv`, `fmt`, `errors`, `time`, `math`, `sort`, `slices`, `maps`, `regexp`, `bytes`,
+  `bufio`, `io`, `context`, `sync`, `unicode`, `encoding/json|csv|base64|hex|xml|binary`,
+  hashing, `net/url` …); the environment, files, processes, the network and the database are not
+  (`os`, `os/exec`, `syscall`, `net`, `net/http`, `database/sql`, `reflect`, `runtime`, `plugin`,
+  `log` …).
+- **GoEasyERP packages outside the app API:** an app may use the records
+  (`backend/generated/tables`), `backend/business-logic` (its functions and events, but not
+  `apps`, `migrations`, `scheduler`, `jobqueue`, `docmail`, `demodata`, `themerepo`,
+  `refusedposting`), and from `backend/foundation` `types`, `system`, `functions`, `events`,
+  `codeunits`, `errors`, `i18n`, `format`, `dateformula` and `flowfilter` — not `database`,
+  `tables`, `secrets`, `session`, `mail` or the server's other internals.
+- **Functions that give the server's powers**, whatever their package: the record's database
+  connection and SQL (`GetDB`, `SetDB`, `Exec`, `Query`, `QueryRow`, `Begin` …), other
+  companies (`ChangeCompany`), other users' rights (`SetCurrentAccess`, `SetCurrentContext`),
+  tables on a database of the app's choosing (`InitWithDBType`, `InitTemporary`, `DBSource`), the
+  balance check (`Consistent`), the environment (`Getenv`).
+- **Changing another package's variables** (`pkg.X = …`, `&pkg.X`): an app does not take over
+  the base's behaviour.
+- **Modules:** `go.mod` requires only the base (and the modules App Build Setup's *Allowed Go
+  Modules* names), and has no `replace` or `exclude` directives.
+
+A finding that is right for an app (an import the allowlist does not have yet) can be approved
+by a SUPER user for **exactly one source** — the Git commit or the uploaded package's SHA-256
+the report names — in Installed Apps → App Audit Exceptions. A new version, or a tag that moved,
+is audited afresh. An approval is recorded in the change log and as a security event.
+
+The audit does not make an app harmless: an app that passes can still post wrong amounts or
+change records in the companies where it runs. It closes the server-wide powers — other
+companies, the secrets, files, the network, the database behind the base's checks, other users'
+rights. A module allowed in App Build Setup is built in without being audited: allow only modules
+you trust.
+
 ## 9. Building
 
 `tools/extmerge` merges apps into the base definitions; the base's Dockerfile does it when

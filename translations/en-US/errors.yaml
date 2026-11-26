@@ -52,6 +52,7 @@ errors:
   ERR_CHANGE_LOG_SUPER_ONLY: "Only a user with the role SUPER may change what the change log records."
   ERR_CHANGE_LOG_FIELD_UNKNOWN: "Table %2 has no field %1."
   ERR_SMTP_SETUP_SUPER_ONLY: "Only a user with the role SUPER may change the SMTP Setup."
+  ERR_APP_AUDIT_SUPER_ONLY: "Only a user with the role SUPER may approve a finding of the app audit."
   ERR_SMTP_SERVER_NOT_ALLOWED: "%1 cannot be the SMTP server: %2."
   ERR_PREVIEW_EXPIRED: "The posting preview is no longer available. Preview the posting again."
   ERR_FIELD_NOT_EDITABLE: "%1 cannot be changed."

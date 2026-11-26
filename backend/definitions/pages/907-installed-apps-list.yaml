@@ -103,6 +103,12 @@ page:
           image: History
           run_page: 912
 
+        # findings of the app audit a SUPER user approved for one app's exact source (S55)
+        - name: App Audit Exceptions
+          caption: App Audit Exceptions
+          image: Approve
+          run_page: 917
+
         - name: Build List
           caption: Build List
           image: Export

@@ -52,6 +52,7 @@ errors:
   ERR_CHANGE_LOG_SUPER_ONLY: "Bare en bruker med rollen SUPER kan endre hva endringsloggen registrerer."
   ERR_CHANGE_LOG_FIELD_UNKNOWN: "Tabell %2 har ikke felt %1."
   ERR_SMTP_SETUP_SUPER_ONLY: "Bare en bruker med rollen SUPER kan endre SMTP-oppsettet."
+  ERR_APP_AUDIT_SUPER_ONLY: "Bare en bruker med rollen SUPER kan godkjenne et funn fra app-revisjonen."
   ERR_SMTP_SERVER_NOT_ALLOWED: "%1 kan ikke være SMTP-server: %2."
   ERR_PREVIEW_EXPIRED: "Forhåndsvisningen av bokføringen er ikke lenger tilgjengelig. Forhåndsvis bokføringen på nytt."
   ERR_FIELD_NOT_EDITABLE: "%1 kan ikke endres."

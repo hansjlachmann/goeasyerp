@@ -100,6 +100,43 @@ func TestBuildChecksTheSource(t *testing.T) {
 	}
 }
 
+// An app that fails the app audit is not merged or compiled: the build fails with the report in
+// its log; an exception approved for the finding lets it through to the next step (S55)
+func TestBuildAuditsTheApp(t *testing.T) {
+	appDir := filepath.Join(repoRoot, "testdata", "apps", "loyalty-points")
+	app, err := fapps.Load(filepath.Join(appDir, "application.yaml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	bad := t.TempDir()
+	if err := copyTree(appDir, bad, nil); err != nil {
+		t.Fatal(err)
+	}
+	evil := "package loyaltypoints\n\nimport \"os\"\n\nvar secret = os.Getenv(\"JWT_SECRET\")\n"
+	if err := os.WriteFile(filepath.Join(bad, "evil.go"), []byte(evil), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	// the base source is not a real one: a build that got past the audit fails at the merge
+	b := &builder{baseSource: filepath.Join(repoRoot, "testdata", "apps"), buildsDir: t.TempDir(), workDir: t.TempDir(), fetch: folderFetcher{dir: bad}}
+	var list fapps.BuildList
+	list.Apps = []fapps.BuildApp{{ID: app.ID, Name: app.Name, Version: app.Version, Source: fapps.SourceGit, Commit: "abc123"}}
+	log := &buildLog{}
+	_, err = b.build(context.Background(), 1, list, log)
+	if err == nil || !strings.Contains(err.Error(), "did not pass the app audit") {
+		t.Fatalf("err = %v", err)
+	}
+	text := string(log.Bytes())
+	if !strings.Contains(text, "REFUSED") || !strings.Contains(text, "evil.go:3") || !strings.Contains(text, "source abc123") {
+		t.Errorf("the report in the log:\n%s", text)
+	}
+
+	list.Apps[0].AuditExceptions = []fapps.AuditException{{Rule: "import", Key: "os"}, {Rule: "forbidden", Key: "Getenv"}}
+	_, err = b.build(context.Background(), 2, list, &buildLog{})
+	if err == nil || strings.Contains(err.Error(), "app audit") {
+		t.Errorf("with the findings approved the audit passes (the build then fails at the merge of this fake base): %v", err)
+	}
+}
+
 // An uploaded package is unpacked only when it is the one the build was requested with
 func TestUnpack(t *testing.T) {
 	manifest, err := os.ReadFile(filepath.Join(repoRoot, "testdata", "apps", "loyalty-points", "application.yaml"))

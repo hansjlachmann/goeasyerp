@@ -9,6 +9,16 @@ type BuildList struct {
 		Version string `yaml:"version" json:"version"`
 	} `yaml:"base" json:"base"`
 	Apps []BuildApp `yaml:"apps" json:"apps"`
+	// AllowedGoModules: Go modules the apps' go.mod may require besides the base (App Build
+	// Setup), for the app audit (S55)
+	AllowedGoModules []string `yaml:"allowed_go_modules,omitempty" json:"allowed_go_modules,omitempty"`
+}
+
+// AuditException is a finding of the app audit a SUPER user approved for this app's source
+// (App Audit Exception): the audit's rule and the finding's key
+type AuditException struct {
+	Rule string `yaml:"rule" json:"rule"`
+	Key  string `yaml:"key" json:"key"`
 }
 
 // Where a build takes an app from
@@ -30,4 +40,14 @@ type BuildApp struct {
 	Commit        string `yaml:"commit,omitempty" json:"commit,omitempty"` // the tag's commit when installed: built exactly, the tag must still point to it
 	Path          string `yaml:"path,omitempty" json:"path,omitempty"`
 	PackageSHA256 string `yaml:"package_sha256,omitempty" json:"package_sha256,omitempty"`
+	// AuditExceptions: the app audit's findings approved for exactly this source (S55)
+	AuditExceptions []AuditException `yaml:"audit_exceptions,omitempty" json:"audit_exceptions,omitempty"`
+}
+
+// SourceID is what an audit exception is bound to: the Git commit, or the package's SHA-256
+func (a BuildApp) SourceID() string {
+	if a.Source == SourcePackage {
+		return a.PackageSHA256
+	}
+	return a.Commit
 }

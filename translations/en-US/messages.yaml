@@ -505,6 +505,7 @@ messages:
   APP_UPLOAD_FILE: "App package (.zip)"
   ERR_APP_UPLOAD_NOT_ALLOWED: "Uploading apps is not allowed in this installation (App Build Setup: Allow Upload)."
   ERR_APP_PACKAGE: "This is not an app package: %1"
+  ERR_APP_AUDIT_FAILED: "%1 %2 did not pass the app audit and was not uploaded (package SHA-256 %3; a SUPER user can approve a finding for this package in App Audit Exceptions):\n%4"
   ERR_APP_LOCAL_BUILDER_ONLY: "This installation's apps are built by a CI pipeline: use Build List, or set Builds By to Local Builder in App Build Setup."
   ERR_APP_PACKAGE_NEEDS_LOCAL_BUILDER: "%1 was uploaded as a package, which a CI pipeline cannot take: set Builds By to Local Builder in App Build Setup, or install the app from its repository."
   ERR_APP_BUILD_PENDING: "Build %1 is requested or running already: wait for it (App Builds)."

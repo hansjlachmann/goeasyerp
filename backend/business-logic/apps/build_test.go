@@ -3,7 +3,9 @@ package apps
 import (
 	"archive/zip"
 	"bytes"
+	"crypto/sha256"
 	"database/sql"
+	"encoding/hex"
 	"encoding/json"
 	"strings"
 	"testing"
@@ -27,7 +29,7 @@ func buildTestDB(t *testing.T) (*gtables.InstalledApp, *fapps.App) {
 	t.Cleanup(func() { _ = db.Close() })
 	for _, rec := range []interface {
 		CreateTableWithDBType(database.Executor, string, database.DBType) error
-	}{&gtables.InstalledApp{}, &gtables.AppPackage{}, &gtables.AppBuildSetup{}, &gtables.AppBuild{}} {
+	}{&gtables.InstalledApp{}, &gtables.AppPackage{}, &gtables.AppBuildSetup{}, &gtables.AppAuditException{}, &gtables.AppBuild{}} {
 		if err := rec.CreateTableWithDBType(db, "", database.DBTypeSQLite); err != nil {
 			t.Fatal(err)
 		}
@@ -90,6 +92,49 @@ func zipOf(t *testing.T, files map[string]string) []byte {
 
 // Upload App needs Allow Upload; a package's app is checked like Install App and recorded
 // Pending Install from the package, which is stored; a pipeline's build list refuses it
+// An uploaded package that fails the app audit is refused with the report and not stored; an
+// exception approved for exactly this package lets it through (S55)
+func TestUploadAppAudit(t *testing.T) {
+	src, base := buildTestDB(t)
+	setBuildSetup(t, src, true, true)
+	const id = "aaaaaaaa-0000-4000-8000-000000000031"
+	pkg := zipOf(t, map[string]string{
+		"application.yaml": string(manifest(id, "Spy", "1.0.0", "sp", "{from: 54000, to: 54099}", "{id: "+base.ID+"}")),
+		"go.mod":           "module example.com/spy\n\nrequire github.com/hansjlachmann/goeasyerp v0.0.0\n",
+		"spy.go":           "package spy\n\nimport \"os/exec\"\n\nvar _ = exec.Command\n",
+	})
+	_, err := uploadPackage(src, pkg)
+	if err == nil || !strings.Contains(err.Error(), "did not pass the app audit") || !strings.Contains(err.Error(), "spy.go:3") {
+		t.Fatalf("a package with os/exec: %v", err)
+	}
+	if gtables.NewAppPackage(src).Get(map[string]interface{}{"app_id": id, "version": "1.0.0"}) {
+		t.Fatal("the refused package was stored")
+	}
+
+	sum := sha256.Sum256(pkg)
+	exception := gtables.NewAppAuditException(src)
+	exception.App_id = types.NewText(id)
+	exception.Version = "1.0.0"
+	exception.Source_id = types.NewText(hex.EncodeToString(sum[:]))
+	exception.Rule = "import"
+	exception.Finding_key = "os/exec"
+	exception.Reason = "reviewed: only in a test helper"
+	if !exception.Insert(true) {
+		t.Fatal(exception.TriggerError())
+	}
+	if _, err := uploadPackage(src, pkg); err != nil {
+		t.Fatalf("with the finding approved for this package: %v", err)
+	}
+	// the build list carries the approval, bound to the package
+	list, err := plannedBuild(src)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(list.Apps) != 1 || len(list.Apps[0].AuditExceptions) != 1 || list.Apps[0].AuditExceptions[0].Key != "os/exec" {
+		t.Errorf("build list %+v", list.Apps)
+	}
+}
+
 func TestUploadApp(t *testing.T) {
 	src, base := buildTestDB(t)
 	const id = "aaaaaaaa-0000-4000-8000-000000000021"

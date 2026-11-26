@@ -546,6 +546,17 @@ tables:
       uploaded_by: "Uploadet af"
       uploaded_at: "Uploadet"
 
+  app_audit_exception:
+    caption: "Undtagelse fra app-revision"
+    fields:
+      app_id: "App-id"
+      version: "Version"
+      source_id: "Kilde (commit eller pakkens SHA-256)"
+      rule: "Regel"
+      finding_key: "Fund"
+      reason: "Begrundelse"
+      approved_by: "Godkendt af"
+      approved_at: "Godkendt"
   app_build_setup:
     caption: "Opsætning af app-builds"
     fields:
@@ -553,6 +564,7 @@ tables:
       builds_by: "Bygges af"
       allow_upload: "Tillad upload"
       allowed_repositories: "Tilladte repositorier"
+      allowed_go_modules: "Tilladte Go-moduler"
     options:
       builds_by:
         ci_pipeline: "CI-pipeline"

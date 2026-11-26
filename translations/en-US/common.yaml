@@ -313,6 +313,7 @@ common:
     build: "Build"
     build_apps: "Build Apps"
     app_builds: "App Builds"
+    app_audit_exceptions: "App Audit Exceptions"
     app_build_setup: "App Build Setup"
     main_menu_text: "Main Menu Text"
     test: "TEST"

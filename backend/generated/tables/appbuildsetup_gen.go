@@ -16,6 +16,7 @@
 //	OnValidate_Builds_by(rec *gtables.AppBuildSetup) error
 //	OnValidate_Allow_upload(rec *gtables.AppBuildSetup) error
 //	OnValidate_Allowed_repositories(rec *gtables.AppBuildSetup) error
+//	OnValidate_Allowed_go_modules(rec *gtables.AppBuildSetup) error
 package tables
 
 import (
@@ -62,6 +63,7 @@ type AppBuildSetup struct {
 	Builds_by            AppBuildSetupBuilds_by `db:"builds_by"`
 	Allow_upload         bool                   `db:"allow_upload"`
 	Allowed_repositories types.Text             `db:"allowed_repositories"`
+	Allowed_go_modules   types.Text             `db:"allowed_go_modules"`
 
 	// Internal context (set by Init)
 	db      database.Executor
@@ -121,11 +123,13 @@ var AppBuildSetup_FieldNo = struct {
 	Builds_by            int
 	Allow_upload         int
 	Allowed_repositories int
+	Allowed_go_modules   int
 }{
 	Primary_key:          1,
 	Builds_by:            2,
 	Allow_upload:         3,
 	Allowed_repositories: 4,
+	Allowed_go_modules:   5,
 }
 
 // FieldNo returns the number of a field (FieldNo), 0 for an unknown field
@@ -418,6 +422,9 @@ func (t *AppBuildSetup) CheckFields() error {
 	if err := tables.CheckMaxLength(AppBuildSetupTableName, "allowed_repositories", string(t.Allowed_repositories), 250); err != nil {
 		return err
 	}
+	if err := tables.CheckMaxLength(AppBuildSetupTableName, "allowed_go_modules", string(t.Allowed_go_modules), 250); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -460,7 +467,8 @@ func GetAppBuildSetupTableSchema() string {
 		primary_key TEXT(20) PRIMARY KEY,
 		builds_by INTEGER CHECK (builds_by >= 0 AND builds_by <= 1),
 		allow_upload INTEGER,
-		allowed_repositories TEXT(250)
+		allowed_repositories TEXT(250),
+		allowed_go_modules TEXT(250)
 	`
 }
 
@@ -470,7 +478,8 @@ func GetAppBuildSetupPostgresTableSchema() string {
 		primary_key VARCHAR(20) PRIMARY KEY,
 		builds_by INTEGER CHECK (builds_by >= 0 AND builds_by <= 1),
 		allow_upload BOOLEAN,
-		allowed_repositories VARCHAR(250)
+		allowed_repositories VARCHAR(250),
+		allowed_go_modules VARCHAR(250)
 	`
 }
 
@@ -1407,6 +1416,7 @@ func (t *AppBuildSetup) Init() {
 	t.Builds_by = 0
 	t.Allow_upload = *new(bool)
 	t.Allowed_repositories = *new(types.Text)
+	t.Allowed_go_modules = *new(types.Text)
 	t.applyDefaults()
 }
 
@@ -1477,6 +1487,8 @@ func (t *AppBuildSetup) fieldRef(i int) any {
 		return &t.Allow_upload
 	case 3:
 		return &t.Allowed_repositories
+	case 4:
+		return &t.Allowed_go_modules
 	}
 	return nil
 }
@@ -1542,6 +1554,20 @@ var appBuildSetupFields = &tables.TableFields{
 			},
 			Kind:    tables.KindText,
 			Trigger: "OnValidate_Allowed_repositories",
+		},
+		{
+			Info: tables.FieldInfo{
+				No:         5,
+				Name:       "allowed_go_modules",
+				Type:       tables.FieldTypeText,
+				Length:     250,
+				Required:   false,
+				Editable:   true,
+				PrimaryKey: false,
+				FlowField:  false,
+			},
+			Kind:    tables.KindText,
+			Trigger: "OnValidate_Allowed_go_modules",
 		},
 	},
 }

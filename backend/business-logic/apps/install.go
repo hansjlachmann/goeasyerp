@@ -12,6 +12,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
+	"github.com/hansjlachmann/goeasyerp/backend/foundation/appaudit"
 	fapps "github.com/hansjlachmann/goeasyerp/backend/foundation/apps"
 	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/functions"
@@ -147,6 +148,11 @@ func uploadPackage(src *gtables.InstalledApp, data []byte) (fcodeunits.Result, e
 	}
 	sum := sha256.Sum256(data)
 	hash := hex.EncodeToString(sum[:])
+	// the app audit (S55): a package that fails it is not recorded
+	err = auditPackage(src, pkg, hash)
+	if err != nil {
+		return fcodeunits.Result{}, err
+	}
 	save := func(app *fapps.App) error {
 		pkgRec := gtables.NewAppPackage(src)
 		exists := pkgRec.Get(map[string]interface{}{"app_id": app.ID, "version": app.Version})
@@ -168,6 +174,22 @@ func uploadPackage(src *gtables.InstalledApp, data []byte) (fcodeunits.Result, e
 	}
 	return installChecked(src, pkg.Manifest, appSource{kind: gtables.InstalledApp_Source_type.Package,
 		source: "package " + hash[:12], ref: pkg.App.Version, save: save})
+}
+
+// auditPackage runs the app audit on an uploaded package, with App Build Setup's allowed modules
+// and the exceptions approved for this package; refused: the report as the error (it names the
+// package's SHA-256, which an exception is approved for)
+func auditPackage(src *gtables.InstalledApp, pkg *fapps.Package, hash string) error {
+	opts := appaudit.Options{AllowedModules: allowedGoModules(src)}
+	for _, e := range auditExceptions(src, pkg.App.ID, pkg.App.Version, hash) {
+		opts.Exceptions = append(opts.Exceptions, appaudit.Exception{Rule: e.Rule, Key: e.Key})
+	}
+	report := appaudit.Audit(pkg.App.Name+" "+pkg.App.Version, pkg.Files, opts)
+	if report.Passed() {
+		return nil
+	}
+	lang := fcodeunits.CurrentLanguage()
+	return errors.New(i18n.GetInstance().MessageWithParams("ERR_APP_AUDIT_FAILED", lang, pkg.App.Name, pkg.App.Version, hash, report.Text()))
 }
 
 // installManifest checks an app's application.yaml against the planned apps and records it as
@@ -431,9 +453,33 @@ func buildListOf(src *gtables.InstalledApp, base *fapps.App, planned []*fapps.Ap
 			app.Commit = row.Source_commit.String()
 			app.Path = row.Source_path.String()
 		}
+		app.AuditExceptions = auditExceptions(src, a.ID, a.Version, app.SourceID())
 		list.Apps = append(list.Apps, app)
 	}
+	list.AllowedGoModules = allowedGoModules(src)
 	return list, nil
+}
+
+// auditExceptions: the app audit's findings a SUPER user approved for an app's exact source
+// (App Audit Exception; S55)
+func auditExceptions(src *gtables.InstalledApp, appID, version, sourceID string) []fapps.AuditException {
+	exception := gtables.NewAppAuditException(src)
+	exception.SetRange("app_id", appID)
+	exception.SetRange("version", version)
+	exception.SetRange("source_id", sourceID)
+	var result []fapps.AuditException
+	for found := exception.FindSet(); found; found = exception.Next() {
+		result = append(result, fapps.AuditException{Rule: exception.Rule.String(), Key: exception.Finding_key.String()})
+	}
+	return result
+}
+
+// allowedGoModules: App Build Setup's Allowed Go Modules as a list
+func allowedGoModules(src *gtables.InstalledApp) []string {
+	setup := gtables.GetAppBuildSetup(src)
+	return strings.FieldsFunc(setup.Allowed_go_modules.String(), func(r rune) bool {
+		return r == ' ' || r == ',' || r == ';' || r == '\n' || r == '\t'
+	})
 }
 
 // BuildList gives the list of apps the next build contains (apps.yaml) for a CI pipeline: the

@@ -1,0 +1,70 @@
+table:
+  id: 2000000159
+  name: App_Audit_Exception
+  caption: App Audit Exception
+  description: "App Audit Exception (S55): a finding of the app audit a SUPER user approved for one app — its version and its exact source (the Git commit, or the uploaded package's SHA-256), so a new version or a moved tag is audited afresh. Written in the change log and as a security event."
+  global: true
+  lookup_page_id: 917
+  fields:
+    - name: app_id
+      no: 1
+      type: types.Text
+      db_name: app_id
+      length: 50
+      primary_key: true
+
+    - name: version
+      no: 2
+      type: types.Text
+      db_name: version
+      length: 30
+      primary_key: true
+
+    # the Git commit or the package's SHA-256 the approval is for (the audit report names it)
+    - name: source_id
+      no: 3
+      type: types.Text
+      db_name: source_id
+      length: 64
+      primary_key: true
+
+    # the audit's rule (import, forbidden, module …)
+    - name: rule
+      no: 4
+      type: types.Text
+      db_name: rule
+      length: 30
+      primary_key: true
+
+    # what the finding names: the import path, the function, the module …
+    - name: finding_key
+      no: 5
+      type: types.Text
+      db_name: finding_key
+      length: 200
+      primary_key: true
+
+    - name: reason
+      no: 6
+      type: types.Text
+      db_name: reason
+      length: 250
+      required: true
+
+    - name: approved_by
+      no: 7
+      type: types.Code
+      db_name: approved_by
+      length: 50
+      editable: false
+
+    - name: approved_at
+      no: 8
+      type: types.DateTime
+      db_name: approved_at
+      editable: false
+
+  keys:
+    - name: Primary
+      fields: [app_id, version, source_id, rule, finding_key]
+      clustered: true

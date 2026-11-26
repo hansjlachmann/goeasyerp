@@ -38,6 +38,15 @@ table:
       db_name: allowed_repositories
       length: 250
 
+    # Go modules an app's go.mod may require besides the base (path, or path@version; separated
+    # by spaces, commas or semicolons): their code is built into the server without the app audit
+    # (S55), so only modules you trust
+    - name: allowed_go_modules
+      no: 5
+      type: types.Text
+      db_name: allowed_go_modules
+      length: 250
+
   keys:
     - name: Primary
       fields: [primary_key]

@@ -41,6 +41,7 @@ const (
 	ErrDeleteTypeCount        ErrorCode = "ERR_DELETE_TYPE_COUNT"
 	ErrDeleteCountChanged     ErrorCode = "ERR_DELETE_COUNT_CHANGED"
 	ErrCompanyDeleteSuper     ErrorCode = "ERR_COMPANY_DELETE_SUPER_ONLY"
+	ErrAppAuditSuperOnly      ErrorCode = "ERR_APP_AUDIT_SUPER_ONLY"
 	ErrSMTPSetupSuperOnly     ErrorCode = "ERR_SMTP_SETUP_SUPER_ONLY"
 	ErrSMTPServerNotAllowed   ErrorCode = "ERR_SMTP_SERVER_NOT_ALLOWED"
 	ErrChangeLogSuperOnly     ErrorCode = "ERR_CHANGE_LOG_SUPER_ONLY"
@@ -577,6 +578,11 @@ func ReportNotScheduled(reportID int) *AppError {
 // one side of each transaction to another date)
 func DateComprGLFilter(filter string) *AppError {
 	return &AppError{Code: ErrDateComprGLFilter, Params: []string{filter}}
+}
+
+// AppAuditSuperOnly: only a SUPER user approves a finding of the app audit (S55)
+func AppAuditSuperOnly() *AppError {
+	return &AppError{Code: ErrAppAuditSuperOnly}
 }
 
 // SMTPSetupSuperOnly: only a SUPER user changes where the server sends mail (S49)

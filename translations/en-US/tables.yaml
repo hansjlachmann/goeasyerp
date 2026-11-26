@@ -546,6 +546,17 @@ tables:
       uploaded_by: "Uploaded By"
       uploaded_at: "Uploaded At"
 
+  app_audit_exception:
+    caption: "App Audit Exception"
+    fields:
+      app_id: "App ID"
+      version: "Version"
+      source_id: "Source (Commit or Package SHA-256)"
+      rule: "Rule"
+      finding_key: "Finding"
+      reason: "Reason"
+      approved_by: "Approved By"
+      approved_at: "Approved At"
   app_build_setup:
     caption: "App Build Setup"
     fields:
@@ -553,6 +564,7 @@ tables:
       builds_by: "Builds By"
       allow_upload: "Allow Upload"
       allowed_repositories: "Allowed Repositories"
+      allowed_go_modules: "Allowed Go Modules"
     options:
       builds_by:
         ci_pipeline: "CI Pipeline"
