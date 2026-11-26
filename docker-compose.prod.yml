@@ -86,8 +86,10 @@ services:
       SETUP_TOKEN: ${SETUP_TOKEN:-}
       # a session without requests ends after this (S39; e.g. 30m, 8h; empty: 2h; 0: never)
       SESSION_IDLE_TIMEOUT: ${SESSION_IDLE_TIMEOUT:-}
-      # Encrypts the SMTP password in the database (empty: derived from JWT_SECRET)
+      # Encrypts the SMTP password in the database (empty: derived from JWT_SECRET); _OLD: the
+      # key before, read once to change it (docs/operations.md, Rotating the secrets)
       OPENERP_ENCRYPTION_KEY: ${OPENERP_ENCRYPTION_KEY:-}
+      OPENERP_ENCRYPTION_KEY_OLD: ${OPENERP_ENCRYPTION_KEY_OLD:-}
       # NAV report proxy used by the NAV Report Runner codeunit (empty: http://localhost:5009)
       NAV_PROXY_URL: ${NAV_PROXY_URL:-}
       # Themes from GitHub (Appearance dialog): optional token against GitHub's download limit

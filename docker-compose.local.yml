@@ -86,6 +86,10 @@ services:
       PORT: 8080
       APP_VERSION: "0.1.192" # x-release-please-version
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in the file .env next to docker-compose.yml}
+      # encrypts the passwords stored in the database (SMTP Setup; empty: a key from JWT_SECRET);
+      # the install script puts one into .env. _OLD: the key before, read once to change it
+      OPENERP_ENCRYPTION_KEY: ${OPENERP_ENCRYPTION_KEY:-}
+      OPENERP_ENCRYPTION_KEY_OLD: ${OPENERP_ENCRYPTION_KEY_OLD:-}
       # the first user needs it on the login page (S37); the install script puts one into .env and shows it
       SETUP_TOKEN: ${SETUP_TOKEN:-}
       # a session without requests ends after this (S39; e.g. 30m, 8h; empty: 2h; 0: never)
@@ -182,6 +186,13 @@ configs:
             proxy_pass http://frontend:3000;
             proxy_http_version 1.1;
             proxy_set_header Host $$host;
+            # the frontend's static files come without the headers of its pages
+            proxy_hide_header X-Content-Type-Options;
+            proxy_hide_header Permissions-Policy;
+            proxy_hide_header Cross-Origin-Resource-Policy;
+            add_header X-Content-Type-Options "nosniff" always;
+            add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()" always;
+            add_header Cross-Origin-Resource-Policy "same-origin" always;
           }
         }
       }

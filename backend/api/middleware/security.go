@@ -15,12 +15,15 @@ import (
 // SecurityHeaders sets the headers every API answer carries (S25, S27): never framed, never
 // sniffed into another type, no referrer to other sites, and not stored by the browser or a
 // proxy — the answers hold company data, which must not stay in a shared computer's cache after
-// log out. A handler whose answer may be kept (theme images) sets its own Cache-Control.
+// log out, and not read by other sites' pages (Cross-Origin-Resource-Policy; the app's own pages
+// are the same origin). A handler whose answer may be kept (theme images) sets its own
+// Cache-Control.
 func SecurityHeaders() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		c.Set("X-Content-Type-Options", "nosniff")
 		c.Set("X-Frame-Options", "DENY")
 		c.Set("Referrer-Policy", "same-origin")
+		c.Set("Cross-Origin-Resource-Policy", "same-origin")
 		c.Set("Cache-Control", "no-store")
 		return c.Next()
 	}

@@ -386,8 +386,9 @@ Daily at 02:15 (`crontab -e`):
 15 2 * * * $HOME/openerp/scripts/backup.sh >> $HOME/backups/backup.log 2>&1
 ```
 
-Backups on the same disk do not survive a disk failure: copy them to another machine (e.g.
-`rsync` or `scp` from that machine, on its own schedule).
+Backups on the same disk do not survive a disk failure — nor a break-in, which can delete them:
+copy them to another machine that fetches them on its own schedule (e.g. `rsync` or `scp` from
+that machine), so the server cannot delete or overwrite the copies.
 
 ## Restore
 
@@ -452,9 +453,9 @@ the database first (after its backup), then written to `.env`.
 backend refuses to start with a database server (`DB_HOST`) and no `JWT_SECRET`, with one
 shorter than 16 characters, or with an example text from the repository (it warns below 32);
 only a development start without a database server uses a random key (sessions then end at
-every restart). Set it once
-(`openssl rand -hex 32`) and keep it; changing it logs everyone out once — and, unless
-`OPENERP_ENCRYPTION_KEY` is set, the SMTP password has to be entered again (next section).
+every restart). Set it once (`openssl rand -hex 32`); changing it logs everyone out once. Set
+`OPENERP_ENCRYPTION_KEY` too (next section), so `JWT_SECRET` can be changed without touching
+the stored secrets — Rotating the secrets below has the steps.
 
 ## Where the server sends mail (SMTP Setup)
 
@@ -470,17 +471,87 @@ prod.env when the mail server is outside your network, and they are refused too.
 ## Encrypted secrets (SMTP password)
 
 The SMTP password in SMTP Setup is stored encrypted (AES-256-GCM), so a database dump or
-backup does not reveal it. The key is `OPENERP_ENCRYPTION_KEY` in `prod.env` (optional) — when
-it is empty, a key derived from `JWT_SECRET` is used, so nothing has to be set up. At startup the
-backend logs `✓ Stored secrets encrypted (key from …)` and encrypts a password that was saved
-before (`✓ SMTP password encrypted`, once). Without either key (development) the password is
-stored as typed and the backend warns.
+backup does not reveal it. The key is `OPENERP_ENCRYPTION_KEY` in `prod.env`: set it once
+(`openssl rand -hex 32`). When it is empty, a key derived from `JWT_SECRET` is used — which ties
+the two together: `JWT_SECRET` could not be changed without the stored password becoming
+unreadable. At startup the backend logs `✓ Stored secrets encrypted (key from …)` and encrypts
+what is stored with another key or as typed (`✓ N stored secret(s) encrypted`). Without either
+key (development) the password is stored as typed and the backend warns.
 
-If the key changes (a new `OPENERP_ENCRYPTION_KEY`, or a new `JWT_SECRET` while
-`OPENERP_ENCRYPTION_KEY` is empty), the stored password can no longer be read: job e-mails stop
-(the log says "enter the SMTP password again") and "Send Test E-mail" says so. Enter the password
-again in SMTP Setup. To be able to change `JWT_SECRET` without this, set
-`OPENERP_ENCRYPTION_KEY` once (`openssl rand -hex 32`) and enter the SMTP password again.
+Adding `OPENERP_ENCRYPTION_KEY` to an installation that ran without it is safe: the key derived
+from `JWT_SECRET` still reads the stored password, and the first start with the new key encrypts
+it again with that key. The one-computer trial's install script adds one to `.env` by itself.
+
+A value that no key reads (the key was changed without the steps below, or `JWT_SECRET` changed
+while it was the key) can no longer be read: job e-mails stop (the log says "enter the SMTP
+password again") and "Send Test E-mail" says so. Enter the password again in SMTP Setup.
+
+## Rotating the secrets
+
+Change a secret at once when it may have been seen by someone else (a leaked `prod.env`, a
+backup or screenshot that holds it, someone who had it leaves), and otherwise on a schedule of
+your own. After each step check the backend's log (`scripts/prod.sh logs backend --since 5m`).
+The one-computer trial keeps the same settings in `.env` next to its `docker-compose.yml`; use
+`docker compose up -d` there instead of `scripts/prod.sh up -d`.
+
+- **`JWT_SECRET`** (signs the sessions; everyone is logged out): first make sure
+  `OPENERP_ENCRYPTION_KEY` is set and the backend has started with it once — the log says
+  `key from OPENERP_ENCRYPTION_KEY`. Then a new value in `prod.env`
+  (`openssl rand -hex 32`) and `scripts/prod.sh up -d`.
+- **`OPENERP_ENCRYPTION_KEY`** (encrypts the stored secrets): move the old value to
+  `OPENERP_ENCRYPTION_KEY_OLD`, put a new one into `OPENERP_ENCRYPTION_KEY`,
+  `scripts/prod.sh up -d`; the log says `✓ N stored secret(s) encrypted`. Then empty
+  `OPENERP_ENCRYPTION_KEY_OLD` and `up -d` again. The key protects the secrets in dumps and
+  backups only: when it leaked together with a backup, change the secrets themselves (the SMTP
+  password at the mail provider, then in SMTP Setup).
+- **`POSTGRES_PASSWORD`, `BUILDER_DB_PASSWORD`**: Changing the database password above.
+- **The SMTP password**: change it at the mail provider, then enter it in SMTP Setup.
+- **`SETUP_TOKEN`**: only used while no user exists. Once the first user is made it opens
+  nothing — check under Users that no administrator you do not know was made with it (Security
+  Events: First User).
+- **GitHub tokens** (`GITHUB_TOKEN`, `APPS_TOKEN` in `prod.env`, and for whoever runs the
+  repository the `RELEASE_TOKEN` secret of its Actions): revoke the token in GitHub
+  (Settings → Developer settings → tokens), make a new one with the same rights, and replace it.
+- **A user's password**: a SUPER user sets a new one on the User card — the user's sessions end
+  (S22); the user changes it again with Change Password.
+
+## When something goes wrong (incidents)
+
+Keep what shows what happened: do not delete logs or the database first. The records are the
+Security Events (Administration; logins, refusals, app and company changes — Security events
+above), the Change Log Entries (who changed which record in the security and money tables), Bulk
+Deletes, Refused Postings, and the logs (`scripts/prod.sh logs backend`, `… logs nginx`; Docker
+keeps 50 MB per container). Write down the times as you go.
+
+**A secret leaked** (in a chat, a commit, a screenshot, a lost laptop): rotate it (above). A
+secret in a public repository must be treated as known even after it is deleted there.
+
+**A user account is misused** (logins from unknown addresses, changes the user did not make):
+untick Active on the User card — every session of the user ends within 30 seconds, and the user
+can no longer log in. Then look at what the account did: Security Events and Change Log Entries
+filtered on the user, Bulk Deletes, the documents posted (G/L Registers, User ID). Give the user
+a new password and their rights back only when the cause is known.
+
+**Data was changed or deleted that should not have been**: the Change Log Entries show the
+values before and after; Bulk Deletes lists the keys deleted. To read the data as it was, restore
+the last backup before the change into a scratch database (Restore above) and compare — never
+over the production database while it is in use.
+
+**The server may be taken over** (unknown processes or users, files changed, the security alerts
+show what nobody did):
+
+1. Cut it off the network (or stop nginx: `scripts/prod.sh stop nginx`) — keep it running, so
+   it can still be looked at.
+2. Set up a new server from scratch — not from a copy of the old one.
+3. Restore the database there from a backup made before the break-in, from a copy outside the
+   old server (Backups above: copies on the same server are no longer to be trusted).
+4. Make every secret new (Rotating the secrets: all of them, `JWT_SECRET` and the GitHub tokens
+   included) and give every user a new password.
+5. Check the users and roles: no SUPER user or role permission you do not know.
+6. Only then point the address at the new server.
+
+**A vulnerability in GoEasyERP itself**: report it as `SECURITY.md` says (privately, not in a
+public issue).
 
 ## NAV report proxy
 

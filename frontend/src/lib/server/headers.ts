@@ -6,8 +6,16 @@ export const PAGE_HEADERS: Record<string, string> = {
 	'X-Frame-Options': 'SAMEORIGIN', // only the app frames its pages (clickjacking)
 	'X-Content-Type-Options': 'nosniff',
 	'Referrer-Policy': 'same-origin',
-	'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=(), usb=()'
+	'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=(), usb=()',
+	'Cross-Origin-Resource-Policy': 'same-origin', // other sites' pages cannot load its answers
+	// a page of another site the app opens (a hyperlink) gets no handle on the app's window
+	'Cross-Origin-Opener-Policy': 'same-origin'
 };
+
+// The headers of the static files (scripts, styles, icons): the Node server sends them before
+// the hook above runs, so the web server in front adds these (nginx.conf, the trial's
+// docker-compose.local.yml — S53's nightly scan checks them)
+export const STATIC_HEADERS = ['X-Content-Type-Options', 'Permissions-Policy', 'Cross-Origin-Resource-Policy'];
 
 // Request headers the /api proxy never passes on as the client sent them: the client's
 // address is the one this server sees (S28) — the backend trusts this proxy's X-Forwarded-For,

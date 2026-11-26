@@ -118,6 +118,42 @@ func TestEncryptStoredSecrets(t *testing.T) {
 	}
 }
 
+// An installation that adds OPENERP_ENCRYPTION_KEY (S40): the next start encrypts the password
+// stored with the JWT_SECRET key again with the new key, so JWT_SECRET can change afterwards
+func TestEncryptStoredSecretsNewKey(t *testing.T) {
+	db := newTestDB(t)
+	var setup gtables.SMTPSetup
+	if err := setup.CreateTableWithDBType(db, "", database.DBTypeSQLite); err != nil {
+		t.Fatal(err)
+	}
+	restore := secrets.SetKeysForTest("", "", "the jwt secret")
+	setup.InitWithDBType(db, "", database.DBTypeSQLite)
+	setup.Password = types.NewText("smtp password")
+	if !setup.Insert(true) {
+		t.Fatal("insert")
+	}
+	restore()
+
+	restore = secrets.SetKeysForTest("the new key", "", "the jwt secret")
+	if n, err := gtables.EncryptStoredSecrets(db, database.DBTypeSQLite, nil); n != 1 || err != nil {
+		t.Fatalf("re-encrypted %d, %v; want the password", n, err)
+	}
+	if n, _ := gtables.EncryptStoredSecrets(db, database.DBTypeSQLite, nil); n != 0 {
+		t.Error("the password was re-encrypted twice")
+	}
+	restore()
+
+	defer secrets.SetKeysForTest("the new key", "", "a new jwt secret")()
+	var check gtables.SMTPSetup
+	check.InitWithDBType(db, "", database.DBTypeSQLite)
+	if !check.Get("") {
+		t.Fatal("get")
+	}
+	if plain, err := check.PlainPassword(); err != nil || plain != "smtp password" {
+		t.Errorf("after the JWT_SECRET change: %q, %v", plain, err)
+	}
+}
+
 // Only SUPER users change SMTP Setup, and its server cannot be an address the server refuses
 // to connect to (S49)
 func TestSMTPSetupGuards(t *testing.T) {

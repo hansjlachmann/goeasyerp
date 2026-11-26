@@ -6,8 +6,11 @@
 // installation with a JWT_SECRET needs no new setting). Without either, values are stored
 // as they are and a warning is logged at startup.
 //
-// Changing the key (or JWT_SECRET when it is the source) makes stored values unreadable:
-// they then have to be entered again.
+// Old keys still decrypt: with OPENERP_ENCRYPTION_KEY set, the key derived from JWT_SECRET and
+// the key in OPENERP_ENCRYPTION_KEY_OLD are tried after it, and the server re-encrypts what it
+// finds with them at startup (Rewrap) — so an installation can add OPENERP_ENCRYPTION_KEY, or
+// replace it, without entering its secrets again. A value no key decrypts has to be entered
+// again.
 package secrets
 
 import (
@@ -36,21 +39,54 @@ var (
 	keyOnce   sync.Once
 	keyBytes  []byte
 	keySource string
+	// oldKeys decrypt values encrypted before the current key (never used to encrypt)
+	oldKeys [][]byte
 )
 
 // loadKey reads the key once: OPENERP_ENCRYPTION_KEY, else derived from JWT_SECRET.
 // Any string is accepted; the AES key is its SHA-256 (with a label for JWT_SECRET, so
-// the encryption key differs from the session signing key).
+// the encryption key differs from the session signing key). With OPENERP_ENCRYPTION_KEY set,
+// the key derived from JWT_SECRET and OPENERP_ENCRYPTION_KEY_OLD are old keys.
 func loadKey() {
 	keyOnce.Do(func() {
-		if k := os.Getenv("OPENERP_ENCRYPTION_KEY"); k != "" {
-			sum := sha256.Sum256([]byte(k))
-			keyBytes, keySource = sum[:], "OPENERP_ENCRYPTION_KEY"
-		} else if j := os.Getenv("JWT_SECRET"); j != "" {
-			sum := sha256.Sum256([]byte("openerp secrets v1\x00" + j))
-			keyBytes, keySource = sum[:], "JWT_SECRET"
-		}
+		keyBytes, keySource, oldKeys = keysFrom(os.Getenv("OPENERP_ENCRYPTION_KEY"),
+			os.Getenv("OPENERP_ENCRYPTION_KEY_OLD"), os.Getenv("JWT_SECRET"))
 	})
+}
+
+// keysFrom: the current key, its source and the old keys from the three settings
+func keysFrom(key, oldKey, jwtSecret string) ([]byte, string, [][]byte) {
+	derived := func(j string) []byte {
+		sum := sha256.Sum256([]byte("openerp secrets v1\x00" + j))
+		return sum[:]
+	}
+	plainKey := func(k string) []byte {
+		sum := sha256.Sum256([]byte(k))
+		return sum[:]
+	}
+	if key == "" {
+		if jwtSecret == "" {
+			return nil, "", nil
+		}
+		return derived(jwtSecret), "JWT_SECRET", nil
+	}
+	var old [][]byte
+	if oldKey != "" && oldKey != key {
+		old = append(old, plainKey(oldKey))
+	}
+	if jwtSecret != "" {
+		old = append(old, derived(jwtSecret))
+	}
+	return plainKey(key), "OPENERP_ENCRYPTION_KEY", old
+}
+
+// SetKeysForTest sets the keys as the environment would give them and returns a function
+// restoring the ones before.
+func SetKeysForTest(key, oldKey, jwtSecret string) func() {
+	loadKey()
+	k, src, old := keyBytes, keySource, oldKeys
+	keyBytes, keySource, oldKeys = keysFrom(key, oldKey, jwtSecret)
+	return func() { keyBytes, keySource, oldKeys = k, src, old }
 }
 
 // Source names where the key comes from ("OPENERP_ENCRYPTION_KEY", "JWT_SECRET"), or ""
@@ -63,14 +99,13 @@ func Source() string {
 // SetKeyForTest replaces the key (nil: no key) and returns a function restoring it.
 func SetKeyForTest(key string) func() {
 	loadKey()
-	oldKey, oldSource := keyBytes, keySource
-	if key == "" {
-		keyBytes, keySource = nil, ""
-	} else {
+	oldKey, oldSource, oldOld := keyBytes, keySource, oldKeys
+	keyBytes, keySource, oldKeys = nil, "", nil
+	if key != "" {
 		sum := sha256.Sum256([]byte(key))
 		keyBytes, keySource = sum[:], "test"
 	}
-	return func() { keyBytes, keySource = oldKey, oldSource }
+	return func() { keyBytes, keySource, oldKeys = oldKey, oldSource, oldOld }
 }
 
 // IsEncrypted reports whether a stored value is encrypted
@@ -97,24 +132,67 @@ func Encrypt(plain string) (string, error) {
 }
 
 // Decrypt returns the secret of a stored value. A value that is not encrypted (stored
-// before encryption, or without a key) is returned as it is.
+// before encryption, or without a key) is returned as it is. A value encrypted with an old
+// key (see the package comment) is decrypted with it.
 func Decrypt(stored string) (string, error) {
+	plain, _, err := decrypt(stored)
+	return plain, err
+}
+
+// decrypt: the secret, and whether an old key decrypted it
+func decrypt(stored string) (string, bool, error) {
 	if !IsEncrypted(stored) {
-		return stored, nil
+		return stored, false, nil
+	}
+	loadKey()
+	if keyBytes == nil {
+		return "", false, ErrNoKey
+	}
+	sealed, err := base64.RawStdEncoding.DecodeString(strings.TrimPrefix(stored, prefix))
+	if err != nil {
+		return "", false, ErrDecrypt
+	}
+	for i, key := range append([][]byte{keyBytes}, oldKeys...) {
+		gcm, err := gcmOf(key)
+		if err != nil {
+			return "", false, err
+		}
+		if len(sealed) < gcm.NonceSize() {
+			return "", false, ErrDecrypt
+		}
+		plain, err := gcm.Open(nil, sealed[:gcm.NonceSize()], sealed[gcm.NonceSize():], nil)
+		if err == nil {
+			return string(plain), i > 0, nil
+		}
+	}
+	return "", false, ErrDecrypt
+}
+
+// Rewrap returns the stored form a value should have with the current key: a value stored as
+// typed encrypted, one encrypted with an old key encrypted again with the current one.
+// changed is false when the value is already right ("" too). A value no key decrypts is
+// returned with ErrDecrypt.
+func Rewrap(stored string) (string, bool, error) {
+	if stored == "" {
+		return stored, false, nil
+	}
+	if !IsEncrypted(stored) {
+		enc, err := Encrypt(stored)
+		return enc, err == nil, err
+	}
+	plain, old, err := decrypt(stored)
+	if err != nil || !old {
+		return stored, false, err
 	}
 	gcm, err := newGCM()
 	if err != nil {
-		return "", err
+		return stored, false, err
 	}
-	sealed, err := base64.RawStdEncoding.DecodeString(strings.TrimPrefix(stored, prefix))
-	if err != nil || len(sealed) < gcm.NonceSize() {
-		return "", ErrDecrypt
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err := rand.Read(nonce); err != nil {
+		return stored, false, err
 	}
-	plain, err := gcm.Open(nil, sealed[:gcm.NonceSize()], sealed[gcm.NonceSize():], nil)
-	if err != nil {
-		return "", ErrDecrypt
-	}
-	return string(plain), nil
+	return prefix + base64.RawStdEncoding.EncodeToString(gcm.Seal(nonce, nonce, []byte(plain), nil)), true, nil
 }
 
 // EncryptedLength is the stored length of a secret of n bytes
@@ -127,7 +205,11 @@ func newGCM() (cipher.AEAD, error) {
 	if keyBytes == nil {
 		return nil, ErrNoKey
 	}
-	block, err := aes.NewCipher(keyBytes)
+	return gcmOf(keyBytes)
+}
+
+func gcmOf(key []byte) (cipher.AEAD, error) {
+	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
 	}

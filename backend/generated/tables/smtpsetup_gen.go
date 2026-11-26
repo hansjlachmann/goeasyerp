@@ -734,8 +734,10 @@ func (t *SMTPSetup) PlainPassword() (string, error) {
 }
 
 // EncryptStoredSecrets encrypts the values of encrypted fields that are stored as typed
-// (saved before the field was encrypted, or without a key) in the table of the receiver's
-// company. Run at startup; does nothing without a key. Returns how many it encrypted.
+// (saved before the field was encrypted, or without a key) and encrypts those encrypted with
+// an old key again with the current one (secrets.Rewrap), in the table of the receiver's
+// company. Run at startup; does nothing without a key. A value no key decrypts is left as it
+// is (it has to be entered again). Returns how many it changed.
 func (t *SMTPSetup) EncryptStoredSecrets() (int, error) {
 	if secrets.Source() == "" {
 		return 0, nil
@@ -764,20 +766,24 @@ func (t *SMTPSetup) EncryptStoredSecrets() (int, error) {
 				_ = rows.Close()
 				return done, err
 			}
-			if !secrets.IsEncrypted(value) {
-				plain = append(plain, plainRow{key, value})
-			}
+			plain = append(plain, plainRow{key, value})
 		}
 		if err := rows.Close(); err != nil {
 			return done, err
 		}
 		for _, r := range plain {
-			if len(r.value) > 154 {
+			if !secrets.IsEncrypted(r.value) && len(r.value) > 154 {
 				return done, apperrors.FieldTooLong(SMTPSetupTableName, "password", 154)
 			}
-			stored, err := secrets.Encrypt(r.value)
+			stored, changed, err := secrets.Rewrap(r.value)
+			if errors.Is(err, secrets.ErrDecrypt) {
+				continue
+			}
 			if err != nil {
 				return done, err
+			}
+			if !changed {
+				continue
 			}
 			sqlStr := t.convertPlaceholders(fmt.Sprintf(`UPDATE "%s" SET password = ? WHERE primary_key = ?`, tableName), 1+len(r.key))
 			if _, err := t.db.Exec(sqlStr, append([]interface{}{stored}, r.key...)...); err != nil {

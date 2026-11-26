@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { PAGE_HEADERS, proxyHeaders } from './headers';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { PAGE_HEADERS, STATIC_HEADERS, proxyHeaders } from './headers';
 
 describe('proxyHeaders', () => {
 	it('replaces the address headers the client sent by its own address', () => {
@@ -22,6 +24,19 @@ describe('proxyHeaders', () => {
 		const out = proxyHeaders(new Headers({ 'x-forwarded-for': '1.2.3.4' }), '');
 		expect(out.has('x-forwarded-for')).toBe(false);
 	});
+});
+
+describe('STATIC_HEADERS', () => {
+	// the web servers in front add them to the static files, with the pages' values
+	for (const file of ['../nginx.conf', '../docker-compose.local.yml']) {
+		it(`are added by ${file}`, () => {
+			const text = readFileSync(resolve(process.cwd(), file), 'utf8');
+			for (const name of STATIC_HEADERS) {
+				expect(text).toContain(`add_header ${name} "${PAGE_HEADERS[name]}" always;`);
+				expect(text).toContain(`proxy_hide_header ${name};`);
+			}
+		});
+	}
 });
 
 describe('PAGE_HEADERS', () => {

@@ -68,3 +68,50 @@ func TestEncryptedLengthMatchesTablegen(t *testing.T) {
 		t.Errorf("EncryptedLength(154) = %d, want 250 (as tablegen's encryptedLength)", got)
 	}
 }
+
+// An installation that adds OPENERP_ENCRYPTION_KEY keeps its secrets: the key derived from
+// JWT_SECRET still decrypts them, and Rewrap encrypts them with the new key — after which
+// JWT_SECRET can change. OPENERP_ENCRYPTION_KEY_OLD does the same when the key is replaced.
+func TestOldKeysAndRewrap(t *testing.T) {
+	restore := SetKeysForTest("", "", "the jwt secret")
+	fromJWT, err := Encrypt("smtp password")
+	restore()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	restore = SetKeysForTest("new key", "", "the jwt secret")
+	if plain, err := Decrypt(fromJWT); err != nil || plain != "smtp password" {
+		t.Fatalf("Decrypt with the JWT_SECRET key as old key = %q, %v", plain, err)
+	}
+	wrapped, changed, err := Rewrap(fromJWT)
+	if err != nil || !changed || wrapped == fromJWT {
+		t.Fatalf("Rewrap = %q, %v, %v", wrapped, changed, err)
+	}
+	if same, changed, err := Rewrap(wrapped); err != nil || changed || same != wrapped {
+		t.Errorf("Rewrap of a value with the current key = %v, %v", changed, err)
+	}
+	if typed, changed, err := Rewrap("typed"); err != nil || !changed || !IsEncrypted(typed) {
+		t.Errorf("Rewrap of a typed value = %q, %v, %v", typed, changed, err)
+	}
+	restore()
+
+	// JWT_SECRET replaced: the rewrapped value still decrypts, the old one does not
+	restore = SetKeysForTest("new key", "", "another jwt secret")
+	if plain, err := Decrypt(wrapped); err != nil || plain != "smtp password" {
+		t.Errorf("after the JWT_SECRET change: %q, %v", plain, err)
+	}
+	if _, _, err := Rewrap(fromJWT); !errors.Is(err, ErrDecrypt) {
+		t.Errorf("a value of no known key: %v, want ErrDecrypt", err)
+	}
+	restore()
+
+	// the key replaced, the former one as OPENERP_ENCRYPTION_KEY_OLD
+	defer SetKeysForTest("third key", "new key", "")()
+	if plain, err := Decrypt(wrapped); err != nil || plain != "smtp password" {
+		t.Errorf("with the old key in OPENERP_ENCRYPTION_KEY_OLD: %q, %v", plain, err)
+	}
+	if _, changed, err := Rewrap(wrapped); err != nil || !changed {
+		t.Errorf("Rewrap with the old key: %v, %v", changed, err)
+	}
+}

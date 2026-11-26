@@ -60,10 +60,11 @@ func TestSecurityHeaders(t *testing.T) {
 		t.Fatal(err)
 	}
 	for name, want := range map[string]string{
-		"X-Content-Type-Options": "nosniff",
-		"X-Frame-Options":        "DENY",
-		"Referrer-Policy":        "same-origin",
-		"Cache-Control":          "no-store",
+		"X-Content-Type-Options":       "nosniff",
+		"X-Frame-Options":              "DENY",
+		"Referrer-Policy":              "same-origin",
+		"Cache-Control":                "no-store",
+		"Cross-Origin-Resource-Policy": "same-origin",
 	} {
 		if got := resp.Header.Get(name); got != want {
 			t.Errorf("%s = %q, want %q", name, got, want)

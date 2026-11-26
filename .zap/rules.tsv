@@ -1,0 +1,7 @@
+10015	IGNORE	(Re-examine Cache-control Directives: informational; the pages are rendered per request, the API answers are no-store)
+10027	IGNORE	(Suspicious Comments: informational; the HTML comments of app.html explain the first-paint theme script)
+10049	IGNORE	(Storable and Cacheable Content: informational; the hashed static files are cached on purpose, the API answers are no-store)
+10055	IGNORE	(CSP style-src unsafe-inline: Svelte's style attributes and transitions need inline styles; scripts are nonce-only)
+10099	IGNORE	(Source Code Disclosure - SQL: a false alarm on /api/translations, whose texts contain words like SELECT and FROM)
+10109	IGNORE	(Modern Web Application: informational)
+90004	IGNORE	(Cross-Origin-Embedder-Policy: not set — the app needs no cross-origin isolation, and it would block the PDF preview frames; CORP and COOP are set, checked by the unit tests of the backend and frontend headers)

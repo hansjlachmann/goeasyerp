@@ -7,10 +7,11 @@
 #
 # What it does, in the folder (default ~/goeasyerp, or GOEASYERP_DIR / the first argument):
 #   1. checks that Docker runs Linux containers and has "docker compose";
-#   2. keeps the settings in .env — a new installation gets a random JWT_SECRET and database
-#      password; an older installation's docker-compose.yml gives its JWT_SECRET, port and ORIGIN
-#      (the secret also encrypts stored passwords, so it must never change), and its database
-#      gets a password of its own instead of the public "openerp" (after the backup);
+#   2. keeps the settings in .env — a new installation gets a random JWT_SECRET, encryption key
+#      and database password; an older installation's docker-compose.yml gives its JWT_SECRET,
+#      port and ORIGIN, it gets an encryption key of its own (the server encrypts the stored
+#      passwords with it at the next start, so JWT_SECRET can be changed afterwards), and its
+#      database gets a password of its own instead of the public "openerp" (after the backup);
 #   3. backs the database up into backups/ when GoEasyERP already runs;
 #   4. downloads the latest docker-compose.yml (the old one stays as docker-compose.yml.bak);
 #   5. docker compose pull, docker compose up -d, and waits until GoEasyERP answers.
@@ -115,6 +116,14 @@ if [ -z "$(envValue POSTGRES_PASSWORD)" ]; then
 	fi
 fi
 
+# The key of the passwords stored encrypted (SMTP Setup), separate from JWT_SECRET (S40). An
+# installation made before had them encrypted with a key from JWT_SECRET: the server still reads
+# those and encrypts them with this key at its next start.
+if [ -z "$(envValue OPENERP_ENCRYPTION_KEY)" ]; then
+	add="${add}OPENERP_ENCRYPTION_KEY='$(od -An -tx1 -N32 /dev/urandom | tr -d ' \n')'
+"
+fi
+
 # The setup token: the first user (the administrator) is made on the login page with it (S37)
 if [ -z "$(envValue SETUP_TOKEN)" ]; then
 	add="${add}SETUP_TOKEN='$(od -An -tx1 -N16 /dev/urandom | tr -d ' \n')'
@@ -148,7 +157,9 @@ if [ -n "$newEnv" ]; then
 	umask 077
 	cat >.env <<EOF
 # GoEasyERP settings, read by docker compose (docker-compose.yml in this folder).
-# Keep JWT_SECRET: it also encrypts stored passwords (SMTP Setup); a new one makes them unreadable.
+# JWT_SECRET signs the sessions: a new one logs everyone out.
+# Keep OPENERP_ENCRYPTION_KEY: it encrypts stored passwords (SMTP Setup); a new one makes them
+# unreadable (unless the old one is put into OPENERP_ENCRYPTION_KEY_OLD for the next start).
 # POSTGRES_PASSWORD is the database's: to change it, change it in the database first.
 # SETUP_TOKEN: asked on the login page when the first user (the administrator) is made.
 ${add}# The port GoEasyERP is opened on, and from where: 127.0.0.1 this computer only, 0.0.0.0 the network too
