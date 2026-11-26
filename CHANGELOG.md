@@ -7,6 +7,7 @@
 
 * apps are checked for known vulnerabilities in the modules they bring in, and Installed Apps shows an app's audit report ([1f2b330](https://github.com/hansjlachmann/goeasyerp/commit/1f2b330debf23c7d0fc58260dece4740e4baeace))
 * every extension app is audited before it is built into the server ([68aad83](https://github.com/hansjlachmann/goeasyerp/commit/68aad83f91122369af755b5174f1345f173e12e4))
+* the Main Menu Text lines can be copied and pasted, e.g. to another company ([6776e42](https://github.com/hansjlachmann/goeasyerp/commit/6776e4298ff4fc3bba92902596679f31a0e39cc6))
 * request limits count per user, IPv6 addresses by their /64, and only failed logins ([746c384](https://github.com/hansjlachmann/goeasyerp/commit/746c3845b95bb59e5499439e05b4f94bb1cc660b))
 * secrets can be rotated, TLS is tightened and the running app is scanned every night ([cf8b424](https://github.com/hansjlachmann/goeasyerp/commit/cf8b42458355e3fc9a97920927b12c779ee20dae))
 
