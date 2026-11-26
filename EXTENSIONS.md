@@ -462,10 +462,21 @@ Log in as for the pages (`POST /api/auth/login`, the session cookie); a SUPER us
 | `GET /api/dev/schemas`, `GET /api/dev/schemas/<name>` | The JSON schemas of the YAML files (below); no login. |
 
 A publish is: package → `POST /api/dev/apps` → read the build until `done` (a failed build's log
-says why) → wait until `/api/version` names the build → open the browser. On a workstation the
-first build of a new container takes about two minutes (the build cache is empty); after that a
-change of the app's code is built in seconds and live in about 15 seconds. While a development
-server is set up the server looks for a new build every 2 seconds (otherwise 30).
+says why) → wait until `/api/version` names the build → open the browser. While a development
+server is set up the server looks for a new build every 2 seconds (otherwise 30). Measured on a
+workstation with 4 CPUs:
+
+| The app's change | Built in | Why |
+|---|---|---|
+| The first publish in a new container | about 2 minutes | the build cache is empty |
+| Its Go code, pages, menus or texts | about 6 s (live in about 15 s) | only the app's own packages compile |
+| Its tables (a field, a new table) | about 40 s | the generated table code compiles again |
+
+The development container compiles with Go's own settings (`APP_BUILD_LOW_MEMORY=false` in its
+`.env`, the default there): a table change compiles in 35 s with a peak of 3.1 GB. An
+installation's builder keeps the settings of a small server (one compile thread for the table
+code, `GOGC=25`): 62 s and 2.2 GB for the same change — set `APP_BUILD_LOW_MEMORY=true` in the
+development container's `.env` on a computer with little memory.
 
 Production never takes apps this way: a released version is installed with Install App or Upload
 App (section 10).

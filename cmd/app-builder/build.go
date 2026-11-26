@@ -303,11 +303,20 @@ func (b *builder) build(ctx context.Context, no int, list fapps.BuildList, log *
 // tablesPackage: the generated table code, the one package that needs much memory to compile
 const tablesPackage = "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 
+// EnvLowMemory: "false" builds with Go's defaults — a machine with memory to spare, e.g. a
+// developer's workstation running the development container (docker-compose.dev.yml), where a
+// change of the app's tables compiles the table code again on every F5
+const EnvLowMemory = "APP_BUILD_LOW_MEMORY"
+
 // lowMemoryBuild: the go build flags and environment that keep the compile of the generated
 // table code within a small server's memory (one package of some 40 MB source: about 8 GB with
 // Go's defaults, about 4.6 GB with one compile thread and GOGC=25). What the operator sets in
-// the builder's environment wins: GOFLAGS with -gcflags or -p, and GOGC.
+// the builder's environment wins: GOFLAGS with -gcflags or -p, and GOGC; APP_BUILD_LOW_MEMORY=false
+// leaves all three to Go.
 func lowMemoryBuild(getenv func(string) string) (args, env []string) {
+	if strings.EqualFold(strings.TrimSpace(getenv(EnvLowMemory)), "false") {
+		return nil, nil
+	}
 	goflags := getenv("GOFLAGS")
 	if !strings.Contains(goflags, "-gcflags") {
 		args = append(args, "-gcflags="+tablesPackage+"=-c=1")

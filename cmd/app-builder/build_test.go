@@ -254,6 +254,14 @@ func TestLowMemoryBuild(t *testing.T) {
 	if len(args) != 0 || len(env) != 0 {
 		t.Errorf("operator settings: %v %v", args, env)
 	}
+	// a workstation (the development container): Go's defaults
+	args, env = lowMemoryBuild(envOf(map[string]string{EnvLowMemory: "false"}))
+	if len(args) != 0 || len(env) != 0 {
+		t.Errorf("APP_BUILD_LOW_MEMORY=false: %v %v", args, env)
+	}
+	if args, _ := lowMemoryBuild(envOf(map[string]string{EnvLowMemory: "true"})); len(args) != 2 {
+		t.Errorf("APP_BUILD_LOW_MEMORY=true: %v", args)
+	}
 	if _, err := os.Stat(filepath.Join("..", "..", "backend", "generated", "tables")); err != nil {
 		t.Fatal(err)
 	}

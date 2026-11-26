@@ -25,3 +25,9 @@ services:
       GOEASYERP_DEV_ENDPOINT: "true"
       # a demo company to develop against (empty: none; LARGE, LARGE VAT …)
       DEMO_DATA: ${DEMO_DATA-SMALL}
+
+  builder:
+    environment:
+      # build with Go's defaults: a workstation has memory to spare, and a change of the app's
+      # tables compiles the table code again on every publish (true: the small server's settings)
+      APP_BUILD_LOW_MEMORY: ${APP_BUILD_LOW_MEMORY:-false}
