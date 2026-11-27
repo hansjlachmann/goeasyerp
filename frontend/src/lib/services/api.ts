@@ -6,7 +6,6 @@ import type {
 	ListOptions,
 	TableRecord,
 	LookupData,
-	CodeunitResult,
 	ValidateFieldResult,
 	TableFilter,
 	FixedFilter
@@ -457,16 +456,6 @@ export const api = {
 			})
 		});
 		return handleApiResponse<T>(response, `init ${tableName}`);
-	},
-
-	// Run codeunit by ID with record data
-	async runCodeunit(codeunitId: number, record: Record<string, any>): Promise<CodeunitResult> {
-		const response = await fetch(`${API_BASE}/codeunits/run`, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ codeunit_id: codeunitId, record })
-		});
-		return handleApiResponse<CodeunitResult>(response, `run codeunit ${codeunitId}`);
 	},
 
 	// Authentication

@@ -146,7 +146,6 @@ func (s *Server) Setup() {
 	themesHandler := handlers.NewThemesHandler(s.db, s.dbType)
 	authHandler := handlers.NewAuthHandlerFull(s.db, s.dbType, s.companyInit, s.jwtConfig, s.sessionCache)
 	handlers.InitSetupToken(s.db) // S37: the first user needs it
-	codeunitsHandler := handlers.NewCodeunitsHandlerWithDBType(s.db, s.dbType)
 	tablesHandler.OnCompanyChanged(authHandler.CompanyChanged) // renamed/deleted company: sessions follow
 
 	// Translation routes
@@ -243,7 +242,6 @@ func (s *Server) Setup() {
 	api.Put("/appearance", themesHandler.SaveAppearance)
 
 	// Codeunit routes (generic handler)
-	api.Post("/codeunits/run", codeunitsHandler.RunCodeunit)
 
 	// Jobs routes (codeunits with progress)
 	jobsHandler := handlers.NewJobsHandlerWithDBType(s.db, s.dbType)

@@ -116,7 +116,7 @@ func TestSecurityAlertParameter(t *testing.T) {
 	if err != nil || limits != (securityAlertLimits{refusals: 5, failedLogins: 10, keepDays: 0}) {
 		t.Errorf("limits %+v, %v", limits, err)
 	}
-	for _, bad := range []string{"REFUSALS", "REFUSALS=x", "OTHER=1", "KEEP_DAYS=-1"} {
+	for _, bad := range []string{"REFUSALS", "REFUSALS=x", "OTHER=1", "KEEP_DAYS=-1", "KEEP_DAYS=1", "KEEP_DAYS=29"} {
 		if _, err := parseSecurityAlertLimits(bad); err == nil {
 			t.Errorf("%q accepted", bad)
 		}

@@ -56,13 +56,13 @@ func TestCodeunitRunsOnListSelection(t *testing.T) {
 		return selectionCodeunit{}
 	})
 
-	h := NewCodeunitsHandlerWithDBType(db, database.DBTypeSQLite)
+	h := NewJobsHandlerWithDBType(db, database.DBTypeSQLite)
 	app := fiber.New()
 	app.Use(func(c *fiber.Ctx) error {
 		c.Locals("session", &session.Session{IsSuper: true, HasRoles: true, Company: "TEST", Language: "en-US"})
 		return c.Next()
 	})
-	app.Post("/api/codeunits/run", h.RunCodeunit)
+	app.Post("/api/jobs/start", h.StartJob)
 
 	run := func(url, body string) string {
 		t.Helper()
@@ -73,14 +73,69 @@ func TestCodeunitRunsOnListSelection(t *testing.T) {
 		}
 		return fmt.Sprint(data["message"])
 	}
-	if got := run("/api/codeunits/run", `{"codeunit_id":99990,"record":{"no":"C02"}}`); got != "C02" {
+	if got := run("/api/jobs/start", `{"codeunit_id":99990,"record":{"no":"C02"}}`); got != "C02" {
 		t.Errorf("no selection: the current record, got %q", got)
 	}
-	if got := run("/api/codeunits/run", `{"codeunit_id":99990,"record":{"no":"C02"},"selection":{"keys":["C01","C03","C04"]}}`); got != "C01,C03,C04" {
+	if got := run("/api/jobs/start", `{"codeunit_id":99990,"record":{"no":"C02"},"selection":{"keys":["C01","C03","C04"]}}`); got != "C01,C03,C04" {
 		t.Errorf("selected keys: %q", got)
 	}
 	filters := url.QueryEscape(`[{"field":"name","expression":"*r*"}]`)
-	if got := run("/api/codeunits/run?filters="+filters, `{"codeunit_id":99990,"record":{"no":"C01"},"selection":{"all":true}}`); got != "C02,C03,C04" {
+	if got := run("/api/jobs/start?filters="+filters, `{"codeunit_id":99990,"record":{"no":"C01"},"selection":{"all":true}}`); got != "C02,C03,C04" {
 		t.Errorf("all of a filtered list: %q", got)
+	}
+}
+
+// recordCodeunit returns the No. and Name of the record it runs on
+type recordCodeunit struct{}
+
+func (recordCodeunit) ID() int             { return 99992 }
+func (recordCodeunit) Name() string        { return "record-test" }
+func (recordCodeunit) SourceTable() string { return "Customer" }
+func (recordCodeunit) UsesProgress() bool  { return false }
+func (recordCodeunit) Run(record interface{}) (fcodeunits.Result, error) {
+	rec := record.(*gtables.Customer)
+	return fcodeunits.Result{Success: true, Message: string(rec.No) + "|" + rec.Name.String()}, nil
+}
+
+// A routine started from a page runs on the stored record, never on the values the browser
+// sends; a key that is not stored gives a blank record with only the key
+func TestJobRunsOnStoredRecord(t *testing.T) {
+	db, err := sql.Open("sqlite3", "file:"+t.Name()+"?mode=memory&cache=shared")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = db.Close() })
+	if err := (&gtables.Customer{}).CreateTableWithDBType(db, "TEST", database.DBTypeSQLite); err != nil {
+		t.Fatal(err)
+	}
+	cust := &gtables.Customer{}
+	cust.InitWithDBType(db, "TEST", database.DBTypeSQLite)
+	cust.No, cust.Name = types.NewCode("C01"), types.NewText("Stored Name")
+	if !cust.Insert(false) {
+		t.Fatal("insert")
+	}
+	codeunits.Register(99992, "record-test", func(database.Executor, string, database.DBType) fcodeunits.Codeunit {
+		return recordCodeunit{}
+	})
+	app := fiber.New()
+	app.Use(func(c *fiber.Ctx) error {
+		c.Locals("session", &session.Session{IsSuper: true, HasRoles: true, Company: "TEST", Language: "en-US"})
+		return c.Next()
+	})
+	app.Post("/api/jobs/start", NewJobsHandlerWithDBType(db, database.DBTypeSQLite).StartJob)
+	run := func(body string) string {
+		t.Helper()
+		out := postJSON(t, app, "/api/jobs/start", body)
+		data, _ := out["data"].(map[string]interface{})
+		if data == nil {
+			t.Fatalf("%s: %v", body, out)
+		}
+		return fmt.Sprint(data["message"])
+	}
+	if got := run(`{"codeunit_id":99992,"record":{"no":"C01","name":"Sent Name"}}`); got != "C01|Stored Name" {
+		t.Errorf("stored record: got %q", got)
+	}
+	if got := run(`{"codeunit_id":99992,"record":{"no":"C99","name":"Sent Name"}}`); got != "C99|" {
+		t.Errorf("a key not stored: got %q", got)
 	}
 }

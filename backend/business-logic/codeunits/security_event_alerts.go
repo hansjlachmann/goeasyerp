@@ -28,9 +28,13 @@ import (
 // still reports them).
 //
 // Parameter (optional, "name=value" separated by ";" or spaces): REFUSALS=20 (refused requests
-// of one user), FAILED_LOGINS=50 (failed logins in all), KEEP_DAYS=365 (0: keep every event).
+// of one user), FAILED_LOGINS=50 (failed logins in all), KEEP_DAYS=365 (0: keep every event;
+// otherwise at least securityKeepDaysMin, so a job cannot wipe the recent events).
 const SecurityEventAlertsID = 909
 const SecurityEventAlertsName = "security-event-alerts"
+
+// securityKeepDaysMin: the fewest days KEEP_DAYS keeps the events (0 keeps them all)
+const securityKeepDaysMin = 30
 
 // securityAlertMaxRows: the rows shown per section of the findings
 const securityAlertMaxRows = 500
@@ -78,6 +82,9 @@ func parseSecurityAlertLimits(parameter string) (securityAlertLimits, error) {
 		case "FAILED_LOGINS":
 			limits.failedLogins = number
 		case "KEEP_DAYS":
+			if number > 0 && number < securityKeepDaysMin {
+				return limits, apperrors.SecurityAlertKeepDays(number, securityKeepDaysMin)
+			}
 			limits.keepDays = number
 		default:
 			return limits, apperrors.SecurityAlertParameter(field)

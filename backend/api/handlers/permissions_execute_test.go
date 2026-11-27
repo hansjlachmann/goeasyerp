@@ -122,17 +122,12 @@ func TestRunEndpointsCheckExecute(t *testing.T) {
 			c.Locals("session", sess)
 			return c.Next()
 		})
-		app.Post("/api/codeunits/run", NewCodeunitsHandlerWithDBType(db, database.DBTypeSQLite).RunCodeunit)
 		app.Post("/api/jobs/start", NewJobsHandlerWithDBType(db, database.DBTypeSQLite).StartJob)
 		return app
 	}
 
 	denied := newApp(readerSession(nil))
-	out := postJSON(t, denied, "/api/codeunits/run", `{"codeunit_id":99991}`)
-	if out["success"] != false || !strings.Contains(fmt.Sprint(out["error"]), "permission to run routine 99991") {
-		t.Errorf("codeunit without Execute: %v", out)
-	}
-	out = postJSON(t, denied, "/api/jobs/start", `{"codeunit_id":99991}`)
+	out := postJSON(t, denied, "/api/jobs/start", `{"codeunit_id":99991}`)
 	if out["success"] != false || !strings.Contains(fmt.Sprint(out["error"]), "permission to run routine 99991") {
 		t.Errorf("job start without Execute: %v", out)
 	}
@@ -142,7 +137,7 @@ func TestRunEndpointsCheckExecute(t *testing.T) {
 	}
 
 	allowed := newApp(readerSession(map[string]session.TablePermission{"CODEUNIT 99991": {Execute: true}}))
-	out = postJSON(t, allowed, "/api/codeunits/run", `{"codeunit_id":99991}`)
+	out = postJSON(t, allowed, "/api/jobs/start", `{"codeunit_id":99991}`)
 	data, _ := out["data"].(map[string]interface{})
 	if out["success"] != true || data["message"] != "ran true" {
 		t.Errorf("codeunit with Execute: %v", out)
@@ -158,7 +153,7 @@ func TestRunEndpointsCheckExecute(t *testing.T) {
 	})
 	extensions.SetDisabled(app)
 	t.Cleanup(func() { extensions.SetDisabled(); extensions.SetObjectApps(nil) })
-	for _, target := range []string{"/api/codeunits/run", "/api/jobs/start"} {
+	for _, target := range []string{"/api/jobs/start"} {
 		out = postJSON(t, allowed, target, `{"codeunit_id":99991}`)
 		if out["success"] != false || !strings.Contains(fmt.Sprint(out["error"]), "disabled") {
 			t.Errorf("%s: a disabled app's routine: %v", target, out)

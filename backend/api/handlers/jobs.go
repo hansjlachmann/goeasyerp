@@ -119,25 +119,31 @@ func (h *JobsHandler) StartJob(c *fiber.Ctx) error {
 			return c.Status(500).JSON(apitypes.NewErrorResponse("Source table not found: " + tableName))
 		}
 
-		// Create table instance and populate from request
-		table = tableFactory()
-		table.InitWithDBType(h.db, company, h.dbType)
-		table.FromMap(req.Record)
-		// A function works on the stored record (not on what the browser sent) — an AssistEdit
-		// function on the record as the page has it (also a new one), with the stored values as
-		// its old values
+		newTable := func() ftables.Table {
+			t := tableFactory()
+			t.InitWithDBType(h.db, company, h.dbType)
+			return t
+		}
+		// The object works on the stored record, never on what the browser sent: the request
+		// only names the record by its key (a Job Queue entry's Parameter, a journal line's
+		// amounts are read from the database). A page on a temporary source table fills its
+		// rows first, so the key finds the row there.
+		table = newTable()
+		err := fillTemporaryFunctionPage(h.db, company, h.dbType, req.PageID, tableName, req.PageParams, table)
+		if err != nil {
+			return c.Status(400).JSON(apitypes.NewErrorResponse(errorMessage(err, language)))
+		}
+		sent := tableFactory()
+		sent.FromMap(req.Record)
+		key, id := fullPrimaryKey(sent)
 		if req.Function != "" {
+			// a function needs its record — an AssistEdit function works on the record as the
+			// page has it (also a new one), with the stored values as its old values
 			fn, _ := functions.Lookup(req.Function)
-			err := fillTemporaryFunctionPage(h.db, company, h.dbType, req.PageID, tableName, req.PageParams, table)
-			if err != nil {
-				return c.Status(400).JSON(apitypes.NewErrorResponse(errorMessage(err, language)))
-			}
 			table.FromMap(req.Record) // the row the function runs on (the fill moved the record)
-			key, id := fullPrimaryKey(table)
 			switch {
 			case fn != nil && fn.AssistEdit:
-				stored := tableFactory()
-				stored.InitWithDBType(h.db, company, h.dbType)
+				stored := newTable()
 				if stored.Get(key) {
 					stored.UpdateFromMap(req.Record)
 					table = stored
@@ -145,11 +151,11 @@ func (h *JobsHandler) StartJob(c *fiber.Ctx) error {
 			case !table.Get(key):
 				return c.Status(404).JSON(apitypes.NewErrorResponse(apperrors.RecordNotFound(tableName, id).Message(language)))
 			}
-		}
-		newTable := func() ftables.Table {
-			t := tableFactory()
-			t.InitWithDBType(h.db, company, h.dbType)
-			return t
+		} else if !table.Get(key) {
+			// a codeunit or report on a record that is not stored (a list without rows, a key
+			// from the list's filters): a blank record with only the key fields
+			table = newTable()
+			table.FromMap(primaryKeyValues(table, req.Record))
 		}
 		// The list's selection and filters are on the page's source table: an object that works
 		// on another table (Calc. and Post Tax Settlement on the Tax Statement) starts without them
@@ -219,6 +225,19 @@ func (h *JobsHandler) StartJob(c *fiber.Ctx) error {
 	return c.JSON(apitypes.NewSuccessResponse(map[string]interface{}{
 		"job_id": jobID,
 	}))
+}
+
+// primaryKeyValues: the primary key fields of a record the browser sent (the other fields
+// left out)
+func primaryKeyValues(table ftables.Table, record map[string]interface{}) map[string]interface{} {
+	key := map[string]interface{}{}
+	for _, f := range table.GetFields() {
+		value, ok := record[f.Name]
+		if f.PrimaryKey && ok {
+			key[f.Name] = value
+		}
+	}
+	return key
 }
 
 // syncWait: how long a run without progress may take to answer in the request itself

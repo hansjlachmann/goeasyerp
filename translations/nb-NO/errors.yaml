@@ -50,6 +50,7 @@ errors:
   ERR_GL_CHECK_FAILED: "Finanskontrollen fant feil: bokføringsdatoer som ikke går i balanse: %1, transaksjoner som ikke går i balanse: %2, hull i løpenumrene: %3, journalfeil: %4."
   ERR_SECURITY_EVENTS_FOUND: "Sikkerhetshendelsene trenger oppmerksomhet: hendelser å se på: %1, brukere med mange avviste forespørsler: %2, mislykkede pålogginger: %3."
   ERR_SECURITY_ALERT_PARAMETER: "Parameterdelen \"%1\" forstås ikke. Bruk REFUSALS=20, FAILED_LOGINS=50 eller KEEP_DAYS=365."
+  ERR_SECURITY_ALERT_KEEP_DAYS: "KEEP_DAYS=%1 ville slette nye sikkerhetshendelser: bruk 0 (behold alle hendelser) eller minst %2 dager."
   ERR_CHANGE_LOG_SUPER_ONLY: "Bare en bruker med rollen SUPER kan endre hva endringsloggen registrerer."
   ERR_CHANGE_LOG_FIELD_UNKNOWN: "Tabell %2 har ikke felt %1."
   ERR_SMTP_SETUP_SUPER_ONLY: "Bare en bruker med rollen SUPER kan endre SMTP-oppsettet."

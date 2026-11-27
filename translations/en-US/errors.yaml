@@ -50,6 +50,7 @@ errors:
   ERR_GL_CHECK_FAILED: "The G/L check found problems: posting dates that do not balance: %1, transactions that do not balance: %2, gaps in the entry numbers: %3, register problems: %4."
   ERR_SECURITY_EVENTS_FOUND: "The security events need your attention: events to look at: %1, users with many refused requests: %2, failed logins: %3."
   ERR_SECURITY_ALERT_PARAMETER: "The parameter part \"%1\" is not understood. Use REFUSALS=20, FAILED_LOGINS=50 or KEEP_DAYS=365."
+  ERR_SECURITY_ALERT_KEEP_DAYS: "KEEP_DAYS=%1 would delete recent security events: use 0 (keep every event) or at least %2 days."
   ERR_CHANGE_LOG_SUPER_ONLY: "Only a user with the role SUPER may change what the change log records."
   ERR_CHANGE_LOG_FIELD_UNKNOWN: "Table %2 has no field %1."
   ERR_SMTP_SETUP_SUPER_ONLY: "Only a user with the role SUPER may change the SMTP Setup."

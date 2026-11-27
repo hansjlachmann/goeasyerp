@@ -65,6 +65,7 @@ const (
 	ErrGLCheckFailed          ErrorCode = "ERR_GL_CHECK_FAILED"
 	ErrSecurityEventsFound    ErrorCode = "ERR_SECURITY_EVENTS_FOUND"
 	ErrSecurityAlertParameter ErrorCode = "ERR_SECURITY_ALERT_PARAMETER"
+	ErrSecurityAlertKeepDays  ErrorCode = "ERR_SECURITY_ALERT_KEEP_DAYS"
 	ErrPreviewExpired         ErrorCode = "ERR_PREVIEW_EXPIRED"
 	ErrFieldNotEditable       ErrorCode = "ERR_FIELD_NOT_EDITABLE"
 	ErrMustBeRoundedTo        ErrorCode = "ERR_MUST_BE_ROUNDED_TO"
@@ -708,6 +709,11 @@ func GLCheckFailed(dates, transactions, gaps, registers string) *AppError {
 // reported one by one, users with many refused requests, failed logins (0: not too many)
 func SecurityEventsFound(events, users, failedLogins string) *AppError {
 	return &AppError{Code: ErrSecurityEventsFound, Params: []string{events, users, failedLogins}}
+}
+
+// SecurityAlertKeepDays: routine 909 keeps the security events at least minimum days (0: all)
+func SecurityAlertKeepDays(days, minimum int) *AppError {
+	return &AppError{Code: ErrSecurityAlertKeepDays, Params: []string{fmt.Sprint(days), fmt.Sprint(minimum)}}
 }
 
 // SecurityAlertParameter: a part of routine 909's parameter it does not understand
