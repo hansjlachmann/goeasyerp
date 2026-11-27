@@ -33,23 +33,9 @@
 		// Load translations (login page may load before layout's onMount)
 		await loadTranslations();
 
-		// Load companies
-		try {
-			const response = await api.listCompanies();
-			if (response.success && response.data) {
-				companies = response.data;
-				// Set default company if available
-				if (companies.length > 0) {
-					company = companies[0].name;
-				}
-			}
-		} catch (err: any) {
-			console.error('Failed to load companies:', err);
-			// the server is being updated (its extension apps are built): its message says so
-			if (err?.status === 503 && err.message) {
-				error = err.message;
-			}
-		}
+		// The companies come with the login (after the password), never before it; the last
+		// company logged in to is offered again
+		company = lastCompany();
 
 		// Check if we're already logged in
 		try {
@@ -87,6 +73,31 @@
 		}
 	});
 
+	// Another user ID or password: the companies listed were the previous user's
+	$effect(() => {
+		void userID;
+		void password;
+		companies = [];
+	});
+
+	// The company this browser logged in to last (sent with the next login; kept per browser)
+	const LAST_COMPANY_KEY = 'login-company';
+	function lastCompany(): string {
+		try {
+			return localStorage.getItem(LAST_COMPANY_KEY) ?? '';
+		} catch {
+			return '';
+		}
+	}
+	function rememberCompany(name: string) {
+		try {
+			if (name) localStorage.setItem(LAST_COMPANY_KEY, name);
+			else localStorage.removeItem(LAST_COMPANY_KEY);
+		} catch {
+			// no storage (private window): the user picks the company again
+		}
+	}
+
 	async function handleLogin() {
 		error = '';
 		if (!userID || !password) {
@@ -94,17 +105,28 @@
 			return;
 		}
 
-		if (!company) {
-			error = t(ERR.LOGIN_NO_COMPANY);
-			return;
-		}
-
 		loading = true;
 		try {
-			const response = await api.login(userID, password, company);
+			await login(company);
+		} finally {
+			loading = false;
+		}
+	}
+
+	// Logs in to company — blank: the server picks the user's only company, or lists the user's
+	// companies to pick from (the list appears, and the next Sign In uses the one picked)
+	async function login(companyName: string) {
+		try {
+			const response = await api.login(userID, password, companyName);
+			if (response.success && response.data?.choose_company) {
+				companies = response.data.companies ?? [];
+				company = companies.some((c) => c.name === lastCompany()) ? lastCompany() : (companies[0]?.name ?? '');
+				return;
+			}
 			if (response.success) {
 				// this tab works in the company logged in to (other tabs keep theirs)
-				setTabCompany(company);
+				setTabCompany(response.data.company);
+				rememberCompany(response.data.company);
 				// Store user info in store (also saves to localStorage)
 				currentUser.setUser(response.data);
 				// Re-initialize session to get updated language from backend
@@ -121,21 +143,26 @@
 				}
 			}
 		} catch (err: any) {
+			// the remembered company is gone or not this user's: ask for the user's companies
+			if ((err.status === 400 || err.status === 403) && companyName && companies.length === 0) {
+				rememberCompany('');
+				company = '';
+				await login('');
+				return;
+			}
 			if (err.status === 401) {
 				error = t(ERR.INVALID_CREDENTIALS);
-			} else if (err.status === 403) {
+			} else if (err.status === 403 && companyName) {
 				// Valid user, but no User Member entry for this company
-				const selected = companies.find((c) => c.name === company);
-				error = t(ERR.LOGIN_NO_COMPANY_ACCESS, userID.toUpperCase(), selected ? companyLabel(selected) : company);
-			} else if (err.status === 503 && err.message) {
-				// the server is being updated (its extension apps are built)
+				const selected = companies.find((c) => c.name === companyName);
+				error = t(ERR.LOGIN_NO_COMPANY_ACCESS, userID.toUpperCase(), selected ? companyLabel(selected) : companyName);
+			} else if ((err.status === 403 || err.status === 503) && err.message) {
+				// no company at all, or the server is being updated (its extension apps are built)
 				error = err.message;
 			} else {
 				error = t(ERR.GENERIC_RETRY);
 			}
 			toast.error(error);
-		} finally {
-			loading = false;
 		}
 	}
 
@@ -385,25 +412,27 @@
 				/>
 			</div>
 
-			<div class="form-group">
-				<label for="company">{t(LOGIN.COMPANY)}</label>
-				<div class="company-row">
-					<select
-						id="company"
-						bind:value={company}
-						disabled={loading || companies.length === 0}
-						class="company-select"
-					>
-						{#if companies.length === 0}
-							<option value="">{t(LOGIN.LOADING_COMPANIES)}</option>
-						{:else}
+			{#if companies.length > 0}
+				<!-- the user's companies, listed after the password -->
+				<div class="form-group">
+					<label for="company">{t(LOGIN.COMPANY)}</label>
+					<div class="company-row">
+						<!-- svelte-ignore a11y_autofocus -->
+						<select
+							id="company"
+							bind:value={company}
+							disabled={loading}
+							class="company-select"
+							onkeypress={handleKeyPress}
+							autofocus
+						>
 							{#each companies as c (c.name)}
 								<option value={c.name}>{companyLabel(c)}</option>
 							{/each}
-						{/if}
-					</select>
+						</select>
+					</div>
 				</div>
-			</div>
+			{/if}
 
 			<button class="login-button" onclick={handleLogin} disabled={loading}>
 				{loading ? t(LOGIN.SIGNING_IN) : t(LOGIN.SIGN_IN)}

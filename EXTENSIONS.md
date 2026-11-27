@@ -451,7 +451,12 @@ a trial installation's). Make the first user with the setup token (the login pag
 company with customers is a demo company, and at most 10 users; otherwise the server logs why and
 the routes do not exist. It answers this computer only (the container's network included);
 `GOEASYERP_DEV_ENDPOINT_REMOTE=true` lets other computers publish too (a shared test server).
-Log in as for the pages (`POST /api/auth/login`, the session cookie); a SUPER user publishes.
+"This computer" is judged by the caller's address: loopback and private network addresses count,
+because the developer's `localhost` reaches the container through Docker's network. So keep the
+port published on `127.0.0.1` only, as the development compose file does — published on all
+interfaces, other computers on the same network could reach the endpoint.
+Log in as for the pages (`POST /api/auth/login`, the session cookie); a SUPER user publishes and
+reads builds.
 
 | Request | Does |
 |---|---|

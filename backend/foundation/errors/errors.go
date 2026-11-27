@@ -42,6 +42,8 @@ const (
 	ErrDeleteCountChanged     ErrorCode = "ERR_DELETE_COUNT_CHANGED"
 	ErrCompanyDeleteSuper     ErrorCode = "ERR_COMPANY_DELETE_SUPER_ONLY"
 	ErrCompanySuperOnly       ErrorCode = "ERR_COMPANY_SUPER_ONLY"
+	ErrOwnUserRowsOnly        ErrorCode = "ERR_OWN_USER_ROWS_ONLY"
+	ErrNoCompanyAccess        ErrorCode = "ERR_NO_COMPANY_ACCESS"
 	ErrAppAuditSuperOnly      ErrorCode = "ERR_APP_AUDIT_SUPER_ONLY"
 	ErrSMTPSetupSuperOnly     ErrorCode = "ERR_SMTP_SETUP_SUPER_ONLY"
 	ErrSMTPServerNotAllowed   ErrorCode = "ERR_SMTP_SERVER_NOT_ALLOWED"
@@ -611,6 +613,16 @@ func ChangeLogFieldUnknown(tableNo, fieldNo string) *AppError {
 // CompanyDeleteSuperOnly: only a SUPER user deletes a company (with all its data)
 func CompanyDeleteSuperOnly(name string) *AppError {
 	return &AppError{Code: ErrCompanyDeleteSuper, Params: []string{name}}
+}
+
+// NoCompanyAccess: the user has roles in no existing company
+func NoCompanyAccess(userID string) *AppError {
+	return &AppError{Code: ErrNoCompanyAccess, Params: []string{userID}}
+}
+
+// OwnUserRowsOnly: a per-user table's rows of another user are changed by a SUPER user only
+func OwnUserRowsOnly(table, userID string) *AppError {
+	return &AppError{Code: ErrOwnUserRowsOnly, Params: []string{table, userID}}
 }
 
 // CompanySuperOnly: only a SUPER user creates or renames a company

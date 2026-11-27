@@ -93,3 +93,47 @@ func TestInstalledAppSuperOnly(t *testing.T) {
 		t.Errorf("a SUPER user: %v", app.TriggerError())
 	}
 }
+
+// A user's preferences and appearance are changed by that user or a SUPER user only
+func TestOwnUserRowsOnly(t *testing.T) {
+	db := newTestDB(t)
+	var prefs gtables.UserPreferences
+	if err := prefs.CreateTableWithDBType(db, "", database.DBTypeSQLite); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(fcodeunits.ClearCurrentContext)
+	fcodeunits.SetCurrentAccess(&session.Session{UserID: "CLERK", HasRoles: true})
+
+	own := gtables.NewUserPreferences(ftables.DBSource(db, "", database.DBTypeSQLite))
+	own.User_id, own.Page_id = types.NewCode("CLERK"), 22
+	own.Preference_type, own.Preference_name = types.NewCode("LAYOUT"), types.NewCode("DEFAULT")
+	if !own.Insert(true) {
+		t.Fatalf("own preferences: %v", own.TriggerError())
+	}
+	other := gtables.NewUserPreferences(ftables.DBSource(db, "", database.DBTypeSQLite))
+	other.User_id, other.Page_id = types.NewCode("ADMIN"), 22
+	other.Preference_type, other.Preference_name = types.NewCode("LAYOUT"), types.NewCode("DEFAULT")
+	if other.Insert(true) {
+		t.Fatal("a user wrote another user's preferences")
+	}
+	var appErr *apperrors.AppError
+	if !errors.As(other.TriggerError(), &appErr) || appErr.Code != apperrors.ErrOwnUserRowsOnly {
+		t.Errorf("error %v", other.TriggerError())
+	}
+
+	fcodeunits.SetCurrentAccess(&session.Session{UserID: "ADMIN", HasRoles: true, IsSuper: true})
+	if !own.Delete(true) {
+		t.Errorf("a SUPER user deleting another user's preferences: %v", own.TriggerError())
+	}
+
+	var pers gtables.UserPersonalization
+	if err := pers.CreateTableWithDBType(db, "", database.DBTypeSQLite); err != nil {
+		t.Fatal(err)
+	}
+	fcodeunits.SetCurrentAccess(&session.Session{UserID: "CLERK", HasRoles: true})
+	theirs := DefaultUserPersonalization("ADMIN")
+	theirs.InitWithDBType(db, "", database.DBTypeSQLite)
+	if theirs.Insert(true) {
+		t.Error("a user wrote another user's appearance")
+	}
+}

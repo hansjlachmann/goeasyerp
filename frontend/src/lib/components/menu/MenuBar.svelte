@@ -99,10 +99,11 @@
 		try {
 			// Load current user info from storage
 			currentUser.loadFromStorage();
-			// Load available languages, companies and version in parallel
+			// Load available languages, companies and version in parallel (the companies only for a
+			// logged-in user: on the login page the list answers 401)
 			const [langs, comps, ver] = await Promise.all([
 				api.getLanguages(),
-				api.getCompanies(),
+				api.getCompanies().catch(() => [] as CompanyInfo[]),
 				api.getVersion()
 			]);
 			languages = langs;

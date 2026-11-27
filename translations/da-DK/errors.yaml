@@ -34,6 +34,8 @@ errors:
   ERR_DELETE_COUNT_CHANGED: "Listen har nu %1 poster, ikke de %2, du bekræftede: intet blev slettet. Kontroller listen, og slet igen."
   ERR_COMPANY_DELETE_SUPER_ONLY: "Kun en bruger med rollen SUPER kan slette virksomheden %1."
   ERR_COMPANY_SUPER_ONLY: "Kun en bruger med rollen SUPER kan oprette eller omdøbe en virksomhed."
+  ERR_OWN_USER_ROWS_ONLY: "%1 for brugeren %2 kan kun ændres af den bruger eller en bruger med rollen SUPER."
+  ERR_NO_COMPANY_ACCESS: "Brugeren %1 har ikke adgang til nogen virksomhed. Bed en administrator om en rolle i en virksomhed."
   ERR_ROLES_SUPER_ONLY: "Kun en bruger med rollen SUPER i alle virksomheder kan ændre roller og deres tilladelser."
   ERR_MEMBER_SUPER_ONLY: "Kun en bruger med rollen SUPER i virksomheden %1 kan give eller fjerne roller der."
   ERR_MEMBER_ALL_SUPER_ONLY: "Kun en bruger med rollen SUPER i alle virksomheder kan give eller fjerne roller for alle virksomheder."

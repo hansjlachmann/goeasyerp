@@ -76,21 +76,10 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		return c.Status(400).JSON(apitypes.NewErrorResponse(apperrors.UserRequired().Message("en-US")))
 	}
 
-	// The company to log in to (the login page sends the one picked; there is no default)
+	// The company to log in to: the one the login page sends (picked, or the last one used),
+	// checked only after the password, so the answer tells nobody which companies exist. Without
+	// one the user's companies decide: one is logged in to, several are listed to pick from.
 	company := requestBody.Company
-	if company == "" {
-		return c.Status(400).JSON(apitypes.NewErrorResponse(apperrors.CompanyRequired().Message("en-US")))
-	}
-
-	// Verify company exists
-	var companyCheck string
-	err := h.db.QueryRow(`SELECT name FROM "Company" WHERE name = $1`, company).Scan(&companyCheck)
-	if err == sql.ErrNoRows {
-		return c.Status(400).JSON(apitypes.NewErrorResponse(apperrors.CompanyNotFound().Message("en-US")))
-	}
-	if err != nil {
-		return c.Status(500).JSON(apitypes.NewErrorResponse(apperrors.CompanyVerifyFailed().Message("en-US")))
-	}
 
 	// A user ID with too many failed logins from this address, or braked after failures from
 	// everywhere, waits (loginGuard, S32), whatever the password; an IPv6 address counts by its
@@ -121,6 +110,36 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		return c.Status(401).JSON(apitypes.NewErrorResponse(apperrors.UserInactive().Message("en-US")))
 	}
 	logins.succeeded(requestBody.UserID, address)
+
+	if company == "" {
+		companies, listErr := h.companiesFor(user.User_id.String())
+		if listErr != nil {
+			return c.Status(500).JSON(apitypes.NewErrorResponse(apperrors.CompanyListFailed().Message("en-US")))
+		}
+		switch len(companies) {
+		case 0:
+			recordSecurity(c, securitylog.CompanyRefused, user.User_id.String(), "", "login: no company")
+			return c.Status(403).JSON(apitypes.NewErrorResponse(apperrors.NoCompanyAccess(user.User_id.String()).Message("en-US")))
+		case 1:
+			company = companies[0].Name
+		default:
+			// no session yet: the login page asks which company and logs in again with it
+			return c.JSON(apitypes.NewSuccessResponse(map[string]interface{}{
+				"choose_company": true,
+				"companies":      companies,
+			}))
+		}
+	}
+
+	// Verify company exists
+	var companyCheck string
+	err := h.db.QueryRow(`SELECT name FROM "Company" WHERE name = $1`, company).Scan(&companyCheck)
+	if err == sql.ErrNoRows {
+		return c.Status(400).JSON(apitypes.NewErrorResponse(apperrors.CompanyNotFound().Message("en-US")))
+	}
+	if err != nil {
+		return c.Status(500).JSON(apitypes.NewErrorResponse(apperrors.CompanyVerifyFailed().Message("en-US")))
+	}
 
 	// Check company access before proceeding (use canonical user ID from DB, not raw input)
 	allowed, _ := h.userHasCompanyAccess(user.User_id.String(), company)
@@ -376,52 +395,54 @@ type CompanyInfo struct {
 	DisplayName string `json:"display_name"`
 }
 
-// ListCompanies returns available companies for the current user.
-// If the user is logged in and has role memberships, only returns companies they have access to.
-// If not logged in (login screen) or user has no roles, returns all companies.
-// GET /api/auth/companies
-func (h *AuthHandler) ListCompanies(c *fiber.Ctx) error {
-	// Get all companies first
+// companiesFor lists the companies a user may work in: those of the user's role memberships
+// (a membership with a blank company: all), or all companies for a user without roles
+func (h *AuthHandler) companiesFor(userID string) ([]CompanyInfo, error) {
 	rows, err := h.db.Query(`SELECT name, COALESCE(display_name, '') FROM "Company" ORDER BY name`)
 	if err != nil {
-		return c.Status(500).JSON(apitypes.NewErrorResponse(apperrors.CompanyListFailed().Message("en-US")))
+		return nil, err
 	}
 	defer rows.Close()
-
-	allCompanies := []CompanyInfo{}
+	all := []CompanyInfo{}
 	for rows.Next() {
 		var info CompanyInfo
-		if err := rows.Scan(&info.Name, &info.DisplayName); err != nil {
-			return c.Status(500).JSON(apitypes.NewErrorResponse(apperrors.CompanyListFailed().Message("en-US")))
+		err = rows.Scan(&info.Name, &info.DisplayName)
+		if err != nil {
+			return nil, err
 		}
-		allCompanies = append(allCompanies, info)
+		all = append(all, info)
 	}
+	allowed, hasRoles := h.getUserAllowedCompanies(userID)
+	if !hasRoles || allowed == nil {
+		return all, nil
+	}
+	allowedSet := make(map[string]bool, len(allowed))
+	for _, name := range allowed {
+		allowedSet[strings.ToLower(name)] = true
+	}
+	filtered := make([]CompanyInfo, 0, len(allowed))
+	for _, info := range all {
+		if allowedSet[strings.ToLower(info.Name)] {
+			filtered = append(filtered, info)
+		}
+	}
+	return filtered, nil
+}
 
-	// If user is logged in, filter by allowed companies
+// ListCompanies returns the companies the logged-in user may work in (the company switcher).
+// Not logged in: 401 — the login page gets the user's companies from the login itself, so the
+// company names are never shown to someone without a password.
+// GET /api/auth/companies
+func (h *AuthHandler) ListCompanies(c *fiber.Ctx) error {
 	sess := getSession(c)
-	if sess != nil && sess.GetUserID() != "" {
-		allowedCompanies, hasRoles := h.getUserAllowedCompanies(sess.GetUserID())
-		if hasRoles && allowedCompanies != nil {
-			// Filter to only allowed companies
-			filtered := make([]CompanyInfo, 0, len(allowedCompanies))
-			allowedSet := make(map[string]bool, len(allowedCompanies))
-			for _, c := range allowedCompanies {
-				allowedSet[strings.ToLower(c)] = true
-			}
-			for _, c := range allCompanies {
-				if allowedSet[strings.ToLower(c.Name)] {
-					filtered = append(filtered, c)
-				}
-			}
-			response := apitypes.NewSuccessResponse(filtered)
-			return c.JSON(response)
-		}
-		// hasRoles=true but allowedCompanies=nil means blank company (all access)
-		// hasRoles=false means no roles configured, show all
+	if sess == nil || sess.GetUserID() == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(apitypes.NewErrorResponse(apperrors.NoActiveSession().Message(getLanguageOrDefault(sess))))
 	}
-
-	response := apitypes.NewSuccessResponse(allCompanies)
-	return c.JSON(response)
+	companies, err := h.companiesFor(sess.GetUserID())
+	if err != nil {
+		return c.Status(500).JSON(apitypes.NewErrorResponse(apperrors.CompanyListFailed().Message(sess.GetLanguage())))
+	}
+	return c.JSON(apitypes.NewSuccessResponse(companies))
 }
 
 // SetLanguage changes the current session language

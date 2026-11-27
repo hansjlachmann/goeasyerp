@@ -1,6 +1,7 @@
 package tables
 
 import (
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 	gtables "github.com/hansjlachmann/goeasyerp/backend/generated/tables"
 )
 
@@ -12,22 +13,26 @@ type userPreferencesLogic struct{}
 
 func init() { gtables.RegisterUserPreferencesLogic(userPreferencesLogic{}) }
 
-// OnInsert runs before a new record is inserted
+// OnInsert: a user's own preferences only (or a SUPER user)
 func (userPreferencesLogic) OnInsert(rec *gtables.UserPreferences) error {
-	return nil
+	return ownUserRowOnly(rec.TableCaption(fcodeunits.CurrentLanguage()), rec.User_id.String())
 }
 
-// OnModify runs before a record is modified
+// OnModify: a user's own preferences only (or a SUPER user)
 func (userPreferencesLogic) OnModify(rec *gtables.UserPreferences) error {
-	return nil
+	return ownUserRowOnly(rec.TableCaption(fcodeunits.CurrentLanguage()), rec.User_id.String())
 }
 
-// OnDelete runs before a record is deleted
+// OnDelete: a user's own preferences only (or a SUPER user)
 func (userPreferencesLogic) OnDelete(rec *gtables.UserPreferences) error {
-	return nil
+	return ownUserRowOnly(rec.TableCaption(fcodeunits.CurrentLanguage()), rec.User_id.String())
 }
 
-// OnRename runs before a primary key field is changed (rec.OldValue has the old value)
+// OnRename: neither the old nor the new user may be another user (or a SUPER user)
 func (userPreferencesLogic) OnRename(rec *gtables.UserPreferences) error {
-	return nil
+	err := ownUserRowOnly(rec.TableCaption(fcodeunits.CurrentLanguage()), rec.XRec().User_id.String())
+	if err != nil {
+		return err
+	}
+	return ownUserRowOnly(rec.TableCaption(fcodeunits.CurrentLanguage()), rec.User_id.String())
 }

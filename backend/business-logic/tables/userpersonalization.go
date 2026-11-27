@@ -1,6 +1,7 @@
 package tables
 
 import (
+	fcodeunits "github.com/hansjlachmann/goeasyerp/backend/foundation/codeunits"
 	"regexp"
 
 	apperrors "github.com/hansjlachmann/goeasyerp/backend/foundation/errors"
@@ -42,12 +43,36 @@ func DefaultUserPersonalization(userID string) *gtables.UserPersonalization {
 	return p
 }
 
+// OnInsert: a user's own settings only (or a SUPER user)
 func (userPersonalizationLogic) OnInsert(rec *gtables.UserPersonalization) error {
+	err := ownUserRowOnly(rec.TableCaption(fcodeunits.CurrentLanguage()), rec.User_id.String())
+	if err != nil {
+		return err
+	}
 	return checkAppearance(rec)
 }
 
+// OnModify: a user's own settings only (or a SUPER user)
 func (userPersonalizationLogic) OnModify(rec *gtables.UserPersonalization) error {
+	err := ownUserRowOnly(rec.TableCaption(fcodeunits.CurrentLanguage()), rec.User_id.String())
+	if err != nil {
+		return err
+	}
 	return checkAppearance(rec)
+}
+
+// OnDelete: a user's own settings only (or a SUPER user)
+func (userPersonalizationLogic) OnDelete(rec *gtables.UserPersonalization) error {
+	return ownUserRowOnly(rec.TableCaption(fcodeunits.CurrentLanguage()), rec.User_id.String())
+}
+
+// OnRename: neither the old nor the new user may be another user (or a SUPER user)
+func (userPersonalizationLogic) OnRename(rec *gtables.UserPersonalization) error {
+	err := ownUserRowOnly(rec.TableCaption(fcodeunits.CurrentLanguage()), rec.XRec().User_id.String())
+	if err != nil {
+		return err
+	}
+	return ownUserRowOnly(rec.TableCaption(fcodeunits.CurrentLanguage()), rec.User_id.String())
 }
 
 // OnValidate_Light_theme checks that the light theme exists and is made for light mode
