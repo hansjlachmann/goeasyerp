@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.197](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.196...v0.1.197) (2026-11-27)
+
+
+### Bug Fixes
+
+* routines and reports started from a page run on the stored record ([e91b11b](https://github.com/hansjlachmann/goeasyerp/commit/e91b11b7a328d0525d344ad4b8e803bc2b23ebdd))
+* show company names only after the password; own preferences only ([957f14c](https://github.com/hansjlachmann/goeasyerp/commit/957f14c8d83600f70587c0dfc0b6348bb104ccdd))
+* tighten table API permissions for companies, installed apps and unknown routes ([de5094d](https://github.com/hansjlachmann/goeasyerp/commit/de5094d923211af85b728b12b0a24d16c520e007))
+
 ## [0.1.196](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.195...v0.1.196) (2026-11-26)
 
 
