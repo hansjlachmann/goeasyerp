@@ -63,6 +63,7 @@ messages:
 
   # Login/Setup
   LOGIN_SIGN_IN: "Sign In"
+  LOGIN_SELECT_COMPANY: "Select company"
   LOGIN_INITIAL_SETUP: "Initial Setup"
   LOGIN_SETUP_TOKEN: "Setup Token"
   LOGIN_SETUP_TOKEN_HINT: "The install script shows it; on a server it is in the backend log (\"setup token\")."

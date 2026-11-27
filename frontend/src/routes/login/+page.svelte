@@ -267,7 +267,7 @@
 				<Wordmark height="2.5rem" alt="" />
 				<span class="sr-only">GoEasyERP</span>
 			</h1>
-			<p>{setupMode ? t(LOGIN.INITIAL_SETUP) : t(LOGIN.SIGN_IN)}</p>
+			<p>{setupMode ? t(LOGIN.INITIAL_SETUP) : companies.length > 0 ? t(LOGIN.SELECT_COMPANY) : t(LOGIN.SIGN_IN)}</p>
 		</div>
 
 		{#if error}

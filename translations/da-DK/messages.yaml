@@ -63,6 +63,7 @@ messages:
 
   # Login/Setup
   LOGIN_SIGN_IN: "Log ind"
+  LOGIN_SELECT_COMPANY: "Vælg virksomhed"
   LOGIN_INITIAL_SETUP: "Førstegangsopsætning"
   LOGIN_SETUP_TOKEN: "Opsætningsnøgle"
   LOGIN_SETUP_TOKEN_HINT: "Installationsscriptet viser den; på en server står den i backend-loggen (\"setup token\")."
