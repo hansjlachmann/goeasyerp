@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.196](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.195...v0.1.196) (2026-11-26)
+
+
+### Bug Fixes
+
+* a Job Queue report job's dialog shows a field's label as written ([42602f5](https://github.com/hansjlachmann/goeasyerp/commit/42602f5891098fd012dca670d809e987e032d72e))
+* Cancel in a routine's input dialog stops the routine ([667b31f](https://github.com/hansjlachmann/goeasyerp/commit/667b31f72e0b636a2f2d4e53a38c403d16875350))
+
 ## [0.1.195](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.194...v0.1.195) (2026-11-26)
 
 
