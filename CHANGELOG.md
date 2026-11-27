@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.198](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.197...v0.1.198) (2026-11-27)
+
+
+### Bug Fixes
+
+* the login page's company step is titled Select company ([714beb8](https://github.com/hansjlachmann/goeasyerp/commit/714beb82b40f223e05b981bc9914cff79aa4c0e5))
+
 ## [0.1.197](https://github.com/hansjlachmann/goeasyerp/compare/v0.1.196...v0.1.197) (2026-11-27)
 
 
