@@ -52,7 +52,7 @@ func (h *DevAppsHandler) Register(api fiber.Router) {
 	dev.Get("/schemas/:name", h.Schema)
 	dev.Post("/apps", h.loggedIn, h.Publish)
 	dev.Delete("/apps/:id", h.loggedIn, h.Unpublish)
-	dev.Get("/builds/:no", h.loggedIn, h.Build)
+	dev.Get("/builds/:no", h.loggedIn, h.super, h.Build)
 }
 
 // local: from this machine, unless remote publishing is allowed
@@ -70,6 +70,15 @@ func (h *DevAppsHandler) loggedIn(c *fiber.Ctx) error {
 	if sess == nil || sess.GetUserID() == "" {
 		language := getLanguageOrDefault(sess)
 		return c.Status(fiber.StatusUnauthorized).JSON(apitypes.NewErrorResponse(apperrors.NoActiveSession().Message(language)))
+	}
+	return c.Next()
+}
+
+// super: a SUPER user (publishing checks it in the business logic; a build's log is read here)
+func (h *DevAppsHandler) super(c *fiber.Ctx) error {
+	sess := getSession(c)
+	if !sess.IsSuper {
+		return c.Status(fiber.StatusForbidden).JSON(apitypes.NewErrorResponse(i18n.GetInstance().Message("ERR_APP_SUPER_ONLY", getLanguageOrDefault(sess))))
 	}
 	return c.Next()
 }

@@ -672,21 +672,6 @@ func runObjectExists(runObject string) bool {
 	return false
 }
 
-// GetAllPages returns all loaded page definitions
-// GET /api/pages
-func (h *PagesHandler) GetAllPages(c *fiber.Ctx) error {
-	registry := pages.GetRegistry()
-	allPages := registry.GetAllPages()
-
-	// Convert map to slice for easier consumption
-	pageList := make([]*pages.PageDefinition, 0, len(allPages))
-	for _, page := range allPages {
-		pageList = append(pageList, page)
-	}
-
-	return c.JSON(apitypes.NewSuccessResponse(pageList))
-}
-
 // markFlowFieldDrilldown: a FlowField's drilldown without filters of its own opens its page
 // with the FlowField's filters (field.DrilldownFlowFilters; POST /api/pages/:id/drilldown)
 func markFlowFieldDrilldown(tableMeta *pages.TableMetadata, table string, field *pages.Field) {

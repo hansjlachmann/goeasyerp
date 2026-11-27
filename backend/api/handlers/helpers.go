@@ -12,12 +12,10 @@ import (
 )
 
 // getSession retrieves the per-request session from c.Locals.
-// Falls back to the global session during migration.
+// nil: the request is not logged in.
 func getSession(c *fiber.Ctx) *session.Session {
-	if sess, ok := c.Locals("session").(*session.Session); ok {
-		return sess
-	}
-	return session.GetCurrent()
+	sess, _ := c.Locals("session").(*session.Session)
+	return sess
 }
 
 // NewCompanyAccess returns the check whether a user may work in a company (role memberships;

@@ -17,9 +17,15 @@ type companyLogic struct{}
 
 func init() { gtables.RegisterCompanyLogic(companyLogic{}) }
 
-// OnInsert: the name prefixes every table of the company ("name$Customer") and goes into SQL as
-// part of their names: only a-z, 0-9, _ and - (lower case, 2–50 characters), as a rename
+// OnInsert: a new company gets all the tables of a company, so a SUPER user only (code without
+// a user — setup, the first user, tests — may). The name prefixes every table of the company
+// ("name$Customer") and goes into SQL as part of their names: only a-z, 0-9, _ and - (lower
+// case, 2–50 characters), as a rename
 func (companyLogic) OnInsert(rec *gtables.Company) error {
+	err := companySuperOnly()
+	if err != nil {
+		return err
+	}
 	name, err := company.NormalizeName(rec.Name.String())
 	if err != nil {
 		return err
@@ -38,12 +44,26 @@ func (companyLogic) OnDelete(rec *gtables.Company) error {
 	return nil
 }
 
-// OnRename: the name prefixes every table of the company ("name$Customer"), so the
+// companySuperOnly refuses a user who is not SUPER to create or rename a company (code
+// without a user is allowed)
+func companySuperOnly() error {
+	access := fcodeunits.CurrentAccess()
+	if access != nil && !access.IsSuper {
+		return apperrors.CompanySuperOnly()
+	}
+	return nil
+}
+
+// OnRename (a SUPER user only, as creating and deleting): the name prefixes every table of the company ("name$Customer"), so the
 // company's data moves with it: its tables, indexes and sequences are renamed and its
 // indexes and SIFT totals built for the new name, in the transaction of the Modify (the
 // API's modifyInTransaction). The generated Modify then carries the name over to User
 // Member (table relation).
 func (companyLogic) OnRename(rec *gtables.Company) error {
+	err := companySuperOnly()
+	if err != nil {
+		return err
+	}
 	oldName := rec.XRec().Name.String()
 	newName, err := company.NormalizeName(rec.Name.String())
 	if err != nil {

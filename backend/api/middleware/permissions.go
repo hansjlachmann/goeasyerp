@@ -12,12 +12,10 @@ import (
 	"github.com/hansjlachmann/goeasyerp/backend/foundation/session"
 )
 
-// getSessionFromLocals retrieves the session from c.Locals, falling back to global session
+// getSessionFromLocals retrieves the request's session from c.Locals (nil: not logged in)
 func getSessionFromLocals(c *fiber.Ctx) *session.Session {
-	if sess, ok := c.Locals("session").(*session.Session); ok {
-		return sess
-	}
-	return session.GetCurrent()
+	sess, _ := c.Locals("session").(*session.Session)
+	return sess
 }
 
 // PermissionCheck returns middleware that enforces table-level permissions.
@@ -40,10 +38,12 @@ func PermissionCheck() fiber.Handler {
 			return c.Next()
 		}
 
+		// a route that maps to no permission operation is refused: a new table route must be
+		// added to mapRouteToOperation
 		op := mapRouteToOperation(c)
 		if op == "" {
-			// Route doesn't map to a permission operation (e.g. unknown path)
-			return c.Next()
+			language := sess.GetLanguage()
+			return c.Status(403).JSON(apitypes.NewErrorResponse(apperrors.PermissionDenied(c.Method(), tableName).Message(language)))
 		}
 
 		if sess.HasPermission(tableName, op) {
@@ -63,7 +63,7 @@ func mapRouteToOperation(c *fiber.Ctx) session.PermissionOperation {
 	path := c.Path()
 
 	switch method {
-	case "GET":
+	case "GET", "HEAD":
 		return session.PermRead
 	case "POST":
 		// Initializing a new record is the first step of inserting one

@@ -51,14 +51,19 @@ func (h *PreferencesHandler) GetPreferences(c *fiber.Ctx) error {
 		return c.Status(400).JSON(apitypes.NewErrorResponse(apperrors.NotLoggedIn().Message(language)))
 	}
 
+	pageNo, err := strconv.Atoi(pageID)
+	if err != nil {
+		return c.Status(400).JSON(apitypes.NewErrorResponse(apperrors.InvalidPageID().Message(language)))
+	}
+
 	// Query preferences for this user, page, and type
 	var prefs gtables.UserPreferences
 	prefs.InitWithDBType(h.db, "", h.dbType) // No company context
 
 	// Set filters
-	prefs.SetFilter("user_id", userID)
-	prefs.SetFilter("page_id", pageID) // SetFilter handles type conversion
-	prefs.SetFilter("preference_type", preferenceType)
+	prefs.SetRange("user_id", userID)
+	prefs.SetRange("page_id", pageNo)
+	prefs.SetRange("preference_type", preferenceType)
 
 	var results []map[string]interface{}
 
